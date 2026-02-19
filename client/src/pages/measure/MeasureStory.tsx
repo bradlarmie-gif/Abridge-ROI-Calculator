@@ -182,6 +182,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     };
   }, [state, capacityPercent, savingsPercent, wellbeingPercent, careSetting]);
 
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? results.timeValueSubtotal : (results.timeValueSubtotal - results.savingsValue);
+  const adjustedTotalLow = results.totalValueLow - (pvEnabled ? 0 : results.savingsValue);
+  const adjustedTotalHigh = results.totalValueHigh - (pvEnabled ? 0 : results.savingsValue);
   const hoursPerProvider = Math.round(results.expansion.hoursPerProvider);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
@@ -280,11 +284,11 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <div className="py-3 border-b border-[#F0F0F0]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-[#1A1A1A]">Time Value</span>
-              <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(results.timeValueSubtotal)}</span>
+              <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</span>
             </div>
             <div className="pl-4 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[#666666]">Operational Savings ({savingsPercent}%)</span>
+              <div className={`flex items-center justify-between ${pvEnabled ? '' : 'opacity-40 line-through'}`}>
+                <span className="text-xs text-[#666666]">Potential Value ({savingsPercent}%)</span>
                 <span className="text-xs text-[#666666]">{formatCurrency(results.savingsValue)}</span>
               </div>
               {!isInpatient && !isNursing && (
@@ -327,7 +331,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide">Estimated Annual Value</span>
               <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-total-value">
-                {formatSmartRange(results.totalValueLow, results.totalValueHigh)}
+                {formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}
               </span>
             </div>
             <p className="text-xs text-[#666666]">Per {isNursing ? "nurse" : "provider"}: ~{formatCurrency(results.expansion.perProviderValue)}/year</p>
@@ -465,7 +469,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} x {formatNumber(state.deployment.totalEncounters)} total {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {savingsPercent}% operational savings at ${state.calibration.otHourlyRate}/hr{!isInpatient && !isNursing ? `, ${capacityPercent}% ${isED ? "throughput" : "capacity"} at $${state.calibration.revenuePerVisit}/${isED ? "patient" : "visit"}` : ""}, {wellbeingPercent}% wellbeing.
+                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {savingsPercent}% potential value at ${state.calibration.otHourlyRate}/hr{pvEnabled ? "" : " (excluded from totals)"}{!isInpatient && !isNursing ? `, ${capacityPercent}% ${isED ? "throughput" : "capacity"} at $${state.calibration.revenuePerVisit}/${isED ? "patient" : "visit"}` : ""}, {wellbeingPercent}% wellbeing.
                   </p>
                   {!isNursing && (
                     <p>

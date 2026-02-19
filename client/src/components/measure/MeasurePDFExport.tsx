@@ -208,6 +208,11 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     state.expansionTargets?.targetAdoption,
     state.expansionTargets?.targetProviders
   );
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? timeValueSubtotal : (timeValueSubtotal - savingsValue);
+  const adjustedTotalLow = totalValueLow - (pvEnabled ? 0 : savingsValue);
+  const adjustedTotalHigh = totalValueHigh - (pvEnabled ? 0 : savingsValue);
+
   const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
   const hoursPerWeekReturned = state.deployment.providers > 0
     ? (totalHoursSaved / state.deployment.providers / (state.deployment.monthsOnAbridge * 4.33))
@@ -220,10 +225,10 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
   const nonAbridgeEncounters = state.deployment.totalEncounters - Math.round(documentedEncounters);
 
   const perProviderValuePerYear = state.deployment.providers > 0
-    ? ((totalValueLow + totalValueHigh) / 2) / state.deployment.providers
+    ? ((adjustedTotalLow + adjustedTotalHigh) / 2) / state.deployment.providers
     : 0;
   const perEncounterValue = state.deployment.totalEncounters > 0
-    ? ((totalValueLow + totalValueHigh) / 2) / state.deployment.totalEncounters
+    ? ((adjustedTotalLow + adjustedTotalHigh) / 2) / state.deployment.totalEncounters
     : 0;
 
   return (
@@ -270,7 +275,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>adoption</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>est. value</Text>
               </View>
             </View>
@@ -396,15 +401,15 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           {/* TIME VALUE section */}
           <Text style={styles.sectionLabelGray}>TIME VALUE</Text>
           <View style={{ marginBottom: 10 }}>
-            {/* Operational Savings */}
-            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8 }}>
-              <View style={{ width: 3, height: 36, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1 }} />
+            {/* Potential Value */}
+            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8, opacity: pvEnabled ? 1 : 0.4 }}>
+              <View style={{ width: 3, height: 36, backgroundColor: pvEnabled ? colors.primary : "#CCCCCC", marginRight: 10, borderRadius: 1 }} />
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Operational Savings</Text>
+                  <Text style={{ fontSize: 10, fontWeight: "bold", color: pvEnabled ? colors.primaryText : "#999999" }}>Potential Value{pvEnabled ? "" : " (excluded)"}</Text>
                   <View style={{ flexDirection: "row", gap: 20 }}>
                     <Text style={{ fontSize: 10, color: colors.secondary }}>{savingsPercent}%</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(savingsValue)}</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: pvEnabled ? colors.primaryText : "#999999" }}>{formatCurrency(savingsValue)}</Text>
                   </View>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.secondary }}>
@@ -460,9 +465,9 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <View>
                 <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>Time Value Subtotal</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>Per provider: ~{formatCurrency(state.deployment.providers > 0 ? timeValueSubtotal / state.deployment.providers : 0)}/year</Text>
+                <Text style={{ fontSize: 10, color: colors.secondary }}>Per provider: ~{formatCurrency(state.deployment.providers > 0 ? adjustedTimeValue / state.deployment.providers : 0)}/year</Text>
               </View>
-              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(timeValueSubtotal)}</Text>
+              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(adjustedTimeValue)}</Text>
             </View>
           </View>
 
@@ -519,12 +524,12 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           <View style={[styles.cardBg, { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12, paddingHorizontal: 16 }]}>
             <View>
               <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>ESTIMATED ANNUAL VALUE</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
               <Text style={{ fontSize: 10, color: colors.secondary }}>Per provider: ~{formatCurrency(perProviderValuePerYear)}/year</Text>
               <Text style={{ fontSize: 10, color: colors.secondary }}>Per encounter: ~${Math.round(perEncounterValue)}</Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 4 }}>Time: {formatCurrency(timeValueSubtotal)} {"\u00B7"} Documentation: {formatSmartRange(docValueLow, docValueHigh)}</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 4 }}>Time: {formatCurrency(adjustedTimeValue)} {"\u00B7"} Documentation: {formatSmartRange(docValueLow, docValueHigh)}</Text>
             </View>
           </View>
 
@@ -627,7 +632,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{state.deployment.providers} providers</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{Math.round(state.deployment.utilizationRate)}% adoption</Text>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 2 }}>est. annual value</Text>
             </View>
             {/* Deeper + Wider */}
@@ -697,9 +702,9 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Hours Reclaimed</Text>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(totalHoursSaved))} hrs   ({hoursPerProvider}/provider)</Text>
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Operational Savings ({savingsPercent}%)</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatCurrency(savingsValue)}</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, opacity: pvEnabled ? 1 : 0.4 }}>
+              <Text style={{ fontSize: 10, color: pvEnabled ? colors.primaryText : "#999999" }}>Potential Value ({savingsPercent}%){pvEnabled ? "" : " — excluded"}</Text>
+              <Text style={{ fontSize: 10, color: pvEnabled ? colors.primaryText : "#999999" }}>{formatCurrency(savingsValue)}</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Patient Capacity ({capacityPercent}%)</Text>
@@ -716,7 +721,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
               <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>Estimated Annual Value</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(totalValueLow, totalValueHigh)}   (~{formatCurrency(perProviderValuePerYear)}/provider)</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}   (~{formatCurrency(perProviderValuePerYear)}/provider)</Text>
             </View>
           </View>
 

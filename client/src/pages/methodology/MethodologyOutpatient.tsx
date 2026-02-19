@@ -210,7 +210,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
 
-                <MechanismCard title="Operational Savings">
+                <MechanismCard title="Potential Value">
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>

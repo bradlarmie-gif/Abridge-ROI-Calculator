@@ -92,6 +92,7 @@ export interface MeasureState {
     targetAdoption: number;
     targetProviders: number;
   };
+  potentialValueEnabled?: boolean;
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
@@ -170,6 +171,7 @@ function useGenericResults(state: MeasureState) {
 
 export default function MeasureAllocate({ 
   state, 
+  updateState,
   onNext,
   onHome, 
   onBack,
@@ -177,21 +179,40 @@ export default function MeasureAllocate({
   const careSetting = state.careSetting || "outpatient";
 
   if (careSetting === "inpatient") {
-    return <InpatientAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+    return <InpatientAllocate state={state} updateState={updateState} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
   if (careSetting === "ed") {
-    return <EDAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+    return <EDAllocate state={state} updateState={updateState} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
   if (careSetting === "nursing") {
-    return <NursingAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+    return <NursingAllocate state={state} updateState={updateState} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
 
-  return <GenericAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+  return <GenericAllocate state={state} updateState={updateState} onNext={onNext} onBack={onBack} onHome={onHome} />;
 }
 
-function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+type AllocateComponentProps = { state: MeasureState; updateState: (updates: Partial<MeasureState>) => void; onNext: () => void; onBack: () => void; onHome: () => void };
+
+function PotentialValueToggle({ enabled, onToggle }: { enabled: boolean; onToggle: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Switch
+        checked={enabled}
+        onCheckedChange={onToggle}
+        data-testid="toggle-potential-value"
+      />
+      <span className="text-[10px] text-[#999999]">{enabled ? "Included" : "Excluded"}</span>
+    </div>
+  );
+}
+
+function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useInpatientResults(state);
-  const heroValue = formatSmartRange(r.totalValueLow, r.totalValueHigh);
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : 0;
+  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
+  const adjustedTotalHigh = r.totalValueHigh - (pvEnabled ? 0 : r.savingsValue);
+  const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
     <div className="min-h-screen bg-white">
@@ -239,7 +260,7 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Doc & Coding</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
-              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
@@ -339,17 +360,20 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
           </p>
 
           <div className="space-y-0">
-            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
               <div className="flex items-start gap-3">
-                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Operational Savings ({r.savingsPercent}%)</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
+                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
+                  </div>
                   <p className="text-xs text-[#666666] mt-1">
                     {formatNumber(Math.round(r.savingsHours))} hours {'\u00D7'} ${r.hourlyRate}/hr
                   </p>
                 </div>
               </div>
-              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.savingsValue)}</p>
+              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
             </div>
 
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
@@ -372,7 +396,7 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
 
             <div className="flex items-center justify-between pt-4">
               <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
-              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(adjustedTimeValue)}</p>
             </div>
           </div>
         </motion.div>
@@ -392,7 +416,7 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
           </p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Documentation & coding: {formatSmartRange(r.docValueLow, r.docValueHigh)}</p>
-            <p>Time value: {formatCurrency(r.timeValueSubtotal)}</p>
+            <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
           </div>
           <div className="border-t border-[#E5E5E5] pt-4">
             <p className="text-sm text-[#666666]">Per provider: ~{formatCurrency(r.expansion.perProviderValue)}/year</p>
@@ -550,9 +574,13 @@ function useNursingResults(state: MeasureState) {
   }, [state]);
 }
 
-function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useEDResults(state);
-  const heroValue = formatSmartRange(r.totalValueLow, r.totalValueHigh);
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : (r.timeValueSubtotal - r.savingsValue);
+  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
+  const adjustedTotalHigh = r.totalValueHigh - (pvEnabled ? 0 : r.savingsValue);
+  const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
     <div className="min-h-screen bg-white">
@@ -573,7 +601,7 @@ function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; on
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
-              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-throughput-value">
@@ -604,15 +632,18 @@ function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; on
               </div>
               <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.throughputValue)}</p>
             </div>
-            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
               <div className="flex items-start gap-3">
-                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Operational Savings ({r.savingsPercent}%)</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
+                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
+                  </div>
                   <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
                 </div>
               </div>
-              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.savingsValue)}</p>
+              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
             </div>
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
@@ -626,7 +657,7 @@ function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; on
             </div>
             <div className="flex items-center justify-between pt-4">
               <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
-              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(adjustedTimeValue)}</p>
             </div>
           </div>
         </motion.div>
@@ -669,7 +700,7 @@ function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; on
           <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
-            <p>Time value: {formatCurrency(r.timeValueSubtotal)}</p>
+            <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
             {r.lwbsValue > 0 && <p>LWBS recovery: {formatCurrency(r.lwbsValue)}</p>}
             {(r.docValueLow > 0 || r.docValueHigh > 0) && <p>E/M accuracy: {formatSmartRange(r.docValueLow, r.docValueHigh)}</p>}
           </div>
@@ -690,9 +721,12 @@ function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; on
   );
 }
 
-function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+function NursingAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useNursingResults(state);
-  const heroValue = formatCurrency(r.totalValueLow);
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : (r.timeValueSubtotal - r.savingsValue);
+  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
+  const heroValue = formatCurrency(adjustedTotalLow);
 
   return (
     <div className="min-h-screen bg-white">
@@ -713,7 +747,7 @@ function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
-              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-overtime-value">
@@ -734,15 +768,18 @@ function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
           <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Time Value</p>
           <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed from charting.</p>
           <div className="space-y-0">
-            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
               <div className="flex items-start gap-3">
-                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Operational Savings ({r.savingsPercent}%)</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
+                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
+                  </div>
                   <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
                 </div>
               </div>
-              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.savingsValue)}</p>
+              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
             </div>
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
@@ -836,7 +873,7 @@ function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
           <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
-            <p>Time value: {formatCurrency(r.timeValueSubtotal)}</p>
+            <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
             {r.annualOvertimeSavings > 0 && <p>Overtime savings: {formatCurrency(r.annualOvertimeSavings)}</p>}
             {r.retentionValue > 0 && <p>Retention value: {formatCurrency(r.retentionValue)}</p>}
           </div>
@@ -856,9 +893,13 @@ function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
   );
 }
 
-function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+function GenericAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const results = useGenericResults(state);
-  const heroValue = formatSmartRange(results.totalValueLow, results.totalValueHigh);
+  const pvEnabled = state.potentialValueEnabled !== false;
+  const adjustedTimeValue = pvEnabled ? results.timeValueSubtotal : (results.timeValueSubtotal - results.savingsValue);
+  const adjustedTotalLow = results.totalValueLow - (pvEnabled ? 0 : results.savingsValue);
+  const adjustedTotalHigh = results.totalValueHigh - (pvEnabled ? 0 : results.savingsValue);
+  const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
     <div className="min-h-screen bg-white">
@@ -902,7 +943,7 @@ function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
 
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
-              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(results.timeValueSubtotal)}</p>
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-doc-value">
@@ -935,18 +976,21 @@ function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
           </p>
 
           <div className="space-y-0">
-            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
               <div className="flex items-start gap-3">
-                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Operational Savings</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value</p>
+                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
+                  </div>
                   <p className="text-xs text-[#666666] mt-1">
                     {formatNumber(Math.round(results.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr<sup>1</sup>
                   </p>
                   <p className="text-[10px] text-[#999999] mt-0.5">[{results.savingsPercent}% of time saved]</p>
                 </div>
               </div>
-              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.savingsValue)}</p>
+              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(results.savingsValue)}</p>
             </div>
 
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
@@ -984,7 +1028,7 @@ function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
 
             <div className="flex items-center justify-between pt-4">
               <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
-              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.timeValueSubtotal)}</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(adjustedTimeValue)}</p>
             </div>
           </div>
 
@@ -1053,7 +1097,7 @@ function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
             {heroValue}
           </p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
-            <p>Time value: {formatCurrency(results.timeValueSubtotal)}</p>
+            <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
             <p>Documentation quality: {formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
           </div>
           <div className="border-t border-[#E5E5E5] pt-4">

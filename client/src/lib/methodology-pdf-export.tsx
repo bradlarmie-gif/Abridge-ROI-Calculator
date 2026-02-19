@@ -298,7 +298,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         label: "TIME RECAPTURED",
         labelColor: colors.secondary,
         mechanisms: [
-          { name: "Operational Savings", attribution: "Measurable", description: "Time saved on documentation reduces overtime, after-hours work, and per-encounter labor cost.", formula: "Providers \u00D7 encounters \u00D7 time saved \u00D7 hourly rate \u00D7 realization" },
+          { name: "Potential Value", attribution: "Measurable", description: "Time saved on documentation reduces overtime, after-hours work, and per-encounter labor cost.", formula: "Providers \u00D7 encounters \u00D7 time saved \u00D7 hourly rate \u00D7 realization" },
           { name: "Patient Capacity", attribution: "Measurable", description: "Freed time can be allocated to additional patient visits, increasing throughput and revenue.", formula: "Hours saved \u00D7 % to capacity \u00D7 revenue/visit \u00D7 realization" },
           { name: "Provider Wellbeing", attribution: "Influenceable", description: "Reduced documentation burden lowers burnout and may improve retention, avoiding replacement costs.", formula: "Providers \u00D7 turnover \u00D7 burnout% \u00D7 impact \u00D7 replacement cost" },
         ],

@@ -80,7 +80,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
       { key: "wrvuValue", label: "wRVU value", defaultValue: 33, prefix: "$" },
     ],
     allocationFields: [
-      { key: "allocSavings", label: "Operational savings", defaultValue: 50 },
+      { key: "allocSavings", label: "Potential Value", defaultValue: 50 },
       { key: "allocCapacity", label: "Patient capacity", defaultValue: 20 },
       { key: "allocWellbeing", label: "Provider wellbeing", defaultValue: 30 },
     ],
@@ -116,7 +116,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
       { key: "lwbsRevenueRecovery", label: "LWBS revenue recovery", defaultValue: 350, prefix: "$" },
     ],
     allocationFields: [
-      { key: "allocSavings", label: "Operational savings", defaultValue: 40 },
+      { key: "allocSavings", label: "Potential Value", defaultValue: 40 },
       { key: "allocThroughput", label: "Throughput", defaultValue: 40 },
       { key: "allocWellbeing", label: "Provider wellbeing", defaultValue: 20 },
     ],
@@ -157,7 +157,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
       { key: "hourlyRate", label: "Provider hourly rate", defaultValue: 175, prefix: "$" },
     ],
     allocationFields: [
-      { key: "allocSavings", label: "Operational Savings", defaultValue: 60 },
+      { key: "allocSavings", label: "Potential Value", defaultValue: 60 },
       { key: "allocWellbeing", label: "Provider Wellbeing", defaultValue: 40 },
     ],
   },
@@ -199,7 +199,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
       { key: "retentionImpact", label: "Retention impact", defaultValue: 15, suffix: "%" },
     ],
     allocationFields: [
-      { key: "allocSavings", label: "Operational savings", defaultValue: 50 },
+      { key: "allocSavings", label: "Potential Value", defaultValue: 50 },
       { key: "allocCapacity", label: "Patient capacity", defaultValue: 20 },
       { key: "allocWellbeing", label: "Provider wellbeing", defaultValue: 30 },
     ],

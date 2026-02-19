@@ -106,7 +106,7 @@ export default function MeasureOpportunity({
   const encounterLabel = isInpatient ? "discharges" : isNursing ? "shifts" : "encounters";
 
   const defaultTargetAdoption = 80;
-  const defaultTargetProviders = state.deployment.providers + 50;
+  const defaultTargetProviders = state.deployment.totalProviders || state.deployment.providers;
 
   const [targetAdoption, setTargetAdoption] = useState(
     state.expansionTargets?.targetAdoption ?? defaultTargetAdoption
