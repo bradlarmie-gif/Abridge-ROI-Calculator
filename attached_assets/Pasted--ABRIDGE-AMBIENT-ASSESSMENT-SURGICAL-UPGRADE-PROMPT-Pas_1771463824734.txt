@@ -1,0 +1,401 @@
+# ABRIDGE AMBIENT ASSESSMENT — SURGICAL UPGRADE PROMPT
+## Paste this as a single instruction into the existing Replit project
+
+---
+
+## CONTEXT: WHAT THIS IS AND WHAT WE'RE DOING
+
+This is not a rebuild. This is a sequence redesign and UX elevation of the existing Abridge Ambient Assessment.
+
+The existing tool quantifies well. But it doesn't disorient first. It flows when it should jolt. It concludes when it should haunt. We are fixing that.
+
+Keep: All existing calculation logic, branding (EA2C00 red, Manrope font, Abridge logo), the four value engine screens, uncertainty calibration logic, and the enterprise synthesis output.
+
+Change: The sequence, the emotional architecture of each screen, the copy tone, and the UX layout principles.
+
+The person taking this assessment currently uses a competing ambient solution. They believe they've solved their documentation problem. By the end they should feel they've been thinking embarrassingly small — and be hungry to understand what they're missing.
+
+**Hungry people act. That is the only goal.**
+
+---
+
+## GLOBAL UX PRINCIPLES — APPLY TO EVERY SCREEN
+
+These are non-negotiable. Every screen gets reviewed against these before it ships.
+
+**1. One idea per screen. Never two.**
+If a screen is trying to say two things, it's saying nothing. Cut or split.
+
+**2. White space is not empty space. It is the work.**
+Content should breathe like a premium medical journal, not a SaaS dashboard. If it feels too sparse, you're probably right. Resist adding.
+
+**3. Cognitive load is the enemy.**
+Every element on screen must justify its existence. Decorative elements: zero. Redundant labels: zero. If someone has to think about the UI, the UI has failed.
+
+**4. Numbers are verdicts. Treat them that way.**
+Big numbers get their own space. They are centered, large, and surrounded by silence. Never buried in a card grid without breathing room first.
+
+**5. Loss framing over gain framing — always.**
+"You are currently losing X" lands 2x harder than "You could gain X." Rewrite every engine screen to lead with what is currently being lost, not what could be captured.
+
+**6. CTAs are directional, not generic.**
+No screen ends with "Next →". Every CTA tells them exactly where they're going and creates forward momentum. Examples: "Show Me My Gap →" / "See What This Costs You →" / "Build My Value Map →"
+
+**7. Mobile-first. No exceptions.**
+CMOs open things on their phones at HIMSS. Every screen must be flawless at 390px width. Pill selectors stack. Cards go full width. Numbers stay large.
+
+**8. Transitions: fade, 300ms, purposeful.**
+Not bouncy. Not sliding carousels. A clean fade between screens signals that something important just ended and something important is beginning.
+
+---
+
+## THE NEW SEQUENCE
+
+Replace the current screen order with this exact sequence:
+
+```
+0. Entry Gate (NEW)
+1. The Hidden Operating System (existing — copy refinement only)
+2. Organization Baseline (existing — minor UX changes)
+3. Uncertainty Calibration (existing — reframe copy only)
+4. The Benchmark Mirror (NEW — most important screen)
+5. Enterprise Pressure / Focus (existing — copy reframe)
+6. Capacity Engine (existing — loss framing update)
+7. Revenue & Yield Engine (existing — loss framing update)
+8. Workforce Stability Engine (existing — loss framing update)
+9. Enterprise Risk Engine (existing — loss framing update)
+10. Enterprise Capture Score (existing — MOVE THIS before synthesis)
+11. Unrealized Enterprise Value Synthesis (existing — one addition)
+12. The Compounding Effect (existing — one column addition)
+13. Exit: Documentation Intelligence Gap (existing — full redesign)
+```
+
+---
+
+## SCREEN-BY-SCREEN INSTRUCTIONS
+
+---
+
+### SCREEN 0: ENTRY GATE (NEW)
+**Purpose:** In 10 seconds, the user self-identifies as someone who doesn't actually know what documentation costs them. They indict themselves. You never have to say it.
+
+**Layout:** Full screen. Vertically and horizontally centered. Nothing else on the page except the Abridge logo top-left and no progress dots (this is the foyer).
+
+**Headline (display, large, bold, centered):**
+> "What is documentation actually costing your organization annually?"
+
+**Three pill options, centered, generous padding:**
+- "I have a number"
+- "I have a rough estimate"
+- "I've never calculated it"
+
+**Behavior:** Selecting any option immediately shows a one-line response (fade in below the pills, 400ms delay):
+- "I have a number" → *"Let's validate that number."*
+- "I have a rough estimate" → *"Let's sharpen it."*
+- "I've never calculated it" → *"Most don't. That's exactly why this exists."*
+
+Then auto-advance to Screen 1 after 1.8 seconds. No button needed.
+
+**Design note:** The third response — "Most don't" — should land with zero judgment. It's a relief, not an indictment. The tone is a calm, knowing colleague. Not a salesperson.
+
+---
+
+### SCREEN 1: THE HIDDEN OPERATING SYSTEM
+**Purpose:** Make a claim so confident and clean that they have to keep going.
+
+**Keep the existing structure but apply these copy and layout changes:**
+
+Remove all bullet points. Replace with this exact layout:
+
+**Headline (display, uppercase, bold):**
+> THE HIDDEN OPERATING SYSTEM
+
+**Subheadline (large, not bold, generous margin below):**
+> "Documentation is the largest unstructured economic system in your organization."
+
+**Single sentence below (secondary gray, 16px):**
+> "Every dollar of clinical labor, reimbursement accuracy, quality reporting, and compliance exposure flows through it."
+
+**Horizontal rule.**
+
+**Single italic line below rule:**
+> "This assessment maps how much enterprise value is currently flowing through — and leaking from — that system."
+
+**CTA:** "Show Me →"
+
+**Design note:** That's it. Nothing else. The restraint is the message. If someone suggests adding more content to this screen, the answer is no.
+
+---
+
+### SCREEN 2: ORGANIZATION BASELINE
+**Existing screen — apply these specific changes only:**
+
+1. Add this green-tinted helper note under the headline:
+   > *"Data-light by design — benchmarks + guardrails apply automatically when data isn't available."*
+
+2. The right preview panel should only appear after the first input is made — not on load. Appearing on load creates noise before they've engaged.
+
+3. Change the black card at bottom of right panel to read:
+   > "You're approximately 90 seconds from seeing your enterprise opportunity map."
+   *(Remove "TIME TO VALUE" label — it reads like a feature, not a promise)*
+
+4. CTA: "Continue →" is fine here. This is a functional screen, not an emotional one.
+
+---
+
+### SCREEN 3: UNCERTAINTY CALIBRATION
+**Existing screen — copy changes only:**
+
+Change the three option labels to feel like honest choices, not tiers:
+- Benchmark-Based → keep label, but change subtext to: *"Designed for early-stage environments. We apply conservative guardrails automatically."*
+- Estimated → keep, subtext: *"You have directional signals. We apply moderate adjustments."*
+- Measured → keep, subtext: *"You have real data. We reduce haircuts while keeping guardrails enforced."*
+
+Add this single bold line above the three cards:
+> **"This is why our models hold up in CFO rooms."**
+
+Keep all right panel logic. It's strong.
+
+Footer note: *"You can adjust this later. We default to conservative."*
+
+CTA: "Continue →"
+
+---
+
+### SCREEN 4: THE BENCHMARK MIRROR (NEW — MOST IMPORTANT SCREEN)
+**Purpose:** This is the moment of silence. The screen that makes someone go quiet. They walk in thinking they're at the finish line. This screen shows them they're at the starting line.
+
+**Layout:** Full screen. No sidebar. Centered. Maximum white space. No progress interference — this screen should feel like it exists outside the flow, like a pause.
+
+**Section label (small caps, secondary gray, top center):**
+WHERE DOES YOUR ORGANIZATION STAND?
+
+**Subtext below label:**
+> *"Most health systems believe they have solved their documentation problem. Here's what the data shows."*
+
+---
+
+**Three-tier visual — the centerpiece of this screen:**
+
+Display as three horizontally connected tiers (stacked on mobile). Each tier is a card with clear visual hierarchy:
+
+**TIER 1 — DOCUMENTATION-AWARE**
+*"Time savings measured. Physicians satisfied. The documentation problem feels solved."*
+Tag: WHERE MOST ORGANIZATIONS ARE TODAY
+
+**TIER 2 — DOCUMENTATION-ACTIVATED**
+*"Economic value captured across capacity, revenue, workforce, and risk. Documentation drives measurable enterprise performance."*
+
+**TIER 3 — DOCUMENTATION-INTELLIGENT**
+*"Documentation is a strategic infrastructure asset. It feeds automation, quality systems, and competitive advantage."*
+
+**A visual indicator (pulsing red dot or bold highlight border) marks Tier 1** with the label:
+> *"Based on your inputs, this is where organizations with your profile typically operate after initial ambient deployment."*
+
+---
+
+**Below the tier visual — THE GUT PUNCH. Full width, slightly larger type, near-black:**
+
+> *"The gap between Tier 1 and Tier 2 is not a technology gap.*
+> It is a framing gap.
+> Organizations at Tier 1 have ambient documentation.
+> Organizations at Tier 2 have documentation infrastructure.
+> For an organization your size, that difference is worth an estimated $X–$Y annually."*
+
+(X–Y calculated conservatively from org baseline inputs)
+
+---
+
+**Below that, secondary gray:**
+> *"This assessment will show you exactly where that gap lives in your organization."*
+
+**CTA:** "Show Me My Gap →"
+
+**Design note:** This screen must feel like a diagnosis, not a pitch. Clinical calm. The typography carries the emotional weight — not colors, animations, or icons. Do not add decorative elements. Do not add more copy. The gap between the tier visual and the gut-punch paragraph should be generous — let them sit with the tiers before reading the conclusion.
+
+---
+
+### SCREENS 5–9: ENTERPRISE PRESSURE + FOUR VALUE ENGINES
+**Apply these changes across all five screens:**
+
+**Screen 5 — Enterprise Pressure:**
+Change the headline question from:
+*"Where is enterprise pressure highest?"*
+
+To:
+*"What is your organization being held accountable for that documentation is silently affecting?"*
+
+This reframe makes it personal and political. They're not selecting a feature. They're naming their pain.
+
+**Screens 6–9 — All four engine screens:**
+
+Lead every engine screen with loss, not gain. Apply this exact opening formula to each:
+
+**Capacity Engine:**
+> *"Your documentation infrastructure is currently constraining approximately [X] FTE of deployable clinical capacity.*
+> *This capacity exists inside your current operations. It is not new hiring. It is not new spending.*
+> *It is already there — locked."*
+
+**Revenue & Yield Engine:**
+> *"Your documentation fidelity is currently leaving approximately [X] in reimbursement accuracy on the table.*
+> *This is not revenue you haven't earned. It is revenue you've earned and failed to capture."*
+
+**Workforce Stability Engine:**
+> *"Your after-hours documentation burden is generating approximately [X] in avoidable labor volatility annually.*
+> *Turnover, overtime, and agency staffing pressure trace directly back to documentation friction."*
+
+**Enterprise Risk Engine:**
+> *"Your current documentation infrastructure creates approximately [X] in audit exposure and quality reporting friction.*
+> *Your readiness score of [X]/100 reflects structural gaps that compound over time."*
+
+Change CTA buttons to be directional:
+- Capacity → "See Revenue Impact →"
+- Revenue → "See Workforce Impact →"
+- Workforce → "See Risk Exposure →"
+- Risk → "See My Enterprise Score →"
+
+---
+
+### SCREEN 10: ENTERPRISE CAPTURE SCORE (MOVED — NOW BEFORE SYNTHESIS)
+**This screen moves from after synthesis to before synthesis. This is the structural surgery.**
+
+**Layout:** Full screen. Centered. The score owns the page. No sidebar.
+
+**No section label. Open directly with the score.**
+
+Large display, centered, with generous vertical margin:
+
+**ENTERPRISE DOCUMENTATION**
+**CAPTURE SCORE**
+
+**[SCORE] / 100**
+(Score dynamically calculated from four engine scores)
+
+Score bar: red fill to score%, remaining gray.
+
+---
+
+**Below score, standard body text, centered:**
+> *"This score reflects how much of the enterprise value flowing through your documentation infrastructure you are currently capturing."*
+
+**Divider line.**
+
+**Two benchmark lines (slightly bolder):**
+- *"Industry average — organizations using ambient documentation today: **34 / 100***"
+- *"Top quartile organizations: **71 / 100***"
+
+**One verdict line — near-black, slightly larger:**
+> *"You are performing at the industry average. The gap to top quartile is not incremental. It is structural."*
+
+**CTA:** "See What This Is Costing You →"
+
+**Design note:** Nothing else on this screen. No cards. No breakdown yet. The breakdown comes in synthesis. This screen is the moment before the reveal. Restraint is everything here. White space around the score should be dramatic — at least 80px top and bottom on desktop.
+
+---
+
+### SCREEN 11: UNREALIZED ENTERPRISE VALUE SYNTHESIS
+**Existing screen — add one element only:**
+
+After the pillar grid and before the "Where Value Leaks" section, insert this full-width statement in a lightly shaded warm box:
+
+> *"This is not a projection of what better technology could deliver.*
+> *This is a map of what your current documentation infrastructure is failing to capture — right now, inside your existing operations."*
+
+This single addition reframes the entire synthesis. They're not looking at a promise. They're looking at a leak.
+
+Everything else on this screen stays.
+
+CTA: "See the Cost of Waiting →"
+
+---
+
+### SCREEN 12: THE COMPOUNDING EFFECT
+**Existing screen — two changes:**
+
+1. Change headline from "The Compounding Effect of Action" to:
+   > **THE COMPOUNDING EFFECT OF INACTION**
+   *(One word change. Completely different emotional charge.)*
+
+2. Add a fourth column to the cost-of-waiting table:
+   **"Current Solution Annual Cost"** — a simple input field where they can enter what they currently pay for their ambient documentation tool. Once entered, the table recalculates to show net position.
+
+   If left blank, show: *"Add your current solution cost for complete picture."* — this creates a moment of reflection even if they don't fill it in.
+
+CTA: "See My Enterprise Summary →"
+
+---
+
+### SCREEN 13: EXIT — DOCUMENTATION INTELLIGENCE GAP (REDESIGNED)
+**Replace the current Enterprise Summary layout entirely.**
+
+**Section label (small caps):** YOUR DOCUMENTATION INTELLIGENCE GAP
+
+**Layout:** Three clean sections. Nothing else.
+
+---
+
+**SECTION 1 — THE VERDICT**
+Two numbers, side by side, large:
+
+Your Score: **[36]** &nbsp;&nbsp;&nbsp; Top Quartile: **71**
+
+A simple gap bar showing the distance. One line below:
+> *"You are capturing [36]% of available enterprise value. Top-performing organizations capture 71%."*
+
+---
+
+**SECTION 2 — YOUR HIGHEST-LEVERAGE INTERVENTION**
+One card. The single biggest gap from the assessment.
+
+Format:
+- **Gap Name** (e.g., "Workforce Stability Infrastructure")
+- Dollar value at stake (red, large)
+- One sentence: what this means in plain language
+- One sentence: what addressing it requires
+
+---
+
+**SECTION 3 — THE INVITATION**
+Centered. Display size. No button yet. Just a question:
+
+> *"Would you like to see what closing this gap looks like?"*
+
+Two options below (generous spacing between them):
+- **"Show Me"** — filled red button
+- **"Export My Assessment"** — outlined secondary button
+
+**If "Show Me" is clicked**, a calm overlay or new screen appears:
+
+> *"We'd like to walk you through what documentation-intelligent organizations look like at your scale.*
+>
+> *This is not a product demo.*
+> *It's a 30-minute working session with someone who has mapped this for organizations like yours."*
+
+Simple form below: Name / Organization / Title / Email
+Submit button: "Request My Session →"
+
+---
+
+**DESIGN NOTE FOR THIS SCREEN:**
+The word "Abridge" appears in the logo and nowhere else until the form submit confirmation. The assessment earns the brand. The insight opens the door — not the logo.
+
+---
+
+## COPY TONE RULES — APPLY EVERYWHERE
+
+- **No exclamation points. Ever.**
+- **No "unlock," "transform," "revolutionize," or "empower."** These are the words of vendors. This tool speaks like a strategist.
+- **Short sentences.** If a sentence exceeds 18 words, cut it.
+- **"Already embedded in your operations"** — use this phrase or close variations throughout Screens 6–12. It turns gain into recovery. Recovery is more urgent than gain.
+- **Statements over questions** — except Screen 0 (Entry) and Screen 13 (Exit). Questions at those two moments are intentional and powerful. Everywhere else, statements signal authority.
+- **Numbers get their own line.** Never bury a dollar figure mid-sentence mid-paragraph.
+
+---
+
+## THE HIMSS / VIVE TEST
+
+Before calling this done, ask: if a CMO or CMIO walked past this running on a screen at HIMSS, would they stop?
+
+Not because it's flashy. Because it says something true that nobody else is saying out loud.
+
+That is the bar. Build to it.
