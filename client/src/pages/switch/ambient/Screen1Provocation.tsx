@@ -4,6 +4,7 @@ import { DS } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { DataMode } from "@/lib/switchGapCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface Screen1Props {
   onNext: () => void;
@@ -58,6 +59,15 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
       className="fixed inset-0 z-50 flex items-center justify-center px-6 md:px-12"
       style={{ backgroundColor: DS.bg, fontFamily: DS.font }}
     >
+      <a
+        href="/"
+        className="fixed top-0 left-0 z-50 flex items-center"
+        style={{ padding: '16px 24px' }}
+        data-testid="link-logo-home-screen1"
+      >
+        <img src={abridgeLogo} alt="Abridge" className="h-5" />
+      </a>
+
       <div className="w-full max-w-[480px] text-center">
         <p
           style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }}
@@ -68,25 +78,23 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
         </p>
 
         <h1
-          className="mb-4"
-          style={{ fontWeight: 700, fontSize: 'clamp(38px, 5vw, 52px)', color: DS.black, lineHeight: 1.15, fontFamily: DS.font }}
+          style={{ fontWeight: 700, fontSize: 'clamp(38px, 5vw, 52px)', color: DS.black, lineHeight: 1.15, fontFamily: DS.font, maxWidth: 480, margin: '0 auto 16px' }}
           data-testid="text-screen1-headline"
         >
           What is ambient documentation actually returning to your organization?
         </h1>
 
         <p
-          className="mb-12"
-          style={{ fontWeight: 400, fontSize: 17, color: DS.body, lineHeight: 1.75, fontFamily: DS.font }}
+          style={{ fontWeight: 400, fontSize: 17, color: DS.body, lineHeight: 1.75, fontFamily: DS.font, marginBottom: 40 }}
           data-testid="text-screen1-body"
         >
           Not what you paid for it.<br />
           What it is actually returning.
         </p>
 
-        <div className="mx-auto mb-12" style={{ width: 56, height: 1, backgroundColor: DS.border }} />
+        <div className="mx-auto mb-10" style={{ width: 56, height: 1, backgroundColor: DS.border }} />
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 flex-wrap">
+        <div className="flex flex-wrap justify-center gap-3 mb-8" style={{ gap: 12 }}>
           {PILLS.map((pill) => (
             <button
               key={pill.id}
@@ -103,6 +111,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
                 color: selected === pill.id ? DS.black : DS.body,
                 cursor: 'pointer',
                 transition: 'all 150ms ease',
+                minWidth: 200,
               }}
               data-testid={`pill-entry-${pill.id}`}
             >
