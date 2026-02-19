@@ -1,23 +1,14 @@
 import { useCallback } from "react";
-import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
-import { CinematicTransition } from "@/components/CinematicTransition";
-import PillarProgressBar from "@/components/PillarProgressBar";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import StepEntryGate from "./narrative-steps/StepEntryGate";
-import StepHiddenOperatingSystem from "./narrative-steps/StepHiddenOperatingSystem";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
-import StepMeasurementReality from "./narrative-steps/StepMeasurementReality";
+import StepCurrentPerformance from "./narrative-steps/StepCurrentPerformance";
+import StepUtilizationReality from "./narrative-steps/StepUtilizationReality";
+import StepEfficiencyReality from "./narrative-steps/StepEfficiencyReality";
 import StepBenchmarkMirror from "./narrative-steps/StepBenchmarkMirror";
-import StepEnterprisePressureMap from "./narrative-steps/StepEnterprisePressureMap";
-import StepPillarCapacity from "./narrative-steps/StepPillarCapacity";
-import StepPillarYield from "./narrative-steps/StepPillarYield";
-import StepPillarWorkforce from "./narrative-steps/StepPillarWorkforce";
-import StepPillarRisk from "./narrative-steps/StepPillarRisk";
-import StepEnterpriseCaptureScore from "./narrative-steps/StepEnterpriseCaptureScore";
-import StepEnterpriseValueSynthesis from "./narrative-steps/StepEnterpriseValueSynthesis";
-import StepTheMath from "./narrative-steps/StepTheMath";
 import StepTheInvitation from "./narrative-steps/StepTheInvitation";
 
 interface AmbientNarrativeFlowProps {
@@ -26,76 +17,56 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 14;
-
-const STEPS = [
-  { id: 1, name: "Entry", shortName: "Entry" },
-  { id: 2, name: "The Hidden Operating System", shortName: "Thesis" },
-  { id: 3, name: "Your Organization", shortName: "Org" },
-  { id: 4, name: "Uncertainty Calibration", shortName: "Calibrate" },
-  { id: 5, name: "Benchmark Mirror", shortName: "Benchmark" },
-  { id: 6, name: "Enterprise Focus", shortName: "Focus" },
-  { id: 7, name: "Capacity Creation", shortName: "Capacity" },
-  { id: 8, name: "Revenue & Yield", shortName: "Yield" },
-  { id: 9, name: "Workforce Stability", shortName: "Workforce" },
-  { id: 10, name: "Enterprise Risk", shortName: "Risk" },
-  { id: 11, name: "Enterprise Capture Score", shortName: "Score" },
-  { id: 12, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
-  { id: 13, name: "The Cost of Inaction", shortName: "Inaction" },
-  { id: 14, name: "Documentation Intelligence Gap", shortName: "Gap" },
-];
+const TOTAL_STEPS = 8;
 
 export default function AmbientNarrativeFlow({
   onBack,
   onBackToJourney,
-  onNavigateToExplore,
 }: AmbientNarrativeFlowProps) {
   const { state, dispatch, calculations } = useAssessment();
   const { inputs } = state;
-  const { currentStep, completedSteps, showLoadingOverlay } = state.navigation;
+  const { currentStep } = state.navigation;
 
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
     dispatch(assessmentActions.updateInput(key, value));
   };
 
-  const canProceedFromStep3 = 
-    inputs.providers > 0 && 
+  const canProceedFromStep2 =
+    inputs.providers > 0 &&
     inputs.annualEncounters > 0;
+
+  const MAX_BUILT_STEP = 6;
 
   const goToStep = (step: number) => {
     if (step < 1 || step > TOTAL_STEPS) return;
-    if (step > currentStep && !canProceedFromStep3 && currentStep === 3) return;
-    
+    if (step > MAX_BUILT_STEP) return;
+    if (step > currentStep && !canProceedFromStep2 && currentStep === 2) return;
+
     dispatch(assessmentActions.setStep(step));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = () => {
-    if (currentStep === 3 && !canProceedFromStep3) return;
-    
-    if (currentStep === 13) {
-      dispatch(assessmentActions.showLoading(true));
-    } else {
-      dispatch(assessmentActions.completeStep(currentStep));
-      goToStep(currentStep + 1);
-    }
+    if (currentStep === 2 && !canProceedFromStep2) return;
+    if (currentStep >= MAX_BUILT_STEP) return;
+    dispatch(assessmentActions.completeStep(currentStep));
+    goToStep(currentStep + 1);
   };
-
-  const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(13));
-    dispatch(assessmentActions.setStep(14));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [dispatch]);
-
-  const handleTransitionComplete = useCallback(() => {
-    dispatch(assessmentActions.showLoading(false));
-  }, [dispatch]);
 
   const handleBack = () => {
     if (currentStep === 1) {
       onBack();
     } else {
       goToStep(currentStep - 1);
+    }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onBackToJourney) {
+      onBackToJourney();
+    } else {
+      window.location.href = "/";
     }
   };
 
@@ -110,96 +81,52 @@ export default function AmbientNarrativeFlow({
 
     switch (currentStep) {
       case 1:
-        return (
-          <StepEntryGate
-            onNext={handleNext}
-          />
-        );
+        return <StepEntryGate onNext={handleNext} />;
       case 2:
         return (
-          <StepHiddenOperatingSystem
-            onNext={handleNext}
-            onBack={handleBack}
+          <StepYourOrganization
+            {...commonProps}
+            canProceed={canProceedFromStep2}
           />
         );
       case 3:
         return (
-          <StepYourOrganization 
-            {...commonProps} 
-            canProceed={canProceedFromStep3}
-          />
-        );
-      case 4:
-        return (
-          <StepMeasurementReality
+          <StepCurrentPerformance
             inputs={inputs}
             updateInput={updateInput}
             onNext={handleNext}
             onBack={handleBack}
           />
         );
+      case 4:
+        return (
+          <StepUtilizationReality
+            inputs={inputs}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
       case 5:
         return (
-          <StepBenchmarkMirror
+          <StepEfficiencyReality
+            inputs={inputs}
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 6:
         return (
-          <StepEnterprisePressureMap
+          <StepBenchmarkMirror
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 7:
-        return (
-          <StepPillarCapacity
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
+        return null;
       case 8:
         return (
-          <StepPillarYield
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 9:
-        return (
-          <StepPillarWorkforce
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 10:
-        return (
-          <StepPillarRisk
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 11:
-        return (
-          <StepEnterpriseCaptureScore
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 12:
-        return (
-          <StepEnterpriseValueSynthesis
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 13:
-        return <StepTheMath {...commonProps} />;
-      case 14:
-        return (
-          <StepTheInvitation 
-            {...commonProps} 
+          <StepTheInvitation
+            {...commonProps}
             onBackToJourney={onBackToJourney}
           />
         );
@@ -209,56 +136,53 @@ export default function AmbientNarrativeFlow({
   };
 
   const isEntryGate = currentStep === 1;
-  const isScoreReveal = currentStep === 11;
-
-  const containerWidth = (() => {
-    if (isEntryGate || isScoreReveal) return "max-w-2xl";
-    if (currentStep === 2) return "max-w-2xl";
-    if (currentStep <= 4 || (currentStep >= 7 && currentStep <= 10)) return "max-w-6xl";
-    if (currentStep === 5) return "max-w-3xl";
-    if (currentStep === 12) return "max-w-4xl";
-    return "max-w-3xl";
-  })();
-
-  const showHeader = !isEntryGate;
-  const showProgressBar = !isEntryGate && !isScoreReveal;
 
   return (
-    <>
-      <CinematicTransition 
-        isVisible={showLoadingOverlay} 
-        onMidpoint={handleTransitionMidpoint}
-        onComplete={handleTransitionComplete}
-      />
-      <div className="min-h-screen bg-white">
-        {showHeader && (
-          <>
-            <UnifiedHeader 
-              pathType="switch"
-              currentStep={currentStep} 
-              totalSteps={TOTAL_STEPS}
-              stepName={STEPS[currentStep - 1]?.name || ""}
-              onBack={handleBack}
-              onHome={onBackToJourney}
-            />
-            <UnifiedHeaderSpacer />
-          </>
-        )}
+    <div className="min-h-screen bg-white" style={{ fontFamily: "Manrope, sans-serif" }}>
+      {!isEntryGate && (
+        <header className="fixed top-0 left-0 right-0 bg-white border-b border-[#E8E8E8] z-50 h-14">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-between">
+            <a
+              href="/"
+              onClick={handleLogoClick}
+              className="flex items-center transition-opacity hover:opacity-70 cursor-pointer"
+              data-testid="link-logo-home"
+            >
+              <img src={abridgeLogo} alt="Abridge" className="h-5" />
+            </a>
 
-        <main className={`mx-auto px-4 md:px-6 ${isEntryGate ? "" : "py-6 md:py-8 pb-12 md:pb-16"} ${containerWidth}`}>
-          {showProgressBar && (
-            <PillarProgressBar
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              totalSteps={TOTAL_STEPS}
-              steps={STEPS}
-            />
-          )}
-          <PageTransition pageKey={`narrative-step-${currentStep}`}>
-            {renderStep()}
-          </PageTransition>
-        </main>
-      </div>
-    </>
+            <div className="flex gap-1.5 items-center" data-testid="progress-dots">
+              {Array.from({ length: TOTAL_STEPS }, (_, i) => {
+                const stepNum = i + 1;
+                const isActive = stepNum === currentStep;
+                const isCompleted = stepNum < currentStep;
+
+                return (
+                  <span
+                    key={i}
+                    className={`rounded-full transition-all duration-300 ${
+                      isActive
+                        ? "w-5 h-2 bg-[#EA2C00]"
+                        : isCompleted
+                          ? "w-1.5 h-1.5 bg-[#1A1A1A]"
+                          : "w-1.5 h-1.5 bg-[#E8E8E8]"
+                    }`}
+                    data-testid={`progress-dot-${stepNum}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </header>
+      )}
+
+      {!isEntryGate && <div className="h-14" />}
+
+      <main className={`mx-auto px-6 md:px-10 ${isEntryGate ? "" : ""} max-w-[1200px]`}>
+        <PageTransition pageKey={`narrative-step-${currentStep}`}>
+          {renderStep()}
+        </PageTransition>
+      </main>
+    </div>
   );
 }

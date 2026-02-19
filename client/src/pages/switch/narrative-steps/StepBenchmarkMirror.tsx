@@ -12,24 +12,27 @@ interface StepBenchmarkMirrorProps {
 const TIERS = [
   {
     id: "aware",
-    label: "Tier 1",
+    label: "TIER 1",
     title: "Documentation-Aware",
-    description: "Time savings measured. Physicians satisfied. The documentation problem feels solved.",
-    borderColor: "#D0D0D0",
+    body: "Time savings measured.\nPhysicians satisfied.\nThe problem feels solved.",
+    bg: "#F7F6F4",
+    hasDot: true,
   },
   {
     id: "activated",
-    label: "Tier 2",
+    label: "TIER 2",
     title: "Documentation-Activated",
-    description: "Economic value captured across capacity, revenue, workforce, and risk. Documentation drives measurable performance.",
-    borderColor: "#999999",
+    body: "Economic value captured across\ncapacity, revenue, workforce,\nand risk.",
+    bg: "#FFFFFF",
+    hasDot: false,
   },
   {
     id: "intelligent",
-    label: "Tier 3",
+    label: "TIER 3",
     title: "Documentation-Intelligent",
-    description: "Documentation is strategic infrastructure \u2014 feeding automation, quality systems, and competitive advantage.",
-    borderColor: "#1A1A1A",
+    body: "Documentation is strategic\ninfrastructure \u2014 feeding\nautomation, quality systems,\nand competitive advantage.",
+    bg: "#FFFFFF",
+    hasDot: false,
   },
 ];
 
@@ -50,19 +53,25 @@ export default function StepBenchmarkMirror({
     [displayedTotal],
   );
 
-  const hasData = state.inputs.providers > 0 && state.inputs.annualEncounters > 0;
-
+  const [showInsight, setShowInsight] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
+
   useEffect(() => {
-    const timer = setTimeout(() => setShowCTA(true), 2200);
-    return () => clearTimeout(timer);
+    const insightTimer = setTimeout(() => setShowInsight(true), 600);
+    const ctaTimer = setTimeout(() => setShowCTA(true), 2200);
+    return () => {
+      clearTimeout(insightTimer);
+      clearTimeout(ctaTimer);
+    };
   }, []);
 
+  const hasData = state.inputs.providers > 0 && state.inputs.annualEncounters > 0;
+
   return (
-    <div className="max-w-[720px] mx-auto py-20 md:py-24 px-4" style={{ fontFamily: "Manrope, sans-serif" }}>
-      <div className="text-center mb-12">
+    <div className="max-w-[680px] mx-auto py-20 md:py-20" style={{ fontFamily: "Manrope, sans-serif" }}>
+      <div className="text-center mb-5">
         <p
-          className="text-[16px] text-[#4B4B4B] leading-[1.7] mb-4"
+          className="text-[17px] text-[#9B9B9B] leading-[1.75] mb-5"
           data-testid="text-mirror-subtext"
         >
           Most organizations believe they have solved
@@ -70,122 +79,116 @@ export default function StepBenchmarkMirror({
           their documentation problem.
         </p>
         <h1
-          className="text-[36px] md:text-[44px] font-bold text-[#1A1A1A] leading-[1.15]"
+          className="text-[36px] md:text-[48px] font-bold text-[#1A1A1A] leading-[1.15]"
           data-testid="text-mirror-headline"
         >
           Here is what the data shows.
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 mb-8">
-        {TIERS.map((tier, idx) => (
-          <div
-            key={tier.id}
-            data-testid={`card-tier-${tier.id}`}
-            className={`relative bg-[#F7F6F4] p-6 md:p-7 ${
-              idx === 0
-                ? "md:rounded-l-lg rounded-t-lg md:rounded-tr-none"
-                : idx === 2
-                  ? "md:rounded-r-lg rounded-b-lg md:rounded-bl-none"
-                  : ""
-            }`}
-            style={{ borderLeft: `3px solid ${tier.borderColor}` }}
-          >
-            <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-2">
-              {tier.label}
-            </p>
-            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-3 uppercase tracking-wide">
-              {tier.title}
-            </h3>
-            <p className="text-[15px] text-[#4B4B4B] leading-[1.6]">
-              {tier.description}
-            </p>
-          </div>
-        ))}
+      <div className="h-16" />
+
+      <div className="relative">
+        <div className="hidden md:block absolute top-1/2 left-0 right-0 h-px bg-[#E8E8E8] -translate-y-1/2 z-0" />
+        <div className="md:hidden absolute left-1/2 top-0 bottom-0 w-px bg-[#E8E8E8] -translate-x-1/2 z-0" />
+
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {TIERS.map((tier) => (
+            <div key={tier.id} className="flex flex-col" data-testid={`card-tier-${tier.id}`}>
+              <div
+                className="border border-[#E8E8E8] rounded-xl p-7"
+                style={{ backgroundColor: tier.bg }}
+              >
+                <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-2">
+                  {tier.label}
+                </p>
+                <h3 className="text-[20px] font-bold text-[#1A1A1A] mb-3">
+                  {tier.title}
+                </h3>
+                <p className="text-[15px] text-[#4B4B4B] leading-[1.7] whitespace-pre-line">
+                  {tier.body}
+                </p>
+              </div>
+              {tier.hasDot && (
+                <div className="flex items-center gap-2.5 mt-4 pl-1">
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#EA2C00] animate-[pulse_3s_ease-in-out_infinite]" style={{ animationTimingFunction: "ease-in-out" }} />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EA2C00]" />
+                  </span>
+                  <p className="text-[13px] text-[#EA2C00]" data-testid="text-tier-indicator">
+                    Most organizations at your profile are here.
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-16 md:mb-20 pl-1">
-        <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EA2C00] opacity-75" />
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#EA2C00]" />
-        </span>
-        <p
-          className="text-[14px] text-[#4B4B4B]"
-          data-testid="text-tier-indicator"
-        >
-          Most organizations at your utilization profile are here.
-        </p>
-      </div>
+      <div className="h-16" />
 
-      <div className="max-w-[600px] mx-auto mb-16 md:mb-20 space-y-6">
-        <p
-          className="text-[20px] text-[#1A1A1A] leading-[2.0]"
-          data-testid="text-insight-1"
-        >
+      <div
+        className={`max-w-[560px] mx-auto text-center transition-all duration-500 ${
+          showInsight ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+        }`}
+      >
+        <p className="text-[20px] text-[#1A1A1A] leading-[2.0] mb-6" data-testid="text-insight-1">
           The gap between Tier 1 and Tier 2
           <br />
           is not a technology gap.
         </p>
-        <p
-          className="text-[20px] text-[#1A1A1A] leading-[2.0]"
-          data-testid="text-insight-2"
-        >
+        <p className="text-[20px] text-[#1A1A1A] leading-[2.0] mb-6" data-testid="text-insight-2">
           It is a framing gap.
         </p>
-        <p className="text-[17px] text-[#4B4B4B] leading-[1.7]">
+        <p className="text-[20px] text-[#1A1A1A] leading-[2.0]">
           Organizations at Tier 1 have ambient documentation.
         </p>
-        <p className="text-[17px] text-[#4B4B4B] leading-[1.7]">
+        <p className="text-[20px] text-[#1A1A1A] leading-[2.0] mb-6">
           Organizations at Tier 2 have documentation infrastructure.
         </p>
 
         {hasData && (
-          <div className="pt-6">
-            <p
-              className="text-[20px] text-[#1A1A1A] leading-[2.0]"
-              data-testid="text-gap-intro"
-            >
+          <>
+            <p className="text-[20px] text-[#1A1A1A] leading-[2.0]" data-testid="text-gap-intro">
               For an organization your size, that difference
               <br />
               is worth an estimated
             </p>
             <p
-              className="text-[28px] md:text-[32px] font-bold text-[#1A1A1A] tabular-nums mt-3"
+              className="text-[36px] font-bold text-[#EA2C00] tabular-nums mt-4 mb-10"
               data-testid="text-gap-value"
             >
-              {formatCurrency(rangeLow)} &ndash; {formatCurrency(rangeHigh)} annually.
+              {formatCurrency(rangeLow)} \u2013 {formatCurrency(rangeHigh)} annually
             </p>
-          </div>
+          </>
         )}
-      </div>
 
-      <div className="text-center mb-12">
-        <p className="text-[15px] text-[#9B9B9B]" data-testid="text-assessment-promise">
-          This assessment will show you exactly where
+        <p className="text-[15px] text-[#9B9B9B] leading-[1.75]" data-testid="text-assessment-promise">
+          This assessment maps exactly where that gap
           <br className="hidden sm:block" />
-          that gap lives in your organization.
+          lives in your organization.
         </p>
       </div>
 
-      <div
-        className={`flex items-center justify-between transition-all duration-500 ${
-          showCTA ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-        }`}
-      >
+      <div className="h-10" />
+
+      <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-[14px] text-[#9B9B9B] hover:text-[#4B4B4B] transition-colors"
+          className="text-[14px] text-[#4B4B4B] underline underline-offset-2 hover:text-[#1A1A1A] transition-colors"
           data-testid="button-back"
         >
           Back
         </button>
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-2.5 px-8 py-4 bg-[#EA2C00] text-white text-[15px] font-semibold rounded-lg hover:bg-[#D42800] transition-colors"
+          className={`inline-flex items-center gap-1.5 px-8 py-3.5 bg-[#EA2C00] text-white text-[15px] font-semibold rounded-[10px] hover:bg-[#C72300] transition-all duration-300 ${
+            showCTA ? "opacity-100" : "opacity-0"
+          }`}
           data-testid="button-show-gap"
         >
           Show Me My Gap
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-4 h-4 ml-1.5" />
         </button>
       </div>
     </div>
