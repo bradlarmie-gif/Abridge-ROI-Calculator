@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 
@@ -9,6 +10,11 @@ interface StepCurrentPerformanceProps {
   onBack: () => void;
 }
 
+const ABRIDGE_UTIL = 76;
+const ABRIDGE_TIME = 4.0;
+const INDUSTRY_UTIL = 45;
+const INDUSTRY_TIME = 2.0;
+
 function SliderWithFill({
   value,
   min,
@@ -16,6 +22,7 @@ function SliderWithFill({
   step,
   onChange,
   testId,
+  disabled,
 }: {
   value: number;
   min: number;
@@ -23,6 +30,7 @@ function SliderWithFill({
   step: number;
   onChange: (v: number) => void;
   testId: string;
+  disabled?: boolean;
 }) {
   const sliderRef = useRef<HTMLInputElement>(null);
   const fillPercent = ((value - min) / (max - min)) * 100;
@@ -42,9 +50,152 @@ function SliderWithFill({
       step={step}
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
-      className="w-full"
+      className={`w-full transition-opacity duration-200 ${disabled ? "opacity-40" : ""}`}
       data-testid={testId}
     />
+  );
+}
+
+function BenchmarkChip({
+  value,
+  label,
+  variant,
+  onClick,
+  active,
+}: {
+  value: string;
+  label: string;
+  variant: "neutral" | "abridge";
+  onClick: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={`chip-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[13px] transition-all duration-200 cursor-pointer ${
+        active
+          ? variant === "abridge"
+            ? "bg-[#EA2C00]/15 border-2 border-[#EA2C00]/40 text-[#EA2C00] font-semibold"
+            : "bg-[#1A1A1A]/10 border-2 border-[#1A1A1A]/25 text-[#1A1A1A] font-semibold"
+          : variant === "abridge"
+            ? "text-[#EA2C00] font-medium hover:bg-[#EA2C00]/10 border border-transparent hover:border-[#EA2C00]/20"
+            : "text-[#9B9B9B] hover:text-[#666666] hover:bg-[#F0F0F0] border border-transparent hover:border-[#E0E0E0]"
+      }`}
+    >
+      <span className="font-bold">{value}</span>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function EditableValue({
+  value,
+  suffix,
+  isSet,
+  placeholder,
+  onCommit,
+  min,
+  max,
+  step,
+  testId,
+}: {
+  value: number | null;
+  suffix: string;
+  isSet: boolean;
+  placeholder: string;
+  onCommit: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  testId: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleStartEdit = () => {
+    setDraft(value != null ? String(value) : "");
+    setEditing(true);
+  };
+
+  const handleCommit = () => {
+    const parsed = parseFloat(draft);
+    if (!isNaN(parsed)) {
+      const clamped = Math.round(Math.min(max, Math.max(min, parsed)) / step) * step;
+      onCommit(Math.round(clamped * 100) / 100);
+    }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="text-center mb-4">
+        <div className="inline-flex items-baseline gap-1">
+          <input
+            ref={inputRef}
+            type="number"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={handleCommit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCommit();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            min={min}
+            max={max}
+            step={step}
+            className="w-24 text-[32px] font-bold text-[#1A1A1A] text-center bg-transparent border-b-2 border-[#EA2C00] outline-none tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            data-testid={`${testId}-input`}
+          />
+          <span className="text-lg text-[#888] font-medium">{suffix}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSet) {
+    return (
+      <div className="text-center mb-4">
+        <button
+          type="button"
+          onClick={handleStartEdit}
+          className="group"
+          data-testid={testId}
+        >
+          <span className="text-[28px] font-bold text-[#CCCCCC] group-hover:text-[#999999] transition-colors">
+            {placeholder}
+          </span>
+          <p className="text-xs text-[#BBBBBB] mt-1 group-hover:text-[#999999] transition-colors">
+            Tap a benchmark or click to type
+          </p>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center mb-4">
+      <button
+        type="button"
+        onClick={handleStartEdit}
+        className="group cursor-text"
+        data-testid={testId}
+        title="Click to type a value"
+      >
+        <span className="text-[32px] font-bold text-[#1A1A1A] tabular-nums group-hover:text-[#EA2C00] transition-colors duration-200">
+          {step < 1 ? value?.toFixed(step < 0.5 ? 2 : 1) : value}{suffix}
+        </span>
+      </button>
+    </div>
   );
 }
 
@@ -54,42 +205,41 @@ export default function StepCurrentPerformance({
   onNext,
   onBack,
 }: StepCurrentPerformanceProps) {
-  const [utilizationMoved, setUtilizationMoved] = useState(inputs.utilization > 0);
-  const [timeMoved, setTimeMoved] = useState(inputs.timeSavedPerEncounter > 0);
+  const [utilization, setUtilization] = useState<number | null>(inputs.utilization > 0 ? inputs.utilization : null);
+  const [timeSaved, setTimeSaved] = useState<number | null>(inputs.timeSavedPerEncounter > 0 ? inputs.timeSavedPerEncounter : null);
+  const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
+  const [timeSet, setTimeSet] = useState(inputs.timeSavedPerEncounter > 0);
   const [unmeasuredTime, setUnmeasuredTime] = useState(false);
 
-  const utilization = inputs.utilization || 45;
-  const timeSaved = inputs.timeSavedPerEncounter || 2.0;
+  const bothSet = utilSet && timeSet;
 
-  const handleUtilizationChange = useCallback((v: number) => {
+  const safeUtil = utilization ?? 45;
+  const safeTime = timeSaved ?? 2.0;
+
+  const handleUtilChange = useCallback((v: number) => {
+    setUtilization(v);
     updateInput("utilization", v);
-    if (!utilizationMoved) setUtilizationMoved(true);
-  }, [updateInput, utilizationMoved]);
+    if (!utilSet) setUtilSet(true);
+  }, [updateInput, utilSet]);
 
   const handleTimeChange = useCallback((v: number) => {
+    setTimeSaved(v);
     updateInput("timeSavedPerEncounter", v);
-    if (!timeMoved) setTimeMoved(true);
-  }, [updateInput, timeMoved]);
+    if (!timeSet) setTimeSet(true);
+    if (unmeasuredTime) setUnmeasuredTime(false);
+  }, [updateInput, timeSet, unmeasuredTime]);
 
   const handleUnmeasuredToggle = () => {
     const next = !unmeasuredTime;
     setUnmeasuredTime(next);
     if (next) {
-      updateInput("timeSavedPerEncounter", 2.0);
-      setTimeMoved(true);
+      setTimeSaved(INDUSTRY_TIME);
+      updateInput("timeSavedPerEncounter", INDUSTRY_TIME);
+      setTimeSet(true);
     }
   };
 
-  useEffect(() => {
-    if (inputs.utilization === 0) {
-      updateInput("utilization", 45);
-    }
-    if (inputs.timeSavedPerEncounter === 0) {
-      updateInput("timeSavedPerEncounter", 2.0);
-    }
-  }, []);
-
-  const documentedEncounters = Math.round(inputs.annualEncounters * (utilization / 100));
+  const documentedEncounters = Math.round(inputs.annualEncounters * (safeUtil / 100));
 
   return (
     <div className="max-w-[560px] mx-auto py-20 md:py-20" style={{ fontFamily: "Manrope, sans-serif" }}>
@@ -113,57 +263,103 @@ export default function StepCurrentPerformance({
             What percentage of eligible encounters are being documented with ambient AI today?
           </p>
 
-          <div className="text-center mb-4">
-            <span className="text-[32px] font-bold text-[#1A1A1A] tabular-nums" data-testid="value-utilization">
-              {utilization}%
-            </span>
-          </div>
-
-          <SliderWithFill
+          <EditableValue
             value={utilization}
+            suffix="%"
+            isSet={utilSet}
+            placeholder="— %"
+            onCommit={handleUtilChange}
             min={10}
             max={95}
             step={5}
-            onChange={handleUtilizationChange}
-            testId="slider-utilization"
+            testId="value-utilization"
           />
 
-          <div className="flex justify-between mt-3 text-[13px] text-[#9B9B9B]">
-            <span>Industry average: 45%</span>
-            <span>Abridge average: 76%</span>
+          <SliderWithFill
+            value={safeUtil}
+            min={10}
+            max={95}
+            step={5}
+            onChange={handleUtilChange}
+            testId="slider-utilization"
+            disabled={!utilSet}
+          />
+
+          <div className="flex justify-between mt-3 gap-2">
+            <BenchmarkChip
+              value="45%"
+              label="Industry average"
+              variant="neutral"
+              onClick={() => handleUtilChange(INDUSTRY_UTIL)}
+              active={utilSet && utilization === INDUSTRY_UTIL}
+            />
+            <BenchmarkChip
+              value="76%"
+              label="Abridge average"
+              variant="abridge"
+              onClick={() => handleUtilChange(ABRIDGE_UTIL)}
+              active={utilSet && utilization === ABRIDGE_UTIL}
+            />
           </div>
 
-          {utilizationMoved && (
-            <p className="text-[17px] text-[#4B4B4B] leading-[1.75] mt-4 transition-opacity duration-300" data-testid="text-utilization-insight">
-              At {utilization}% utilization, you're documenting{" "}
-              {documentedEncounters.toLocaleString()} encounters annually.
-            </p>
-          )}
+          <AnimatePresence>
+            {utilSet && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-[17px] text-[#4B4B4B] leading-[1.75] mt-4"
+                data-testid="text-utilization-insight"
+              >
+                At {utilization}% utilization, you're documenting{" "}
+                {documentedEncounters.toLocaleString()} encounters annually.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div>
+        <div className={`transition-opacity duration-300 ${utilSet ? "opacity-100" : "opacity-30 pointer-events-none"}`}>
           <p className="text-[15px] font-medium text-[#1A1A1A] mb-2">
             How many minutes does your ambient tool save per documented encounter?
           </p>
 
-          <div className="text-center mb-4">
-            <span className="text-[32px] font-bold text-[#1A1A1A] tabular-nums" data-testid="value-time-saved">
-              {timeSaved.toFixed(timeSaved % 1 === 0 ? 1 : 2)} min / encounter
-            </span>
-          </div>
+          <EditableValue
+            value={timeSaved}
+            suffix=" min / encounter"
+            isSet={timeSet}
+            placeholder="— min"
+            onCommit={handleTimeChange}
+            min={0.5}
+            max={6.0}
+            step={0.25}
+            testId="value-time-saved"
+          />
 
           <SliderWithFill
-            value={timeSaved}
+            value={safeTime}
             min={0.5}
             max={6.0}
             step={0.25}
             onChange={handleTimeChange}
             testId="slider-time-saved"
+            disabled={!timeSet}
           />
 
-          <div className="flex justify-between mt-3 text-[13px] text-[#9B9B9B]">
-            <span>Most ambient tools: 1.5\u20132.5 min</span>
-            <span>Abridge average: 4.0 min</span>
+          <div className="flex justify-between mt-3 gap-2">
+            <BenchmarkChip
+              value="1.5\u20132.5 min"
+              label="Most tools"
+              variant="neutral"
+              onClick={() => handleTimeChange(INDUSTRY_TIME)}
+              active={timeSet && timeSaved === INDUSTRY_TIME}
+            />
+            <BenchmarkChip
+              value="4.0 min"
+              label="Abridge average"
+              variant="abridge"
+              onClick={() => handleTimeChange(ABRIDGE_TIME)}
+              active={timeSet && timeSaved === ABRIDGE_TIME}
+            />
           </div>
 
           <label className="flex items-start gap-2.5 mt-4 cursor-pointer">
@@ -178,11 +374,24 @@ export default function StepCurrentPerformance({
               I haven't measured this precisely
             </span>
           </label>
-          {unmeasuredTime && (
-            <p className="text-[13px] text-[#9B9B9B] mt-1.5 ml-6.5" data-testid="text-benchmark-note">
-              Using industry benchmark: 2.0 min
-            </p>
-          )}
+
+          <AnimatePresence>
+            {unmeasuredTime && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2 mt-1.5 ml-6.5 px-3 py-1.5 bg-[#F5F0EB] rounded-lg inline-flex">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500/60 flex-shrink-0" />
+                  <p className="text-[13px] text-[#9B9B9B]">
+                    Using conservative industry benchmark: {INDUSTRY_TIME.toFixed(1)} min
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -196,7 +405,12 @@ export default function StepCurrentPerformance({
         </button>
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-1.5 px-8 py-3.5 bg-[#EA2C00] text-white text-[15px] font-semibold rounded-[10px] hover:bg-[#C72300] transition-colors"
+          disabled={!bothSet}
+          className={`inline-flex items-center gap-1.5 px-8 py-3.5 text-[15px] font-semibold rounded-[10px] transition-all duration-200 ${
+            bothSet
+              ? "bg-[#EA2C00] text-white hover:bg-[#C72300]"
+              : "bg-[#E8E8E8] text-[#BBBBBB] cursor-not-allowed"
+          }`}
           data-testid="button-next"
         >
           See What These Numbers Mean

@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,16 +13,150 @@ interface Screen3Props {
 
 const ABRIDGE_UTIL = 76;
 const ABRIDGE_TIME = 3.0;
+const INDUSTRY_UTIL = 45;
+const INDUSTRY_TIME = 2.0;
 
-function BenchmarkPill({ value, label, variant }: { value: string; label: string; variant: "neutral" | "abridge" }) {
+function BenchmarkPill({
+  value,
+  label,
+  variant,
+  onClick,
+  active,
+  testId,
+}: {
+  value: string;
+  label: string;
+  variant: "neutral" | "abridge";
+  onClick?: () => void;
+  active?: boolean;
+  testId?: string;
+}) {
   return (
-    <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs ${
-      variant === "abridge"
-        ? "bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold"
-        : "bg-[#F0EFED] border border-[#E5E7EB] text-[#888888] font-medium"
-    }`}>
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testId || `pill-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer ${
+        active
+          ? variant === "abridge"
+            ? "bg-[#EA2C00]/15 border-2 border-[#EA2C00]/50 text-[#EA2C00] font-semibold scale-105"
+            : "bg-[#1A1A1A]/10 border-2 border-[#1A1A1A]/30 text-[#1A1A1A] font-semibold scale-105"
+          : variant === "abridge"
+            ? "bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold hover:bg-[#EA2C00]/15 hover:border-[#EA2C00]/40"
+            : "bg-[#F0EFED] border border-[#E5E7EB] text-[#888888] font-medium hover:bg-[#E8E5E0] hover:border-[#D0D0D0]"
+      }`}
+    >
       <span className="font-bold">{value}</span>
       <span>{label}</span>
+    </button>
+  );
+}
+
+function EditableValue({
+  value,
+  suffix,
+  isSet,
+  placeholder,
+  onCommit,
+  min,
+  max,
+  step,
+  testId,
+}: {
+  value: number | null;
+  suffix: string;
+  isSet: boolean;
+  placeholder: string;
+  onCommit: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  testId: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleStartEdit = () => {
+    setDraft(value != null ? String(value) : "");
+    setEditing(true);
+  };
+
+  const handleCommit = () => {
+    const parsed = parseFloat(draft);
+    if (!isNaN(parsed)) {
+      const clamped = Math.round(Math.min(max, Math.max(min, parsed)) / step) * step;
+      onCommit(Math.round(clamped * 100) / 100);
+    }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="text-center mb-6">
+        <div className="inline-flex items-baseline gap-2">
+          <input
+            ref={inputRef}
+            type="number"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={handleCommit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCommit();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            min={min}
+            max={max}
+            step={step}
+            className="w-28 text-5xl font-bold text-[#1A1A1A] text-center bg-transparent border-b-2 border-[#EA2C00] outline-none tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            data-testid={`${testId}-input`}
+          />
+          <span className="text-2xl text-[#888888] font-medium">{suffix}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSet) {
+    return (
+      <div className="text-center mb-6">
+        <button
+          type="button"
+          onClick={handleStartEdit}
+          className="group"
+          data-testid={testId}
+        >
+          <span className="text-4xl font-bold text-[#CCCCCC] group-hover:text-[#999999] transition-colors">
+            {placeholder}
+          </span>
+          <p className="text-xs text-[#BBBBBB] mt-1 group-hover:text-[#999999] transition-colors">
+            Tap a benchmark below or click to type
+          </p>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center mb-6">
+      <button
+        type="button"
+        onClick={handleStartEdit}
+        className="group cursor-text"
+        data-testid={testId}
+        title="Click to type a value"
+      >
+        <span className="text-5xl font-bold text-[#1A1A1A] tabular-nums group-hover:text-[#EA2C00] transition-colors duration-200">
+          {step < 1 ? value?.toFixed(1) : value}{suffix}
+        </span>
+      </button>
     </div>
   );
 }
@@ -31,32 +165,39 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
 
-  const [utilization, setUtilization] = useState(inputs.utilization || 50);
-  const [timeSavings, setTimeSavings] = useState(inputs.timeSavedPerEncounter || 2.0);
-  const [utilMoved, setUtilMoved] = useState(false);
-  const [timeMoved, setTimeMoved] = useState(false);
+  const [utilization, setUtilization] = useState<number | null>(
+    inputs.utilization > 0 ? inputs.utilization : null
+  );
+  const [timeSavings, setTimeSavings] = useState<number | null>(
+    inputs.timeSavedPerEncounter > 0 ? inputs.timeSavedPerEncounter : null
+  );
+  const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
+  const [timeSet, setTimeSet] = useState(inputs.timeSavedPerEncounter > 0);
   const [unmeasuredChecked, setUnmeasuredChecked] = useState(false);
 
-  const bothMoved = utilMoved && timeMoved;
+  const bothSet = utilSet && timeSet;
 
-  const theirEncounters = Math.round(inputs.annualEncounters * (utilization / 100));
+  const safeUtil = utilization ?? 0;
+  const safeTime = timeSavings ?? 0;
+
+  const theirEncounters = Math.round(inputs.annualEncounters * (safeUtil / 100));
   const abridgeEncounters = Math.round(inputs.annualEncounters * (ABRIDGE_UTIL / 100));
   const encounterGap = Math.max(0, abridgeEncounters - theirEncounters);
 
-  const theirHours = Math.round((theirEncounters * timeSavings) / 60);
+  const theirHours = Math.round((theirEncounters * safeTime) / 60);
   const abridgeHours = Math.round((abridgeEncounters * ABRIDGE_TIME) / 60);
   const hourGap = Math.max(0, abridgeHours - theirHours);
 
   const utilInsight = useMemo(() => {
-    if (!utilMoved) return null;
+    if (!utilSet || utilization == null) return null;
     if (utilization < 45) return `Below industry average \u2014 significant headroom to benchmark.`;
     if (utilization <= 60) return `Near industry average \u2014 ${encounterGap.toLocaleString()} encounter gap to Abridge benchmark.`;
     if (utilization <= 75) return `Above average \u2014 ${encounterGap.toLocaleString()} encounter gap to close.`;
     return "At or above Abridge benchmark \u2014 strong utilization.";
-  }, [utilMoved, utilization, encounterGap]);
+  }, [utilSet, utilization, encounterGap]);
 
   const timeInsight = useMemo(() => {
-    if (!timeMoved) return null;
+    if (!timeSet || timeSavings == null) return null;
     const hoursGapCalc = Math.round((theirEncounters * Math.max(0, ABRIDGE_TIME - timeSavings)) / 60);
     if (timeSavings < 1.5) return `Below typical range \u2014 ${hoursGapCalc.toLocaleString()} hour gap to Abridge benchmark.`;
     if (timeSavings < 2.5) {
@@ -68,36 +209,36 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
       return `Above average \u2014 ${gap} min to Abridge benchmark.`;
     }
     return "At or above Abridge benchmark.";
-  }, [timeMoved, timeSavings, theirEncounters]);
+  }, [timeSet, timeSavings, theirEncounters]);
 
   const handleUtilChange = (val: number) => {
     setUtilization(val);
-    if (!utilMoved) setUtilMoved(true);
+    if (!utilSet) setUtilSet(true);
   };
 
   const handleTimeChange = (val: number) => {
     setTimeSavings(val);
-    if (!timeMoved) setTimeMoved(true);
+    if (!timeSet) setTimeSet(true);
     if (unmeasuredChecked) setUnmeasuredChecked(false);
   };
 
-  const handleUnmeasuredToggle = () => {
-    const next = !unmeasuredChecked;
+  const handleUnmeasuredToggle = (checked: boolean | "indeterminate") => {
+    const next = checked === true;
     setUnmeasuredChecked(next);
     if (next) {
-      setTimeSavings(2.0);
-      if (!timeMoved) setTimeMoved(true);
+      setTimeSavings(INDUSTRY_TIME);
+      setTimeSet(true);
     }
   };
 
   const handleNext = () => {
-    dispatch(assessmentActions.updateInput('utilization', utilization));
-    dispatch(assessmentActions.updateInput('timeSavedPerEncounter', timeSavings));
+    if (utilization != null) dispatch(assessmentActions.updateInput('utilization', utilization));
+    if (timeSavings != null) dispatch(assessmentActions.updateInput('timeSavedPerEncounter', timeSavings));
     onNext();
   };
 
-  const utilGapPp = Math.max(0, ABRIDGE_UTIL - utilization);
-  const timeGapMin = Math.max(0, Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10);
+  const utilGapPp = Math.max(0, ABRIDGE_UTIL - safeUtil);
+  const timeGapMin = Math.max(0, Math.round((ABRIDGE_TIME - safeTime) * 10) / 10);
 
   return (
     <div className={`flex flex-col lg:flex-row gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
@@ -129,39 +270,69 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               What % of eligible encounters are being documented?
             </p>
 
-            <div className="text-center mb-6">
-              <span className="text-5xl font-bold text-black" data-testid="value-utilization">
-                {utilization}%
-              </span>
-            </div>
-
-            <Slider
+            <EditableValue
+              value={utilization}
+              suffix="%"
+              isSet={utilSet}
+              placeholder="— %"
+              onCommit={handleUtilChange}
               min={10}
               max={95}
               step={5}
-              value={[utilization]}
-              onValueChange={(v) => handleUtilChange(v[0])}
-              className="w-full"
-              data-testid="slider-utilization"
+              testId="value-utilization"
             />
 
-            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
-              <BenchmarkPill value="45%" label="Industry avg" variant="neutral" />
-              <BenchmarkPill value="76%" label="Abridge avg" variant="abridge" />
+            <div className={`transition-opacity duration-300 ${utilSet ? "opacity-100" : "opacity-40"}`}>
+              <Slider
+                min={10}
+                max={95}
+                step={5}
+                value={[utilization ?? 50]}
+                onValueChange={(v) => handleUtilChange(v[0])}
+                className="w-full"
+                data-testid="slider-utilization"
+              />
             </div>
 
-            {utilInsight && (
-              <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-util-insight">
-                {utilInsight}
-              </p>
-            )}
+            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
+              <BenchmarkPill
+                value="45%"
+                label="Industry avg"
+                variant="neutral"
+                onClick={() => handleUtilChange(INDUSTRY_UTIL)}
+                active={utilSet && utilization === INDUSTRY_UTIL}
+                testId="pill-util-industry"
+              />
+              <BenchmarkPill
+                value="76%"
+                label="Abridge avg"
+                variant="abridge"
+                onClick={() => handleUtilChange(ABRIDGE_UTIL)}
+                active={utilSet && utilization === ABRIDGE_UTIL}
+                testId="pill-util-abridge"
+              />
+            </div>
+
+            <AnimatePresence>
+              {utilInsight && (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="mt-5 text-sm text-[#888888] italic leading-relaxed"
+                  data-testid="text-util-insight"
+                >
+                  {utilInsight}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
         <motion.div variants={staggerItem}>
           <div
             className={`bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-6 transition-opacity duration-300 ${
-              utilMoved ? "opacity-100" : "opacity-30 pointer-events-none"
+              utilSet ? "opacity-100" : "opacity-30 pointer-events-none"
             }`}
           >
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
@@ -172,53 +343,96 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               Minutes saved per documented encounter
             </p>
 
-            <div className="text-center mb-6">
-              <span className="text-5xl font-bold text-black" data-testid="value-time-savings">
-                {timeSavings.toFixed(1)} min
-              </span>
-            </div>
-
-            <Slider
+            <EditableValue
+              value={timeSavings}
+              suffix=" min"
+              isSet={timeSet}
+              placeholder="— min"
+              onCommit={handleTimeChange}
               min={0.5}
               max={6.0}
               step={0.25}
-              value={[timeSavings]}
-              onValueChange={(v) => handleTimeChange(v[0])}
-              className="w-full"
-              data-testid="slider-time-savings"
+              testId="value-time-savings"
             />
 
-            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
-              <BenchmarkPill value="1.5\u20132.5 min" label="Most tools" variant="neutral" />
-              <BenchmarkPill value="3.0 min" label="Abridge avg" variant="abridge" />
+            <div className={`transition-opacity duration-300 ${timeSet ? "opacity-100" : "opacity-40"}`}>
+              <Slider
+                min={0.5}
+                max={6.0}
+                step={0.25}
+                value={[timeSavings ?? 2.0]}
+                onValueChange={(v) => handleTimeChange(v[0])}
+                className="w-full"
+                data-testid="slider-time-savings"
+              />
             </div>
 
-            <div className="flex items-center gap-2.5 mt-5" data-testid="checkbox-unmeasured">
+            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
+              <BenchmarkPill
+                value="1.5–2.5 min"
+                label="Most tools"
+                variant="neutral"
+                onClick={() => handleTimeChange(INDUSTRY_TIME)}
+                active={timeSet && timeSavings === INDUSTRY_TIME}
+                testId="pill-time-industry"
+              />
+              <BenchmarkPill
+                value="3.0 min"
+                label="Abridge avg"
+                variant="abridge"
+                onClick={() => handleTimeChange(ABRIDGE_TIME)}
+                active={timeSet && timeSavings === ABRIDGE_TIME}
+                testId="pill-time-abridge"
+              />
+            </div>
+
+            <div className="flex items-center gap-2.5 mt-5">
               <Checkbox
                 id="unmeasured"
                 checked={unmeasuredChecked}
-                onCheckedChange={() => handleUnmeasuredToggle()}
+                onCheckedChange={handleUnmeasuredToggle}
+                data-testid="checkbox-unmeasured"
               />
               <label htmlFor="unmeasured" className="text-sm text-[#525252] cursor-pointer select-none">
                 I haven't measured this precisely
               </label>
             </div>
-            {unmeasuredChecked && (
-              <p className="mt-2 text-sm text-[#888888]">
-                Using industry benchmark: 2.0 min
-              </p>
-            )}
+            <AnimatePresence>
+              {unmeasuredChecked && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-[#E8E0D8]/50 rounded-lg">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]/60 flex-shrink-0" />
+                    <p className="text-sm text-[#888888]">
+                      Using conservative industry benchmark: {INDUSTRY_TIME.toFixed(1)} min
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {timeInsight && (
-              <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-time-insight">
-                {timeInsight}
-              </p>
-            )}
+            <AnimatePresence>
+              {timeInsight && (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="mt-5 text-sm text-[#888888] italic leading-relaxed"
+                  data-testid="text-time-insight"
+                >
+                  {timeInsight}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
         <div className="max-w-[700px]">
-          <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothMoved} />
+          <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothSet} />
         </div>
       </motion.div>
 
@@ -230,18 +444,24 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
           <div className="mb-5">
             <p className="text-xs text-white/40 mb-1">Utilization Rate</p>
-            <p className="text-3xl font-bold text-white leading-none" data-testid="panel-utilization">
-              {utilization}%
-            </p>
-            {utilMoved && utilGapPp > 0 && (
-              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
-                {utilGapPp}pp below Abridge avg
-              </p>
-            )}
-            {utilMoved && utilGapPp <= 0 && (
-              <p className="text-xs text-green-400 font-semibold mt-1">
-                At or above Abridge avg
-              </p>
+            {utilSet ? (
+              <>
+                <p className="text-3xl font-bold text-white leading-none" data-testid="panel-utilization">
+                  {utilization}%
+                </p>
+                {utilGapPp > 0 && (
+                  <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                    {utilGapPp}pp below Abridge avg
+                  </p>
+                )}
+                {utilGapPp <= 0 && (
+                  <p className="text-xs text-green-400 font-semibold mt-1">
+                    At or above Abridge avg
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
             )}
           </div>
 
@@ -249,18 +469,29 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
           <div className="mb-5">
             <p className="text-xs text-white/40 mb-1">Time Saved / Encounter</p>
-            <p className="text-3xl font-bold text-white leading-none" data-testid="panel-time-savings">
-              {timeSavings.toFixed(1)} min
-            </p>
-            {timeMoved && timeGapMin > 0 && (
-              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
-                {timeGapMin.toFixed(1)} min below Abridge avg
-              </p>
-            )}
-            {timeMoved && timeGapMin <= 0 && (
-              <p className="text-xs text-green-400 font-semibold mt-1">
-                At or above Abridge avg
-              </p>
+            {timeSet ? (
+              <>
+                <p className="text-3xl font-bold text-white leading-none" data-testid="panel-time-savings">
+                  {safeTime.toFixed(1)} min
+                </p>
+                {unmeasuredChecked && (
+                  <p className="text-xs text-amber-400/80 font-medium mt-1">
+                    Estimated (benchmark)
+                  </p>
+                )}
+                {!unmeasuredChecked && timeGapMin > 0 && (
+                  <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                    {timeGapMin.toFixed(1)} min below Abridge avg
+                  </p>
+                )}
+                {!unmeasuredChecked && timeGapMin <= 0 && (
+                  <p className="text-xs text-green-400 font-semibold mt-1">
+                    At or above Abridge avg
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
             )}
           </div>
 
@@ -268,13 +499,19 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
           <div className="mb-5">
             <p className="text-xs text-white/40 mb-1">Hours Returned Annually</p>
-            <p className="text-2xl font-bold text-white leading-none" data-testid="panel-hours">
-              {theirHours.toLocaleString()}
-            </p>
-            {bothMoved && hourGap > 0 && (
-              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
-                +{hourGap.toLocaleString()} hrs available at Abridge avg
-              </p>
+            {bothSet ? (
+              <>
+                <p className="text-2xl font-bold text-white leading-none" data-testid="panel-hours">
+                  {theirHours.toLocaleString()}
+                </p>
+                {hourGap > 0 && (
+                  <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                    +{hourGap.toLocaleString()} hrs available at Abridge avg
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
             )}
           </div>
 
@@ -282,17 +519,23 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
           <div>
             <p className="text-xs text-white/40 mb-1">Encounters Documented</p>
-            <p className="text-2xl font-bold text-white leading-none" data-testid="panel-encounters">
-              {theirEncounters.toLocaleString()}
-            </p>
-            {bothMoved && encounterGap > 0 && (
-              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
-                +{encounterGap.toLocaleString()} at Abridge avg
-              </p>
+            {bothSet ? (
+              <>
+                <p className="text-2xl font-bold text-white leading-none" data-testid="panel-encounters">
+                  {theirEncounters.toLocaleString()}
+                </p>
+                {encounterGap > 0 && (
+                  <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                    +{encounterGap.toLocaleString()} at Abridge avg
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
             )}
           </div>
 
-          {bothMoved && (
+          {bothSet && (
             <>
               <div className="h-px bg-white/10 my-5" />
               <p className="text-xs text-white/30 italic leading-relaxed">
@@ -303,37 +546,42 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
         </div>
       </div>
 
-      {/* Mobile summary - only after both inputs */}
-      {bothMoved && (
-        <motion.div
-          className="block lg:hidden"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <div className="bg-[#1A1A1A] rounded-xl p-6" data-testid="card-live-summary-mobile">
-            <p className="text-[11px] font-medium text-white/60 uppercase tracking-[1.5px] mb-4">Your Performance</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-white/40 mb-1">Utilization</p>
-                <p className="text-2xl font-bold text-white">{utilization}%</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Time Saved</p>
-                <p className="text-2xl font-bold text-white">{timeSavings.toFixed(1)} min</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Hours Returned</p>
-                <p className="text-xl font-bold text-white">{theirHours.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Gap to Benchmark</p>
-                <p className="text-xl font-bold text-[#EA2C00]">+{hourGap.toLocaleString()} hrs</p>
+      <AnimatePresence>
+        {bothSet && (
+          <motion.div
+            className="block lg:hidden"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="bg-[#1A1A1A] rounded-xl p-6" data-testid="card-live-summary-mobile">
+              <p className="text-[11px] font-medium text-white/60 uppercase tracking-[1.5px] mb-4">Your Performance</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-white/40 mb-1">Utilization</p>
+                  <p className="text-2xl font-bold text-white">{utilization}%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-white/40 mb-1">Time Saved</p>
+                  <p className="text-2xl font-bold text-white">{safeTime.toFixed(1)} min</p>
+                  {unmeasuredChecked && (
+                    <p className="text-[10px] text-amber-400/80 mt-0.5">Estimated</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-white/40 mb-1">Hours Returned</p>
+                  <p className="text-xl font-bold text-white">{theirHours.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-white/40 mb-1">Gap to Benchmark</p>
+                  <p className="text-xl font-bold text-[#EA2C00]">+{hourGap.toLocaleString()} hrs</p>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
