@@ -1,10 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useAssessment, assessmentActions } from "@/lib/assessment";
+import type { DataMode } from "@/lib/switchGapCalculator";
 
 interface StepEntryGateProps {
   onNext: () => void;
 }
 
 type GateChoice = "number" | "estimate" | "never" | null;
+
+const DATA_MODE_MAP: Record<Exclude<GateChoice, null>, { dataMode: DataMode; confidence: number }> = {
+  number:   { dataMode: "measured",  confidence: 0.85 },
+  estimate: { dataMode: "estimated", confidence: 0.70 },
+  never:    { dataMode: "benchmark", confidence: 0.55 },
+};
 
 const CHOICES: { value: GateChoice; label: string; response: string }[] = [
   {
@@ -27,10 +35,16 @@ const CHOICES: { value: GateChoice; label: string; response: string }[] = [
 export default function StepEntryGate({ onNext }: StepEntryGateProps) {
   const [selected, setSelected] = useState<GateChoice>(null);
   const [showResponse, setShowResponse] = useState(false);
+  const { dispatch } = useAssessment();
 
   const handleSelect = (choice: GateChoice) => {
-    if (selected) return;
+    if (selected || !choice) return;
     setSelected(choice);
+
+    const mapping = DATA_MODE_MAP[choice];
+    dispatch(assessmentActions.updateInput("dataMode", mapping.dataMode));
+    dispatch(assessmentActions.updateInput("confidenceBaseline", mapping.confidence));
+
     setTimeout(() => setShowResponse(true), 400);
     setTimeout(() => onNext(), 2200);
   };
