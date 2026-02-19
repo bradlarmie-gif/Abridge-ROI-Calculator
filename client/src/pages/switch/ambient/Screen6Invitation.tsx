@@ -1,8 +1,20 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Download } from "lucide-react";
+import { ArrowRight, Download, Loader2 } from "lucide-react";
 import { DS } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
+import {
+  generateAmbientAssessmentPDF,
+  opportunityText,
+  type AmbientAssessmentPDFData,
+} from "@/lib/ambient-assessment-pdf";
+import {
+  ACTIVATION_LABELS,
+  scoreToActivationLevel,
+  computeDomainScore,
+  computeGapForDomain,
+  type Domain,
+} from "./domainCalculations";
 
 interface Screen6Props {
   onBack: () => void;
@@ -48,6 +60,52 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const [showForm, setShowForm] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: '', org: '', title: '', email: '' });
+  const [isExporting, setIsExporting] = useState(false);
+
+  const providers = inputs.providers || 0;
+  const annualEncounters = inputs.annualEncounters || 0;
+  const utilization = inputs.utilization || 45;
+  const timeSavings = inputs.timeSavedPerEncounter || 2.0;
+
+  const HAIRCUT = 0.60;
+
+  const domainData = useMemo(() => {
+    const domains: Array<Domain> = ['capacity', 'revenue', 'workforce', 'risk'];
+    const scores: Record<string, number> = {
+      capacity: inputs.capacityScore || 0,
+      revenue: inputs.revenueScore || 0,
+      workforce: inputs.workforceScore || 0,
+      risk: inputs.riskScore || 0,
+    };
+    const gaps: Record<string, number> = {
+      capacity: inputs.capacityGap || 0,
+      revenue: inputs.revenueGap || 0,
+      workforce: inputs.workforceGap || 0,
+      risk: inputs.riskGap || 0,
+    };
+
+    const result: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; primaryOpportunity: string }> = {};
+    for (const d of domains) {
+      const level = scoreToActivationLevel(d, scores[d]);
+      result[d] = {
+        activationLevel: level,
+        activationLabel: ACTIVATION_LABELS[d][level],
+        score: scores[d],
+        gapValue: Math.round(gaps[d] * HAIRCUT),
+        primaryOpportunity: opportunityText[d]?.[level] || '',
+      };
+    }
+    return result;
+  }, [inputs]);
+
+  const displayedTotal = useMemo(() => {
+    const totalGap = (inputs.capacityGap || 0) + (inputs.revenueGap || 0) +
+      (inputs.workforceGap || 0) + (inputs.riskGap || 0);
+    return Math.round(totalGap * HAIRCUT);
+  }, [inputs]);
+
+  const displayedMonthly = Math.round(displayedTotal / 12);
+  const displayedDaily = Math.round(displayedTotal / 365);
 
   const topDomainName = DOMAIN_NAMES[result.topDomain] || 'Capacity Creation';
   const topDomainOps = DOMAIN_OPS[result.topDomain];
@@ -57,37 +115,42 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
     setFormSubmitted(true);
   };
 
-  const handleExport = () => {
-    const text = [
-      `ABRIDGE DOCUMENTATION INTELLIGENCE ASSESSMENT`,
-      ``,
-      `Documentation Intelligence Score: ${result.score} / 100`,
-      ``,
-      `Domain Breakdown:`,
-      `  Capacity:  ${formatDollar(Math.round(result.domains.capacity * result.haircut))}`,
-      `  Revenue:   ${formatDollar(Math.round(result.domains.revenue * result.haircut))}`,
-      `  Workforce: ${formatDollar(Math.round(result.domains.workforce * result.haircut))}`,
-      `  Risk:      ${formatDollar(Math.round(result.domains.risk * result.haircut))}`,
-      ``,
-      `Total Annual Gap: ${formatDollarFull(result.displayedTotal)}`,
-      `Monthly Cost of Inaction: ${formatDollarFull(result.monthlyGap)}`,
-      ``,
-      `Organization Profile:`,
-      `  Providers: ${inputs.providers}`,
-      `  Annual Encounters: ${inputs.annualEncounters.toLocaleString()}`,
-      `  Utilization: ${inputs.utilization || 45}%`,
-      `  Time Saved: ${(inputs.timeSavedPerEncounter || 2.0).toFixed(1)} min/encounter`,
-      ``,
-      `Conservative estimate. Methodology available on request.`,
-    ].join('\n');
-
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'abridge-assessment.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const dt = displayedTotal;
+      const pdfData: AmbientAssessmentPDFData = {
+        organizationName: formData.org || "Your Organization",
+        preparedBy: formData.name || undefined,
+        assessmentDate: new Date().toLocaleDateString("en-US", {
+          month: "long", day: "numeric", year: "numeric"
+        }),
+        providers,
+        annualEncounters,
+        utilization,
+        timeSavings,
+        documentationScore: result.score,
+        totalAnnualGap: dt,
+        monthlyGap: displayedMonthly,
+        dailyGap: displayedDaily,
+        actNow3yr: Math.round(dt * 3.45),
+        wait6mo3yr: Math.round(dt * (3.45 - 0.42)),
+        wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
+        permanentlyLost6mo: Math.round(dt * 0.42),
+        permanentlyLost12mo: Math.round(dt * 0.95),
+        domains: {
+          capacity: domainData.capacity as any,
+          revenue: domainData.revenue as any,
+          workforce: domainData.workforce as any,
+          risk: domainData.risk as any,
+        },
+      };
+      await generateAmbientAssessmentPDF(pdfData);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -169,18 +232,19 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             </button>
             <button
               onClick={handleExport}
+              disabled={isExporting}
               className="inline-flex items-center gap-2 w-full sm:w-auto justify-center"
               style={{
                 fontFamily: DS.font, fontWeight: 500, fontSize: 15, padding: '13px 28px', borderRadius: DS.radius.input,
-                backgroundColor: 'transparent', color: DS.black, border: `1.5px solid ${DS.black}`, cursor: 'pointer',
-                transition: 'background 150ms ease',
+                backgroundColor: 'transparent', color: DS.black, border: `1.5px solid ${DS.black}`, cursor: isExporting ? 'wait' : 'pointer',
+                transition: 'background 150ms ease', opacity: isExporting ? 0.7 : 1,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.hoverBg)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.backgroundColor = DS.hoverBg; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
               data-testid="button-export"
             >
-              <Download size={16} />
-              Export My Assessment
+              {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
             </button>
           </div>
         )}
@@ -245,10 +309,11 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             </p>
             <button
               onClick={handleExport}
-              style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }}
+              disabled={isExporting}
+              style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: isExporting ? 'wait' : 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }}
               data-testid="button-copy-link"
             >
-              Copy your assessment link
+              {isExporting ? 'Generating PDF...' : 'Download your assessment'}
             </button>
           </div>
         )}
