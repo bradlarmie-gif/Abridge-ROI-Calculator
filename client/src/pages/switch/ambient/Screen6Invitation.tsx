@@ -12,6 +12,8 @@ import {
 import {
   ACTIVATION_LABELS,
   scoreToActivationLevel,
+  DOMAIN_ORDER,
+  DOMAIN_LABELS,
   type Domain,
 } from "./domainCalculations";
 
@@ -19,13 +21,6 @@ interface Screen6Props {
   onBack: () => void;
   onBackToJourney?: () => void;
 }
-
-const DOMAIN_NAMES: Record<string, string> = {
-  capacity: 'Capacity Creation',
-  revenue: 'Revenue Integrity',
-  workforce: 'Workforce Stability',
-  risk: 'Risk & Compliance',
-};
 
 const DOMAIN_OPS: Record<string, { meaning: string; action: string }> = {
   capacity: {
@@ -69,7 +64,6 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const HAIRCUT = 0.60;
 
   const domainData = useMemo(() => {
-    const domains: Array<Domain> = ['capacity', 'revenue', 'workforce', 'risk'];
     const scores: Record<string, number> = {
       capacity: inputs.capacityScore || 0,
       revenue: inputs.revenueScore || 0,
@@ -83,10 +77,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
       risk: inputs.riskGap || 0,
     };
 
-    const result: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; primaryOpportunity: string }> = {};
-    for (const d of domains) {
+    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; primaryOpportunity: string }> = {};
+    for (const d of DOMAIN_ORDER) {
       const level = scoreToActivationLevel(d, scores[d]);
-      result[d] = {
+      r[d] = {
         activationLevel: level,
         activationLabel: ACTIVATION_LABELS[d][level],
         score: scores[d],
@@ -94,7 +88,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         primaryOpportunity: opportunityText[d]?.[level] || '',
       };
     }
-    return result;
+    return r;
   }, [inputs]);
 
   const displayedTotal = useMemo(() => {
@@ -106,8 +100,12 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const displayedMonthly = Math.round(displayedTotal / 12);
   const displayedDaily = Math.round(displayedTotal / 365);
 
-  const topDomainName = DOMAIN_NAMES[result.topDomain] || 'Capacity Creation';
   const topDomainOps = DOMAIN_OPS[result.topDomain];
+
+  const dt = displayedTotal;
+  const actNow3yr = Math.round(dt * 3.45);
+  const permanentlyLost6mo = Math.round(dt * 0.42);
+  const permanentlyLost12mo = Math.round(dt * 0.95);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +115,6 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const dt = displayedTotal;
       const pdfData: AmbientAssessmentPDFData = {
         organizationName: formData.org || "Your Organization",
         preparedBy: formData.name || undefined,
@@ -132,11 +129,11 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         totalAnnualGap: dt,
         monthlyGap: displayedMonthly,
         dailyGap: displayedDaily,
-        actNow3yr: Math.round(dt * 3.45),
+        actNow3yr,
         wait6mo3yr: Math.round(dt * (3.45 - 0.42)),
         wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
-        permanentlyLost6mo: Math.round(dt * 0.42),
-        permanentlyLost12mo: Math.round(dt * 0.95),
+        permanentlyLost6mo,
+        permanentlyLost12mo,
         domains: {
           capacity: domainData.capacity as any,
           revenue: domainData.revenue as any,
@@ -154,176 +151,345 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
 
   return (
     <div>
-      <div className="max-w-lg mx-auto">
+      <motion.div
+        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-12 md:py-16 mb-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="max-w-[800px] mx-auto text-center">
+          <p className="text-[10px] font-medium text-white/40 uppercase tracking-[2px] mb-6" data-testid="text-hero-label">
+            Documentation Intelligence Assessment
+          </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight text-center" data-testid="text-screen6-heading">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-10 font-abridge uppercase tracking-tight" data-testid="text-screen6-heading">
             Your Assessment
           </h1>
-          <p className="text-base text-[#888888] text-center mb-8">
-            Summary of your documentation intelligence assessment
-          </p>
 
-          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-10" data-testid="card-verdict-numbers">
-            <div className="flex items-start justify-between gap-8 flex-wrap">
-              <div>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Your Score</p>
-                <p className="text-4xl font-bold text-black">
-                  {result.score} <span className="text-xl text-[#888888] font-normal">/ 100</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Top Quartile</p>
-                <p className="text-4xl font-bold text-black">
-                  71 <span className="text-xl text-[#888888] font-normal">/ 100</span>
-                </p>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 mb-8">
+            <div>
+              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
+              <p className="text-[64px] md:text-[80px] font-bold text-white leading-none" data-testid="hero-score-value">
+                {result.score}
+              </p>
+              <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
             </div>
 
-            <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden relative mt-5 mb-3">
+            <div className="hidden sm:block w-px h-20 bg-white/10" />
+
+            <div>
+              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Unrealized Value</p>
+              <p className="text-[48px] md:text-[56px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+                {formatDollar(displayedTotal)}
+              </p>
+              <p className="text-lg text-white/30 font-normal mt-1">annually</p>
+            </div>
+          </div>
+
+          <div className="max-w-[400px] mx-auto mb-6">
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden relative">
               <div
-                className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full"
+                className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full transition-all duration-700"
                 style={{ width: `${Math.min(result.score, 100)}%` }}
               />
-            </div>
-
-            <p className="text-sm text-[#888888] leading-relaxed" data-testid="text-capture-line">
-              You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
-            </p>
-          </div>
-        </motion.div>
-
-        <div className="h-px bg-[#E5E7EB] mb-10" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-            Highest-Leverage Opportunity
-          </p>
-
-          <div className="bg-[#F5F0EB] rounded-lg p-6 mb-14" data-testid="card-top-opportunity">
-            <p className="text-xl font-bold text-black mb-2">{topDomainName}</p>
-            <p className="text-3xl font-bold text-[#EA2C00] mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
-            <div className="h-px bg-[#E5E7EB]/50 mb-4" />
-            <p className="text-sm text-[#888888] leading-relaxed">
-              {topDomainOps.meaning} {topDomainOps.action}
-            </p>
-          </div>
-        </motion.div>
-
-        <div className="h-px bg-[#E5E7EB] mb-14" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] max-w-[400px] mx-auto" data-testid="text-invitation-headline">
-              Would you like to see what documentation intelligence looks like at your scale?
-            </h2>
-            <p className="text-base text-[#888888] leading-relaxed mt-5">
-              This is not a product demonstration.<br />
-              It is a 30-minute working session.
-            </p>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55 }}
-        >
-          {!showForm && !formSubmitted && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-              <Button
-                onClick={() => setShowForm(true)}
-                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
-                data-testid="button-request-session"
-              >
-                Request a Working Session
-                <ArrowRight size={16} />
-              </Button>
-              <Button
-                onClick={handleExport}
-                disabled={isExporting}
-                variant="outline"
-                className="rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
-                data-testid="button-export"
-              >
-                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
-              </Button>
-            </div>
-          )}
-
-          {showForm && !formSubmitted && (
-            <form onSubmit={handleSubmit} className="bg-[#F5F0EB] rounded-lg p-8 mb-14" data-testid="form-contact">
-              <div className="flex flex-col gap-4">
-                <input
-                  type="text" placeholder="Name" value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                  data-testid="input-name"
-                />
-                <input
-                  type="text" placeholder="Organization" value={formData.org}
-                  onChange={(e) => setFormData({ ...formData, org: e.target.value })}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                  data-testid="input-org"
-                />
-                <input
-                  type="text" placeholder="Title" value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                  data-testid="input-title"
-                />
-                <input
-                  type="email" placeholder="Email" value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                  data-testid="input-email"
-                />
+              <div className="absolute -top-0.5" style={{ left: '34%', transform: 'translateX(-50%)' }}>
+                <div className="w-px h-3 bg-white/40" />
               </div>
-              <Button
-                type="submit"
-                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-6"
-                data-testid="button-submit"
-              >
-                Submit
-                <ArrowRight size={16} />
-              </Button>
-            </form>
-          )}
-
-          {formSubmitted && (
-            <div className="text-center bg-[#F5F0EB] rounded-lg p-8 mb-14" data-testid="form-confirmation">
-              <p className="text-base text-black font-semibold mb-3">
-                We'll be in touch within one business day.
-              </p>
-              <button
-                onClick={handleExport}
-                disabled={isExporting}
-                className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer disabled:cursor-wait"
-                data-testid="button-copy-link"
-              >
-                {isExporting ? 'Generating PDF...' : 'Download your assessment'}
-              </button>
+              <div className="absolute -top-0.5" style={{ left: '71%', transform: 'translateX(-50%)' }}>
+                <div className="w-px h-3 bg-white/70" />
+              </div>
             </div>
-          )}
-        </motion.div>
+            <div className="flex justify-between mt-2">
+              <span className="text-[10px] text-white/30">0</span>
+              <span className="text-[10px] text-white/40">Avg: 34</span>
+              <span className="text-[10px] text-white/50">Top: 71</span>
+              <span className="text-[10px] text-white/30">100</span>
+            </div>
+          </div>
 
-        <p className="text-center text-sm text-[#888888] leading-relaxed">
-          Conservative estimates based on Abridge deployment benchmarks.<br />
-          Methodology available on request.
-        </p>
+          <p className="text-sm text-white/50 leading-relaxed max-w-[500px] mx-auto" data-testid="text-capture-line">
+            You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
+          </p>
+        </div>
+      </motion.div>
+
+      <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex-1 max-w-[700px]">
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-top-opportunity">
+              <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
+                Highest-Leverage Opportunity — {DOMAIN_LABELS[result.topDomain as Domain] || 'Capacity'}
+              </p>
+              <div className="h-px bg-[#E5E7EB] mb-6" />
+              <p className="text-[#EA2C00] font-bold text-3xl leading-none mb-3" data-testid="text-top-domain-value">
+                {formatDollarFull(result.topDomainValue)} <span className="text-base font-normal text-[#888888]">annually</span>
+              </p>
+              <p className="text-sm text-[#888888] leading-relaxed">
+                {topDomainOps.meaning} {topDomainOps.action}
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
+          >
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-domain-summary">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Domain Performance
+              </p>
+              <div className="h-px bg-[#E5E7EB] mb-6" />
+
+              {DOMAIN_ORDER.map((domain, idx) => {
+                const d = domainData[domain];
+                return (
+                  <div key={domain}>
+                    <div className="flex items-center justify-between py-3" data-testid={`summary-domain-${domain}`}>
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</p>
+                        <p className="text-xs text-[#888888] italic">{d?.activationLabel}</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="w-[100px]">
+                          <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
+                              style={{ width: `${d?.score || 0}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold text-black w-[40px] text-right">{d?.score || 0}</span>
+                        <span className="text-sm font-bold text-[#EA2C00] w-[80px] text-right">{formatDollar(d?.gapValue || 0)}</span>
+                      </div>
+                    </div>
+                    {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                  </div>
+                );
+              })}
+
+              <div className="h-px bg-[#E5E7EB] mt-2" />
+              <div className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between">
+                <span className="font-semibold text-sm text-black">Total Annual Gap</span>
+                <span className="font-bold text-xl text-[#EA2C00]" data-testid="text-total-gap">{formatDollar(displayedTotal)}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10" data-testid="card-invitation">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Next Step
+              </p>
+              <div className="h-px bg-[#E5E7EB] mb-6" />
+
+              <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
+                Would you like to see what documentation intelligence looks like at your scale?
+              </h2>
+              <p className="text-sm text-[#888888] leading-relaxed mb-6">
+                This is not a product demonstration. It is a 30-minute working session.
+              </p>
+
+              {!showForm && !formSubmitted && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                    data-testid="button-request-session"
+                  >
+                    Request a Working Session
+                    <ArrowRight size={16} />
+                  </Button>
+                  <Button
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    variant="outline"
+                    className="rounded-full px-6 font-medium gap-2"
+                    data-testid="button-export"
+                  >
+                    {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                    {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
+                  </Button>
+                </div>
+              )}
+
+              {showForm && !formSubmitted && (
+                <form onSubmit={handleSubmit} data-testid="form-contact">
+                  <div className="flex flex-col gap-3">
+                    <input
+                      type="text" placeholder="Name" value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-name"
+                    />
+                    <input
+                      type="text" placeholder="Organization" value={formData.org}
+                      onChange={(e) => setFormData({ ...formData, org: e.target.value })}
+                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-org"
+                    />
+                    <input
+                      type="text" placeholder="Title" value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-title"
+                    />
+                    <input
+                      type="email" placeholder="Email" value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-email"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-4"
+                    data-testid="button-submit"
+                  >
+                    Submit
+                    <ArrowRight size={16} />
+                  </Button>
+                </form>
+              )}
+
+              {formSubmitted && (
+                <div className="text-center" data-testid="form-confirmation">
+                  <p className="text-base text-black font-semibold mb-3">
+                    We'll be in touch within one business day.
+                  </p>
+                  <button
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer disabled:cursor-wait"
+                    data-testid="button-copy-link"
+                  >
+                    {isExporting ? 'Generating PDF...' : 'Download your assessment'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          <p className="text-center text-xs text-[#888888] leading-relaxed mt-8 mb-4">
+            Conservative estimates based on Abridge deployment benchmarks. Methodology available on request.
+          </p>
+        </div>
+
+        <motion.div
+          className="w-full lg:w-[320px] flex-shrink-0"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+        >
+          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-summary">
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[2px] mb-4">
+              Assessment Summary
+            </p>
+
+            <div className="flex items-end gap-3 mb-1">
+              <span className="text-white font-bold text-[48px] leading-none" data-testid="panel-score">
+                {result.score}
+              </span>
+              <span className="text-white/30 text-lg mb-1">/ 100</span>
+            </div>
+            <p className="text-xs text-white/40 mb-5">Documentation Intelligence Score</p>
+
+            <div className="h-px bg-white/10 my-4" />
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+              Enterprise Value
+            </p>
+
+            <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">
+              {formatDollar(displayedTotal)}
+            </p>
+            <p className="text-xs text-white/40 mb-4">unrealized annually</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div>
+                <p className="text-white font-bold text-lg leading-none" data-testid="panel-monthly">
+                  ${displayedMonthly.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg leading-none" data-testid="panel-daily">
+                  ${displayedDaily.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+              Cost of Waiting
+            </p>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/60">Wait 6 months</span>
+                <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-6mo">
+                  {formatDollarFull(permanentlyLost6mo)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/60">Wait 12 months</span>
+                <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-12mo">
+                  {formatDollarFull(permanentlyLost12mo)}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+              Domain Gaps
+            </p>
+            <div className="space-y-2">
+              {DOMAIN_ORDER.map((domain) => (
+                <div key={domain} className="flex items-center justify-between text-sm">
+                  <span className="text-white/60">{DOMAIN_LABELS[domain]}</span>
+                  <span className="text-white font-semibold">{formatDollar(domainData[domain]?.gapValue || 0)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+              Your Inputs
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/50">Providers</span>
+                <span className="text-white/80 font-medium">{providers}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/50">Encounters / yr</span>
+                <span className="text-white/80 font-medium">{annualEncounters.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/50">Utilization</span>
+                <span className="text-white/80 font-medium">{utilization}%</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/50">Time saved</span>
+                <span className="text-white/80 font-medium">{timeSavings} min</span>
+              </div>
+            </div>
+
+          </div>
+        </motion.div>
       </div>
     </div>
   );
