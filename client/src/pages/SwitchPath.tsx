@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import abridgeLogo from "@assets/abridge-logo-symbol-500x300_1768935221852.png";
+import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
 
 const spectrumStyles = `
 @keyframes scaleX {
@@ -114,14 +115,6 @@ const SOLUTION_DATA: Record<SolutionType, {
   },
 };
 
-const ABRIDGE_BENCHMARKS = {
-  utilization: 65,
-  timeSavings: 3.0,
-  wrvuUplift: 6,
-  underCoding: 12,
-  denialPrevention: 45,
-  hccImprovement: 15,
-};
 
 const CARE_SETTINGS: { id: CareSetting; label: string; available: boolean }[] = [
   { id: "outpatient", label: "Outpatient", available: true },
@@ -521,31 +514,21 @@ const PATHWAY_SUMMARIES = {
 // Default assumption values per driver - now with pathway structure
 const DEFAULT_ASSUMPTIONS = {
   patient_access: {
-    // Pathway 1: Additional Patient Visits
     visitsEnabled: true,
-    visitConversion: 10, // % (conservative, was 20%)
-    revenuePerVisit: 200, // $
-    // Pathway 2: Reduced Overtime (moved from separate driver)
+    revenuePerVisit: 200,
     overtimeEnabled: true,
-    otConversion: 40, // %
-    otHourlyRate: 75, // $
-    // Pathway 3: Utilization realization
+    otHourlyRate: 75,
     utilizationEnabled: true,
-    utilizationRealization: 10, // % (conservative)
   },
   overtime: {
-    // Single pathway - efficiency-based
     efficiencyEnabled: true,
-    otConversionRate: 40, // %
-    otHourlyRate: 100, // $
+    otHourlyRate: 100,
   },
   retention: {
-    // Single pathway - burnout reduction
     retentionEnabled: true,
-    turnoverRate: 8, // %
-    replacementCost: 400000, // $
-    realizationRate: 20, // %
-    burnoutReduction: 25, // %
+    turnoverRate: 8,
+    replacementCost: 400000,
+    burnoutReduction: 25,
   },
   level_of_service: {
     // Single pathway: wRVU uplift from better documentation
@@ -792,7 +775,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const utilizationGapPercent = theirDocumentedEncounters > 0 ? Math.round((utilizationGapEncounters / theirDocumentedEncounters) * 100) : 0;
     
     const theirTimeSavedMinutes = theirDocumentedEncounters * timeSavings;
-    const abridgeTimeSavedMinutes = abridgeDocumentedEncounters * ABRIDGE_BENCHMARKS.timeSavings;
+    const abridgeTimeSavedMinutes = abridgeDocumentedEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg;
     const theirTimeSavedHours = Math.round(theirTimeSavedMinutes / 60);
     const abridgeTimeSavedHours = Math.round(abridgeTimeSavedMinutes / 60);
     const efficiencyGapHours = abridgeTimeSavedHours - theirTimeSavedHours;
@@ -807,15 +790,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
     const hccAssumptions = driverAssumptions.hcc;
     
     const revenuePerVisit = paAssumptions.revenuePerVisit;
-    const timeToVisitConversion = paAssumptions.visitConversion / 100;
-    const utilizationRealizationRate = paAssumptions.utilizationRealization / 100;
     
-    const otConversionRate = otAssumptions.otConversionRate / 100;
     const overtimeRate = otAssumptions.otHourlyRate;
     
     const turnoverRate = retAssumptions.turnoverRate / 100;
     const providerCost = retAssumptions.replacementCost;
-    const retentionRealization = retAssumptions.realizationRate / 100;
     const burnoutReduction = retAssumptions.burnoutReduction / 100;
     
     const denialRate = denAssumptions.denialRate / 100;
@@ -871,18 +850,15 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       hcc: { their: 0, abridge: 0, gap: 0, theirCalc: [], abridgeCalc: [], gapBreakdown: createEmptyGapBreakdown() },
     };
     
-    // Patient Access calculations using editable assumptions
-    const theirUsableHours = Math.round(theirTimeSavedHours * timeToVisitConversion);
-    const abridgeUsableHours = Math.round(abridgeTimeSavedHours * timeToVisitConversion);
-    const theirNewVisits = Math.round(theirUsableHours * 2);
-    const abridgeNewVisits = Math.round(abridgeUsableHours * 2);
+    // Patient Access calculations — full modeled value (haircut applied at display layer)
+    const theirNewVisits = Math.round(theirTimeSavedHours * 2);
+    const abridgeNewVisits = Math.round(abridgeTimeSavedHours * 2);
     const theirPatientAccess = theirNewVisits * revenuePerVisit;
     const abridgePatientAccess = abridgeNewVisits * revenuePerVisit;
     
     // Calculate efficiency gap contribution to patient access
     const efficiencyGapHoursForAccess = efficiencyGapHours;
-    const efficiencyUsableHours = Math.round(efficiencyGapHoursForAccess * timeToVisitConversion);
-    const efficiencyNewVisits = Math.round(efficiencyUsableHours * 2);
+    const efficiencyNewVisits = Math.round(efficiencyGapHoursForAccess * 2);
     const efficiencyPatientAccessValue = efficiencyNewVisits * revenuePerVisit;
     
     // Total = efficiency pathway only (utilization pathway removed)
@@ -894,37 +870,35 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       gap: patientAccessGap,
       theirCalc: [
         `${theirTimeSavedHours.toLocaleString()} hours returned`,
-        `${theirUsableHours.toLocaleString()} usable (20% realization)`,
-        `${theirNewVisits.toLocaleString()} new visits possible`,
+        `${theirNewVisits.toLocaleString()} new visits possible (2/hr)`,
         `${theirNewVisits.toLocaleString()} x $${revenuePerVisit} = ${formatCurrency(theirPatientAccess)}/year`,
       ],
       abridgeCalc: [
         `${abridgeTimeSavedHours.toLocaleString()} hours returned`,
-        `${abridgeUsableHours.toLocaleString()} usable (20% realization)`,
-        `${abridgeNewVisits.toLocaleString()} new visits possible`,
+        `${abridgeNewVisits.toLocaleString()} new visits possible (2/hr)`,
         `${abridgeNewVisits.toLocaleString()} x $${revenuePerVisit} = ${formatCurrency(abridgePatientAccess)}/year`,
       ],
       gapBreakdown: {
         fromEfficiency: {
           steps: [
             { label: `+${efficiencyGapHoursForAccess.toLocaleString()} hours returned`, value: '' },
-            { label: `× ${paAssumptions.visitConversion}% time-to-visit conversion`, value: '', editable: { key: 'visitConversion', driverId: 'patient_access' as DriverId, type: 'percent' as const } },
+            { label: `× 2 visits/hour`, value: '' },
             { label: `× $${revenuePerVisit} per visit`, value: '', editable: { key: 'revenuePerVisit', driverId: 'patient_access' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(efficiencyPatientAccessValue)}/year`, value: formatCurrency(efficiencyPatientAccessValue), isResult: true },
           ],
           subtotal: efficiencyPatientAccessValue,
         },
         total: patientAccessGap,
-        assumptions: [`${paAssumptions.visitConversion}% conversion`, `$${revenuePerVisit}/visit`],
+        assumptions: [`$${revenuePerVisit}/visit`, `2 visits/hr`],
       },
     };
     
-    // Overtime calculations using editable assumptions
-    const theirOvertimeHours = Math.round(theirTimeSavedHours * otConversionRate);
-    const abridgeOvertimeHours = Math.round(abridgeTimeSavedHours * otConversionRate);
+    // Overtime calculations — full modeled value (haircut applied at display layer)
+    const theirOvertimeHours = theirTimeSavedHours;
+    const abridgeOvertimeHours = abridgeTimeSavedHours;
     const theirOvertime = theirOvertimeHours * overtimeRate;
     const abridgeOvertime = abridgeOvertimeHours * overtimeRate;
-    const efficiencyOvertimeValue = Math.round(efficiencyGapHours * otConversionRate * overtimeRate);
+    const efficiencyOvertimeValue = Math.round(efficiencyGapHours * overtimeRate);
     // Total = efficiency component ONLY if enabled
     const overtimeGap = otAssumptions.efficiencyEnabled ? efficiencyOvertimeValue : 0;
     
@@ -934,32 +908,29 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
       gap: overtimeGap,
       theirCalc: [
         `${theirTimeSavedHours.toLocaleString()} hours returned`,
-        `${theirOvertimeHours.toLocaleString()} OT hours reduced (40%)`,
-        `${theirOvertimeHours.toLocaleString()} x $${overtimeRate} = ${formatCurrency(theirOvertime)}/year`,
+        `${theirOvertimeHours.toLocaleString()} x $${overtimeRate}/hr = ${formatCurrency(theirOvertime)}/year`,
       ],
       abridgeCalc: [
         `${abridgeTimeSavedHours.toLocaleString()} hours returned`,
-        `${abridgeOvertimeHours.toLocaleString()} OT hours reduced (40%)`,
-        `${abridgeOvertimeHours.toLocaleString()} x $${overtimeRate} = ${formatCurrency(abridgeOvertime)}/year`,
+        `${abridgeOvertimeHours.toLocaleString()} x $${overtimeRate}/hr = ${formatCurrency(abridgeOvertime)}/year`,
       ],
       gapBreakdown: {
         fromEfficiency: {
           steps: [
             { label: `+${efficiencyGapHours.toLocaleString()} hours returned`, value: '' },
-            { label: `× ${otAssumptions.otConversionRate}% converts to OT reduction`, value: '', editable: { key: 'otConversionRate', driverId: 'overtime' as DriverId, type: 'percent' as const } },
             { label: `× $${overtimeRate}/hour OT rate`, value: '', editable: { key: 'otHourlyRate', driverId: 'overtime' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(efficiencyOvertimeValue)}/year`, value: formatCurrency(efficiencyOvertimeValue), isResult: true },
           ],
           subtotal: efficiencyOvertimeValue,
         },
         total: overtimeGap,
-        assumptions: [`${otAssumptions.otConversionRate}% OT conversion`, `$${overtimeRate}/hr OT rate`],
+        assumptions: [`$${overtimeRate}/hr OT rate`],
       },
     };
     
-    // Retention calculations using editable assumptions
-    const theirRetention = Math.round(providers * turnoverRate * burnoutReduction * 0.5 * providerCost * retentionRealization);
-    const abridgeRetention = Math.round(providers * turnoverRate * burnoutReduction * providerCost * retentionRealization);
+    // Retention calculations — full modeled value (haircut applied at display layer)
+    const theirRetention = Math.round(providers * turnoverRate * burnoutReduction * 0.5 * providerCost);
+    const abridgeRetention = Math.round(providers * turnoverRate * burnoutReduction * providerCost);
     // Total = retention value ONLY if enabled
     const retentionGapRaw = abridgeRetention - theirRetention;
     const retentionGap = retAssumptions.retentionEnabled ? retentionGapRaw : 0;
@@ -987,13 +958,13 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
             { label: `${providers} providers × ${retAssumptions.turnoverRate}% turnover rate`, value: '', editable: { key: 'turnoverRate', driverId: 'retention' as DriverId, type: 'percent' as const } },
             { label: `× ${retAssumptions.burnoutReduction}% burnout reduction`, value: '', editable: { key: 'burnoutReduction', driverId: 'retention' as DriverId, type: 'percent' as const } },
             { label: `× ${(effectivenessGap * 100).toFixed(0)}% higher effectiveness with Abridge`, value: '' },
-            { label: `× $${(providerCost / 1000).toFixed(0)}K replacement cost × ${retAssumptions.realizationRate}%`, value: '', editable: { key: 'replacementCost', driverId: 'retention' as DriverId, type: 'currency' as const } },
+            { label: `× $${(providerCost / 1000).toFixed(0)}K replacement cost`, value: '', editable: { key: 'replacementCost', driverId: 'retention' as DriverId, type: 'currency' as const } },
             { label: `= ${formatCurrency(retentionGap)}/year`, value: formatCurrency(retentionGap), isResult: true },
           ],
           subtotal: retentionGap,
         },
         total: retentionGap,
-        assumptions: [`${retAssumptions.turnoverRate}% turnover`, `$${(providerCost / 1000).toFixed(0)}K replacement`, `${retAssumptions.realizationRate}% realization`],
+        assumptions: [`${retAssumptions.turnoverRate}% turnover`, `$${(providerCost / 1000).toFixed(0)}K replacement`],
       },
     };
     
@@ -1934,7 +1905,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-[#EA2C00] flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4" />
-                    Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min
+                    Abridge avg: {ABRIDGE_BENCHMARKS.timeSavedAvg} min
                   </span>
                   <button 
                     onClick={() => setShowBenchmarkModal(true)}
@@ -1964,11 +1935,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               
               <div className="bg-[#FEF7F7] rounded-2xl p-6 border-2 border-[#EA2C00]/20">
                 <p className="text-xs font-semibold text-[#EA2C00]/80 uppercase tracking-wide mb-2">With Abridge</p>
-                <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.timeSavings} min savings</p>
+                <p className="text-sm text-[#1F2937]/60 mb-1">At {ABRIDGE_BENCHMARKS.timeSavedAvg} min savings</p>
                 <p className="text-4xl font-bold text-[#1F2937] mb-1 tabular-nums">{calculations.abridgeTimeSavedHours.toLocaleString()}</p>
                 <p className="text-sm text-[#1F2937]/70">hours returned/year</p>
                 <p className="text-xs text-neutral-400 mt-3 font-mono">
-                  {ABRIDGE_BENCHMARKS.timeSavings} min × {calculations.abridgeDocumentedEncounters.toLocaleString()} ÷ 60
+                  {ABRIDGE_BENCHMARKS.timeSavedAvg} min × {calculations.abridgeDocumentedEncounters.toLocaleString()} ÷ 60
                 </p>
               </div>
             </div>
@@ -2544,7 +2515,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <span className="text-sm">
                     <span className="text-neutral-500">{timeSavings} min</span>
                     <span className="text-neutral-400 mx-2">→</span>
-                    <span className="font-semibold text-neutral-900">{ABRIDGE_BENCHMARKS.timeSavings} min</span>
+                    <span className="font-semibold text-neutral-900">{ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
                     <span className="text-emerald-600 ml-2 font-medium">= +{calculations.efficiencyGapHours.toLocaleString()} hours</span>
                   </span>
                 </div>
@@ -2636,14 +2607,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                 onToggle={(enabled) => updateDriverAssumption('patient_access', 'visitsEnabled', enabled ? 1 : 0)}
                                 canToggle={true}
                                 subtotal={values.gapBreakdown.fromEfficiency.subtotal}
-                                summary={PATHWAY_SUMMARIES.patient_access_visits(
-                                  calculations.efficiencyGapHours,
-                                  driverAssumptions.patient_access.visitConversion,
-                                  driverAssumptions.patient_access.revenuePerVisit
-                                )}
+                                summary={`${calculations.efficiencyGapHours.toLocaleString()} hours → visits @ $${driverAssumptions.patient_access.revenuePerVisit}`}
                                 inputs={[
                                   { label: 'Hours returned', value: calculations.efficiencyGapHours },
-                                  { label: 'Conversion to visits', value: driverAssumptions.patient_access.visitConversion, editable: { key: 'visitConversion', driverId: 'patient_access', type: 'percent' } },
                                   { label: 'Revenue per visit', value: driverAssumptions.patient_access.revenuePerVisit, editable: { key: 'revenuePerVisit', driverId: 'patient_access', type: 'currency' } },
                                   { label: 'Result', value: 0, isResult: true },
                                 ]}
@@ -2662,14 +2628,9 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                 onToggle={(enabled) => updateDriverAssumption('overtime', 'efficiencyEnabled', enabled ? 1 : 0)}
                                 canToggle={true}
                                 subtotal={values.gapBreakdown.fromEfficiency.subtotal}
-                                summary={PATHWAY_SUMMARIES.overtime_reduction(
-                                  calculations.efficiencyGapHours,
-                                  driverAssumptions.overtime.otConversionRate,
-                                  driverAssumptions.overtime.otHourlyRate
-                                )}
+                                summary={`${calculations.efficiencyGapHours.toLocaleString()} hours × $${driverAssumptions.overtime.otHourlyRate}/hr OT rate`}
                                 inputs={[
                                   { label: 'Hours returned', value: calculations.efficiencyGapHours },
-                                  { label: 'OT conversion rate', value: driverAssumptions.overtime.otConversionRate, editable: { key: 'otConversionRate', driverId: 'overtime', type: 'percent' } },
                                   { label: 'OT hourly rate', value: driverAssumptions.overtime.otHourlyRate, editable: { key: 'otHourlyRate', driverId: 'overtime', type: 'currency' } },
                                   { label: 'Result', value: 0, isResult: true },
                                 ]}
@@ -2698,7 +2659,6 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                                   { label: 'Turnover rate', value: driverAssumptions.retention.turnoverRate, editable: { key: 'turnoverRate', driverId: 'retention', type: 'percent' } },
                                   { label: 'Burnout reduction', value: driverAssumptions.retention.burnoutReduction, editable: { key: 'burnoutReduction', driverId: 'retention', type: 'percent' } },
                                   { label: 'Replacement cost', value: driverAssumptions.retention.replacementCost, editable: { key: 'replacementCost', driverId: 'retention', type: 'currency' } },
-                                  { label: 'Realization rate', value: driverAssumptions.retention.realizationRate, editable: { key: 'realizationRate', driverId: 'retention', type: 'percent' } },
                                   { label: 'Result', value: 0, isResult: true },
                                 ]}
                                 context={PATHWAY_CONTEXT.retention.retention}
@@ -3075,7 +3035,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
-                  <span className="text-neutral-300">Your time savings: <span className="font-semibold text-white">{timeSavings} min</span> <span className="text-neutral-500">(Abridge avg: {ABRIDGE_BENCHMARKS.timeSavings} min)</span></span>
+                  <span className="text-neutral-300">Your time savings: <span className="font-semibold text-white">{timeSavings} min</span> <span className="text-neutral-500">(Abridge avg: {ABRIDGE_BENCHMARKS.timeSavedAvg} min)</span></span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -3107,7 +3067,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </button>
               {showAssumptions && (
                 <div className="mt-2 bg-neutral-50 rounded-lg p-3 border border-neutral-200 text-xs text-neutral-500">
-                  <p>Utilization: {utilization}% → {ABRIDGE_BENCHMARKS.utilization}% • Time: {timeSavings} → {ABRIDGE_BENCHMARKS.timeSavings} min • wRVU: $45 • OT: $100/hr</p>
+                  <p>Utilization: {utilization}% → {ABRIDGE_BENCHMARKS.utilization}% • Time: {timeSavings} → {ABRIDGE_BENCHMARKS.timeSavedAvg} min • wRVU: $45 • OT: $100/hr</p>
                 </div>
               )}
             </div>

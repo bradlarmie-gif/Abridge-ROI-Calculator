@@ -1,0 +1,1062 @@
+# ABRIDGE AMBIENT AI PATH — COMPLETE REDESIGN
+## Single instruction for Replit — Ambient AI path only
+
+---
+
+## WHO THIS IS FOR — READ THIS FIRST
+
+Every design decision in this document is made for one specific person:
+
+**The CMO or CMIO at a health system that already uses ambient AI.**
+
+They are clinically trained. Intellectually rigorous. They made the decision to deploy ambient AI and it went well — physicians are happier, satisfaction scores are up. They believe the problem is solved.
+
+They are not looking to be sold to. They are not looking for a calculator. They are not in pain.
+
+**The only thing that moves this person is a question they haven't thought to ask yet.**
+
+The assessment's entire job is to surface that question — calmly, credibly, without pressure. By the end, the CMO should feel genuinely curious. Not scared. Not urgent. *Curious.* Like they just read something in a journal that made them want to call a colleague and say "have you seen this?"
+
+**That is the only success criterion for this assessment.**
+
+Everything — the sequence, the math, the copy, the UX — exists to create that one moment of intellectual curiosity in a person who walked in certain they didn't need it.
+
+---
+
+## WHAT TO BUILD
+
+Replace the entire ambient AI path in `SwitchPath.tsx` with this new sequence. Keep all existing state management, calculation logic foundation, and Abridge branding. Replace the screen content, sequence, and copy entirely.
+
+The scribe path is untouched. Only the ambient AI path (`!isScribePath`) is being redesigned.
+
+**New step count for ambient path: 8 steps**
+
+```
+Step 1: The Question They Haven't Asked
+Step 2: Your Organization
+Step 3: Your Current Tool's Performance  
+Step 4: The Utilization Reality
+Step 5: The Efficiency Reality
+Step 6: The Benchmark Mirror
+Step 7: The Score + Value Map
+Step 8: The Invitation
+```
+
+Update step type: `type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;`
+Update ambient maxStep to 8.
+Progress dots: 8 dots for ambient path.
+
+---
+
+## GLOBAL DESIGN RULES
+
+These apply to every screen without exception.
+
+**Typography hierarchy:**
+- Screen titles: Manrope, 40–48px, bold, near-black (#1A1A1A)
+- Body: Manrope, 17px, 1.7 line height, #4B4B4B
+- Labels: Manrope, 11px, uppercase, tracked 2px, #9B9B9B
+- Numbers/verdicts: Manrope, large, bold, either #1A1A1A or #EA2C00
+- Never use font sizes below 13px for any content a CMO needs to read
+
+**Spacing:**
+- Minimum 80px vertical padding top and bottom on every screen
+- Minimum 32px between major content sections
+- Cards: 24px internal padding minimum
+- Let content breathe — white space signals confidence
+
+**Color usage:**
+- #EA2C00 for: CTAs, active states, key numbers, score bar fill, accent lines
+- #1A1A1A for: headlines, verdicts, primary data
+- #4B4B4B for: body text, descriptions
+- #9B9B9B for: labels, secondary info, footnotes
+- #F7F6F4 for: card backgrounds, subtle sections
+- White for: primary background
+- Never use green for positive numbers — this is a diagnostic tool, not a financial dashboard. Use #1A1A1A bold instead.
+
+**Interactions:**
+- All screen transitions: fade, 250ms
+- CTAs: never say "Continue" or "Next" — always directional
+- No tooltips that require hovering — CMOs on mobile will miss them
+- Input fields: large, clean, border-2 neutral, focus ring EA2C00
+- Never auto-advance without user intent except where specifically noted
+
+**Tone:**
+- Clinical authority. Not friendly. Not cold. Like a respected colleague.
+- Short sentences. One idea per sentence.
+- No exclamation points. Ever.
+- No "unlock", "transform", "revolutionize", "empower"
+- Numbers get their own line. Always.
+- "Already in your operations" — use this phrase. It reframes loss as recovery.
+
+---
+
+## BENCHMARK SOURCE OF TRUTH
+
+Delete the local `ABRIDGE_BENCHMARKS` in `SwitchPath.tsx`.
+Import from `switchGapCalculator.ts`:
+
+```typescript
+import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
+```
+
+**Canonical values used throughout:**
+```
+utilization benchmark:     76%
+time saved benchmark:      4.0 min/encounter  
+edit time benchmark:       0.5 min (net = 3.5 min)
+wRVU lift benchmark:       5.5%
+wRVU dollar value:         $33
+wRVU realization:          0.85
+hourly rate (physician):   $150
+time conversion rate:      0.25
+```
+
+---
+
+## CONFIDENCE HAIRCUT — ONE PLACE ONLY
+
+Add state:
+```typescript
+const [confidenceMode, setConfidenceMode] = 
+  useState<'benchmark' | 'estimated' | 'measured'>('benchmark');
+
+const CONFIDENCE_HAIRCUTS = {
+  benchmark: 0.55,
+  estimated: 0.72,
+  measured: 0.88,
+};
+
+const haircut = CONFIDENCE_HAIRCUTS[confidenceMode];
+```
+
+Apply haircut ONLY to displayed values:
+```typescript
+const displayedTotal = Math.round(calculations.totalGap * haircut);
+const displayedMonthly = Math.round(calculations.monthlyGap * haircut);
+```
+
+Remove ALL internal realization multipliers from engine calculations.
+The haircut is the single conservatism mechanism.
+
+---
+
+## SCREEN-BY-SCREEN SPECIFICATION
+
+---
+
+### STEP 1: THE QUESTION THEY HAVEN'T ASKED
+
+**Purpose:** In 15 seconds, create productive doubt in someone who walked in certain. They should leave this screen with one thought: *"I actually don't know the answer to that."*
+
+**Layout:** Full screen. Vertically centered. Nothing except logo top-left. No progress dots on this screen — this is the foyer.
+
+**Content — centered, maximum white space:**
+
+Small caps label above the question:
+```
+BEFORE WE BEGIN
+```
+
+Large display question (48px, bold, centered, max-width 640px):
+```
+What is ambient documentation
+actually worth to your organization?
+```
+
+Body text below (centered, secondary color, 18px):
+```
+Not what you paid for it.
+What it is actually returning.
+```
+
+Horizontal rule — thin, 60px wide, centered.
+
+Three pill options (large, centered, generous padding):
+```
+[ I know the number ]
+[ I have a rough sense ]  
+[ I've never calculated it ]
+```
+
+Selecting any option fades in a response below (400ms delay):
+- "I know the number" → *"Good. Let's validate it."*
+- "I have a rough sense" → *"Let's sharpen it."*
+- "I've never calculated it" → *"Most CMOs haven't. That's exactly why this exists."*
+
+Then the CTA button fades in 800ms after the response:
+```
+[ Begin the Assessment → ]
+```
+
+**If "I know the number" selected:** After the CTA appears, show a subtle input below the response:
+```
+What's your estimate?  [$ _______ annually]  (optional)
+```
+Store this as `entryEstimate` in state.
+
+**Design note:** The third response — "Most CMOs haven't" — must land without judgment. It's recognition, not condescension. The tone is a department chair, not a salesperson.
+
+---
+
+### STEP 2: YOUR ORGANIZATION
+
+**Purpose:** Collect the minimum inputs needed to make the assessment credible. Nothing more.
+
+**Layout:** Centered content, max-width 560px. No sidebar yet.
+
+**Section label:** YOUR ORGANIZATION
+
+**Headline:**
+```
+Let's establish your baseline.
+```
+
+**Subtext:**
+```
+Three inputs. Everything else comes from benchmarks.
+```
+
+**Input block — clean, generous spacing:**
+
+Input 1:
+```
+Physicians and APPs using ambient documentation
+
+[ ___ ] providers
+```
+
+Input 2:
+```
+Annual encounters where ambient is available
+
+[ _______ ] encounters / year
+[ Help me estimate → ] (link, not button)
+```
+
+"Help me estimate" expands inline to show:
+```
+[providers] × 2,000 typical encounters = [calculated]
+[ Use this estimate ]
+```
+
+Input 3 (appears after first two are filled):
+```
+Primary care setting
+
+[ Outpatient ]  [ ED ]  [ Inpatient ]  [ Mixed ]
+```
+
+**Right side — live preview panel** (appears after first input is made):
+```
+WHAT WE'LL MODEL
+
+  Capacity creation         ✓
+  Revenue integrity         ✓
+  Workforce stability       ✓
+  Risk & compliance         ✓
+
+─────────────────────────────
+BASELINE
+  Providers         [X]
+  Encounters        [X,XXX]
+  Setting           Outpatient
+```
+
+**Bottom of right panel — dark card:**
+```
+You're about 4 minutes from seeing 
+your enterprise opportunity map.
+```
+
+**Encounters per provider guardrail:**
+```typescript
+const encPerProvider = annualEncounters / providers;
+if (encPerProvider > 3500) {
+  // Show inline warning below encounters input:
+  // "That's ~[X] per day per provider — want to double-check this?"
+}
+```
+
+**CTA:** "See My Utilization Reality →"
+
+---
+
+### STEP 3: YOUR CURRENT TOOL'S PERFORMANCE
+
+**Purpose:** Establish what their current ambient solution is actually delivering — utilization and time savings. Make them confront that they may not actually know these numbers precisely.
+
+**Layout:** Centered, max-width 560px.
+
+**Section label:** CURRENT PERFORMANCE
+
+**Headline:**
+```
+How is your ambient tool performing?
+```
+
+**Subtext:**
+```
+Most organizations deploy ambient AI but don't systematically 
+measure what it's returning. These two numbers tell the story.
+```
+
+---
+
+**Input 1 — Utilization:**
+
+Label:
+```
+UTILIZATION RATE
+What percentage of eligible encounters are actually 
+being documented with ambient AI?
+```
+
+Slider: 10% → 95%, step 5%
+Large centered display of selected value: **[X]%**
+
+Below slider, two reference markers:
+```
+Industry average: 45%          Abridge average: 76%
+```
+
+After selection, single insight line appears (fade in):
+```
+At [X]%, you're documenting [Y,YYY] encounters annually.
+```
+
+---
+
+**Input 2 — Time Savings:**
+
+Label:
+```
+TIME RETURNED PER ENCOUNTER
+How many minutes does your ambient tool save 
+per documented encounter?
+```
+
+Slider: 0.5 → 6.0 min, step 0.25
+Large centered display: **[X] min / encounter**
+
+Below slider, reference markers:
+```
+Most ambient tools: 1.5–2.5 min          Abridge average: 4.0 min
+```
+
+Checkbox below:
+```
+☐  I haven't measured this precisely
+```
+If checked: use `2.0` as default and show "Using industry benchmark: 2.0 min"
+
+---
+
+**After both inputs — summary insight block:**
+
+```
+AT YOUR CURRENT PERFORMANCE
+
+[X,XXX] encounters documented annually
+[X,XXX] hours returned to your physicians
+```
+
+One line below in a subtle warm box:
+```
+These two numbers govern more enterprise value 
+than most organizations realize.
+```
+
+**CTA:** "See What These Numbers Mean →"
+
+---
+
+### STEP 4: THE UTILIZATION REALITY
+
+**Purpose:** Show them the first gap calmly. Not as a failure — as an unrealized opportunity. The tone is diagnostic, not accusatory.
+
+**Layout:** Centered, max-width 640px. No sidebar.
+
+**Section label:** UTILIZATION
+
+**Headline:**
+```
+Your utilization gap.
+```
+
+**The visual — two cards side by side (stacked mobile):**
+
+Left card (neutral background):
+```
+YOUR CURRENT
+─────────────────
+[X]% utilization
+
+[X,XXX]
+encounters documented
+annually
+```
+
+Right card (warm white, subtle EA2C00 border):
+```
+ABRIDGE AVERAGE
+─────────────────
+76% utilization
+
+[X,XXX]
+encounters documented
+annually
+
++[X,XXX] more encounters
+```
+
+**Connector between cards:** thin arrow line, no animation needed.
+
+**Below the cards — the translation:**
+
+One line in a subtle box:
+```
+That gap represents [X,XXX] encounters annually 
+where documentation could be captured — and isn't.
+```
+
+Then, secondary text:
+```
+Every undocumented encounter affects reimbursement accuracy, 
+quality reporting, and clinical completeness simultaneously.
+```
+
+**Important pause mechanic:**
+The CTA button appears only after 1.8 seconds on this screen. Not a loading indicator — just a delay. Force the moment to land.
+
+**CTA:** "See Your Efficiency Gap →"
+
+---
+
+### STEP 5: THE EFFICIENCY REALITY
+
+**Purpose:** Show the second gap — time savings — and translate abstract minutes into something concrete and organizational.
+
+**Layout:** Centered, max-width 640px.
+
+**Section label:** EFFICIENCY
+
+**Headline:**
+```
+Your efficiency gap.
+```
+
+**Opening paragraph:**
+```
+Most ambient tools return 1.5–2 minutes per encounter. 
+Abridge averages 4 minutes through deeper workflow integration. 
+Here is what that difference means at your scale.
+```
+
+**Two comparison cards:**
+
+Left (neutral):
+```
+YOUR CURRENT
+─────────────────
+[X] min / encounter
+
+[X,XXX] hours
+returned annually
+```
+
+Right (warm white):
+```
+ABRIDGE AVERAGE
+─────────────────
+4.0 min / encounter
+
+[X,XXX] hours
+returned annually
+
++[X,XXX] additional hours
+```
+
+**Translation block:**
+
+```
++[X,XXX] additional hours annually
+
+That is equivalent to [X.X] FTE of physician time.
+Currently locked inside documentation overhead.
+Already in your operations.
+```
+
+The phrase "Already in your operations" is in bold.
+
+**1.8 second CTA delay (same as Step 4).**
+
+**CTA:** "See Where You Stand →"
+
+---
+
+### STEP 6: THE BENCHMARK MIRROR
+
+**Purpose:** This is the centerpiece of the entire assessment. The moment of productive doubt. A CMO who walked in certain walks out of this screen *curious*.
+
+The screen shows them not just their gap — but where they sit relative to the full maturity spectrum. Most will realize they are at the beginning, not the end.
+
+**Layout:** Full screen. No sidebar. Centered. Maximum white space. This screen feels different from all others — more spacious, more considered.
+
+**No section label. Open directly.**
+
+**Subtext at top (centered, secondary, 16px):**
+```
+Most organizations believe they have solved 
+their documentation problem.
+```
+
+**Main headline (centered, 44px, bold):**
+```
+Here is what the data shows.
+```
+
+---
+
+**THE THREE-TIER VISUAL — the centerpiece:**
+
+Three cards connected horizontally with a subtle progress line between them. On mobile: stacked vertically with connecting arrow.
+
+**CARD 1 — DOCUMENTATION-AWARE**
+Subtle left border in neutral gray.
+```
+TIER 1
+DOCUMENTATION-AWARE
+
+Time savings measured.
+Physicians satisfied.
+The documentation 
+problem feels solved.
+```
+Below card, a pulsing red indicator dot with label:
+```
+● Most organizations at your utilization 
+  profile are here.
+```
+
+**CARD 2 — DOCUMENTATION-ACTIVATED**
+Subtle left border, slightly more prominent.
+```
+TIER 2
+DOCUMENTATION-ACTIVATED
+
+Economic value captured
+across capacity, revenue,
+workforce, and risk.
+Documentation drives
+measurable performance.
+```
+
+**CARD 3 — DOCUMENTATION-INTELLIGENT**
+Subtle left border, most prominent.
+```
+TIER 3
+DOCUMENTATION-INTELLIGENT
+
+Documentation is strategic
+infrastructure — feeding
+automation, quality systems,
+and competitive advantage.
+```
+
+---
+
+**Below the tier visual — THE INSIGHT. This is the moment.**
+
+Large top margin (48px). Each line on its own line. Near-black. 20px. Line height 2.0:
+
+```
+The gap between Tier 1 and Tier 2
+is not a technology gap.
+
+It is a framing gap.
+
+Organizations at Tier 1 have ambient documentation.
+Organizations at Tier 2 have documentation infrastructure.
+
+For an organization your size, that difference 
+is worth an estimated
+
+$[LOW] – $[HIGH] annually.
+```
+
+Where:
+```typescript
+const rangeLow = Math.round(displayedTotal * 0.75 / 1000) * 1000;
+const rangeHigh = Math.round(displayedTotal * 1.25 / 1000) * 1000;
+```
+
+Display as formatted currency range. No cents.
+
+**Below the range, secondary gray:**
+```
+This assessment will show you exactly where 
+that gap lives in your organization.
+```
+
+**Pause mechanic:** CTA appears after 2.2 seconds. This is the longest pause in the assessment. It earns it.
+
+**CTA:** "Show Me My Gap →"
+
+---
+
+### STEP 7: THE SCORE + VALUE MAP
+
+**Purpose:** First show them their score — the verdict before the dollars. Then reveal the dollar breakdown. Then show what inaction compounds into.
+
+This step has three sequential sections that reveal one at a time on the same screen.
+
+**State:**
+```typescript
+const [step7Phase, setStep7Phase] = useState<'score' | 'breakdown' | 'projection'>('score');
+```
+
+---
+
+#### PHASE A — THE SCORE
+
+When `step7Phase === 'score'`, show only this. Nothing else.
+
+**Layout:** Full screen vertically centered.
+
+**Section label:** ENTERPRISE DOCUMENTATION CAPTURE SCORE
+
+**Score number — enormous, centered:**
+```
+[SCORE]
+─────
+100
+```
+
+Score bar below: 400ms fill animation. Red fill to score%, neutral remainder. 8px height, full width, rounded.
+
+**Score calculation:**
+```typescript
+const utilizationScore = Math.min(100, 
+  Math.round((utilization / 76) * 100));
+const efficiencyScore = Math.min(100, 
+  Math.round((timeSavings / 4.0) * 100));
+const driverScore = Math.min(100,
+  Math.round((selectedDrivers.length / DRIVERS.length) * 100));
+const confidenceScore = 
+  confidenceMode === 'measured' ? 90 : 
+  confidenceMode === 'estimated' ? 65 : 40;
+
+const enterpriseScore = Math.round(
+  (utilizationScore * 0.35) +
+  (efficiencyScore * 0.30) +
+  (driverScore * 0.20) +
+  (confidenceScore * 0.15)
+);
+```
+
+**After score bar fills (600ms delay):**
+
+Two benchmark lines fade in:
+```
+Industry average — organizations using ambient AI today:   34 / 100
+Top-quartile organizations:                                71 / 100
+```
+
+**After benchmarks (800ms delay):**
+
+Verdict line fades in — near-black, 20px, centered:
+```
+You are performing at the industry average.
+The gap to top quartile is not incremental.
+It is structural.
+```
+
+**After verdict (1000ms delay):**
+
+CTA fades in:
+```
+[ See What This Is Costing You → ]
+```
+
+On click: `setStep7Phase('breakdown')`
+Smooth scroll down OR fade transition to Phase B.
+
+---
+
+#### PHASE B — THE VALUE MAP
+
+When `step7Phase === 'breakdown'`.
+
+**Section label:** WHERE THE GAP LIVES
+
+**Opening — before driver selection:**
+
+```
+Below are the dimensions where documentation infrastructure 
+creates enterprise value. Select the ones most relevant 
+to your organization's current priorities.
+```
+
+**Driver selection cards — none pre-selected:**
+
+Six cards. Large, clean. Each card:
+```
+[Icon]  [Driver Name]
+        [One-line description]
+        
+        Relevant when: [context]
+        
+        Estimated range: $[LOW]–$[HIGH]/yr
+```
+
+Cards are selectable. Selected state: EA2C00 left border, subtle warm background.
+
+Minimum 1 required. Counter shows: "X selected"
+
+After selecting at least 1, the value breakdown appears below in real time:
+
+**Live breakdown:**
+
+For each selected driver, a row:
+```
+[Driver Name]                    +$[VALUE]/yr
+  ↳ [one-line math summary]
+```
+
+Expandable (click to expand) showing full math chain.
+
+Total row:
+```
+TOTAL ANNUAL GAP                 $[DISPLAYED_TOTAL]/yr
+```
+
+Confidence mode selector (compact, inline):
+```
+Confidence:  [ Benchmark ▼ ]  →  displaying with [45]% haircut
+```
+
+**CTA:** "See the Cost of Waiting →"
+On click: `setStep7Phase('projection')`
+
+---
+
+#### PHASE C — THE COMPOUNDING EFFECT
+
+When `step7Phase === 'projection'`.
+
+**Section label:** THE COMPOUNDING EFFECT OF INACTION
+
+**Headline:**
+```
+Every year at current state compounds the gap.
+```
+
+**Chart — S-curve, not linear:**
+
+```typescript
+// Compounding adoption model
+const projectionData = [
+  { period: 'Today',  abridge: 0,  current: 0 },
+  { period: '3 mo',   
+    abridge: Math.round(displayedTotal * 0.20),  
+    current: 0 },
+  { period: '6 mo',   
+    abridge: Math.round(displayedTotal * 0.50),  
+    current: 0 },
+  { period: 'Year 1', 
+    abridge: Math.round(displayedTotal * 0.88),  
+    current: Math.round(displayedTotal * 0.03) },
+  { period: 'Year 2', 
+    abridge: Math.round(displayedTotal * 0.88 + displayedTotal),  
+    current: Math.round(displayedTotal * 0.06) },
+  { period: 'Year 3', 
+    abridge: Math.round(displayedTotal * 0.88 + displayedTotal + displayedTotal * 1.08),  
+    current: Math.round(displayedTotal * 0.09) },
+];
+```
+
+Two lines: Abridge (EA2C00, solid), Current state (neutral, dashed).
+
+**Below chart — cost of waiting table:**
+
+```
+                        Act Now    Wait 6 mo    Wait 12 mo
+─────────────────────────────────────────────────────────
+3-Year Value            $[X]       $[X]         $[X]
+Permanently Lost           —       $[X]         $[X]
+```
+
+Label "Permanently Lost" — not "Opportunity Cost." 
+Lost value doesn't come back. That word matters.
+
+**One statement below table:**
+
+```
+Every month at current state leaves $[MONTHLY] 
+in enterprise value permanently uncaptured.
+
+Already in your operations. Already earned.
+Not yet realized.
+```
+
+**CTA:** "See My Summary →"
+Advances to Step 8.
+
+---
+
+### STEP 8: THE INVITATION
+
+**Purpose:** This is not a sales close. This is an intellectual invitation. A CMO who feels curious should find exactly what they need here — a way to continue the conversation without feeling sold to.
+
+**Layout:** Clean. Three sections. Nothing else.
+
+---
+
+**SECTION 1 — THE VERDICT**
+
+```
+ENTERPRISE DOCUMENTATION CAPTURE SCORE
+
+[SCORE] / 100          Top quartile: 71 / 100
+```
+
+Simple gap bar showing the distance.
+
+```
+You are capturing approximately [SCORE]% of the enterprise 
+value flowing through your documentation infrastructure.
+```
+
+---
+
+**SECTION 2 — YOUR HIGHEST-LEVERAGE OPPORTUNITY**
+
+One card. The single driver with the highest calculated gap value.
+
+```
+PRIMARY OPPORTUNITY
+
+[Driver Name]
+$[VALUE] annually
+
+[One sentence: what this means in clinical and operational terms]
+
+[One sentence: what closing this gap requires]
+```
+
+---
+
+**SECTION 3 — THE INVITATION**
+
+Centered. Large. No button yet. Just a question:
+
+```
+Would you like to see what a 
+documentation-intelligent organization 
+looks like at your scale?
+```
+
+Secondary text below:
+```
+This is not a product demonstration.
+It is a 30-minute working session with someone 
+who has mapped this for organizations like yours.
+```
+
+Two options, centered, generous spacing:
+
+```
+[ Request a Working Session → ]    [ Export My Assessment ]
+```
+
+**"Request a Working Session" → reveals a simple form:**
+```
+Name
+Organization  
+Title
+Email
+
+[ Submit → ]
+```
+
+After submit:
+```
+We'll be in touch within one business day.
+
+In the meantime — your assessment is saved at this link:
+[copy link]
+```
+
+---
+
+**DESIGN NOTE — this screen:**
+
+The word "Abridge" appears only in the logo. Nowhere in the body copy of this screen. The assessment earned the brand. The insight opened the door.
+
+The CTA is "Request a Working Session" — not "Talk to Sales," not "Schedule a Demo," not "Learn More." A working session is something a CMO does. It implies peer-level conversation, not vendor presentation.
+
+---
+
+## CONFIDENCE / UNCERTAINTY CALIBRATION
+
+This currently exists as a standalone step. Keep it but move it to appear as a brief inline moment at the TOP of Step 7 Phase B (the driver selection), not as its own dedicated step.
+
+Format: compact card, collapsed by default:
+```
+MEASUREMENT MODE
+[ Benchmark ▼ ]  — Conservative industry benchmarks. Appropriate for early-stage environments.
+```
+
+Expandable to show all three options with descriptions.
+When changed: values in the breakdown update in real time.
+Show the haircut impact live: "Displaying $X of $Y modeled value"
+
+This makes the calibration feel like a natural part of exploring the numbers — not a bureaucratic step before the results.
+
+---
+
+## ENTRY GATE CONNECTION TO SYNTHESIS
+
+If `entryEstimate` is not null (they entered a number in Step 1):
+
+At the top of Step 7 Phase B, above the driver cards, show:
+
+```
+You estimated $[ENTRY_ESTIMATE] annually.
+Our model shows $[DISPLAYED_TOTAL].
+```
+
+Then one of these based on comparison:
+- If model > estimate × 1.2: *"The actual figure is [X]% higher than you estimated."*
+- If model is within 20%: *"Your intuition was accurate. Here is the breakdown."*
+- If model < estimate × 0.8: *"Our conservative model is lower. Here is what we can defend."*
+
+If `entryAnswer === 'unknown'` (they said they've never calculated it):
+```
+Most CMOs haven't calculated this.
+Here is what the model shows for your organization.
+```
+
+---
+
+## MATH FIXES — APPLY TO CALCULATION ENGINE
+
+**Fix the retention formula phantom variable:**
+
+Remove the hardcoded `effectivenessGap = 0.50` assumption. Replace with:
+```typescript
+// Abridge effectiveness advantage is surfaced as an editable assumption
+// Default: 40% improvement over current tool (conservative)
+const abridgeEffectivenessAdvantage = retAssumptions.effectivenessAdvantage / 100; // default 40
+const retentionGap = Math.round(
+  providers * 
+  (turnoverRate / 100) * 
+  (burnoutReduction / 100) * 
+  abridgeEffectivenessAdvantage * 
+  replacementCost
+);
+```
+
+Add `effectivenessAdvantage: 40` to `DEFAULT_ASSUMPTIONS.retention`.
+
+**Fix the double-count in HCC and Denials:**
+
+For both HCC and Denials, the gap should be calculated only on the utilization-adjusted encounters, not split between utilization gap encounters AND rate improvement separately. Simplify:
+
+```typescript
+// Denials: calculate on Abridge encounter volume vs current encounter volume
+const denialsGap = Math.round(
+  (abridgeDocumentedEncounters - theirDocumentedEncounters) * 
+  (denialRate / 100) * 
+  (docRelatedRate / 100) * 
+  (ABRIDGE_BENCHMARKS.denialPrevention / 100) * 
+  avgClaimValue
+) + Math.round(
+  theirDocumentedEncounters *
+  ((ABRIDGE_BENCHMARKS.denialPrevention - denialPrevention) / 100) *
+  (denialRate / 100) *
+  (docRelatedRate / 100) *
+  avgClaimValue
+);
+// Same pattern for HCC
+```
+
+**Add encounters-per-provider guardrail:**
+```typescript
+const encPerProvider = providers > 0 ? annualEncounters / providers : 0;
+const showEncounterWarning = encPerProvider > 3500;
+// Show below encounters input: 
+// "That's ~[X] per provider per day — want to double-check?"
+```
+
+---
+
+## COPY VOICE REFERENCE
+
+For any copy written beyond what is specified above, match this voice:
+
+**Write like a department chair giving a Grand Rounds presentation.**
+- Precise but accessible
+- Evidence-referenced but not academic
+- No hedging, no overselling
+- Confidence through restraint — the less you say, the more it lands
+- Short declarative sentences
+- Never explain the obvious
+
+**Wrong:** "Ambient AI is a powerful technology that can transform your organization's documentation workflows and unlock significant value across multiple dimensions."
+
+**Right:** "Most ambient AI deployments capture 35% of available enterprise value. This assessment maps the other 65%."
+
+---
+
+## WHAT NOT TO TOUCH
+
+- Scribe path entirely — untouched
+- PDF export logic
+- SETTING_CONFIG.ts
+- EditableInput component
+- PathwayCard component
+- All Abridge branding (EA2C00, Manrope, logo placement)
+- The AnimatedNumber component
+
+---
+
+## TESTING CHECKLIST
+
+Before marking complete:
+
+1. ☐ Entry Gate "I've never calculated it" response reads: "Most CMOs haven't. That's exactly why this exists."
+2. ☐ Utilization benchmark shows 76% throughout (not 65%)
+3. ☐ Time savings benchmark shows 4.0 min throughout (not 3.0)
+4. ☐ Haircut applied once — only to displayed values, not inside engine math
+5. ☐ No drivers pre-selected on entry to driver selection
+6. ☐ Score animates in before dollar figures on Step 7
+7. ☐ Score changes dynamically when utilization/time savings/confidence changes
+8. ☐ Benchmark Mirror (Step 6) appears as its own full screen with 2.2 second CTA delay
+9. ☐ Three-year chart shows S-curve, not linear ramp
+10. ☐ "Permanently Lost" label used (not "Opportunity Cost")
+11. ☐ Final CTA reads "Request a Working Session" (not "Talk to Sales")
+12. ☐ Word "Abridge" does not appear in body copy of Step 8
+13. ☐ Entry estimate referenced in Step 7 if provided
+14. ☐ Encounters-per-provider warning shows above 3,500
+15. ☐ 1.8 second CTA delay on Steps 4 and 5
+16. ☐ Mobile layout intact at 390px on all screens
+17. ☐ No "Continue" or "Next" on any CTA button
+
+---
+
+## THE FINAL TEST
+
+Before calling this done, read the assessment as a CMO who believes their ambient AI is working fine.
+
+Ask: does this assessment make me feel smart for asking a question I hadn't thought to ask?
+
+Not pressured. Not scared. Not sold to.
+
+*Curious.*
+
+If the answer is yes — ship it.
+If the answer is no — find the screen where you lost them and fix it.
+
+That is the only quality gate that matters.

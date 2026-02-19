@@ -127,6 +127,10 @@ export const ABRIDGE_BENCHMARKS = {
   afterHoursMin: 1,
   afterHoursMax: 3,
   costPerProviderMonth: 250,
+  wrvuUplift: 6,
+  underCoding: 12,
+  denialPrevention: 45,
+  hccImprovement: 15,
 };
 
 export const VALUE_ASSUMPTIONS = {

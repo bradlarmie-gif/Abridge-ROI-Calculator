@@ -23,8 +23,37 @@ interface StepTheMathProps {
   onBack: () => void;
 }
 
-const RAMP = 0.9;
-const GROWTH = 0.03;
+// S-curve adoption multipliers at key milestones
+const S_CURVE = [
+  { month: 0, rate: 0 },
+  { month: 3, rate: 0.25 },
+  { month: 6, rate: 0.55 },
+  { month: 12, rate: 0.85 },
+  { month: 24, rate: 1.00 },
+  { month: 36, rate: 1.08 },
+];
+
+function interpolateRate(month: number): number {
+  if (month <= 0) return 0;
+  if (month >= 36) return S_CURVE[S_CURVE.length - 1].rate;
+  for (let i = 1; i < S_CURVE.length; i++) {
+    if (month <= S_CURVE[i].month) {
+      const prev = S_CURVE[i - 1];
+      const curr = S_CURVE[i];
+      const t = (month - prev.month) / (curr.month - prev.month);
+      return prev.rate + t * (curr.rate - prev.rate);
+    }
+  }
+  return S_CURVE[S_CURVE.length - 1].rate;
+}
+
+function computeCumulative(A: number, months: number): number {
+  let total = 0;
+  for (let m = 1; m <= months; m++) {
+    total += (A / 12) * interpolateRate(m);
+  }
+  return Math.round(total);
+}
 
 function CustomLabel({
   viewBox,
@@ -54,18 +83,29 @@ function CustomLabel({
 }
 
 function computeProjection(A: number) {
-  const year1 = Math.round(A * RAMP);
-  const year2 = Math.round(A);
-  const year3 = Math.round(A * (1 + GROWTH));
-  const cumulative = year1 + year2 + year3;
+  const year1 = computeCumulative(A, 12);
+  const year2 = computeCumulative(A, 24) - computeCumulative(A, 12);
+  const year3 = computeCumulative(A, 36) - computeCumulative(A, 24);
+  const cumulative = computeCumulative(A, 36);
   return { year1, year2, year3, cumulative };
 }
 
+function computeShiftedCumulative(A: number, months: number, delayMonths: number): number {
+  let total = 0;
+  for (let m = 1; m <= months; m++) {
+    const adoptionMonth = m - delayMonths;
+    if (adoptionMonth > 0) {
+      total += (A / 12) * interpolateRate(adoptionMonth);
+    }
+  }
+  return Math.round(total);
+}
+
 function computeDelayProjection(A: number, delayMonths: number) {
-  const adjustedYear1 = Math.round(A * RAMP * ((12 - delayMonths) / 12));
-  const year2 = Math.round(A);
-  const year3 = Math.round(A * (1 + GROWTH));
-  const cumulative = adjustedYear1 + year2 + year3;
+  const adjustedYear1 = computeShiftedCumulative(A, 12, delayMonths);
+  const year2 = computeShiftedCumulative(A, 24, delayMonths) - computeShiftedCumulative(A, 12, delayMonths);
+  const year3 = computeShiftedCumulative(A, 36, delayMonths) - computeShiftedCumulative(A, 24, delayMonths);
+  const cumulative = computeShiftedCumulative(A, 36, delayMonths);
   return { adjustedYear1, year2, year3, cumulative };
 }
 
@@ -98,20 +138,11 @@ export default function StepTheMath({
   const chartData = useMemo(() => {
     const points = [];
     for (let m = 0; m <= 36; m += 3) {
-      let potential = 0;
-      if (m <= 12) {
-        potential = Math.round(projection.year1 * (m / 12));
-      } else if (m <= 24) {
-        potential = Math.round(projection.year1 + projection.year2 * ((m - 12) / 12));
-      } else {
-        potential = Math.round(
-          projection.year1 + projection.year2 + projection.year3 * ((m - 24) / 12),
-        );
-      }
+      const potential = computeCumulative(A, m);
       points.push({ month: m, current: 0, potential });
     }
     return points;
-  }, [projection]);
+  }, [A]);
 
   return (
     <div className={`space-y-8 ${STEP_FOOTER_SPACER_CLASS}`}>
@@ -260,7 +291,7 @@ export default function StepTheMath({
             <p className="text-lg font-bold text-[#1A1A1A] tabular-nums" data-testid="value-y1">
               {formatCurrency(projection.year1)}
             </p>
-            <p className="text-[10px] text-[#999999]">A x {(RAMP * 100).toFixed(0)}% ramp</p>
+            <p className="text-[10px] text-[#999999]">Adoption ramp 25-85%</p>
           </div>
           <div className="text-center">
             <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">Year 2</p>
@@ -274,7 +305,7 @@ export default function StepTheMath({
             <p className="text-lg font-bold text-[#EA2C00] tabular-nums" data-testid="value-y3">
               {formatCurrency(projection.year3)}
             </p>
-            <p className="text-[10px] text-[#999999]">+{(GROWTH * 100).toFixed(0)}% growth</p>
+            <p className="text-[10px] text-[#999999]">108% maturity uplift</p>
           </div>
         </div>
 
@@ -363,21 +394,21 @@ export default function StepTheMath({
             <div className="pt-4 space-y-4">
               <div>
                 <p className="text-[10px] text-[#999999] uppercase tracking-wider font-medium mb-2">
-                  Defined Variables
+                  S-Curve Adoption Model
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-2 text-sm font-mono">
                   <p className="text-[#333333]">
                     <span className="text-[#EA2C00] font-semibold">A</span> = {formatCurrency(A)}
-                    <span className="text-[#999999] font-sans text-xs ml-2">(Conservative Annual Enterprise Opportunity)</span>
+                    <span className="text-[#999999] font-sans text-xs ml-2">(Annual Enterprise Opportunity at full adoption)</span>
                   </p>
-                  <p className="text-[#333333]">
-                    <span className="text-[#EA2C00] font-semibold">ramp</span> = {(RAMP * 100).toFixed(0)}%
-                    <span className="text-[#999999] font-sans text-xs ml-2">(Year 1 capture rate during adoption build-out)</span>
-                  </p>
-                  <p className="text-[#333333]">
-                    <span className="text-[#EA2C00] font-semibold">growth</span> = {(GROWTH * 100).toFixed(0)}%
-                    <span className="text-[#999999] font-sans text-xs ml-2">(Annual growth rate after full capture)</span>
-                  </p>
+                  <div className="border-t border-[#E8E0D8] pt-2 mt-2 space-y-1">
+                    <p className="text-[#999999] font-sans text-xs font-medium uppercase tracking-wider mb-1">Adoption Milestones</p>
+                    {S_CURVE.slice(1).map((pt) => (
+                      <p key={pt.month} className="text-[#333333]">
+                        Month {pt.month}: <span className="font-semibold">{(pt.rate * 100).toFixed(0)}%</span> capture rate
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -387,13 +418,13 @@ export default function StepTheMath({
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-2 text-sm font-mono">
                   <p className="text-[#333333]">
-                    Year 1 = A x ramp = {formatCurrency(A)} x {(RAMP * 100).toFixed(0)}% = <span className="font-semibold">{formatCurrency(projection.year1)}</span>
+                    Year 1 = S-curve integral (months 1-12) = <span className="font-semibold">{formatCurrency(projection.year1)}</span>
                   </p>
                   <p className="text-[#333333]">
-                    Year 2 = A = <span className="font-semibold">{formatCurrency(projection.year2)}</span>
+                    Year 2 = S-curve integral (months 13-24) = <span className="font-semibold">{formatCurrency(projection.year2)}</span>
                   </p>
                   <p className="text-[#333333]">
-                    Year 3 = A x (1 + growth) = {formatCurrency(A)} x {(1 + GROWTH).toFixed(2)} = <span className="font-semibold">{formatCurrency(projection.year3)}</span>
+                    Year 3 = S-curve integral (months 25-36) = <span className="font-semibold">{formatCurrency(projection.year3)}</span>
                   </p>
                   <div className="border-t border-[#E8E0D8] pt-2 mt-2">
                     <p className="text-[#1A1A1A] font-semibold">
@@ -405,16 +436,13 @@ export default function StepTheMath({
 
               <div>
                 <p className="text-[10px] text-[#999999] uppercase tracking-wider font-medium mb-2">
-                  Delay Reduces Year 1 Capture Proportionally
+                  Delay Shifts the Adoption Curve Forward
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-3 text-sm font-mono">
                   <div className="space-y-1.5">
                     <p className="text-[#999999] font-sans text-xs font-medium uppercase tracking-wider">6-Month Delay</p>
                     <p className="text-[#333333]">
-                      Adjusted Year 1 = A x ramp x (6/12) = <span className="font-semibold">{formatCurrency(delay6.adjustedYear1)}</span>
-                    </p>
-                    <p className="text-[#333333]">
-                      3-Year Cumulative = {formatCurrency(delay6.adjustedYear1)} + {formatCurrency(delay6.year2)} + {formatCurrency(delay6.year3)} = <span className="font-semibold">{formatCurrency(delay6.cumulative)}</span>
+                      3-Year Cumulative = <span className="font-semibold">{formatCurrency(delay6.cumulative)}</span>
                     </p>
                     <p className="text-[#EA2C00]">
                       Opportunity Cost = {formatCurrency(projection.cumulative)} - {formatCurrency(delay6.cumulative)} = <span className="font-semibold">-{formatCurrency(loss6)}</span>
@@ -423,10 +451,7 @@ export default function StepTheMath({
                   <div className="border-t border-[#E8E0D8] pt-3 space-y-1.5">
                     <p className="text-[#999999] font-sans text-xs font-medium uppercase tracking-wider">12-Month Delay</p>
                     <p className="text-[#333333]">
-                      Adjusted Year 1 = A x ramp x (0/12) = <span className="font-semibold">{formatCurrency(delay12.adjustedYear1)}</span>
-                    </p>
-                    <p className="text-[#333333]">
-                      3-Year Cumulative = {formatCurrency(delay12.adjustedYear1)} + {formatCurrency(delay12.year2)} + {formatCurrency(delay12.year3)} = <span className="font-semibold">{formatCurrency(delay12.cumulative)}</span>
+                      3-Year Cumulative = <span className="font-semibold">{formatCurrency(delay12.cumulative)}</span>
                     </p>
                     <p className="text-[#EA2C00]">
                       Opportunity Cost = {formatCurrency(projection.cumulative)} - {formatCurrency(delay12.cumulative)} = <span className="font-semibold">-{formatCurrency(loss12)}</span>
@@ -437,7 +462,7 @@ export default function StepTheMath({
 
               <div className="border-t border-[#E5E7EB] pt-3">
                 <p className="text-xs text-[#999999] leading-relaxed">
-                  No exponential compounding beyond the defined {(GROWTH * 100).toFixed(0)}% growth rate. Delay shortens the capture window — it does not extend the 3-year horizon. All values are haircut-adjusted before entering this projection.
+                  The S-curve models realistic adoption: early ramp (25% at 3 months), acceleration (55% at 6 months), maturity (85% at 12 months), full capture (100% at 24 months), and optimization gains (108% at 36 months). Delay shifts the entire curve forward — it does not extend the 3-year horizon. All values are haircut-adjusted before entering this projection.
                 </p>
               </div>
             </div>

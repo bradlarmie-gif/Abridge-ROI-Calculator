@@ -26,6 +26,8 @@ export interface PillarDetail {
 export interface PillarResult {
   pillars: Record<PillarId, PillarDetail>;
   totalAnnual: number;
+  rawTotal: number;
+  haircutMultiplier: number;
   total3yr: number;
   monthlyOpportunity: number;
 }
@@ -34,18 +36,26 @@ export interface PillarResult {
 export type { SpecialtyMix };
 
 // ---------------------------------------------------------------------------
-// Confidence haircut — scales pillar values by data quality
-// high = full credit, medium = 70%, low = 40%
+// Confidence haircut — applied ONCE to final totals, based on dataMode
+// benchmark = 0.55 (45% haircut, conservative default)
+// estimated = 0.70 (30% haircut, directional)
+// measured  = 0.85 (15% haircut, board-defensible)
 // ---------------------------------------------------------------------------
+
+export const CONFIDENCE_HAIRCUTS: Record<string, number> = {
+  benchmark: 0.55,
+  estimated: 0.70,
+  measured: 0.85,
+};
 
 const CONFIDENCE_MULTIPLIER: Record<Confidence, number> = {
   high: 1.0,
-  medium: 0.7,
-  low: 0.4,
+  medium: 1.0,
+  low: 1.0,
 };
 
-function haircut(value: number, confidence: Confidence): number {
-  return Math.round(value * CONFIDENCE_MULTIPLIER[confidence]);
+function haircut(value: number, _confidence: Confidence): number {
+  return Math.round(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -507,6 +517,11 @@ function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
     annualEncounters: raw.annualEncounters ?? 0,
     currentCostPerProvider: raw.currentCostPerProvider ?? 200,
     specialtyMix: raw.specialtyMix ?? "balanced",
+    careSetting: raw.careSetting ?? "outpatient",
+    dataMode: raw.dataMode ?? "benchmark",
+    currentVendor: raw.currentVendor ?? "none",
+    encountersEstimated: raw.encountersEstimated ?? false,
+    confidenceBaseline: raw.confidenceBaseline ?? 50,
     utilization: raw.utilization ?? 0,
     timeSavedPerEncounter: raw.timeSavedPerEncounter ?? 0,
     editTimePerEncounter: raw.editTimePerEncounter ?? 0,
@@ -544,8 +559,12 @@ export function computePillars(state: AssessmentState): PillarResult {
   const workforce = computeWorkforce(safe, confidence);
   const risk = computeRisk(safe, confidence);
 
-  const totalAnnual = capacity.valueAnnual + yieldPillar.valueAnnual +
+  const rawTotal = capacity.valueAnnual + yieldPillar.valueAnnual +
     workforce.valueAnnual + risk.valueAnnual;
+
+  const dataMode = safe.inputs.dataMode ?? "benchmark";
+  const haircutMultiplier = CONFIDENCE_HAIRCUTS[dataMode] ?? CONFIDENCE_HAIRCUTS.benchmark;
+  const totalAnnual = Math.round(rawTotal * haircutMultiplier);
 
   return {
     pillars: {
@@ -555,6 +574,8 @@ export function computePillars(state: AssessmentState): PillarResult {
       risk,
     },
     totalAnnual,
+    rawTotal,
+    haircutMultiplier,
     total3yr: totalAnnual * 3,
     monthlyOpportunity: Math.round(totalAnnual / 12),
   };

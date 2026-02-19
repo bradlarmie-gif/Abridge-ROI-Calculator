@@ -38,10 +38,12 @@ The Switch path is a 14-screen premium narrative flow for prospects migrating fr
 
 Key design patterns: Loss framing over gain framing, directional CTAs, no celebratory tone, statements over questions (except Entry and Exit screens), enterprise-grade executive tone.
 
-### Technical Implementations
--   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings, including specific time allocation categories and documentation drivers. ROI calculations incorporate conservative realization rates.
--   **ROI Calculation Logic**: Includes formulas for "Today's ROI" and "Full Scale ROI" which accounts for expansion and utilization improvements.
--   **Simplified Wellbeing Retention Model**: A threshold-based approach for calculating retention lift.
+### Calculation Architecture
+-   **Two calculation engines**: Classic SwitchPath.tsx (driver-level calculations) and computePillars.ts (narrative flow pillar calculations)
+-   **Confidence haircuts**: Applied once at display layer based on dataMode — benchmark=55%, estimated=70%, measured=85%. No internal realization multipliers in engine calculations.
+-   **Consolidated benchmarks**: Single source of truth in switchGapCalculator.ts — utilization 76%, timeSavings 4 min, denialPrevention 45%, hccImprovement 15%
+-   **S-curve adoption model**: 3-year projections use compounding adoption curve (25%/55%/85%/100%/108% at months 3/6/12/24/36) instead of flat ramp multipliers
+-   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings.
 -   **Expandable Math Breakdowns**: "See the math" functionality provides step-by-step calculations.
 -   **Component-Driven UI**: Utilizes `PathwayCard` components for progressive disclosure.
 

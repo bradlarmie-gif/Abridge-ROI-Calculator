@@ -1,0 +1,484 @@
+# ABRIDGE SWITCH PATH — SURGICAL FIX PROMPT
+## Paste this as a single instruction into the existing Replit project
+
+---
+
+## CONTEXT: WHAT WE'RE FIXING AND WHY
+
+The Switch path (Ambient AI journey) has several critical problems that need to be fixed in order. Do not rebuild from scratch. Operate surgically on the existing files: `SwitchPath.tsx` and `switchGapCalculator.ts`.
+
+The problems in priority order:
+1. Two separate calculation engines with contradictory benchmarks
+2. Confidence haircut applied twice (double-conservative)
+3. Benchmark Mirror screen is missing entirely
+4. Score appears after synthesis instead of before
+5. Entry Gate answer is disconnected from the math
+6. Drivers are pre-selected — killing the discovery experience
+7. Three-year curve is flat instead of compounding
+
+Fix them in this exact order.
+
+---
+
+## FIX 1: ONE SOURCE OF TRUTH FOR BENCHMARKS
+
+`SwitchPath.tsx` currently defines its own `ABRIDGE_BENCHMARKS` object that contradicts `switchGapCalculator.ts`. This must be resolved.
+
+**Delete** the `ABRIDGE_BENCHMARKS` constant inside `SwitchPath.tsx` entirely.
+
+**Import** the benchmarks from `switchGapCalculator.ts` instead:
+```typescript
+import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
+```
+
+The canonical benchmark values (use these everywhere):
+```typescript
+// In switchGapCalculator.ts — these are the source of truth
+utilization: 76        // NOT 65
+timeSavedAvg: 4        // NOT 3.0 minutes
+editTime: 0.5          // net impact = 3.5 min
+wrvuLift: 5.5
+wrvuDollarValue: 33    // Medicare conversion factor
+wrvuRealization: 0.85
+hourlyRate: 150
+timeConversionRate: 0.25
+```
+
+Update every reference in `SwitchPath.tsx` that previously used the old local benchmark values to now use the imported ones.
+
+**The utilization slider benchmark label** on Step 2 should now read "Abridge Avg: 76%" not "65%".
+
+---
+
+## FIX 2: CONFIDENCE HAIRCUT — APPLY ONCE, AT THE END
+
+Currently the math is double-conservative: individual engine calculations have conservative assumptions baked in (20% visit conversion, 40% OT conversion, 20% retention realization) AND THEN a confidence haircut is applied on top. This is wrong.
+
+**The fix:**
+
+Each individual engine should calculate at **full modeled value** — no internal realization factors baked in. The confidence haircut (selected on the Uncertainty Calibration screen) is the ONLY conservatism applied, and it's applied once to the final total.
+
+**New confidence haircut values by selection:**
+```typescript
+const CONFIDENCE_HAIRCUTS = {
+  benchmark: 0.55,   // 45% haircut — conservative default
+  estimated: 0.70,   // 30% haircut — directional
+  measured: 0.85,    // 15% haircut — board-defensible
+};
+```
+
+Add state for this:
+```typescript
+const [confidenceMode, setConfidenceMode] = useState<'benchmark' | 'estimated' | 'measured'>('benchmark');
+const haircut = CONFIDENCE_HAIRCUTS[confidenceMode];
+```
+
+**Apply the haircut only here:**
+```typescript
+const displayedTotal = Math.round(calculations.totalGap * haircut);
+const displayedMonthly = Math.round(calculations.monthlyGap * haircut);
+```
+
+Use `displayedTotal` and `displayedMonthly` everywhere values are shown to the user. Use `calculations.totalGap` (raw) only for internal math like the three-year projection base.
+
+**Update the Uncertainty Calibration screen** to set `confidenceMode` when user selects an option. Show the live impact in the right panel: "Modeled: $X → Displayed: $Y after [XX]% confidence adjustment."
+
+Remove these internal realization multipliers from the engine calculations — they are now handled by the global haircut:
+- Patient Access: remove the `visitConversion / 100` internal factor → use full hours
+- Overtime: remove the `otConversionRate` internal factor → model full hours
+- Retention: remove `realizationRate` from the formula → model full replacement cost prevented
+
+---
+
+## FIX 3: BUILD THE BENCHMARK MIRROR SCREEN (NEW SCREEN — MOST IMPORTANT)
+
+This screen does not exist yet. Build it as a new step between the current Step 4 (Efficiency Gap) and Step 5 (Summary). It becomes the new Step 5. The old Step 5 Summary becomes Step 6.
+
+Update the step type: `type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;`
+Update `maxStep` for ambient path from `5` to `6`.
+
+**The Benchmark Mirror screen renders when `step === 5 && !isScribePath`**
+
+**Layout:** Full screen. No sidebar. Centered. Maximum white space. No assumptions panels. This screen is a pause — a diagnostic moment.
+
+**Content:**
+
+Section label (small caps, secondary gray, centered):
+```
+WHERE DOES YOUR ORGANIZATION STAND?
+```
+
+Subtext below:
+```
+Most organizations believe they have solved their documentation problem. 
+Here is what the data shows.
+```
+
+---
+
+**THREE-TIER VISUAL — the centerpiece:**
+
+Render as three horizontally connected cards (stacked on mobile). Use a connected visual with arrows or a progress bar between them to show they are a spectrum, not three separate things.
+
+**Card 1 — DOCUMENTATION-AWARE**
+- Bold label: "DOCUMENTATION-AWARE"
+- Body: "Time savings measured. Physicians satisfied. The documentation problem feels solved."
+- Tag below card (red pill): "WHERE MOST ORGANIZATIONS ARE TODAY"
+
+**Card 2 — DOCUMENTATION-ACTIVATED**
+- Bold label: "DOCUMENTATION-ACTIVATED"  
+- Body: "Economic value captured across capacity, revenue, workforce, and risk."
+- Tag: empty — aspirational, not labeled
+
+**Card 3 — DOCUMENTATION-INTELLIGENT**
+- Bold label: "DOCUMENTATION-INTELLIGENT"
+- Body: "Documentation is a strategic infrastructure asset feeding automation, quality systems, and competitive advantage."
+- Tag: empty
+
+**Visual indicator:** A pulsing red dot or bold red border highlights Card 1. Below Card 1, in small secondary text:
+```
+"Based on your inputs, this is where organizations at your utilization 
+and time-savings profile typically sit after initial ambient deployment."
+```
+
+---
+
+**Below the tier visual — THE GUT PUNCH. This is the moment of silence.**
+
+Full width. Slightly larger type. Near-black. Generous margin above it. Each line on its own line:
+
+```
+The gap between Tier 1 and Tier 2 is not a technology gap.
+It is a framing gap.
+Organizations at Tier 1 have ambient documentation.
+Organizations at Tier 2 have documentation infrastructure.
+For an organization your size, that difference is worth an estimated 
+$[LOW] – $[HIGH] annually.
+```
+
+Where `[LOW]` = `displayedTotal * 0.8` and `[HIGH]` = `displayedTotal * 1.2` — shown as a range, not a precise figure. Ranges feel honest. Precise numbers feel like tricks at this stage.
+
+---
+
+**Below that, secondary gray, smaller:**
+```
+"This assessment will show you exactly where that gap lives in your organization."
+```
+
+**CTA button:** "Show Me My Gap →"
+
+**Design rules for this screen:**
+- No icons
+- No decorative elements
+- No animations except a subtle fade-in on the gut-punch paragraph (300ms delay after screen loads)
+- The white space around the tier visual should be dramatic — minimum 40px top and bottom on each card
+- The gut-punch paragraph line spacing should be 1.8 — let it breathe
+- This screen should feel like reading a diagnosis, not a pitch deck
+
+---
+
+## FIX 4: MOVE THE SCORE BEFORE THE SYNTHESIS
+
+Currently the Enterprise Capture Score appears at the bottom of the synthesis screen as a footnote. It must become its own screen before the dollar synthesis.
+
+**New screen order for ambient path:**
+```
+1. Solution Selection
+2. Organization Baseline  
+3. Utilization Gap
+4. Efficiency Gap
+5. Benchmark Mirror (NEW)
+6. Enterprise Pressure / Driver Selection (was step 4 logic)
+7. Value Engine Results (was step 5 summary — now split)
+   7a. THE SCORE SCREEN (new sub-step)
+   7b. Dollar Synthesis
+   7c. Compounding Effect
+```
+
+For implementation simplicity, add the Score as a visual "reveal" moment at the TOP of the existing Step 6 (Summary) — before the dollar headline animates in. Use a sequential animation:
+
+**Animation sequence on Summary screen:**
+1. 0ms: Score screen appears full-screen (covers the rest of the content)
+2. Score animates in — counting up from 0 to final score over 1.5 seconds
+3. 800ms after score lands: benchmark lines fade in ("Industry avg: 34 / Top quartile: 71")
+4. 1200ms: verdict line fades in
+5. 2000ms: "See What This Costs You →" button fades in
+6. On click: score section collapses/scrolls up, dollar synthesis reveals below
+
+**Score screen content:**
+
+Large display, centered, dramatic white space above and below:
+
+```
+ENTERPRISE DOCUMENTATION
+CAPTURE SCORE
+```
+
+The score number — very large (80-96px), bold, centered:
+```
+[SCORE] / 100
+```
+
+Score bar: red fill to score%, gray remainder. 40px height, rounded, full width.
+
+Below bar, body text centered:
+```
+"This score reflects how much of the enterprise value flowing through 
+your documentation infrastructure you are currently capturing."
+```
+
+Divider line.
+
+Two benchmark lines (slightly bolder):
+```
+Industry average — organizations using ambient documentation today: 34 / 100
+Top quartile organizations: 71 / 100
+```
+
+One verdict line — near-black, larger than body:
+```
+"You are performing at the industry average. 
+The gap to top quartile is not incremental. It is structural."
+```
+
+CTA: "See What This Is Costing You →"
+
+**How to calculate the score dynamically:**
+
+```typescript
+const enterpriseScore = Math.round(
+  (utilizationScore * 0.30) +      // utilization weight
+  (efficiencyScore * 0.25) +       // time savings weight  
+  (driverCoverageScore * 0.25) +   // how many value dimensions selected
+  (confidenceScore * 0.20)         // measurement maturity (benchmark=40, estimated=65, measured=90)
+);
+
+// Where:
+const utilizationScore = Math.min(100, Math.round((utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
+const efficiencyScore = Math.min(100, Math.round((timeSavings / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
+const driverCoverageScore = Math.round((selectedDrivers.length / DRIVERS.length) * 100);
+const confidenceScore = confidenceMode === 'measured' ? 90 : confidenceMode === 'estimated' ? 65 : 40;
+```
+
+This score is now **dynamic and connected to their actual inputs** — it changes based on utilization, time savings, which drivers they selected, and how much data they have. It is no longer a static number.
+
+---
+
+## FIX 5: CONNECT THE ENTRY GATE TO THE MATH
+
+Add state for the entry gate response:
+```typescript
+const [entryAnswer, setEntryAnswer] = useState<'has_number' | 'estimate' | 'unknown' | null>(null);
+const [entryEstimate, setEntryEstimate] = useState<number | null>(null);
+```
+
+**When "I have a number" is selected:** After the auto-advance, show a brief input field on Screen 1 (Hidden Operating System) in a subtle card at the bottom:
+```
+You said you have a number. What is it? (Optional — we'll validate it.)
+[$_______ annually]
+```
+
+**On the synthesis screen**, if they entered a number, add this line above the main dollar figure:
+
+```
+You estimated: $[THEIR NUMBER]
+Our model shows: $[DISPLAYED_TOTAL]
+```
+
+If `displayedTotal` > their estimate: 
+```
+"The actual figure is [X]% higher than you thought."
+```
+
+If `displayedTotal` < their estimate:
+```
+"Your intuition was right. Here's where it's coming from."
+```
+
+If `entryAnswer === 'unknown'`, show:
+```
+"Most don't know. You're about to."
+```
+
+This makes the Entry Gate answer meaningful — it creates a personalized moment on the synthesis screen that references what they said at the very beginning.
+
+---
+
+## FIX 6: REMOVE DRIVER PRE-SELECTION
+
+Currently on Step 5, this code pre-selects three drivers automatically:
+```typescript
+// DELETE THIS ENTIRE useEffect:
+useEffect(() => {
+  if (step === 5 && !isScribePath && selectedDrivers.length === 0) {
+    setSelectedDrivers(["patient_access", "level_of_service", "denials"]);
+  }
+}, [step, isScribePath]);
+```
+
+**Replace the driver selection experience entirely.**
+
+Instead of arriving at the summary with pre-selected drivers, add a **Driver Selection step** between the Benchmark Mirror (Step 5) and the Summary (Step 6).
+
+This becomes the new Step 6 for ambient path. The summary becomes Step 7.
+
+**Driver Selection screen design:**
+
+Headline:
+```
+WHAT IS YOUR ORGANIZATION BEING HELD ACCOUNTABLE FOR 
+THAT DOCUMENTATION IS SILENTLY AFFECTING?
+```
+
+Subtext:
+```
+Select the pressures most relevant to your organization. 
+You can add or remove these later.
+```
+
+Show all 6 drivers as large selectable cards. Each card:
+- Driver name (bold)
+- One-line description
+- Estimated value range (e.g., "$60–120K") — NOT a precise calculated number yet
+- Context note (italic, small)
+- Select/deselect toggle
+
+No pre-selection. All cards start unselected.
+
+Require at least 1 selection to continue.
+
+CTA: "Build My Value Map →" (disabled until at least 1 selected)
+
+**This is the discovery moment.** They choose their own pain. They arrive at the numbers themselves. The assessment doesn't answer for them.
+
+---
+
+## FIX 7: FIX THE THREE-YEAR COMPOUNDING CURVE
+
+Replace the flat three-year projection with a compounding adoption model.
+
+**New projection logic:**
+```typescript
+// Adoption compounds as utilization deepens
+const adoptionCurve = {
+  month3:  0.25,   // 25% of full value — ramp up
+  month6:  0.55,   // 55% — adoption building
+  year1:   0.85,   // 85% — near full first year
+  year2:   1.00,   // 100% full value
+  year3:   1.08,   // 108% — compounding (more providers, deeper use)
+};
+
+// Three-year cumulative (not annual, cumulative):
+const year1Cumulative = Math.round(rawTotal * adoptionCurve.year1);
+const year2Cumulative = Math.round(year1Cumulative + rawTotal * adoptionCurve.year2);
+const year3Cumulative = Math.round(year2Cumulative + rawTotal * adoptionCurve.year3);
+
+// Apply haircut to displayed values:
+const displayedYear1 = Math.round(year1Cumulative * haircut);
+const displayedYear2 = Math.round(year2Cumulative * haircut);
+const displayedYear3 = Math.round(year3Cumulative * haircut);
+```
+
+**Cost of waiting calculation (fix this too):**
+```typescript
+// If they wait 6 months, they miss the first 6 months of ramp
+// That value is permanently lost — it doesn't shift, it disappears
+const costOfWaiting6Months = Math.round(
+  rawTotal * ((adoptionCurve.month3 * 0.25) + (adoptionCurve.month6 * 0.5)) * haircut
+);
+const costOfWaiting12Months = Math.round(rawTotal * adoptionCurve.year1 * haircut);
+```
+
+**Update the chart data** to use the new curve points and show a genuine S-curve shape, not a linear ramp. The chart should visually look like compounding adoption — slow start, acceleration through months 3-12, plateau at year 2-3.
+
+---
+
+## COPY FIXES — APPLY THROUGHOUT
+
+These are specific copy changes. Apply them exactly:
+
+**Step 2 — Utilization slider benchmark label:**
+Change: "Abridge Avg: 65%"
+To: "Abridge Avg: 76%"
+
+**Step 4 — Efficiency gap intro:**
+Change: "It's not just how often it's used - it's how much time it returns."
+To: "Most ambient tools return 1–2 minutes. Abridge averages 4. Here's what that gap costs you."
+
+**Step 6 (Summary) — Opening statement:**
+Change: "Based on what you've told us, you're leaving"
+To: "Based on your organization's profile, your current documentation infrastructure is failing to capture"
+
+Change: "on the table. Every. Single. Year."
+To: "in enterprise value — annually. Already embedded in your operations."
+
+**Synthesis dark card — "The Decision" section:**
+Change: "You already invested in ambient AI. The question is whether you're getting full value."
+To: "You have ambient documentation. The question is whether you have documentation infrastructure."
+
+**Cost of waiting label:**
+Change: "Cost of Waiting"
+To: "THE COMPOUNDING EFFECT OF INACTION"
+
+**CTA on final screen:**
+Change: "Let's Talk"
+To: "See What Closing This Gap Looks Like →"
+
+---
+
+## STEP COUNTER UPDATE
+
+The ambient path now has more steps. Update the progress dots:
+
+```typescript
+const ambientSteps = [1, 2, 3, 4, 5, 6, 7]; // 7 steps for ambient
+const scribesSteps = [1, 2, 3, 4, 5, 6, 7];  // unchanged
+
+// In the header dots render:
+(isScribePath ? [1,2,3,4,5,6,7] : [1,2,3,4,5,6,7]).map(...)
+```
+
+---
+
+## WHAT NOT TO TOUCH
+
+- The scribe path (Steps 3-7 for scribes) — leave completely unchanged
+- The PDF export logic
+- The `SETTING_CONFIG.ts` file — this is for a different path
+- The assumption panels and EditableInput components — they work well
+- The PathwayCard component — keep it
+- Animation keyframes — keep them
+- All existing Abridge branding (EA2C00, Manrope, logo)
+
+---
+
+## TESTING CHECKLIST — VERIFY THESE BEFORE DONE
+
+After implementing all fixes, verify:
+
+1. ☐ Utilization benchmark shows 76% (not 65%) throughout
+2. ☐ Time savings benchmark shows 4 min (not 3 min) throughout  
+3. ☐ Confidence haircut appears only once — on the final displayed total
+4. ☐ Benchmark Mirror screen appears between Step 4 and the driver selection
+5. ☐ Score screen animates in before the dollar figure on Summary
+6. ☐ Score changes when utilization, time savings, or confidence mode changes
+7. ☐ No drivers are pre-selected when entering the driver selection screen
+8. ☐ Entry Gate "I have a number" option shows an input and references it in synthesis
+9. ☐ Three-year chart shows an S-curve, not a straight line
+10. ☐ "Cost of Waiting" math reflects permanently lost value, not shifted value
+11. ☐ All copy changes applied exactly as specified above
+12. ☐ Mobile layout intact at 390px width on all new screens
+
+---
+
+## THE NORTH STAR
+
+Every fix in this document serves one goal:
+
+The person taking this assessment should feel like they discovered something true about their own organization — not like they were sold to.
+
+The math should be defensible in a CFO meeting.
+The sequence should feel inevitable in retrospect.
+The score should feel earned, not assigned.
+
+Build to that standard.
