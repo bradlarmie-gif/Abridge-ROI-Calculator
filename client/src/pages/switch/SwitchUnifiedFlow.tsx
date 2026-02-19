@@ -17,7 +17,7 @@ interface SwitchUnifiedFlowProps {
 type FlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scribe-analysis";
 
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
-  const [phase, setPhase] = useState<FlowPhase>("ambient-flow");
+  const [phase, setPhase] = useState<FlowPhase>("path-selection");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
   useEffect(() => {
