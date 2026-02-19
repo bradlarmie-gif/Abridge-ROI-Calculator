@@ -4,6 +4,7 @@ import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { staggerContainer, staggerItem } from "@/components/PageTransition";
 
 interface Screen3Props {
   onNext: () => void;
@@ -13,27 +14,15 @@ interface Screen3Props {
 const ABRIDGE_UTIL = 76;
 const ABRIDGE_TIME = 4.0;
 
-function GapBadge({ value, suffix }: { value: number; suffix: string }) {
-  if (value <= 0) return null;
+function BenchmarkPill({ value, label, variant }: { value: string; label: string; variant: "neutral" | "abridge" }) {
   return (
-    <span
-      className="inline-flex items-center bg-[#EA2C00]/10 rounded-full px-2 py-0.5 text-[11px] font-bold text-[#EA2C00] ml-1.5 whitespace-nowrap"
-      data-testid="badge-gap"
-    >
-      +{typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}{suffix}
-    </span>
-  );
-}
-
-function BenchmarkPill({ value, label, isRed }: { value: string; label: string; isRed?: boolean }) {
-  return (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
-      isRed
-        ? "bg-white border-[#EA2C00] text-[#EA2C00]"
-        : "bg-white border-[#E5E7EB] text-[#888888]"
+    <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs ${
+      variant === "abridge"
+        ? "bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold"
+        : "bg-[#F0EFED] border border-[#E5E7EB] text-[#888888] font-medium"
     }`}>
-      <span className={`font-bold text-sm ${isRed ? "text-[#EA2C00]" : "text-[#888888]"}`}>{value}</span>
-      <span className={`text-xs ${isRed ? "text-[#EA2C00]" : "text-[#888888]"}`}>{label}</span>
+      <span className="font-bold">{value}</span>
+      <span>{label}</span>
     </div>
   );
 }
@@ -60,23 +49,23 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
   const utilInsight = useMemo(() => {
     if (!utilMoved) return null;
-    if (utilization < 45) return `Below industry average — significant headroom to benchmark.`;
-    if (utilization <= 60) return `Near industry average — ${encounterGap.toLocaleString()} encounter gap to Abridge benchmark.`;
-    if (utilization <= 75) return `Above average — ${encounterGap.toLocaleString()} encounter gap to close.`;
-    return "At or above Abridge benchmark — strong utilization.";
+    if (utilization < 45) return `Below industry average \u2014 significant headroom to benchmark.`;
+    if (utilization <= 60) return `Near industry average \u2014 ${encounterGap.toLocaleString()} encounter gap to Abridge benchmark.`;
+    if (utilization <= 75) return `Above average \u2014 ${encounterGap.toLocaleString()} encounter gap to close.`;
+    return "At or above Abridge benchmark \u2014 strong utilization.";
   }, [utilMoved, utilization, encounterGap]);
 
   const timeInsight = useMemo(() => {
     if (!timeMoved) return null;
     const hoursGapCalc = Math.round((theirEncounters * Math.max(0, ABRIDGE_TIME - timeSavings)) / 60);
-    if (timeSavings < 2.0) return `Below typical range — ${hoursGapCalc.toLocaleString()} hour gap to Abridge benchmark.`;
+    if (timeSavings < 2.0) return `Below typical range \u2014 ${hoursGapCalc.toLocaleString()} hour gap to Abridge benchmark.`;
     if (timeSavings <= 3.0) {
       const gap = (ABRIDGE_TIME - timeSavings).toFixed(1);
-      return `Within typical range — ${gap} min gap represents ${hoursGapCalc.toLocaleString()} hours.`;
+      return `Within typical range \u2014 ${gap} min gap represents ${hoursGapCalc.toLocaleString()} hours.`;
     }
     if (timeSavings < 4.0) {
       const gap = (ABRIDGE_TIME - timeSavings).toFixed(1);
-      return `Above average — ${gap} min to Abridge benchmark.`;
+      return `Above average \u2014 ${gap} min to Abridge benchmark.`;
     }
     return "At or above Abridge benchmark.";
   }, [timeMoved, timeSavings, theirEncounters]);
@@ -107,29 +96,31 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
     onNext();
   };
 
-  return (
-    <div className={STEP_FOOTER_SPACER_CLASS}>
-      <motion.div
-        className="text-center mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-screen3-headline">
-          Current Performance
-        </h1>
-        <p className="text-base text-[#888888]">
-          Two inputs. These determine your documentation intelligence score.
-        </p>
-      </motion.div>
+  const utilGapPp = Math.max(0, ABRIDGE_UTIL - utilization);
+  const timeGapMin = Math.max(0, Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10);
 
-      <div className="flex flex-col lg:flex-row gap-10">
-        <div className="flex-1 max-w-[700px]">
-          <motion.div
-            className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+  return (
+    <div className={`flex flex-col lg:flex-row gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
+      <motion.div
+        className="flex-1 max-w-[700px]"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
+        <motion.div className="text-center mb-8" variants={staggerItem}>
+          <h1
+            className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight"
+            data-testid="text-screen3-headline"
           >
+            Current Performance
+          </h1>
+          <p className="text-base text-[#888888]">
+            Two inputs. These determine your documentation intelligence score.
+          </p>
+        </motion.div>
+
+        <motion.div variants={staggerItem}>
+          <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-6">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               Utilization Rate
             </p>
@@ -154,9 +145,9 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               data-testid="slider-utilization"
             />
 
-            <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
-              <BenchmarkPill value="45%" label="Industry avg" />
-              <BenchmarkPill value="76%" label="Abridge avg" isRed />
+            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
+              <BenchmarkPill value="45%" label="Industry avg" variant="neutral" />
+              <BenchmarkPill value="76%" label="Abridge avg" variant="abridge" />
             </div>
 
             {utilInsight && (
@@ -164,184 +155,185 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 {utilInsight}
               </p>
             )}
-          </motion.div>
+          </div>
+        </motion.div>
 
-          <motion.div
-            className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
-            animate={{
-              opacity: utilMoved ? 1 : 0.3,
-              y: utilMoved ? 0 : 8,
-            }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            initial={{ opacity: 0.3, y: 8 }}
+        <motion.div variants={staggerItem}>
+          <div
+            className={`bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-6 transition-opacity duration-300 ${
+              utilMoved ? "opacity-100" : "opacity-30 pointer-events-none"
+            }`}
           >
-            <div className={utilMoved ? "pointer-events-auto" : "pointer-events-none"}>
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Time Returned / Encounter
-              </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
-              <p className="text-sm text-black mb-6">
-                Minutes saved per documented encounter
-              </p>
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              Time Returned / Encounter
+            </p>
+            <div className="h-px bg-[#E5E7EB] mb-6" />
+            <p className="text-sm text-black mb-6">
+              Minutes saved per documented encounter
+            </p>
 
-              <div className="text-center mb-6">
-                <span className="text-5xl font-bold text-black" data-testid="value-time-savings">
-                  {timeSavings.toFixed(1)} min
-                </span>
-              </div>
+            <div className="text-center mb-6">
+              <span className="text-5xl font-bold text-black" data-testid="value-time-savings">
+                {timeSavings.toFixed(1)} min
+              </span>
+            </div>
 
-              <Slider
-                min={0.5}
-                max={6.0}
-                step={0.25}
-                value={[timeSavings]}
-                onValueChange={(v) => handleTimeChange(v[0])}
-                className="w-full"
-                data-testid="slider-time-savings"
+            <Slider
+              min={0.5}
+              max={6.0}
+              step={0.25}
+              value={[timeSavings]}
+              onValueChange={(v) => handleTimeChange(v[0])}
+              className="w-full"
+              data-testid="slider-time-savings"
+            />
+
+            <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
+              <BenchmarkPill value="1.5\u20132.5 min" label="Most tools" variant="neutral" />
+              <BenchmarkPill value="4.0 min" label="Abridge avg" variant="abridge" />
+            </div>
+
+            <div className="flex items-center gap-2.5 mt-5" data-testid="checkbox-unmeasured">
+              <Checkbox
+                id="unmeasured"
+                checked={unmeasuredChecked}
+                onCheckedChange={() => handleUnmeasuredToggle()}
               />
-
-              <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
-                <BenchmarkPill value="1.5–2.5 min" label="Most tools" />
-                <BenchmarkPill value="4.0 min" label="Abridge avg" isRed />
-              </div>
-
-              <div className="flex items-center gap-2.5 mt-4" data-testid="checkbox-unmeasured">
-                <Checkbox
-                  id="unmeasured"
-                  checked={unmeasuredChecked}
-                  onCheckedChange={() => handleUnmeasuredToggle()}
-                />
-                <label htmlFor="unmeasured" className="text-sm text-[#888888] cursor-pointer select-none">
-                  I haven't measured this precisely
-                </label>
-              </div>
-              {unmeasuredChecked && (
-                <p className="mt-2 text-sm text-[#888888]">
-                  Using industry benchmark: 2.0 min
-                </p>
-              )}
-
-              {timeInsight && (
-                <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-time-insight">
-                  {timeInsight}
-                </p>
-              )}
+              <label htmlFor="unmeasured" className="text-sm text-[#525252] cursor-pointer select-none">
+                I haven't measured this precisely
+              </label>
             </div>
-          </motion.div>
+            {unmeasuredChecked && (
+              <p className="mt-2 text-sm text-[#888888]">
+                Using industry benchmark: 2.0 min
+              </p>
+            )}
+
+            {timeInsight && (
+              <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-time-insight">
+                {timeInsight}
+              </p>
+            )}
+          </div>
+        </motion.div>
+
+        <div className="max-w-[700px]">
+          <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothMoved} />
         </div>
+      </motion.div>
 
-        {bothMoved && (
-          <motion.div
-            className="w-full lg:w-[320px] flex-shrink-0"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
-              <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
-                At Your Current Performance
+      <div className="w-full lg:w-[320px] flex-shrink-0 hidden lg:block">
+        <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+          <p className="text-[11px] font-medium text-white/60 uppercase tracking-[1.5px] mb-6">
+            Your Inputs
+          </p>
+
+          <div className="mb-5">
+            <p className="text-xs text-white/40 mb-1">Utilization Rate</p>
+            <p className="text-3xl font-bold text-white leading-none" data-testid="panel-utilization">
+              {utilization}%
+            </p>
+            {utilMoved && utilGapPp > 0 && (
+              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                {utilGapPp}pp below Abridge avg
               </p>
-
-              <div className="space-y-2 text-sm mb-4">
-                <div className="flex justify-between">
-                  <span className="text-white/50">Encounters documented</span>
-                  <span className="text-white font-semibold" data-testid="value-their-encounters">
-                    {theirEncounters.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Hours returned annually</span>
-                  <span className="text-white font-semibold" data-testid="value-their-hours">
-                    {theirHours.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              <div className="h-px bg-white/10 my-4" />
-
-              <div className="flex justify-between text-sm">
-                <span className="text-white/50">Gap to Abridge benchmark</span>
-                <span className="text-[#EA2C00] font-bold" data-testid="value-hour-gap">
-                  +{hourGap.toLocaleString()} hrs
-                </span>
-              </div>
-
-              <p className="mt-4 text-xs text-white/40 italic">
-                Gap vs Abridge avg: 76% utilization, 4.0 min/encounter
+            )}
+            {utilMoved && utilGapPp <= 0 && (
+              <p className="text-xs text-green-400 font-semibold mt-1">
+                At or above Abridge avg
               </p>
+            )}
+          </div>
 
+          <div className="h-px bg-white/10 mb-5" />
+
+          <div className="mb-5">
+            <p className="text-xs text-white/40 mb-1">Time Saved / Encounter</p>
+            <p className="text-3xl font-bold text-white leading-none" data-testid="panel-time-savings">
+              {timeSavings.toFixed(1)} min
+            </p>
+            {timeMoved && timeGapMin > 0 && (
+              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                {timeGapMin.toFixed(1)} min below Abridge avg
+              </p>
+            )}
+            {timeMoved && timeGapMin <= 0 && (
+              <p className="text-xs text-green-400 font-semibold mt-1">
+                At or above Abridge avg
+              </p>
+            )}
+          </div>
+
+          <div className="h-px bg-white/10 mb-5" />
+
+          <div className="mb-5">
+            <p className="text-xs text-white/40 mb-1">Hours Returned Annually</p>
+            <p className="text-2xl font-bold text-white leading-none" data-testid="panel-hours">
+              {theirHours.toLocaleString()}
+            </p>
+            {bothMoved && hourGap > 0 && (
+              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                +{hourGap.toLocaleString()} hrs available at Abridge avg
+              </p>
+            )}
+          </div>
+
+          <div className="h-px bg-white/10 mb-5" />
+
+          <div>
+            <p className="text-xs text-white/40 mb-1">Encounters Documented</p>
+            <p className="text-2xl font-bold text-white leading-none" data-testid="panel-encounters">
+              {theirEncounters.toLocaleString()}
+            </p>
+            {bothMoved && encounterGap > 0 && (
+              <p className="text-xs text-[#EA2C00] font-semibold mt-1">
+                +{encounterGap.toLocaleString()} at Abridge avg
+              </p>
+            )}
+          </div>
+
+          {bothMoved && (
+            <>
               <div className="h-px bg-white/10 my-5" />
-
-              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-                How Your Tool Compares
+              <p className="text-xs text-white/30 italic leading-relaxed">
+                Abridge benchmarks: 76% utilization, 4.0 min/encounter. Based on production deployment data.
               </p>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Your Tool</p>
-                  <p className="text-2xl font-bold text-white leading-none mb-1">{utilization}%</p>
-                  <p className="text-xs text-white/40 mb-3">utilization</p>
-                  <p className="text-2xl font-bold text-white leading-none mb-1">{timeSavings.toFixed(1)} min</p>
-                  <p className="text-xs text-white/40 mb-3">per encounter</p>
-                  <p className="text-lg font-bold text-white leading-none">{theirHours.toLocaleString()} hrs</p>
-                  <p className="text-xs text-white/40">returned / yr</p>
-                </div>
-
-                <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
-                  <p className="text-[10px] font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Abridge Avg</p>
-                  <div className="flex items-center flex-wrap gap-1">
-                    <p className="text-2xl font-bold text-white leading-none">76%</p>
-                    <GapBadge value={ABRIDGE_UTIL - utilization} suffix="pp" />
-                  </div>
-                  <p className="text-xs text-white/40 mb-3 mt-1">utilization</p>
-                  <div className="flex items-center flex-wrap gap-1">
-                    <p className="text-2xl font-bold text-white leading-none">4.0 min</p>
-                    <GapBadge value={Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10} suffix=" min" />
-                  </div>
-                  <p className="text-xs text-white/40 mb-3 mt-1">per encounter</p>
-                  <div className="flex items-center flex-wrap gap-1">
-                    <p className="text-lg font-bold text-white leading-none">{abridgeHours.toLocaleString()} hrs</p>
-                    <GapBadge value={hourGap} suffix=" hrs" />
-                  </div>
-                  <p className="text-xs text-white/40 mt-1">returned / yr</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {bothMoved && (
-          <motion.div
-            className="block lg:hidden mt-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            <div className="bg-[#1A1A1A] rounded-xl p-6" data-testid="card-live-summary-mobile">
-              <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">At Your Current Performance</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-white/50">Encounters documented</span>
-                  <span className="text-white font-semibold">{theirEncounters.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Hours returned</span>
-                  <span className="text-white font-semibold">{theirHours.toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="h-px bg-white/10 my-3" />
-              <div className="flex justify-between text-sm">
-                <span className="text-white/50">Gap to benchmark</span>
-                <span className="text-[#EA2C00] font-bold">+{hourGap.toLocaleString()} hrs / yr</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="max-w-[700px]">
-        <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothMoved} />
-      </div>
+      {/* Mobile summary - only after both inputs */}
+      {bothMoved && (
+        <motion.div
+          className="block lg:hidden"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="bg-[#1A1A1A] rounded-xl p-6" data-testid="card-live-summary-mobile">
+            <p className="text-[11px] font-medium text-white/60 uppercase tracking-[1.5px] mb-4">Your Performance</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-white/40 mb-1">Utilization</p>
+                <p className="text-2xl font-bold text-white">{utilization}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-white/40 mb-1">Time Saved</p>
+                <p className="text-2xl font-bold text-white">{timeSavings.toFixed(1)} min</p>
+              </div>
+              <div>
+                <p className="text-xs text-white/40 mb-1">Hours Returned</p>
+                <p className="text-xl font-bold text-white">{theirHours.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs text-white/40 mb-1">Gap to Benchmark</p>
+                <p className="text-xl font-bold text-[#EA2C00]">+{hourGap.toLocaleString()} hrs</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
