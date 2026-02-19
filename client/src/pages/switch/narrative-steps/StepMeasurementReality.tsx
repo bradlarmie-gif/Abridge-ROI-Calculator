@@ -27,23 +27,23 @@ const TILES: {
   {
     value: "benchmark",
     title: "Benchmark-Based",
-    description: "We'll use specialty-adjusted industry benchmarks with conservative guardrails.",
+    description: "Designed for early-stage environments. We apply conservative guardrails automatically.",
     badge: "Conservative Default",
-    note: "Designed for early-stage or partial data environments.",
+    note: "Industry benchmarks with specialty-adjusted defaults.",
   },
   {
     value: "estimated",
     title: "Estimated",
-    description: "You have directional internal data or pilot signals.",
+    description: "You have directional signals. We apply moderate adjustments.",
     badge: "Directional",
-    note: "Moderate confidence adjustments applied.",
+    note: "Internal estimates where available, benchmarks where not.",
   },
   {
     value: "measured",
     title: "Measured",
-    description: "You have pre/post data, tracked metrics, or formal pilots.",
+    description: "You have real data. We reduce haircuts while keeping guardrails enforced.",
     badge: "Board-Defensible",
-    note: "Reduced confidence haircuts. Guardrails still enforced.",
+    note: "Verified deployment data with reduced confidence discounts.",
     reinforcement: "We reduce haircuts, but never remove caps.",
   },
 ];
@@ -240,7 +240,7 @@ export default function StepMeasurementReality({
             <StepFooter
               onBack={onBack}
               onNext={onNext}
-              nextLabel="Next"
+              nextLabel="See My Benchmark"
               nextDisabled={false}
             />
           </div>

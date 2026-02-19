@@ -130,14 +130,24 @@ export default function StepPillarYield({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Revenue Integrity Potential
+          Revenue & Yield
         </h1>
-        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Documentation fidelity determines yield accuracy — not just coding lift.
-        </p>
-        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
-          This value is already embedded in your operations.
-        </p>
+        {!isZero && (
+          <div className="mt-4 mb-2 space-y-2" data-testid="text-loss-frame">
+            <p className="text-base text-[#1A1A1A] leading-relaxed">
+              Your documentation fidelity is currently leaving approximately{" "}
+              <span className="font-semibold tabular-nums">{formatCurrency(Math.round(conservativeValue))}</span> in reimbursement accuracy on the table.
+            </p>
+            <p className="text-sm text-[#666]">
+              This is not revenue you haven't earned. It is revenue you've earned and failed to capture.
+            </p>
+          </div>
+        )}
+        {isZero && (
+          <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+            Documentation fidelity determines yield accuracy — not just coding lift.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
@@ -217,7 +227,7 @@ export default function StepPillarYield({
           </div>
 
           <div className="hidden lg:block">
-            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Workforce Impact" nextTestId="button-next-yield" />
           </div>
         </div>
 
@@ -388,7 +398,7 @@ export default function StepPillarYield({
       </div>
 
       <div className="lg:hidden mt-10">
-        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Workforce Impact" nextTestId="button-next-yield" />
       </div>
 
       {showSnapshot && (

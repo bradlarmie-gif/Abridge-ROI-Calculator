@@ -236,14 +236,8 @@ function AssessmentPreviewRail({ inputs }: { inputs: SwitchInputs }) {
       </div>
 
       <div className="bg-[#1A1A1A] rounded-xl p-5 border border-[#333]">
-        <div className="flex items-center gap-2.5 mb-1.5">
-          <Clock className="w-4 h-4 text-[#EA2C00]" />
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-time-label">
-            Time to value
-          </p>
-        </div>
         <p className="text-sm text-white/80">
-          You're ~90 seconds from an enterprise opportunity map.
+          You're approximately 90 seconds from seeing your enterprise opportunity map.
         </p>
       </div>
     </div>
@@ -291,13 +285,16 @@ export default function StepYourOrganization({
 
   const providerWarning = inputs.providers > 0 && (inputs.providers < 5 || inputs.providers > 5000);
   const volumeWarning = inputs.providers > 0 && inputs.annualEncounters > 0 && inputs.annualEncounters < inputs.providers * 500;
+  const hasAnyInput = inputs.providers > 0 || inputs.annualEncounters > 0;
 
   return (
     <div className={`${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
-        <div className="lg:hidden">
-          <AssessmentPreviewRail inputs={inputs} />
-        </div>
+        {hasAnyInput && (
+          <div className="lg:hidden">
+            <AssessmentPreviewRail inputs={inputs} />
+          </div>
+        )}
 
         <div className="flex-1 max-w-[720px] space-y-8">
           <div className="text-left">
@@ -503,16 +500,18 @@ export default function StepYourOrganization({
           <StepFooter
             onBack={onBack}
             onNext={onNext}
-            nextLabel="Next"
+            nextLabel="Calibrate My Inputs"
             nextDisabled={!canProceed}
           />
         </div>
 
-        <div className="hidden lg:block w-[360px] shrink-0">
-          <div className="sticky top-24">
-            <AssessmentPreviewRail inputs={inputs} />
+        {hasAnyInput && (
+          <div className="hidden lg:block w-[360px] shrink-0">
+            <div className="sticky top-24">
+              <AssessmentPreviewRail inputs={inputs} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

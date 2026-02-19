@@ -138,14 +138,26 @@ export default function StepPillarRisk({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Enterprise Risk Exposure
+          Enterprise Risk
         </h1>
-        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Audit posture, quality velocity, and downstream automation readiness are governed by documentation infrastructure.
-        </p>
-        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
-          This value is already embedded in your operations.
-        </p>
+        {!isZero && (
+          <div className="mt-4 mb-2 space-y-2" data-testid="text-loss-frame">
+            <p className="text-base text-[#1A1A1A] leading-relaxed">
+              Your current documentation infrastructure creates approximately{" "}
+              <span className="font-semibold tabular-nums">{formatCurrency(Math.round(conservativeValue))}</span> in audit exposure and quality reporting friction.
+            </p>
+            <p className="text-sm text-[#666]">
+              Your readiness score of{" "}
+              <span className="font-semibold tabular-nums">{readinessScore}/100</span>{" "}
+              reflects structural gaps that compound over time.
+            </p>
+          </div>
+        )}
+        {isZero && (
+          <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+            Audit posture, quality velocity, and downstream automation readiness are governed by documentation infrastructure.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
@@ -266,7 +278,7 @@ export default function StepPillarRisk({
           </div>
 
           <div className="hidden lg:block">
-            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-risk" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Enterprise Score" nextTestId="button-next-risk" />
           </div>
         </div>
 
@@ -412,7 +424,7 @@ export default function StepPillarRisk({
       </div>
 
       <div className="lg:hidden mt-10">
-        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-risk" />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Enterprise Score" nextTestId="button-next-risk" />
       </div>
 
       {showSnapshot && (

@@ -19,6 +19,25 @@ The Measure path follows a 5-page narrative flow:
 
 Key calculation: `calculateExpansionResults()` in measureCalculator.ts computes Deepen (85% adoption target), Expand (scale to totalProviders), and combined opportunity values with per-provider economics.
 
+### Switch Path (14-Screen Ambient AI Assessment)
+The Switch path is a 14-screen premium narrative flow for prospects migrating from other ambient AI solutions:
+1. **Entry Gate** (StepEntryGate): Full-screen self-identification with three pills, conditional response fade-in, 1.8s auto-advance
+2. **The Hidden Operating System** (StepHiddenOperatingSystem): Thesis framing, CTA "Show Me"
+3. **Your Organization** (StepYourOrganization): Baseline inputs (providers, encounters), right panel conditional on first input
+4. **Uncertainty Calibration** (StepMeasurementReality): Tile-based inputs with updated subtexts
+5. **Benchmark Mirror** (StepBenchmarkMirror): Three-tier maturity visualization with pulsing indicator, dynamic gap calculation
+6. **Enterprise Focus** (StepEnterprisePressureMap): Accountability framing, pressure map
+7. **Capacity Creation** (StepPillarCapacity): Loss-framing opening with FTE calculation, directional CTA
+8. **Revenue & Yield** (StepPillarYield): Loss-framing opening with failed capture language
+9. **Workforce Stability** (StepPillarWorkforce): Loss-framing opening with volatility language
+10. **Enterprise Risk** (StepPillarRisk): Loss-framing opening with readiness score
+11. **Enterprise Capture Score** (StepEnterpriseCaptureScore): Full-screen centered score reveal with industry avg (34) and top quartile (71) benchmarks
+12. **Enterprise Value Synthesis** (StepEnterpriseValueSynthesis): Reframing statement, pillar breakdown, leakage drivers
+13. **The Cost of Inaction** (StepTheMath): Current solution cost input, 3-year projection chart, delay cost analysis
+14. **Documentation Intelligence Gap** (StepTheInvitation): Verdict line, gap bar visualization, intervention priority, invitation card, PDF export
+
+Key design patterns: Loss framing over gain framing, directional CTAs, no celebratory tone, statements over questions (except Entry and Exit screens), enterprise-grade executive tone.
+
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings, including specific time allocation categories and documentation drivers. ROI calculations incorporate conservative realization rates.
 -   **ROI Calculation Logic**: Includes formulas for "Today's ROI" and "Full Scale ROI" which accounts for expansion and utilization improvements.

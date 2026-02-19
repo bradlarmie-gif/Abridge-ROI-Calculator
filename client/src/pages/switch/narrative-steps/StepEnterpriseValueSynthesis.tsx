@@ -225,11 +225,11 @@ export default function StepEnterpriseValueSynthesis({
             {formatCurrency(Math.round(totalAnnual))}
           </p>
         )}
-        <p className="text-[13px] text-[#555] italic">
-          This value is already embedded in your operations.
+        <p className="text-base text-[#1A1A1A] mt-4 leading-relaxed max-w-lg mx-auto">
+          This is not a projection. It is a measurement of what your documentation infrastructure is already failing to capture.
         </p>
-        <p className="text-sm text-[#999999] mt-1">
-          Conservative, haircut-adjusted estimate across four enterprise value pillars
+        <p className="text-sm text-[#999999] mt-2">
+          Conservative, haircut-adjusted across four enterprise value pillars.
         </p>
       </div>
 
@@ -452,7 +452,7 @@ export default function StepEnterpriseValueSynthesis({
       <StepFooter
         onBack={onBack}
         onNext={onNext}
-        nextLabel="Build Action Plan"
+        nextLabel="See the Cost of Inaction"
         nextTestId="button-build-action-plan"
       />
     </div>

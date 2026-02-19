@@ -142,14 +142,24 @@ export default function StepPillarWorkforce({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Workforce Stability Impact
+          Workforce Stability
         </h1>
-        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Labor volatility — after-hours burden, turnover exposure, and premium staffing pressure — traces back to documentation friction.
-        </p>
-        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
-          This value is already embedded in your operations.
-        </p>
+        {!isZero && (
+          <div className="mt-4 mb-2 space-y-2" data-testid="text-loss-frame">
+            <p className="text-base text-[#1A1A1A] leading-relaxed">
+              Your after-hours documentation burden is generating approximately{" "}
+              <span className="font-semibold tabular-nums">{formatCurrency(Math.round(conservativeValue))}</span> in avoidable labor volatility annually.
+            </p>
+            <p className="text-sm text-[#666]">
+              Turnover, overtime, and agency staffing pressure trace directly back to documentation friction.
+            </p>
+          </div>
+        )}
+        {isZero && (
+          <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+            Labor volatility — after-hours burden, turnover exposure, and premium staffing pressure — traces back to documentation friction.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
@@ -229,7 +239,7 @@ export default function StepPillarWorkforce({
           </div>
 
           <div className="hidden lg:block">
-            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-workforce" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Risk Exposure" nextTestId="button-next-workforce" />
           </div>
         </div>
 
@@ -439,7 +449,7 @@ export default function StepPillarWorkforce({
       </div>
 
       <div className="lg:hidden mt-10">
-        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-workforce" />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Risk Exposure" nextTestId="button-next-workforce" />
       </div>
 
       {showSnapshot && (

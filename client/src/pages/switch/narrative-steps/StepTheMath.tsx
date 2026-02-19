@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { ChevronDown, DollarSign } from "lucide-react";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import type { SwitchInputs, SwitchCalculations } from "@/lib/switchGapCalculator";
 import { formatCurrency } from "@/lib/switchGapCalculator";
@@ -74,9 +74,19 @@ export default function StepTheMath({
   onBack,
 }: StepTheMathProps) {
   const [showMethodology, setShowMethodology] = useState(false);
+  const [currentSolutionCost, setCurrentSolutionCost] = useState<number>(0);
   const { state } = useAssessment();
   const pillarResult = useMemo(() => computePillars(state), [state]);
   const A = pillarResult.totalAnnual;
+
+  const handleCostChange = useCallback((val: string) => {
+    const num = parseInt(val.replace(/[^0-9]/g, ""), 10) || 0;
+    setCurrentSolutionCost(num);
+  }, []);
+
+  const netOpportunityCost = useMemo(() => {
+    return Math.max(0, A - currentSolutionCost);
+  }, [A, currentSolutionCost]);
 
   const projection = useMemo(() => computeProjection(A), [A]);
   const delay6 = useMemo(() => computeDelayProjection(A, 6), [A]);
@@ -113,12 +123,45 @@ export default function StepTheMath({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          The Compounding Effect of Action
+          The Cost of Inaction
         </h1>
         <p className="text-sm text-[#888888]">
-          Enterprise value compounds as adoption deepens and governance matures.
+          Every quarter without action compounds the gap between what you earn and what you capture.
         </p>
       </div>
+
+      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6" data-testid="section-current-cost">
+        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+          What are you paying today?
+        </p>
+        <p className="text-sm text-[#666] mb-4">
+          Enter the annual cost of your current ambient AI or documentation solution.
+        </p>
+        <div className="flex items-center gap-3 max-w-sm">
+          <div className="relative flex-1">
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999]" />
+            <input
+              type="text"
+              value={currentSolutionCost > 0 ? currentSolutionCost.toLocaleString() : ""}
+              onChange={(e) => handleCostChange(e.target.value)}
+              placeholder="0"
+              className="w-full pl-8 pr-4 py-2.5 text-sm bg-[#F9F7F4] border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] tabular-nums"
+              data-testid="input-current-cost"
+            />
+          </div>
+          <span className="text-xs text-[#999]">per year</span>
+        </div>
+        {currentSolutionCost > 0 && (
+          <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+            <p className="text-sm text-[#666]">
+              Your current solution costs{" "}
+              <span className="font-semibold text-[#1A1A1A] tabular-nums">{formatCurrency(currentSolutionCost)}</span> annually
+              while leaving{" "}
+              <span className="font-semibold text-[#EA2C00] tabular-nums">{formatCurrency(netOpportunityCost)}</span> in enterprise value uncaptured.
+            </p>
+          </div>
+        )}
+      </section>
 
       <section className="bg-[#F5F0EB] rounded-xl border border-[#E8E0D8] p-4 md:p-6">
         <div className="h-80 md:h-96" data-testid="chart-projection">
@@ -402,7 +445,7 @@ export default function StepTheMath({
         )}
       </section>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Enterprise Summary" />
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="See the Documentation Intelligence Gap" />
     </div>
   );
 }

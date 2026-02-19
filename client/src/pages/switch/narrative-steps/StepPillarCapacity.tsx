@@ -152,14 +152,27 @@ export default function StepPillarCapacity({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Capacity Creation Potential
+          Capacity Creation
         </h1>
-        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Deployable clinical supply exists inside current encounter volume — constrained by documentation overhead.
-        </p>
-        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
-          This value is already embedded in your operations.
-        </p>
+        {!isZero && (
+          <div className="mt-4 mb-2 space-y-2" data-testid="text-loss-frame">
+            <p className="text-base text-[#1A1A1A] leading-relaxed">
+              Your documentation infrastructure is currently constraining approximately{" "}
+              <span className="font-semibold tabular-nums">{fteUnlocked.toFixed(1)} FTE</span> of deployable clinical capacity.
+            </p>
+            <p className="text-sm text-[#666]">
+              This capacity exists inside your current operations. It is not new hiring. It is not new spending.
+            </p>
+            <p className="text-sm text-[#666] italic">
+              It is already there — locked.
+            </p>
+          </div>
+        )}
+        {isZero && (
+          <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+            Deployable clinical supply exists inside current encounter volume — constrained by documentation overhead.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
@@ -238,7 +251,7 @@ export default function StepPillarCapacity({
           </div>
 
           <div className="hidden lg:block">
-            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Revenue Impact" nextTestId="button-next-capacity" />
           </div>
         </div>
 
@@ -433,7 +446,7 @@ export default function StepPillarCapacity({
       </div>
 
       <div className="lg:hidden mt-10">
-        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Revenue Impact" nextTestId="button-next-capacity" />
       </div>
 
       {showSnapshot && (

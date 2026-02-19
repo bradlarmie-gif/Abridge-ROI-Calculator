@@ -203,10 +203,10 @@ export default function StepEnterprisePressureMap({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Where Is Enterprise Pressure Highest?
+          What is your organization being held accountable for that documentation is silently affecting?
         </h1>
         <p className="text-base text-[#888888] leading-relaxed max-w-xl" data-testid="text-page-subtitle">
-          Enterprise value concentrates where operational pressure is most acute. Strategic focus determines where modeling delivers the sharpest signal.
+          Strategic focus determines where modeling delivers the sharpest signal.
         </p>
       </div>
 
@@ -402,7 +402,7 @@ export default function StepEnterprisePressureMap({
         </button>
       </div>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Build Enterprise Value Map" nextTestId="button-build-value-map" />
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Capacity Impact" nextTestId="button-build-value-map" />
 
       {showSnapshot && (
         <OperationalPerformanceSnapshot
