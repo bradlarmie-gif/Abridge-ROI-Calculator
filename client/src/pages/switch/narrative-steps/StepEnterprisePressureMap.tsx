@@ -203,16 +203,16 @@ export default function StepEnterprisePressureMap({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Enterprise Focus
+          Where Is Enterprise Pressure Highest?
         </h1>
         <p className="text-base text-[#888888] leading-relaxed max-w-xl" data-testid="text-page-subtitle">
-          Ambient value concentrates where enterprise pressure is highest.
+          Enterprise value concentrates where operational pressure is most acute. Strategic focus determines where modeling delivers the sharpest signal.
         </p>
       </div>
 
       <div>
         <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-5" data-testid="text-recommended-label">
-          Recommended enterprise focus
+          Indicated strategic priority
         </p>
         <div
           className="bg-[#F5F0EB] rounded-2xl p-7 border border-[#E8E0D8]"
@@ -246,7 +246,7 @@ export default function StepEnterprisePressureMap({
       {confirmed === null && (
         <div data-testid="section-confirm">
           <p className="text-base font-medium text-[#1A1A1A] mb-5" data-testid="text-confirm-question">
-            Does this reflect internal reality?
+            Is this the dominant pressure point today?
           </p>
           <div className="flex gap-3">
             <button
@@ -255,7 +255,7 @@ export default function StepEnterprisePressureMap({
               data-testid="button-confirm-yes"
               className="px-6 py-3 rounded-xl text-sm font-semibold bg-[#1A1A1A] text-white hover:bg-[#333] transition-colors"
             >
-              Yes, proceed with this focus
+              Confirm Strategic Focus
             </button>
             <button
               type="button"
@@ -263,7 +263,7 @@ export default function StepEnterprisePressureMap({
               data-testid="button-confirm-no"
               className="px-6 py-3 rounded-xl text-sm font-semibold border border-[#E8E0D8] text-[#555] bg-white hover:bg-[#FAFAF7] transition-colors"
             >
-              No, adjust focus
+              Refine Focus
             </button>
           </div>
         </div>
@@ -272,7 +272,7 @@ export default function StepEnterprisePressureMap({
       {confirmed === false && (
         <div data-testid="section-override-tiles">
           <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4">
-            Select primary focus
+            Designate primary pressure point
           </p>
           <div className="space-y-3">
             {FOCUS_OPTIONS.map((opt) => {
