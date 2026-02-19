@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { ArrowRight, Download, Loader2 } from "lucide-react";
-import { DS, labelStyle, cardStyle, featuredCardStyle, primaryButtonStyle, secondaryButtonStyle, backLinkStyle } from "./designTokens";
+import { motion } from "framer-motion";
+import { DS } from "./designTokens";
+import { Button } from "@/components/ui/button";
 import { useAssessment } from "@/lib/assessment";
 import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
@@ -151,168 +153,179 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
     }
   };
 
-  const formInputStyle: React.CSSProperties = {
-    fontFamily: DS.font, fontWeight: 600, fontSize: 18, color: DS.black,
-    backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: DS.radius.input,
-    padding: '14px 18px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
-  };
-
   return (
-    <div style={{ fontFamily: DS.font, paddingTop: 72, paddingBottom: 80 }}>
-      <div className="max-w-[520px] mx-auto">
-        <p style={labelStyle} className="mb-6" data-testid="text-screen6-label">
-          Your Assessment
-        </p>
+    <div className="font-[Manrope,sans-serif] pt-[72px] pb-20">
+      <div className="max-w-lg mx-auto px-4">
 
-        <div style={cardStyle} className="mb-10" data-testid="card-verdict-numbers">
-          <div className="flex items-start justify-between gap-8 flex-wrap">
-            <div>
-              <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-1">Your Score</p>
-              <p style={{ fontSize: 36, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>
-                {result.score} <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span>
-              </p>
+        <button
+          onClick={onBack}
+          className="text-sm text-[#888] hover:text-[#1A1A1A] transition-colors mb-8"
+          data-testid="button-back"
+        >
+          Back
+        </button>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6" data-testid="text-screen6-label">
+            Your Assessment
+          </p>
+
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-10" data-testid="card-verdict-numbers">
+            <div className="flex items-start justify-between gap-8 flex-wrap">
+              <div>
+                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif] mb-1">Your Score</p>
+                <p className="text-[36px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif]">
+                  {result.score} <span className="text-[20px] text-[#9B9B9B] font-normal">/ 100</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif] mb-1">Top Quartile</p>
+                <p className="text-[36px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif]">
+                  71 <span className="text-[20px] text-[#9B9B9B] font-normal">/ 100</span>
+                </p>
+              </div>
             </div>
-            <div>
-              <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-1">Top Quartile</p>
-              <p style={{ fontSize: 36, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>
-                71 <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span>
-              </p>
-            </div>
-          </div>
 
-          <div style={{ width: '100%', height: 6, backgroundColor: DS.border, borderRadius: 3, overflow: 'hidden', marginTop: 20, marginBottom: 12, position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${Math.min(result.score, 100)}%`, backgroundColor: DS.red, borderRadius: 3 }} />
-            <div style={{ position: 'absolute', left: `${Math.min(result.score, 100)}%`, top: 0, height: '100%', width: `${Math.max(0, 71 - result.score)}%`, backgroundColor: DS.border }} />
-            <div style={{ position: 'absolute', left: '71%', top: 0, height: '100%', width: '29%', backgroundColor: '#F5F5F4' }} />
-          </div>
-
-          <p style={{ fontSize: 15, color: DS.body, lineHeight: 1.6, fontFamily: DS.font }} data-testid="text-capture-line">
-            You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
-          </p>
-        </div>
-
-        <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 40 }} />
-
-        <p style={labelStyle} className="mb-4">
-          Highest-Leverage Opportunity
-        </p>
-
-        <div style={featuredCardStyle} className="mb-14" data-testid="card-top-opportunity">
-          <p style={{ fontSize: 20, fontWeight: 700, color: DS.black, fontFamily: DS.font }} className="mb-2">{topDomainName}</p>
-          <p style={{ fontSize: 32, fontWeight: 700, color: DS.red, fontFamily: DS.font }} className="mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
-          <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 16 }} />
-          <p style={{ fontSize: 15, color: DS.body, lineHeight: 1.75, fontFamily: DS.font }}>
-            {topDomainOps.meaning} {topDomainOps.action}
-          </p>
-        </div>
-
-        <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 56 }} />
-
-        <div className="text-center mb-8">
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: DS.black, lineHeight: 1.3, maxWidth: 400, margin: '0 auto', fontFamily: DS.font }} data-testid="text-invitation-headline">
-            Would you like to see what documentation intelligence looks like at your scale?
-          </h2>
-          <p style={{ fontSize: 15, color: DS.muted, lineHeight: 1.75, marginTop: 20, fontFamily: DS.font }}>
-            This is not a product demonstration.<br />
-            It is a 30-minute working session.
-          </p>
-        </div>
-
-        {!showForm && !formSubmitted && (
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-2 w-full sm:w-auto justify-center"
-              style={primaryButtonStyle()}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
-              data-testid="button-request-session"
-            >
-              Request a Working Session
-              <ArrowRight size={16} />
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="inline-flex items-center gap-2 w-full sm:w-auto justify-center"
-              style={{ ...secondaryButtonStyle, opacity: isExporting ? 0.7 : 1, cursor: isExporting ? 'wait' : 'pointer' }}
-              onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.backgroundColor = DS.hoverBg; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-              data-testid="button-export"
-            >
-              {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-              {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
-            </button>
-          </div>
-        )}
-
-        {showForm && !formSubmitted && (
-          <form onSubmit={handleSubmit} style={cardStyle} className="mb-14" data-testid="form-contact">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <input
-                type="text" placeholder="Name" value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = DS.red)}
-                onBlur={(e) => (e.target.style.borderColor = DS.border)}
-                data-testid="input-name"
-              />
-              <input
-                type="text" placeholder="Organization" value={formData.org}
-                onChange={(e) => setFormData({ ...formData, org: e.target.value })}
-                style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = DS.red)}
-                onBlur={(e) => (e.target.style.borderColor = DS.border)}
-                data-testid="input-org"
-              />
-              <input
-                type="text" placeholder="Title" value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = DS.red)}
-                onBlur={(e) => (e.target.style.borderColor = DS.border)}
-                data-testid="input-title"
-              />
-              <input
-                type="email" placeholder="Email" value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={formInputStyle}
-                onFocus={(e) => (e.target.style.borderColor = DS.red)}
-                onBlur={(e) => (e.target.style.borderColor = DS.border)}
-                data-testid="input-email"
+            <div className="w-full h-1.5 bg-[#EDEAE5] rounded-full overflow-hidden relative mt-5 mb-3">
+              <div
+                className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full"
+                style={{ width: `${Math.min(result.score, 100)}%` }}
               />
             </div>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 w-full justify-center mt-6"
-              style={primaryButtonStyle()}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
-              data-testid="button-submit"
-            >
-              Submit
-              <ArrowRight size={16} />
-            </button>
-          </form>
-        )}
 
-        {formSubmitted && (
-          <div className="text-center mb-14" style={cardStyle} data-testid="form-confirmation">
-            <p style={{ fontSize: 17, color: DS.black, fontWeight: 600, marginBottom: 12, fontFamily: DS.font }}>
-              We'll be in touch within one business day.
+            <p className="text-[15px] text-[#4B4B4B] leading-[1.6] font-[Manrope,sans-serif]" data-testid="text-capture-line">
+              You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
             </p>
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: isExporting ? 'wait' : 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }}
-              data-testid="button-copy-link"
-            >
-              {isExporting ? 'Generating PDF...' : 'Download your assessment'}
-            </button>
           </div>
-        )}
+        </motion.div>
 
-        <p className="text-center" style={{ fontSize: 13, color: DS.muted, lineHeight: 1.6, fontFamily: DS.font }}>
+        <div className="h-px bg-[#E8E0D8] mb-10" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">
+            Highest-Leverage Opportunity
+          </p>
+
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] border-l-[3px] border-l-[#EA2C00] rounded-xl p-6 mb-14" data-testid="card-top-opportunity">
+            <p className="text-[20px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif] mb-2">{topDomainName}</p>
+            <p className="text-[32px] font-bold text-[#EA2C00] font-[Manrope,sans-serif] mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
+            <div className="h-px bg-[#E8E0D8] mb-4" />
+            <p className="text-[15px] text-[#4B4B4B] leading-[1.75] font-[Manrope,sans-serif]">
+              {topDomainOps.meaning} {topDomainOps.action}
+            </p>
+          </div>
+        </motion.div>
+
+        <div className="h-px bg-[#E8E0D8] mb-14" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-[32px] font-bold text-[#1A1A1A] leading-[1.3] max-w-[400px] mx-auto" data-testid="text-invitation-headline">
+              Would you like to see what documentation intelligence looks like at your scale?
+            </h2>
+            <p className="text-[15px] text-[#9B9B9B] leading-[1.75] mt-5 font-[Manrope,sans-serif]">
+              This is not a product demonstration.<br />
+              It is a 30-minute working session.
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+        >
+          {!showForm && !formSubmitted && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
+                data-testid="button-request-session"
+              >
+                Request a Working Session
+                <ArrowRight size={16} />
+              </Button>
+              <button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="rounded-full border border-[#E8E0D8] bg-transparent px-6 py-3 text-sm font-medium text-[#4B4B4B] transition-colors hover:bg-[#F5F0EB] inline-flex items-center gap-2 w-full sm:w-auto justify-center disabled:opacity-70 disabled:cursor-wait"
+                data-testid="button-export"
+              >
+                {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
+              </button>
+            </div>
+          )}
+
+          {showForm && !formSubmitted && (
+            <form onSubmit={handleSubmit} className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-14" data-testid="form-contact">
+              <div className="flex flex-col gap-4">
+                <input
+                  type="text" placeholder="Name" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  data-testid="input-name"
+                />
+                <input
+                  type="text" placeholder="Organization" value={formData.org}
+                  onChange={(e) => setFormData({ ...formData, org: e.target.value })}
+                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  data-testid="input-org"
+                />
+                <input
+                  type="text" placeholder="Title" value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  data-testid="input-title"
+                />
+                <input
+                  type="email" placeholder="Email" value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  data-testid="input-email"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-6"
+                data-testid="button-submit"
+              >
+                Submit
+                <ArrowRight size={16} />
+              </Button>
+            </form>
+          )}
+
+          {formSubmitted && (
+            <div className="text-center bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-14" data-testid="form-confirmation">
+              <p className="text-[17px] text-[#1A1A1A] font-semibold mb-3 font-[Manrope,sans-serif]">
+                We'll be in touch within one business day.
+              </p>
+              <button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="text-[15px] text-[#4B4B4B] underline underline-offset-2 font-medium bg-transparent border-none font-[Manrope,sans-serif] disabled:cursor-wait"
+                data-testid="button-copy-link"
+              >
+                {isExporting ? 'Generating PDF...' : 'Download your assessment'}
+              </button>
+            </div>
+          )}
+        </motion.div>
+
+        <p className="text-center text-[13px] text-[#9B9B9B] leading-[1.6] font-[Manrope,sans-serif]">
           Conservative estimates based on Abridge deployment benchmarks.<br />
           Methodology available on request.
         </p>

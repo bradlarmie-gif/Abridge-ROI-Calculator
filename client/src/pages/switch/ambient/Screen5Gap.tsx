@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { DS, labelStyle, cardStyle, featuredCardStyle, primaryButtonStyle, backLinkStyle } from "./designTokens";
+import { ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { DS } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -13,6 +14,7 @@ import {
   DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, DOMAIN_WEIGHTS,
   computeGapForDomain, computeDomainScore, scoreToActivationLevel,
 } from "./domainCalculations";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
 interface Screen5Props {
   onNext: () => void;
@@ -48,53 +50,23 @@ function CountUpNumber({ target, duration = 1400, prefix = "$" }: { target: numb
   return <>{prefix}{current.toLocaleString()}</>;
 }
 
-function FadeIn({ delay, children, className }: { delay: number; children: React.ReactNode; className?: string }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-  return (
-    <div className={className} style={{
-      opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(8px)',
-      transition: 'opacity 400ms ease-out, transform 400ms ease-out',
-    }}>{children}</div>
-  );
-}
-
-const inputStyle: React.CSSProperties = {
-  fontFamily: DS.font, fontWeight: 600, fontSize: 15, color: DS.black,
-  backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: 8,
-  padding: '10px 14px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
-  textAlign: 'right' as const,
-};
-
-const selectStyle: React.CSSProperties = {
-  fontFamily: DS.font, fontWeight: 500, fontSize: 14, color: DS.black,
-  backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: 8,
-  padding: '10px 14px', width: '100%', outline: 'none', cursor: 'pointer',
-  appearance: 'none' as const, WebkitAppearance: 'none' as const,
-};
-
 function EditField({ label, value, onChange, prefix, suffix, testId }: {
   label: string; value: number; onChange: (v: number) => void;
   prefix?: string; suffix?: string; testId: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-3">
-      <span style={{ fontSize: 13, color: DS.body, fontFamily: DS.font, flex: 1 }}>{label}</span>
-      <div className="flex items-center gap-1" style={{ maxWidth: 140 }}>
-        {prefix && <span style={{ fontSize: 13, color: DS.muted }}>{prefix}</span>}
+      <span className="text-[13px] text-[#4B4B4B] flex-1">{label}</span>
+      <div className="flex items-center gap-1 max-w-[140px]">
+        {prefix && <span className="text-[13px] text-[#9B9B9B]">{prefix}</span>}
         <FormattedNumberInput
           value={value}
           onChange={onChange}
           placeholder="0"
-          style={{ ...inputStyle, minWidth: 80 }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = DS.red; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = DS.border; }}
+          className="w-full rounded-lg border border-[#E8E0D8] bg-white px-3.5 py-2.5 text-sm font-semibold text-[#1A1A1A] text-right outline-none focus:border-[#EA2C00] transition-colors min-w-[80px]"
           data-testid={testId}
         />
-        {suffix && <span style={{ fontSize: 13, color: DS.muted }}>{suffix}</span>}
+        {suffix && <span className="text-[13px] text-[#9B9B9B]">{suffix}</span>}
       </div>
     </div>
   );
@@ -107,12 +79,12 @@ function EditSlider({ label, value, onChange, min, max, step, display, testId }:
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between mb-1">
-        <span style={{ fontSize: 13, color: DS.body, fontFamily: DS.font }}>{label}</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>{display}</span>
+        <span className="text-[13px] text-[#4B4B4B]">{label}</span>
+        <span className="text-[13px] font-bold text-[#1A1A1A]">{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-[#EA2C00]" style={{ height: 4 }} data-testid={testId} />
+        className="w-full accent-[#EA2C00] h-1" data-testid={testId} />
     </div>
   );
 }
@@ -122,17 +94,15 @@ function EditPill({ label, options, value, onChange, testId }: {
 }) {
   return (
     <div className="mb-3">
-      <span style={{ fontSize: 13, color: DS.body, fontFamily: DS.font, display: 'block', marginBottom: 6 }}>{label}</span>
+      <span className="block text-[13px] text-[#4B4B4B] mb-1.5">{label}</span>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <button key={opt} type="button" onClick={() => onChange(opt)}
-            style={{
-              fontFamily: DS.font, fontWeight: value === opt ? 700 : 500, fontSize: 13,
-              padding: '6px 14px', borderRadius: DS.radius.pill,
-              border: `1.5px solid ${value === opt ? DS.black : DS.border}`,
-              backgroundColor: value === opt ? DS.white : DS.bg,
-              color: value === opt ? DS.black : DS.body, cursor: 'pointer',
-            }}
+            className={`rounded-full px-3.5 py-1.5 text-[13px] cursor-pointer transition-colors ${
+              value === opt
+                ? 'border border-[#1A1A1A] bg-white font-bold text-[#1A1A1A]'
+                : 'border border-[#E5E7EB] bg-[#F7F6F4] font-medium text-[#4B4B4B]'
+            }`}
             data-testid={`${testId}-${opt}`}
           >{opt}</button>
         ))}
@@ -161,65 +131,56 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
   };
 
   return (
-    <div style={{
-      backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderRadius: 12,
-      padding: expanded ? '20px' : '16px 20px', marginBottom: 12,
-      transition: 'all 200ms ease',
-    }} data-testid={`edit-card-${domain}`}>
+    <div className={`bg-white border border-[#E8E0D8] rounded-xl transition-all mb-3 ${expanded ? 'p-5' : 'px-5 py-4'}`}
+      data-testid={`edit-card-${domain}`}>
       <button type="button" onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        className="w-full flex items-center justify-between bg-transparent border-none cursor-pointer p-0"
         data-testid={`toggle-${domain}`}
       >
         <div className="flex items-center gap-3">
           <div>
-            <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font, textAlign: 'left' }}>
+            <p className="font-semibold text-[15px] text-[#1A1A1A] text-left">
               {DOMAIN_LABELS[domain]}
             </p>
-            <p style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font, fontStyle: 'italic', textAlign: 'left' }}>
+            <p className="text-[12px] text-[#9B9B9B] italic text-left">
               {ACTIVATION_LABELS[domain][level]}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p style={{ fontWeight: 700, fontSize: 17, color: changed ? DS.red : DS.black, fontFamily: DS.font }}>
+            <p className={`font-bold text-[17px] ${changed ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
               {formatDollar(Math.round(gapValue * HAIRCUT))}
             </p>
-            <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }}>/ yr</p>
+            <p className="text-[11px] text-[#9B9B9B]">/ yr</p>
           </div>
-          <ChevronDown size={16} style={{
-            color: DS.muted, transition: 'transform 200ms',
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0)',
-          }} />
+          <ChevronDown size={16} className="text-[#9B9B9B] transition-transform duration-200"
+            style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)' }} />
         </div>
       </button>
 
       {expanded && (
-        <div style={{ marginTop: 16, borderTop: `1px solid ${DS.border}`, paddingTop: 16 }}>
+        <div className="mt-4 pt-4 border-t border-[#E8E0D8]">
           <div className="mb-4">
-            <p style={{ ...labelStyle, marginBottom: 6 }}>
+            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-1.5">
               Activation Level
             </p>
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <select
                 value={level}
                 onChange={(e) => handleLevelChange(parseInt(e.target.value) as ActivationLevel)}
-                style={selectStyle}
+                className="w-full rounded-lg border border-[#E8E0D8] bg-white px-3.5 py-2.5 text-sm font-medium text-[#1A1A1A] outline-none cursor-pointer appearance-none"
                 data-testid={`select-activation-${domain}`}
               >
                 {([1, 2, 3, 4] as ActivationLevel[]).map((l) => (
                   <option key={l} value={l}>{ACTIVATION_LABELS[domain][l]}</option>
                 ))}
               </select>
-              <ChevronDown size={14} style={{
-                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                color: DS.muted, pointerEvents: 'none',
-              }} />
+              <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9B9B] pointer-events-none" />
             </div>
           </div>
 
-          <p style={{ ...labelStyle, marginBottom: 8 }}>
+          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
             {DOMAIN_LABELS[domain]} Inputs
           </p>
 
@@ -311,10 +272,10 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
               onChange={(v) => updateInput('initiatives', v)} testId="edit-pill-initiatives" />
           )}
 
-          <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${DS.border}` }}>
+          <div className="mt-3 pt-3 border-t border-[#E8E0D8]">
             <div className="flex items-center justify-between">
-              <span style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font }}>Updated gap</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: changed ? DS.red : DS.muted, fontFamily: DS.font }}
+              <span className="text-[12px] text-[#9B9B9B]">Updated gap</span>
+              <span className={`text-[12px] font-bold ${changed ? 'text-[#EA2C00]' : 'text-[#9B9B9B]'}`}
                 data-testid={`updated-gap-${domain}`}>
                 {formatDollar(Math.round(gapValue * HAIRCUT))} / yr
               </span>
@@ -332,14 +293,11 @@ function CustomTooltip({ active, payload, label }: any) {
   const current = payload.find((p: any) => p.dataKey === 'currentState');
   const gap = (actNow?.value || 0) - (current?.value || 0);
   return (
-    <div style={{
-      backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderRadius: 8,
-      padding: '12px 16px', boxShadow: DS.shadow,
-    }}>
-      <p style={{ fontSize: 12, fontWeight: 600, color: DS.black, fontFamily: DS.font, marginBottom: 6 }}>{label}</p>
-      {actNow && <p style={{ fontSize: 12, color: DS.red, fontFamily: DS.font }}>Act Now: {formatDollarFull(actNow.value)}</p>}
-      {current && <p style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font }}>Current State: {formatDollarFull(current.value)}</p>}
-      <p style={{ fontSize: 12, fontWeight: 700, color: DS.red, fontFamily: DS.font, marginTop: 4 }}>Gap: {formatDollarFull(gap)}</p>
+    <div className="bg-white border border-[#E8E0D8] rounded-lg p-3 shadow-sm">
+      <p className="text-[12px] font-semibold text-[#1A1A1A] mb-1.5">{label}</p>
+      {actNow && <p className="text-[12px] text-[#EA2C00]">Act Now: {formatDollarFull(actNow.value)}</p>}
+      {current && <p className="text-[12px] text-[#9B9B9B]">Current State: {formatDollarFull(current.value)}</p>}
+      <p className="text-[12px] font-bold text-[#EA2C00] mt-1">Gap: {formatDollarFull(gap)}</p>
     </div>
   );
 }
@@ -433,87 +391,82 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   const permanentlyLost12mo = actNow3yr - wait12mo3yr;
 
   return (
-    <div style={{ fontFamily: DS.font, paddingBottom: 80 }}>
+    <div className={`font-[Manrope,sans-serif] ${STEP_FOOTER_SPACER_CLASS}`}>
 
-      <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: 'calc(100vh - 56px)', paddingTop: 80 }}>
-        <FadeIn delay={0}>
-          <p style={labelStyle} className="mb-3" data-testid="text-gap-label">
+      <div className="flex flex-col items-center justify-center text-center min-h-[calc(100vh-56px)] pt-20">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0, duration: 0.5 }}>
+          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3" data-testid="text-gap-label">
             Unrealized Enterprise Value
           </p>
-          <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75, fontStyle: 'italic', fontFamily: DS.font, maxWidth: 400, margin: '0 auto' }} className="mb-10" data-testid="text-gap-pre-statement">
+          <p className="text-[17px] text-[#4B4B4B] leading-[1.75] italic max-w-[400px] mx-auto mb-10" data-testid="text-gap-pre-statement">
             Already in your operations. Already earned. Not yet realized.
           </p>
-        </FadeIn>
+        </motion.div>
 
-        <FadeIn delay={200}>
-          <p style={{ fontWeight: 700, fontSize: 'clamp(64px, 8vw, 96px)', color: DS.red, lineHeight: 1 }} className="mb-2" data-testid="value-hero-gap">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
+          <p className="text-[#EA2C00] font-bold leading-none text-[clamp(64px,8vw,96px)] mb-2" data-testid="value-hero-gap">
             <CountUpNumber target={displayedTotal} />
           </p>
-          <p style={{ fontSize: 20, color: DS.muted }} className="mb-8">annually</p>
-        </FadeIn>
+          <p className="text-[20px] text-[#9B9B9B] mb-8">annually</p>
+        </motion.div>
 
-        <FadeIn delay={600}>
-          <div style={cardStyle} className="mb-8" data-testid="card-time-breakdowns">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-8" data-testid="card-time-breakdowns">
             <div className="flex flex-wrap justify-center gap-12">
               <div className="text-center">
-                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-monthly">
+                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-monthly">
                   ${displayedMonthly.toLocaleString()}
                 </p>
-                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Month</p>
+                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Month</p>
               </div>
               <div className="text-center">
-                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-weekly">
+                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-weekly">
                   ${displayedWeekly.toLocaleString()}
                 </p>
-                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Week</p>
+                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Week</p>
               </div>
               <div className="text-center">
-                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-daily">
+                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-daily">
                   ${displayedDaily.toLocaleString()}
                 </p>
-                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Day</p>
+                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Day</p>
               </div>
             </div>
           </div>
-        </FadeIn>
+        </motion.div>
 
-        <FadeIn delay={1100}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.5 }}>
           <button type="button" onClick={handleOpenEdit}
-            style={{
-              fontSize: 13, color: DS.muted, cursor: 'pointer', background: 'none', border: 'none',
-              fontFamily: DS.font, fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '2px',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = DS.black)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = DS.muted)}
+            className="text-[13px] text-[#9B9B9B] hover:text-[#1A1A1A] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
             data-testid="button-refine"
           >
             Refine my assumptions
           </button>
-        </FadeIn>
+        </motion.div>
       </div>
 
-      <div ref={editSectionRef} style={{ paddingTop: 64 }}>
-        <div className="max-w-[600px] mx-auto">
+      <div ref={editSectionRef} className="pt-16">
+        <div className="max-w-xl mx-auto">
 
-          <div style={cardStyle} className="mb-12" data-testid="card-domain-breakdown">
-            <p style={labelStyle} className="mb-6">
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-domain-breakdown">
+            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6">
               Domain Breakdown
             </p>
             {DOMAIN_ORDER.map((domain, idx) => (
               <div key={domain}>
-                <div className="flex items-center justify-between" style={{ padding: '12px 0' }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>{DOMAIN_LABELS[domain]}</span>
-                  <span style={{ fontWeight: 700, fontSize: 17, color: DS.black, fontFamily: DS.font }} data-testid={`domain-gap-${domain}`}>
+                <div className="flex items-center justify-between py-3">
+                  <span className="font-semibold text-[15px] text-[#1A1A1A]">{DOMAIN_LABELS[domain]}</span>
+                  <span className="font-bold text-[17px] text-[#1A1A1A]" data-testid={`domain-gap-${domain}`}>
                     {formatDollar(Math.round(gapValues[domain] * HAIRCUT))}
                   </span>
                 </div>
-                {idx < DOMAIN_ORDER.length - 1 && <div style={{ height: 1, backgroundColor: '#F0F0F0' }} />}
+                {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E8E0D8]" />}
               </div>
             ))}
-            <div style={{ height: 1, backgroundColor: DS.border, marginTop: 4 }} />
-            <div className="flex items-center justify-between" style={{ backgroundColor: DS.bg, borderRadius: 8, padding: '14px 16px', marginTop: 12 }}>
-              <span style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>Total Annual Gap</span>
-              <span style={{ fontWeight: 700, fontSize: 20, color: DS.red, fontFamily: DS.font }} data-testid="value-total-gap">
+            <div className="h-px bg-[#E8E0D8] mt-1" />
+            <div className="bg-[#F7F6F4] rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
+              <span className="font-semibold text-[15px] text-[#1A1A1A]">Total Annual Gap</span>
+              <span className="font-bold text-[20px] text-[#EA2C00]" data-testid="value-total-gap">
                 {formatDollar(displayedTotal)}
               </span>
             </div>
@@ -522,11 +475,11 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           {isEditing && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-4">
-                <p style={labelStyle}>
+                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B]">
                   Refine Assumptions
                 </p>
                 <button type="button" onClick={handleReset}
-                  style={{ fontSize: 12, color: DS.muted, cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '2px' }}
+                  className="text-[12px] text-[#9B9B9B] hover:text-[#1A1A1A] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
                   data-testid="button-reset"
                 >
                   Reset to original
@@ -550,26 +503,26 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
             </div>
           )}
 
-          <div style={cardStyle} className="mb-12" data-testid="card-chart">
-            <p style={labelStyle} className="mb-2">
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-chart">
+            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
               3-Year Projection
             </p>
-            <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-6">
+            <p className="text-[13px] text-[#9B9B9B] mb-6">
               Cumulative value captured vs. current trajectory
             </p>
-            <div style={{ height: 280 }}>
+            <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: DS.muted, fontFamily: DS.font }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={DS.warmBorder} />
+                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: DS.muted }} />
                   <YAxis
                     tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
-                    tick={{ fontSize: 12, fill: DS.muted, fontFamily: DS.font }}
+                    tick={{ fontSize: 12, fill: DS.muted }}
                     width={70}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
-                    formatter={(value: string) => <span style={{ fontSize: 12, color: DS.body, fontFamily: DS.font }}>{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
+                    formatter={(value: string) => <span className="text-[12px] text-[#4B4B4B]">{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
                     wrapperStyle={{ paddingTop: 12 }}
                   />
                   <Line type="monotone" dataKey="actNow" stroke={DS.red} strokeWidth={2} dot={{ r: 4, fill: DS.red }} fill="none" name="actNow" />
@@ -579,53 +532,34 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
             </div>
           </div>
 
-          <div style={cardStyle} className="mb-12" data-testid="card-cost-waiting">
-            <p style={labelStyle} className="mb-6">
+          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-cost-waiting">
+            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6">
               The Cost of Waiting
             </p>
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <span style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }}>Wait 6 months</span>
-                <span style={{ fontWeight: 700, fontSize: 17, color: DS.red, fontFamily: DS.font }} data-testid="value-wait-6mo">
+                <span className="text-[15px] text-[#4B4B4B]">Wait 6 months</span>
+                <span className="font-bold text-[17px] text-[#EA2C00]" data-testid="value-wait-6mo">
                   {formatDollarFull(permanentlyLost6mo)} lost
                 </span>
               </div>
-              <div style={{ height: 1, backgroundColor: '#F0F0F0' }} />
+              <div className="h-px bg-[#E8E0D8]" />
               <div className="flex items-center justify-between">
-                <span style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }}>Wait 12 months</span>
-                <span style={{ fontWeight: 700, fontSize: 17, color: DS.red, fontFamily: DS.font }} data-testid="value-wait-12mo">
+                <span className="text-[15px] text-[#4B4B4B]">Wait 12 months</span>
+                <span className="font-bold text-[17px] text-[#EA2C00]" data-testid="value-wait-12mo">
                   {formatDollarFull(permanentlyLost12mo)} lost
                 </span>
               </div>
             </div>
           </div>
 
-          <div
-            style={{ backgroundColor: DS.black, borderRadius: DS.radius.card, padding: '32px' }}
-            className="mb-12"
-            data-testid="card-dark-summary"
-          >
-            <p style={{ fontSize: 17, color: DS.white, lineHeight: 1.75, fontFamily: DS.font }}>
+          <div className="bg-[#1A1A1A] rounded-xl p-8 mb-12" data-testid="card-dark-summary">
+            <p className="text-[17px] text-white leading-[1.75]">
               This is not an aspirational number. It is a measurement of the enterprise value currently flowing through your documentation infrastructure that is not being captured. Every day it compounds.
             </p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <button onClick={onBack} style={backLinkStyle} data-testid="button-back">
-              Back
-            </button>
-            <button
-              onClick={onNext}
-              className="inline-flex items-center gap-2"
-              style={primaryButtonStyle()}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
-              data-testid="button-next"
-            >
-              See My Summary
-              <ArrowRight size={16} />
-            </button>
-          </div>
+          <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary" />
 
         </div>
       </div>

@@ -1,7 +1,10 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Check } from "lucide-react";
-import { DS, labelStyle, bodyStyle, cardStyle, inputFieldStyle, primaryButtonStyle, backLinkStyle } from "./designTokens";
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { DS } from "./designTokens";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { staggerContainer, staggerItem } from "@/components/PageTransition";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 
 interface Screen2Props {
@@ -25,39 +28,53 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 && (inputs.annualEncounters / inputs.providers) > 3500;
 
   return (
-    <div className="flex flex-col lg:flex-row" style={{ fontFamily: DS.font, gap: 32 }}>
-      <div className="flex-1 max-w-[380px]" style={{ paddingTop: 72, paddingBottom: 80 }}>
-        <p style={labelStyle} className="mb-3" data-testid="text-screen2-label">
+    <div className={`flex flex-col lg:flex-row gap-8 font-[Manrope,sans-serif] ${STEP_FOOTER_SPACER_CLASS}`}>
+      <motion.div
+        className="flex-1 max-w-[380px] pt-[72px] pb-20"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
+        <motion.p
+          variants={staggerItem}
+          className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3"
+          data-testid="text-screen2-label"
+        >
           Your Organization
-        </p>
-        <h1 style={{ fontWeight: 700, fontSize: 44, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 hidden md:block" data-testid="text-screen2-headline">
+        </motion.p>
+        <motion.h1
+          variants={staggerItem}
+          className="mb-4 hidden md:block text-[44px] font-bold leading-[1.15] text-[#1A1A1A]"
+          data-testid="text-screen2-headline"
+        >
           Let's establish your baseline.
-        </h1>
-        <h1 style={{ fontWeight: 700, fontSize: 32, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 block md:hidden">
+        </motion.h1>
+        <motion.h1
+          variants={staggerItem}
+          className="mb-4 block md:hidden text-[32px] font-bold leading-[1.15] text-[#1A1A1A]"
+        >
           Let's establish your baseline.
-        </h1>
-        <p style={bodyStyle} className="mb-10">
+        </motion.h1>
+        <motion.p variants={staggerItem} className="mb-10 text-[15px] leading-relaxed text-[#4B4B4B]">
           Two inputs. Benchmarks handle the rest.
-        </p>
+        </motion.p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        <motion.div variants={staggerItem} className="flex flex-col gap-7">
           <div>
-            <p style={{ fontWeight: 600, fontSize: 13, color: DS.body, fontFamily: DS.font }} className="mb-2">
+            <p className="mb-2 text-[13px] font-semibold text-[#4B4B4B]">
               Physicians and APPs using ambient documentation
             </p>
             <FormattedNumberInput
               value={inputs.providers}
               onChange={(v) => updateInput("providers", v || 0)}
               placeholder="50"
-              style={inputFieldStyle}
-              onFocus={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.red; }}
-              onBlur={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.border; }}
+              className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]"
               data-testid="input-providers"
             />
           </div>
 
           <div>
-            <p style={{ fontWeight: 600, fontSize: 13, color: DS.body, fontFamily: DS.font }} className="mb-2">
+            <p className="mb-2 text-[13px] font-semibold text-[#4B4B4B]">
               Annual encounters where ambient is available
             </p>
             <FormattedNumberInput
@@ -67,29 +84,26 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 updateInput("encountersEstimated", false);
               }}
               placeholder="100,000"
-              style={inputFieldStyle}
-              onFocus={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.red; }}
-              onBlur={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.border; }}
+              className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]"
               data-testid="input-encounters"
             />
             <button
               type="button"
               onClick={() => setShowEstimator(!showEstimator)}
-              className="mt-3"
-              style={{ fontSize: 13, color: DS.muted, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }}
+              className="mt-3 cursor-pointer border-none bg-transparent text-[13px] font-medium text-[#9B9B9B] underline underline-offset-2"
               data-testid="button-help-estimate"
             >
               Help me estimate
             </button>
             {showEstimator && inputs.providers > 0 && (
-              <div className="mt-3" style={{ ...cardStyle, padding: 20 }}>
-                <p style={{ ...bodyStyle, fontSize: 15 }} className="mb-3">
-                  <span style={{ fontWeight: 700, color: DS.black }}>{inputs.providers.toLocaleString()}</span> providers &times; 2,000 typical = <span style={{ fontWeight: 700, color: DS.black }}>{estimatedEncounters.toLocaleString()}</span>
+              <div className="mt-3 rounded-xl border border-[#E8E0D8] bg-[#F5F0EB] p-5">
+                <p className="mb-3 text-[15px] leading-relaxed text-[#4B4B4B]">
+                  <span className="font-bold text-[#1A1A1A]">{inputs.providers.toLocaleString()}</span> providers &times; 2,000 typical = <span className="font-bold text-[#1A1A1A]">{estimatedEncounters.toLocaleString()}</span>
                 </p>
                 <button
                   type="button"
                   onClick={() => { updateInput("annualEncounters", estimatedEncounters); updateInput("encountersEstimated", true); setShowEstimator(false); }}
-                  style={{ fontFamily: DS.font, fontWeight: 600, fontSize: 14, padding: '10px 22px', borderRadius: DS.radius.pill, border: `1.5px solid ${DS.black}`, backgroundColor: DS.white, color: DS.black, cursor: 'pointer' }}
+                  className="rounded-full border border-[#1A1A1A] bg-white px-5 py-2.5 text-sm font-semibold text-[#1A1A1A]"
                   data-testid="button-use-estimate"
                 >
                   Use {estimatedEncounters.toLocaleString()}
@@ -97,66 +111,61 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
               </div>
             )}
             {showGuardrail && (
-              <p className="mt-2" style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} data-testid="text-guardrail">
+              <p className="mt-2 text-[13px] text-[#9B9B9B]" data-testid="text-guardrail">
                 That's ~{encountersPerDay} per provider per day — want to double-check?
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center justify-between" style={{ marginTop: 56 }}>
-          <button onClick={onBack} style={backLinkStyle} data-testid="button-back">
-            Back
-          </button>
-          <button
-            onClick={onNext}
-            disabled={!hasBothInputs}
-            className="inline-flex items-center gap-2"
-            style={primaryButtonStyle(hasBothInputs)}
-            onMouseEnter={(e) => hasBothInputs && (e.currentTarget.style.backgroundColor = DS.redHover)}
-            onMouseLeave={(e) => hasBothInputs && (e.currentTarget.style.backgroundColor = DS.red)}
-            data-testid="button-next"
-          >
-            See My Utilization Reality
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      </div>
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Utilization Reality" nextDisabled={!hasBothInputs} />
+      </motion.div>
 
       {hasFirstInput && (
-        <div className="hidden lg:block w-[300px] shrink-0" style={{ paddingTop: 72 }}>
-          <div className="sticky top-24" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={cardStyle}>
-              <p style={labelStyle} className="mb-4">
+        <motion.div
+          className="hidden lg:block w-[300px] shrink-0 pt-[72px]"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
+        >
+          <div className="sticky top-24 flex flex-col gap-4">
+            <div className="rounded-xl border border-[#E8E0D8] bg-[#F5F0EB] p-6">
+              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">
                 What We'll Model
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="flex flex-col gap-3">
                 {["Capacity creation", "Revenue integrity", "Workforce stability", "Risk & compliance"].map((item) => (
                   <div key={item} className="flex items-center gap-2.5">
-                    <Check size={16} color={DS.red} />
-                    <span style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }}>{item}</span>
+                    <Check size={16} className="text-[#EA2C00]" />
+                    <span className="text-[15px] text-[#4B4B4B]">{item}</span>
                   </div>
                 ))}
               </div>
-              <div style={{ height: 1, backgroundColor: DS.border, margin: '20px 0' }} />
-              <p style={labelStyle} className="mb-3">
+              <div className="my-5 h-px bg-[#E8E0D8]" />
+              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3">
                 Baseline
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 15 }}>
-                <div className="flex justify-between gap-2"><span style={{ color: DS.muted, fontSize: 13 }}>Providers</span><span style={{ color: DS.black, fontWeight: 700, fontSize: 15 }} data-testid="text-rail-providers">{inputs.providers > 0 ? inputs.providers.toLocaleString() : "\u2014"}</span></div>
-                <div className="flex justify-between gap-2"><span style={{ color: DS.muted, fontSize: 13 }}>Encounters</span><span style={{ color: DS.black, fontWeight: 700, fontSize: 15 }} data-testid="text-rail-encounters">{inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "\u2014"}</span></div>
+              <div className="flex flex-col gap-2 text-[15px]">
+                <div className="flex justify-between gap-2">
+                  <span className="text-[13px] text-[#9B9B9B]">Providers</span>
+                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="text-rail-providers">{inputs.providers > 0 ? inputs.providers.toLocaleString() : "\u2014"}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-[13px] text-[#9B9B9B]">Encounters</span>
+                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="text-rail-encounters">{inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "\u2014"}</span>
+                </div>
               </div>
 
-              <div style={{ marginTop: 20 }}>
-                <div style={{ backgroundColor: DS.black, borderRadius: 10, padding: 20 }}>
-                  <p style={{ fontSize: 15, color: DS.white, lineHeight: 1.7, fontFamily: DS.font }}>
+              <div className="mt-5">
+                <div className="bg-[#1A1A1A] rounded-xl p-5">
+                  <p className="text-[15px] leading-[1.7] text-white">
                     Most organizations at your scale have never mapped what their documentation infrastructure is actually returning. You're about to.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

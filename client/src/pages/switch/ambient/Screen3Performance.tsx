@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { ArrowRight } from "lucide-react";
-import { DS, labelStyle, bodyStyle, cardStyle, primaryButtonStyle, backLinkStyle } from "./designTokens";
+import { motion } from "framer-motion";
+import { DS } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
 interface Screen3Props {
   onNext: () => void;
@@ -15,19 +16,7 @@ function GapBadge({ value, suffix }: { value: number; suffix: string }) {
   if (value <= 0) return null;
   return (
     <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        backgroundColor: 'rgba(234, 44, 0, 0.08)',
-        borderRadius: 999,
-        padding: '2px 8px',
-        fontFamily: DS.font,
-        fontWeight: 600,
-        fontSize: 12,
-        color: DS.red,
-        marginLeft: 6,
-        whiteSpace: 'nowrap',
-      }}
+      className="inline-flex items-center bg-[#EA2C00]/10 rounded-full px-2 py-0.5 text-[11px] font-bold text-[#EA2C00] ml-1.5 whitespace-nowrap"
       data-testid="badge-gap"
     >
       +{typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}{suffix}
@@ -37,17 +26,13 @@ function GapBadge({ value, suffix }: { value: number; suffix: string }) {
 
 function BenchmarkPill({ value, label, isRed }: { value: string; label: string; isRed?: boolean }) {
   return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '8px 16px',
-      borderRadius: DS.radius.pill,
-      backgroundColor: isRed ? DS.white : DS.bg,
-      border: `1px solid ${isRed ? DS.red : DS.border}`,
-    }}>
-      <span style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 13, color: isRed ? DS.red : DS.muted }}>{value}</span>
-      <span style={{ fontFamily: DS.font, fontSize: 12, color: isRed ? DS.red : DS.muted }}>{label}</span>
+    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
+      isRed
+        ? "bg-white border-[#EA2C00] text-[#EA2C00]"
+        : "bg-[#F5F0EB] border-[#E8E0D8] text-[#9B9B9B]"
+    }`}>
+      <span className={`font-bold text-[13px] ${isRed ? "text-[#EA2C00]" : "text-[#9B9B9B]"}`}>{value}</span>
+      <span className={`text-[12px] ${isRed ? "text-[#EA2C00]" : "text-[#9B9B9B]"}`}>{label}</span>
     </div>
   );
 }
@@ -122,34 +107,39 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
   };
 
   return (
-    <div style={{ fontFamily: DS.font, paddingTop: 72, paddingBottom: 80 }}>
-      <div className="max-w-[640px] mx-auto mb-10">
-        <p style={labelStyle} className="mb-3" data-testid="text-screen3-label">
+    <div className="pt-18 pb-20 font-[Manrope,sans-serif]">
+      <motion.div
+        className="max-w-2xl mx-auto mb-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3" data-testid="text-screen3-label">
           Current Performance
         </p>
-        <h1 style={{ fontWeight: 700, fontSize: 44, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 hidden md:block" data-testid="text-screen3-headline">
+        <h1 className="text-[#1A1A1A] font-bold text-4xl md:text-[44px] leading-[1.15] mb-4 hidden md:block" data-testid="text-screen3-headline">
           How is your ambient tool performing today?
         </h1>
-        <h1 style={{ fontWeight: 700, fontSize: 32, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 block md:hidden">
+        <h1 className="text-[#1A1A1A] font-bold text-[32px] leading-[1.15] mb-4 block md:hidden">
           How is your ambient tool performing today?
         </h1>
-        <p style={bodyStyle}>
+        <p className="text-[#4B4B4B] text-[17px] leading-[1.75]">
           Two inputs. These determine your documentation intelligence score.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-col lg:flex-row" style={{ gap: 32 }}>
-        <div className="flex-1 max-w-[640px]">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 max-w-2xl">
           <div className="mb-10">
-            <p style={labelStyle} className="mb-2">
+            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
               Utilization Rate
             </p>
-            <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }} className="mb-6">
+            <p className="text-[15px] text-[#4B4B4B] mb-6">
               What % of eligible encounters are being documented?
             </p>
 
             <div className="text-center mb-4">
-              <span style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 56, color: DS.black, lineHeight: 1 }} data-testid="value-utilization">
+              <span className="text-[#1A1A1A] font-bold text-[56px] leading-none" data-testid="value-utilization">
                 {utilization}%
               </span>
             </div>
@@ -161,219 +151,214 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               step={5}
               value={utilization}
               onChange={(e) => handleUtilChange(parseInt(e.target.value))}
-              className="w-full accent-[#0F0F0F]"
-              style={{ height: 4 }}
+              className="w-full accent-[#1A1A1A] h-1"
               data-testid="slider-utilization"
             />
 
-            <div className="flex items-center justify-center mt-4" style={{ gap: 12 }}>
+            <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
               <BenchmarkPill value="45%" label="Industry avg" />
               <BenchmarkPill value="76%" label="Abridge avg" isRed />
             </div>
 
             {utilInsight && (
-              <p className="mt-5" style={{ fontSize: 13, color: DS.body, fontStyle: 'italic', fontFamily: DS.font, lineHeight: 1.6 }} data-testid="text-util-insight">
+              <p className="mt-5 text-[13px] text-[#4B4B4B] italic leading-[1.6]" data-testid="text-util-insight">
                 {utilInsight}
               </p>
             )}
           </div>
 
-          <div
+          <motion.div
             className="mb-10"
-            style={{
+            animate={{
               opacity: utilMoved ? 1 : 0,
-              transform: utilMoved ? 'translateY(0)' : 'translateY(8px)',
-              transition: 'opacity 300ms ease-out, transform 300ms ease-out',
-              pointerEvents: utilMoved ? 'auto' : 'none',
+              y: utilMoved ? 0 : 8,
             }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 8 }}
           >
-            <p style={labelStyle} className="mb-2">
-              Time Returned / Encounter
-            </p>
-            <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }} className="mb-6">
-              Minutes saved per documented encounter
-            </p>
+            <div className={utilMoved ? "pointer-events-auto" : "pointer-events-none"}>
+              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
+                Time Returned / Encounter
+              </p>
+              <p className="text-[15px] text-[#4B4B4B] mb-6">
+                Minutes saved per documented encounter
+              </p>
 
-            <div className="text-center mb-4">
-              <span style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 56, color: DS.black, lineHeight: 1 }} data-testid="value-time-savings">
-                {timeSavings.toFixed(1)} min
-              </span>
-            </div>
+              <div className="text-center mb-4">
+                <span className="text-[#1A1A1A] font-bold text-[56px] leading-none" data-testid="value-time-savings">
+                  {timeSavings.toFixed(1)} min
+                </span>
+              </div>
 
-            <input
-              type="range"
-              min={0.5}
-              max={6.0}
-              step={0.25}
-              value={timeSavings}
-              onChange={(e) => handleTimeChange(parseFloat(e.target.value))}
-              className="w-full accent-[#0F0F0F]"
-              style={{ height: 4 }}
-              data-testid="slider-time-savings"
-            />
-
-            <div className="flex items-center justify-center mt-4" style={{ gap: 12 }}>
-              <BenchmarkPill value="1.5–2.5 min" label="Most tools" />
-              <BenchmarkPill value="4.0 min" label="Abridge avg" isRed />
-            </div>
-
-            <label className="flex items-center gap-2.5 mt-4 cursor-pointer" data-testid="checkbox-unmeasured">
               <input
-                type="checkbox"
-                checked={unmeasuredChecked}
-                onChange={handleUnmeasuredToggle}
-                className="accent-[#0F0F0F]"
-                style={{ width: 16, height: 16 }}
+                type="range"
+                min={0.5}
+                max={6.0}
+                step={0.25}
+                value={timeSavings}
+                onChange={(e) => handleTimeChange(parseFloat(e.target.value))}
+                className="w-full accent-[#1A1A1A] h-1"
+                data-testid="slider-time-savings"
               />
-              <span style={{ fontSize: 13, color: DS.body, fontFamily: DS.font }}>
-                I haven't measured this precisely
-              </span>
-            </label>
-            {unmeasuredChecked && (
-              <p className="mt-2" style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>
-                Using industry benchmark: 2.0 min
-              </p>
-            )}
 
-            {timeInsight && (
-              <p className="mt-5" style={{ fontSize: 13, color: DS.body, fontStyle: 'italic', fontFamily: DS.font, lineHeight: 1.6 }} data-testid="text-time-insight">
-                {timeInsight}
-              </p>
-            )}
-          </div>
+              <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
+                <BenchmarkPill value="1.5–2.5 min" label="Most tools" />
+                <BenchmarkPill value="4.0 min" label="Abridge avg" isRed />
+              </div>
+
+              <label className="flex items-center gap-2.5 mt-4 cursor-pointer" data-testid="checkbox-unmeasured">
+                <input
+                  type="checkbox"
+                  checked={unmeasuredChecked}
+                  onChange={handleUnmeasuredToggle}
+                  className="accent-[#1A1A1A] w-4 h-4"
+                />
+                <span className="text-[13px] text-[#4B4B4B]">
+                  I haven't measured this precisely
+                </span>
+              </label>
+              {unmeasuredChecked && (
+                <p className="mt-2 text-[13px] text-[#9B9B9B]">
+                  Using industry benchmark: 2.0 min
+                </p>
+              )}
+
+              {timeInsight && (
+                <p className="mt-5 text-[13px] text-[#4B4B4B] italic leading-[1.6]" data-testid="text-time-insight">
+                  {timeInsight}
+                </p>
+              )}
+            </div>
+          </motion.div>
         </div>
 
         {bothMoved && (
-          <div className="hidden lg:block w-[320px] shrink-0">
-            <div className="sticky top-24" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={cardStyle} data-testid="card-live-summary">
-                <p style={labelStyle} className="mb-5">
+          <motion.div
+            className="hidden lg:block w-[320px] shrink-0"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="sticky top-24 flex flex-col gap-4">
+              <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-live-summary">
+                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5">
                   At Your Current Performance
                 </p>
 
-                <div className="flex items-center justify-between mb-3">
-                  <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Encounters documented annually</span>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: DS.black, fontFamily: DS.font }} data-testid="value-their-encounters">
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <span className="text-[13px] text-[#9B9B9B]">Encounters documented annually</span>
+                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="value-their-encounters">
                     {theirEncounters.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mb-4">
-                  <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Hours returned annually</span>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: DS.black, fontFamily: DS.font }} data-testid="value-their-hours">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <span className="text-[13px] text-[#9B9B9B]">Hours returned annually</span>
+                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="value-their-hours">
                     {theirHours.toLocaleString()}
                   </span>
                 </div>
 
-                <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 16 }} />
+                <div className="h-px bg-[#E8E0D8] mb-4" />
 
-                <div className="flex items-center justify-between">
-                  <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Gap to Abridge benchmark</span>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: DS.red, fontFamily: DS.font }} data-testid="value-hour-gap">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[13px] text-[#9B9B9B]">Gap to Abridge benchmark</span>
+                  <span className="text-[15px] font-bold text-[#EA2C00]" data-testid="value-hour-gap">
                     +{hourGap.toLocaleString()} hrs / yr
                   </span>
                 </div>
 
-                <p className="mt-4" style={{ fontSize: 12, color: DS.muted, fontStyle: 'italic', fontFamily: DS.font }}>
+                <p className="mt-4 text-[12px] text-[#9B9B9B] italic">
                   Gap vs Abridge avg: 76% utilization, 4.0 min/encounter
                 </p>
               </div>
 
-              <div style={cardStyle} data-testid="card-comparison">
-                <p style={labelStyle} className="mb-5 text-center">
+              <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-comparison">
+                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5 text-center">
                   How Your Tool Compares
                 </p>
 
-                <div className="grid grid-cols-2" style={{ gap: 0 }}>
-                  <div style={{ paddingRight: 16 }}>
-                    <p style={{ ...labelStyle, fontSize: 10, marginBottom: 16 }}>Your Current Tool</p>
+                <div className="grid grid-cols-2">
+                  <div className="pr-4">
+                    <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">Your Current Tool</p>
 
-                    <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 24, color: DS.black, lineHeight: 1 }} className="mb-1">
+                    <p className="font-bold text-[24px] text-[#1A1A1A] leading-none mb-1">
                       {utilization}%
                     </p>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }} className="mb-3">utilization rate</p>
-                    <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 12 }} />
+                    <p className="text-[11px] text-[#9B9B9B] mb-3">utilization rate</p>
+                    <div className="h-px bg-[#E8E0D8] mb-3" />
 
-                    <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 24, color: DS.black, lineHeight: 1 }} className="mb-1">
+                    <p className="font-bold text-[24px] text-[#1A1A1A] leading-none mb-1">
                       {timeSavings.toFixed(1)} min
                     </p>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }} className="mb-3">per encounter</p>
-                    <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 12 }} />
+                    <p className="text-[11px] text-[#9B9B9B] mb-3">per encounter</p>
+                    <div className="h-px bg-[#E8E0D8] mb-3" />
 
-                    <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 20, color: DS.black, lineHeight: 1 }} className="mb-1">
+                    <p className="font-bold text-[20px] text-[#1A1A1A] leading-none mb-1">
                       {theirHours.toLocaleString()} hrs
                     </p>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }}>returned annually</p>
+                    <p className="text-[11px] text-[#9B9B9B]">returned annually</p>
                   </div>
 
-                  <div style={{ paddingLeft: 16, borderLeft: `4px solid ${DS.red}` }}>
-                    <p style={{ ...labelStyle, fontSize: 10, color: DS.red, marginBottom: 16 }}>Abridge Average</p>
+                  <div className="pl-4 border-l-[3px] border-l-[#EA2C00]">
+                    <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-4">Abridge Average</p>
 
                     <div className="flex items-center flex-wrap gap-1">
-                      <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 24, color: DS.black, lineHeight: 1 }}>76%</p>
+                      <p className="font-bold text-[24px] text-[#1A1A1A] leading-none">76%</p>
                       <GapBadge value={ABRIDGE_UTIL - utilization} suffix="pp" />
                     </div>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }} className="mb-3 mt-1">utilization rate</p>
-                    <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 12 }} />
+                    <p className="text-[11px] text-[#9B9B9B] mb-3 mt-1">utilization rate</p>
+                    <div className="h-px bg-[#E8E0D8] mb-3" />
 
                     <div className="flex items-center flex-wrap gap-1">
-                      <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 24, color: DS.black, lineHeight: 1 }}>4.0 min</p>
+                      <p className="font-bold text-[24px] text-[#1A1A1A] leading-none">4.0 min</p>
                       <GapBadge value={Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10} suffix=" min" />
                     </div>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }} className="mb-3 mt-1">per encounter</p>
-                    <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 12 }} />
+                    <p className="text-[11px] text-[#9B9B9B] mb-3 mt-1">per encounter</p>
+                    <div className="h-px bg-[#E8E0D8] mb-3" />
 
                     <div className="flex items-center flex-wrap gap-1">
-                      <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 20, color: DS.black, lineHeight: 1 }}>
+                      <p className="font-bold text-[20px] text-[#1A1A1A] leading-none">
                         {abridgeHours.toLocaleString()} hrs
                       </p>
                       <GapBadge value={hourGap} suffix=" hrs" />
                     </div>
-                    <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }} className="mt-1">returned annually</p>
+                    <p className="text-[11px] text-[#9B9B9B] mt-1">returned annually</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {bothMoved && (
-          <div className="block lg:hidden" style={{ marginTop: 16 }}>
-            <div style={cardStyle} data-testid="card-live-summary-mobile">
-              <p style={labelStyle} className="mb-5">At Your Current Performance</p>
-              <div className="flex items-center justify-between mb-3">
-                <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Encounters documented</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>{theirEncounters.toLocaleString()}</span>
+          <motion.div
+            className="block lg:hidden mt-4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-live-summary-mobile">
+              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5">At Your Current Performance</p>
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <span className="text-[13px] text-[#9B9B9B]">Encounters documented</span>
+                <span className="text-[15px] font-bold text-[#1A1A1A]">{theirEncounters.toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between mb-3">
-                <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Hours returned</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>{theirHours.toLocaleString()}</span>
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <span className="text-[13px] text-[#9B9B9B]">Hours returned</span>
+                <span className="text-[15px] font-bold text-[#1A1A1A]">{theirHours.toLocaleString()}</span>
               </div>
-              <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 12 }} />
-              <div className="flex items-center justify-between">
-                <span style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>Gap to benchmark</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: DS.red, fontFamily: DS.font }}>+{hourGap.toLocaleString()} hrs / yr</span>
+              <div className="h-px bg-[#E8E0D8] mb-3" />
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[13px] text-[#9B9B9B]">Gap to benchmark</span>
+                <span className="text-[15px] font-bold text-[#EA2C00]">+{hourGap.toLocaleString()} hrs / yr</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
-      <div className="max-w-[640px] mx-auto flex items-center justify-between" style={{ marginTop: 32 }}>
-        <button onClick={onBack} style={backLinkStyle} data-testid="button-back">
-          Back
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={!bothMoved}
-          className="inline-flex items-center gap-2"
-          style={primaryButtonStyle(bothMoved)}
-          onMouseEnter={(e) => bothMoved && (e.currentTarget.style.backgroundColor = DS.redHover)}
-          onMouseLeave={(e) => bothMoved && (e.currentTarget.style.backgroundColor = DS.red)}
-          data-testid="button-next"
-        >
-          See the Four Domains
-          <ArrowRight size={16} />
-        </button>
+      <div className={`max-w-2xl mx-auto ${STEP_FOOTER_SPACER_CLASS}`}>
+        <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothMoved} />
       </div>
     </div>
   );

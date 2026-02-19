@@ -1,9 +1,7 @@
-import { useCallback } from "react";
-import { PageTransition } from "@/components/PageTransition";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
-import { DS } from "./ambient/designTokens";
-import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+import { PageTransition } from "@/components/PageTransition";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 import Screen1Provocation from "./ambient/Screen1Provocation";
 import Screen2Baseline from "./ambient/Screen2Baseline";
@@ -20,6 +18,16 @@ interface AmbientNarrativeFlowProps {
 }
 
 const TOTAL_SCREENS = 7;
+
+const STEP_NAMES = [
+  "Provocation",
+  "Baseline",
+  "Performance",
+  "Domains",
+  "Score",
+  "Gap Analysis",
+  "Summary",
+];
 
 export default function AmbientNarrativeFlow({
   onBack,
@@ -56,8 +64,7 @@ export default function AmbientNarrativeFlow({
     }
   };
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleHome = () => {
     if (onBackToJourney) onBackToJourney();
     else window.location.href = "/";
   };
@@ -86,49 +93,21 @@ export default function AmbientNarrativeFlow({
   const isScreen1 = currentStep === 1;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: DS.bg, fontFamily: DS.font }}>
+    <div className="min-h-screen bg-[#F7F6F4]">
       {!isScreen1 && (
-        <header
-          className="fixed top-0 left-0 right-0 z-50"
-          style={{ backgroundColor: DS.bg, borderBottom: `1px solid ${DS.border}`, height: 56 }}
-        >
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-between">
-            <a
-              href="/"
-              onClick={handleLogoClick}
-              className="flex items-center transition-opacity hover:opacity-70 cursor-pointer"
-              data-testid="link-logo-home"
-            >
-              <img src={abridgeLogo} alt="Abridge" className="h-5" />
-            </a>
-
-            <div className="flex items-center" style={{ gap: 6 }} data-testid="progress-dots">
-              {Array.from({ length: TOTAL_SCREENS }, (_, i) => {
-                const stepNum = i + 1;
-                const isActive = stepNum === currentStep;
-                const isCompleted = stepNum < currentStep;
-
-                return (
-                  <span
-                    key={i}
-                    style={{
-                      borderRadius: DS.radius.pill,
-                      transition: 'all 200ms ease',
-                      width: isActive ? 20 : 7,
-                      height: isActive ? 8 : 7,
-                      backgroundColor: isActive ? DS.red : isCompleted ? DS.black : DS.border,
-                      display: 'inline-block',
-                    }}
-                    data-testid={`progress-dot-${stepNum}`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </header>
+        <>
+          <UnifiedHeader
+            pathType="switch"
+            currentStep={currentStep}
+            totalSteps={TOTAL_SCREENS}
+            stepName={STEP_NAMES[currentStep - 1]}
+            onBack={handleBack}
+            showBack={currentStep > 1}
+            onHome={handleHome}
+          />
+          <UnifiedHeaderSpacer />
+        </>
       )}
-
-      {!isScreen1 && <div style={{ height: 56 }} />}
 
       <main className="mx-auto px-5 md:px-10 max-w-[1200px]">
         <PageTransition pageKey={`ambient-screen-${currentStep}`}>
