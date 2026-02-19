@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { DS } from "./designTokens";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { SwitchInputs, CareSetting } from "@/lib/switchGapCalculator";
+import type { SwitchInputs } from "@/lib/switchGapCalculator";
 
 interface Screen2Props {
   inputs: SwitchInputs;
@@ -11,37 +11,11 @@ interface Screen2Props {
   onBack: () => void;
 }
 
-const CARE_SETTINGS: { label: string; value: CareSetting }[] = [
-  { label: "Outpatient", value: "outpatient" },
-  { label: "ED", value: "ed" },
-  { label: "Inpatient", value: "inpatient" },
-  { label: "Mixed", value: "mixed" },
-];
-
-const inputStyle: React.CSSProperties = {
-  fontFamily: DS.font,
-  fontWeight: 600,
-  fontSize: 18,
-  color: DS.black,
-  backgroundColor: DS.white,
-  border: `1.5px solid ${DS.border}`,
-  borderRadius: DS.radius.input,
-  padding: '14px 18px',
-  width: '100%',
-  outline: 'none',
-  transition: 'border-color 150ms ease',
-};
-
 export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }: Screen2Props) {
-  const [showCareSetting, setShowCareSetting] = useState(false);
   const [showEstimator, setShowEstimator] = useState(false);
 
   const hasBothInputs = inputs.providers > 0 && inputs.annualEncounters > 0;
   const hasFirstInput = inputs.providers > 0;
-
-  useEffect(() => {
-    if (hasBothInputs && !showCareSetting) setShowCareSetting(true);
-  }, [hasBothInputs]);
 
   const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);
   const encountersPerDay = useMemo(() => {
@@ -60,10 +34,10 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           Let's establish your baseline.
         </h1>
         <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75 }} className="mb-14">
-          Three inputs. Benchmarks handle the rest.
+          Two inputs. Benchmarks handle the rest.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           <div>
             <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-2.5">Providers</p>
             <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75 }} className="mb-4">
@@ -73,6 +47,13 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
               value={inputs.providers}
               onChange={(v) => updateInput("providers", v || 0)}
               placeholder="providers"
+              style={{
+                fontFamily: DS.font, fontWeight: 600, fontSize: 17, color: DS.black,
+                backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: 10,
+                padding: '14px 18px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
+              }}
+              onFocus={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.red; }}
+              onBlur={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.border; }}
               data-testid="input-providers"
             />
           </div>
@@ -89,6 +70,13 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 updateInput("encountersEstimated", false);
               }}
               placeholder="encounters / year"
+              style={{
+                fontFamily: DS.font, fontWeight: 600, fontSize: 17, color: DS.black,
+                backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: 10,
+                padding: '14px 18px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
+              }}
+              onFocus={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.red; }}
+              onBlur={(e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = DS.border; }}
               data-testid="input-encounters"
             />
             <button
@@ -121,31 +109,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
               </p>
             )}
           </div>
-
-          {showCareSetting && (
-            <div className="transition-all duration-300">
-              <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-2.5">Care Setting</p>
-              <div className="flex flex-wrap gap-3">
-                {CARE_SETTINGS.map((cs) => (
-                  <button
-                    key={cs.value}
-                    type="button"
-                    onClick={() => updateInput("careSetting", cs.value)}
-                    style={{
-                      fontFamily: DS.font, fontWeight: inputs.careSetting === cs.value ? 700 : 600, fontSize: 14,
-                      padding: '10px 22px', borderRadius: DS.radius.pill,
-                      border: `1.5px solid ${inputs.careSetting === cs.value ? DS.black : DS.border}`,
-                      backgroundColor: inputs.careSetting === cs.value ? DS.white : DS.bg,
-                      color: inputs.careSetting === cs.value ? DS.black : DS.body, cursor: 'pointer', transition: 'all 150ms ease',
-                    }}
-                    data-testid={`pill-setting-${cs.value}`}
-                  >
-                    {cs.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="flex items-center justify-between" style={{ marginTop: 56 }}>
@@ -174,7 +137,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
       {hasFirstInput && (
         <div className="hidden lg:block w-[300px] shrink-0" style={{ paddingTop: 80 }}>
           <div className="sticky top-24" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card, padding: 32 }}>
+            <div style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: 14, padding: 28 }}>
               <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-4">
                 What We'll Model
               </p>
@@ -191,14 +154,13 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 Baseline
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 15 }}>
-                <div className="flex justify-between"><span style={{ color: DS.muted }}>Providers</span><span style={{ color: DS.black, fontWeight: 700 }} data-testid="text-rail-providers">{inputs.providers > 0 ? inputs.providers.toLocaleString() : "\u2014"}</span></div>
-                <div className="flex justify-between"><span style={{ color: DS.muted }}>Encounters</span><span style={{ color: DS.black, fontWeight: 700 }} data-testid="text-rail-encounters">{inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "\u2014"}</span></div>
-                <div className="flex justify-between"><span style={{ color: DS.muted }}>Setting</span><span style={{ color: DS.black, fontWeight: 700 }} data-testid="text-rail-setting">{CARE_SETTINGS.find(c => c.value === inputs.careSetting)?.label || "Outpatient"}</span></div>
+                <div className="flex justify-between gap-2"><span style={{ color: DS.muted }}>Providers</span><span style={{ color: DS.black, fontWeight: 700 }} data-testid="text-rail-providers">{inputs.providers > 0 ? inputs.providers.toLocaleString() : "\u2014"}</span></div>
+                <div className="flex justify-between gap-2"><span style={{ color: DS.muted }}>Encounters</span><span style={{ color: DS.black, fontWeight: 700 }} data-testid="text-rail-encounters">{inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "\u2014"}</span></div>
               </div>
             </div>
             <div style={{ backgroundColor: DS.black, borderRadius: DS.radius.card, padding: 32 }}>
               <p style={{ fontSize: 17, color: DS.white, lineHeight: 1.75, fontFamily: DS.font }}>
-                You're approximately 4 minutes from your documentation intelligence score.
+                Most organizations at your scale have never mapped what their documentation infrastructure is actually returning.
               </p>
             </div>
           </div>

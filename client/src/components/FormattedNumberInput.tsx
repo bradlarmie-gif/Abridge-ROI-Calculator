@@ -5,8 +5,11 @@ interface FormattedNumberInputProps {
   value: number | '';
   onChange: (value: number) => void;
   onBlurValue?: (value: number) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   step?: number;
   className?: string;
+  style?: React.CSSProperties;
   placeholder?: string;
   'data-testid'?: string;
 }
@@ -30,8 +33,11 @@ export function FormattedNumberInput({
   value,
   onChange,
   onBlurValue,
+  onFocus: externalOnFocus,
+  onBlur: externalOnBlur,
   step = 1,
   className = '',
+  style,
   placeholder = '',
   'data-testid': testId
 }: FormattedNumberInputProps) {
@@ -93,21 +99,27 @@ export function FormattedNumberInput({
     onChange(parsed);
   }, [onChange]);
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);
     const parsed = parseFormattedNumber(displayValue);
     setDisplayValue(parsed === 0 ? '' : formatWithCommas(parsed, decimals));
     if (onBlurValue) {
       onBlurValue(parsed);
     }
-  }, [displayValue, decimals, onBlurValue]);
+    if (externalOnBlur) {
+      externalOnBlur(e);
+    }
+  }, [displayValue, decimals, onBlurValue, externalOnBlur]);
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     setTimeout(() => {
       e.target.select();
     }, 0);
-  }, []);
+    if (externalOnFocus) {
+      externalOnFocus(e);
+    }
+  }, [externalOnFocus]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -130,6 +142,7 @@ export function FormattedNumberInput({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={className}
+      style={style}
       placeholder={placeholder}
       data-testid={testId}
       autoComplete="off"
