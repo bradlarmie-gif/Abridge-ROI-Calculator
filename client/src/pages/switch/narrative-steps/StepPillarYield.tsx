@@ -135,6 +135,9 @@ export default function StepPillarYield({
         <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Documentation fidelity determines yield accuracy — not just coding lift.
         </p>
+        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
+          This value is already embedded in your operations.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">

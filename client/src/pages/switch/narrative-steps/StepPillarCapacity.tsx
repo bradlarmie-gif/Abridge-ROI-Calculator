@@ -155,7 +155,10 @@ export default function StepPillarCapacity({
           Capacity Creation Potential
         </h1>
         <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Ambient unlocks deployable clinical supply from existing encounters.
+          Deployable clinical supply exists inside current encounter volume — constrained by documentation overhead.
+        </p>
+        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
+          This value is already embedded in your operations.
         </p>
       </div>
 
@@ -219,7 +222,7 @@ export default function StepPillarCapacity({
           <div className="space-y-5" data-testid="section-drivers">
             <DriverRow
               label="Coverage"
-              description={`${coveragePct}% of encounters flow through ambient`}
+              description={`${coveragePct}% of encounters covered by documentation infrastructure`}
               pct={coveragePct}
             />
             <DriverRow

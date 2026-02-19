@@ -141,7 +141,10 @@ export default function StepPillarRisk({
           Enterprise Risk Exposure
         </h1>
         <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Ambient is infrastructure for audit posture, quality velocity, and downstream automation readiness.
+          Audit posture, quality velocity, and downstream automation readiness are governed by documentation infrastructure.
+        </p>
+        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
+          This value is already embedded in your operations.
         </p>
       </div>
 

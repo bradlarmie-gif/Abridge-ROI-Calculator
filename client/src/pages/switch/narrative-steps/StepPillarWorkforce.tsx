@@ -145,7 +145,10 @@ export default function StepPillarWorkforce({
           Workforce Stability Impact
         </h1>
         <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Ambient reduces labor volatility — after-hours burden, turnover exposure, and premium staffing pressure.
+          Labor volatility — after-hours burden, turnover exposure, and premium staffing pressure — traces back to documentation friction.
+        </p>
+        <p className="text-[13px] text-[#555] italic mt-2" data-testid="text-pillar-reframe">
+          This value is already embedded in your operations.
         </p>
       </div>
 
