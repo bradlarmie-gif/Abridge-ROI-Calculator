@@ -65,9 +65,9 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
   const [showCTA, setShowCTA] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('benchmarks'), 1600);
-    const t2 = setTimeout(() => setPhase('verdict'), 2400);
-    const t3 = setTimeout(() => setShowCTA(true), 2800);
+    const t1 = setTimeout(() => setPhase('benchmarks'), 900);
+    const t2 = setTimeout(() => setPhase('verdict'), 1600);
+    const t3 = setTimeout(() => setShowCTA(true), 2200);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 

@@ -78,6 +78,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         leftSecondary: yourDoc.toLocaleString(), leftSecondaryDesc: "encounters documented annually",
         rightLabel: "DOCUMENTATION-INTELLIGENT", rightPrimary: "76%", rightPrimaryDesc: "documentation-intelligent average",
         rightGap: `+${gapEnc.toLocaleString()}`, rightGapDesc: "encounters currently undocumented",
+        rightNote: `${result.abridgeDocumented.toLocaleString()} encounters documented annually`,
         insight: `At ${utilization}% utilization, ${gapEnc.toLocaleString()} eligible encounters annually go undocumented. Every undocumented encounter represents unrealized clinical supply \u2014 capacity that exists in your operations but never reaches your enterprise.`,
       },
       revenue: {
@@ -86,6 +87,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         leftSecondary: result.yourHours.toLocaleString() + " hrs", leftSecondaryDesc: "returned annually",
         rightLabel: "DOCUMENTATION-INTELLIGENT", rightPrimary: "4.0 min", rightPrimaryDesc: "documentation-intelligent average",
         rightGap: `+${gapHrs.toLocaleString()} hrs`, rightGapDesc: "additional capacity",
+        rightNote: `${result.abridgeHours.toLocaleString()} hrs returned annually at benchmark`,
         insight: `Documentation fidelity governs reimbursement accuracy at every encounter. The ${timeDiff} minute gap in time returned per encounter compounds across ${yourDoc.toLocaleString()} annual encounters \u2014 affecting E/M coding accuracy, denial rates, and HCC capture simultaneously.`,
       },
       workforce: {

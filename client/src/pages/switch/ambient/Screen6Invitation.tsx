@@ -248,7 +248,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }}
               data-testid="button-copy-link"
             >
-              Export your assessment
+              Copy your assessment link
             </button>
           </div>
         )}
