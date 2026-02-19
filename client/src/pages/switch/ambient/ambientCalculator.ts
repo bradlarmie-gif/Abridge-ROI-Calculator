@@ -44,7 +44,7 @@ export function calculateAmbientScore(
   dataMode: DataMode,
 ): AmbientScoreResult {
   const utilizationPct = Math.min(100, Math.round((utilization / 76) * 100));
-  const efficiencyPct = Math.min(100, Math.round((timeSavings / 4.0) * 100));
+  const efficiencyPct = Math.min(100, Math.round((timeSavings / 3.0) * 100));
   const measurementPct = dataMode === 'measured' ? 85 : dataMode === 'estimated' ? 60 : 38;
 
   const score = Math.round(
@@ -62,7 +62,7 @@ export function calculateAmbientScore(
 
   const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
   const efficiencyGapHours = Math.max(0, Math.round(
-    (documentedEncounters * Math.max(0, 4.0 - timeSavings)) / 60,
+    (documentedEncounters * Math.max(0, 3.0 - timeSavings)) / 60,
   ));
   const revenueValue = Math.round(
     efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate,

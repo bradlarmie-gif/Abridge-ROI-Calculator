@@ -475,7 +475,7 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
             { assumption: "Utilization rate", yours: `${data.utilization}%`, range: "30\u201375%" },
             { assumption: "Time saved per encounter", yours: `${data.timeSavings} min`, range: "2\u20136 minutes" },
             { assumption: "Abridge utilization benchmark", yours: "76%", range: "Production data" },
-            { assumption: "Abridge time benchmark", yours: "4.0 min", range: "Production data" },
+            { assumption: "Abridge time benchmark", yours: "3.0 min", range: "Production data" },
             { assumption: "Conservative realization haircut", yours: "40%", range: "Standard" },
           ].map((row, i, arr) => (
             <View key={row.assumption} style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 10, backgroundColor: i % 2 === 1 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
@@ -532,8 +532,9 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
   <Document>
     <PDFCoverPage
       reportLabel="Documentation Intelligence Assessment"
-      title={data.organizationName || "Your Organization"}
+      title="Ambient Assessment"
       subtitle={`A structured analysis of the enterprise value flowing through your documentation infrastructure \u2014 where it is being captured, where it is leaking, and what closing the gap is worth.`}
+      clientName={data.organizationName || "Your Organization"}
       preparedBy={data.preparedBy || "Abridge Partner Success"}
       disclaimerText="This assessment is for strategic planning purposes. All calculations are based on self-reported inputs and Abridge deployment benchmarks. Conservative haircuts are applied to all estimates."
     />

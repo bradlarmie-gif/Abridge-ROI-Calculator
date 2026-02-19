@@ -84,8 +84,8 @@ export function computeCapacityFeedback(
   providers: number,
   timeSavings: number,
 ): DomainFeedback {
-  const totalCapacityValue = providers * 2000 * (4.0 - timeSavings) / 60 * 150 * 0.25;
-  const totalHours = Math.round(providers * 2000 * (4.0 - timeSavings) / 60);
+  const totalCapacityValue = providers * 2000 * (3.0 - timeSavings) / 60 * 150 * 0.25;
+  const totalHours = Math.round(providers * 2000 * (3.0 - timeSavings) / 60);
   const fte = (totalHours / 2080).toFixed(1);
 
   if (level === 1) {
@@ -93,7 +93,7 @@ export function computeCapacityFeedback(
       label: 'Estimated undeployed capacity value',
       value: Math.round(totalCapacityValue),
       context: `At your scale, undeployed recovered time represents an estimated ${totalHours.toLocaleString()} hours annually \u2014 ${fte} FTE of clinical capacity currently evaporating.`,
-      footnote: 'Based on Abridge benchmark: 4.0 min avg time returned',
+      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
     };
   }
   if (level === 2) {
@@ -104,7 +104,7 @@ export function computeCapacityFeedback(
       label: 'Estimated undeployed capacity value',
       value: Math.max(0, gap),
       context: `At ${redeployment}% redeployment, approximately ${formatDollar(captured)} is being captured. ${formatDollar(gap)} remains undeployed annually.`,
-      footnote: 'Based on Abridge benchmark: 4.0 min avg time returned',
+      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
     };
   }
   if (level === 3) {
@@ -118,7 +118,7 @@ export function computeCapacityFeedback(
       label: 'Estimated remaining capacity opportunity',
       value: nextLayer,
       context: `You're capturing the efficiency layer. Systematic capacity deployment could add an estimated ${formatDollar(nextLayer)} annually.`,
-      footnote: 'Based on Abridge benchmark: 4.0 min avg time returned',
+      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
     };
   }
   const additionalPatients = (inputs.additionalPatients as number) || 0;
@@ -128,7 +128,7 @@ export function computeCapacityFeedback(
     label: 'Estimated capacity deployment value',
     value: annualValue,
     context: `Strong activation. Your capacity deployment is generating an estimated ${formatDollar(annualValue)} annually.`,
-    footnote: 'Based on Abridge benchmark: 4.0 min avg time returned',
+    footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
   };
 }
 

@@ -12,7 +12,7 @@ interface Screen3Props {
 }
 
 const ABRIDGE_UTIL = 76;
-const ABRIDGE_TIME = 4.0;
+const ABRIDGE_TIME = 3.0;
 
 function BenchmarkPill({ value, label, variant }: { value: string; label: string; variant: "neutral" | "abridge" }) {
   return (
@@ -58,12 +58,12 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
   const timeInsight = useMemo(() => {
     if (!timeMoved) return null;
     const hoursGapCalc = Math.round((theirEncounters * Math.max(0, ABRIDGE_TIME - timeSavings)) / 60);
-    if (timeSavings < 2.0) return `Below typical range \u2014 ${hoursGapCalc.toLocaleString()} hour gap to Abridge benchmark.`;
-    if (timeSavings <= 3.0) {
+    if (timeSavings < 1.5) return `Below typical range \u2014 ${hoursGapCalc.toLocaleString()} hour gap to Abridge benchmark.`;
+    if (timeSavings < 2.5) {
       const gap = (ABRIDGE_TIME - timeSavings).toFixed(1);
       return `Within typical range \u2014 ${gap} min gap represents ${hoursGapCalc.toLocaleString()} hours.`;
     }
-    if (timeSavings < 4.0) {
+    if (timeSavings < 3.0) {
       const gap = (ABRIDGE_TIME - timeSavings).toFixed(1);
       return `Above average \u2014 ${gap} min to Abridge benchmark.`;
     }
@@ -190,7 +190,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
             <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
               <BenchmarkPill value="1.5\u20132.5 min" label="Most tools" variant="neutral" />
-              <BenchmarkPill value="4.0 min" label="Abridge avg" variant="abridge" />
+              <BenchmarkPill value="3.0 min" label="Abridge avg" variant="abridge" />
             </div>
 
             <div className="flex items-center gap-2.5 mt-5" data-testid="checkbox-unmeasured">
@@ -296,7 +296,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
             <>
               <div className="h-px bg-white/10 my-5" />
               <p className="text-xs text-white/30 italic leading-relaxed">
-                Abridge benchmarks: 76% utilization, 4.0 min/encounter. Based on production deployment data.
+                Abridge benchmarks: 76% utilization, 3.0 min/encounter. Based on production deployment data.
               </p>
             </>
           )}

@@ -1,7 +1,16 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Download, Loader2 } from "lucide-react";
+import { ArrowRight, Download, Loader2, FileText, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useAssessment } from "@/lib/assessment";
 import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
@@ -55,6 +64,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: '', org: '', title: '', email: '' });
   const [isExporting, setIsExporting] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportOrgName, setExportOrgName] = useState("");
+  const [exportPreparedBy, setExportPreparedBy] = useState("");
 
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
@@ -112,12 +125,17 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
     setFormSubmitted(true);
   };
 
+  const openExportModal = () => {
+    setExportSuccess(false);
+    setExportModalOpen(true);
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
       const pdfData: AmbientAssessmentPDFData = {
-        organizationName: formData.org || "Your Organization",
-        preparedBy: formData.name || undefined,
+        organizationName: exportOrgName || "Your Organization",
+        preparedBy: exportPreparedBy || undefined,
         assessmentDate: new Date().toLocaleDateString("en-US", {
           month: "long", day: "numeric", year: "numeric"
         }),
@@ -142,6 +160,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         },
       };
       await generateAmbientAssessmentPDF(pdfData);
+      setExportSuccess(true);
     } catch (err) {
       console.error('PDF generation failed:', err);
     } finally {
@@ -310,14 +329,13 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                     <ArrowRight size={16} />
                   </Button>
                   <Button
-                    onClick={handleExport}
-                    disabled={isExporting}
+                    onClick={openExportModal}
                     variant="outline"
                     className="rounded-full px-6 font-medium gap-2"
                     data-testid="button-export"
                   >
-                    {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                    {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
+                    <Download size={16} />
+                    Export My Assessment
                   </Button>
                 </div>
               )}
@@ -367,12 +385,11 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                     We'll be in touch within one business day.
                   </p>
                   <button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer disabled:cursor-wait"
+                    onClick={openExportModal}
+                    className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer"
                     data-testid="button-copy-link"
                   >
-                    {isExporting ? 'Generating PDF...' : 'Download your assessment'}
+                    Download your assessment
                   </button>
                 </div>
               )}
@@ -491,6 +508,117 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
           </div>
         </motion.div>
       </div>
+
+      <Dialog open={exportModalOpen} onOpenChange={(open) => { setExportModalOpen(open); if (!open) setExportSuccess(false); }}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-[#EA2C00]" />
+              Export Ambient Assessment
+            </DialogTitle>
+            <DialogDescription>
+              Generate a professional PDF report with your assessment results, domain analysis, and cost-of-inaction projections.
+            </DialogDescription>
+          </DialogHeader>
+
+          {!exportSuccess ? (
+            <div className="space-y-5 py-3">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="export-org-name" className="text-sm font-medium">
+                    Organization name
+                  </Label>
+                  <Input
+                    id="export-org-name"
+                    placeholder="e.g., Memorial Health System"
+                    value={exportOrgName}
+                    onChange={(e) => setExportOrgName(e.target.value)}
+                    data-testid="input-export-org-name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="export-prepared-by" className="text-sm font-medium">
+                    Prepared by (optional)
+                  </Label>
+                  <Input
+                    id="export-prepared-by"
+                    placeholder="e.g., Partner Success Team"
+                    value={exportPreparedBy}
+                    onChange={(e) => setExportPreparedBy(e.target.value)}
+                    data-testid="input-export-prepared-by"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-sm text-neutral-500 border-t pt-4">
+                <span>Estimated length: <span className="font-medium">5 pages</span></span>
+                <span>Format: <span className="font-medium">PDF</span></span>
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-cancel-export"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-[#EA2C00]"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  data-testid="button-generate-pdf"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Generate PDF
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">PDF Generated Successfully</h3>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Check your downloads folder for the file.
+                </p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleExport}
+                  data-testid="button-download-again"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Again
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-close-export"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
