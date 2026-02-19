@@ -68,9 +68,9 @@ export default function AmbientNarrativeFlow({
       case 2:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 3:
-        return <Screen3Score onNext={handleNext} onBack={handleBack} />;
-      case 4:
         return <Screen4Domains onNext={handleNext} onBack={handleBack} />;
+      case 4:
+        return <Screen3Score onNext={handleNext} onBack={handleBack} />;
       case 5:
         return <Screen5Gap onNext={handleNext} onBack={handleBack} />;
       case 6:

@@ -55,11 +55,21 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
   const { state } = useAssessment();
   const { inputs } = state;
 
+  const documentationScore = useMemo(() => {
+    const cs = inputs.capacityScore || 0;
+    const rs = inputs.revenueScore || 0;
+    const ws = inputs.workforceScore || 0;
+    const rks = inputs.riskScore || 0;
+    return Math.round((cs * 0.30) + (rs * 0.25) + (ws * 0.25) + (rks * 0.20));
+  }, [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
+
   const result = useMemo(() => calculateAmbientScore(
     inputs.providers, inputs.annualEncounters,
     inputs.utilization || 45, inputs.timeSavedPerEncounter || 2.0,
     inputs.dataMode,
   ), [inputs]);
+
+  const score = documentationScore || result.score;
 
   const [phase, setPhase] = useState<'reveal' | 'benchmarks' | 'verdict'>('reveal');
   const [showCTA, setShowCTA] = useState(false);
@@ -80,13 +90,13 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
 
         <div className="mb-6" data-testid="score-number">
           <span style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 96, color: DS.black, lineHeight: 1 }}>
-            <AnimatedNumber target={result.score} />
+            <AnimatedNumber target={score} />
           </span>
         </div>
 
         <p style={{ fontSize: 24, color: DS.muted, fontWeight: 400 }} className="mb-6">/ 100</p>
 
-        <ScoreBar score={result.score} delay={200} />
+        <ScoreBar score={score} delay={200} />
 
         <div
           className="mt-12 transition-all duration-500"
@@ -114,7 +124,13 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
         >
           <div style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card, padding: 32 }}>
             <p style={{ fontSize: 20, color: DS.black, lineHeight: 1.7, fontFamily: DS.font, fontWeight: 400 }} data-testid="text-verdict">
-              {result.verdictLine}
+              {score < 34
+                ? 'You are performing below the industry average. The gap is structural, not incremental.'
+                : score < 55
+                  ? 'You are performing at the industry average. The gap to top quartile is not incremental. It is structural.'
+                  : score < 71
+                    ? 'You are performing above the industry average. The remaining gap to top quartile is addressable with the right infrastructure.'
+                    : 'You are performing at or near top quartile. The opportunity now is deepening and expanding.'}
             </p>
           </div>
         </div>

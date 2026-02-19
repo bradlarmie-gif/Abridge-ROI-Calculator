@@ -41,6 +41,14 @@ export interface SwitchInputs {
   qualityReportingFriction: "smooth" | "manageable" | "painful";
   structuredDataUsability: "yes" | "some" | "no";
   entryEstimate: number | null;
+  capacityScore: number;
+  capacityGap: number;
+  revenueScore: number;
+  revenueGap: number;
+  workforceScore: number;
+  workforceGap: number;
+  riskScore: number;
+  riskGap: number;
 }
 
 export interface GapItem {

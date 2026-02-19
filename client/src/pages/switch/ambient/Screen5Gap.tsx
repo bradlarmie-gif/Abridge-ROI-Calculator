@@ -44,13 +44,29 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
     inputs.dataMode,
   ), [inputs]);
 
+  const hasDomainData = (inputs.capacityGap || 0) + (inputs.revenueGap || 0) + (inputs.workforceGap || 0) + (inputs.riskGap || 0) > 0;
+  const haircut = inputs.dataMode === 'measured' ? 0.85 : inputs.dataMode === 'estimated' ? 0.70 : 0.55;
+  const rawTotal = hasDomainData
+    ? (inputs.capacityGap || 0) + (inputs.revenueGap || 0) + (inputs.workforceGap || 0) + (inputs.riskGap || 0)
+    : result.totalGap;
+  const displayedTotal = hasDomainData ? Math.round(rawTotal * haircut) : result.displayedTotal;
+
+  const domainScore = useMemo(() => {
+    if (!hasDomainData) return result.score;
+    const cs = inputs.capacityScore || 0;
+    const rs = inputs.revenueScore || 0;
+    const ws = inputs.workforceScore || 0;
+    const rks = inputs.riskScore || 0;
+    return Math.round((cs * 0.30) + (rs * 0.25) + (ws * 0.25) + (rks * 0.20));
+  }, [hasDomainData, inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore, result.score]);
+
   const [showCTA, setShowCTA] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setShowCTA(true), 2000);
     return () => clearTimeout(t);
   }, []);
 
-  const dt = result.displayedTotal;
+  const dt = displayedTotal;
   const chartData = [
     { label: 'Today', abridge: 0, current: 0 },
     { label: '3mo', abridge: Math.round(dt * 0.18), current: 0 },
@@ -60,11 +76,16 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
     { label: 'Year 3', abridge: Math.round(dt * 0.85 + dt + dt * 1.08), current: Math.round(dt * 0.09) },
   ];
 
-  const domainPills = [
-    { key: 'C', label: 'Capacity', value: result.domains.capacity },
-    { key: 'R', label: 'Revenue', value: result.domains.revenue },
-    { key: 'W', label: 'Workforce', value: result.domains.workforce },
-    { key: 'X', label: 'Risk', value: result.domains.risk },
+  const domainPills = hasDomainData ? [
+    { key: 'C', label: 'Capacity', value: Math.round((inputs.capacityGap || 0) * haircut) },
+    { key: 'R', label: 'Revenue', value: Math.round((inputs.revenueGap || 0) * haircut) },
+    { key: 'W', label: 'Workforce', value: Math.round((inputs.workforceGap || 0) * haircut) },
+    { key: 'X', label: 'Risk', value: Math.round((inputs.riskGap || 0) * haircut) },
+  ] : [
+    { key: 'C', label: 'Capacity', value: Math.round(result.domains.capacity * result.haircut) },
+    { key: 'R', label: 'Revenue', value: Math.round(result.domains.revenue * result.haircut) },
+    { key: 'W', label: 'Workforce', value: Math.round(result.domains.workforce * result.haircut) },
+    { key: 'X', label: 'Risk', value: Math.round(result.domains.risk * result.haircut) },
   ];
 
   const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
@@ -83,7 +104,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         </p>
 
         <p style={{ fontWeight: 700, fontSize: 'clamp(64px, 8vw, 96px)', color: DS.red, lineHeight: 1 }} className="mb-4" data-testid="value-hero-gap">
-          <CountUpNumber target={result.displayedTotal} />
+          <CountUpNumber target={displayedTotal} />
         </p>
 
         <p style={{ fontSize: 20, color: DS.muted }} className="mb-8">annually</p>
@@ -105,7 +126,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
               data-testid={`domain-value-${d.key}`}
             >
               <span>{d.key}</span>
-              <span>{formatDollar(Math.round(d.value * result.haircut))}</span>
+              <span>{formatDollar(d.value)}</span>
             </div>
           ))}
         </div>
@@ -158,15 +179,15 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
               <tbody>
                 <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
                   <td style={{ padding: '12px 0', fontWeight: 600, color: DS.black }}>3-Year Value</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black, fontWeight: 600 }}>{formatDollar(result.switchNowValue)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(result.wait6MonthsValue)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(result.wait12MonthsValue)}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black, fontWeight: 600 }}>{formatDollar(Math.round(dt * 0.85 + dt + dt * 1.08))}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(Math.round(dt * 0.48 + dt * 0.85 + dt))}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(Math.round(dt * 0.85 + dt))}</td>
                 </tr>
                 <tr>
                   <td style={{ padding: '12px 0', fontWeight: 600, color: DS.black }}>Permanently Lost</td>
                   <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.muted }}>&mdash;</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }}>{formatDollar(result.wait6MonthsLoss)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }}>{formatDollar(result.wait12MonthsLoss)}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }}>{formatDollar(Math.round((dt * 0.85 + dt + dt * 1.08) - (dt * 0.48 + dt * 0.85 + dt)))}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }}>{formatDollar(Math.round((dt * 0.85 + dt + dt * 1.08) - (dt * 0.85 + dt)))}</td>
                 </tr>
               </tbody>
             </table>
@@ -177,7 +198,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
               Every month at current state leaves
             </p>
             <p style={{ fontSize: 36, fontWeight: 700, color: DS.red, fontFamily: DS.font }} className="mb-3">
-              {formatDollarFull(result.monthlyGap)}
+              {formatDollarFull(Math.round(displayedTotal / 12))}
             </p>
             <p style={{ fontSize: 17, color: DS.white, lineHeight: 1.75, fontFamily: DS.font }} className="mb-3">
               in enterprise value permanently uncaptured.
@@ -209,46 +230,44 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           <div style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card, padding: 32 }} data-testid="card-summary">
             <div className="flex items-center justify-between mb-4">
               <span style={{ fontSize: 17, fontWeight: 600, color: DS.black }}>Documentation Intelligence Score</span>
-              <span style={{ fontSize: 20, fontWeight: 700, color: DS.black }}>{result.score} / 100</span>
+              <span style={{ fontSize: 20, fontWeight: 700, color: DS.black }}>{domainScore} / 100</span>
             </div>
             <div style={{ width: '100%', height: 6, backgroundColor: DS.border, borderRadius: 3, overflow: 'hidden', marginBottom: 24 }}>
-              <div style={{ height: '100%', width: `${Math.min(result.score, 100)}%`, backgroundColor: DS.red, borderRadius: 3 }} />
+              <div style={{ height: '100%', width: `${Math.min(domainScore, 100)}%`, backgroundColor: DS.red, borderRadius: 3 }} />
             </div>
 
             <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 20 }} />
 
-            {[
-              { key: 'C', label: 'Capacity', value: result.domains.capacity, pct: result.utilizationPct },
-              { key: 'R', label: 'Revenue', value: result.domains.revenue, pct: result.efficiencyPct },
-              { key: 'W', label: 'Workforce', value: result.domains.workforce, pct: Math.min(100, Math.round((result.domains.workforce / (result.totalGap * 0.3 || 1)) * 100)) },
-              { key: 'X', label: 'Risk', value: result.domains.risk, pct: Math.min(100, Math.round((result.domains.risk / (result.totalGap * 0.15 || 1)) * 100)) },
-            ].map((d) => (
-              <div key={d.key} className="flex items-center gap-3 mb-4">
-                <div style={{ width: 24, height: 24, borderRadius: DS.radius.pill, backgroundColor: DS.black, color: DS.white, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {d.key}
+            {domainPills.map((d) => {
+              const pct = displayedTotal > 0 ? Math.min(100, Math.round((d.value / displayedTotal) * 100)) : 0;
+              return (
+                <div key={d.key} className="flex items-center gap-3 mb-4">
+                  <div style={{ width: 24, height: 24, borderRadius: DS.radius.pill, backgroundColor: DS.black, color: DS.white, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {d.key}
+                  </div>
+                  <span style={{ fontSize: 15, color: DS.black, fontWeight: 600, width: 90 }}>{d.label}</span>
+                  <span style={{ fontSize: 15, color: DS.red, fontWeight: 700, width: 70, textAlign: 'right' }}>{formatDollar(d.value)}</span>
+                  <div className="flex-1" style={{ height: 4, backgroundColor: DS.border, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, backgroundColor: DS.red, borderRadius: 2, transition: 'width 600ms ease-out' }} />
+                  </div>
                 </div>
-                <span style={{ fontSize: 15, color: DS.black, fontWeight: 600, width: 90 }}>{d.label}</span>
-                <span style={{ fontSize: 15, color: DS.red, fontWeight: 700, width: 70, textAlign: 'right' }}>{formatDollar(Math.round(d.value * result.haircut))}</span>
-                <div className="flex-1" style={{ height: 4, backgroundColor: DS.border, borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(d.pct, 100)}%`, backgroundColor: DS.red, borderRadius: 2, transition: 'width 600ms ease-out' }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div style={{ height: 1, backgroundColor: DS.border, margin: '20px 0' }} />
 
             <div className="flex items-center justify-between">
               <span style={{ fontSize: 17, fontWeight: 700, color: DS.black }}>Total Annual Gap</span>
-              <span style={{ fontSize: 24, fontWeight: 700, color: DS.red }} data-testid="value-total-gap">{formatDollarFull(result.displayedTotal)}</span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: DS.red }} data-testid="value-total-gap">{formatDollarFull(displayedTotal)}</span>
             </div>
 
             {inputs.entryEstimate && inputs.entryEstimate > 0 && (
               <div className="mt-4">
                 <p style={{ fontSize: 13, color: DS.muted }}>
-                  You estimated {formatDollarFull(inputs.entryEstimate)}. Our model shows {formatDollarFull(result.displayedTotal)}.
-                  {result.displayedTotal > inputs.entryEstimate
+                  You estimated {formatDollarFull(inputs.entryEstimate)}. Our model shows {formatDollarFull(displayedTotal)}.
+                  {displayedTotal > inputs.entryEstimate
                     ? " The gap is larger than expected."
-                    : result.displayedTotal < inputs.entryEstimate
+                    : displayedTotal < inputs.entryEstimate
                       ? " The conservative model is tighter than your estimate."
                       : " Your intuition was accurate."}
                 </p>
