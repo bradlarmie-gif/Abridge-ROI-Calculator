@@ -40,6 +40,7 @@ export interface SwitchInputs {
   docDefensibility: "high" | "medium" | "low";
   qualityReportingFriction: "smooth" | "manageable" | "painful";
   structuredDataUsability: "yes" | "some" | "no";
+  entryEstimate: number | null;
 }
 
 export interface GapItem {

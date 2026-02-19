@@ -1,0 +1,1160 @@
+# ABRIDGE AMBIENT AI PATH
+## Design System + Exact Build Instructions
+### Ambient AI path only. Every decision is final.
+
+---
+
+## THE STANDARD
+
+This tool is used by CMOs and CMIOs at health systems that already have ambient AI. They are clinically trained, intellectually rigorous, and skeptical of vendor tools. They will forward this to their CFO or they won't. That is the only quality gate.
+
+**Premium for this audience means:**
+- It respects their intelligence on every screen without exception
+- The math survives an analyst's scrutiny
+- The visual language signals institutional authority, not startup enthusiasm
+- They would be comfortable showing it to a peer without adding a disclaimer
+
+Current state: Concept 8 / Execution 3 / UX 4.
+Target: Concept 8 / Execution 9 / UX 9.
+
+The gap is closed through subtraction, consistency, and discipline. Not more features.
+
+---
+
+## PART 1: THE DESIGN SYSTEM
+
+This is the law. Every element on every screen follows these rules. No exceptions. No approximations.
+
+---
+
+### TYPOGRAPHY
+
+**One system. Applied everywhere.**
+
+```
+Display / Hero:
+  Font:    Manrope
+  Size:    48px desktop / 36px mobile
+  Weight:  700 (Bold)
+  Color:   #1A1A1A
+  Usage:   Screen headlines only. One per screen.
+
+Section Headline:
+  Font:    Manrope
+  Size:    28px desktop / 22px mobile
+  Weight:  600 (SemiBold)
+  Color:   #1A1A1A
+  Usage:   Major content blocks
+
+Body:
+  Font:    Manrope
+  Size:    17px desktop / 16px mobile
+  Weight:  400 (Regular)
+  Color:   #4B4B4B
+  Line height: 1.75
+  Usage:   All descriptive text, explanations
+
+Label / Eyebrow:
+  Font:    Manrope
+  Size:    11px
+  Weight:  600
+  Color:   #9B9B9B
+  Letter spacing: 2px
+  Transform: UPPERCASE
+  Usage:   Section identifiers, metadata
+
+Data / Numbers:
+  Font:    Manrope
+  Size:    Contextual — 72px for hero numbers,
+           32px for card numbers, 20px for inline
+  Weight:  700
+  Color:   #1A1A1A (default) or #EA2C00 (primary metric)
+  Usage:   All numerical values
+
+Footnote:
+  Font:    Manrope
+  Size:    13px
+  Weight:  400
+  Color:   #9B9B9B
+  Usage:   Assumptions, caveats, methodology notes
+```
+
+**NEVER use:**
+- Font sizes below 13px for any user-facing content
+- Font weights other than 400, 600, 700
+- Color for text other than #1A1A1A, #4B4B4B, #9B9B9B, #EA2C00, or #FFFFFF
+
+---
+
+### COLOR
+
+**Five colors. That's it.**
+
+```
+Brand Red:       #EA2C00
+  Usage: Primary CTA buttons, active states, score bar fill,
+         accent borders on featured cards, primary metric numbers.
+         NEVER for body text. NEVER decoratively.
+
+Near Black:      #1A1A1A
+  Usage: All headlines, data numbers, verdict statements.
+
+Body Gray:       #4B4B4B
+  Usage: All body copy, descriptions, explanations.
+
+Secondary Gray:  #9B9B9B
+  Usage: Labels, footnotes, secondary metadata, benchmarks.
+
+Background Warm: #F7F6F4
+  Usage: Card backgrounds, section backgrounds, input fields.
+  NOT pure white — the warmth signals premium print quality.
+
+White:           #FFFFFF
+  Usage: Primary page background only.
+```
+
+**ELIMINATE IMMEDIATELY:**
+- All emerald/green (#10B981 and variants) — remove from every value display
+- All amber (#F59E0B and variants) — remove from warnings, use #9B9B9B instead
+- All blue — not in this tool
+- All gradient backgrounds
+
+**Positive values display in #1A1A1A bold — not green.**
+This is a diagnostic. Green reads as celebratory. This content is analytical.
+The red (#EA2C00) is used only for the primary metric — the gap number.
+
+---
+
+### SPACING
+
+**The grid:**
+
+```
+Page max-width:      640px centered (NOT 3xl/max-w-3xl — too wide)
+Page padding:        24px horizontal mobile / 40px desktop
+Section padding:     80px vertical top and bottom — every screen
+
+Between major sections:   48px
+Between cards:            16px
+Between inputs:           32px
+Card internal padding:    28px
+Between label and content: 12px
+```
+
+**White space is not empty space. It is the work.**
+
+If a screen feels sparse — that is correct. Resist adding content to fill space.
+If a screen feels crowded — remove an element before adjusting spacing.
+
+---
+
+### COMPONENTS
+
+**Buttons:**
+
+```
+Primary CTA:
+  Background:  #EA2C00
+  Text:        #FFFFFF, 15px, weight 600
+  Padding:     14px 32px
+  Radius:      10px
+  Hover:       #C72300 (darken 15%)
+  Shadow:      none — flat is premium
+  Width:       auto, right-aligned (never full-width on desktop)
+  Icon:        Arrow right, 16px, 6px left margin
+
+Secondary:
+  Background:  transparent
+  Border:      1.5px solid #1A1A1A
+  Text:        #1A1A1A, 15px, weight 500
+  Padding:     12px 24px
+  Radius:      10px
+  Hover:       background #F7F6F4
+
+Text link:
+  Color:       #4B4B4B
+  Underline:   underline-offset-2
+  Hover:       #1A1A1A
+  Usage:       "Edit assumptions", "Help me estimate", back navigation
+```
+
+**Cards:**
+
+```
+Standard card:
+  Background:  #F7F6F4
+  Border:      1px solid #E8E8E8
+  Radius:      12px
+  Padding:     28px
+  Shadow:      none
+
+Featured card (Abridge benchmark):
+  Background:  #FFFFFF
+  Border:      1.5px solid #EA2C00 on left side only (4px wide left border)
+  Radius:      12px
+  Padding:     28px
+  Shadow:      0 1px 4px rgba(0,0,0,0.06)
+
+Comparison pair layout:
+  Two cards side by side: left neutral, right featured
+  Gap between: 16px
+  On mobile: stack vertically, featured card second
+```
+
+**Input fields:**
+
+```
+Text/number input:
+  Background:  #FFFFFF
+  Border:      1.5px solid #E8E8E8
+  Radius:      8px
+  Padding:     12px 16px
+  Font:        Manrope 17px #1A1A1A
+  Focus:       border-color #EA2C00, ring none
+  Error state: border-color #C72300
+
+Pill selectors (option groups):
+  Default:     background #F7F6F4, border 1.5px #E8E8E8, text #4B4B4B
+  Selected:    background #FFFFFF, border 1.5px #1A1A1A, text #1A1A1A weight 600
+  Radius:      8px
+  Padding:     10px 20px
+  Font:        14px Manrope
+
+Slider:
+  Track:       4px height, #E8E8E8 background
+  Fill:        #1A1A1A (not red — slider fill is neutral)
+  Thumb:       20px diameter, #FFFFFF, border 2px #1A1A1A, shadow subtle
+  NO emoji status indicators (remove Frown/Meh/Smile/PartyPopper entirely)
+```
+
+**Progress indicator:**
+
+```
+Dots only. No labels. No step numbers on hover.
+Active dot:    #EA2C00, 8px diameter
+Completed dot: #1A1A1A, 6px diameter  
+Upcoming dot:  #E8E8E8, 6px diameter
+Active dot elongates to 20px width (pill shape) — no other animation
+Position:      Top right of header. Right-aligned.
+```
+
+**Dividers:**
+
+```
+Standard:  1px solid #E8E8E8
+Accent:    2px solid #EA2C00 (left border on featured content only)
+Space:     40px above and below dividers
+```
+
+---
+
+### TRANSITIONS & ANIMATION
+
+**Rules:**
+
+```
+Screen transitions:     fade, 200ms, ease-out. Nothing else.
+Content reveal:         fade + translateY(8px → 0), 300ms, ease-out
+Number count-up:        duration 1200ms, ease-out cubic
+Score bar fill:         duration 600ms, ease-out, left to right
+CTA delayed appearance: specific delays noted per screen — use opacity transition
+```
+
+**ELIMINATE:**
+- Slide transitions (too casual)
+- Bounce (never)
+- Scale animations on cards (too playful)
+- Pulse animations except the single red dot on Benchmark Mirror
+- The `liftButton` animation currently in the CSS
+- The `successPulse` animation
+
+**The only animations that remain:**
+1. Fade in/out between screens
+2. Content sections revealing sequentially (fade + slight upward movement)
+3. Score bar filling on Step 7
+4. Number counting up on Step 7
+5. Single pulsing dot on Benchmark Mirror (slow pulse, 3s cycle, subtle)
+6. CTA button appearing with delay on Steps 4, 5, 6
+
+---
+
+### COPY VOICE — LOCKED
+
+**The voice is a respected department chair presenting at Grand Rounds.**
+
+Not a salesperson. Not a chatbot. Not a startup. A peer.
+
+```
+✓ Precise but accessible
+✓ Short declarative sentences
+✓ Evidence-referenced without being academic  
+✓ Confidence through restraint
+✓ Numbers on their own line — always
+✓ "Already in your operations" — use this phrase
+✗ No exclamation points
+✗ No "unlock", "transform", "revolutionize", "empower"
+✗ No dramatic punctuation (no "Every. Single. Year.")
+✗ No hedging ("might", "could potentially", "may")
+✗ No explaining the obvious
+✗ No green checkmarks celebrating data points
+```
+
+---
+
+## PART 2: SCREEN-BY-SCREEN BUILD SPECIFICATION
+
+8 steps. Ambient AI path only (`!isScribePath`).
+
+---
+
+### STEP 1 — THE QUESTION
+
+**Remove:** The current solution selector (Ambient AI / Scribes cards) as the opening. Move solution selection to a small inline selector after the main question.
+
+**Layout:** Full screen centered. No progress dots. No sidebar. Logo only.
+
+**Structure:**
+
+```
+[80px top padding]
+
+EYEBROW LABEL (11px, #9B9B9B, uppercase, centered):
+BEFORE WE BEGIN
+
+[28px gap]
+
+DISPLAY HEADLINE (48px, #1A1A1A, bold, centered, max-width 520px):
+What is ambient documentation
+actually returning to your organization?
+
+[20px gap]
+
+BODY (17px, #4B4B4B, centered):
+Not what you paid for it.
+What it is actually returning.
+
+[40px gap]
+
+DIVIDER (thin, 48px wide, centered, #E8E8E8)
+
+[40px gap]
+
+THREE PILL OPTIONS (centered, gap 12px):
+[ I know the number ]
+[ I have a rough sense ]
+[ I've never calculated it ]
+
+[On selection — 400ms delay — response fades in below pills]
+[800ms after response — CTA fades in]
+[If "I know the number" — input appears between response and CTA]
+```
+
+**Response copy (exact):**
+- "I know the number" → *"Good. Let's validate it."*
+- "I have a rough sense" → *"Let's sharpen it."*
+- "I've never calculated it" → *"Most haven't. That's exactly why this exists."*
+
+**Optional input (only for "I know the number"):**
+```
+Your estimate   [$ ___________ annually]
+                Small text: "Optional — we'll reference this in your results."
+```
+
+**CTA:** `Begin the Assessment →`
+Full-width on mobile. Auto-width right-aligned on desktop.
+
+---
+
+### STEP 2 — YOUR ORGANIZATION
+
+**Layout:** Two-column on desktop (inputs left, live preview right). Single column mobile.
+
+**Left column max-width:** 400px
+
+**Structure:**
+
+```
+EYEBROW: YOUR ORGANIZATION
+
+HEADLINE (28px):
+Let's establish your baseline.
+
+BODY:
+Three inputs. Benchmarks handle the rest.
+
+[32px gap]
+
+INPUT 1:
+Label: Physicians and APPs using ambient AI
+Input: [  ___  ] providers
+
+INPUT 2:
+Label: Annual encounters where ambient is available
+Input: [  _________  ] encounters / year
+Below: "Help me estimate" text link
+  → Expands inline to show:
+    [providers] × 2,000 = [auto-calculated]
+    [ Use this estimate ] pill button
+
+INPUT 3 (appears after inputs 1+2 filled, 300ms fade):
+Label: Primary care setting
+Pills: [ Outpatient ] [ ED ] [ Inpatient ] [ Mixed ]
+```
+
+**Right column — live preview panel:**
+```
+Appears after first input is filled. Fades in.
+
+LABEL: WHAT WE'LL MODEL
+
+Four rows with checkmarks (static — always checked):
+  Capacity creation
+  Revenue integrity  
+  Workforce stability
+  Risk & compliance
+
+DIVIDER
+
+LABEL: BASELINE RECOGNIZED
+  Providers:     [X]
+  Encounters:    [X,XXX]
+  Setting:       [Selected]
+
+[32px gap]
+
+DARK CARD (#1A1A1A background):
+  Text (#FFFFFF, 15px):
+  "You're approximately 4 minutes from 
+  your enterprise opportunity map."
+```
+
+**Encounters-per-provider guardrail:**
+```typescript
+if (annualEncounters / providers > 3500) {
+  // Show below encounters input in #9B9B9B, 13px:
+  "That's ~[X] per provider per day — want to double-check this?"
+}
+```
+
+**Remove:** The amber gradient insight box at the bottom. Replace with the guardrail above.
+
+**CTA:** `See My Utilization Reality →`
+
+---
+
+### STEP 3 — CURRENT PERFORMANCE
+
+**New screen. Does not exist currently.**
+
+**Layout:** Centered, max-width 560px.
+
+**Structure:**
+
+```
+EYEBROW: CURRENT PERFORMANCE
+
+HEADLINE:
+How is your current ambient tool performing?
+
+BODY:
+Most organizations deploy ambient AI without 
+systematically measuring what it returns. 
+These two numbers tell the story.
+
+[48px gap]
+
+SECTION: UTILIZATION RATE
+
+Label: 
+What percentage of eligible encounters are being 
+documented with ambient AI today?
+
+Slider: 10% → 95%, step 5%
+Value display (32px, bold, #1A1A1A, centered): [X]%
+
+Two reference lines below slider:
+  Industry average: 45%     Abridge average: 76%
+  (13px, #9B9B9B)
+
+Insight line (fades in after slider moved, 17px #4B4B4B):
+"At [X]% utilization, you're documenting 
+[Y,YYY] encounters annually."
+
+[48px gap]
+
+SECTION: TIME RETURNED PER ENCOUNTER
+
+Label:
+How many minutes does your ambient tool save 
+per documented encounter?
+
+Slider: 0.5 → 6.0, step 0.25
+Value display: [X.X] min / encounter
+
+Two reference lines:
+  Most ambient tools: 1.5–2.5 min     Abridge average: 4.0 min
+
+CHECKBOX (13px, #4B4B4B):
+☐ I haven't measured this precisely
+   → If checked: set value to 2.0, show "Using industry benchmark: 2.0 min"
+```
+
+**REMOVE:** The emoji status indicators (Frown, Meh, Smile, PartyPopper). Completely gone.
+**REMOVE:** The large amber gradient benchmark comparison boxes.
+**REMOVE:** The "Industry Avg: 45%" and "Abridge Avg: 76%" large cards.
+
+Replace with the clean reference lines specified above.
+
+**CTA:** `See What These Numbers Mean →`
+
+---
+
+### STEP 4 — THE UTILIZATION REALITY
+
+**Layout:** Centered, max-width 580px. No sidebar.
+
+**Structure:**
+
+```
+EYEBROW: UTILIZATION
+
+HEADLINE:
+Your utilization gap.
+
+[40px gap]
+
+TWO COMPARISON CARDS (side by side, gap 16px):
+
+LEFT CARD (standard — #F7F6F4):
+  Label: YOUR CURRENT
+  Value (48px bold #1A1A1A): [X]%
+  Sub: utilization rate
+  ─────
+  Value (32px bold #1A1A1A): [X,XXX]
+  Sub: encounters documented annually
+
+RIGHT CARD (featured — left border #EA2C00):
+  Label: ABRIDGE AVERAGE
+  Value (48px bold #1A1A1A): 76%
+  Sub: utilization rate
+  ─────
+  Value (32px bold #1A1A1A): [X,XXX]
+  Sub: encounters documented annually
+  ─────
+  Difference (20px bold #EA2C00): +[X,XXX] encounters
+
+[32px gap]
+
+INSIGHT BOX (#F7F6F4, 28px padding, 12px radius):
+  Body (17px #4B4B4B):
+  "That gap represents [X,XXX] encounters annually where 
+  documentation is available but not captured."
+  
+  [16px gap]
+  
+  Body (17px #4B4B4B):
+  "Every undocumented encounter affects reimbursement 
+  accuracy, quality reporting, and workforce load simultaneously."
+```
+
+**CTA delay:** Button renders in DOM immediately but `opacity: 0`. 
+After 1800ms: transition to `opacity: 1` over 300ms.
+No loading indicator. Just the delay.
+
+**CTA:** `See Your Efficiency Gap →`
+
+**REMOVE:** The animated spectrum bar with the YOU and ABRIDGE markers.
+Too casual. Too animated. The two comparison cards do the same job with more authority.
+
+---
+
+### STEP 5 — THE EFFICIENCY REALITY
+
+**Layout:** Centered, max-width 580px. No sidebar.
+
+**Structure:**
+
+```
+EYEBROW: EFFICIENCY
+
+HEADLINE:
+Your efficiency gap.
+
+BODY:
+Most ambient tools return 1.5–2 minutes per encounter.
+Abridge averages 4 minutes through deeper workflow integration.
+
+[40px gap]
+
+TWO COMPARISON CARDS:
+
+LEFT (standard):
+  Label: YOUR CURRENT
+  Value (48px bold): [X.X] min / encounter
+  ─────
+  Value (32px bold): [X,XXX]
+  Sub: hours returned annually
+
+RIGHT (featured):
+  Label: ABRIDGE AVERAGE
+  Value (48px bold): 4.0 min / encounter
+  ─────
+  Value (32px bold): [X,XXX]
+  Sub: hours returned annually
+  ─────
+  Difference (20px bold #EA2C00): +[X,XXX] additional hours
+
+[32px gap]
+
+TRANSLATION BOX (#F7F6F4):
+  Value (28px bold #1A1A1A): +[X,XXX] hours annually
+  
+  [12px gap]
+  
+  Body: "Equivalent to [X.X] FTE of physician time."
+  Body (bold): "Already in your operations."
+  Body: "Currently locked inside documentation overhead."
+```
+
+**Same 1800ms CTA delay as Step 4.**
+
+**CTA:** `See Where You Stand →`
+
+---
+
+### STEP 6 — THE BENCHMARK MIRROR
+
+**The most important screen. Build this with the most care.**
+
+**Layout:** Full screen. No sidebar. Centered. Max-width 680px. Maximum white space.
+
+**80px top padding. This screen breathes more than any other.**
+
+**Structure:**
+
+```
+BODY (17px #9B9B9B, centered):
+Most organizations believe they have solved 
+their documentation problem.
+
+[20px gap]
+
+DISPLAY HEADLINE (48px bold #1A1A1A, centered):
+Here is what the data shows.
+
+[64px gap]
+
+THREE-TIER VISUAL:
+
+Desktop: Three cards in a row connected by a thin #E8E8E8 line through their centers
+Mobile: Three cards stacked, connected by a thin vertical line
+
+CARD 1 — DOCUMENTATION-AWARE
+  Background: #F7F6F4
+  Border: 1px solid #E8E8E8
+  Label (eyebrow): TIER 1
+  Headline (20px bold #1A1A1A): Documentation-Aware
+  Body (15px #4B4B4B, line-height 1.7):
+    "Time savings measured.
+    Physicians satisfied.
+    The problem feels solved."
+  
+  Below card (not inside) — pulsing red dot + text:
+    ● (8px, #EA2C00, pulse animation 3s cycle, opacity 0.6→1.0)
+    Text (13px #EA2C00):
+    "Most organizations at your profile are here."
+
+CARD 2 — DOCUMENTATION-ACTIVATED  
+  Background: #FFFFFF
+  Border: 1px solid #E8E8E8
+  Label: TIER 2
+  Headline: Documentation-Activated
+  Body:
+    "Economic value captured across
+    capacity, revenue, workforce,
+    and risk."
+
+CARD 3 — DOCUMENTATION-INTELLIGENT
+  Background: #FFFFFF
+  Border: 1px solid #E8E8E8
+  Label: TIER 3
+  Headline: Documentation-Intelligent
+  Body:
+    "Documentation is strategic
+    infrastructure — feeding
+    automation, quality systems,
+    and competitive advantage."
+
+[64px gap]
+
+THE INSIGHT — full width, centered, max-width 560px:
+
+  Each line renders on its own line.
+  Font: 20px, #1A1A1A, line-height 2.0
+  Fade in 600ms after screen loads:
+
+  "The gap between Tier 1 and Tier 2
+  is not a technology gap.
+
+  It is a framing gap.
+
+  Organizations at Tier 1 have ambient documentation.
+  Organizations at Tier 2 have documentation infrastructure.
+
+  For an organization your size, that difference
+  is worth an estimated"
+  
+  [16px gap]
+  
+  RANGE VALUE (36px bold #EA2C00, centered):
+  $[LOW] – $[HIGH] annually
+  
+  [Where LOW = displayedTotal * 0.75 rounded to nearest $1K]
+  [Where HIGH = displayedTotal * 1.25 rounded to nearest $1K]
+
+[40px gap]
+
+SECONDARY TEXT (15px #9B9B9B, centered):
+"This assessment maps exactly where that gap 
+lives in your organization."
+```
+
+**CTA delay: 2200ms.** Longest delay in the assessment. It is earned.
+
+**CTA:** `Show Me My Gap →`
+
+---
+
+### STEP 7 — THE SCORE + VALUE MAP
+
+**Three sequential phases on one step. State controls which phase shows.**
+
+```typescript
+const [step7Phase, setStep7Phase] = 
+  useState<'score' | 'breakdown' | 'projection'>('score');
+```
+
+---
+
+#### PHASE A — THE SCORE
+
+**Full screen. Vertically centered. Nothing else visible.**
+
+```
+[80px top]
+
+EYEBROW (centered):
+ENTERPRISE DOCUMENTATION CAPTURE SCORE
+
+[40px gap]
+
+SCORE NUMBER (96px bold #1A1A1A, centered):
+[SCORE]
+
+DENOMINATOR (24px #9B9B9B, centered):
+/ 100
+
+[24px gap]
+
+SCORE BAR:
+  Height: 8px
+  Width: full (max 480px centered)
+  Radius: 4px
+  Background: #E8E8E8
+  Fill: #EA2C00, animates left to right over 600ms
+  Fill width: [SCORE]%
+
+[40px gap — then these fade in sequentially]
+
+BENCHMARK LINES (fade in at 800ms after score bar fills):
+  Two rows, centered, 15px #9B9B9B:
+  
+  "Industry average — organizations using ambient AI today"
+  "34 / 100"
+  
+  [16px gap]
+  
+  "Top-quartile organizations"  
+  "71 / 100"
+
+[32px gap]
+
+VERDICT (fade in at 1400ms, 20px bold #1A1A1A, centered, max-width 440px):
+"You are performing at the industry average.
+The gap to top quartile is not incremental.
+It is structural."
+
+[40px gap]
+
+CTA (fade in at 2000ms):
+See What This Is Costing You →
+```
+
+**Score calculation:**
+```typescript
+const utilizationPct = Math.min(100, 
+  Math.round((utilization / 76) * 100));
+const efficiencyPct = Math.min(100, 
+  Math.round((timeSavings / 4.0) * 100));
+const driverPct = Math.min(100,
+  Math.round((selectedDrivers.length / 6) * 100));
+const confidencePct = 
+  confidenceMode === 'measured' ? 90 : 
+  confidenceMode === 'estimated' ? 65 : 40;
+
+const enterpriseScore = Math.round(
+  (utilizationPct * 0.35) +
+  (efficiencyPct * 0.30) +
+  (driverPct * 0.20) +
+  (confidencePct * 0.15)
+);
+```
+
+On CTA click: `setStep7Phase('breakdown')`, scroll to top.
+
+---
+
+#### PHASE B — THE VALUE MAP
+
+```
+EYEBROW: WHERE THE GAP LIVES
+
+[If entryEstimate exists — show this block first:]
+  Standard card (#F7F6F4):
+    "You estimated $[ENTRY_ESTIMATE] annually."
+    "Our model shows $[DISPLAYED_TOTAL]."
+    [Contextual line based on comparison — see spec below]
+
+[32px gap]
+
+CONFIDENCE SELECTOR (compact, inline):
+  Label (eyebrow): MEASUREMENT MODE
+  Three pills: [ Benchmark ] [ Estimated ] [ Measured ]
+  Selected pill: border #1A1A1A, bold
+  Below selector (13px #9B9B9B):
+  "Displaying $[DISPLAYED_TOTAL] of $[RAW_TOTAL] modeled value 
+  ([HAIRCUT_PCT]% confidence adjustment)"
+
+[40px gap]
+
+BODY:
+"Select the pressures most relevant to your organization.
+Values update in real time."
+
+[24px gap]
+
+SIX DRIVER CARDS (none pre-selected):
+
+Each card:
+  Default state:
+    Background: #F7F6F4
+    Border: 1px solid #E8E8E8
+    Radius: 12px
+    Padding: 20px
+    
+  Selected state:
+    Background: #FFFFFF
+    Border left: 4px solid #EA2C00
+    Border other: 1px solid #E8E8E8
+    
+  Card content:
+    Headline (17px bold #1A1A1A): [Driver Name]
+    Body (15px #4B4B4B): [One-line description]
+    Footnote (13px #9B9B9B italic): [Context — when relevant]
+    [On selection: range value fades in]
+    Range (15px bold #1A1A1A): $[LOW]–$[HIGH] / yr estimated
+
+  NO ICONS on driver cards. Text only. Icons read as decorative.
+  NO CHECKBOXES. The entire card is the click target.
+
+[24px gap]
+
+SELECTION COUNTER (13px #9B9B9B, right-aligned):
+[X] of 6 selected — minimum 1 required
+
+[After at least 1 selected — breakdown appears with fade:]
+
+VALUE BREAKDOWN:
+  For each selected driver, one row:
+    [Driver Name]                    $[VALUE]/yr
+    ↳ [One-line math summary]       [expand link]
+  
+  Expandable: clicking row shows full math chain
+  
+  DIVIDER
+  
+  TOTAL ROW:
+    TOTAL ANNUAL GAP               $[DISPLAYED_TOTAL]/yr
+    (17px bold #EA2C00)
+
+[40px gap]
+
+CTA: See the Cost of Waiting →
+```
+
+**Entry estimate contextual lines:**
+```
+If model > estimate * 1.2:
+  "The actual figure is [X]% higher than your estimate."
+
+If model within 20% of estimate:
+  "Your intuition was accurate. Here is the full breakdown."
+
+If model < estimate * 0.8:
+  "Our conservative model is lower. Here is what we can defend."
+
+If entryAnswer === 'unknown':
+  "Most haven't calculated this. Here is what the model shows."
+```
+
+---
+
+#### PHASE C — THE COMPOUNDING EFFECT
+
+```
+EYEBROW: THE COMPOUNDING EFFECT OF INACTION
+
+HEADLINE:
+Every year at current state 
+compounds the gap.
+
+[40px gap]
+
+CHART:
+  Line chart, two lines
+  Abridge: #EA2C00, 2px solid
+  Current: #9B9B9B, 1.5px dashed
+  No fill/gradient under lines — clean lines only
+  Grid: horizontal only, #F0F0F0
+  No right-side Y axis labels
+  X axis labels: Today / 3mo / 6mo / Year 1 / Year 2 / Year 3
+
+  Data points:
+  Today:   abridge: 0     current: 0
+  3mo:     abridge: displayedTotal * 0.20   current: 0
+  6mo:     abridge: displayedTotal * 0.50   current: 0
+  Year 1:  abridge: displayedTotal * 0.88   current: displayedTotal * 0.03
+  Year 2:  abridge: Y1 + displayedTotal     current: displayedTotal * 0.06
+  Year 3:  abridge: Y2 + displayedTotal * 1.08  current: displayedTotal * 0.09
+
+[32px gap]
+
+COST OF WAITING TABLE:
+  Clean table, no outer border, inner dividers only
+  
+                    Act Now    Wait 6 mo    Wait 12 mo
+  ──────────────────────────────────────────────────
+  3-Year Value      $[X]       $[X]         $[X]
+  Permanently Lost    —        $[X]         $[X]
+
+  "Permanently Lost" — exact phrase. Not "Opportunity Cost."
+
+[32px gap]
+
+STATEMENT (#F7F6F4 card, 28px padding):
+  Body: "Every month at current state leaves"
+  Value (28px bold #EA2C00): $[MONTHLY_GAP]
+  Body: "in enterprise value permanently uncaptured."
+  
+  [16px gap]
+  
+  Body (15px #9B9B9B):
+  "Already in your operations. Already earned. Not yet realized."
+
+[40px gap]
+
+CTA: See My Summary →
+→ Advances to Step 8
+```
+
+---
+
+### STEP 8 — THE INVITATION
+
+**Not a sales close. An intellectual invitation.**
+
+**Layout:** Centered, max-width 560px. Three sections with clear separation.
+
+```
+[80px top]
+
+SECTION 1 — THE VERDICT
+
+EYEBROW: YOUR ASSESSMENT
+
+Score display (two numbers, side by side):
+
+  Your Score          Top Quartile
+  [SCORE] / 100       71 / 100
+
+Gap bar between them — simple horizontal bar
+showing position of [SCORE] relative to 71.
+
+[20px gap]
+
+Body (17px #4B4B4B):
+"You are capturing approximately [SCORE]% of the enterprise 
+value flowing through your documentation infrastructure."
+
+[64px gap]
+
+SECTION 2 — PRIMARY OPPORTUNITY
+
+EYEBROW: HIGHEST-LEVERAGE OPPORTUNITY
+
+One card (#F7F6F4, left border #EA2C00):
+  Driver name (20px bold #1A1A1A): [Top Driver]
+  Value (28px bold #EA2C00): $[VALUE] annually
+  
+  [16px gap]
+  
+  Body (15px #4B4B4B): [What this means clinically and operationally]
+  Body (15px #4B4B4B): [What addressing it requires]
+
+[64px gap]
+
+SECTION 3 — THE INVITATION
+
+HEADLINE (32px bold #1A1A1A, centered, max-width 420px):
+Would you like to see what a documentation-intelligent 
+organization looks like at your scale?
+
+[20px gap]
+
+Body (15px #9B9B9B, centered):
+"This is not a product demonstration.
+It is a 30-minute working session with someone 
+who has mapped this for organizations like yours."
+
+[32px gap]
+
+TWO OPTIONS (centered, gap 16px):
+
+Primary: [ Request a Working Session → ]
+Secondary (outlined): [ Export My Assessment ]
+
+[On "Request a Working Session" click — form fades in below:]
+
+  Name          [____________]
+  Organization  [____________]
+  Title         [____________]
+  Email         [____________]
+  
+  [ Submit → ]
+
+[After submit:]
+  "We'll be in touch within one business day."
+  
+  "Your assessment:"  [ Copy Link ]
+```
+
+**Abridge appears in the logo only. Not in body copy on this screen.**
+
+---
+
+## PART 3: WHAT TO REMOVE FROM THE CURRENT CODE
+
+These elements exist in the current `SwitchPath.tsx` and must be eliminated:
+
+```
+REMOVE:
+☒ All emoji status icons (Frown, Meh, Smile, PartyPopper)
+☒ All green/emerald color usage (#10B981 and variants)
+☒ All amber color usage (#F59E0B and variants)  
+☒ The animated spectrum bar (utilization gap visual)
+☒ The "liftButton" CSS animation
+☒ The "successPulse" CSS animation
+☒ Step number labels on progress dot hover
+☒ "Continue →" copy on any CTA (replace per spec above)
+☒ The pre-selection useEffect for drivers
+☒ The large benchmark comparison cards with "Industry Avg / Abridge Avg"
+   (replace with clean reference lines per Step 3 spec)
+☒ The amber gradient insight box on Step 2
+☒ All gradient backgrounds anywhere
+☒ The "on the table. Every. Single. Year." copy
+☒ The "TOTAL ANNUAL GAP" in emerald green
+☒ Green "+$X/yr" values — replace with #1A1A1A bold
+☒ The summaryTab switcher with "Value Breakdown / Over Time" tabs
+   (replaced by sequential phases in Step 7)
+☒ The showInputsBar state and associated bar
+☒ The showUtilizationModal and showTimeSavingsModal
+☒ The "benchmark data" modal on Step 4
+```
+
+---
+
+## PART 4: MATH INTEGRITY RULES
+
+**One source of truth:**
+```typescript
+// DELETE local ABRIDGE_BENCHMARKS in SwitchPath.tsx
+// IMPORT from switchGapCalculator.ts:
+import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
+
+// Update switchGapCalculator.ts canonical values:
+utilization: 76        // not 65
+timeSavedAvg: 4.0      // not 3.0
+```
+
+**Confidence haircut — once only:**
+```typescript
+const CONFIDENCE_HAIRCUTS = {
+  benchmark: 0.55,
+  estimated: 0.72,
+  measured: 0.88,
+};
+const haircut = CONFIDENCE_HAIRCUTS[confidenceMode];
+const displayedTotal = Math.round(calculations.totalGap * haircut);
+```
+
+Remove internal realization multipliers from all engine calculations.
+The haircut is the only conservatism mechanism.
+
+**Fix retention phantom variable:**
+Replace hardcoded `effectivenessGap = 0.50` with editable assumption:
+```typescript
+effectivenessAdvantage: 40  // % — added to DEFAULT_ASSUMPTIONS.retention
+```
+
+---
+
+## TESTING STANDARD
+
+Ship only when every item passes:
+
+```
+☐ Opens on mobile (390px) — every screen readable without horizontal scroll
+☐ No green anywhere on the ambient path
+☐ No emoji icons anywhere
+☐ Every CTA is directional — none say "Continue" or "Next"
+☐ Score animates before any dollar figure appears
+☐ No drivers pre-selected
+☐ Utilization benchmark reads 76% everywhere
+☐ Time savings benchmark reads 4.0 min everywhere  
+☐ Haircut applied once — to displayed values only
+☐ CTA delay on Steps 4, 5, 6 (1800ms / 1800ms / 2200ms)
+☐ Three-year chart shows S-curve
+☐ "Permanently Lost" — exact phrase in table
+☐ Final CTA: "Request a Working Session"
+☐ "Abridge" not in body copy of Step 8
+☐ PartyPopper import deleted from file
+☐ All emerald/amber Tailwind classes removed
+☐ Typography consistent — no rogue font sizes
+```
+
+---
+
+## THE SINGLE QUALITY GATE
+
+Read the completed assessment as a CMO who believes their ambient AI is working fine.
+
+Ask one question:
+
+**Does this make me feel smart for asking something I hadn't thought to ask?**
+
+Not pressured. Not sold to. Not impressed by animations.
+
+*Intellectually curious.*
+
+If yes — ship it.
+If no — find the screen where the voice broke or the design got busy, and fix it there.

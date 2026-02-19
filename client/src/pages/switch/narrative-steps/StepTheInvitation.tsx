@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { ArrowLeft, Download, Loader2, ArrowRight } from "lucide-react";
-import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { Button } from "@/components/ui/button";
 import {
   formatCurrency,
@@ -26,10 +25,29 @@ interface StepTheInvitationProps {
 const PILLAR_ORDER: PillarId[] = ["capacity", "yield", "workforce", "risk"];
 
 const PILLAR_LABELS: Record<PillarId, string> = {
-  capacity: "Capacity",
-  yield: "Revenue & Yield",
+  capacity: "Capacity Creation",
+  yield: "Revenue Integrity",
   workforce: "Workforce Stability",
-  risk: "Enterprise Risk",
+  risk: "Risk & Compliance",
+};
+
+const PILLAR_DESCRIPTIONS: Record<PillarId, { meaning: string; closing: string }> = {
+  capacity: {
+    meaning: "Physician time currently absorbed by documentation overhead could be redirected to patient access and throughput.",
+    closing: "Requires systematic utilization improvement and workflow integration beyond basic ambient capture.",
+  },
+  yield: {
+    meaning: "Revenue leakage through incomplete documentation, missed coding opportunities, and denial exposure.",
+    closing: "Requires documentation completeness that feeds coding accuracy and denial prevention at the encounter level.",
+  },
+  workforce: {
+    meaning: "Provider burnout, after-hours charting, and retention risk tied directly to documentation burden.",
+    closing: "Requires measurable reduction in documentation-related dissatisfaction and after-hours work.",
+  },
+  risk: {
+    meaning: "Compliance exposure through incomplete structured data, quality reporting gaps, and audit readiness.",
+    closing: "Requires documentation infrastructure that produces defensible, auditable clinical records.",
+  },
 };
 
 const PILLAR_WEIGHTS: Record<PillarId, number> = {
@@ -39,7 +57,6 @@ const PILLAR_WEIGHTS: Record<PillarId, number> = {
   risk: 0.20,
 };
 
-const INDUSTRY_AVG = 34;
 const TOP_QUARTILE = 71;
 
 export default function StepTheInvitation({
@@ -49,6 +66,9 @@ export default function StepTheInvitation({
 }: StepTheInvitationProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formData, setFormData] = useState({ name: "", organization: "", title: "", email: "" });
   const { toast } = useToast();
 
   const { state } = useAssessment();
@@ -62,37 +82,29 @@ export default function StepTheInvitation({
     ),
   );
 
-  const gapToTopQuartile = Math.max(0, TOP_QUARTILE - enterpriseScore);
-  const gapFillPercent = Math.min(100, Math.round((enterpriseScore / TOP_QUARTILE) * 100));
+  const gapFillPercent = Math.min(100, Math.round((enterpriseScore / 100) * 100));
+  const topQuartilePercent = Math.round((TOP_QUARTILE / 100) * 100);
 
-  const sorted = useMemo(
-    () => [...PILLAR_ORDER].sort((a, b) => pillars[a].score0to100 - pillars[b].score0to100),
-    [pillars],
-  );
-
-  const verdictLine = useMemo(() => {
-    if (enterpriseScore <= INDUSTRY_AVG) {
-      return "Your documentation infrastructure is performing at or below the industry average. The distance to top-quartile capture is not incremental — it is structural.";
-    }
-    if (enterpriseScore < TOP_QUARTILE) {
-      return `You are above average but below top-quartile. ${gapToTopQuartile} points of structural improvement remain between current performance and full enterprise capture.`;
-    }
-    return "You are operating at top-quartile levels. The focus shifts from closing gaps to sustaining advantage and deepening capture across all pillars.";
-  }, [enterpriseScore, gapToTopQuartile]);
+  const highestLeveragePillar = useMemo(() => {
+    let maxId: PillarId = "capacity";
+    let maxVal = 0;
+    PILLAR_ORDER.forEach((id) => {
+      if (pillars[id].valueAnnual > maxVal) {
+        maxVal = pillars[id].valueAnnual;
+        maxId = id;
+      }
+    });
+    return maxId;
+  }, [pillars]);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsGeneratingPDF(true);
     try {
-      await generateAmbientPDF({
-        inputs,
-        calculations,
-        clientName,
-        preparedBy,
-      });
+      await generateAmbientPDF({ inputs, calculations, clientName, preparedBy });
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
-        description: "Your Enterprise Summary has been saved.",
+        description: "Your assessment has been saved.",
         variant: "brand",
       });
     } catch (error) {
@@ -107,157 +119,232 @@ export default function StepTheInvitation({
     }
   };
 
-  return (
-    <div className={`space-y-10 max-w-3xl mx-auto ${STEP_FOOTER_SPACER_CLASS}`}>
-      <div className="text-center pt-4">
-        <h1
-          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-1 font-abridge uppercase tracking-tight"
-          data-testid="text-page-title"
-        >
-          The Documentation
-        </h1>
-        <h1
-          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight"
-          data-testid="text-page-title-2"
-        >
-          Intelligence Gap
-        </h1>
-      </div>
+  const handleFormSubmit = () => {
+    setFormSubmitted(true);
+    toast({
+      title: "Request Received",
+      description: "We'll be in touch within one business day.",
+      variant: "brand",
+    });
+  };
 
-      <section className="text-center" data-testid="section-verdict">
+  const isFormValid = formData.name && formData.organization && formData.email;
+
+  return (
+    <div className="max-w-[640px] mx-auto py-20 md:py-24 px-4" style={{ fontFamily: "Manrope, sans-serif" }}>
+
+      <section className="mb-16" data-testid="section-verdict">
+        <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
+          Enterprise Documentation Capture Score
+        </p>
+
+        <div className="flex items-baseline justify-between mb-6">
+          <div className="flex items-baseline gap-1">
+            <span
+              className="text-[48px] md:text-[56px] font-bold text-[#1A1A1A] tabular-nums leading-none"
+              data-testid="value-score"
+            >
+              {enterpriseScore}
+            </span>
+            <span className="text-[20px] text-[#9B9B9B] font-medium">/ 100</span>
+          </div>
+          <div className="text-right">
+            <span className="text-[14px] text-[#9B9B9B]">
+              Top quartile: <span className="font-semibold text-[#1A1A1A] tabular-nums">{TOP_QUARTILE}</span> / 100
+            </span>
+          </div>
+        </div>
+
+        <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden mb-4">
+          <div
+            className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full transition-all duration-700"
+            style={{ width: `${gapFillPercent}%` }}
+            data-testid="bar-score"
+          />
+          <div
+            className="absolute top-0 h-full border-r-2 border-dashed border-[#9B9B9B]"
+            style={{ left: `${topQuartilePercent}%` }}
+          />
+        </div>
+
         <p
-          className="text-base text-[#1A1A1A] leading-relaxed max-w-lg mx-auto"
-          data-testid="text-verdict"
+          className="text-[17px] text-[#4B4B4B] leading-[1.7] mt-6"
+          data-testid="text-capture-verdict"
         >
-          {verdictLine}
+          You are capturing approximately {enterpriseScore}% of the enterprise
+          value flowing through your documentation infrastructure.
         </p>
       </section>
 
-      <section data-testid="section-gap-bar">
-        <div className="bg-[#F5F0EB] rounded-xl border border-[#E8E0D8] p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-[10px] text-[#999] uppercase tracking-widest font-medium">Your Score</p>
-              <p className="text-3xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-score">
-                {enterpriseScore}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] text-[#999] uppercase tracking-widest font-medium">Top Quartile</p>
-              <p className="text-3xl font-bold text-[#999] tabular-nums" data-testid="value-top-quartile">
-                {TOP_QUARTILE}
-              </p>
-            </div>
-          </div>
+      <div className="w-full h-px bg-[#E8E0D8] mb-16" />
 
-          <div className="relative h-3 bg-white rounded-full overflow-hidden border border-[#E8E0D8]">
-            <div
-              className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full transition-all duration-700"
-              style={{ width: `${gapFillPercent}%` }}
-              data-testid="bar-gap"
-            />
-            <div
-              className="absolute top-0 h-full border-r-2 border-dashed border-[#999]"
-              style={{ left: `${Math.min(100, Math.round((INDUSTRY_AVG / TOP_QUARTILE) * 100))}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-2">
-            <span className="text-[9px] text-[#BBB]">0</span>
-            <span className="text-[9px] text-[#999]">Industry Avg ({INDUSTRY_AVG})</span>
-            <span className="text-[9px] text-[#BBB]">{TOP_QUARTILE}</span>
-          </div>
+      <section className="mb-16" data-testid="section-opportunity">
+        <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
+          Primary Opportunity
+        </p>
 
-          {gapToTopQuartile > 0 && (
-            <p className="text-sm text-[#666] mt-4 text-center" data-testid="text-gap-points">
-              <span className="font-semibold text-[#EA2C00] tabular-nums">{gapToTopQuartile} points</span> separate your current position from top-quartile enterprise capture.
-            </p>
-          )}
-        </div>
-      </section>
-
-      <section data-testid="section-value-at-stake">
-        <div className="text-center mb-6">
-          <p className="text-[10px] text-[#999] uppercase tracking-widest font-medium mb-2">Annual Enterprise Value at Stake</p>
-          <p className="text-5xl md:text-6xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-annual">
-            {formatCurrency(Math.round(totalAnnual))}
+        <div className="bg-[#F7F6F4] rounded-lg p-6 md:p-8">
+          <h3
+            className="text-[20px] font-bold text-[#1A1A1A] mb-2"
+            data-testid="text-opportunity-name"
+          >
+            {PILLAR_LABELS[highestLeveragePillar]}
+          </h3>
+          <p
+            className="text-[24px] md:text-[28px] font-bold text-[#1A1A1A] tabular-nums mb-4"
+            data-testid="text-opportunity-value"
+          >
+            {formatCurrency(Math.round(pillars[highestLeveragePillar].valueAnnual))} annually
+          </p>
+          <p className="text-[15px] text-[#4B4B4B] leading-[1.7] mb-3">
+            {PILLAR_DESCRIPTIONS[highestLeveragePillar].meaning}
+          </p>
+          <p className="text-[15px] text-[#9B9B9B] leading-[1.7]">
+            {PILLAR_DESCRIPTIONS[highestLeveragePillar].closing}
           </p>
         </div>
       </section>
 
-      <section data-testid="section-intervention">
-        <p className="text-[10px] text-[#999] uppercase tracking-widest mb-3 font-medium">
-          Intervention Priority
-        </p>
-        <div className="space-y-3">
-          {sorted.slice(0, 3).map((id, i) => {
-            const pillar = pillars[id];
-            return (
-              <div
-                key={id}
-                className="bg-white rounded-xl border border-[#E5E7EB] p-4 flex items-center gap-4"
-                data-testid={`intervention-${id}`}
-              >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${i === 0 ? "bg-[#EA2C00]" : "bg-[#CCC]"}`}>
-                  <span className="text-[10px] font-bold text-white">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-sm font-semibold text-[#1A1A1A]">{PILLAR_LABELS[id]}</span>
-                    <span className="text-xs font-semibold text-[#EA2C00] tabular-nums" data-testid={`intervention-value-${id}`}>
-                      {formatCurrency(Math.round(pillar.valueAnnual))}/yr at stake
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#888] mt-0.5">
-                    Score: <span className="tabular-nums">{pillar.score0to100}/100</span>
-                  </p>
-                </div>
+      <div className="w-full h-px bg-[#E8E0D8] mb-16" />
+
+      <section className="text-center mb-12" data-testid="section-invitation">
+        {!formSubmitted ? (
+          <>
+            <h2
+              className="text-[24px] md:text-[28px] font-bold text-[#1A1A1A] leading-[1.4] mb-6"
+              data-testid="text-invitation-question"
+            >
+              Would you like to see what a
+              <br />
+              documentation-intelligent organization
+              <br />
+              looks like at your scale?
+            </h2>
+
+            <p className="text-[15px] text-[#4B4B4B] leading-[1.7] max-w-md mx-auto mb-10">
+              This is not a product demonstration.
+              <br />
+              It is a 30-minute working session with someone
+              <br />
+              who has mapped this for organizations like yours.
+            </p>
+
+            {!showForm ? (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="inline-flex items-center gap-2.5 px-8 py-4 bg-[#EA2C00] text-white text-[15px] font-semibold rounded-lg hover:bg-[#D42800] transition-colors"
+                  data-testid="button-request-session"
+                >
+                  Request a Working Session
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="inline-flex items-center gap-2 px-6 py-4 text-[15px] font-medium text-[#4B4B4B] border border-[#E0E0E0] rounded-lg hover:border-[#9B9B9B] transition-colors"
+                  data-testid="button-export-assessment"
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  Export My Assessment
+                </button>
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <div className="max-w-sm mx-auto text-left">
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-[13px] text-[#9B9B9B] mb-1.5">Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 text-[15px] text-[#1A1A1A] border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] text-[#9B9B9B] mb-1.5">Organization</label>
+                    <input
+                      type="text"
+                      value={formData.organization}
+                      onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                      className="w-full px-4 py-3 text-[15px] text-[#1A1A1A] border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-organization"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] text-[#9B9B9B] mb-1.5">Title</label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full px-4 py-3 text-[15px] text-[#1A1A1A] border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-title"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] text-[#9B9B9B] mb-1.5">Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 text-[15px] text-[#1A1A1A] border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-email"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleFormSubmit}
+                  disabled={!isFormValid}
+                  className={`w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 text-[15px] font-semibold rounded-lg transition-colors ${
+                    isFormValid
+                      ? "bg-[#EA2C00] text-white hover:bg-[#D42800]"
+                      : "bg-[#E0E0E0] text-[#9B9B9B] cursor-not-allowed"
+                  }`}
+                  data-testid="button-submit-session"
+                >
+                  Submit
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="py-8">
+            <p className="text-[17px] text-[#1A1A1A] leading-[1.7] mb-4">
+              We'll be in touch within one business day.
+            </p>
+            <p className="text-[15px] text-[#9B9B9B] leading-[1.7] mb-8">
+              In the meantime \u2014 your assessment is available to export.
+            </p>
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-4 text-[15px] font-medium text-[#4B4B4B] border border-[#E0E0E0] rounded-lg hover:border-[#9B9B9B] transition-colors"
+              data-testid="button-export-after-submit"
+            >
+              {isGeneratingPDF ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Export My Assessment
+            </button>
+          </div>
+        )}
       </section>
 
-      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 text-center" data-testid="section-invitation">
-        <p className="text-[10px] text-[#666] uppercase tracking-widest mb-4 font-medium">
-          What Happens Next
-        </p>
-        <p className="text-base text-[#CCC] leading-relaxed max-w-md mx-auto mb-6">
-          This analysis identifies the structural gap. Closing it requires a focused intervention plan calibrated to your specific operational context.
-        </p>
-        <p className="text-sm text-[#999] italic max-w-sm mx-auto">
-          Would you like to explore what a structured engagement looks like?
-        </p>
-      </section>
-
-      <div className="border-t border-[#E5E7EB] pt-4">
-        <p className="text-xs text-[#999] leading-relaxed" data-testid="text-disclaimer">
-          This model reflects conservative, haircut-adjusted assumptions. Realized value depends on execution discipline, adoption depth, and governance maturity.
-        </p>
-      </div>
-
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E8E0D8]">
         <Button
           variant="ghost"
           onClick={onBack}
-          className="gap-2"
+          className="gap-2 text-[#9B9B9B]"
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
-        </Button>
-
-        <Button
-          variant="outline"
-          onClick={() => setShowExportModal(true)}
-          className="gap-2 text-[#666666]"
-          data-testid="button-export-summary"
-        >
-          {isGeneratingPDF ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Download className="w-4 h-4" />
-          )}
-          Export Executive Summary
         </Button>
       </div>
 

@@ -69,6 +69,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   docDefensibility: "medium" as const,
   qualityReportingFriction: "manageable" as const,
   structuredDataUsability: "some" as const,
+  entryEstimate: null,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
