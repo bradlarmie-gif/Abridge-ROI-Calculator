@@ -7,10 +7,11 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 import Screen1Provocation from "./ambient/Screen1Provocation";
 import Screen2Baseline from "./ambient/Screen2Baseline";
-import Screen3Score from "./ambient/Screen3Score";
+import Screen3Performance from "./ambient/Screen3Performance";
 import Screen4Domains from "./ambient/Screen4Domains";
-import Screen5Gap from "./ambient/Screen5Gap";
-import Screen6Invitation from "./ambient/Screen6Invitation";
+import Screen5Score from "./ambient/Screen3Score";
+import Screen6Gap from "./ambient/Screen5Gap";
+import Screen7Invitation from "./ambient/Screen6Invitation";
 
 interface AmbientNarrativeFlowProps {
   onBack: () => void;
@@ -18,7 +19,7 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_SCREENS = 6;
+const TOTAL_SCREENS = 7;
 
 export default function AmbientNarrativeFlow({
   onBack,
@@ -68,13 +69,15 @@ export default function AmbientNarrativeFlow({
       case 2:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 3:
-        return <Screen4Domains onNext={handleNext} onBack={handleBack} />;
+        return <Screen3Performance onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return <Screen3Score onNext={handleNext} onBack={handleBack} />;
+        return <Screen4Domains onNext={handleNext} onBack={handleBack} />;
       case 5:
-        return <Screen5Gap onNext={handleNext} onBack={handleBack} />;
+        return <Screen5Score onNext={handleNext} onBack={handleBack} />;
       case 6:
-        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} />;
+        return <Screen6Gap onNext={handleNext} onBack={handleBack} />;
+      case 7:
+        return <Screen7Invitation onBack={handleBack} onBackToJourney={onBackToJourney} />;
       default:
         return null;
     }

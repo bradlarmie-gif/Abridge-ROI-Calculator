@@ -1,0 +1,393 @@
+# SCORE SCREEN — COMPLETE REDESIGN
+## The score must feel earned. Not random.
+
+---
+
+## THE CORE PROBLEM TO FIX
+
+The current score appears as a standalone number with no visible connection to how it was calculated. A CMO sees 50/100 and immediately thinks "why 50?" That question destroys credibility.
+
+The fix: the score is built visibly from the four domain scores in real time. The CMO can see exactly what is driving it — and more importantly, what is dragging it down.
+
+---
+
+## SCREEN ARCHITECTURE
+
+Three sequential sections on one screen revealed with staggered animation:
+
+```
+SECTION A — The Build-Up (domains → score)
+SECTION B — The Verdict (score in context)
+SECTION C — The Implication (what this means)
+```
+
+---
+
+## SECTION A — THE BUILD-UP
+
+This section shows the four domain scores assembling into the total score. It plays like a reveal — each domain appears, then the total resolves.
+
+```
+LABEL (11px uppercase #A3A3A3, centered):
+HOW YOUR SCORE IS BUILT
+
+[48px gap]
+
+FOUR DOMAIN ROWS — staggered fade in, 150ms apart:
+
+Each row:
+┌─────────────────────────────────────────────┐
+│  [Domain Name]    [Score bar]    [XX / 100] │
+└─────────────────────────────────────────────┘
+
+Layout per row:
+  Left:   Domain name — 15px Manrope 600 #0F0F0F
+          Activation label — 12px #A3A3A3
+          e.g. "Informally tracked"
+
+  Middle: Score bar
+          Height: 6px
+          Background: #EDEDED
+          Fill: #EA2C00
+          Width: [domainScore]% of container
+          Border-radius: 3px
+          Animates from 0 to final value: 600ms ease-out
+          Stagger: each bar starts 150ms after previous
+
+  Right:  Domain score — 17px Manrope 700 #0F0F0F
+          e.g. "35 / 100"
+
+Gap between rows: 20px
+```
+
+**Domain score values:**
+```typescript
+// These come directly from the four domain screens
+// Each domain's activation level + inputs determine its score
+
+const domainScores = {
+  capacity:  capacityScore,   // 15 | 35 | 65 | 90 (modified by inputs)
+  revenue:   revenueScore,    // 10 | 30 | 62 | 88
+  workforce: workforceScore,  // 20 | 40 | 65 | 85
+  risk:      riskScore,       // 15 | 38 | 62 | 90
+};
+
+// Weights
+const documentationScore = Math.round(
+  (domainScores.capacity  * 0.30) +
+  (domainScores.revenue   * 0.25) +
+  (domainScores.workforce * 0.25) +
+  (domainScores.risk      * 0.20)
+);
+```
+
+**After all four rows appear (600ms delay):**
+
+A divider line draws across full width: 300ms ease-out
+
+Then the total row appears:
+
+```
+┌─────────────────────────────────────────────┐
+│  Documentation         ══════════░░░░░░░░░  │
+│  Intelligence Score                         │
+│                               [SCORE] / 100 │
+└─────────────────────────────────────────────┘
+
+Total row styling:
+  Background: #FAFAF9
+  Border: 1px solid #EDEDED
+  Border-radius: 10px
+  Padding: 20px 24px
+
+  Left: "Documentation Intelligence Score"
+        15px Manrope 600 #0F0F0F
+
+  Middle: Full composite bar
+          Height: 8px
+          Shows all four domain contributions as segments:
+          Capacity segment:  width proportional to contribution
+          Revenue segment:   same
+          Workforce segment: same
+          Risk segment:      same
+          All segments #EA2C00 but separated by 2px #FFFFFF gap
+          Total fill = documentationScore%
+
+  Right: "[SCORE] / 100"
+         24px Manrope 700 #0F0F0F
+         Counts up from 0 over 800ms after bar fills
+```
+
+---
+
+## SECTION B — THE VERDICT
+
+Appears 500ms after the score count-up completes.
+
+```
+[48px gap]
+
+HERO NUMBER (centered):
+  Font: Manrope 700, 96px, #0F0F0F
+  Value: [SCORE]
+  
+  Below: "/ 100" — 24px #A3A3A3
+
+[24px gap]
+
+SCORE BAR (full width, centered, max 520px):
+  Height: 10px
+  Background: #EDEDED
+  Border-radius: 5px
+  
+  Fill: #EA2C00 to [SCORE]%
+  Animates: 700ms ease-out
+  
+  TWO BENCHMARK MARKERS on the bar:
+  
+  Marker 1 — Industry average (34):
+    A thin 2px vertical line at 34% position
+    Color: #A3A3A3
+    Below line: "34" label 11px #A3A3A3
+  
+  Marker 2 — Top quartile (71):
+    A thin 2px vertical line at 71% position  
+    Color: #0F0F0F
+    Below line: "71" label 11px #0F0F0F
+
+[32px gap]
+
+BENCHMARK CONTEXT (two rows, centered, gap 16px):
+
+Row 1:
+  Label: 11px #A3A3A3
+  "Industry average — organizations using ambient AI today"
+  Value: 17px Manrope 700 #0F0F0F
+  "34 / 100"
+
+Row 2:
+  Label: 11px #A3A3A3
+  "Top-quartile organizations"
+  Value: 17px Manrope 700 #0F0F0F
+  "71 / 100"
+
+[32px gap]
+
+VERDICT CARD (Standard card, max-width 520px, centered):
+  Dynamic copy based on score:
+
+  Score < 34:
+  Headline (20px 700 #0F0F0F):
+  "Below the industry average."
+  Body (17px #525252):
+  "Your documentation infrastructure is in early activation.
+  Significant enterprise value is available across all
+  four domains — none of it requires new technology."
+
+  Score 34–50:
+  Headline:
+  "At the industry average."
+  Body:
+  "Most organizations that deploy ambient AI land here.
+  The gap to top quartile is not incremental.
+  It is a fundamentally different relationship with
+  documentation infrastructure."
+
+  Score 51–70:
+  Headline:
+  "Above the industry average."
+  Body:
+  "You have activated more than most. The remaining gap
+  to top quartile is concentrated in specific domains —
+  and addressable with the right infrastructure."
+
+  Score 71–85:
+  Headline:
+  "Approaching top-quartile performance."
+  Body:
+  "Strong documentation intelligence. The remaining
+  opportunity is in the domains where activation
+  is still partial."
+
+  Score > 85:
+  Headline:
+  "Top-quartile documentation intelligence."
+  Body:
+  "Your organization is among the highest performers
+  in documentation infrastructure activation.
+  The remaining opportunity is in optimization,
+  not activation."
+```
+
+---
+
+## SECTION C — THE IMPLICATION
+
+Appears after verdict card. The lowest-scoring domain gets called out specifically. This is the moment that makes the score feel actionable — not just a grade.
+
+```
+[48px gap]
+
+LABEL (11px uppercase #A3A3A3):
+YOUR PRIMARY OPPORTUNITY
+
+[Identifies the lowest-scoring domain]
+
+FEATURED CARD (TYPE 2 — left border #EA2C00):
+
+  Domain name (13px uppercase #EA2C00):
+  [LOWEST DOMAIN NAME]
+
+  Statement (20px Manrope 600 #0F0F0F):
+  Dynamic per domain:
+
+  If lowest = Capacity:
+  "Recovered time is not being systematically
+  deployed into enterprise value."
+
+  If lowest = Revenue:
+  "Documentation fidelity is not yet connected
+  to revenue integrity strategy."
+
+  If lowest = Workforce:
+  "After-hours burden is not yet measured as
+  a leading retention indicator."
+
+  If lowest = Risk:
+  "Documentation infrastructure is not yet
+  positioned as the foundation for what comes next."
+
+  [16px gap]
+
+  Gap value (32px Manrope 700 #EA2C00):
+  $[lowestDomainGapValue]
+
+  Gap label (13px #A3A3A3):
+  estimated annual opportunity in this domain
+
+[32px gap]
+
+SECONDARY NOTE (15px #525252, centered, max-width 480px):
+"Improving your score in [lowest domain] by one
+activation level would move your overall
+Documentation Intelligence Score from [SCORE]
+to an estimated [SCORE + improvement]."
+```
+
+---
+
+## WHAT THE SCORE IS NOT
+
+Add this as a footnote at the bottom of the screen.
+Small. Calm. Builds credibility.
+
+```
+FOOTNOTE (13px #A3A3A3, centered, max-width 480px):
+
+"This score reflects your self-reported activation
+across four dimensions of documentation intelligence.
+It is not a vendor assessment. It is a diagnostic
+based on your organization's inputs."
+```
+
+---
+
+## ANIMATION SEQUENCE — EXACT TIMING
+
+```
+0ms      Screen fades in
+200ms    "HOW YOUR SCORE IS BUILT" label appears
+400ms    Domain row 1 (Capacity) fades in, bar animates
+550ms    Domain row 2 (Revenue) fades in, bar animates
+700ms    Domain row 3 (Workforce) fades in, bar animates
+850ms    Domain row 4 (Risk) fades in, bar animates
+1200ms   Divider line draws across
+1400ms   Total composite row appears, bar animates
+2000ms   Score count-up begins (800ms duration)
+2800ms   Section B fades in — hero number
+3200ms   Score bar fills with benchmark markers
+3600ms   Benchmark context rows fade in
+4000ms   Verdict card fades in
+4600ms   Section C fades in — primary opportunity card
+5000ms   Footnote fades in
+5400ms   CTA fades in
+```
+
+---
+
+## CTA
+
+```
+Text: See What This Is Costing You →
+Position: Right-aligned desktop / full-width mobile
+Style: Primary (#EA2C00)
+Appears: 5400ms after screen loads (after full reveal)
+```
+
+---
+
+## CALCULATIONS REFERENCE
+
+```typescript
+// Domain scores from domain screens:
+// capacityScore:  base {1:15, 2:35, 3:65, 4:90} + input modifier
+// revenueScore:   base {1:10, 2:30, 3:62, 4:88}
+// workforceScore: base {1:20, 2:40, 3:65, 4:85}
+// riskScore:      base {1:15, 2:38, 3:62, 4:90}
+
+const documentationScore = Math.round(
+  (capacityScore  * 0.30) +
+  (revenueScore   * 0.25) +
+  (workforceScore * 0.25) +
+  (riskScore      * 0.20)
+);
+
+// Lowest domain identification:
+const domainScoreMap = {
+  Capacity:  capacityScore,
+  Revenue:   revenueScore,
+  Workforce: workforceScore,
+  Risk:      riskScore,
+};
+
+const lowestDomain = Object.entries(domainScoreMap)
+  .sort(([,a], [,b]) => a - b)[0][0];
+
+// Score improvement projection:
+const nextLevelScore = (current: number): number => {
+  if (current < 35) return 35;
+  if (current < 65) return 65;
+  if (current < 90) return 90;
+  return current;
+};
+
+const improvedDomainScore = nextLevelScore(
+  domainScoreMap[lowestDomain]
+);
+
+const improvedTotal = Math.round(
+  documentationScore + 
+  ((improvedDomainScore - domainScoreMap[lowestDomain]) * 
+   domainWeights[lowestDomain])
+);
+```
+
+---
+
+## TESTING CHECKLIST
+
+```
+☐ Score is calculated from four domain scores — not hardcoded
+☐ Domain rows show correct activation label from domain screen selection
+☐ Score bar has two visible benchmark markers at 34 and 71
+☐ Hero number counts up from 0 — never just appears
+☐ Verdict copy is dynamic — changes based on score range
+☐ Primary opportunity card shows lowest-scoring domain
+☐ Score improvement projection is mathematically correct
+☐ Footnote present at bottom
+☐ Full animation sequence plays correctly
+☐ CTA appears last — after all content revealed
+☐ No green anywhere
+☐ No random/hardcoded score values
+☐ Score changes if user goes back and changes domain inputs
+```
