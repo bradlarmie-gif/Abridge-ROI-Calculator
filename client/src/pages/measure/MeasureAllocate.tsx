@@ -56,8 +56,8 @@ function useInpatientResults(state: MeasureState) {
 
     const totalDischarges = deployment.totalEncounters;
 
-    const drgValueLow = cmiDelta * totalDischarges * cmiPointValue * 0.5;
-    const drgValueHigh = cmiDelta * totalDischarges * cmiPointValue * 0.75;
+    const drgValueLow = cmiDelta * totalDischarges * cmiPointValue * 0.70;
+    const drgValueHigh = cmiDelta * totalDischarges * cmiPointValue * 0.85;
 
     const fewerDenials = (denialsDelta / 100) * totalDischarges;
     const denialValue = fewerDenials * denialCostPerCase;
@@ -136,8 +136,8 @@ function useGenericResults(state: MeasureState) {
     const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
     const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
     const additionalWRVUs = wrvuLift * documentedEncounters;
-    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.5;
-    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.75;
+    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.70;
+    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.85;
 
     const totalValueLow = timeValueSubtotal + docValueLow;
     const totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -339,7 +339,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
-            <p className="text-[10px] text-[#999999]"><sup>1</sup> Attribution range: 50-75% accounts for factors beyond documentation</p>
+            <p className="text-[10px] text-[#999999]"><sup>1</sup> Attribution range: 70-85% accounts for factors beyond documentation</p>
             <p className="text-[10px] text-[#999999]"><sup>2</sup> Based on denial cost of ${formatNumber(r.denialCostPerCase)} per case</p>
             <p className="text-[10px] text-[#999999]"><sup>3</sup> Based on CDI FTE cost of ${formatNumber(85000)}/year at {formatNumber(2500)} cases/FTE</p>
           </div>
@@ -485,8 +485,8 @@ function useEDResults(state: MeasureState) {
     const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
     const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
     const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-    const docValueLow = emLevelValue * 0.5;
-    const docValueHigh = emLevelValue * 0.75;
+    const docValueLow = emLevelValue * 0.70;
+    const docValueHigh = emLevelValue * 0.85;
 
     const totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
     const totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -688,7 +688,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
-                  <p className="text-xs text-[#666666] mt-1">+{r.emLevelLift.toFixed(2)} E/M level improvement across {formatNumber(Math.round(r.documentedEncounters))} encounters at 50-75% attribution</p>
+                  <p className="text-xs text-[#666666] mt-1">+{r.emLevelLift.toFixed(2)} E/M level improvement across {formatNumber(Math.round(r.documentedEncounters))} encounters at 70-85% attribution</p>
                 </div>
               </div>
               <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(r.docValueLow, r.docValueHigh)}</p>
@@ -1072,7 +1072,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
               <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
-                <p className="text-xs text-[#666666] mt-1">at 50-75% attribution<sup>3</sup></p>
+                <p className="text-xs text-[#666666] mt-1">at 70-85% attribution<sup>3</sup></p>
               </div>
             </div>
             <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>

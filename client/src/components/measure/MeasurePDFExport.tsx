@@ -190,8 +190,8 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     ? (wrvuDelta / state.documentationQuality.wrvuWithout) * 100
     : 0;
   const additionalWRVUs = wrvuDelta * documentedEncounters;
-  const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.5;
-  const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.75;
+  const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.70;
+  const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.85;
 
   const totalValueLow = timeValueSubtotal + docValueLow;
   const totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -539,7 +539,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           <View>
             <Text style={styles.caption}>{"\u00B9"} ${state.calibration.otHourlyRate}/hr provider cost</Text>
             <Text style={styles.caption}>{"\u00B2"} {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</Text>
-            <Text style={styles.caption}>{"\u00B3"} 50-75% attribution range</Text>
+            <Text style={styles.caption}>{"\u00B3"} 70-85% attribution range</Text>
           </View>
 
           <PageFooter pageNum={2} orgName={orgName} />
@@ -752,7 +752,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
                 Visit duration: {state.calibration.minutesPerVisit} min{"\n"}
                 Revenue/visit: ${state.calibration.revenuePerVisit}{"\n"}
                 wRVU value: ${state.calibration.conversionFactor}{"\n"}
-                Attribution: 50-75%{"\n"}
+                Attribution: 70-85%{"\n"}
                 Allocation: {savingsPercent}/{capacityPercent}/{wellbeingPercent}
               </Text>
             </View>
@@ -772,7 +772,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           <View style={styles.divider} />
 
           <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-            This analysis is for planning purposes. Documentation value uses a 50-75% attribution range. Projections assume current patterns continue. Consult your finance team before making investment decisions based on these estimates.
+            This analysis is for planning purposes. Documentation value uses a 70-85% attribution range. Projections assume current patterns continue. Consult your finance team before making investment decisions based on these estimates.
           </Text>
 
           <PageFooter pageNum={4} orgName={orgName} />

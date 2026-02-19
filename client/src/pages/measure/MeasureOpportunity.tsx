@@ -152,8 +152,8 @@ export default function MeasureOpportunity({
       const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
       const inpSavingsPercent = state.allocation.hardSavingsPercent ?? 60;
 
-      const drgLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.5;
-      const drgHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.75;
+      const drgLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70;
+      const drgHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85;
       const denialValue = (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase;
       const cdiValue = casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0;
       const savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate;
@@ -180,8 +180,8 @@ export default function MeasureOpportunity({
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
       const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
 
-      totalValueLow = timeSubtotal + lwbsValue + emLevelValue * 0.5;
-      totalValueHigh = timeSubtotal + lwbsValue + emLevelValue * 0.75;
+      totalValueLow = timeSubtotal + lwbsValue + emLevelValue * 0.70;
+      totalValueHigh = timeSubtotal + lwbsValue + emLevelValue * 0.85;
     } else if (careSetting === "nursing") {
       const nursingMetrics = state.settingData?.nursing || {};
       const nursingSavingsPercent = state.allocation.hardSavingsPercent ?? 50;
@@ -209,8 +209,8 @@ export default function MeasureOpportunity({
 
       const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      const docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.5;
-      const docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.75;
+      const docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70;
+      const docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85;
 
       totalValueLow = timeValueSubtotal + docValueLow;
       totalValueHigh = timeValueSubtotal + docValueHigh;

@@ -223,10 +223,10 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const qualityHours = totalHoursSaved * (allocation.qualityOfLifePercent / 100);
   const qualityHoursPerWeek = deployment.providers > 0 ? qualityHours / deployment.providers / 52 : 0;
   
-  const wrvuValue = wrvuDelta * deployment.abridgeEncounters * calibration.conversionFactor * 0.5;
+  const wrvuValue = wrvuDelta * deployment.abridgeEncounters * calibration.conversionFactor * 0.70;
   
   const emValuePerLevel = 15;
-  const emValue = emLevelDelta * deployment.abridgeEncounters * emValuePerLevel * 0.5;
+  const emValue = emLevelDelta * deployment.abridgeEncounters * emValuePerLevel * 0.70;
   
   const documentationQualityTotal = wrvuValue + emValue;
   const timeReallocatedTotal = hardSavingsValue + capacityValue;

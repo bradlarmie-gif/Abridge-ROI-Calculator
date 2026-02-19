@@ -82,10 +82,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const cdiFteCost = metrics.vm_cdiFteCost ?? 85000;
       const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
 
-      docValueLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.5
+      docValueLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70
         + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
         + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0);
-      docValueHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.75
+      docValueHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85
         + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
         + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0);
 
@@ -112,8 +112,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
       const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-      docValueLow = emLevelValue * 0.5;
-      docValueHigh = emLevelValue * 0.75;
+      docValueLow = emLevelValue * 0.70;
+      docValueHigh = emLevelValue * 0.85;
 
       totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
       totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -152,8 +152,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
       wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.5;
-      docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.75;
+      docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70;
+      docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85;
 
       totalValueLow = timeValueSubtotal + docValueLow;
       totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -475,10 +475,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     <p>
                       <strong className="text-[#1A1A1A]">{isInpatient ? "Documentation & Coding:" : isED ? "E/M & Throughput:" : "Documentation value:"}</strong>{" "}
                       {isInpatient
-                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 50-75% attribution for DRG accuracy."
+                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 70-85% attribution for DRG accuracy."
                         : isED
                         ? "E/M level accuracy and LWBS recovery value."
-                        : `+${results.wrvuLift.toFixed(2)} wRVU/encounter x $${state.calibration.conversionFactor} conversion factor. Range reflects 50-75% attribution.`
+                        : `+${results.wrvuLift.toFixed(2)} wRVU/encounter x $${state.calibration.conversionFactor} conversion factor. Range reflects 70-85% attribution.`
                       }
                     </p>
                   )}
