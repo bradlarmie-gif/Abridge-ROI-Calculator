@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { Slider } from "@/components/ui/slider";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Legend, Tooltip,
@@ -77,13 +78,19 @@ function EditSlider({ label, value, onChange, min, max, step, display, testId }:
 }) {
   return (
     <div className="mb-3">
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-sm text-black">{label}</span>
         <span className="text-sm font-bold text-black">{display}</span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-[#1A1A1A] h-1" data-testid={testId} />
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={[value]}
+        onValueChange={(v) => onChange(v[0])}
+        className="w-full"
+        data-testid={testId}
+      />
     </div>
   );
 }
@@ -100,7 +107,7 @@ function EditPill({ label, options, value, onChange, testId }: {
             className={`rounded-full px-4 py-2 text-sm cursor-pointer transition-all ${
               value === opt
                 ? 'border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black'
-                : 'border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]'
+                : 'border border-[#E5E7EB] bg-white font-medium text-black/80'
             }`}
             data-testid={`${testId}-${opt}`}
           >{opt}</button>
@@ -392,7 +399,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
 
-      <div className="flex flex-col items-center justify-center text-center min-h-[60vh]">
+      <div className="flex flex-col items-center justify-center text-center mb-12">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0, duration: 0.5 }}>
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3" data-testid="text-gap-label">
             Unrealized Enterprise Value
@@ -406,37 +413,12 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           <p className="text-[#EA2C00] font-bold leading-none text-[clamp(64px,8vw,96px)] mb-2" data-testid="value-hero-gap">
             <CountUpNumber target={displayedTotal} />
           </p>
-          <p className="text-xl text-[#888888] mb-8">annually</p>
+          <p className="text-xl text-[#888888] mb-6">annually</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-          <div className="bg-[#F5F0EB] rounded-lg p-6 mb-8" data-testid="card-time-breakdowns">
-            <div className="flex flex-wrap justify-center gap-12">
-              <div className="text-center">
-                <p className="text-black font-bold text-[28px]" data-testid="value-monthly">
-                  ${displayedMonthly.toLocaleString()}
-                </p>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Month</p>
-              </div>
-              <div className="text-center">
-                <p className="text-black font-bold text-[28px]" data-testid="value-weekly">
-                  ${displayedWeekly.toLocaleString()}
-                </p>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Week</p>
-              </div>
-              <div className="text-center">
-                <p className="text-black font-bold text-[28px]" data-testid="value-daily">
-                  ${displayedDaily.toLocaleString()}
-                </p>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Day</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.5 }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
           <button type="button" onClick={handleOpenEdit}
-            className="text-sm text-[#888888] hover:text-black cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
+            className="text-sm text-[#888888] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
             data-testid="button-refine"
           >
             Refine my assumptions
@@ -444,124 +426,195 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         </motion.div>
       </div>
 
-      <div ref={editSectionRef} className="pt-16">
-        <div className="max-w-xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex-1 max-w-[700px]">
 
-          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-domain-breakdown">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              Domain Breakdown
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-domain-breakdown">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Domain Breakdown
+              </p>
+              <div className="h-px bg-[#E5E7EB] mb-6" />
+              {DOMAIN_ORDER.map((domain, idx) => (
+                <div key={domain}>
+                  <div className="flex items-center justify-between py-3">
+                    <span className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</span>
+                    <span className="font-bold text-base text-black" data-testid={`domain-gap-${domain}`}>
+                      {formatDollar(Math.round(gapValues[domain] * HAIRCUT))}
+                    </span>
+                  </div>
+                  {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                </div>
+              ))}
+              <div className="h-px bg-[#E5E7EB] mt-1" />
+              <div className="bg-white/60 rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
+                <span className="font-semibold text-sm text-black">Total Annual Gap</span>
+                <span className="font-bold text-xl text-[#EA2C00]" data-testid="value-total-gap">
+                  {formatDollar(displayedTotal)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          <div ref={editSectionRef}>
+            {isEditing && (
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">
+                      Refine Assumptions
+                    </p>
+                    <button type="button" onClick={handleReset}
+                      className="text-xs text-[#888888] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
+                      data-testid="button-reset"
+                    >
+                      Reset to original
+                    </button>
+                  </div>
+                  <div className="h-px bg-[#E5E7EB] mb-6" />
+                  {DOMAIN_ORDER.map((domain) => (
+                    <DomainEditCard
+                      key={domain}
+                      domain={domain}
+                      domainState={editState[domain]}
+                      onUpdate={(level, inputs) => handleEditDomain(domain, level, inputs)}
+                      gapValue={gapValues[domain]}
+                      originalGapValue={originalGaps[domain]}
+                      providers={providers}
+                      annualEncounters={annualEncounters}
+                      utilization={utilization}
+                      timeSavings={timeSavings}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-chart">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                3-Year Projection
+              </p>
+              <p className="text-sm text-[#888888] mb-6">
+                Cumulative value captured vs. current trajectory
+              </p>
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
+                    <YAxis
+                      tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
+                      tick={{ fontSize: 12, fill: '#888888' }}
+                      width={70}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      formatter={(value: string) => <span className="text-xs text-black">{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
+                      wrapperStyle={{ paddingTop: 12 }}
+                    />
+                    <Line type="monotone" dataKey="actNow" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="actNow" />
+                    <Line type="monotone" dataKey="currentState" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="currentState" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </motion.div>
+
+          <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary" />
+          <div className={STEP_FOOTER_SPACER_CLASS} />
+        </div>
+
+        <motion.div
+          className="w-full lg:w-[320px] flex-shrink-0"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+        >
+          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
+
+            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
+              Value at a Glance
             </p>
-            <div className="h-px bg-[#E5E7EB] mb-6" />
-            {DOMAIN_ORDER.map((domain, idx) => (
-              <div key={domain}>
-                <div className="flex items-center justify-between py-3">
-                  <span className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</span>
-                  <span className="font-bold text-base text-black" data-testid={`domain-gap-${domain}`}>
+
+            <p className="font-bold text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
+              {formatDollar(displayedTotal)}
+            </p>
+            <p className="text-xs text-white/40 mb-5">unrealized annually</p>
+
+            <div className="h-px bg-white/10 my-4" />
+
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <div>
+                <p className="text-white font-bold text-lg leading-none" data-testid="value-monthly">
+                  ${displayedMonthly.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg leading-none" data-testid="value-weekly">
+                  ${displayedWeekly.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg leading-none" data-testid="value-daily">
+                  ${displayedDaily.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+              Cost of Waiting
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/70">Wait 6 months</span>
+                <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-6mo">
+                  {formatDollarFull(permanentlyLost6mo)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/70">Wait 12 months</span>
+                <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-12mo">
+                  {formatDollarFull(permanentlyLost12mo)}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+              Domain Gaps
+            </p>
+            <div className="space-y-2">
+              {DOMAIN_ORDER.map((domain) => (
+                <div key={domain} className="flex items-center justify-between text-sm">
+                  <span className="text-white/70">{DOMAIN_LABELS[domain]}</span>
+                  <span className="text-white font-semibold">
                     {formatDollar(Math.round(gapValues[domain] * HAIRCUT))}
                   </span>
                 </div>
-                {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
-              </div>
-            ))}
-            <div className="h-px bg-[#E5E7EB] mt-1" />
-            <div className="bg-white/60 rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
-              <span className="font-semibold text-sm text-black">Total Annual Gap</span>
-              <span className="font-bold text-xl text-[#EA2C00]" data-testid="value-total-gap">
-                {formatDollar(displayedTotal)}
-              </span>
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">
-                  Refine Assumptions
-                </p>
-                <button type="button" onClick={handleReset}
-                  className="text-xs text-[#888888] hover:text-black cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
-                  data-testid="button-reset"
-                >
-                  Reset to original
-                </button>
-              </div>
-              {DOMAIN_ORDER.map((domain) => (
-                <DomainEditCard
-                  key={domain}
-                  domain={domain}
-                  domainState={editState[domain]}
-                  onUpdate={(level, inputs) => handleEditDomain(domain, level, inputs)}
-                  gapValue={gapValues[domain]}
-                  originalGapValue={originalGaps[domain]}
-                  providers={providers}
-                  annualEncounters={annualEncounters}
-                  utilization={utilization}
-                  timeSavings={timeSavings}
-                />
               ))}
             </div>
-          )}
 
-          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-chart">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              3-Year Projection
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-xs text-white/60 leading-relaxed italic">
+              This is not an aspirational number. It is a measurement of the enterprise value currently flowing through your documentation infrastructure that is not being captured.
             </p>
-            <p className="text-sm text-[#888888] mb-6">
-              Cumulative value captured vs. current trajectory
-            </p>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
-                  <YAxis
-                    tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
-                    tick={{ fontSize: 12, fill: '#888888' }}
-                    width={70}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    formatter={(value: string) => <span className="text-xs text-black">{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
-                    wrapperStyle={{ paddingTop: 12 }}
-                  />
-                  <Line type="monotone" dataKey="actNow" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="actNow" />
-                  <Line type="monotone" dataKey="currentState" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="currentState" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+
           </div>
-
-          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-cost-waiting">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              The Cost of Waiting
-            </p>
-            <div className="h-px bg-[#E5E7EB] mb-6" />
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-black">Wait 6 months</span>
-                <span className="font-bold text-base text-[#EA2C00]" data-testid="value-wait-6mo">
-                  {formatDollarFull(permanentlyLost6mo)} lost
-                </span>
-              </div>
-              <div className="h-px bg-[#E5E7EB]/50" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-black">Wait 12 months</span>
-                <span className="font-bold text-base text-[#EA2C00]" data-testid="value-wait-12mo">
-                  {formatDollarFull(permanentlyLost12mo)} lost
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#1A1A1A] rounded-xl p-8 mb-12" data-testid="card-dark-summary">
-            <p className="text-base text-white leading-relaxed">
-              This is not an aspirational number. It is a measurement of the enterprise value currently flowing through your documentation infrastructure that is not being captured. Every day it compounds.
-            </p>
-          </div>
-
-          <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary" />
-
-        </div>
+        </motion.div>
       </div>
     </div>
   );
