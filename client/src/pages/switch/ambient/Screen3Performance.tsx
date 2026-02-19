@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
 interface Screen3Props {
@@ -136,20 +138,19 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               What % of eligible encounters are being documented?
             </p>
 
-            <div className="text-center mb-4">
+            <div className="text-center mb-6">
               <span className="text-5xl font-bold text-black" data-testid="value-utilization">
                 {utilization}%
               </span>
             </div>
 
-            <input
-              type="range"
+            <Slider
               min={10}
               max={95}
               step={5}
-              value={utilization}
-              onChange={(e) => handleUtilChange(parseInt(e.target.value))}
-              className="w-full accent-[#1A1A1A] h-1"
+              value={[utilization]}
+              onValueChange={(v) => handleUtilChange(v[0])}
+              className="w-full"
               data-testid="slider-utilization"
             />
 
@@ -183,20 +184,19 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 Minutes saved per documented encounter
               </p>
 
-              <div className="text-center mb-4">
+              <div className="text-center mb-6">
                 <span className="text-5xl font-bold text-black" data-testid="value-time-savings">
                   {timeSavings.toFixed(1)} min
                 </span>
               </div>
 
-              <input
-                type="range"
+              <Slider
                 min={0.5}
                 max={6.0}
                 step={0.25}
-                value={timeSavings}
-                onChange={(e) => handleTimeChange(parseFloat(e.target.value))}
-                className="w-full accent-[#1A1A1A] h-1"
+                value={[timeSavings]}
+                onValueChange={(v) => handleTimeChange(v[0])}
+                className="w-full"
                 data-testid="slider-time-savings"
               />
 
@@ -205,17 +205,16 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 <BenchmarkPill value="4.0 min" label="Abridge avg" isRed />
               </div>
 
-              <label className="flex items-center gap-2.5 mt-4 cursor-pointer" data-testid="checkbox-unmeasured">
-                <input
-                  type="checkbox"
+              <div className="flex items-center gap-2.5 mt-4" data-testid="checkbox-unmeasured">
+                <Checkbox
+                  id="unmeasured"
                   checked={unmeasuredChecked}
-                  onChange={handleUnmeasuredToggle}
-                  className="accent-[#1A1A1A] w-4 h-4"
+                  onCheckedChange={() => handleUnmeasuredToggle()}
                 />
-                <span className="text-sm text-[#888888]">
+                <label htmlFor="unmeasured" className="text-sm text-[#888888] cursor-pointer select-none">
                   I haven't measured this precisely
-                </span>
-              </label>
+                </label>
+              </div>
               {unmeasuredChecked && (
                 <p className="mt-2 text-sm text-[#888888]">
                   Using industry benchmark: 2.0 min
