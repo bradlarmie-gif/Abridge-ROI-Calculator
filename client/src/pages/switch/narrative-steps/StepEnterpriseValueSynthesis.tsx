@@ -215,17 +215,20 @@ export default function StepEnterpriseValueSynthesis({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Total Annual Enterprise Opportunity
+          Unrealized Enterprise Value
         </h1>
         {hasData && (
           <p
-            className="text-5xl md:text-6xl font-bold text-[#EA2C00] mt-4 mb-2 tabular-nums"
+            className="text-5xl md:text-6xl font-bold text-[#1A1A1A] mt-4 mb-2 tabular-nums"
             data-testid="value-total-opportunity"
           >
             {formatCurrency(Math.round(totalAnnual))}
           </p>
         )}
-        <p className="text-sm text-[#999999]">
+        <p className="text-[13px] text-[#555] italic">
+          This value is already embedded in your operations.
+        </p>
+        <p className="text-sm text-[#999999] mt-1">
           Conservative, haircut-adjusted estimate across four enterprise value pillars
         </p>
       </div>

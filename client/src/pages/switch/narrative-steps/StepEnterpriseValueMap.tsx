@@ -165,17 +165,20 @@ export default function StepEnterpriseValueMap({
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Total Annual Enterprise Opportunity
+          Unrealized Enterprise Value
         </h1>
         {hasData && (
           <p
-            className="text-4xl md:text-5xl font-bold text-[#EA2C00] mt-3"
+            className="text-4xl md:text-5xl font-bold text-[#1A1A1A] mt-3"
             data-testid="value-total-opportunity"
           >
             {formatCurrency(Math.round(totalAnnual))}
           </p>
         )}
-        <p className="text-sm text-[#999999] mt-2">
+        <p className="text-[13px] text-[#555] italic mt-1">
+          This value is already embedded in your operations.
+        </p>
+        <p className="text-sm text-[#999999] mt-1">
           Conservative, haircut-adjusted across four pillars
         </p>
       </div>
