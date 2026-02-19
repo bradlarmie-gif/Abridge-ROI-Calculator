@@ -37,6 +37,7 @@ export default function MeasureDataEntry({
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     profile: true,
   });
+  const [stickyExpanded, setStickyExpanded] = useState<Record<string, boolean>>({});
 
   const activeSetting = (state.careSetting || "outpatient") as MeasureCareSetting;
   const config = CARE_SETTING_CONFIGS[activeSetting];
@@ -68,29 +69,19 @@ export default function MeasureDataEntry({
     updateState({ careSetting: setting });
   };
 
-  const toggleSection = (sectionKey: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionKey]: !prev[sectionKey],
-    }));
-  };
+  const toggleSection = useCallback((sectionKey: string) => {
+    const currentlyExpanded = expandedSections[sectionKey] ?? stickyExpanded[sectionKey] ?? false;
+    const newValue = !currentlyExpanded;
+    setExpandedSections((prev) => ({ ...prev, [sectionKey]: newValue }));
+    setStickyExpanded((prev) => ({ ...prev, [sectionKey]: newValue }));
+  }, [expandedSections, stickyExpanded]);
 
   const hasRequiredFields = () => {
     const hasOrg = state.deployment.organizationName.trim().length > 0;
     const hasProviders = state.deployment.providers > 0;
     const hasEncounters = state.deployment.totalEncounters > 0;
     const hasUtilization = state.deployment.utilizationRate > 0;
-    const hasMetricPair = config.metricSections.some((section) =>
-      section.metrics.some((m) => {
-        if (m.hasBeforeAfter) {
-          const before = metrics[`${m.key}_before`] ?? 0;
-          const after = metrics[`${m.key}_after`] ?? 0;
-          return before !== 0 && after !== 0;
-        }
-        return false;
-      }),
-    );
-    return hasOrg && hasProviders && hasEncounters && hasUtilization && hasMetricPair;
+    return hasOrg && hasProviders && hasEncounters && hasUtilization;
   };
 
   const handleSavePreview = () => {
@@ -166,6 +157,7 @@ export default function MeasureDataEntry({
               metrics={metrics}
               activeSetting={activeSetting}
               expandedSections={expandedSections}
+              stickyExpanded={stickyExpanded}
               allocationTotal={allocationTotal}
               allocationValid={allocationValid}
               isValid={isValid}
@@ -348,6 +340,7 @@ interface EditViewProps {
   metrics: SettingMetrics;
   activeSetting: MeasureCareSetting;
   expandedSections: Record<string, boolean>;
+  stickyExpanded: Record<string, boolean>;
   allocationTotal: number;
   allocationValid: boolean;
   isValid: boolean;
@@ -364,15 +357,8 @@ interface EditViewProps {
 
 function getNextStepGuidance(
   profileComplete: boolean,
-  metricSectionStatuses: SectionStatus[],
-  config: CareSettingConfig,
 ): string {
   if (!profileComplete) return "Fill in Partner Profile to continue";
-  const firstIncomplete = metricSectionStatuses.findIndex((s) => s !== "complete");
-  if (firstIncomplete !== -1) {
-    const sectionLabel = config.metricSections[firstIncomplete]?.label || "metrics";
-    return `Add at least one before/after pair in ${sectionLabel}`;
-  }
   return "Review and continue";
 }
 
@@ -382,6 +368,7 @@ function EditView({
   metrics,
   activeSetting,
   expandedSections,
+  stickyExpanded,
   allocationTotal,
   allocationValid,
   isValid,
@@ -398,7 +385,7 @@ function EditView({
     state.deployment.totalEncounters > 0;
 
   const metricSectionStatuses: SectionStatus[] = useMemo(() => {
-    return config.metricSections.map((section, idx) => {
+    return config.metricSections.map((section) => {
       const sectionHasContent = section.metrics.some((m) => {
         if (m.hasBeforeAfter) {
           return (
@@ -412,22 +399,12 @@ function EditView({
 
       if (sectionIsComplete) return "complete" as SectionStatus;
       if (sectionHasContent) return "in-progress" as SectionStatus;
-
       if (!profileComplete) return "locked" as SectionStatus;
-
-      const previousSectionsReady = config.metricSections.slice(0, idx).every((prev) => {
-        return isSectionComplete(prev.key, config, metrics);
-      });
-
-      if (idx === 0 && profileComplete) return "active" as SectionStatus;
-      if (previousSectionsReady) return "active" as SectionStatus;
-      return "locked" as SectionStatus;
+      return "active" as SectionStatus;
     });
   }, [config, metrics, profileComplete]);
 
-  const firstActiveIdx = metricSectionStatuses.findIndex((s) => s === "active");
-
-  const guidance = getNextStepGuidance(profileComplete, metricSectionStatuses, config);
+  const guidance = getNextStepGuidance(profileComplete);
 
   return (
     <motion.div
@@ -558,8 +535,7 @@ function EditView({
 
       {config.metricSections.map((section, idx) => {
         const status = metricSectionStatuses[idx];
-        const shouldAutoExpand = status === "active" && idx === firstActiveIdx;
-        const isExpanded = expandedSections[section.key] ?? shouldAutoExpand;
+        const isExpanded = expandedSections[section.key] ?? stickyExpanded[section.key] ?? false;
 
         return (
           <CollapsibleSection
