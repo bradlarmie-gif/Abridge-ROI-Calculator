@@ -193,96 +193,110 @@ export default function MeasureTransformation({
         </motion.div>
 
         <div className="space-y-4 mb-6">
-          <ComparisonCard
-            icon={Clock}
-            title={isNursing ? "Charting Time" : "Documentation Time"}
-            beforeValue={state.timeEfficiency.timeInNotesWithout}
-            afterValue={state.timeEfficiency.timeInNotesWith}
-            beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
-            afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
-            deltaText={`${timeReclaimed} min saved per ${isNursing ? "shift" : "note"}`}
-            insight={isNursing ? "Time returned to bedside care" : "Time returned to patient care"}
-            perProviderNote={`Per provider: ${hoursPerProvider} hours saved over ${state.deployment.monthsOnAbridge} months`}
-            delay={0.15}
-          />
+          {(state.timeEfficiency.timeInNotesWithout > 0 || state.timeEfficiency.timeInNotesWith > 0) && (
+            <ComparisonCard
+              icon={Clock}
+              title={isNursing ? "Charting Time" : "Documentation Time"}
+              beforeValue={state.timeEfficiency.timeInNotesWithout}
+              afterValue={state.timeEfficiency.timeInNotesWith}
+              beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
+              afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
+              deltaText={`${timeReclaimed} min saved per ${isNursing ? "shift" : "note"}`}
+              insight={isNursing ? "Time returned to bedside care" : "Time returned to patient care"}
+              perProviderNote={`Per provider: ${hoursPerProvider} hours saved over ${state.deployment.monthsOnAbridge} months`}
+              delay={0.15}
+            />
+          )}
 
           {isInpatient && (
             <>
-              <ComparisonCard
-                icon={FileText}
-                title="CMI"
-                beforeValue={inpatientMetrics.cmi_before ?? 0}
-                afterValue={inpatientMetrics.cmi_after ?? 0}
-                beforeLabel={(inpatientMetrics.cmi_before ?? 0).toFixed(2)}
-                afterLabel={(inpatientMetrics.cmi_after ?? 0).toFixed(2)}
-                deltaText={`+${((inpatientMetrics.cmi_after ?? 0) - (inpatientMetrics.cmi_before ?? 0)).toFixed(2)} CMI improvement`}
-                insight="Higher acuity capture per discharge"
-                delay={0.25}
-              />
+              {((inpatientMetrics.cmi_before ?? 0) > 0 || (inpatientMetrics.cmi_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={FileText}
+                  title="CMI"
+                  beforeValue={inpatientMetrics.cmi_before ?? 0}
+                  afterValue={inpatientMetrics.cmi_after ?? 0}
+                  beforeLabel={(inpatientMetrics.cmi_before ?? 0).toFixed(2)}
+                  afterLabel={(inpatientMetrics.cmi_after ?? 0).toFixed(2)}
+                  deltaText={`+${((inpatientMetrics.cmi_after ?? 0) - (inpatientMetrics.cmi_before ?? 0)).toFixed(2)} CMI improvement`}
+                  insight="Higher acuity capture per discharge"
+                  delay={0.25}
+                />
+              )}
 
-              <ComparisonCard
-                icon={TrendingUp}
-                title="Denials per 100 Claims"
-                beforeValue={inpatientMetrics.denialsPer100_before ?? 0}
-                afterValue={inpatientMetrics.denialsPer100_after ?? 0}
-                beforeLabel={`${(inpatientMetrics.denialsPer100_before ?? 0).toFixed(1)}`}
-                afterLabel={`${(inpatientMetrics.denialsPer100_after ?? 0).toFixed(1)}`}
-                deltaText={`${((inpatientMetrics.denialsPer100_before ?? 0) - (inpatientMetrics.denialsPer100_after ?? 0)).toFixed(1)} fewer per 100`}
-                insight="Reduced rework and revenue leakage"
-                delay={0.35}
-              />
+              {((inpatientMetrics.denialsPer100_before ?? 0) > 0 || (inpatientMetrics.denialsPer100_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={TrendingUp}
+                  title="Denials per 100 Claims"
+                  beforeValue={inpatientMetrics.denialsPer100_before ?? 0}
+                  afterValue={inpatientMetrics.denialsPer100_after ?? 0}
+                  beforeLabel={`${(inpatientMetrics.denialsPer100_before ?? 0).toFixed(1)}`}
+                  afterLabel={`${(inpatientMetrics.denialsPer100_after ?? 0).toFixed(1)}`}
+                  deltaText={`${((inpatientMetrics.denialsPer100_before ?? 0) - (inpatientMetrics.denialsPer100_after ?? 0)).toFixed(1)} fewer per 100`}
+                  insight="Reduced rework and revenue leakage"
+                  delay={0.35}
+                />
+              )}
 
-              <ComparisonCard
-                icon={Info}
-                title="CDI Queries per 100 Cases"
-                beforeValue={inpatientMetrics.cdiQueriesPer100_before ?? 0}
-                afterValue={inpatientMetrics.cdiQueriesPer100_after ?? 0}
-                beforeLabel={`${inpatientMetrics.cdiQueriesPer100_before ?? 0}`}
-                afterLabel={`${inpatientMetrics.cdiQueriesPer100_after ?? 0}`}
-                deltaText={`${((inpatientMetrics.cdiQueriesPer100_before ?? 0) - (inpatientMetrics.cdiQueriesPer100_after ?? 0))} fewer per 100`}
-                insight="Less CDI follow-up needed"
-                delay={0.45}
-              />
+              {((inpatientMetrics.cdiQueriesPer100_before ?? 0) > 0 || (inpatientMetrics.cdiQueriesPer100_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={Info}
+                  title="CDI Queries per 100 Cases"
+                  beforeValue={inpatientMetrics.cdiQueriesPer100_before ?? 0}
+                  afterValue={inpatientMetrics.cdiQueriesPer100_after ?? 0}
+                  beforeLabel={`${inpatientMetrics.cdiQueriesPer100_before ?? 0}`}
+                  afterLabel={`${inpatientMetrics.cdiQueriesPer100_after ?? 0}`}
+                  deltaText={`${((inpatientMetrics.cdiQueriesPer100_before ?? 0) - (inpatientMetrics.cdiQueriesPer100_after ?? 0))} fewer per 100`}
+                  insight="Less CDI follow-up needed"
+                  delay={0.45}
+                />
+              )}
 
-              <ComparisonCard
-                icon={TrendingUp}
-                title="Same-Day Completion"
-                beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                afterValue={state.timeEfficiency.sameDayClosureWith}
-                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                deltaText={`+${results.sameDayClosureDelta} percentage points`}
-                insight="Notes completed same day"
-                delay={0.55}
-              />
+              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
+                <ComparisonCard
+                  icon={TrendingUp}
+                  title="Same-Day Completion"
+                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                  afterValue={state.timeEfficiency.sameDayClosureWith}
+                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                  deltaText={`+${results.sameDayClosureDelta} percentage points`}
+                  insight="Notes completed same day"
+                  delay={0.55}
+                />
+              )}
             </>
           )}
 
           {isED && (
             <>
-              <ComparisonCard
-                icon={TrendingUp}
-                title="Door-to-Doc Time"
-                beforeValue={state.timeEfficiency.timeToCloseWithout}
-                afterValue={state.timeEfficiency.timeToCloseWith}
-                beforeLabel={`${state.timeEfficiency.timeToCloseWithout} min`}
-                afterLabel={`${state.timeEfficiency.timeToCloseWith} min`}
-                deltaText={`${Math.max(0, state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith)} min faster`}
-                insight="Patients seen sooner"
-                delay={0.25}
-              />
+              {(state.timeEfficiency.timeToCloseWithout > 0 || state.timeEfficiency.timeToCloseWith > 0) && (
+                <ComparisonCard
+                  icon={TrendingUp}
+                  title="Door-to-Doc Time"
+                  beforeValue={state.timeEfficiency.timeToCloseWithout}
+                  afterValue={state.timeEfficiency.timeToCloseWith}
+                  beforeLabel={`${state.timeEfficiency.timeToCloseWithout} min`}
+                  afterLabel={`${state.timeEfficiency.timeToCloseWith} min`}
+                  deltaText={`${Math.max(0, state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith)} min faster`}
+                  insight="Patients seen sooner"
+                  delay={0.25}
+                />
+              )}
 
-              <ComparisonCard
-                icon={Heart}
-                title="LWBS Rate"
-                beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                afterValue={state.timeEfficiency.sameDayClosureWith}
-                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                deltaText={`${Math.max(0, state.timeEfficiency.sameDayClosureWithout - state.timeEfficiency.sameDayClosureWith).toFixed(1)} pp reduction`}
-                insight="Fewer patients leaving without being seen"
-                delay={0.35}
-              />
+              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
+                <ComparisonCard
+                  icon={Heart}
+                  title="LWBS Rate"
+                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                  afterValue={state.timeEfficiency.sameDayClosureWith}
+                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                  deltaText={`${Math.max(0, state.timeEfficiency.sameDayClosureWithout - state.timeEfficiency.sameDayClosureWith).toFixed(1)} pp reduction`}
+                  insight="Fewer patients leaving without being seen"
+                  delay={0.35}
+                />
+              )}
 
               {(state.documentationQuality.emLevelWithout > 0 || state.documentationQuality.emLevelWith > 0) && (
                 <ComparisonCard
@@ -298,33 +312,37 @@ export default function MeasureTransformation({
                 />
               )}
 
-              <ComparisonCard
-                icon={Heart}
-                title="After-Hours Work"
-                beforeValue={state.timeEfficiency.workOutsideWithout}
-                afterValue={state.timeEfficiency.workOutsideWith}
-                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
-                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
-                deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
-                insight="Less charting after shifts"
-                delay={0.55}
-              />
+              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
+                <ComparisonCard
+                  icon={Heart}
+                  title="After-Hours Work"
+                  beforeValue={state.timeEfficiency.workOutsideWithout}
+                  afterValue={state.timeEfficiency.workOutsideWith}
+                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
+                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
+                  deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
+                  insight="Less charting after shifts"
+                  delay={0.55}
+                />
+              )}
             </>
           )}
 
           {isNursing && (
             <>
-              <ComparisonCard
-                icon={Heart}
-                title="Overtime Hours"
-                beforeValue={state.timeEfficiency.workOutsideWithout}
-                afterValue={state.timeEfficiency.workOutsideWith}
-                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs/wk`}
-                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs/wk`}
-                deltaText={`${pajamaTimeSaved.toFixed(1)} fewer overtime hours`}
-                insight="Reduced overtime burden"
-                delay={0.25}
-              />
+              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
+                <ComparisonCard
+                  icon={Heart}
+                  title="Overtime Hours"
+                  beforeValue={state.timeEfficiency.workOutsideWithout}
+                  afterValue={state.timeEfficiency.workOutsideWith}
+                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs/wk`}
+                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs/wk`}
+                  deltaText={`${pajamaTimeSaved.toFixed(1)} fewer overtime hours`}
+                  insight="Reduced overtime burden"
+                  delay={0.25}
+                />
+              )}
 
               {((nursingMetrics.turnoverRate_before ?? 0) > 0 || (nursingMetrics.turnoverRate_after ?? 0) > 0) && (
                 <ComparisonCard
@@ -372,41 +390,47 @@ export default function MeasureTransformation({
 
           {!isInpatient && !isED && !isNursing && (
             <>
-              <ComparisonCard
-                icon={FileText}
-                title="Revenue Capture"
-                beforeValue={state.documentationQuality.wrvuWithout}
-                afterValue={state.documentationQuality.wrvuWith}
-                beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
-                afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
-                deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-                insight="Capturing clinical complexity"
-                delay={0.25}
-              />
+              {(state.documentationQuality.wrvuWithout > 0 || state.documentationQuality.wrvuWith > 0) && (
+                <ComparisonCard
+                  icon={FileText}
+                  title="Revenue Capture"
+                  beforeValue={state.documentationQuality.wrvuWithout}
+                  afterValue={state.documentationQuality.wrvuWith}
+                  beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
+                  afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
+                  deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
+                  insight="Capturing clinical complexity"
+                  delay={0.25}
+                />
+              )}
 
-              <ComparisonCard
-                icon={TrendingUp}
-                title="Same-Day Closure"
-                beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                afterValue={state.timeEfficiency.sameDayClosureWith}
-                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                deltaText={`+${results.sameDayClosureDelta} percentage points`}
-                insight="Documentation completed during the visit"
-                delay={0.35}
-              />
+              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
+                <ComparisonCard
+                  icon={TrendingUp}
+                  title="Same-Day Closure"
+                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                  afterValue={state.timeEfficiency.sameDayClosureWith}
+                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                  deltaText={`+${results.sameDayClosureDelta} percentage points`}
+                  insight="Documentation completed during the visit"
+                  delay={0.35}
+                />
+              )}
 
-              <ComparisonCard
-                icon={Heart}
-                title="Work-Life Balance"
-                beforeValue={state.timeEfficiency.workOutsideWithout}
-                afterValue={state.timeEfficiency.workOutsideWith}
-                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
-                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
-                deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
-                insight="Evenings reclaimed"
-                delay={0.45}
-              />
+              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
+                <ComparisonCard
+                  icon={Heart}
+                  title="Work-Life Balance"
+                  beforeValue={state.timeEfficiency.workOutsideWithout}
+                  afterValue={state.timeEfficiency.workOutsideWith}
+                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
+                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
+                  deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
+                  insight="Evenings reclaimed"
+                  delay={0.45}
+                />
+              )}
             </>
           )}
         </div>
