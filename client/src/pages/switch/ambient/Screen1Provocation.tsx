@@ -56,155 +56,157 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white px-4 sm:px-6">
-      <a
-        href="/"
-        className="fixed top-0 left-0 z-50 flex items-center p-6"
-        data-testid="link-logo-home-screen1"
-      >
-        <img src={abridgeLogo} alt="Abridge" className="h-5" />
-      </a>
-
-      <div className="w-full max-w-lg text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+      <div className="flex items-center justify-center py-5 px-6 border-b border-[#F0EFED]">
+        <a
+          href="/"
+          className="flex items-center"
+          data-testid="link-logo-home-screen1"
         >
-          <p
-            className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-8"
-            data-testid="text-screen1-label"
+          <img src={abridgeLogo} alt="Abridge" className="h-5" />
+        </a>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6">
+        <div className="w-full max-w-lg text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Before We Begin
-          </p>
-        </motion.div>
+            <p
+              className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-6"
+              data-testid="text-screen1-label"
+            >
+              Before We Begin
+            </p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          <h1
-            className="text-2xl md:text-3xl font-bold text-black mb-4 font-abridge uppercase tracking-tight max-w-[480px] mx-auto"
-            data-testid="text-screen1-headline"
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            What is ambient documentation actually returning to your organization?
-          </h1>
-        </motion.div>
+            <h1
+              className="text-2xl md:text-3xl font-bold text-black mb-5 font-abridge uppercase tracking-tight max-w-[480px] mx-auto"
+              data-testid="text-screen1-headline"
+            >
+              What is ambient documentation actually returning to your organization?
+            </h1>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          <p
-            className="text-base text-[#888888] text-center mb-12"
-            data-testid="text-screen1-body"
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Not what you paid for it.<br />
-            What it is actually returning.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          <div className="mx-auto w-14 h-px bg-[#E5E7EB] mb-12" />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
-            {PILLS.map((pill) => (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={() => handleSelect(pill)}
-                className={`text-sm px-6 py-3 rounded-full border transition-all min-w-[180px] cursor-pointer ${
-                  selected === pill.id
-                    ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
-                    : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"
-                }`}
-                data-testid={`pill-entry-${pill.id}`}
-              >
-                {pill.label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        <AnimatePresence>
-          {showResponse && selected && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.3 }}
+            <p
+              className="text-lg text-[#525252] leading-relaxed mb-10 max-w-[400px] mx-auto"
+              data-testid="text-screen1-body"
             >
-              <p
-                className="text-base text-[#888888] leading-relaxed italic mb-6"
-                data-testid="text-screen1-response"
-              >
-                {RESPONSES[selected]}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              Not what you paid for it.<br />
+              What it is actually returning.
+            </p>
+          </motion.div>
 
-        <AnimatePresence>
-          {selected === "knows" && showInput && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.3 }}
-              className="max-w-[280px] mx-auto mb-6"
-            >
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] text-left mb-2.5">
-                Your Estimate
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="text-lg text-[#888888]">$</span>
-                <FormattedNumberInput
-                  value={entryEstimate}
-                  onChange={setEntryEstimate}
-                  className="flex-1"
-                  placeholder="annually"
-                  data-testid="input-entry-estimate"
-                />
-                <span className="text-sm text-[#888888]">/ year</span>
-              </div>
-              <p className="text-left mt-2 text-sm text-[#888888]">
-                Optional — we'll reference this in your results.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8">
+              {PILLS.map((pill) => (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => handleSelect(pill)}
+                  className={`text-sm px-6 py-3 rounded-full border transition-all cursor-pointer ${
+                    selected === pill.id
+                      ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
+                      : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"
+                  }`}
+                  data-testid={`pill-entry-${pill.id}`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
 
-        <AnimatePresence>
-          {showCTA && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Button
-                onClick={handleBegin}
-                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
-                data-testid="button-begin-assessment"
+          <AnimatePresence>
+            {showResponse && selected && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.3 }}
               >
-                Begin the Assessment
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <p
+                  className="text-base text-[#525252] leading-relaxed italic mb-6"
+                  data-testid="text-screen1-response"
+                >
+                  {RESPONSES[selected]}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {selected === "knows" && showInput && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-[280px] mx-auto mb-6"
+              >
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] text-left mb-2.5">
+                  Your Estimate
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={entryEstimate}
+                    onChange={setEntryEstimate}
+                    className="flex-1"
+                    placeholder="annually"
+                    data-testid="input-entry-estimate"
+                  />
+                  <span className="text-sm text-[#888888]">/ year</span>
+                </div>
+                <p className="text-left mt-2 text-sm text-[#888888]">
+                  Optional — we'll reference this in your results.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showCTA && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Button
+                  onClick={handleBegin}
+                  className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                  data-testid="button-begin-assessment"
+                >
+                  Begin the Assessment
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="py-4 px-6 text-center">
+        <p className="text-xs text-[#AAAAAA]">
+          All calculations are client-side. No data leaves your browser.
+        </p>
       </div>
     </div>
   );
