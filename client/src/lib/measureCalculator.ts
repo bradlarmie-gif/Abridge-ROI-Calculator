@@ -88,6 +88,10 @@ export interface MeasureState {
   };
   settingData: Partial<Record<MeasureCareSetting, Record<string, number>>>;
   customMetrics: CustomMetric[];
+  expansionTargets?: {
+    targetAdoption: number;
+    targetProviders: number;
+  };
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -383,10 +387,12 @@ export function calculateExpansionResults(
   totalValueLow: number,
   totalValueHigh: number,
   totalHoursSaved: number,
+  targetAdoption?: number,
+  targetProviders?: number,
 ): ExpansionResults {
   const { deployment } = state;
   const currentRate = Math.max(deployment.utilizationRate, 1) / 100;
-  const deepenRate = 0.85;
+  const deepenRate = (targetAdoption ?? 85) / 100;
 
   const currentAdoptedEncounters = Math.round(deployment.totalEncounters * currentRate);
   const currentNonAdoptedEncounters = deployment.totalEncounters - currentAdoptedEncounters;
@@ -398,7 +404,9 @@ export function calculateExpansionResults(
   const deepenAdditionalValueHigh = totalValueHigh * (deepenScale - 1);
   const deepenAdditionalValue = (deepenAdditionalValueLow + deepenAdditionalValueHigh) / 2;
 
-  const expandTarget = Math.max(deployment.totalProviders, deployment.providers);
+  const expandTarget = targetProviders != null
+    ? Math.max(targetProviders, deployment.providers)
+    : Math.max(deployment.totalProviders, deployment.providers);
   const expandScale = deployment.providers > 0 ? expandTarget / deployment.providers : 1;
   const expandValueLow = totalValueLow * expandScale;
   const expandValueHigh = totalValueHigh * expandScale;
@@ -414,7 +422,7 @@ export function calculateExpansionResults(
   const perEncounterValueLow = deployment.totalEncounters > 0 ? totalValueLow / deployment.totalEncounters : 0;
   const perEncounterValueHigh = deployment.totalEncounters > 0 ? totalValueHigh / deployment.totalEncounters : 0;
   const hoursPerProvider = deployment.providers > 0 ? totalHoursSaved / deployment.providers : 0;
-  const remainingProviders = Math.max(0, deployment.totalProviders - deployment.providers);
+  const remainingProviders = Math.max(0, expandTarget - deployment.providers);
 
   return {
     currentAdoptedEncounters,

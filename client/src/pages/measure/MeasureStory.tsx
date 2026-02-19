@@ -159,7 +159,11 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       totalValueHigh = timeValueSubtotal + docValueHigh;
     }
 
-    const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+    const expansion = calculateExpansionResults(
+      state, totalValueLow, totalValueHigh, totalHoursSaved,
+      state.expansionTargets?.targetAdoption,
+      state.expansionTargets?.targetProviders
+    );
 
     return {
       totalHoursSaved,
@@ -381,7 +385,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4">
               <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Deepen</p>
-              <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} 85% adoption</p>
+              <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} {state.expansionTargets?.targetAdoption ?? 85}% adoption</p>
               <p className="text-lg font-bold text-[#EA2C00]">+{formatCurrency(results.expansion.deepenAdditionalValue)} / year</p>
               <p className="text-[10px] text-[#999999] mt-1">No additional cost</p>
             </div>
@@ -482,7 +486,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     </p>
                   )}
                   <p>
-                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes 85% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 85}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
                   </p>
                 </div>
               </motion.div>

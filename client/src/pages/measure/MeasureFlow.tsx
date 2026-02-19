@@ -102,6 +102,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureOpportunity
           state={state}
+          updateState={updateState}
           onNext={() => navigate('story')}
           onBack={() => navigate('value')}
           onHome={goHome}

@@ -14,10 +14,10 @@ The Measure path follows a 5-page narrative flow:
 1. **Your Data** (MeasureDataEntry): Edit/Presentation modes. Edit mode has Partner Profile (org name, care setting, providers on Abridge, total providers), before/after metrics (time, closure, after-hours, wRVU), and Value Model configuration (time allocation percentages, financial rates). Presentation mode shows a clean summary.
 2. **What Changed** (MeasureTransformation): Before/after comparison cards with animated bars, per-provider stats, utilization headroom expansion seed.
 3. **The Value** (MeasureAllocate): Hero value display, time waterfall with footnotes (operational savings, patient capacity, provider wellbeing), documentation quality section, per-provider/per-encounter metrics.
-4. **The Opportunity Ahead** (MeasureOpportunity): Two-layer expansion model - Deepen (current adoption to 85%) + Expand (current providers to total providers). Combined opportunity view with per-provider economics.
-5. **Your Story** (MeasureStory): Per-provider hero section, narrative callout, detailed results table, Deepen/Expand "What's Next" cards, PDF export, methodology accordion.
+4. **The Opportunity Ahead** (MeasureOpportunity): Two-layer expansion model with **editable targets** - Deepen (default 80% adoption, user-editable) + Expand (default current + 50 providers, user-editable). InlineEdit component with click-to-edit UX, real-time recalculation, dark stat cards, dark Combined Opportunity panel. Targets stored in `state.expansionTargets` and flow to Story page and PDF.
+5. **Your Story** (MeasureStory): Per-provider hero section, narrative callout, detailed results table, Deepen/Expand "What's Next" cards (reflecting custom targets), PDF export, methodology accordion.
 
-Key calculation: `calculateExpansionResults()` in measureCalculator.ts computes Deepen (85% adoption target), Expand (scale to totalProviders), and combined opportunity values with per-provider economics.
+Key calculation: `calculateExpansionResults()` in measureCalculator.ts accepts optional `targetAdoption` and `targetProviders` params (defaults 85% and totalProviders for backward compatibility). Computes Deepen, Expand, and combined opportunity values with per-provider economics.
 
 ### Switch Path (14-Screen Ambient AI Assessment)
 The Switch path is a 14-screen premium narrative flow for prospects migrating from other ambient AI solutions:

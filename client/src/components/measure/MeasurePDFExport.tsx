@@ -203,7 +203,11 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     ? Math.round((workOutsideDelta / state.timeEfficiency.workOutsideWithout) * 100)
     : 0;
 
-  const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+  const expansion = calculateExpansionResults(
+    state, totalValueLow, totalValueHigh, totalHoursSaved,
+    state.expansionTargets?.targetAdoption,
+    state.expansionTargets?.targetProviders
+  );
   const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
   const hoursPerWeekReturned = state.deployment.providers > 0
     ? (totalHoursSaved / state.deployment.providers / (state.deployment.monthsOnAbridge * 4.33))
@@ -568,8 +572,8 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
                 <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
               </View>
               <View>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>AT 85% ADOPTION</Text>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>85% adoption</Text>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>AT {state.expansionTargets?.targetAdoption ?? 85}% ADOPTION</Text>
+                <Text style={{ fontSize: 10, color: colors.primaryText }}>{state.expansionTargets?.targetAdoption ?? 85}% adoption</Text>
                 <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(expansion.deepenEncounters)} encounters</Text>
                 <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(expansion.deepenHoursSaved))} hours saved</Text>
               </View>
@@ -630,7 +634,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
             <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
               <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>DEEPER + WIDER</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{expansion.combinedProviders} providers</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>85% adoption</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{state.expansionTargets?.targetAdoption ?? 85}% adoption</Text>
               <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 2 }}>est. annual value</Text>
             </View>
@@ -640,7 +644,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
 
           {/* Scaling insight callout */}
           <View style={[styles.calloutBox, { marginBottom: 6 }]}>
-            <Text style={{ fontSize: 10.5, color: colors.secondaryText, lineHeight: 1.5 }}>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5 }}>
               Unlike programs that scale linearly with headcount, AI documentation cost per provider decreases as adoption grows, while value per encounter remains consistent.
             </Text>
           </View>
