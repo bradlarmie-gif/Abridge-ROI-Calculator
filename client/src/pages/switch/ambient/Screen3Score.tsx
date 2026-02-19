@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { ArrowRight } from "lucide-react";
-import { DS } from "./designTokens";
+import { DS, labelStyle, cardStyle, featuredCardStyle, primaryButtonStyle, backLinkStyle } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 
@@ -86,7 +86,7 @@ function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number
   return <>{current}</>;
 }
 
-function AnimatedBar({ percent, delay = 0, height = 6 }: { percent: number; delay?: number; height?: number }) {
+function AnimatedBar({ percent, delay = 0, height = 5 }: { percent: number; delay?: number; height?: number }) {
   const [width, setWidth] = useState(0);
   useEffect(() => {
     const timer = setTimeout(() => setWidth(Math.min(percent, 100)), delay);
@@ -98,7 +98,7 @@ function AnimatedBar({ percent, delay = 0, height = 6 }: { percent: number; dela
       <div
         style={{
           height: '100%', backgroundColor: DS.red, borderRadius: height / 2,
-          width: `${width}%`, transition: 'width 600ms ease-out',
+          width: `${width}%`, transition: 'width 500ms ease-out',
         }}
       />
     </div>
@@ -185,88 +185,80 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
   const verdict = getVerdict(documentationScore);
 
   return (
-    <div style={{ fontFamily: DS.font, paddingTop: 80, paddingBottom: 80 }}>
+    <div style={{ fontFamily: DS.font, paddingTop: 72, paddingBottom: 80 }}>
       <div className="max-w-[600px] mx-auto">
 
-        {/* SECTION A — THE BUILD-UP */}
         <FadeIn delay={200}>
-          <p
-            style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', textAlign: 'center' }}
-            className="mb-12"
-            data-testid="text-buildup-label"
-          >
-            How Your Score Is Built
-          </p>
-        </FadeIn>
+          <div style={{ ...cardStyle, padding: 32 }} data-testid="card-buildup">
+            <p style={labelStyle} className="mb-5" data-testid="text-buildup-label">
+              How Your Score Is Built
+            </p>
 
-        {DOMAIN_ORDER.map((domain, idx) => (
-          <FadeIn key={domain} delay={400 + idx * 150}>
-            <div
-              className="flex items-center gap-4"
-              style={{ marginBottom: 20 }}
-              data-testid={`domain-row-${domain}`}
-            >
-              <div style={{ minWidth: 130 }}>
-                <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font, lineHeight: 1.3 }}>
-                  {DOMAIN_LABELS[domain]}
+            {DOMAIN_ORDER.map((domain, idx) => (
+              <div key={domain}>
+                <FadeIn delay={400 + idx * 150}>
+                  <div
+                    className="flex items-center gap-4"
+                    style={{ height: 48, alignItems: 'center' }}
+                    data-testid={`domain-row-${domain}`}
+                  >
+                    <div style={{ width: '35%' }}>
+                      <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font, lineHeight: 1.3 }}>
+                        {DOMAIN_LABELS[domain]}
+                      </p>
+                      <p style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font, fontStyle: 'italic' }}>
+                        {getActivationLabel(domain, domainScores[domain])}
+                      </p>
+                    </div>
+                    <div style={{ width: '45%' }}>
+                      <AnimatedBar percent={domainScores[domain]} delay={400 + idx * 150 + 100} height={5} />
+                    </div>
+                    <p style={{ fontWeight: 700, fontSize: 15, color: DS.black, fontFamily: DS.font, width: '20%', textAlign: 'right' }} data-testid={`domain-score-${domain}`}>
+                      {domainScores[domain]} / 100
+                    </p>
+                  </div>
+                </FadeIn>
+                {idx < DOMAIN_ORDER.length - 1 && (
+                  <div style={{ height: 1, backgroundColor: '#F0F0F0' }} />
+                )}
+              </div>
+            ))}
+
+            <div style={{ height: 1, backgroundColor: DS.border, marginTop: 16 }} />
+
+            <FadeIn delay={1400}>
+              <div
+                style={{
+                  backgroundColor: DS.bg, borderRadius: 8,
+                  padding: '16px 20px', marginTop: 12,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+                }}
+                data-testid="card-composite-score"
+              >
+                <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>
+                  Documentation Intelligence Score
                 </p>
-                <p style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font }}>
-                  {getActivationLabel(domain, domainScores[domain])}
+
+                <div style={{ flex: 1, height: 8, display: 'flex', gap: 2, maxWidth: 200 }}>
+                  {DOMAIN_ORDER.map((domain) => {
+                    const contribution = Math.round(domainScores[domain] * DOMAIN_WEIGHTS[domain]);
+                    return (
+                      <div key={domain} style={{ flex: contribution, height: 8, overflow: 'hidden' }}>
+                        <AnimatedBar percent={100} delay={1600} height={8} />
+                      </div>
+                    );
+                  })}
+                  <div style={{ flex: Math.max(1, 100 - documentationScore), height: 8, backgroundColor: DS.border, borderRadius: 4 }} />
+                </div>
+
+                <p style={{ fontWeight: 700, fontSize: 24, color: DS.black, fontFamily: DS.font, minWidth: 80, textAlign: 'right' }} data-testid="text-composite-score">
+                  <AnimatedCounter target={documentationScore} duration={800} delay={2000} /> / 100
                 </p>
               </div>
-              <AnimatedBar percent={domainScores[domain]} delay={400 + idx * 150 + 100} height={6} />
-              <p style={{ fontWeight: 700, fontSize: 17, color: DS.black, fontFamily: DS.font, minWidth: 70, textAlign: 'right' }} data-testid={`domain-score-${domain}`}>
-                {domainScores[domain]} / 100
-              </p>
-            </div>
-          </FadeIn>
-        ))}
-
-        {/* Divider */}
-        <FadeIn delay={1200}>
-          <div style={{ height: 1, backgroundColor: DS.border, margin: '24px 0' }} />
-        </FadeIn>
-
-        {/* Total composite row */}
-        <FadeIn delay={1400}>
-          <div
-            style={{
-              backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: 10,
-              padding: '20px 24px',
-            }}
-            data-testid="card-composite-score"
-          >
-            <div className="flex items-center gap-4">
-              <div style={{ minWidth: 130 }}>
-                <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font, lineHeight: 1.3 }}>
-                  Documentation<br />Intelligence Score
-                </p>
-              </div>
-
-              {/* Segmented bar */}
-              <div style={{ flex: 1, height: 8, display: 'flex', gap: 2 }}>
-                {DOMAIN_ORDER.map((domain) => {
-                  const contribution = domainScores[domain] * DOMAIN_WEIGHTS[domain];
-                  return (
-                    <AnimatedBar
-                      key={domain}
-                      percent={100}
-                      delay={1600}
-                      height={8}
-                    />
-                  );
-                })}
-                <div style={{ flex: Math.max(0, 100 - documentationScore) / 100 * 4, height: 8, backgroundColor: DS.border, borderRadius: 4 }} />
-              </div>
-
-              <p style={{ fontWeight: 700, fontSize: 24, color: DS.black, fontFamily: DS.font, minWidth: 90, textAlign: 'right' }} data-testid="text-composite-score">
-                <AnimatedCounter target={documentationScore} duration={800} delay={2000} /> / 100
-              </p>
-            </div>
+            </FadeIn>
           </div>
         </FadeIn>
 
-        {/* SECTION B — THE VERDICT */}
         <FadeIn delay={2800} className="mt-12">
           <div className="text-center" data-testid="hero-score">
             <span style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 96, color: DS.black, lineHeight: 1 }}>
@@ -276,9 +268,8 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           </div>
         </FadeIn>
 
-        {/* Score bar with benchmark markers */}
         <FadeIn delay={3200} className="mt-6">
-          <div style={{ position: 'relative', maxWidth: 520, margin: '0 auto' }}>
+          <div style={{ position: 'relative', maxWidth: 480, margin: '0 auto' }}>
             <div style={{ width: '100%', height: 10, backgroundColor: DS.border, borderRadius: 5, overflow: 'hidden' }}>
               <div
                 style={{
@@ -289,13 +280,11 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
               />
             </div>
 
-            {/* Marker: Industry average at 34 */}
             <div style={{ position: 'absolute', left: '34%', top: -4, transform: 'translateX(-50%)' }} data-testid="marker-industry-avg">
               <div style={{ width: 2, height: 18, backgroundColor: DS.muted }} />
               <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font, fontWeight: 600, textAlign: 'center', marginTop: 4 }}>34</p>
             </div>
 
-            {/* Marker: Top quartile at 71 */}
             <div style={{ position: 'absolute', left: '71%', top: -4, transform: 'translateX(-50%)' }} data-testid="marker-top-quartile">
               <div style={{ width: 2, height: 18, backgroundColor: DS.black }} />
               <p style={{ fontSize: 11, color: DS.black, fontFamily: DS.font, fontWeight: 600, textAlign: 'center', marginTop: 4 }}>71</p>
@@ -303,35 +292,32 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           </div>
         </FadeIn>
 
-        {/* Benchmark context */}
-        <FadeIn delay={3600} className="mt-10">
-          <div className="flex flex-col items-center gap-4">
-            <div className="text-center">
-              <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }}>
-                Industry average \u2014 organizations using ambient AI today
-              </p>
-              <p style={{ fontSize: 17, fontWeight: 700, color: DS.black, fontFamily: DS.font }} data-testid="text-benchmark-industry">
-                34 / 100
-              </p>
-            </div>
-            <div className="text-center">
-              <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }}>
-                Top-quartile organizations
-              </p>
-              <p style={{ fontSize: 17, fontWeight: 700, color: DS.black, fontFamily: DS.font }} data-testid="text-benchmark-top">
-                71 / 100
-              </p>
+        <FadeIn delay={3600} className="mt-7">
+          <div style={{ ...cardStyle, padding: '20px 24px', maxWidth: 480, margin: '0 auto' }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>
+                  Industry average — organizations using ambient AI today
+                </p>
+                <p style={{ fontSize: 17, fontWeight: 700, color: DS.black, fontFamily: DS.font, whiteSpace: 'nowrap', marginLeft: 16 }} data-testid="text-benchmark-industry">
+                  34 / 100
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }}>
+                  Top-quartile organizations
+                </p>
+                <p style={{ fontSize: 17, fontWeight: 700, color: DS.black, fontFamily: DS.font, whiteSpace: 'nowrap', marginLeft: 16 }} data-testid="text-benchmark-top">
+                  71 / 100
+                </p>
+              </div>
             </div>
           </div>
         </FadeIn>
 
-        {/* Verdict card */}
-        <FadeIn delay={4000} className="mt-8">
+        <FadeIn delay={4000} className="mt-7">
           <div
-            style={{
-              backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card,
-              padding: 32, maxWidth: 520, margin: '0 auto',
-            }}
+            style={{ ...cardStyle, padding: '24px 28px', maxWidth: 520, margin: '0 auto' }}
             data-testid="card-verdict"
           >
             <p style={{ fontSize: 20, fontWeight: 700, color: DS.black, fontFamily: DS.font, marginBottom: 12 }} data-testid="text-verdict-headline">
@@ -343,10 +329,9 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           </div>
         </FadeIn>
 
-        {/* SECTION C — THE IMPLICATION */}
         <FadeIn delay={4600} className="mt-12">
           <p
-            style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }}
+            style={labelStyle}
             className="mb-6"
             data-testid="text-opportunity-label"
           >
@@ -354,13 +339,10 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           </p>
 
           <div
-            style={{
-              backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderLeft: `4px solid ${DS.red}`,
-              borderRadius: 12, padding: '24px 24px 24px 20px',
-            }}
+            style={featuredCardStyle}
             data-testid="card-primary-opportunity"
           >
-            <p style={{ fontWeight: 600, fontSize: 13, color: DS.red, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font, marginBottom: 12 }}>
+            <p style={{ fontWeight: 600, fontSize: 11, color: DS.red, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font, marginBottom: 12 }}>
               {DOMAIN_LABELS[lowestDomain]}
             </p>
             <p style={{ fontSize: 20, fontWeight: 600, color: DS.black, fontFamily: DS.font, lineHeight: 1.5, marginBottom: 16 }}>
@@ -372,35 +354,22 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
             <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font, marginTop: 4 }}>
               estimated annual opportunity in this domain
             </p>
+            <div style={{ height: 1, backgroundColor: DS.border, margin: '16px 0' }} />
+            <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font, lineHeight: 1.7 }}>
+              Improving your score in {DOMAIN_LABELS[lowestDomain].toLowerCase()} by one activation level would move your overall Documentation Intelligence Score from {documentationScore} to an estimated {improvedTotal}.
+            </p>
           </div>
         </FadeIn>
 
-        <FadeIn delay={4600} className="mt-8">
-          <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font, textAlign: 'center', maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }} data-testid="text-improvement-projection">
-            Improving your score in {DOMAIN_LABELS[lowestDomain].toLowerCase()} by one activation level would move your overall Documentation Intelligence Score from {documentationScore} to an estimated {improvedTotal}.
-          </p>
-        </FadeIn>
-
-        {/* Footnote */}
-        <FadeIn delay={5000} className="mt-10">
-          <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font, textAlign: 'center', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }} data-testid="text-footnote">
-            This score reflects your self-reported activation across four dimensions of documentation intelligence. It is not a vendor assessment. It is a diagnostic based on your organization's inputs.
-          </p>
-        </FadeIn>
-
-        {/* CTA */}
-        <FadeIn delay={5400} className="mt-10">
+        <FadeIn delay={5000} className="mt-8">
           <div className="flex items-center justify-between">
-            <button onClick={onBack} style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }} data-testid="button-back">
+            <button onClick={onBack} style={backLinkStyle} data-testid="button-back">
               Back
             </button>
             <button
               onClick={onNext}
               className="inline-flex items-center gap-2"
-              style={{
-                fontFamily: DS.font, fontWeight: 600, fontSize: 15, padding: '15px 36px', borderRadius: DS.radius.input,
-                backgroundColor: DS.red, color: DS.white, border: 'none', cursor: 'pointer',
-              }}
+              style={primaryButtonStyle()}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
               data-testid="button-next"

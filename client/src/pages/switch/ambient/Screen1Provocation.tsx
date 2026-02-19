@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { DS } from "./designTokens";
+import { DS, labelStyle, bodyStyle, primaryButtonStyle } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { DataMode } from "@/lib/switchGapCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -56,13 +56,13 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-6 md:px-12"
+      className="fixed inset-0 z-50 flex items-center justify-center px-5 md:px-10"
       style={{ backgroundColor: DS.bg, fontFamily: DS.font }}
     >
       <a
         href="/"
         className="fixed top-0 left-0 z-50 flex items-center"
-        style={{ padding: '16px 24px' }}
+        style={{ padding: '24px 24px' }}
         data-testid="link-logo-home-screen1"
       >
         <img src={abridgeLogo} alt="Abridge" className="h-5" />
@@ -70,31 +70,55 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
 
       <div className="w-full max-w-[480px] text-center">
         <p
-          style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }}
-          className="mb-12"
+          style={{ ...labelStyle, letterSpacing: '2px' }}
+          className="mb-8"
           data-testid="text-screen1-label"
         >
           Before We Begin
         </p>
 
         <h1
-          style={{ fontWeight: 700, fontSize: 'clamp(38px, 5vw, 52px)', color: DS.black, lineHeight: 1.15, fontFamily: DS.font, maxWidth: 480, margin: '0 auto 16px' }}
+          style={{
+            fontWeight: 700,
+            fontSize: 44,
+            color: DS.black,
+            lineHeight: 1.15,
+            fontFamily: DS.font,
+            maxWidth: 480,
+            margin: '0 auto 16px',
+          }}
+          className="hidden md:block"
           data-testid="text-screen1-headline"
+        >
+          What is ambient documentation actually returning to your organization?
+        </h1>
+        <h1
+          style={{
+            fontWeight: 700,
+            fontSize: 34,
+            color: DS.black,
+            lineHeight: 1.15,
+            fontFamily: DS.font,
+            maxWidth: 480,
+            margin: '0 auto 16px',
+          }}
+          className="block md:hidden"
+          data-testid="text-screen1-headline-mobile"
         >
           What is ambient documentation actually returning to your organization?
         </h1>
 
         <p
-          style={{ fontWeight: 400, fontSize: 17, color: DS.body, lineHeight: 1.75, fontFamily: DS.font, marginBottom: 40 }}
+          style={{ ...bodyStyle, textAlign: 'center', marginBottom: 48 }}
           data-testid="text-screen1-body"
         >
           Not what you paid for it.<br />
           What it is actually returning.
         </p>
 
-        <div className="mx-auto mb-10" style={{ width: 56, height: 1, backgroundColor: DS.border }} />
+        <div className="mx-auto" style={{ width: 56, height: 1, backgroundColor: DS.border, marginBottom: 48 }} />
 
-        <div className="flex flex-wrap justify-center gap-3 mb-8" style={{ gap: 12 }}>
+        <div className="flex flex-wrap justify-center" style={{ gap: 12, marginBottom: 32 }}>
           {PILLS.map((pill) => (
             <button
               key={pill.id}
@@ -102,16 +126,16 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
               onClick={() => handleSelect(pill)}
               style={{
                 fontFamily: DS.font,
-                fontWeight: selected === pill.id ? 700 : 600,
+                fontWeight: selected === pill.id ? 700 : 500,
                 fontSize: 14,
-                padding: '10px 22px',
+                padding: '12px 24px',
                 borderRadius: DS.radius.pill,
                 border: `1.5px solid ${selected === pill.id ? DS.black : DS.border}`,
-                backgroundColor: selected === pill.id ? DS.white : DS.bg,
+                backgroundColor: DS.white,
                 color: selected === pill.id ? DS.black : DS.body,
                 cursor: 'pointer',
                 transition: 'all 150ms ease',
-                minWidth: 200,
+                minWidth: 180,
               }}
               data-testid={`pill-entry-${pill.id}`}
             >
@@ -142,7 +166,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
           >
             <p
               className="text-left mb-2.5"
-              style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }}
+              style={{ ...labelStyle }}
             >
               Your Estimate
             </p>
@@ -173,18 +197,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
           <button
             onClick={handleBegin}
             className="inline-flex items-center gap-2"
-            style={{
-              fontFamily: DS.font,
-              fontWeight: 600,
-              fontSize: 15,
-              padding: '15px 36px',
-              borderRadius: DS.radius.input,
-              backgroundColor: DS.red,
-              color: DS.white,
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background 150ms ease',
-            }}
+            style={primaryButtonStyle()}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
             data-testid="button-begin-assessment"

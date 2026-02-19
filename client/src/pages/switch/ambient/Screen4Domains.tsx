@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { ArrowRight } from "lucide-react";
-import { DS } from "./designTokens";
+import { DS, labelStyle, bodyStyle, cardStyle, featuredCardStyle, primaryButtonStyle, backLinkStyle, inputFieldStyle } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -89,11 +89,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
 };
 
-
-const inputFieldStyle: React.CSSProperties = {
-  fontFamily: DS.font, fontWeight: 600, fontSize: 18, color: DS.black,
-  backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: 10,
-  padding: '14px 18px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
+const domainInputStyle: React.CSSProperties = {
+  ...inputFieldStyle,
+  fontSize: 18,
 };
 
 function InputField({ label, description, prefix, suffix, value, onChange, placeholder, testId }: {
@@ -102,7 +100,7 @@ function InputField({ label, description, prefix, suffix, value, onChange, place
 }) {
   return (
     <div>
-      <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-1.5">{label}</p>
+      <p style={labelStyle} className="mb-1.5">{label}</p>
       <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }} className="mb-3">{description}</p>
       <div className="flex items-center gap-2">
         {prefix && <span style={{ fontSize: 15, color: DS.muted, fontFamily: DS.font }}>{prefix}</span>}
@@ -110,7 +108,7 @@ function InputField({ label, description, prefix, suffix, value, onChange, place
           value={value}
           onChange={onChange}
           placeholder={placeholder || '0'}
-          style={inputFieldStyle}
+          style={domainInputStyle}
           onFocus={(e) => { e.currentTarget.style.borderColor = DS.red; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = DS.border; }}
           data-testid={testId}
@@ -127,7 +125,7 @@ function SliderField({ label, description, value, onChange, min, max, step, disp
 }) {
   return (
     <div>
-      <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-1.5">{label}</p>
+      <p style={labelStyle} className="mb-1.5">{label}</p>
       <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }} className="mb-3">{description}</p>
       <div className="flex items-center gap-4">
         <input
@@ -137,7 +135,7 @@ function SliderField({ label, description, value, onChange, min, max, step, disp
           step={step}
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="flex-1 accent-[#EA2C00]"
+          className="flex-1 accent-[#0F0F0F]"
           style={{ height: 4 }}
           data-testid={testId}
         />
@@ -153,7 +151,7 @@ function PillSelector({ label, description, options, value, onChange, testId }: 
 }) {
   return (
     <div>
-      <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-1.5">{label}</p>
+      <p style={labelStyle} className="mb-1.5">{label}</p>
       <p style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }} className="mb-3">{description}</p>
       <div className="flex flex-wrap gap-3">
         {options.map((opt) => (
@@ -162,10 +160,10 @@ function PillSelector({ label, description, options, value, onChange, testId }: 
             type="button"
             onClick={() => onChange(opt)}
             style={{
-              fontFamily: DS.font, fontWeight: value === opt ? 700 : 600, fontSize: 14,
+              fontFamily: DS.font, fontWeight: value === opt ? 700 : 500, fontSize: 14,
               padding: '10px 22px', borderRadius: DS.radius.pill,
               border: `1.5px solid ${value === opt ? DS.black : DS.border}`,
-              backgroundColor: value === opt ? DS.white : DS.bg,
+              backgroundColor: DS.white,
               color: value === opt ? DS.black : DS.body,
               cursor: 'pointer', transition: 'all 150ms ease',
             }}
@@ -185,12 +183,12 @@ function FeedbackCard({ label, value, context, footnote }: {
   return (
     <div
       style={{
-        backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderLeft: `4px solid ${DS.red}`,
-        borderRadius: 12, padding: '24px 24px 24px 20px', boxShadow: DS.shadow,
+        ...featuredCardStyle,
+        marginTop: 16,
       }}
       data-testid="card-domain-feedback"
     >
-      <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-2">{label}</p>
+      <p style={labelStyle} className="mb-2">{label}</p>
       <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 36, color: DS.black, lineHeight: 1.1 }} className="mb-2" data-testid="text-feedback-value">
         {formatDollar(Math.max(0, value))}
       </p>
@@ -279,18 +277,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   return (
     <div style={{ fontFamily: DS.font, paddingTop: 40, paddingBottom: 80 }}>
-      <div className="flex items-center justify-center mb-12" style={{ gap: 0 }}>
+      <div className="flex items-center justify-center mb-12" style={{ gap: 0, backgroundColor: DS.white, borderBottom: `1px solid ${DS.border}`, padding: '16px 0' }}>
         {DOMAIN_ORDER.map((d, idx) => {
           const isActive = d === activeDomain;
           const isComplete = idx < activeIdx;
-          const isUpcoming = idx > activeIdx;
 
           return (
             <div key={d} className="flex items-center">
               <div className="flex flex-col items-center" style={{ minWidth: 80 }}>
                 <span
                   style={{
-                    fontFamily: DS.font, fontSize: 13,
+                    fontFamily: DS.font, fontSize: 14,
                     fontWeight: isActive ? 700 : isComplete ? 600 : 400,
                     color: isActive ? DS.red : isComplete ? DS.black : DS.muted,
                     marginBottom: 8,
@@ -316,22 +313,25 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         })}
       </div>
 
-      <div className="max-w-[600px] mx-auto">
-        <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-2.5" data-testid="text-domain-label">
+      <div className="max-w-[640px] mx-auto">
+        <p style={labelStyle} className="mb-3" data-testid="text-domain-label">
           {config.label}
         </p>
-        <h1 style={{ fontWeight: 700, fontSize: 'clamp(32px, 4vw, 48px)', color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4" data-testid="text-domain-headline">
+        <h1 style={{ fontWeight: 700, fontSize: 44, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 hidden md:block" data-testid="text-domain-headline">
           {config.headline}
         </h1>
-        <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75, fontFamily: DS.font, maxWidth: 520 }} className="mb-12" data-testid="text-domain-reframe">
+        <h1 style={{ fontWeight: 700, fontSize: 32, color: DS.black, lineHeight: 1.15, fontFamily: DS.font }} className="mb-4 block md:hidden">
+          {config.headline}
+        </h1>
+        <p style={{ ...bodyStyle, maxWidth: 520 }} className="mb-12" data-testid="text-domain-reframe">
           {config.reframe}
         </p>
 
-        <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: DS.font }} className="mb-4">
+        <p style={labelStyle} className="mb-4">
           Where is your organization today?
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {config.cards.map((card) => {
             const isSelected = currentState.activationLevel === card.level;
             return (
@@ -341,26 +341,27 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 onClick={() => setActivation(card.level)}
                 className="text-left"
                 style={{
-                  backgroundColor: isSelected ? DS.white : DS.bg,
-                  border: isSelected ? `1px solid ${DS.border}` : `1px solid ${DS.border}`,
-                  borderLeft: isSelected ? `4px solid ${DS.red}` : `1px solid ${DS.border}`,
-                  borderRadius: 12,
-                  padding: isSelected ? '20px 20px 20px 16px' : '20px',
+                  backgroundColor: DS.white,
+                  border: `1.5px solid ${DS.border}`,
+                  borderLeft: isSelected ? `5px solid ${DS.red}` : `1.5px solid ${DS.border}`,
+                  borderRadius: DS.radius.card,
+                  padding: isSelected ? '24px 24px 24px 19px' : '24px',
                   cursor: 'pointer',
-                  boxShadow: isSelected ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                  boxShadow: isSelected ? DS.shadow : 'none',
                   transition: 'all 150ms ease',
+                  minHeight: 120,
                 }}
-                onMouseEnter={(e) => { if (!isSelected) { e.currentTarget.style.backgroundColor = '#F0F0EE'; e.currentTarget.style.borderColor = '#D0D0D0'; } }}
-                onMouseLeave={(e) => { if (!isSelected) { e.currentTarget.style.backgroundColor = DS.bg; e.currentTarget.style.borderColor = DS.border; } }}
+                onMouseEnter={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = DS.muted; e.currentTarget.style.backgroundColor = '#FAFAF9'; } }}
+                onMouseLeave={(e) => { if (!isSelected) { e.currentTarget.style.borderColor = DS.border; e.currentTarget.style.backgroundColor = DS.white; } }}
                 data-testid={`activation-card-${activeDomain}-${card.level}`}
               >
-                <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 28, color: isSelected ? DS.red : DS.border, lineHeight: 1, marginBottom: 8 }}>
-                  {String(card.level).padStart(2, '0')}
+                <p style={{ fontFamily: DS.font, fontWeight: 700, fontSize: 32, color: isSelected ? DS.red : DS.border, lineHeight: 1, marginBottom: 8 }}>
+                  {card.level}
                 </p>
-                <p style={{ fontFamily: DS.font, fontWeight: 500, fontSize: 13, color: DS.body, marginBottom: 4 }}>
+                <p style={{ fontFamily: DS.font, fontWeight: isSelected ? 700 : 600, fontSize: 15, color: DS.black, marginBottom: 4 }}>
                   {card.label}
                 </p>
-                <p style={{ fontFamily: DS.font, fontWeight: 400, fontSize: 12, color: DS.muted, lineHeight: 1.4 }}>
+                <p style={{ fontFamily: DS.font, fontWeight: 400, fontSize: 13, color: isSelected ? DS.body : DS.muted, lineHeight: 1.4 }}>
                   {card.description}
                 </p>
               </button>
@@ -380,8 +381,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               }
             `}</style>
 
-            {activeDomain === 'capacity' && currentState.activationLevel === 2 && (
-              <div className="mb-6">
+            <div style={{ ...cardStyle, marginTop: 24 }}>
+              {activeDomain === 'capacity' && currentState.activationLevel === 2 && (
                 <SliderField
                   label="Estimated Redeployment"
                   description="What % of recovered time is being redeployed productively?"
@@ -391,23 +392,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   display={`${(currentState.inputs.redeployment as number) || 20}%`}
                   testId="slider-redeployment"
                 />
-              </div>
-            )}
-            {activeDomain === 'capacity' && currentState.activationLevel === 3 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="Monthly OT Reduction" description="Estimated overtime savings per month ($)" prefix="$" value={(currentState.inputs.monthlyOT as number) || 0} onChange={(v) => setDomainInput('monthlyOT', v)} testId="input-monthly-ot" />
-                <InputField label="Backlog Reduction" description="Additional patients seen per month" value={(currentState.inputs.monthlyPatients as number) || 0} onChange={(v) => setDomainInput('monthlyPatients', v)} testId="input-monthly-patients" />
-              </div>
-            )}
-            {activeDomain === 'capacity' && currentState.activationLevel === 4 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="Additional Patients / Month" description="New patients seen due to recovered capacity" value={(currentState.inputs.additionalPatients as number) || 0} onChange={(v) => setDomainInput('additionalPatients', v)} testId="input-additional-patients" />
-                <InputField label="Revenue Per Visit" description="Average visit revenue ($)" prefix="$" value={(currentState.inputs.revenuePerVisit as number) || 200} onChange={(v) => setDomainInput('revenuePerVisit', v)} testId="input-revenue-per-visit" />
-              </div>
-            )}
+              )}
+              {activeDomain === 'capacity' && currentState.activationLevel === 3 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="Monthly OT Reduction" description="Estimated overtime savings per month ($)" prefix="$" value={(currentState.inputs.monthlyOT as number) || 0} onChange={(v) => setDomainInput('monthlyOT', v)} testId="input-monthly-ot" />
+                  <InputField label="Backlog Reduction" description="Additional patients seen per month" value={(currentState.inputs.monthlyPatients as number) || 0} onChange={(v) => setDomainInput('monthlyPatients', v)} testId="input-monthly-patients" />
+                </div>
+              )}
+              {activeDomain === 'capacity' && currentState.activationLevel === 4 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="Additional Patients / Month" description="New patients seen due to recovered capacity" value={(currentState.inputs.additionalPatients as number) || 0} onChange={(v) => setDomainInput('additionalPatients', v)} testId="input-additional-patients" />
+                  <InputField label="Revenue Per Visit" description="Average visit revenue ($)" prefix="$" value={(currentState.inputs.revenuePerVisit as number) || 200} onChange={(v) => setDomainInput('revenuePerVisit', v)} testId="input-revenue-per-visit" />
+                </div>
+              )}
 
-            {activeDomain === 'revenue' && currentState.activationLevel === 2 && (
-              <div className="mb-6">
+              {activeDomain === 'revenue' && currentState.activationLevel === 2 && (
                 <SliderField
                   label="Current Denial Rate"
                   description="Your overall claim denial rate (%)"
@@ -417,23 +416,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   display={`${(currentState.inputs.denialRate as number) || 7}%`}
                   testId="slider-denial-rate"
                 />
-              </div>
-            )}
-            {activeDomain === 'revenue' && currentState.activationLevel === 3 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="Current Denial Rate (%)" description="Your overall claim denial rate" suffix="%" value={(currentState.inputs.denialRate as number) || 7} onChange={(v) => setDomainInput('denialRate', v)} testId="input-denial-rate" />
-                <InputField label="Average Claim Value ($)" description="Average claim value" prefix="$" value={(currentState.inputs.claimValue as number) || 250} onChange={(v) => setDomainInput('claimValue', v)} testId="input-claim-value" />
-              </div>
-            )}
-            {activeDomain === 'revenue' && currentState.activationLevel === 4 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="wRVU Improvement Since Deployment (%)" description="Improvement in wRVU since deployment" suffix="%" value={(currentState.inputs.wrvuImprovement as number) || 0} onChange={(v) => setDomainInput('wrvuImprovement', v)} testId="input-wrvu-improvement" />
-                <InputField label="HCC Capture Improvement (%)" description="Improvement in HCC capture rate" suffix="%" value={(currentState.inputs.hccImprovement as number) || 0} onChange={(v) => setDomainInput('hccImprovement', v)} testId="input-hcc-improvement" />
-              </div>
-            )}
+              )}
+              {activeDomain === 'revenue' && currentState.activationLevel === 3 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="Current Denial Rate (%)" description="Your overall claim denial rate" suffix="%" value={(currentState.inputs.denialRate as number) || 7} onChange={(v) => setDomainInput('denialRate', v)} testId="input-denial-rate" />
+                  <InputField label="Average Claim Value ($)" description="Average claim value" prefix="$" value={(currentState.inputs.claimValue as number) || 250} onChange={(v) => setDomainInput('claimValue', v)} testId="input-claim-value" />
+                </div>
+              )}
+              {activeDomain === 'revenue' && currentState.activationLevel === 4 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="wRVU Improvement Since Deployment (%)" description="Improvement in wRVU since deployment" suffix="%" value={(currentState.inputs.wrvuImprovement as number) || 0} onChange={(v) => setDomainInput('wrvuImprovement', v)} testId="input-wrvu-improvement" />
+                  <InputField label="HCC Capture Improvement (%)" description="Improvement in HCC capture rate" suffix="%" value={(currentState.inputs.hccImprovement as number) || 0} onChange={(v) => setDomainInput('hccImprovement', v)} testId="input-hcc-improvement" />
+                </div>
+              )}
 
-            {activeDomain === 'workforce' && currentState.activationLevel === 1 && (
-              <div className="mb-6">
+              {activeDomain === 'workforce' && currentState.activationLevel === 1 && (
                 <SliderField
                   label="After-Hours Charting"
                   description="Estimated hours per provider per week spent documenting outside clinic hours"
@@ -443,28 +440,24 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   display={`${(currentState.inputs.afterHours as number) || 3} hrs / week`}
                   testId="slider-after-hours"
                 />
-              </div>
-            )}
-            {activeDomain === 'workforce' && currentState.activationLevel === 2 && (
-              <div className="mb-6">
+              )}
+              {activeDomain === 'workforce' && currentState.activationLevel === 2 && (
                 <InputField label="Current Annual Turnover Rate (%)" description="Your physician turnover rate" suffix="%" value={(currentState.inputs.turnoverRate as number) || 8} onChange={(v) => setDomainInput('turnoverRate', v)} testId="input-turnover-rate" />
-              </div>
-            )}
-            {activeDomain === 'workforce' && currentState.activationLevel === 3 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="After-Hours Reduction (hrs/week/provider)" description="Hours per week reduced per provider" value={(currentState.inputs.afterHoursReduction as number) || 0} onChange={(v) => setDomainInput('afterHoursReduction', v)} testId="input-afterhours-reduction" />
-                <InputField label="Current Turnover Rate (%)" description="Current physician turnover rate" suffix="%" value={(currentState.inputs.turnoverRate as number) || 8} onChange={(v) => setDomainInput('turnoverRate', v)} testId="input-turnover-rate" />
-              </div>
-            )}
-            {activeDomain === 'workforce' && currentState.activationLevel === 4 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="Turnover Rate Change (%)" description="Reduction in turnover rate since deployment" suffix="%" value={(currentState.inputs.turnoverReduction as number) || 0} onChange={(v) => setDomainInput('turnoverReduction', v)} testId="input-turnover-reduction" />
-                <InputField label="OT / Agency Spend Reduction ($)" description="Monthly reduction in overtime and agency spend" prefix="$" value={(currentState.inputs.otSavings as number) || 0} onChange={(v) => setDomainInput('otSavings', v)} testId="input-ot-savings" />
-              </div>
-            )}
+              )}
+              {activeDomain === 'workforce' && currentState.activationLevel === 3 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="After-Hours Reduction (hrs/week/provider)" description="Hours per week reduced per provider" value={(currentState.inputs.afterHoursReduction as number) || 0} onChange={(v) => setDomainInput('afterHoursReduction', v)} testId="input-afterhours-reduction" />
+                  <InputField label="Current Turnover Rate (%)" description="Current physician turnover rate" suffix="%" value={(currentState.inputs.turnoverRate as number) || 8} onChange={(v) => setDomainInput('turnoverRate', v)} testId="input-turnover-rate" />
+                </div>
+              )}
+              {activeDomain === 'workforce' && currentState.activationLevel === 4 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="Turnover Rate Change (%)" description="Reduction in turnover rate since deployment" suffix="%" value={(currentState.inputs.turnoverReduction as number) || 0} onChange={(v) => setDomainInput('turnoverReduction', v)} testId="input-turnover-reduction" />
+                  <InputField label="OT / Agency Spend Reduction ($)" description="Monthly reduction in overtime and agency spend" prefix="$" value={(currentState.inputs.otSavings as number) || 0} onChange={(v) => setDomainInput('otSavings', v)} testId="input-ot-savings" />
+                </div>
+              )}
 
-            {activeDomain === 'risk' && currentState.activationLevel === 1 && (
-              <div className="mb-6">
+              {activeDomain === 'risk' && currentState.activationLevel === 1 && (
                 <PillSelector
                   label="Documentation Defensibility"
                   description="How would you rate your current note defensibility?"
@@ -473,43 +466,50 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   onChange={(v) => setDomainInput('defensibility', v)}
                   testId="pill-defensibility"
                 />
-              </div>
-            )}
-            {activeDomain === 'risk' && currentState.activationLevel === 2 && (
-              <div className="mb-6">
+              )}
+              {activeDomain === 'risk' && currentState.activationLevel === 2 && (
                 <SliderField
-                  label="Audit-Ready Notes (%)"
-                  description="What percentage of notes would you consider audit-ready today?"
+                  label="Audit-Ready Notes"
+                  description="What % of notes would pass an audit today?"
                   value={(currentState.inputs.auditReady as number) || 50}
                   onChange={(v) => setDomainInput('auditReady', v)}
                   min={0} max={100} step={1}
                   display={`${(currentState.inputs.auditReady as number) || 50}%`}
                   testId="slider-audit-ready"
                 />
-              </div>
-            )}
-            {activeDomain === 'risk' && currentState.activationLevel === 3 && (
-              <div className="flex flex-col gap-5 mb-6">
-                <InputField label="CDI Query Rate (per 1,000 encounters)" description="Clinical documentation improvement queries" value={(currentState.inputs.queryRate as number) || 15} onChange={(v) => setDomainInput('queryRate', v)} testId="input-query-rate" />
-                <InputField label="Average CDI Query Cost ($)" description="Cost per CDI query" prefix="$" value={(currentState.inputs.queryCost as number) || 45} onChange={(v) => setDomainInput('queryCost', v)} testId="input-query-cost" />
-              </div>
-            )}
-            {activeDomain === 'risk' && currentState.activationLevel === 4 && (
-              <div className="mb-6">
+              )}
+              {activeDomain === 'risk' && currentState.activationLevel === 3 && (
+                <div className="flex flex-col gap-5">
+                  <InputField label="CDI Query Rate (per 1,000)" description="Average CDI queries per 1,000 encounters" value={(currentState.inputs.queryRate as number) || 15} onChange={(v) => setDomainInput('queryRate', v)} testId="input-query-rate" />
+                  <InputField label="CDI Query Cost ($)" description="Average cost per CDI query" prefix="$" value={(currentState.inputs.queryCost as number) || 45} onChange={(v) => setDomainInput('queryCost', v)} testId="input-query-cost" />
+                </div>
+              )}
+              {activeDomain === 'risk' && currentState.activationLevel === 4 && (
                 <PillSelector
-                  label="AI / Automation Initiatives Planned"
-                  description="Major clinical AI initiatives planned in next 24 months"
+                  label="AI Initiatives Planned (24mo)"
+                  description="How many AI initiatives are planned in the next 24 months?"
                   options={['1\u20132', '3\u20135', '5+']}
                   value={(currentState.inputs.initiatives as string) || '1\u20132'}
                   onChange={(v) => setDomainInput('initiatives', v)}
                   testId="pill-initiatives"
                 />
-              </div>
-            )}
+              )}
+
+              {activeDomain === 'capacity' && currentState.activationLevel === 1 && (
+                <p style={{ fontSize: 13, color: DS.muted, fontStyle: 'italic', fontFamily: DS.font }}>
+                  No additional inputs needed. We'll use benchmarks for this activation level.
+                </p>
+              )}
+              {activeDomain === 'revenue' && currentState.activationLevel === 1 && (
+                <p style={{ fontSize: 13, color: DS.muted, fontStyle: 'italic', fontFamily: DS.font }}>
+                  No additional inputs needed. We'll use benchmarks for this activation level.
+                </p>
+              )}
+            </div>
 
             {feedback && (
               <FeedbackCard
-                label={feedback.label}
+                label="Estimated Impact"
                 value={feedback.value}
                 context={feedback.context}
                 footnote={feedback.footnote}
@@ -519,20 +519,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         )}
 
         <div className="flex items-center justify-between" style={{ marginTop: currentState.activationLevel ? 32 : 56 }}>
-          <button onClick={handleDomainBack} style={{ fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500 }} data-testid="button-back">
+          <button onClick={handleDomainBack} style={backLinkStyle} data-testid="button-back">
             Back
           </button>
           <button
             onClick={handleAdvance}
             disabled={!currentState.activationLevel}
             className="inline-flex items-center gap-2"
-            style={{
-              fontFamily: DS.font, fontWeight: 600, fontSize: 15, padding: '15px 36px', borderRadius: DS.radius.input,
-              backgroundColor: currentState.activationLevel ? DS.red : DS.border,
-              color: currentState.activationLevel ? DS.white : DS.muted,
-              border: 'none', cursor: currentState.activationLevel ? 'pointer' : 'not-allowed',
-              transition: 'background 150ms ease',
-            }}
+            style={primaryButtonStyle(!!currentState.activationLevel)}
             onMouseEnter={(e) => currentState.activationLevel && (e.currentTarget.style.backgroundColor = DS.redHover)}
             onMouseLeave={(e) => currentState.activationLevel && (e.currentTarget.style.backgroundColor = DS.red)}
             data-testid="button-domain-next"

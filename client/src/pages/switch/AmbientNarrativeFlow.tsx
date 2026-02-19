@@ -92,7 +92,7 @@ export default function AmbientNarrativeFlow({
           className="fixed top-0 left-0 right-0 z-50"
           style={{ backgroundColor: DS.bg, borderBottom: `1px solid ${DS.border}`, height: 56 }}
         >
-          <div className="max-w-[1200px] mx-auto px-6 md:px-12 h-full flex items-center justify-between">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-between">
             <a
               href="/"
               onClick={handleLogoClick}
@@ -130,7 +130,7 @@ export default function AmbientNarrativeFlow({
 
       {!isScreen1 && <div style={{ height: 56 }} />}
 
-      <main className="mx-auto px-6 md:px-12 max-w-[1200px]">
+      <main className="mx-auto px-5 md:px-10 max-w-[1200px]">
         <PageTransition pageKey={`ambient-screen-${currentStep}`}>
           {renderScreen()}
         </PageTransition>

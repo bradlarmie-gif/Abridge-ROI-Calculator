@@ -1,0 +1,910 @@
+# ABRIDGE AMBIENT ASSESSMENT — FINAL COMPREHENSIVE FIX
+## One prompt. Every screen. Do not skip anything.
+
+---
+
+## THE STANDARD
+
+Look at the home screen of this app. Three cards. Beige backgrounds. Clean red CTAs. Diagonal watermark. Premium spacing. That is the visual standard every screen in the ambient assessment must match.
+
+The home screen feels intentional and confident. The ambient assessment screens currently feel like a different product. Fix that.
+
+---
+
+## GLOBAL CHANGES — APPLY FIRST, BEFORE TOUCHING ANY SCREEN
+
+### 1. Page Background
+```css
+/* Every screen in the ambient path */
+background-color: #F7F6F4;  /* warm beige — NOT white */
+```
+
+### 2. Card Backgrounds
+```css
+/* Standard cards */
+background-color: #FFFFFF;
+border: 1px solid #E8E8E8;
+border-radius: 14px;
+padding: 28px 32px;
+
+/* Featured / highlighted cards */
+background-color: #FFFFFF;
+border-left: 4px solid #EA2C00;
+border-top: 1px solid #E8E8E8;
+border-right: 1px solid #E8E8E8;
+border-bottom: 1px solid #E8E8E8;
+border-radius: 14px;
+padding: 28px 28px 28px 24px;
+```
+
+### 3. Typography — Lock These Values
+```
+Screen headline:   Manrope 700, 44px desktop / 32px mobile, #0F0F0F
+Section label:     Manrope 600, 11px, #A3A3A3, uppercase, letter-spacing 2px
+Body text:         Manrope 400, 17px, #525252, line-height 1.75
+Data numbers:      Manrope 700, contextual size, #0F0F0F or #EA2C00
+Input labels:      Manrope 600, 13px, #525252
+Footnote:          Manrope 400, 13px, #A3A3A3 italic
+```
+
+### 4. Remove All These Immediately
+- Any green color anywhere
+- Any amber/yellow color anywhere  
+- Any emoji icons (Frown, Meh, Smile, PartyPopper)
+- Any gradient backgrounds
+- "Continue" or "Next" on any button
+
+### 5. Spacing Rhythm
+```
+Page max-width:           640px centered
+Page padding horizontal:  40px desktop / 20px mobile
+Screen top padding:       72px
+Between major sections:   56px
+Between cards:            16px
+Card internal padding:    28px 32px
+Between label and content: 12px
+```
+
+---
+
+## SCREEN 1 — THE PROVOCATION
+
+**Problems:** Stark white background, pills unbalanced, too much dead space, no logo placement hierarchy.
+
+**Fixes:**
+
+```
+Page background: #F7F6F4
+
+Layout: Full viewport height, content vertically AND horizontally centered
+        Single column, max-width 480px, margin auto
+
+Logo: Top-left, fixed position, 24px from edges
+      NO progress dots on this screen
+
+Content order:
+  1. Label: "BEFORE WE BEGIN" — 11px, #A3A3A3, uppercase, letter-spacing 2px
+  2. [32px gap]
+  3. Headline: "What is ambient documentation actually returning to your organization?"
+     Font: Manrope 700, 44px desktop / 34px mobile
+     Color: #0F0F0F
+     Max-width: 480px
+     Text-align: center
+     Line breaks cleanly at 2 lines — not 3
+  4. [16px gap]
+  5. Body: "Not what you paid for it. What it is actually returning."
+     17px, #525252, centered, two lines
+  6. [48px gap]
+  7. Divider: 1px #E8E8E8, 56px wide, centered
+  8. [48px gap]
+  9. Three pills — ALL on one row, centered, gap 12px
+     Each pill: min-width 180px, padding 12px 24px
+     
+     Pill default:  bg #FFFFFF, border 1.5px #E8E8E8, radius 999px, 
+                    text 14px Manrope 500 #525252
+     Pill selected: bg #FFFFFF, border 1.5px #0F0F0F, 
+                    text 14px Manrope 700 #0F0F0F
+     
+  10. [On selection — response fades in, 400ms]
+      Text: 17px #525252 italic, centered
+      
+  11. [800ms after response — CTA fades in]
+      "Begin the Assessment →"
+      Primary button, centered (exception to right-align rule)
+      
+  12. [If "I know the number" — input fades in above CTA]
+      Label: "YOUR ESTIMATE"
+      Input: $[ ________ ] / year
+      Note: "Optional — we'll reference this in your results."
+            13px #A3A3A3
+```
+
+---
+
+## SCREEN 2 — YOUR BASELINE
+
+**Problems:** Inputs too flat, right panel floating, dark card wrong color, beige missing.
+
+**Fixes:**
+
+```
+Page background: #F7F6F4
+
+Layout: Two column on desktop (inputs left, panel right, gap 32px)
+        Single column mobile
+
+LEFT COLUMN (max-width 380px):
+
+  Label: "YOUR ORGANIZATION"
+  Headline: "Let's establish your baseline."
+  Body: "Two inputs. Benchmarks handle the rest."
+  [40px gap]
+  
+  INPUT 1 — PROVIDERS:
+    Label (13px 600 #525252): "Physicians and APPs using ambient documentation"
+    Input field:
+      background: #FFFFFF
+      border: 1.5px solid #E8E8E8
+      border-radius: 10px
+      padding: 14px 18px
+      font: Manrope 600 18px #0F0F0F
+      placeholder: "50"
+      width: 100%
+      focus: border-color #EA2C00, no box-shadow
+  
+  [28px gap]
+  
+  INPUT 2 — ENCOUNTERS:
+    Label: "Annual encounters where ambient is available"
+    Same input styling as above
+    placeholder: "100,000"
+    Below input: "Help me estimate →" text link
+      13px #A3A3A3, underline offset-2
+      Expands inline to show calculation
+  
+  [Encounters-per-provider warning if > 3,500/provider]
+  13px #A3A3A3: "That's ~[X] per provider per day — want to double-check?"
+
+RIGHT COLUMN:
+
+  SINGLE WHITE CARD containing both sections:
+    background: #FFFFFF
+    border: 1px solid #E8E8E8
+    border-radius: 14px
+    padding: 28px
+    
+    Section 1 — WHAT WE'LL MODEL:
+      Label: "WHAT WE'LL MODEL"
+      Four rows with checkmarks:
+        ✓ Capacity creation
+        ✓ Revenue integrity
+        ✓ Workforce stability
+        ✓ Risk & compliance
+      Each row: 15px #525252, checkmark in #EA2C00
+    
+    [1px #E8E8E8 divider]
+    
+    Section 2 — BASELINE (appears after first input):
+      Label: "BASELINE"
+      Providers:   [X]
+      Encounters:  [X,XXX]
+      
+      Each row: label 13px #A3A3A3, value 15px 700 #0F0F0F, 
+                space-between
+    
+    [20px gap]
+    
+    DARK CARD inside the white card:
+      background: #0F0F0F  (true near-black — not muddy dark)
+      border-radius: 10px
+      padding: 20px
+      
+      Text (#FFFFFF, 15px, line-height 1.7):
+      "Most organizations at your scale have never mapped 
+      what their documentation infrastructure is actually 
+      returning. You're about to."
+
+CTA: "See My Utilization Reality →" — right aligned desktop, full-width mobile
+```
+
+---
+
+## SCREEN 3 — CURRENT PERFORMANCE
+
+**Problems:** Single column, too much scrolling, sliders defaulting wrong, benchmark comparison looks bad, not intuitive.
+
+**Complete redesign as TWO COLUMN layout:**
+
+```
+Page background: #F7F6F4
+
+TOP SECTION (full width, above the two columns):
+  Label: "CURRENT PERFORMANCE"
+  Headline: "How is your ambient tool performing today?"
+  Body: "Two inputs. These determine your documentation intelligence score."
+  [40px gap]
+
+TWO COLUMN LAYOUT (gap 32px):
+
+LEFT COLUMN — INPUTS:
+
+  UTILIZATION RATE:
+    Label: "UTILIZATION RATE"
+    Description: "What % of eligible encounters are being documented?"
+    
+    Value display (centered, large):
+      Font: Manrope 700, 56px, #0F0F0F
+      "[X]%"
+      Updates live with slider
+    
+    Slider:
+      Default: 50% (not random)
+      Min: 10%, Max: 95%, Step: 5%
+      Track: 4px, #E8E8E8
+      Fill: #0F0F0F
+      Thumb: 20px, #FFFFFF, border 2px #0F0F0F
+    
+    Benchmark pills below slider (two pills, side by side):
+      Left pill: "45%  Industry avg"  
+        bg #F7F6F4, border #E8E8E8, text #A3A3A3
+      Right pill: "76%  Abridge avg"  
+        bg #FFFFFF, border #EA2C00, text #EA2C00 700
+    
+    [24px gap]
+    
+    Conditional insight (13px #525252 italic, fades in after slider moves):
+      < 45%: "Below industry average — significant headroom to benchmark"
+      45–60%: "Near industry average — [X,XXX] encounter gap to Abridge benchmark"
+      61–75%: "Above average — [X,XXX] encounter gap to close"  
+      ≥ 76%: "At or above Abridge benchmark — strong utilization"
+    
+  [40px gap]
+  
+  TIME RETURNED PER ENCOUNTER:
+    Label: "TIME RETURNED / ENCOUNTER"
+    Description: "Minutes saved per documented encounter"
+    
+    Value display:
+      Font: Manrope 700, 56px, #0F0F0F
+      "[X.X] min"
+    
+    Slider:
+      Default: 2.0 min (not random)
+      Min: 0.5, Max: 6.0, Step: 0.25
+    
+    Benchmark pills:
+      Left: "1.5–2.5 min  Most tools"
+      Right: "4.0 min  Abridge avg" (red)
+    
+    Checkbox below:
+      ☐ "I haven't measured this precisely"
+      → Sets to 2.0, shows "Using industry benchmark"
+    
+    Conditional insight:
+      < 2.0: "Below typical range — [X,XXX] hour gap to Abridge benchmark"
+      2.0–3.0: "Within typical range — [X] min gap represents [X,XXX] hours"
+      3.0–3.9: "Above average — [X] min to Abridge benchmark"
+      ≥ 4.0: "At or above Abridge benchmark"
+
+RIGHT COLUMN — LIVE COMPARISON:
+
+  This column is sticky on desktop (stays in view as user scrolls)
+  
+  WHITE CARD — AT YOUR CURRENT PERFORMANCE:
+    Label: "AT YOUR CURRENT PERFORMANCE"
+    
+    Two data rows:
+      Encounters documented annually:  [X,XXX]
+      Hours returned annually:         [X,XXX]
+    
+    [Divider]
+    
+    Gap row (appears after both sliders moved):
+      "Gap to Abridge benchmark"
+      Value: "+[X,XXX] hours / year not yet captured"
+      Color: #EA2C00, 15px 700
+    
+    Footnote: 12px #A3A3A3 italic
+    "Gap vs Abridge avg: 76% utilization, 4.0 min/encounter"
+  
+  [16px gap]
+  
+  WHITE CARD — HOW YOUR TOOL COMPARES:
+    Label: "HOW YOUR TOOL COMPARES"
+    
+    Two column comparison (side by side):
+    
+    Left (YOUR CURRENT TOOL):
+      Label: "YOUR CURRENT TOOL" — 11px #A3A3A3
+      
+      Stat: [utilization]%
+      Sub: "utilization rate" — 12px #A3A3A3
+      [divider]
+      Stat: [timeSavings] min
+      Sub: "per encounter"
+      [divider]
+      Stat: [theirHours] hrs
+      Sub: "returned annually"
+    
+    Right (ABRIDGE AVERAGE):
+      Label: "ABRIDGE AVERAGE" — 11px #EA2C00
+      Left border: 4px #EA2C00
+      
+      Stat: 76% + gap badge "+[X]pp"
+      Sub: "utilization rate"
+      [divider]
+      Stat: 4.0 min + gap badge "+[X] min"
+      Sub: "per encounter"
+      [divider]
+      Stat: [abridgeHours] hrs + gap badge "+[X] hrs"
+      Sub: "returned annually"
+    
+    Gap badge styling:
+      background: rgba(234,44,0,0.08)
+      border-radius: 999px
+      padding: 2px 8px
+      font: Manrope 600 12px #EA2C00
+      display: inline-flex, margin-left: 6px
+
+CTA: "See the Four Domains →"
+Disabled until both sliders have been moved at least once.
+```
+
+---
+
+## SCREEN 4–7 — THE FOUR DOMAINS
+
+**Problems:** Activation cards too small/flat/hidden, not pronounced enough, selection not intuitive.
+
+**Fixes:**
+
+```
+DOMAIN NAVIGATION THREAD:
+  Position: Below page header, above domain content
+  Background: #FFFFFF
+  Border-bottom: 1px solid #E8E8E8
+  Padding: 16px 0
+  
+  Four items, horizontal, centered, gap 40px:
+  
+  Each item:
+    Domain name: 14px Manrope 600
+    Dot below name: 8px circle
+    
+    Active:    name #EA2C00 700, dot filled #EA2C00
+    Complete:  name #0F0F0F 600, dot filled #0F0F0F
+    Upcoming:  name #A3A3A3 400, dot #E8E8E8
+    
+  Connector lines between dots: 1px #E8E8E8
+
+DOMAIN SCREEN LAYOUT:
+  
+  Domain label (eyebrow): "[DOMAIN NAME]" uppercase #A3A3A3
+  Headline (44px bold): Domain-specific headline
+  Body (17px #525252): Reframe statement, max 2 sentences
+  [48px gap]
+  Section label: "WHERE IS YOUR ORGANIZATION TODAY?"
+  
+  FOUR ACTIVATION CARDS:
+  
+    Layout: 2x2 grid on desktop, single column mobile
+    Each card: min-height 120px
+    
+    UNSELECTED:
+      background: #FFFFFF
+      border: 1.5px solid #E8E8E8
+      border-radius: 14px
+      padding: 24px
+      cursor: pointer
+      
+      Number: 32px Manrope 700 #E8E8E8
+              (large — takes up top-left of card)
+      Label:  15px Manrope 600 #0F0F0F, margin-top 8px
+      Desc:   13px #A3A3A3, margin-top 4px
+      
+      hover: border-color #A3A3A3, background #FAFAF9
+    
+    SELECTED:
+      background: #FFFFFF
+      border: 1.5px solid #E8E8E8
+      border-left: 5px solid #EA2C00
+      border-radius: 14px
+      padding: 24px 24px 24px 19px
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08)
+      
+      Number: 32px Manrope 700 #EA2C00  (color change is the signal)
+      Label:  15px Manrope 700 #0F0F0F
+      Desc:   13px #525252
+  
+  INPUT + FEEDBACK SECTION:
+  (Fades in 200ms after card selected)
+  
+    White card, full width:
+      background: #FFFFFF
+      border: 1px solid #E8E8E8
+      border-radius: 14px
+      padding: 28px 32px
+      margin-top: 24px
+    
+    Input label: 11px uppercase #A3A3A3
+    Input description: 15px #525252
+    Input field: standard styling
+    
+    [20px gap]
+    
+    FEEDBACK CARD (live, updates on input):
+      background: #FFFFFF
+      border-left: 4px solid #EA2C00
+      border: 1px solid #E8E8E8  
+      border-radius: 14px
+      padding: 24px 24px 24px 20px
+      margin-top: 16px
+      
+      Label: "ESTIMATED IMPACT" — 11px #A3A3A3 uppercase
+      Value: 36px Manrope 700 #0F0F0F — updates live
+      Body: 15px #525252 — one sentence context
+      Footnote: 12px #A3A3A3 italic — methodology note
+```
+
+---
+
+## SCREEN 5 — THE SCORE
+
+**Problems:** "How your score is built" has no header, page layout is broken, score feels disconnected.
+
+**Fixes:**
+
+```
+Page background: #F7F6F4
+Max-width: 600px centered
+
+SECTION 1 — HOW YOUR SCORE IS BUILT:
+
+  WHITE CARD (full width):
+    background: #FFFFFF
+    border: 1px solid #E8E8E8
+    border-radius: 14px
+    padding: 32px
+
+    Header row inside card:
+      Left: Label "HOW YOUR SCORE IS BUILT" — 11px #A3A3A3 uppercase
+      Right: nothing — keep clean
+
+    [20px gap]
+
+    Four domain rows (staggered fade in, 150ms apart):
+    Each row:
+      Left (35%):  Domain name — 15px 600 #0F0F0F
+                   Activation — 12px #A3A3A3 italic (their chosen label)
+      Middle (45%): Score bar
+                    Height 5px, bg #E8E8E8, fill #EA2C00
+                    Animates 0→value on entry, 500ms ease-out
+      Right (20%):  Score value — 15px 700 #0F0F0F, right-aligned
+    
+    Row height: 48px
+    Row border-bottom: 1px #F0F0F0 (except last)
+
+    [16px gap, divider 1px #E8E8E8]
+
+    TOTAL ROW:
+      background: #F7F6F4
+      border-radius: 8px
+      padding: 16px 20px
+      margin-top: 12px
+      flex row, space-between
+      
+      Left: "Documentation Intelligence Score" — 15px 600 #0F0F0F
+      
+      Middle: Composite bar (four colored segments, total = score%)
+              Height: 8px, rounded
+              Each segment: proportional contribution, all #EA2C00
+              Separated by 2px white gaps
+      
+      Right: Score count-up — 24px 700 #0F0F0F
+             Counts from 0 over 800ms after bar fills
+
+[48px gap]
+
+SECTION 2 — THE SCORE HERO:
+
+  Centered, no card background — sits on page background
+
+  Score number: 96px Manrope 700 #0F0F0F, centered
+  Denominator: "/ 100" — 24px #A3A3A3 below
+
+  Score bar (480px max, centered):
+    Height: 10px, radius 5px
+    Background: #E8E8E8
+    Fill: #EA2C00, animates after count-up completes
+    
+    TWO MARKER LINES on bar:
+      At 34%: 2px vertical #A3A3A3, label "34" below 11px #A3A3A3
+      At 71%: 2px vertical #0F0F0F, label "71" below 11px #0F0F0F
+
+  [28px gap]
+
+  Two benchmark rows (centered, stacked):
+    Row 1: "Industry average — organizations using ambient AI today"
+           Right-aligned value: "34 / 100" — 17px 700 #0F0F0F
+    Row 2: "Top-quartile organizations"
+           Right-aligned value: "71 / 100" — 17px 700 #0F0F0F
+    
+    Both in a subtle white card, padding 20px 24px
+
+  [28px gap]
+
+  VERDICT CARD (white, centered, max-width 520px):
+    background: #FFFFFF
+    border: 1px solid #E8E8E8
+    border-radius: 14px
+    padding: 24px 28px
+    
+    Dynamic copy based on score range (as specified in score screen prompt)
+    17px #525252, line-height 1.75
+
+[48px gap]
+
+SECTION 3 — PRIMARY OPPORTUNITY:
+  
+  Label: "YOUR PRIMARY OPPORTUNITY"
+  
+  FEATURED CARD (TYPE 2 — left border #EA2C00):
+    Domain name label: 11px #EA2C00 uppercase
+    Statement: 20px Manrope 600 #0F0F0F
+    Gap value: 32px Manrope 700 #EA2C00
+    Gap label: 13px #A3A3A3
+    
+    [divider]
+    
+    Score improvement projection: 15px #525252
+
+[32px gap]
+
+CTA: "See What This Is Costing You →"
+Delay: appears 400ms after verdict card fades in
+```
+
+---
+
+## SCREEN 6 — THE GAP
+
+**Problems:** Spacing inconsistent, sections not separated enough, math labeling loose.
+
+**Fixes:**
+
+```
+Page background: #F7F6F4
+
+SECTION 1 — HERO NUMBER:
+  
+  [80px top padding]
+  
+  Label: "UNREALIZED ENTERPRISE VALUE" — centered
+  
+  [Pre-number statement — 20px #525252 centered]:
+  "Your documentation infrastructure is currently failing to capture"
+  
+  [24px gap]
+  
+  Gap number: 96px Manrope 700 #EA2C00, centered
+  Counts up from 0 over 1600ms on entry
+  
+  [12px gap]
+  "annually" — 20px #A3A3A3 centered
+  
+  [32px gap]
+  
+  THREE TIME BREAKDOWNS (white card, centered, max-width 480px):
+    background: #FFFFFF
+    border: 1px solid #E8E8E8
+    border-radius: 14px
+    padding: 20px 28px
+    
+    Three columns inside, dividers between:
+      Per Month / Per Week / Per Day
+      Value: 24px 700 #0F0F0F
+      Label: 11px #A3A3A3 uppercase
+  
+  [16px gap]
+  
+  Reframe line (centered, 15px #A3A3A3 italic):
+  "Already in your operations. Already earned. Not yet realized."
+  
+  [16px gap]
+  
+  Edit link (centered, 13px #A3A3A3, underline):
+  "Review or adjust your inputs →"
+
+[56px gap]
+
+SECTION 2 — WHERE THE GAP LIVES:
+
+  Label: "WHERE THE GAP LIVES"
+  
+  WHITE CARD:
+    Four domain rows:
+      Left: Domain name (15px 600) + activation label (12px #A3A3A3 italic)
+      Middle: Bar (6px, #EA2C00 fill to domain score %)
+      Right: Gap value (17px 700 #0F0F0F) + "/yr" (12px #A3A3A3)
+    
+    [Divider]
+    
+    Total row:
+      "Total Annual Gap" — 15px 600 #0F0F0F
+      "$[X]" — 20px 700 #EA2C00
+
+[56px gap]
+
+SECTION 3 — THE GRAPH:
+
+  Label: "THE COMPOUNDING EFFECT OF INACTION"
+  Headline: "Every year at current activation compounds the gap."
+  
+  WHITE CARD containing chart:
+    background: #FFFFFF
+    border: 1px solid #E8E8E8
+    border-radius: 14px
+    padding: 28px
+    
+    Line chart (two lines, NO fill):
+      Act Now: #EA2C00, 2px solid
+      Current State: #A3A3A3, 1.5px dashed
+      
+      Grid: horizontal only, #F0F0F0
+      X-axis: Today/6mo/12mo/18mo/24mo/36mo — 12px #A3A3A3
+      No Y-axis labels
+    
+    Legend below: two items, 13px #A3A3A3
+
+[40px gap]
+
+SECTION 4 — COST OF WAITING TABLE:
+
+  Label: "COST OF WAITING"
+  
+  WHITE CARD:
+    Clean table, no outer border
+    
+    Header row: [blank] / Act Now / Wait 6mo / Wait 12mo
+    Row 1: 3-Year Value
+    Row 2: Permanently Lost — values in #EA2C00 700
+    
+    Footnote below table (13px #A3A3A3 italic):
+    "Value not captured in earlier periods is permanently lost —
+    it does not shift forward in time."
+
+[40px gap]
+
+SECTION 5 — DARK CARD:
+
+  background: #0F0F0F
+  border-radius: 14px
+  padding: 32px
+  
+  "Every month at current activation levels leaves"
+  $[monthly] — 36px 700 #EA2C00
+  "in enterprise value permanently uncaptured."
+  
+  [16px gap]
+  
+  Body #A3A3A3 15px:
+  "This is not a projection of what better technology could deliver.
+  It is a map of what your current documentation infrastructure is
+  failing to capture — right now, inside your existing operations."
+  
+  [12px gap]
+  
+  Footnote #525252 13px:
+  "Conservative estimate. Based on your inputs.
+  Methodology available on request."
+
+[40px gap]
+
+CTA: "See My Summary →"
+
+EDIT MODE (when "Review or adjust your inputs" is clicked):
+
+  Each domain row in "Where the Gap Lives" expands:
+    Shows activation dropdown + key input field
+    Live gap value updates as inputs change
+    
+  "Apply Changes" button after editing
+  "Reset to Original" text link
+  
+  Note above edit section (13px #A3A3A3):
+  "Editing inputs updates dollar projections only.
+  Your Documentation Intelligence Score is fixed."
+```
+
+---
+
+## SCREEN 7 — THE INVITATION
+
+**Complete rebuild. This screen is currently bad.**
+
+```
+Page background: #F7F6F4
+Max-width: 560px centered
+
+[80px top padding]
+
+SECTION 1 — VERDICT:
+
+  Label: "YOUR ASSESSMENT"
+  
+  WHITE CARD:
+    Two numbers side by side:
+    
+    Left box:
+      Label: "YOUR SCORE" — 11px #A3A3A3
+      Number: [SCORE] / 100 — 48px 700 #0F0F0F
+    
+    Divider: 1px vertical #E8E8E8
+    
+    Right box:
+      Label: "TOP QUARTILE" — 11px #A3A3A3
+      Number: 71 / 100 — 48px 700 #0F0F0F
+    
+    Gap bar below (full width inside card):
+      Height: 6px, radius 3px
+      #E8E8E8 background full width
+      #EA2C00 fill to [SCORE]%
+      A small marker at 71% in #0F0F0F
+    
+    [16px gap]
+    
+    Body (17px #525252):
+    "You are capturing approximately [SCORE]% of the enterprise value
+    flowing through your documentation infrastructure."
+
+[48px gap]
+
+SECTION 2 — PRIMARY OPPORTUNITY:
+
+  Label: "HIGHEST-LEVERAGE OPPORTUNITY"
+  
+  FEATURED CARD (left border #EA2C00):
+    Domain name: 11px #EA2C00 uppercase
+    Value: 32px 700 #EA2C00
+    "annually" — 13px #A3A3A3
+    
+    [Divider]
+    
+    Body (15px #525252):
+    Two sentences. What this means. What closing it requires.
+
+[48px gap]
+
+SECTION 3 — THE INVITATION:
+
+  Headline (32px 700 #0F0F0F, centered, max-width 400px, margin auto):
+  "Would you like to see what documentation intelligence looks like at your scale?"
+  
+  [20px gap]
+  
+  Body (15px #A3A3A3, centered):
+  "This is not a product demonstration.
+  It is a 30-minute working session."
+  
+  [32px gap]
+  
+  TWO BUTTONS centered with 16px gap:
+  
+    Primary: "Request a Working Session →"
+      bg #EA2C00, text #FFFFFF, 15px 600
+      padding 15px 36px, radius 10px
+    
+    Secondary: "Export My Assessment"
+      bg transparent, border 1.5px #0F0F0F
+      text #0F0F0F, 15px 500
+      padding 13px 28px, radius 10px
+  
+  [On "Request a Working Session" click — form fades in:]
+  
+    WHITE CARD:
+      padding 28px 32px
+      
+      Two inputs side by side on desktop:
+        Name [__________]  Title [__________]
+      Full-width:
+        Organization [__________]
+        Email [__________]
+      
+      All inputs: standard styling (white, 1.5px border, radius 10px,
+                  Manrope 600 17px, focus #EA2C00 border)
+      
+      [24px gap]
+      
+      "Submit →" — primary button, right aligned
+  
+  [After submit:]
+    Check icon + "We'll be in touch within one business day."
+    "Copy your assessment link" — text link
+
+[80px bottom padding]
+
+FOOTNOTE (centered, 13px #A3A3A3 italic):
+"Conservative estimates based on your inputs and Abridge deployment benchmarks."
+
+Note: "Abridge" appears in the logo only — not in body copy on this screen.
+```
+
+---
+
+## WHAT NOT TO CHANGE
+
+- Scribe path — completely untouched
+- Home screen — untouched
+- Any other existing paths (Explore, Measure)
+- PDF generation files
+- Any existing non-ambient screens
+
+---
+
+## FINAL TESTING CHECKLIST
+
+```
+GLOBAL:
+☐ Page background #F7F6F4 on all ambient screens
+☐ No white page backgrounds
+☐ No green anywhere
+☐ No amber anywhere
+☐ No emoji icons anywhere
+☐ No "Continue" or "Next" on any CTA
+
+SCREEN 1:
+☐ Three pills on one row, even widths
+☐ No progress dots
+☐ Headline breaks cleanly at 2 lines
+
+SCREEN 2:
+☐ Two column layout desktop
+☐ Right panel in single white card
+☐ Dark card is true #0F0F0F
+☐ Input fields styled correctly (not plain HTML)
+☐ "Help me estimate" expands inline
+
+SCREEN 3:
+☐ Two column layout desktop
+☐ Right column sticky
+☐ Both sliders default correctly (50% and 2.0 min)
+☐ Benchmark pills show correctly below each slider
+☐ Gap badges on Abridge column update live
+☐ No emoji status indicators on sliders
+
+SCREEN 4-7 (DOMAINS):
+☐ Domain navigation thread present, correct states
+☐ Activation cards: 2x2 grid, 32px Manrope number
+☐ Selected card: 5px #EA2C00 left border, number turns red
+☐ Input section fades in 200ms after selection
+☐ Feedback card updates live (300ms debounce)
+☐ All four domains save state for score calculation
+
+SCORE SCREEN:
+☐ "HOW YOUR SCORE IS BUILT" label visible in card header
+☐ Four domain rows with bars, staggered animation
+☐ Composite bar in total row
+☐ Score count-up after composite bar fills
+☐ Hero number 96px
+☐ Benchmark markers at 34 and 71 on bar
+☐ Verdict copy dynamic based on score range
+☐ Primary opportunity card shows lowest domain
+
+GAP SCREEN:
+☐ Hero number counts up from 0
+☐ Three time breakdowns in white card
+☐ Edit mode works, updates all values live
+☐ Graph shows two lines, no fill
+☐ "Permanently Lost" in #EA2C00 in table
+☐ Dark card is true #0F0F0F
+☐ CTA "See My Summary →" (not "See Invitation")
+
+INVITATION SCREEN:
+☐ Two-number verdict card with gap bar
+☐ Featured card for primary opportunity
+☐ Invitation headline centered, 32px
+☐ Form fades in on "Request Working Session"
+☐ "Abridge" not in body copy
+☐ Export button wired to PDF generation
+☐ After submit: confirmation + copy link
+```

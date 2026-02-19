@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { ArrowRight, Download, Loader2 } from "lucide-react";
-import { DS } from "./designTokens";
+import { DS, labelStyle, cardStyle, featuredCardStyle, primaryButtonStyle, secondaryButtonStyle, backLinkStyle } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
@@ -11,8 +11,6 @@ import {
 import {
   ACTIVATION_LABELS,
   scoreToActivationLevel,
-  computeDomainScore,
-  computeGapForDomain,
   type Domain,
 } from "./domainCalculations";
 
@@ -153,51 +151,57 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
     }
   };
 
-  const inputStyle: React.CSSProperties = {
+  const formInputStyle: React.CSSProperties = {
     fontFamily: DS.font, fontWeight: 600, fontSize: 18, color: DS.black,
     backgroundColor: DS.white, border: `1.5px solid ${DS.border}`, borderRadius: DS.radius.input,
     padding: '14px 18px', width: '100%', outline: 'none', transition: 'border-color 150ms ease',
   };
 
   return (
-    <div style={{ fontFamily: DS.font, paddingTop: 80, paddingBottom: 80 }}>
+    <div style={{ fontFamily: DS.font, paddingTop: 72, paddingBottom: 80 }}>
       <div className="max-w-[520px] mx-auto">
-        <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-6" data-testid="text-screen6-label">
-          Your Score
+        <p style={labelStyle} className="mb-6" data-testid="text-screen6-label">
+          Your Assessment
         </p>
 
-        <div className="flex items-start justify-between gap-8 mb-6 flex-wrap">
-          <div>
-            <p style={{ fontSize: 13, color: DS.muted }} className="mb-1">Your Score</p>
-            <p style={{ fontSize: 36, fontWeight: 700, color: DS.black }}>{result.score} <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span></p>
+        <div style={cardStyle} className="mb-10" data-testid="card-verdict-numbers">
+          <div className="flex items-start justify-between gap-8 flex-wrap">
+            <div>
+              <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-1">Your Score</p>
+              <p style={{ fontSize: 36, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>
+                {result.score} <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span>
+              </p>
+            </div>
+            <div>
+              <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-1">Top Quartile</p>
+              <p style={{ fontSize: 36, fontWeight: 700, color: DS.black, fontFamily: DS.font }}>
+                71 <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span>
+              </p>
+            </div>
           </div>
-          <div>
-            <p style={{ fontSize: 13, color: DS.muted }} className="mb-1">Top Quartile</p>
-            <p style={{ fontSize: 36, fontWeight: 700, color: DS.black }}>71 <span style={{ fontSize: 20, color: DS.muted, fontWeight: 400 }}>/ 100</span></p>
+
+          <div style={{ width: '100%', height: 6, backgroundColor: DS.border, borderRadius: 3, overflow: 'hidden', marginTop: 20, marginBottom: 12, position: 'relative' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${Math.min(result.score, 100)}%`, backgroundColor: DS.red, borderRadius: 3 }} />
+            <div style={{ position: 'absolute', left: `${Math.min(result.score, 100)}%`, top: 0, height: '100%', width: `${Math.max(0, 71 - result.score)}%`, backgroundColor: DS.border }} />
+            <div style={{ position: 'absolute', left: '71%', top: 0, height: '100%', width: '29%', backgroundColor: '#F5F5F4' }} />
           </div>
+
+          <p style={{ fontSize: 15, color: DS.body, lineHeight: 1.6, fontFamily: DS.font }} data-testid="text-capture-line">
+            You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
+          </p>
         </div>
 
-        <div style={{ width: '100%', height: 6, backgroundColor: DS.border, borderRadius: 3, overflow: 'hidden', marginBottom: 20, position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${Math.min(result.score, 100)}%`, backgroundColor: DS.red, borderRadius: 3 }} />
-          <div style={{ position: 'absolute', left: `${Math.min(result.score, 100)}%`, top: 0, height: '100%', width: `${Math.max(0, 71 - result.score)}%`, backgroundColor: DS.border }} />
-          <div style={{ position: 'absolute', left: '71%', top: 0, height: '100%', width: '29%', backgroundColor: '#F5F5F4' }} />
-        </div>
+        <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 40 }} />
 
-        <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75 }} className="mb-14" data-testid="text-capture-line">
-          You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
-        </p>
-
-        <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 56 }} />
-
-        <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-4">
+        <p style={labelStyle} className="mb-4">
           Highest-Leverage Opportunity
         </p>
 
-        <div style={{ backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderLeft: `4px solid ${DS.red}`, borderRadius: DS.radius.card, padding: 32, boxShadow: DS.shadow }} className="mb-14" data-testid="card-top-opportunity">
-          <p style={{ fontSize: 20, fontWeight: 700, color: DS.black }} className="mb-2">{topDomainName}</p>
-          <p style={{ fontSize: 32, fontWeight: 700, color: DS.red }} className="mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
+        <div style={featuredCardStyle} className="mb-14" data-testid="card-top-opportunity">
+          <p style={{ fontSize: 20, fontWeight: 700, color: DS.black, fontFamily: DS.font }} className="mb-2">{topDomainName}</p>
+          <p style={{ fontSize: 32, fontWeight: 700, color: DS.red, fontFamily: DS.font }} className="mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
           <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 16 }} />
-          <p style={{ fontSize: 15, color: DS.body, lineHeight: 1.75 }}>
+          <p style={{ fontSize: 15, color: DS.body, lineHeight: 1.75, fontFamily: DS.font }}>
             {topDomainOps.meaning} {topDomainOps.action}
           </p>
         </div>
@@ -205,10 +209,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         <div style={{ height: 1, backgroundColor: DS.border, marginBottom: 56 }} />
 
         <div className="text-center mb-8">
-          <h2 style={{ fontSize: 32, fontWeight: 700, color: DS.black, lineHeight: 1.3, maxWidth: 400, margin: '0 auto' }} data-testid="text-invitation-headline">
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: DS.black, lineHeight: 1.3, maxWidth: 400, margin: '0 auto', fontFamily: DS.font }} data-testid="text-invitation-headline">
             Would you like to see what documentation intelligence looks like at your scale?
           </h2>
-          <p style={{ fontSize: 15, color: DS.muted, lineHeight: 1.75, marginTop: 20 }}>
+          <p style={{ fontSize: 15, color: DS.muted, lineHeight: 1.75, marginTop: 20, fontFamily: DS.font }}>
             This is not a product demonstration.<br />
             It is a 30-minute working session.
           </p>
@@ -219,10 +223,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <button
               onClick={() => setShowForm(true)}
               className="inline-flex items-center gap-2 w-full sm:w-auto justify-center"
-              style={{
-                fontFamily: DS.font, fontWeight: 600, fontSize: 15, padding: '15px 36px', borderRadius: DS.radius.input,
-                backgroundColor: DS.red, color: DS.white, border: 'none', cursor: 'pointer',
-              }}
+              style={primaryButtonStyle()}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
               data-testid="button-request-session"
@@ -234,11 +235,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               onClick={handleExport}
               disabled={isExporting}
               className="inline-flex items-center gap-2 w-full sm:w-auto justify-center"
-              style={{
-                fontFamily: DS.font, fontWeight: 500, fontSize: 15, padding: '13px 28px', borderRadius: DS.radius.input,
-                backgroundColor: 'transparent', color: DS.black, border: `1.5px solid ${DS.black}`, cursor: isExporting ? 'wait' : 'pointer',
-                transition: 'background 150ms ease', opacity: isExporting ? 0.7 : 1,
-              }}
+              style={{ ...secondaryButtonStyle, opacity: isExporting ? 0.7 : 1, cursor: isExporting ? 'wait' : 'pointer' }}
               onMouseEnter={(e) => { if (!isExporting) e.currentTarget.style.backgroundColor = DS.hoverBg; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
               data-testid="button-export"
@@ -250,12 +247,12 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         )}
 
         {showForm && !formSubmitted && (
-          <form onSubmit={handleSubmit} style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card, padding: 32 }} className="mb-14" data-testid="form-contact">
+          <form onSubmit={handleSubmit} style={cardStyle} className="mb-14" data-testid="form-contact">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <input
                 type="text" placeholder="Name" value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={inputStyle}
+                style={formInputStyle}
                 onFocus={(e) => (e.target.style.borderColor = DS.red)}
                 onBlur={(e) => (e.target.style.borderColor = DS.border)}
                 data-testid="input-name"
@@ -263,7 +260,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               <input
                 type="text" placeholder="Organization" value={formData.org}
                 onChange={(e) => setFormData({ ...formData, org: e.target.value })}
-                style={inputStyle}
+                style={formInputStyle}
                 onFocus={(e) => (e.target.style.borderColor = DS.red)}
                 onBlur={(e) => (e.target.style.borderColor = DS.border)}
                 data-testid="input-org"
@@ -271,7 +268,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               <input
                 type="text" placeholder="Title" value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                style={inputStyle}
+                style={formInputStyle}
                 onFocus={(e) => (e.target.style.borderColor = DS.red)}
                 onBlur={(e) => (e.target.style.borderColor = DS.border)}
                 data-testid="input-title"
@@ -279,7 +276,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               <input
                 type="email" placeholder="Email" value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={inputStyle}
+                style={formInputStyle}
                 onFocus={(e) => (e.target.style.borderColor = DS.red)}
                 onBlur={(e) => (e.target.style.borderColor = DS.border)}
                 data-testid="input-email"
@@ -288,10 +285,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <button
               type="submit"
               className="inline-flex items-center gap-2 w-full justify-center mt-6"
-              style={{
-                fontFamily: DS.font, fontWeight: 600, fontSize: 15, padding: '15px 36px', borderRadius: DS.radius.input,
-                backgroundColor: DS.red, color: DS.white, border: 'none', cursor: 'pointer',
-              }}
+              style={primaryButtonStyle()}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
               data-testid="button-submit"
@@ -303,8 +297,8 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         )}
 
         {formSubmitted && (
-          <div className="text-center mb-14" style={{ backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: DS.radius.card, padding: 32 }} data-testid="form-confirmation">
-            <p style={{ fontSize: 17, color: DS.black, fontWeight: 600, marginBottom: 12 }}>
+          <div className="text-center mb-14" style={cardStyle} data-testid="form-confirmation">
+            <p style={{ fontSize: 17, color: DS.black, fontWeight: 600, marginBottom: 12, fontFamily: DS.font }}>
               We'll be in touch within one business day.
             </p>
             <button

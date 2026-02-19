@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { DS } from "./designTokens";
+import { DS, labelStyle, cardStyle, featuredCardStyle, primaryButtonStyle, backLinkStyle } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -141,8 +141,7 @@ function EditPill({ label, options, value, onChange, testId }: {
   );
 }
 
-function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapValue, score,
-  providers, annualEncounters, utilization, timeSavings }: {
+function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapValue, score }: {
   domain: Domain; domainState: EditableDomainInputs;
   onUpdate: (level: ActivationLevel, inputs: Record<string, number | string>) => void;
   gapValue: number; originalGapValue: number; score: number;
@@ -163,7 +162,7 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
 
   return (
     <div style={{
-      backgroundColor: DS.bg, border: `1px solid ${DS.border}`, borderRadius: 12,
+      backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderRadius: 12,
       padding: expanded ? '20px' : '16px 20px', marginBottom: 12,
       transition: 'all 200ms ease',
     }} data-testid={`edit-card-${domain}`}>
@@ -199,7 +198,7 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
       {expanded && (
         <div style={{ marginTop: 16, borderTop: `1px solid ${DS.border}`, paddingTop: 16 }}>
           <div className="mb-4">
-            <p style={{ fontSize: 11, fontWeight: 600, color: DS.muted, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font, marginBottom: 6 }}>
+            <p style={{ ...labelStyle, marginBottom: 6 }}>
               Activation Level
             </p>
             <div style={{ position: 'relative' }}>
@@ -220,7 +219,7 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
             </div>
           </div>
 
-          <p style={{ fontSize: 11, fontWeight: 600, color: DS.muted, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font, marginBottom: 8 }}>
+          <p style={{ ...labelStyle, marginBottom: 8 }}>
             {DOMAIN_LABELS[domain]} Inputs
           </p>
 
@@ -335,7 +334,7 @@ function CustomTooltip({ active, payload, label }: any) {
   return (
     <div style={{
       backgroundColor: DS.white, border: `1px solid ${DS.border}`, borderRadius: 8,
-      padding: '12px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      padding: '12px 16px', boxShadow: DS.shadow,
     }}>
       <p style={{ fontSize: 12, fontWeight: 600, color: DS.black, fontFamily: DS.font, marginBottom: 6 }}>{label}</p>
       {actNow && <p style={{ fontSize: 12, color: DS.red, fontFamily: DS.font }}>Act Now: {formatDollarFull(actNow.value)}</p>}
@@ -399,14 +398,6 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   const displayedWeekly = Math.round(displayedTotal / 52);
   const displayedDaily = Math.round(displayedTotal / 365);
 
-  const domainScoresForBars = useMemo(() => {
-    const scores: Record<Domain, number> = { capacity: 0, revenue: 0, workforce: 0, risk: 0 };
-    for (const d of DOMAIN_ORDER) {
-      scores[d] = computeDomainScore(d, editState[d].activationLevel, editState[d].inputs);
-    }
-    return scores;
-  }, [editState]);
-
   const handleEditDomain = useCallback((domain: Domain, level: ActivationLevel, domainInputs: Record<string, number | string>) => {
     setEditState(prev => ({
       ...prev,
@@ -444,11 +435,13 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   return (
     <div style={{ fontFamily: DS.font, paddingBottom: 80 }}>
 
-      {/* SECTION 1 — THE NUMBER */}
       <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: 'calc(100vh - 56px)', paddingTop: 80 }}>
         <FadeIn delay={0}>
-          <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-10" data-testid="text-gap-label">
+          <p style={labelStyle} className="mb-3" data-testid="text-gap-label">
             Unrealized Enterprise Value
+          </p>
+          <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75, fontStyle: 'italic', fontFamily: DS.font, maxWidth: 400, margin: '0 auto' }} className="mb-10" data-testid="text-gap-pre-statement">
+            Already in your operations. Already earned. Not yet realized.
           </p>
         </FadeIn>
 
@@ -460,33 +453,28 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         </FadeIn>
 
         <FadeIn delay={600}>
-          <div className="flex flex-wrap justify-center gap-12 mb-8">
-            <div className="text-center">
-              <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-monthly">
-                ${displayedMonthly.toLocaleString()}
-              </p>
-              <p style={{ fontSize: 11, color: DS.muted, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font }}>Per Month</p>
-            </div>
-            <div className="text-center">
-              <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-weekly">
-                ${displayedWeekly.toLocaleString()}
-              </p>
-              <p style={{ fontSize: 11, color: DS.muted, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font }}>Per Week</p>
-            </div>
-            <div className="text-center">
-              <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-daily">
-                ${displayedDaily.toLocaleString()}
-              </p>
-              <p style={{ fontSize: 11, color: DS.muted, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: DS.font }}>Per Day</p>
+          <div style={cardStyle} className="mb-8" data-testid="card-time-breakdowns">
+            <div className="flex flex-wrap justify-center gap-12">
+              <div className="text-center">
+                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-monthly">
+                  ${displayedMonthly.toLocaleString()}
+                </p>
+                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Month</p>
+              </div>
+              <div className="text-center">
+                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-weekly">
+                  ${displayedWeekly.toLocaleString()}
+                </p>
+                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Week</p>
+              </div>
+              <div className="text-center">
+                <p style={{ fontWeight: 700, fontSize: 28, color: DS.black, fontFamily: DS.font }} data-testid="value-daily">
+                  ${displayedDaily.toLocaleString()}
+                </p>
+                <p style={{ ...labelStyle, fontSize: 10, marginTop: 4 }}>Per Day</p>
+              </div>
             </div>
           </div>
-        </FadeIn>
-
-        <FadeIn delay={900}>
-          <p style={{ fontSize: 17, color: DS.body, lineHeight: 1.75, fontStyle: 'italic' }} className="mb-8 max-w-[400px]">
-            Already in your operations.<br />
-            Already earned. Not yet realized.
-          </p>
         </FadeIn>
 
         <FadeIn delay={1100}>
@@ -497,234 +485,148 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = DS.black)}
             onMouseLeave={(e) => (e.currentTarget.style.color = DS.muted)}
-            data-testid="link-edit-inputs"
+            data-testid="button-refine"
           >
-            Review or adjust your inputs &rarr;
+            Refine my assumptions
           </button>
         </FadeIn>
       </div>
 
-      {/* SECTION 2 — DOMAIN BREAKDOWN */}
       <div ref={editSectionRef} style={{ paddingTop: 64 }}>
         <div className="max-w-[600px] mx-auto">
-          <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-6" data-testid="text-breakdown-label">
-            Where the Gap Lives
-          </p>
+
+          <div style={cardStyle} className="mb-12" data-testid="card-domain-breakdown">
+            <p style={labelStyle} className="mb-6">
+              Domain Breakdown
+            </p>
+            {DOMAIN_ORDER.map((domain, idx) => (
+              <div key={domain}>
+                <div className="flex items-center justify-between" style={{ padding: '12px 0' }}>
+                  <span style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>{DOMAIN_LABELS[domain]}</span>
+                  <span style={{ fontWeight: 700, fontSize: 17, color: DS.black, fontFamily: DS.font }} data-testid={`domain-gap-${domain}`}>
+                    {formatDollar(Math.round(gapValues[domain] * HAIRCUT))}
+                  </span>
+                </div>
+                {idx < DOMAIN_ORDER.length - 1 && <div style={{ height: 1, backgroundColor: '#F0F0F0' }} />}
+              </div>
+            ))}
+            <div style={{ height: 1, backgroundColor: DS.border, marginTop: 4 }} />
+            <div className="flex items-center justify-between" style={{ backgroundColor: DS.bg, borderRadius: 8, padding: '14px 16px', marginTop: 12 }}>
+              <span style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>Total Annual Gap</span>
+              <span style={{ fontWeight: 700, fontSize: 20, color: DS.red, fontFamily: DS.font }} data-testid="value-total-gap">
+                {formatDollar(displayedTotal)}
+              </span>
+            </div>
+          </div>
 
           {isEditing && (
-            <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font, marginBottom: 16 }}>
-              Editing inputs here updates dollar projections only. Your Documentation Intelligence Score is fixed.
-            </p>
-          )}
-
-          {!isEditing ? (
-            <>
-              {DOMAIN_ORDER.map((domain) => {
-                const score = domainScoresForBars[domain];
-                const gapVal = Math.round(gapValues[domain] * HAIRCUT);
-                return (
-                  <div key={domain} className="flex items-center gap-4" style={{ marginBottom: 16 }}
-                    data-testid={`gap-row-${domain}`}>
-                    <div style={{ minWidth: 120 }}>
-                      <p style={{ fontWeight: 600, fontSize: 15, color: DS.black, fontFamily: DS.font }}>{DOMAIN_LABELS[domain]}</p>
-                      <p style={{ fontSize: 12, color: DS.muted, fontFamily: DS.font, fontStyle: 'italic' }}>
-                        {ACTIVATION_LABELS[domain][editState[domain].activationLevel]}
-                      </p>
-                    </div>
-                    <div style={{ flex: 1, height: 6, backgroundColor: DS.border, borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%', backgroundColor: DS.red, borderRadius: 3,
-                        width: `${Math.min(score, 100)}%`, transition: 'width 300ms ease-out',
-                      }} />
-                    </div>
-                    <div className="text-right" style={{ minWidth: 90 }}>
-                      <p style={{ fontWeight: 700, fontSize: 17, color: DS.black, fontFamily: DS.font }}>{formatDollar(gapVal)}</p>
-                      <p style={{ fontSize: 11, color: DS.muted, fontFamily: DS.font }}>/ yr</p>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div style={{ height: 1, backgroundColor: DS.border, margin: '16px 0' }} />
-              <div className="flex items-center justify-between">
-                <span style={{ fontSize: 15, fontWeight: 600, color: DS.black, fontFamily: DS.font }}>Total Annual Gap</span>
-                <span style={{ fontSize: 20, fontWeight: 700, color: DS.red, fontFamily: DS.font }} data-testid="value-total-gap">
-                  {formatDollarFull(displayedTotal)}
-                </span>
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <p style={labelStyle}>
+                  Refine Assumptions
+                </p>
+                <button type="button" onClick={handleReset}
+                  style={{ fontSize: 12, color: DS.muted, cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '2px' }}
+                  data-testid="button-reset"
+                >
+                  Reset to original
+                </button>
               </div>
-            </>
-          ) : (
-            <>
               {DOMAIN_ORDER.map((domain) => (
                 <DomainEditCard
                   key={domain}
                   domain={domain}
                   domainState={editState[domain]}
-                  onUpdate={(level, inp) => handleEditDomain(domain, level, inp)}
+                  onUpdate={(level, inputs) => handleEditDomain(domain, level, inputs)}
                   gapValue={gapValues[domain]}
                   originalGapValue={originalGaps[domain]}
-                  score={domainScoresForBars[domain]}
+                  score={editState[domain].activationLevel ? computeDomainScore(domain, editState[domain].activationLevel, editState[domain].inputs) : 0}
                   providers={providers}
                   annualEncounters={annualEncounters}
                   utilization={utilization}
                   timeSavings={timeSavings}
                 />
               ))}
+            </div>
+          )}
 
-              <div style={{ height: 1, backgroundColor: DS.border, margin: '16px 0' }} />
-              <div className="flex items-center justify-between mb-6">
-                <span style={{ fontSize: 15, fontWeight: 600, color: DS.black, fontFamily: DS.font }}>Total Annual Gap</span>
-                <span style={{ fontSize: 20, fontWeight: 700, color: DS.red, fontFamily: DS.font }} data-testid="value-total-gap-edit">
-                  {formatDollarFull(displayedTotal)}
+          <div style={cardStyle} className="mb-12" data-testid="card-chart">
+            <p style={labelStyle} className="mb-2">
+              3-Year Projection
+            </p>
+            <p style={{ fontSize: 13, color: DS.muted, fontFamily: DS.font }} className="mb-6">
+              Cumulative value captured vs. current trajectory
+            </p>
+            <div style={{ height: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: DS.muted, fontFamily: DS.font }} />
+                  <YAxis
+                    tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
+                    tick={{ fontSize: 12, fill: DS.muted, fontFamily: DS.font }}
+                    width={70}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    formatter={(value: string) => <span style={{ fontSize: 12, color: DS.body, fontFamily: DS.font }}>{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
+                    wrapperStyle={{ paddingTop: 12 }}
+                  />
+                  <Line type="monotone" dataKey="actNow" stroke={DS.red} strokeWidth={2} dot={{ r: 4, fill: DS.red }} fill="none" name="actNow" />
+                  <Line type="monotone" dataKey="currentState" stroke={DS.muted} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: DS.muted }} fill="none" name="currentState" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div style={cardStyle} className="mb-12" data-testid="card-cost-waiting">
+            <p style={labelStyle} className="mb-6">
+              The Cost of Waiting
+            </p>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <span style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }}>Wait 6 months</span>
+                <span style={{ fontWeight: 700, fontSize: 17, color: DS.red, fontFamily: DS.font }} data-testid="value-wait-6mo">
+                  {formatDollarFull(permanentlyLost6mo)} lost
                 </span>
               </div>
-
-              <div className="flex items-center gap-4">
-                <button type="button" onClick={() => setIsEditing(false)}
-                  style={{
-                    fontFamily: DS.font, fontWeight: 600, fontSize: 14, padding: '10px 24px', borderRadius: DS.radius.input,
-                    backgroundColor: DS.red, color: DS.white, border: 'none', cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
-                  data-testid="button-apply-changes"
-                >
-                  Apply Changes
-                </button>
-                <button type="button" onClick={handleReset}
-                  style={{
-                    fontFamily: DS.font, fontWeight: 500, fontSize: 13, color: DS.muted,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    textDecoration: 'underline', textUnderlineOffset: '2px',
-                  }}
-                  data-testid="button-reset"
-                >
-                  Reset to Original
-                </button>
+              <div style={{ height: 1, backgroundColor: '#F0F0F0' }} />
+              <div className="flex items-center justify-between">
+                <span style={{ fontSize: 15, color: DS.body, fontFamily: DS.font }}>Wait 12 months</span>
+                <span style={{ fontWeight: 700, fontSize: 17, color: DS.red, fontFamily: DS.font }} data-testid="value-wait-12mo">
+                  {formatDollarFull(permanentlyLost12mo)} lost
+                </span>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* SECTION 3 — THE GRAPH */}
-      <div style={{ paddingTop: 64 }}>
-        <div className="max-w-[600px] mx-auto">
-          <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-2.5">
-            The Compounding Effect of Inaction
-          </p>
-          <h2 style={{ fontWeight: 600, fontSize: 28, color: DS.black, lineHeight: 1.3, fontFamily: DS.font }} className="mb-8">
-            Every year at current activation compounds the gap.
-          </h2>
-
-          <div className="mb-6" style={{ height: 240 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                <CartesianGrid horizontal={true} vertical={false} stroke="#F0F0EE" />
-                <XAxis dataKey="label" tick={{ fontSize: 12, fill: DS.muted, fontFamily: DS.font }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="actNow" stroke={DS.red} strokeWidth={2} dot={false} name="Act Now" />
-                <Line type="monotone" dataKey="currentState" stroke={DS.muted} strokeWidth={1.5} strokeDasharray="6 4" dot={false} name="Current State" />
-                <Legend wrapperStyle={{ fontSize: 13, fontFamily: DS.font, color: DS.muted }} iconType="plainline" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 4 — COST OF WAITING TABLE */}
-      <div style={{ paddingTop: 48 }}>
-        <div className="max-w-[600px] mx-auto">
-          <p style={{ fontWeight: 600, fontSize: 11, color: DS.muted, letterSpacing: '2.5px', textTransform: 'uppercase' }} className="mb-6">
-            Cost of Waiting
-          </p>
-
-          <div className="mb-4 overflow-x-auto">
-            <table style={{ width: '100%', fontSize: 15, fontFamily: DS.font, borderCollapse: 'collapse' }} data-testid="table-cost-waiting">
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
-                  <th style={{ textAlign: 'left', padding: '12px 0', fontWeight: 600, color: DS.muted, fontSize: 13 }}></th>
-                  <th style={{ textAlign: 'right', padding: '12px 16px', fontWeight: 600, color: DS.black, fontSize: 13 }}>Act Now</th>
-                  <th style={{ textAlign: 'right', padding: '12px 16px', fontWeight: 400, color: DS.muted, fontSize: 13 }}>Wait 6mo</th>
-                  <th style={{ textAlign: 'right', padding: '12px 16px', fontWeight: 400, color: DS.muted, fontSize: 13 }}>Wait 12mo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
-                  <td style={{ padding: '12px 0', fontWeight: 600, color: DS.black }}>3-Year Value</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black, fontWeight: 600 }}>{formatDollar(actNow3yr)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(wait6mo3yr)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(wait12mo3yr)}</td>
-                </tr>
-                <tr style={{ borderBottom: `1px solid ${DS.border}` }}>
-                  <td style={{ padding: '12px 0', fontWeight: 700, color: DS.black }}>Permanently Lost</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.muted }}>&mdash;</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }} data-testid="value-lost-6mo">{formatDollar(permanentlyLost6mo)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.red, fontWeight: 600 }} data-testid="value-lost-12mo">{formatDollar(permanentlyLost12mo)}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '12px 0', fontWeight: 600, color: DS.black }}>Monthly Cost</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(displayedMonthly)}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(Math.round(wait6mo3yr / 36))}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', color: DS.black }}>{formatDollar(Math.round(wait12mo3yr / 36))}</td>
-                </tr>
-              </tbody>
-            </table>
+            </div>
           </div>
 
-          <p style={{ fontSize: 13, color: DS.muted, fontStyle: 'italic', fontFamily: DS.font, lineHeight: 1.6 }}>
-            Value not captured in earlier periods is permanently lost &mdash; it does not shift forward in time.
-          </p>
-        </div>
-      </div>
-
-      {/* SECTION 5 — THE STATEMENT */}
-      <div style={{ paddingTop: 48 }}>
-        <div className="max-w-[600px] mx-auto">
-          <div style={{ backgroundColor: DS.black, borderRadius: DS.radius.card, padding: 32 }} className="mb-10" data-testid="card-dark-statement">
-            <p style={{ fontSize: 20, color: DS.white, fontWeight: 600, fontFamily: DS.font }} className="mb-3">
-              Every month at current activation levels leaves
-            </p>
-            <p style={{ fontSize: 36, fontWeight: 700, color: DS.red, fontFamily: DS.font }} className="mb-3" data-testid="value-dark-monthly">
-              {formatDollarFull(displayedMonthly)}
-            </p>
-            <p style={{ fontSize: 20, color: DS.white, fontWeight: 600, fontFamily: DS.font }} className="mb-4">
-              in enterprise value permanently uncaptured.
-            </p>
-            <p style={{ fontSize: 15, color: DS.muted, fontFamily: DS.font, lineHeight: 1.7 }} className="mb-4">
-              This is not a projection of what better technology could deliver. It is a map of what your current documentation infrastructure is failing to capture &mdash; right now, inside your existing operations.
-            </p>
-            <p style={{ fontSize: 13, color: DS.body, fontFamily: DS.font }}>
-              Conservative estimate. Based on your inputs. Methodology available on request.
+          <div
+            style={{ backgroundColor: DS.black, borderRadius: DS.radius.card, padding: '32px' }}
+            className="mb-12"
+            data-testid="card-dark-summary"
+          >
+            <p style={{ fontSize: 17, color: DS.white, lineHeight: 1.75, fontFamily: DS.font }}>
+              This is not an aspirational number. It is a measurement of the enterprise value currently flowing through your documentation infrastructure that is not being captured. Every day it compounds.
             </p>
           </div>
 
-          {/* CTA */}
           <div className="flex items-center justify-between">
-            <button onClick={onBack}
-              style={{
-                fontSize: 15, color: DS.body, textDecoration: 'underline', textUnderlineOffset: '2px',
-                cursor: 'pointer', background: 'none', border: 'none', fontFamily: DS.font, fontWeight: 500,
-              }}
-              data-testid="button-back"
-            >
+            <button onClick={onBack} style={backLinkStyle} data-testid="button-back">
               Back
             </button>
-            <button onClick={onNext}
+            <button
+              onClick={onNext}
               className="inline-flex items-center gap-2"
-              style={{
-                fontFamily: DS.font, fontWeight: 600, fontSize: 15, padding: '15px 36px', borderRadius: DS.radius.input,
-                backgroundColor: DS.red, color: DS.white, border: 'none', cursor: 'pointer',
-              }}
+              style={primaryButtonStyle()}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = DS.redHover)}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = DS.red)}
               data-testid="button-next"
             >
-              See My Invitation
+              See My Summary
               <ArrowRight size={16} />
             </button>
           </div>
+
         </div>
       </div>
     </div>
