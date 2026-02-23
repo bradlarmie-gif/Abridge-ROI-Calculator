@@ -12,11 +12,11 @@ interface ExploreReviewProps {
   onHome: () => void;
 }
 
-const WRVU_CONVERSION = 40;
+const WRVU_CONVERSION = 40; // CMS MPFS national average conversion factor
 const WRVU_REALIZATION = 0.75;
-const HCC_VALUE_PER_CONDITION = 800;
+const HCC_VALUE_PER_CONDITION = 800; // CMS HCC risk adjustment, published MA benchmarks
 const HCC_REALIZATION = 0.60;
-const DENIAL_AVG_VALUE = 250;
+const DENIAL_AVG_VALUE = 250; // Industry average per documentation-related denial (HFMA benchmarks)
 const DENIAL_REALIZATION = 0.70;
 
 export default function ExploreReview({ state, totalHoursSaved, onContinueToInvestment, onBack, onHome }: ExploreReviewProps) {
@@ -308,6 +308,9 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
               <span className="text-xl font-bold text-[#EA2C00]">${totalValue.toLocaleString()}</span>
             </div>
           </div>
+          <p className="text-[10px] text-slate-400 mt-3 leading-relaxed">
+            Benchmark sources: wRVU conversion factor (CMS MPFS national average), HCC risk adjustment (CMS published MA benchmarks), denial values (HFMA industry benchmarks). Realization rates are conservative and based on observed Abridge deployments.
+          </p>
         </motion.div>
 
         {/* ED-specific Downstream Value section */}

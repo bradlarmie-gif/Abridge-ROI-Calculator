@@ -1464,6 +1464,10 @@ export default function ExploreModel({
           </AnimatePresence>
         </motion.div>
 
+        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-8 mb-4 text-center max-w-2xl mx-auto">
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
+        </p>
+
         <PDFExportModal
           open={showExportModal}
           onClose={() => setShowExportModal(false)}

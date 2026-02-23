@@ -254,22 +254,22 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerType: "ED physician",
     providerTypePlural: "ED physicians",
     coverSubtitle: (d) => `${fmtNum(d.providers)} ED physicians \u00B7 ${fmtNum(d.encounters)} encounters \u00B7 Emergency`,
-    thesisQuestion: "In the ED, every minute matters. What happens when you give them back?",
+    thesisQuestion: "In the ED, minutes matter. What happens when you give them back?",
     thesisParagraph: "Emergency documentation creates value through two mechanisms: throughput gains (LWBS reduction, faster disposition, admission capture) and revenue accuracy (E&M level precision, denial prevention). Speed and documentation quality are no longer a trade-off.",
     source1Label: "THROUGHPUT UNLOCKED",
     source1Description: "LWBS reduction, faster door-to-doc times, and additional patient capacity.",
     source1Tagline: "Speed saves lives\u2014and revenue.",
     source2Label: "REVENUE CAPTURED",
     source2Description: "E&M accuracy, admission capture, and denial prevention from complete documentation.",
-    source2Tagline: "Capture every encounter completely.",
+    source2Tagline: "Capture encounters more completely.",
     strategicObservation: (d) => {
       const timePct = d.totalValue > 0 ? Math.round((d.timeValue / d.totalValue) * 100) : 0;
       return timePct > 60
-        ? `Your model is ${timePct}% throughput-driven. This suggests LWBS and capacity are your primary value levers\u2014common in high-volume EDs where every recovered patient generates significant downstream value.`
+        ? `Your model is ${timePct}% throughput-driven. This suggests LWBS and capacity are your primary value levers\u2014common in high-volume EDs where each recovered patient generates significant downstream value.`
         : `Your model balances throughput (${timePct}%) with revenue accuracy (${100 - timePct}%). Mature ED implementations typically optimize both simultaneously.`;
     },
     page2Intro: (d) => `${fmtNum(d.hoursReturned)} hours returned to your ED physicians. Here\u2019s how each driver works.`,
-    closingInsight: "In emergency medicine, every minute spent documenting is a minute not spent with the next patient. Ambient documentation doesn\u2019t just save time\u2014it removes the trade-off between thorough documentation and throughput.",
+    closingInsight: "In emergency medicine, time spent documenting is time not spent with the next patient. Ambient documentation doesn\u2019t just save time\u2014it removes the trade-off between thorough documentation and throughput.",
     keyMetrics: [
       "1. Documentation time per encounter (target: -50%)",
       "2. LWBS rate reduction (target: -15-25%)",
