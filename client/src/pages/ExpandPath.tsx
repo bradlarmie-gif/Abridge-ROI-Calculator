@@ -13,7 +13,7 @@ export default function ExpandPath({ onBack }: ExpandPathProps) {
         <header className="mb-16">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => { window.location.href = '/'; }}
+              onClick={onBack}
               className="cursor-pointer text-left"
               data-testid="link-logo-home"
             >

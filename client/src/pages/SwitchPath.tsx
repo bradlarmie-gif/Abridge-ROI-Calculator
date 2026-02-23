@@ -1285,7 +1285,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-6">
             <button 
-              onClick={() => { window.location.href = '/'; }}
+              onClick={onBack}
               className="cursor-pointer"
               data-testid="link-logo-home"
             >

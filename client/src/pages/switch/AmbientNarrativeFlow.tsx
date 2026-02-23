@@ -72,7 +72,7 @@ export default function AmbientNarrativeFlow({
   const renderScreen = () => {
     switch (currentStep) {
       case 1:
-        return <Screen1Provocation onNext={handleNext} />;
+        return <Screen1Provocation onNext={handleNext} onHome={handleHome} />;
       case 2:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 3:

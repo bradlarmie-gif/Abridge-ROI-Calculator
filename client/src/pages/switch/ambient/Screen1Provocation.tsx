@@ -9,6 +9,7 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface Screen1Props {
   onNext: () => void;
+  onHome?: () => void;
 }
 
 type PillChoice = "knows" | "estimates" | "never" | null;
@@ -25,7 +26,7 @@ const RESPONSES: Record<string, string> = {
   never: "Most haven\u2019t. That\u2019s exactly why this exists.",
 };
 
-export default function Screen1Provocation({ onNext }: Screen1Props) {
+export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
   const { dispatch } = useAssessment();
   const [selected, setSelected] = useState<PillChoice>(null);
   const [showResponse, setShowResponse] = useState(false);
@@ -60,7 +61,8 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
       <div className="flex items-center justify-center py-5 px-6 border-b border-[#F0EFED]">
         <a
           href="/"
-          className="flex items-center"
+          onClick={(e) => { e.preventDefault(); if (onHome) onHome(); else window.location.href = "/"; }}
+          className="flex items-center transition-opacity hover:opacity-70 cursor-pointer"
           data-testid="link-logo-home-screen1"
         >
           <img src={abridgeLogo} alt="Abridge" className="h-5" />
