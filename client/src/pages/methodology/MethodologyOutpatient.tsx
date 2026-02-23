@@ -178,7 +178,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">2. Documentation Quality</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      Every clinical conversation contains complexity that gets discussed but doesn't 
+                      Most clinical conversations contain complexity that gets discussed but doesn't 
                       make it into the note. That gap costs money — in under-coded visits, missed HCC 
                       conditions, and denials that can't be appealed because the documentation wasn't 
                       there. Abridge captures what's said, so the note reflects what actually happened.
@@ -325,7 +325,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Every visit contains clinical complexity that gets discussed but doesn't make it 
+                        Most visits contain clinical complexity that gets discussed but doesn't make it 
                         into the note. A 99214 that should have been a 99215. A procedure that was performed 
                         but not documented. This isn't upcoding — it's capturing what actually happened.
                       </p>
@@ -539,7 +539,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             >
               <div className="space-y-6">
                 <p className="text-[15px] text-black leading-relaxed">
-                  Every vendor will tell you their product saves money. We think you deserve to know 
+                  Most vendors will tell you their product saves money. We think you deserve to know 
                   exactly how confident we are in each claim — and what it takes to verify it.
                 </p>
                 <div className="grid gap-4">
@@ -585,7 +585,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                   <p className="text-sm text-[#666666] leading-relaxed">
                     <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number 
                     you can defend in a board presentation than a larger number that falls apart under scrutiny. 
-                    Every assumption in our model is editable — because your data should drive the answer, not ours.
+                    Key assumptions in our model are editable — because your data should drive the answer, not ours.
                   </p>
                 </div>
               </div>
@@ -600,7 +600,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
               <div className="space-y-6">
                 <p className="text-[15px] text-black leading-relaxed">
                   A model is only as good as its validation. Here's exactly what to measure and when — 
-                  so you're never relying on our assumptions when you could be relying on your data.
+                  so you're not relying on our assumptions when you could be relying on your data.
                 </p>
                 <div className="space-y-4">
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
@@ -735,6 +735,10 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             <ArrowRight className="w-4 h-4" />
           </a>
         </motion.div>
+
+        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+        </p>
 
         {/* Related Care Settings */}
         <div className="mt-12 mb-8">

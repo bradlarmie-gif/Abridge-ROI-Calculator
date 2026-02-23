@@ -282,7 +282,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Every CDI query represents a documentation gap — something that should have been 
+                        Each CDI query typically represents a documentation gap — something that should have been 
                         in the note but wasn't. Each query costs $40-$60 in CDI labor (creation, tracking, 
                         follow-up) plus physician time to respond. When documentation captures clinical 
                         detail at the point of care, fewer queries are needed.
@@ -596,7 +596,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                   <p className="text-sm text-[#666666] leading-relaxed">
                     <strong className="text-black">Our philosophy:</strong> We'd rather show you a defensible DRG 
                     improvement number based on CDI data than a speculative LOS reduction based on assumptions. 
-                    Every variable in our model is editable — because your CDI team knows your gaps better 
+                    Key variables in our model are editable — because your CDI team knows your gaps better 
                     than any default can.
                   </p>
                 </div>
@@ -750,6 +750,10 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
             <ArrowRight className="w-4 h-4" />
           </a>
         </motion.div>
+
+        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+        </p>
 
         {/* Related Care Settings */}
         <div className="mt-12 mb-8">

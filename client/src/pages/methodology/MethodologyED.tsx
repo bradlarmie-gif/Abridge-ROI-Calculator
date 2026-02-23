@@ -186,8 +186,8 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">1. Throughput & LWBS</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      Every patient who leaves without being seen is lost revenue — $300-$500+ per visit, 
-                      gone permanently. Faster documentation contributes to faster throughput, which can 
+                      Each patient who leaves without being seen represents lost revenue — typically $300–$500+ per visit 
+                      (based on blended facility and professional fees). Faster documentation contributes to faster throughput, which can 
                       recover some of these patients. But documentation is one factor among many — staffing, 
                       triage, bed availability all matter. We model the contribution honestly.
                     </p>
@@ -257,7 +257,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
                         <li>National LWBS rate: 2-4% (urban high-volume EDs often higher)</li>
                         <li>Documentation-attributable recovery: 5-15% of LWBS patients</li>
-                        <li>Average ED visit revenue: $300-$500 (blended facility + professional)</li>
+                        <li>Average ED visit revenue: $300-$500 (blended facility + professional, based on published ED benchmarks)</li>
                       </ul>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
@@ -568,7 +568,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                       <li><strong>Documentation time per encounter:</strong> EHR timestamps show exactly when charting happens and how long it takes. Visible in weeks.</li>
                       <li><strong>E/M level distribution:</strong> Claims data shows coding accuracy shifts. Compare high-volume vs. low-volume shifts for proof.</li>
                       <li><strong>Denial rates by category:</strong> RCM data identifies documentation-related denials specifically. Track before and after.</li>
-                      <li><strong>LWBS rate:</strong> Every ED tracks this. The metric is clean — the attribution is the challenge.</li>
+                      <li><strong>LWBS rate:</strong> Most EDs track this. The metric is clean — the attribution is the challenge.</li>
                     </ul>
                   </div>
 
@@ -600,7 +600,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   <p className="text-sm text-[#666666] leading-relaxed">
                     <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number 
                     you can defend in an ED leadership meeting than a larger number that falls apart when your 
-                    CMO asks "how did you attribute that?" Every assumption is editable — because your ED's 
+                    CMO asks "how did you attribute that?" Key assumptions are editable — because your ED's 
                     data should drive the answer, not our defaults.
                   </p>
                 </div>
@@ -753,6 +753,10 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
             <ArrowRight className="w-4 h-4" />
           </a>
         </motion.div>
+
+        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+        </p>
 
         {/* Related Care Settings */}
         <div className="mt-12 mb-8">

@@ -265,7 +265,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                     <div>
                       <p className="text-[#888888] mb-1">The key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Industry turnover: 15-25% annually</li>
+                        <li>Industry turnover: 15-25% annually (NSI Nursing Solutions, ANA surveys)</li>
                         <li>Burnout-related turnover: 30-50% of all turnover</li>
                         <li>Abridge impact: 10-25% of burnout-related turnover</li>
                         <li>Replacement cost: $40,000-$65,000 per nurse</li>
@@ -655,6 +655,10 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
             <ArrowRight className="w-4 h-4" />
           </a>
         </motion.div>
+
+        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+        </p>
 
         {/* Related Care Settings */}
         <div className="mt-12 mb-8">
