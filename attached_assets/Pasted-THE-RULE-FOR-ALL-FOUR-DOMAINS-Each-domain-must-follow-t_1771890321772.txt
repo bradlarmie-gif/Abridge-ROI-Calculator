@@ -1,0 +1,261 @@
+THE RULE FOR ALL FOUR DOMAINS
+
+Each domain must follow this maturity arc:
+
+Level 1 → Benefit exists, not structurally captured
+Level 2 → Benefit locally applied, not systemized
+Level 3 → Benefit intentionally managed
+Level 4 → Benefit institutionalized and governed
+
+And each level must:
+
+Reflect real outpatient behavior
+
+Justify a progressively deeper input
+
+Trigger different math behavior
+
+Be defensible in a CFO conversation
+
+No fluff.
+No multipliers.
+No vibes.
+
+DOMAIN 1 — CAPACITY
+
+(Only rewriting the 4 cards)
+
+Current header:
+“Where does recovered time actually go?”
+
+Keep that.
+
+Now replace the four cards with this:
+
+LEVEL 1
+
+Time Saved, Not Deployed
+
+Recovered documentation time reduces friction for providers — but no structural change in access, templates, or panel growth.
+
+Math behavior:
+Redeployment = 0%
+
+Input behavior:
+No additional inputs required.
+
+This level says:
+“You are experiencing efficiency, not capacity.”
+
+That hits.
+
+LEVEL 2
+
+Ad Hoc Access Relief
+
+Recovered time occasionally reduces backlog or enables extra visits, but without formal scheduling redesign.
+
+New Input Triggered:
+Estimated % of recovered time used for additional visits (0–25%)
+
+Math behavior:
+Recovered hours × estimated redeployment %
+
+Now the user must declare whether time is actually becoming visits.
+
+That creates tension.
+
+LEVEL 3
+
+Structured Access Expansion
+
+Visit templates or provider schedules have been intentionally modified to increase throughput using recovered time.
+
+New Inputs:
+Additional patients per month
+Revenue per visit
+
+Math behavior:
+Patients × revenue × 12
+
+Now we override estimation with declared structural change.
+
+That feels real.
+
+LEVEL 4
+
+Institutionalized Capacity Strategy
+
+Recovered time is embedded into panel planning, provider FTE modeling, and executive-level access targets.
+
+New Inputs:
+Net visit growth per provider
+OR FTE-equivalent expansion
+
+Math behavior:
+Provider-level expansion × revenue × 12
+
+This is enterprise-grade capacity governance.
+
+That is Level 4.
+
+Notice what we did:
+
+We did NOT invent overtime.
+We did NOT invent multipliers.
+We did NOT invent fuzzy percentages.
+
+We defined operational states.
+
+Why This Feels Better
+
+Because when someone selects a level, they must ask:
+
+“Are we structurally redesigning access?”
+or
+“Are we just saving time?”
+
+That’s category framing.
+
+That’s how you make competitors look shallow.
+
+Now — Revenue Cards
+
+We repeat the structure.
+
+Only change the four cards.
+
+LEVEL 1
+
+Documentation Neutral
+
+Ambient improves workflow, but coding integrity and reimbursement accuracy are not actively measured.
+
+Math:
+Conservative baseline yield only.
+
+LEVEL 2
+
+Anecdotal Coding Lift
+
+Improved documentation occasionally leads to higher-level coding, but impact is not measured systematically.
+
+Input:
+Estimated yield delta (%)
+
+Math:
+Directional modeling only.
+
+LEVEL 3
+
+Measured Yield Integrity
+
+wRVU, RAF, or reimbursement variance tied to documentation improvements is actively measured.
+
+Input:
+Measured yield lift OR wRVU delta
+
+Math:
+Applied directly to exposure base.
+
+LEVEL 4
+
+Financial Governance Embedded
+
+Documentation intelligence is integrated into revenue cycle oversight and recognized in financial reporting.
+
+Input:
+Recognized revenue change tied to documentation improvements.
+
+Math:
+Recognized revenue impact.
+
+That’s clean.
+
+Workforce Cards (Fixing What Bothered You)
+LEVEL 1
+
+Pajama Time Reduced
+
+After-hours documentation burden is lower, improving provider satisfaction, but labor strategy is unchanged.
+
+Input:
+After-hours reduction hrs/week/provider
+
+LEVEL 2
+
+Work Out of Work Reduced
+
+Administrative correction, editing, and chart reconciliation workload measurably decreases.
+
+Input:
+Minutes saved in edit/review time
+
+LEVEL 3
+
+Turnover Risk Managed
+
+Burnout-related attrition and staffing volatility are tracked in relation to documentation burden.
+
+Input:
+Turnover rate
+Replacement cost
+
+LEVEL 4
+
+Labor Volatility Strategically Reduced
+
+Agency use, overtime exposure, or staffing instability is structurally reduced through documentation intelligence.
+
+Input:
+Agency spend avoided
+Overtime reduction $
+
+That feels like real organizational maturity.
+
+Risk Cards
+LEVEL 1
+
+Cleaner Clinical Notes
+
+Documentation completeness improves, but audit posture and reporting friction remain unchanged.
+
+LEVEL 2
+
+Audit Awareness
+
+Documentation defensibility is discussed and occasionally reviewed.
+
+Input:
+Estimated defensibility improvement %
+
+LEVEL 3
+
+Reporting Friction Reduced
+
+Quality reporting and chart abstraction workload measurably decline.
+
+Input:
+Reporting hours reduced
+
+LEVEL 4
+
+Governed Compliance Infrastructure
+
+Documentation intelligence is embedded into compliance review and structured data automation strategy.
+
+Input:
+Audit findings reduced
+OR compliance exposure estimate
+
+Important
+
+You are not changing layout.
+You are not changing interaction.
+You are only upgrading:
+
+• Language precision
+• Input escalation
+• Math triggers
+
+This is optimization, not redesign.
