@@ -38,7 +38,7 @@ const BLOCKER_CONTENT: BlockerContent[] = [
     whatWeSee:
       "A significant share of encounters never flow through the AI documentation system. Providers who haven't adopted — or who adopted and lapsed — represent value that's been approved but never captured.",
     whyItMatters:
-      "Every un-covered encounter is a missed opportunity across all four value pillars: no time recovery, no coding uplift, no burnout relief, no documentation defensibility. Coverage is the single highest-leverage multiplier in enterprise value capture.",
+      "Each un-covered encounter represents a potential missed opportunity across all four value pillars: time recovery, coding uplift, burnout relief, and documentation defensibility. Coverage is typically the single highest-leverage multiplier in enterprise value capture.",
     whatWorks: [
       "Deploy a provider-champion network — peer influence outperforms top-down mandates 3:1 in sustained adoption",
       "Implement specialty-wave onboarding (4-6 week cohorts) instead of organization-wide launches that dilute support resources",
@@ -74,7 +74,7 @@ const BLOCKER_CONTENT: BlockerContent[] = [
     whyItMatters:
       "Trust is the foundation of Workforce Stability. Providers who don't believe the tool helps them won't sustain usage, and dissatisfaction accelerates burnout and turnover risk. It also limits Yield — providers who don't trust notes won't rely on AI-captured complexity for coding.",
     whatWorks: [
-      "Share accuracy metrics transparently with providers — data builds trust faster than promises",
+      "Share accuracy metrics transparently with providers — data builds trust faster than assertions alone",
       "Create a provider feedback loop with visible response times (show providers their input drives improvement)",
       "Highlight early-adopter success stories within the same specialty — peer credibility outweighs vendor claims",
     ],

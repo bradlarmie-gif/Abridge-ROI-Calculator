@@ -743,7 +743,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
           <View style={styles.divider} />
 
           <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-            This assessment is for planning purposes. All calculations are based on inputs provided and patterns observed across Abridge implementations. "What we typically see" ranges reflect aggregate data across multiple health systems and specialties. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors.
+            Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. All values shown after stated confidence adjustments. This assessment does not constitute a guarantee of financial outcomes.
           </Text>
 
           <PageFooter pageNum={4} orgName={orgName} />

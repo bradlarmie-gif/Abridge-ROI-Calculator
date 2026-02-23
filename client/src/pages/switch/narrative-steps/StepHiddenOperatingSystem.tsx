@@ -30,7 +30,7 @@ export default function StepHiddenOperatingSystem({
           className="text-base text-[#666666] leading-relaxed"
           data-testid="text-subtext"
         >
-          Every dollar of clinical labor, reimbursement accuracy, quality reporting, and compliance exposure flows through it.
+          Much of your clinical labor cost, reimbursement accuracy, quality reporting, and compliance exposure flows through it.
         </p>
 
         <hr className="border-[#E5E7EB]" />

@@ -38,7 +38,7 @@ export default function StepEnterpriseCaptureScore({
 
   const verdictLine = useMemo(() => {
     if (enterpriseScore <= INDUSTRY_AVG + 5) {
-      return "You are performing at the industry average. The gap to top quartile is not incremental. It is structural.";
+      return "You are performing at the industry average. In our assessment, the gap to top quartile is not incremental — it is structural.";
     }
     if (enterpriseScore < TOP_QUARTILE) {
       return `You are performing above average but below top quartile. ${TOP_QUARTILE - enterpriseScore} points of structural improvement remain.`;
@@ -100,6 +100,9 @@ export default function StepEnterpriseCaptureScore({
         <p className="text-sm text-[#1A1A1A]" data-testid="text-benchmark-top">
           Top quartile organizations:{" "}
           <span className="font-bold tabular-nums">{TOP_QUARTILE} / 100</span>
+        </p>
+        <p className="text-xs text-[#999] mt-2" data-testid="text-benchmark-source">
+          Based on Abridge deployment data and published industry benchmarks.
         </p>
       </div>
 

@@ -312,6 +312,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 testId="pill-util-abridge"
               />
             </div>
+            <p className="text-[10px] text-[#999] text-center mt-2">Based on published industry data and Abridge deployment experience.</p>
 
             <AnimatePresence>
               {utilInsight && (
@@ -385,6 +386,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 testId="pill-time-abridge"
               />
             </div>
+            <p className="text-[10px] text-[#999] text-center mt-2">Based on published industry data and Abridge deployment experience.</p>
 
             <div className="flex items-center gap-2.5 mt-5">
               <Checkbox

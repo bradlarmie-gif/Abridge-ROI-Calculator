@@ -139,7 +139,7 @@ export default function StepPillarYield({
               <span className="font-semibold tabular-nums">{formatCurrency(Math.round(conservativeValue))}</span> in reimbursement accuracy on the table.
             </p>
             <p className="text-sm text-[#666]">
-              This is not revenue you haven't earned. It is revenue you've earned and failed to capture.
+              This is revenue you've delivered clinically but may not be fully capturing in reimbursement.
             </p>
           </div>
         )}
