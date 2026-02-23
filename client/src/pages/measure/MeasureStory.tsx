@@ -401,7 +401,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           </div>
 
           <p className="text-xs text-[#666666]">
-            Your {state.deployment.providers}-{isNursing ? "nurse" : "provider"} pilot has proven the model.
+            Your {state.deployment.providers}-{isNursing ? "nurse" : "provider"} pilot has demonstrated the model.
           </p>
         </motion.div>
 
@@ -512,6 +512,12 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             Start Over
           </button>
         </motion.div>
+
+        <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
+          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+            Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -223,6 +223,8 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const qualityHours = totalHoursSaved * (allocation.qualityOfLifePercent / 100);
   const qualityHoursPerWeek = deployment.providers > 0 ? qualityHours / deployment.providers / 52 : 0;
   
+  // Attribution range is 70-85%; calculator uses conservative floor (0.70).
+  // Display pages show the full 0.70–0.85 range for transparency.
   const wrvuValue = wrvuDelta * deployment.abridgeEncounters * calibration.conversionFactor * 0.70;
   
   const emValuePerLevel = 15;

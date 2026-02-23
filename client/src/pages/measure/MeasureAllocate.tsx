@@ -619,8 +619,8 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         </motion.div>
 
         <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} data-testid="section-time-waterfall">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">How Time Creates Value</p>
-          <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed. Here's where they go.</p>
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Potential Value from Time Savings</p>
+          <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed. Here's where they may go.</p>
           <div className="space-y-0">
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
@@ -824,7 +824,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         {r.retentionValue > 0 && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} data-testid="section-retention">
             <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Retention Value</p>
-            <p className="text-sm text-[#666666] mb-5">Reduced turnover saves recruitment and training costs</p>
+            <p className="text-sm text-[#666666] mb-5">Reduced turnover may lower recruitment and training costs</p>
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3">
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
@@ -888,6 +888,12 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
+
+        <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
+          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+            Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -969,10 +975,10 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           data-testid="section-time-waterfall"
         >
           <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
-            How Time Creates Value
+            Potential Value from Time Savings
           </p>
           <p className="text-sm text-[#666666] mb-5">
-            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed. Here's where they go.
+            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed. Here's where they may go.
           </p>
 
           <div className="space-y-0">
@@ -1121,6 +1127,12 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
+
+        <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
+          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+            Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
+          </p>
+        </div>
       </div>
     </div>
   );

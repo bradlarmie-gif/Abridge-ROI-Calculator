@@ -259,7 +259,7 @@ export default function MeasureOpportunity({
             The Opportunity Ahead
           </h1>
           <p className="text-base text-[#666666] max-w-lg mx-auto" data-testid="text-page-subtitle">
-            You've proven the model with {state.deployment.providers} {providerLabel}. Here's what your data suggests about what's next.
+            You've demonstrated the model with {state.deployment.providers} {providerLabel}. Here's what your data suggests about what's next.
           </p>
         </motion.div>
 
