@@ -282,17 +282,16 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               testId="value-utilization"
             />
 
-            <div className={`transition-opacity duration-300 ${utilSet ? "opacity-100" : "opacity-40"}`}>
-              <Slider
-                min={10}
-                max={95}
-                step={5}
-                value={[utilization ?? 50]}
-                onValueChange={(v) => handleUtilChange(v[0])}
-                className="w-full"
-                data-testid="slider-utilization"
-              />
-            </div>
+            <Slider
+              min={10}
+              max={95}
+              step={5}
+              value={[utilization ?? 50]}
+              onValueChange={(v) => handleUtilChange(v[0])}
+              className="w-full"
+              dormant={!utilSet}
+              data-testid="slider-utilization"
+            />
 
             <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
               <BenchmarkPill
@@ -356,17 +355,16 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
               testId="value-time-savings"
             />
 
-            <div className={`transition-opacity duration-300 ${timeSet ? "opacity-100" : "opacity-40"}`}>
-              <Slider
-                min={0.5}
-                max={6.0}
-                step={0.25}
-                value={[timeSavings ?? 2.0]}
-                onValueChange={(v) => handleTimeChange(v[0])}
-                className="w-full"
-                data-testid="slider-time-savings"
-              />
-            </div>
+            <Slider
+              min={0.5}
+              max={6.0}
+              step={0.25}
+              value={[timeSavings ?? 3.0]}
+              onValueChange={(v) => handleTimeChange(v[0])}
+              className="w-full"
+              dormant={!timeSet}
+              data-testid="slider-time-savings"
+            />
 
             <div className="flex items-center justify-center mt-5 gap-3 flex-wrap">
               <BenchmarkPill
@@ -463,7 +461,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 )}
               </>
             ) : (
-              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
+              <p className="text-2xl font-bold text-white/20 leading-none">{'\u2014'}</p>
             )}
           </div>
 
@@ -493,7 +491,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 )}
               </>
             ) : (
-              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
+              <p className="text-2xl font-bold text-white/20 leading-none">{'\u2014'}</p>
             )}
           </div>
 
@@ -513,7 +511,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 )}
               </>
             ) : (
-              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
+              <p className="text-2xl font-bold text-white/20 leading-none">{'\u2014'}</p>
             )}
           </div>
 
@@ -533,7 +531,7 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                 )}
               </>
             ) : (
-              <p className="text-2xl font-bold text-white/20 leading-none">\u2014</p>
+              <p className="text-2xl font-bold text-white/20 leading-none">{'\u2014'}</p>
             )}
           </div>
 
