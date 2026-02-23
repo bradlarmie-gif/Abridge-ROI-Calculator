@@ -141,12 +141,12 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
               <div className="space-y-4 text-[15px] text-black leading-relaxed">
                 <p>
                   Outpatient is the setting where everyone starts the ROI conversation — because 
-                  the math looks easy. A physician saves 4 minutes per visit. Multiply by encounters, 
+                  the math looks easy. A physician saves 3 minutes per visit. Multiply by encounters, 
                   multiply by hourly rate. Done.
                 </p>
                 <p>
-                  Except it's not that simple. The 4 minutes is real. But what happens to those 4 minutes 
-                  is a strategic question that every organization answers differently.
+                  Except it's not that simple. The 3 minutes is real. But what happens to those 3 minutes 
+                  is a strategic question that each organization answers differently.
                 </p>
                 <p>
                   Some practices reinvest in capacity — more patients, more revenue. Others let physicians 
@@ -242,7 +242,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        If a provider saves 4 minutes per visit across 20 visits, that's 80 minutes. 
+                        If a provider saves 3 minutes per visit across 20 visits, that's 60 minutes. 
                         Some practices convert that time to additional patient slots — if demand exists 
                         and access is a strategic priority. Others don't, and that's a legitimate choice.
                       </p>
@@ -446,11 +446,11 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Time saved per encounter</td>
                             <td className="py-3">2-6 minutes</td>
-                            <td className="py-3">4 minutes</td>
+                            <td className="py-3">3 minutes</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Based on time-motion studies across outpatient implementations. Primary care typically 4-6 min, specialists 2-4 min.</p>
+                          <p className="text-xs">Based on Abridge deployment data across outpatient implementations. Primary care typically 3-5 min, specialists 2-3 min.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>
@@ -481,12 +481,12 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">wRVU conversion factor</td>
-                            <td className="py-3">$35-$50</td>
-                            <td className="py-3">$42</td>
+                            <td className="py-3">$30-$50</td>
+                            <td className="py-3">$33</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">CMS Medicare conversion factor ~$35. Commercial payers often 20-40% higher. Blended rate depends on payer mix.</p>
+                          <p className="text-xs">CMS MPFS Medicare conversion factor ~$33 (2024). Commercial payers often higher. Blended rate depends on payer mix.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>

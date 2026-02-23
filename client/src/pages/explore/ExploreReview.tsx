@@ -12,7 +12,7 @@ interface ExploreReviewProps {
   onHome: () => void;
 }
 
-const WRVU_CONVERSION = 40; // CMS MPFS national average conversion factor
+const WRVU_CONVERSION = 33; // CMS MPFS Medicare conversion factor (2024)
 const WRVU_REALIZATION = 0.75;
 const HCC_VALUE_PER_CONDITION = 800; // CMS HCC risk adjustment, published MA benchmarks
 const HCC_REALIZATION = 0.60;
