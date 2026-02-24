@@ -14,28 +14,28 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Not yet captured',
-    2: 'Informally tracked',
-    3: 'Actively managed',
-    4: 'Systematically deployed',
+    1: 'Time Saved, Not Deployed',
+    2: 'Ad Hoc Access Relief',
+    3: 'Structured Access Expansion',
+    4: 'Institutionalized Capacity Strategy',
   },
   revenue: {
-    1: 'Not connected',
-    2: 'Some improvement',
-    3: 'Actively managed',
-    4: 'Revenue infrastructure',
+    1: 'Documentation Neutral',
+    2: 'Anecdotal Coding Lift',
+    3: 'Measured Yield Integrity',
+    4: 'Financial Governance Embedded',
   },
   workforce: {
-    1: 'Surveys only',
-    2: 'Scores improved',
-    3: 'Burden measured',
-    4: 'Retention connected',
+    1: 'Pajama Time Reduced',
+    2: 'Work Out of Work Reduced',
+    3: 'Turnover Risk Managed',
+    4: 'Labor Volatility Strategically Reduced',
   },
   risk: {
-    1: 'Not connected',
-    2: 'Note completeness',
-    3: 'Audit ready',
-    4: 'Future ready',
+    1: 'Cleaner Clinical Notes',
+    2: 'Audit Awareness',
+    3: 'Reporting Friction Reduced',
+    4: 'Governed Compliance Infrastructure',
   },
 };
 
@@ -54,28 +54,26 @@ export interface DomainFeedback {
 }
 
 export function computeDomainScore(domain: Domain, level: ActivationLevel, inputs: Record<string, number | string>): number {
-  if (domain === 'capacity') {
-    const base: Record<number, number> = { 1: 15, 2: 35, 3: 65, 4: 90 };
-    const b = base[level] || 0;
-    if (level === 2) {
-      const redeployment = (inputs.redeployment as number) || 20;
-      return Math.round(b + (redeployment / 100) * 20);
-    }
-    if (level === 3) {
-      const monthlyOT = (inputs.monthlyOT as number) || 0;
-      const monthlyPatients = (inputs.monthlyPatients as number) || 0;
-      const inputScore = Math.min(20, Math.round((monthlyOT + monthlyPatients * 200) / 1000));
-      return Math.min(85, b + inputScore);
-    }
-    return b;
+  const baseScores: Record<Domain, Record<number, number>> = {
+    capacity: { 1: 15, 2: 35, 3: 65, 4: 90 },
+    revenue: { 1: 10, 2: 30, 3: 62, 4: 88 },
+    workforce: { 1: 20, 2: 40, 3: 65, 4: 85 },
+    risk: { 1: 15, 2: 38, 3: 62, 4: 90 },
+  };
+
+  const base = baseScores[domain]?.[level] || 0;
+
+  if (domain === 'capacity' && level === 2) {
+    const redeployment = (inputs.redeployment as number) || 10;
+    return Math.round(base + (redeployment / 25) * 20);
   }
-  if (domain === 'revenue') {
-    return ({ 1: 10, 2: 30, 3: 62, 4: 88 } as Record<number, number>)[level] || 0;
+  if (domain === 'capacity' && level === 3) {
+    const patients = (inputs.additionalPatients as number) || 0;
+    const inputScore = Math.min(20, Math.round(patients / 5));
+    return Math.min(85, base + inputScore);
   }
-  if (domain === 'workforce') {
-    return ({ 1: 20, 2: 40, 3: 65, 4: 85 } as Record<number, number>)[level] || 0;
-  }
-  return ({ 1: 15, 2: 38, 3: 62, 4: 90 } as Record<number, number>)[level] || 0;
+
+  return base;
 }
 
 export function computeCapacityFeedback(
@@ -84,51 +82,50 @@ export function computeCapacityFeedback(
   providers: number,
   timeSavings: number,
 ): DomainFeedback {
-  const totalCapacityValue = providers * 2000 * (3.0 - timeSavings) / 60 * 150 * 0.25;
-  const totalHours = Math.round(providers * 2000 * (3.0 - timeSavings) / 60);
-  const fte = (totalHours / 2080).toFixed(1);
+  const recoveredHoursPerYear = Math.round(providers * 2000 * (3.0 - timeSavings) / 60);
+  const fte = (recoveredHoursPerYear / 2080).toFixed(1);
 
   if (level === 1) {
     return {
-      label: 'Estimated undeployed capacity value',
-      value: Math.round(totalCapacityValue),
-      context: `At your scale, undeployed recovered time represents an estimated ${totalHours.toLocaleString()} hours annually \u2014 ${fte} FTE of clinical capacity currently evaporating.`,
-      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
+      label: 'Recovered time \u2014 not yet deployed',
+      value: 0,
+      context: `At your scale, recovered documentation time represents an estimated ${recoveredHoursPerYear.toLocaleString()} hours annually (${fte} FTE equivalent). This time reduces friction \u2014 but is not structurally creating capacity.`,
+      footnote: 'Redeployment = 0%. No capacity value claimed at this level.',
     };
   }
+
   if (level === 2) {
-    const redeployment = (inputs.redeployment as number) || 20;
-    const captured = Math.round(totalCapacityValue * (redeployment / 100));
-    const gap = Math.round(totalCapacityValue - captured);
+    const redeployment = (inputs.redeployment as number) || 10;
+    const redeployedHours = Math.round(recoveredHoursPerYear * (redeployment / 100));
+    const estimatedValue = Math.round(redeployedHours * 150);
     return {
-      label: 'Estimated undeployed capacity value',
-      value: Math.max(0, gap),
-      context: `At ${redeployment}% redeployment, approximately ${formatDollar(captured)} is being captured. ${formatDollar(gap)} remains undeployed annually.`,
-      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
+      label: 'Estimated ad hoc capacity value',
+      value: estimatedValue,
+      context: `At ${redeployment}% redeployment, approximately ${redeployedHours.toLocaleString()} recovered hours are translating into additional visits \u2014 estimated at ${formatDollar(estimatedValue)} annually.`,
+      footnote: 'Recovered hours \u00d7 estimated redeployment %. $150/hr blended visit value.',
     };
   }
+
   if (level === 3) {
-    const monthlyOT = (inputs.monthlyOT as number) || 0;
-    const monthlyPatients = (inputs.monthlyPatients as number) || 0;
-    const annualOT = monthlyOT * 12;
-    const annualBacklog = monthlyPatients * 200 * 12;
-    const total = annualOT + annualBacklog;
-    const nextLayer = Math.max(0, Math.round(totalCapacityValue - total));
+    const additionalPatients = (inputs.additionalPatients as number) || 0;
+    const revenuePerVisit = (inputs.revenuePerVisit as number) || 200;
+    const annualValue = Math.round(additionalPatients * revenuePerVisit * 12);
     return {
-      label: 'Estimated remaining capacity opportunity',
-      value: nextLayer,
-      context: `You're capturing the efficiency layer. Systematic capacity deployment could add an estimated ${formatDollar(nextLayer)} annually.`,
-      footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
+      label: 'Estimated structured capacity value',
+      value: annualValue,
+      context: `${additionalPatients} additional patients per month at ${formatDollar(revenuePerVisit)} per visit generates an estimated ${formatDollar(annualValue)} in annual capacity value.`,
+      footnote: 'Patients \u00d7 revenue per visit \u00d7 12 months.',
     };
   }
-  const additionalPatients = (inputs.additionalPatients as number) || 0;
+
+  const visitGrowth = (inputs.visitGrowthPerProvider as number) || 0;
   const revenuePerVisit = (inputs.revenuePerVisit as number) || 200;
-  const annualValue = Math.round(additionalPatients * revenuePerVisit * 12);
+  const annualValue = Math.round(visitGrowth * providers * revenuePerVisit * 12);
   return {
-    label: 'Estimated capacity deployment value',
+    label: 'Estimated institutionalized capacity value',
     value: annualValue,
-    context: `Strong activation. Your capacity deployment is generating an estimated ${formatDollar(annualValue)} annually.`,
-    footnote: 'Based on Abridge benchmark: 3.0 min avg time returned',
+    context: `${visitGrowth} net visits per provider per month across ${providers} providers at ${formatDollar(revenuePerVisit)} per visit \u2014 estimated ${formatDollar(annualValue)} in annual capacity deployment.`,
+    footnote: 'Net visit growth per provider \u00d7 providers \u00d7 revenue per visit \u00d7 12.',
   };
 }
 
@@ -139,53 +136,48 @@ export function computeRevenueFeedback(
   utilization: number,
 ): DomainFeedback {
   const util = utilization / 100;
+  const baseRevenuePerEncounter = 200;
+
   if (level === 1) {
-    const denialLeakage = annualEncounters * 0.07 * 0.35 * 0.30 * 250;
-    const codingLeakage = annualEncounters * util * 0.015 * 33;
-    const hccLeakage = annualEncounters * util * 0.12 * 25;
-    const total = Math.round(denialLeakage + codingLeakage + hccLeakage);
-    const low = formatDollar(Math.round(total * 0.7));
-    const high = formatDollar(Math.round(total * 1.3));
+    const conservativeYield = Math.round(annualEncounters * util * baseRevenuePerEncounter * 0.005);
     return {
-      label: 'Estimated revenue leakage',
-      value: total,
-      context: `At your encounter volume, documentation-driven revenue leakage is estimated at ${low}\u2013${high} annually across denials, undercoding, and HCC capture.`,
-      footnote: 'Based on industry benchmarks for denial, coding, and HCC rates',
+      label: 'Conservative baseline yield estimate',
+      value: conservativeYield,
+      context: `At your encounter volume, conservative documentation-driven yield is estimated at ${formatDollar(conservativeYield)} annually. This is a baseline \u2014 actual impact is not being measured.`,
+      footnote: 'Conservative 0.5% baseline yield on utilized encounters. Directional only.',
     };
   }
+
   if (level === 2) {
-    const denialRate = (inputs.denialRate as number) || 7;
-    const docDenialCost = annualEncounters * util * (denialRate / 100) * 0.35 * 250;
-    const benchmarkCost = annualEncounters * util * 0.04 * 0.35 * 250;
-    const gap = Math.max(0, Math.round(docDenialCost - benchmarkCost));
+    const yieldDelta = (inputs.yieldDelta as number) || 2;
+    const directionalValue = Math.round(annualEncounters * util * baseRevenuePerEncounter * (yieldDelta / 100));
     return {
-      label: 'Estimated denial gap',
-      value: gap,
-      context: `At ${denialRate}% denial rate, documentation-related denials are costing approximately ${formatDollar(gap)} more than benchmark annually.`,
-      footnote: 'Benchmark denial rate: 4%',
+      label: 'Estimated directional yield impact',
+      value: directionalValue,
+      context: `At an estimated ${yieldDelta}% yield improvement, documentation-driven revenue impact is approximately ${formatDollar(directionalValue)} annually. This is directional modeling \u2014 not yet measured.`,
+      footnote: 'Directional modeling based on estimated yield delta. Not independently verified.',
     };
   }
+
   if (level === 3) {
-    const hccValue = Math.round(annualEncounters * util * 0.12 * 25);
-    const codingValue = Math.round(annualEncounters * util * 0.015 * 33);
-    const remainingGap = hccValue + codingValue;
+    const measuredLift = (inputs.measuredYieldLift as number) || 0;
+    const measuredValue = Math.round(annualEncounters * util * baseRevenuePerEncounter * (measuredLift / 100));
     return {
-      label: 'Estimated remaining revenue opportunity',
-      value: remainingGap,
-      context: `Denial management is active. Remaining opportunity in HCC capture and E/M accuracy: estimated ${formatDollar(remainingGap)} annually.`,
-      footnote: 'Based on industry HCC and coding benchmarks',
+      label: 'Measured yield integrity value',
+      value: measuredValue,
+      context: `At a measured ${measuredLift}% yield lift, documentation intelligence is generating an estimated ${formatDollar(measuredValue)} in verified annual revenue impact.`,
+      footnote: 'Applied directly to exposure base using measured yield lift.',
     };
   }
-  const wrvuImprovement = (inputs.wrvuImprovement as number) || 0;
-  const hccImprovement = (inputs.hccImprovement as number) || 0;
-  const wrvuValue = annualEncounters * util * (wrvuImprovement / 100) * 1.5 * 33;
-  const hccValue = annualEncounters * util * 0.30 * (hccImprovement / 100) * 1200;
-  const total = Math.round(wrvuValue + hccValue);
+
+  const recognizedRevenue = (inputs.recognizedRevenue as number) || 0;
   return {
-    label: 'Estimated revenue activation value',
-    value: total,
-    context: `Strong revenue activation. Documentation intelligence is generating an estimated ${formatDollar(total)} in annual revenue integrity.`,
-    footnote: 'Based on wRVU and HCC improvement rates provided',
+    label: 'Recognized revenue impact',
+    value: recognizedRevenue,
+    context: recognizedRevenue > 0
+      ? `${formatDollar(recognizedRevenue)} in recognized revenue change tied to documentation improvements and embedded in financial reporting.`
+      : 'Enter the recognized revenue change tied to documentation improvements.',
+    footnote: 'Recognized revenue impact as reported in financial governance.',
   };
 }
 
@@ -195,46 +187,54 @@ export function computeWorkforceFeedback(
   providers: number,
 ): DomainFeedback {
   if (level === 1) {
-    const afterHours = (inputs.afterHours as number) || 3;
-    const annualBurden = Math.round(afterHours * providers * 52);
-    const retentionLiability = Math.round(providers * 0.08 * 0.25 * 400000);
+    const afterHoursReduction = (inputs.afterHoursReduction as number) || 2;
+    const annualHoursSaved = Math.round(afterHoursReduction * providers * 52);
+    const hourlyRate = 150;
+    const estimatedValue = Math.round(annualHoursSaved * hourlyRate);
     return {
-      label: 'Estimated retention liability',
-      value: retentionLiability,
-      context: `At ${afterHours} hrs/week, your providers carry ${annualBurden.toLocaleString()} hours of after-hours burden annually. Estimated retention liability: ${formatDollar(retentionLiability)}`,
-      footnote: 'Based on $400K average physician replacement cost',
+      label: 'Estimated pajama time reduction value',
+      value: estimatedValue,
+      context: `${afterHoursReduction} hrs/week reduced across ${providers} providers = ${annualHoursSaved.toLocaleString()} hours of after-hours burden eliminated annually, valued at ${formatDollar(estimatedValue)}.`,
+      footnote: 'After-hours reduction \u00d7 providers \u00d7 52 weeks \u00d7 $150/hr blended rate.',
     };
   }
+
   if (level === 2) {
-    const turnoverRate = (inputs.turnoverRate as number) || 8;
-    const turnoverCost = providers * (turnoverRate / 100) * 400000;
-    const docAttributable = Math.round(turnoverCost * 0.25);
+    const editTimeSaved = (inputs.editTimeSaved as number) || 15;
+    const annualMinutesSaved = Math.round(editTimeSaved * providers * 250);
+    const annualHoursSaved = Math.round(annualMinutesSaved / 60);
+    const estimatedValue = Math.round(annualHoursSaved * 100);
     return {
-      label: 'Estimated documentation-attributable turnover cost',
-      value: docAttributable,
-      context: `At ${turnoverRate}% turnover, documentation-attributable departures represent approximately ${formatDollar(docAttributable)} in annual replacement cost.`,
-      footnote: 'Documentation burden attributed to 25% of physician turnover',
+      label: 'Estimated edit/review time savings',
+      value: estimatedValue,
+      context: `${editTimeSaved} min/day reduced across ${providers} providers = ${annualHoursSaved.toLocaleString()} hours of administrative burden eliminated annually, valued at ${formatDollar(estimatedValue)}.`,
+      footnote: 'Minutes saved \u00d7 providers \u00d7 250 working days, at $100/hr administrative rate.',
     };
   }
+
   if (level === 3) {
     const turnoverRate = (inputs.turnoverRate as number) || 8;
-    const remainingLiability = Math.round(providers * (turnoverRate / 100) * 0.20 * 400000);
+    const replacementCost = (inputs.replacementCost as number) || 400000;
+    const docAttributable = 0.25;
+    const turnoverLiability = Math.round(providers * (turnoverRate / 100) * replacementCost * docAttributable);
     return {
-      label: 'Estimated remaining workforce exposure',
-      value: remainingLiability,
-      context: `Meaningful progress. Remaining after-hours burden still represents ${formatDollar(remainingLiability)} in workforce stability exposure.`,
-      footnote: 'Based on $400K average physician replacement cost',
+      label: 'Estimated documentation-attributable turnover exposure',
+      value: turnoverLiability,
+      context: `At ${turnoverRate}% turnover and ${formatDollar(replacementCost)} replacement cost, documentation-attributable departures represent approximately ${formatDollar(turnoverLiability)} in annual exposure.`,
+      footnote: 'Documentation burden attributed to ~25% of physician turnover (industry estimate).',
     };
   }
-  const turnoverReduction = (inputs.turnoverReduction as number) || 0;
-  const otSavings = (inputs.otSavings as number) || 0;
-  const turnoverSavings = Math.round(providers * (turnoverReduction / 100) * 400000);
-  const total = turnoverSavings + (otSavings * 12);
+
+  const agencyAvoided = (inputs.agencyAvoided as number) || 0;
+  const overtimeReduction = (inputs.overtimeReduction as number) || 0;
+  const annualValue = Math.round((agencyAvoided + overtimeReduction) * 12);
   return {
-    label: 'Estimated workforce stability value',
-    value: total,
-    context: `Strong workforce activation. Documentation intelligence is generating ${formatDollar(total)} in workforce stability value annually.`,
-    footnote: 'Based on turnover savings and OT/agency spend reduction',
+    label: 'Estimated labor volatility reduction',
+    value: annualValue,
+    context: annualValue > 0
+      ? `${formatDollar(annualValue)} in annualized agency and overtime spend reduction through structural documentation intelligence.`
+      : 'Enter monthly agency spend avoided and overtime reduction to calculate impact.',
+    footnote: 'Agency spend avoided + overtime reduction \u00d7 12 months.',
   };
 }
 
@@ -245,50 +245,53 @@ export function computeRiskFeedback(
   utilization: number,
 ): DomainFeedback {
   const util = utilization / 100;
+
   if (level === 1) {
-    const defensibility = (inputs.defensibility as string) || 'Medium';
-    const multiplier: Record<string, number> = { Low: 0.012, Medium: 0.007, High: 0.003 };
-    const annualRevenue = annualEncounters * 200;
-    const exposure = Math.round(annualRevenue * (multiplier[defensibility] || 0.007));
+    const baselineExposure = Math.round(annualEncounters * util * 0.007 * 200);
     return {
-      label: 'Estimated compliance exposure',
-      value: exposure,
-      context: `Organizations at this defensibility level carry an estimated ${formatDollar(exposure)} in annual audit and quality reporting exposure \u2014 plus structural limitations on automation readiness.`,
-      footnote: 'Based on industry audit exposure benchmarks',
+      label: 'Baseline compliance exposure',
+      value: baselineExposure,
+      context: `At your encounter volume, baseline documentation-related compliance exposure is estimated at ${formatDollar(baselineExposure)} annually. Cleaner notes improve quality but audit posture is unchanged.`,
+      footnote: 'Based on 0.7% documentation-related audit exposure rate. No inputs required.',
     };
   }
+
   if (level === 2) {
-    const auditReady = (inputs.auditReady as number) || 50;
-    const gap = 100 - auditReady;
-    const exposureValue = Math.round(annualEncounters * util * (gap / 100) * 15);
+    const improvement = (inputs.defensibilityImprovement as number) || 10;
+    const baseExposure = annualEncounters * util * 0.007 * 200;
+    const reducedExposure = Math.round(baseExposure * (improvement / 100));
+    const remainingExposure = Math.round(baseExposure - reducedExposure);
     return {
-      label: 'Estimated compliance exposure',
-      value: exposureValue,
-      context: `At ${auditReady}% audit readiness, your compliance exposure is approximately ${formatDollar(exposureValue)} annually. Automation readiness remains the larger long-term gap.`,
-      footnote: 'Based on per-encounter audit exposure rate',
+      label: 'Estimated exposure reduction',
+      value: reducedExposure,
+      context: `At ${improvement}% defensibility improvement, approximately ${formatDollar(reducedExposure)} in compliance exposure is being addressed. ${formatDollar(remainingExposure)} in estimated exposure remains.`,
+      footnote: 'Baseline exposure \u00d7 estimated defensibility improvement %.',
     };
   }
+
   if (level === 3) {
-    const queryRate = (inputs.queryRate as number) || 15;
-    const queryCost = (inputs.queryCost as number) || 45;
-    const cdiCost = (annualEncounters / 1000) * queryRate * queryCost;
-    const benchmarkCost = (annualEncounters / 1000) * 8 * queryCost;
-    const gap = Math.max(0, Math.round(cdiCost - benchmarkCost));
+    const reportingHours = (inputs.reportingHoursReduced as number) || 0;
+    const annualSavings = Math.round(reportingHours * 12 * 75);
     return {
-      label: 'Estimated CDI gap',
-      value: gap,
-      context: `Solid risk posture. Primary remaining exposure is automation readiness \u2014 the structured data foundation for your next-generation initiatives.`,
-      footnote: 'CDI benchmark: 8 queries per 1,000 encounters',
+      label: 'Estimated reporting friction savings',
+      value: annualSavings,
+      context: reportingHours > 0
+        ? `${reportingHours} hours/month in reduced quality reporting and chart abstraction = ${formatDollar(annualSavings)} in annual operational savings.`
+        : 'Enter monthly reporting hours reduced to calculate operational savings.',
+      footnote: 'Reporting hours \u00d7 12 months \u00d7 $75/hr abstraction rate.',
     };
   }
-  const initiatives = (inputs.initiatives as string) || '1\u20132';
-  const initiativeMultiplier: Record<string, number> = { '1\u20132': 1, '3\u20135': 2.5, '5+': 4 };
-  const foundationValue = Math.round(annualEncounters * 0.002 * (initiativeMultiplier[initiatives] || 1) * 1000);
+
+  const auditReduction = (inputs.auditFindingsReduced as number) || 0;
+  const complianceExposure = (inputs.complianceExposure as number) || 0;
+  const totalValue = complianceExposure > 0 ? complianceExposure : Math.round(annualEncounters * util * 0.007 * 200 * (auditReduction / 100));
   return {
-    label: 'Estimated infrastructure foundation value',
-    value: foundationValue,
-    context: `Your documentation infrastructure is actively building the foundation for ${initiatives} planned initiatives. This is the highest-leverage infrastructure investment in your roadmap.`,
-    footnote: 'Based on initiative count and encounter volume',
+    label: 'Estimated governed compliance value',
+    value: totalValue,
+    context: totalValue > 0
+      ? `Documentation intelligence is reducing compliance exposure by an estimated ${formatDollar(totalValue)} annually through governed infrastructure.`
+      : 'Enter audit findings reduced or compliance exposure estimate to calculate impact.',
+    footnote: 'Based on audit findings reduction or direct compliance exposure estimate.',
   };
 }
 

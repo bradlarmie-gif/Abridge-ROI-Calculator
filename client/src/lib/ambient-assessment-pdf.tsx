@@ -547,28 +547,28 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
 
 const opportunityText: Record<string, Record<number, string>> = {
   capacity: {
-    1: "Recovered time is not being captured. At your scale, undeployed capacity represents significant clinical supply currently evaporating.",
-    2: "You\u2019re capturing some capacity informally. Systematic redeployment could multiply the value being captured.",
-    3: "Active management is delivering results. The next layer is systematic deployment: structured panel growth programs.",
-    4: "Strong capacity activation. Focus on maintaining and expanding the redeployment infrastructure.",
+    1: "Recovered time reduces friction but is not structurally deployed. At your scale, this represents clinical supply currently evaporating.",
+    2: "Ad hoc access relief is occurring, but without formal scheduling redesign the captured value remains limited.",
+    3: "Structured access expansion is delivering results. Visit templates and schedules are intentionally driving throughput.",
+    4: "Institutionalized capacity strategy. Recovered time is embedded into panel planning and FTE modeling.",
   },
   revenue: {
-    1: "Documentation quality is not yet connected to revenue strategy. At your volume, the cumulative impact is significant.",
-    2: "Some coding improvement has been observed. The gap is in systematically connecting documentation fidelity to denial management.",
-    3: "Active revenue management is delivering measurable results. HCC capture optimization represents the highest remaining opportunity.",
-    4: "Documentation infrastructure is driving revenue strategy. Focus on maintaining fidelity as volume grows.",
+    1: "Documentation is workflow-neutral \u2014 coding integrity and reimbursement accuracy are not actively measured.",
+    2: "Anecdotal coding lift has been observed, but the impact is not measured systematically.",
+    3: "Measured yield integrity is delivering verified revenue impact tied to documentation improvements.",
+    4: "Financial governance embedded. Documentation intelligence is recognized in revenue cycle oversight and financial reporting.",
   },
   workforce: {
-    1: "After-hours documentation burden is the leading driver of burnout and the primary predictor of turnover.",
-    2: "Survey improvement is a lagging indicator. Connecting documentation burden directly to after-hours charting data would reveal the retention opportunity.",
-    3: "After-hours burden is measurably declining. The next step is connecting this improvement directly to retention metrics.",
-    4: "Documentation burden is connected to retention strategy. This is the highest-leverage workforce infrastructure investment.",
+    1: "Pajama time is reduced, improving provider satisfaction, but labor strategy remains unchanged.",
+    2: "Administrative correction and chart reconciliation workload is measurably decreasing.",
+    3: "Turnover risk is being managed \u2014 attrition and staffing volatility tracked against documentation burden.",
+    4: "Labor volatility is structurally reduced through documentation intelligence. Agency and overtime exposure declining.",
   },
   risk: {
-    1: "Documentation infrastructure is not yet positioned as a compliance or automation asset.",
-    2: "Note completeness has improved. The gap is in audit defensibility and structured data usability.",
-    3: "Audit posture is actively managed. The primary remaining exposure is automation readiness.",
-    4: "Documentation infrastructure is positioned as a strategic asset. Focus on maintaining this foundation.",
+    1: "Cleaner clinical notes improve documentation completeness, but audit posture and reporting friction remain unchanged.",
+    2: "Audit awareness is improving \u2014 documentation defensibility is being discussed and occasionally reviewed.",
+    3: "Reporting friction is measurably reduced. Quality reporting and chart abstraction workload declining.",
+    4: "Governed compliance infrastructure. Documentation intelligence is embedded into compliance review and structured data automation.",
   },
 };
 

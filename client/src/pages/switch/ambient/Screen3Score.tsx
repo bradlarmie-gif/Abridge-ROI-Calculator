@@ -28,10 +28,10 @@ const DOMAIN_LABELS: Record<DomainKey, string> = {
 const DOMAIN_ORDER: DomainKey[] = ['capacity', 'revenue', 'workforce', 'risk'];
 
 const ACTIVATION_THRESHOLDS: Record<DomainKey, Record<number, string>> = {
-  capacity: { 15: 'Not yet captured', 35: 'Informally tracked', 65: 'Actively managed', 90: 'Systematically deployed' },
-  revenue: { 10: 'Not connected', 30: 'Some improvement', 62: 'Actively managed', 88: 'Revenue infrastructure' },
-  workforce: { 20: 'Surveys only', 40: 'Scores improved', 65: 'Burden measured', 85: 'Retention connected' },
-  risk: { 15: 'Not connected', 38: 'Note completeness', 62: 'Audit ready', 90: 'Future ready' },
+  capacity: { 15: 'Time Saved, Not Deployed', 35: 'Ad Hoc Access Relief', 65: 'Structured Access Expansion', 90: 'Institutionalized Capacity Strategy' },
+  revenue: { 10: 'Documentation Neutral', 30: 'Anecdotal Coding Lift', 62: 'Measured Yield Integrity', 88: 'Financial Governance Embedded' },
+  workforce: { 20: 'Pajama Time Reduced', 40: 'Work Out of Work Reduced', 65: 'Turnover Risk Managed', 85: 'Labor Volatility Strategically Reduced' },
+  risk: { 15: 'Cleaner Clinical Notes', 38: 'Audit Awareness', 62: 'Reporting Friction Reduced', 90: 'Governed Compliance Infrastructure' },
 };
 
 function getActivationLabel(domain: DomainKey, score: number): string {
