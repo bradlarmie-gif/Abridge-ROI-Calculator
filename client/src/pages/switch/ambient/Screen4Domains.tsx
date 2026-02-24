@@ -49,10 +49,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Where does recovered time actually go?',
     reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned \u2014 and whether your organization has a system for capturing it.',
     cards: [
-      { level: 1, label: 'Time Saved, Not Deployed', description: 'Recovered documentation time reduces friction for providers \u2014 but no structural change in access, templates, or panel growth.' },
-      { level: 2, label: 'Ad Hoc Access Relief', description: 'Recovered time occasionally reduces backlog or enables extra visits, but without formal scheduling redesign.' },
-      { level: 3, label: 'Structured Access Expansion', description: 'Visit templates or provider schedules have been intentionally modified to increase throughput using recovered time.' },
-      { level: 4, label: 'Institutionalized Capacity Strategy', description: 'Recovered time is embedded into panel planning, provider FTE modeling, and executive-level access targets.' },
+      { level: 1, label: 'Time Saved, Not Deployed', description: 'Providers are faster. Schedules and panels are unchanged.' },
+      { level: 2, label: 'Ad Hoc Access Relief', description: 'Recovered time informally absorbed. No scheduling redesign.' },
+      { level: 3, label: 'Structured Access Expansion', description: 'Schedules and templates redesigned around recovered time.' },
+      { level: 4, label: 'Institutionalized Capacity Strategy', description: 'Capacity targets embedded in panel planning and FTE models.' },
     ],
   },
   revenue: {
@@ -60,10 +60,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'What is documentation fidelity worth to your revenue cycle?',
     reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned \u2014 or leaking it.',
     cards: [
-      { level: 1, label: 'Documentation Neutral', description: 'Ambient improves workflow, but coding integrity and reimbursement accuracy are not actively measured.' },
-      { level: 2, label: 'Anecdotal Coding Lift', description: 'Improved documentation occasionally leads to higher-level coding, but impact is not measured systematically.' },
-      { level: 3, label: 'Measured Yield Integrity', description: 'wRVU, RAF, or reimbursement variance tied to documentation improvements is actively measured.' },
-      { level: 4, label: 'Financial Governance Embedded', description: 'Documentation intelligence is integrated into revenue cycle oversight and recognized in financial reporting.' },
+      { level: 1, label: 'Documentation Neutral', description: 'Workflow improved. Revenue impact not yet measured.' },
+      { level: 2, label: 'Anecdotal Coding Lift', description: 'Coding improvements observed but not systematically tracked.' },
+      { level: 3, label: 'Measured Yield Integrity', description: 'Yield variance actively measured against documentation changes.' },
+      { level: 4, label: 'Financial Governance Embedded', description: 'Documentation integrated into revenue cycle oversight.' },
     ],
   },
   workforce: {
@@ -71,10 +71,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'What is documentation burden costing your workforce?',
     reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
     cards: [
-      { level: 1, label: 'Pajama Time Reduced', description: 'After-hours documentation burden is lower, improving provider satisfaction, but labor strategy is unchanged.' },
-      { level: 2, label: 'Work Out of Work Reduced', description: 'Administrative correction, editing, and chart reconciliation workload measurably decreases.' },
-      { level: 3, label: 'Turnover Risk Managed', description: 'Burnout-related attrition and staffing volatility are tracked in relation to documentation burden.' },
-      { level: 4, label: 'Labor Volatility Strategically Reduced', description: 'Agency use, overtime exposure, or staffing instability is structurally reduced through documentation intelligence.' },
+      { level: 1, label: 'Pajama Time Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
+      { level: 2, label: 'Work Out of Work Reduced', description: 'Chart editing and reconciliation workload measurably lower.' },
+      { level: 3, label: 'Turnover Risk Managed', description: 'Attrition tracked against documentation burden reduction.' },
+      { level: 4, label: 'Labor Volatility Strategically Reduced', description: 'Agency and overtime exposure structurally declining.' },
     ],
   },
   risk: {
@@ -82,10 +82,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Is your documentation infrastructure ready for what comes next?',
     reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete, defensible documentation at scale.',
     cards: [
-      { level: 1, label: 'Cleaner Clinical Notes', description: 'Documentation completeness improves, but audit posture and reporting friction remain unchanged.' },
-      { level: 2, label: 'Audit Awareness', description: 'Documentation defensibility is discussed and occasionally reviewed.' },
-      { level: 3, label: 'Reporting Friction Reduced', description: 'Quality reporting and chart abstraction workload measurably decline.' },
-      { level: 4, label: 'Governed Compliance Infrastructure', description: 'Documentation intelligence is embedded into compliance review and structured data automation strategy.' },
+      { level: 1, label: 'Cleaner Clinical Notes', description: 'Note quality improved. Audit posture unchanged.' },
+      { level: 2, label: 'Audit Awareness', description: 'Documentation defensibility actively under review.' },
+      { level: 3, label: 'Reporting Friction Reduced', description: 'Reporting and abstraction workload measurably reduced.' },
+      { level: 4, label: 'Governed Compliance Infrastructure', description: 'Compliance review integrated with structured data strategy.' },
     ],
   },
 };
