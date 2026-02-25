@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import {
@@ -21,10 +20,10 @@ interface Screen4Props {
 }
 
 const DOMAIN_CTA: Record<Domain, string> = {
-  capacity: 'See Revenue Impact \u2192',
-  revenue: 'See Workforce Impact \u2192',
-  workforce: 'See Risk Exposure \u2192',
-  risk: 'See My Score \u2192',
+  capacity: 'See Revenue Impact →',
+  revenue: 'See Workforce Impact →',
+  workforce: 'See Risk Exposure →',
+  risk: 'See My Score →',
 };
 
 type DomainState = {
@@ -190,7 +189,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   const activeIdx = DOMAIN_ORDER.indexOf(activeDomain);
 
-  const timeSavedSliderSet = (currentState.inputs.timeSaved as number) > 0;
   const unmeasuredTimeChecked = currentState.inputs.unmeasuredTime === 'true';
 
   const renderCapacityInputs = () => {
@@ -206,25 +204,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </label>
         <p className="text-sm text-[#888888] mb-3">Minutes recovered per encounter using ambient documentation</p>
 
-        <div className="text-center mb-3">
-          {timeSavedSliderSet && !unmeasuredTimeChecked ? (
-            <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{timeSavedValue.toFixed(1)} min</span>
-          ) : (
-            <span className="text-3xl font-bold text-[#CCCCCC]">— min</span>
-          )}
-        </div>
-
         {!unmeasuredTimeChecked && (
-          <Slider
-            min={1}
-            max={8}
-            step={0.5}
-            value={[timeSavedValue || 3]}
-            onValueChange={(v) => setDomainInput('timeSaved', v[0])}
-            className="w-full mb-3"
-            dormant={!timeSavedSliderSet}
-            data-testid="slider-time-saved"
-          />
+          <div className="flex items-center gap-2 mb-3">
+            <FormattedNumberInput
+              value={timeSavedValue}
+              onChange={(v) => setDomainInput('timeSaved', Math.min(8, Math.max(0, v)))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-time-saved"
+            />
+            <span className="text-sm text-[#888888]">min</span>
+          </div>
         )}
 
         <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
@@ -268,7 +258,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
-      const redeploySet = (currentState.inputs.redeploymentRate as number) > 0;
       return (
         <>
           {timeSavedSection}
@@ -277,23 +266,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               Estimated redeployment rate
             </label>
             <p className="text-sm text-[#888888] mb-3">What % of recovered time is being used for additional patient access?</p>
-            <div className="text-center mb-3">
-              {redeploySet ? (
-                <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.redeploymentRate}%</span>
-              ) : (
-                <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
-              )}
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.redeploymentRate as number) || 0}
+                onChange={(v) => setDomainInput('redeploymentRate', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-redeployment"
+              />
+              <span className="text-sm text-[#888888]">%</span>
             </div>
-            <Slider
-              min={5}
-              max={50}
-              step={1}
-              value={[(currentState.inputs.redeploymentRate as number) || 15]}
-              onValueChange={(v) => setDomainInput('redeploymentRate', v[0])}
-              className="w-full"
-              dormant={!redeploySet}
-              data-testid="slider-redeployment"
-            />
             <BenchmarkContext text="Organizations at this stage typically report 15–25%. Without scheduling changes, absorption is limited." />
           </div>
         </>
@@ -365,30 +347,22 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
-      const yieldSet = (currentState.inputs.yieldImprovement as number) > 0;
       return (
         <div>
           <label className="block text-sm font-medium text-black mb-1">
             Estimated improvement in coding yield
           </label>
           <p className="text-sm text-[#888888] mb-3">Estimated improvement in coding yield since deployment</p>
-          <div className="text-center mb-3">
-            {yieldSet ? (
-              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.yieldImprovement}%</span>
-            ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
-            )}
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.yieldImprovement as number) || 0}
+              onChange={(v) => setDomainInput('yieldImprovement', Math.min(100, Math.max(0, v)))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-yield-improvement"
+            />
+            <span className="text-sm text-[#888888]">%</span>
           </div>
-          <Slider
-            min={0.5}
-            max={5}
-            step={0.1}
-            value={[(currentState.inputs.yieldImprovement as number) || 1]}
-            onValueChange={(v) => setDomainInput('yieldImprovement', v[0])}
-            className="w-full"
-            dormant={!yieldSet}
-            data-testid="slider-yield-improvement"
-          />
           <BenchmarkContext text="Abridge customers reporting anecdotal lift estimate 1–3%" />
         </div>
       );
@@ -440,58 +414,42 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (!level) return null;
 
     if (level === 1) {
-      const afterHoursSet = (currentState.inputs.afterHoursReduction as number) > 0;
       return (
         <div>
           <label className="block text-sm font-medium text-black mb-1">
             Estimated hours per provider per week of after-hours documentation reduced
           </label>
-          <div className="text-center mb-3">
-            {afterHoursSet ? (
-              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.afterHoursReduction} hrs/wk</span>
-            ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">— hrs/wk</span>
-            )}
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.afterHoursReduction as number) || 0}
+              onChange={(v) => setDomainInput('afterHoursReduction', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-after-hours"
+            />
+            <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
           </div>
-          <Slider
-            min={0.5}
-            max={5}
-            step={0.5}
-            value={[(currentState.inputs.afterHoursReduction as number) || 2]}
-            onValueChange={(v) => setDomainInput('afterHoursReduction', v[0])}
-            className="w-full"
-            dormant={!afterHoursSet}
-            data-testid="slider-after-hours"
-          />
           <BenchmarkContext text="Abridge deployments report 1–3 hrs/week reduction in after-hours documentation" />
         </div>
       );
     }
 
     if (level === 2) {
-      const editTimeSet = (currentState.inputs.editTimeSaved as number) > 0;
       return (
         <div>
           <label className="block text-sm font-medium text-black mb-1">
             Minutes saved per provider per day in chart editing, correction, and reconciliation
           </label>
-          <div className="text-center mb-3">
-            {editTimeSet ? (
-              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.editTimeSaved} min/day</span>
-            ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">— min/day</span>
-            )}
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.editTimeSaved as number) || 0}
+              onChange={(v) => setDomainInput('editTimeSaved', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-edit-time"
+            />
+            <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
           </div>
-          <Slider
-            min={5}
-            max={30}
-            step={1}
-            value={[(currentState.inputs.editTimeSaved as number) || 15]}
-            onValueChange={(v) => setDomainInput('editTimeSaved', v[0])}
-            className="w-full"
-            dormant={!editTimeSet}
-            data-testid="slider-edit-time"
-          />
           <BenchmarkContext text="Abridge deployments report 10–20 min/day reduction in chart editing and review" />
         </div>
       );
@@ -587,29 +545,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
-      const defenseSet = (currentState.inputs.defensibilityImprovement as number) > 0;
       return (
         <div>
           <label className="block text-sm font-medium text-black mb-1">
             Estimated improvement in documentation defensibility since deployment
           </label>
-          <div className="text-center mb-3">
-            {defenseSet ? (
-              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.defensibilityImprovement}%</span>
-            ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
-            )}
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.defensibilityImprovement as number) || 0}
+              onChange={(v) => setDomainInput('defensibilityImprovement', Math.min(100, Math.max(0, v)))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-defensibility"
+            />
+            <span className="text-sm text-[#888888]">%</span>
           </div>
-          <Slider
-            min={5}
-            max={30}
-            step={1}
-            value={[(currentState.inputs.defensibilityImprovement as number) || 10]}
-            onValueChange={(v) => setDomainInput('defensibilityImprovement', v[0])}
-            className="w-full"
-            dormant={!defenseSet}
-            data-testid="slider-defensibility"
-          />
           <BenchmarkContext text="Abridge customers actively reviewing defensibility estimate 10–20% improvement" />
         </div>
       );

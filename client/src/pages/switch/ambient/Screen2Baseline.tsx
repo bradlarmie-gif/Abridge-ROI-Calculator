@@ -3,7 +3,6 @@ import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { staggerContainer, staggerItem } from "@/components/PageTransition";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
@@ -159,24 +158,16 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   What % of eligible encounters are being documented?
                 </label>
 
-                <div className="text-center mb-4">
-                  {utilSet ? (
-                    <span className="text-4xl font-bold text-[#1A1A1A] tabular-nums">{utilization}%</span>
-                  ) : (
-                    <span className="text-4xl font-bold text-[#CCCCCC]">— %</span>
-                  )}
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={utilSet ? utilization : 0}
+                    onChange={(v) => handleUtilChange(Math.min(100, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-utilization"
+                  />
+                  <span className="text-sm text-[#888888]">%</span>
                 </div>
-
-                <Slider
-                  min={10}
-                  max={100}
-                  step={1}
-                  value={[utilization || 50]}
-                  onValueChange={(v) => handleUtilChange(v[0])}
-                  className="w-full"
-                  dormant={!utilSet}
-                  data-testid="slider-utilization"
-                />
 
                 <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
                   <button
@@ -289,7 +280,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           </div>
         </motion.div>
 
-        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Capacity Reality \u2192" nextDisabled={!canProceed} />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Capacity Reality →" nextDisabled={!canProceed} />
       </motion.div>
 
       {hasFirstInput && (
