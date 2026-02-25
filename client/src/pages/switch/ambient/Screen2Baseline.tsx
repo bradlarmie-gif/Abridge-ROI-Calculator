@@ -155,7 +155,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  What % of eligible encounters are being documented?
+                  What % of encounters use ambient documentation?
                 </label>
 
                 <div className="flex items-center gap-2">
