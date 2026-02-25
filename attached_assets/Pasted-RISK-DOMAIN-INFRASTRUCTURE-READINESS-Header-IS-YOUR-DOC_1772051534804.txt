@@ -1,0 +1,237 @@
+RISK DOMAIN: INFRASTRUCTURE READINESS
+Header: IS YOUR DOCUMENTATION INFRASTRUCTURE READY FOR WHAT COMES NEXT?
+Subhead: Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.
+What this domain measures: Not compliance dollars. Not audit findings. This measures whether your organization is building on the documentation foundation ambient AI created — or just sitting on it. The risk is being unprepared for what's coming.
+
+Level 1 — Better Notes, Same Infrastructure
+What it means: Documentation quality improved. Nothing downstream has changed. CDI, coding, quality reporting, compliance — all operating exactly the same way they did before ambient was deployed. The notes are better but no one is doing anything with that improvement.
+Card text:
+
+Better Notes, Same Infrastructure
+Documentation quality improved. Nothing downstream has changed.
+
+Input: None.
+Estimated Impact Card:
+ESTIMATED IMPACT
+—
+
+Your documentation quality has improved — but nothing
+downstream has changed to leverage it. Quality reporting,
+CDI workflows, coding processes, and compliance reviews
+are operating the same way they did before deployment.
+
+The foundation is there. The question is whether your
+organization is building on it.
+No math. No dollar value. The insight IS the output. Most orgs are here and they haven't even thought about it.
+
+Level 2 — Active Quality Monitoring
+What it means: Someone in your organization is looking at whether the improved documentation is actually better in measurable ways — completeness, specificity, consistency. Not just "providers like it" but "the notes are structurally different."
+Card text:
+
+Active Quality Monitoring
+Documentation completeness and specificity are being tracked.
+
+Input A: How is your organization monitoring documentation quality?
+
+Type: single select radio buttons
+Options:
+
+Not yet — we know notes are better but haven't formalized tracking
+Spot checks — informal review, anecdotal feedback from CDI or coding
+Systematic tracking — structured audits or dashboards measuring documentation attributes
+
+
+
+Dynamic response based on selection:
+If "Not yet":
+ESTIMATED IMPACT
+—
+
+Documentation quality monitoring hasn't started.
+This means your organization has no baseline for
+measuring what improved documentation is worth
+downstream. This is the single most important
+next step.
+
+Abridge customers who begin systematic monitoring
+typically discover 15-30% improvement in documentation
+completeness and specificity.
+If "Spot checks":
+ESTIMATED IMPACT
+Informal monitoring
+
+Your organization is informally reviewing documentation
+quality. This is a start — but spot checks don't scale
+and can't drive organizational strategy. Consider
+formalizing a review cadence and measurement framework.
+
+Abridge customers who formalize monitoring review
+500-2,000 encounters/month for documentation quality.
+If "Systematic tracking":
+Show Input B:
+Input B: What documentation attributes are you tracking?
+
+Type: multi-select checkboxes
+Options:
+
+☐ Note completeness (all relevant elements captured)
+☐ Diagnostic specificity (ICD-10 precision)
+☐ HCC / risk adjustment alignment
+☐ Quality measure documentation (HEDIS, MIPS gaps)
+☐ Compliance defensibility (audit-readiness)
+
+
+
+ESTIMATED IMPACT
+[checkedCount] of 5 quality dimensions tracked
+
+Your organization is systematically tracking
+[checkedCount] documentation quality attribute(s).
+This positions you to connect documentation
+improvements to downstream value.
+
+Tracked: [list of checked items]
+Not yet tracked: [list of unchecked items]
+
+Organizations tracking 4+ attributes are positioned
+to move to Level 3 — connecting documentation quality
+to downstream operational workflows.
+The math here is a coverage score, not dollars. X out of 5 dimensions tracked. Simple, honest, actionable.
+
+Level 3 — Downstream Systems Connected
+What it means: Improved documentation isn't just being measured — it's being used. At least one downstream workflow (CDI, quality reporting, prior auth, coding, abstraction) has been changed or improved because of documentation quality from ambient.
+Card text:
+
+Downstream Systems Connected
+Quality reporting, CDI, or coding workflows are leveraging improved documentation.
+
+Input A: Which downstream workflows have been impacted by improved documentation?
+
+Type: multi-select checkboxes
+Options:
+
+☐ CDI query volume reduced (fewer queries because notes are more complete)
+☐ Coding accuracy improved (fewer rejections, faster turnaround)
+☐ Quality measure capture improved (HEDIS, MIPS, Stars gap closure)
+☐ Prior authorization documentation streamlined
+☐ Chart abstraction time reduced (registries, research, reporting)
+☐ Risk adjustment / HCC capture improved
+
+
+
+Input B: Estimated total hours saved per month across connected workflows
+
+Type: number input
+Placeholder: empty
+NO default
+Benchmark text: "Abridge customers with connected workflows report 10-40 hrs/month in combined efficiency gains"
+
+Estimated Impact Card:
+If checkboxes selected but no hours entered:
+ESTIMATED IMPACT
+[checkedCount] workflow(s) connected
+
+Your documentation infrastructure is connected to
+[checkedCount] downstream workflow(s):
+[list of checked items]
+
+Enter estimated hours saved to calculate operational
+impact.
+
+Not yet connected:
+[list of unchecked items]
+If both provided:
+ESTIMATED IMPACT
+$[annualSavings] operational value
+
+Your documentation infrastructure is driving
+measurable efficiency across [checkedCount]
+downstream workflow(s):
+[list of checked items]
+
+[annualHours] hours recaptured annually — valued
+at $[annualSavings].
+
+[annualHours] = [hoursSaved] × 12
+[annualSavings] = [annualHours] × $75/hr
+Rate: $75/hr blended abstraction/administrative rate.
+
+Not yet connected:
+[list of unchecked items]
+The holy shit moment is the "not yet connected" list. They check 1-2 items and see 4-5 they haven't touched. The opportunity gap is visual and immediate.
+
+Level 4 — Documentation as Strategic Data Asset
+What it means: Documentation quality isn't just improving workflows — it's informing organizational strategy. It's a variable in financial models, payer negotiations, quality program design, or risk management. This is rare. This is where ambient documentation becomes organizational intelligence.
+Card text:
+
+Documentation as Strategic Data Asset
+Structured documentation informs payer, quality, and compliance strategy.
+
+Input A: Where does documentation quality factor into organizational strategy?
+
+Type: multi-select checkboxes
+Options:
+
+☐ Payer contract negotiations (documentation supports rate/quality arguments)
+☐ Value-based care program design (documentation feeds quality metrics)
+☐ Compliance / audit governance (documentation quality is a governed metric)
+☐ Risk management / malpractice review (documentation defensibility is tracked)
+☐ Workforce / FTE modeling (documentation efficiency informs staffing)
+
+
+
+Input B: Can you estimate the annual strategic value?
+
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Helper text: "This is hard to quantify precisely. If you can estimate the combined value of documentation-driven improvements across payer, quality, compliance, and risk programs — enter it here. If not, leave blank."
+Benchmark text: "Abridge enterprise customers at this level report $100K-$500K+ in attributed strategic value"
+
+Estimated Impact Card:
+If checkboxes selected but no dollar value:
+ESTIMATED IMPACT
+[checkedCount] strategic integration(s)
+
+Your organization treats documentation as a strategic
+data asset across [checkedCount] governance area(s):
+[list of checked items]
+
+This is the highest level of documentation infrastructure
+maturity. Quantified impact not yet estimated — but
+strategic integration drives compounding value across
+the organization.
+
+Not yet integrated:
+[list of unchecked items]
+If dollar value provided:
+ESTIMATED IMPACT
+$[strategicValue]
+
+Your organization treats documentation as a strategic
+data asset across [checkedCount] governance area(s):
+[list of checked items]
+
+Estimated annual strategic value: $[strategicValue]
+
+Not yet integrated:
+[list of unchecked items]
+
+How Risk Feeds the Final Score
+Maturity level: 1-4, same as other domains. Contributes to overall score (avg × 25 = out of 100).
+Dollar value for total:
+
+Level 1: $0 (not measured)
+Level 2: $0 (qualitative — coverage score only)
+Level 3: Dollar value from hours saved (if provided), otherwise $0
+Level 4: Strategic value (if provided), otherwise $0
+
+This is intentionally conservative. Risk/infrastructure doesn't inflate the total with made-up numbers. The value of this domain is the maturity insight and the gap visualization (unchecked boxes), not a financial headline. It complements the hard numbers from Capacity, Revenue, and Workforce.
+
+Why This Works
+
+Every input is something someone can actually answer. "Are you monitoring documentation quality?" Yes/no. "Which workflows are connected?" Check the boxes. No one has to guess at audit exposure percentages.
+The gap is visual. Unchecked boxes at Levels 3 and 4 show what they're NOT doing. That's more powerful than any dollar figure.
+It's forward-looking. This isn't "what did ambient save you in compliance costs." It's "are you building the infrastructure for what's coming." That's the strategic conversation that differentiates this assessment from a calculator.
+It's honest about what can be quantified. Levels 1-2 don't pretend to have dollar values. Level 3 has a clean hours-based calculation. Level 4 lets the user provide a number if they have one. No fabricated metrics anywhere.
+It positions Abridge without attacking anyone. The implicit message: any ambient tool can make notes better (Level 1). The question is what you build on that foundation. The organization that's at Level 1 with any vendor should be asking "why aren't we at Level 3?"
