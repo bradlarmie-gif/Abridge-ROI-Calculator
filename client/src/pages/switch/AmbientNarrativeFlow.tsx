@@ -5,11 +5,10 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 import Screen1Provocation from "./ambient/Screen1Provocation";
 import Screen2Baseline from "./ambient/Screen2Baseline";
-import Screen3Performance from "./ambient/Screen3Performance";
-import Screen4Domains from "./ambient/Screen4Domains";
-import Screen5Score from "./ambient/Screen3Score";
-import Screen6Gap from "./ambient/Screen5Gap";
-import Screen7Invitation from "./ambient/Screen6Invitation";
+import Screen3Domains from "./ambient/Screen4Domains";
+import Screen4Score from "./ambient/Screen3Score";
+import Screen5Gap from "./ambient/Screen5Gap";
+import Screen6Invitation from "./ambient/Screen6Invitation";
 
 interface AmbientNarrativeFlowProps {
   onBack: () => void;
@@ -17,12 +16,11 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_SCREENS = 7;
+const TOTAL_SCREENS = 6;
 
 const STEP_NAMES = [
   "Provocation",
   "Baseline",
-  "Performance",
   "Domains",
   "Score",
   "Gap Analysis",
@@ -41,7 +39,7 @@ export default function AmbientNarrativeFlow({
     dispatch(assessmentActions.updateInput(key, value));
   };
 
-  const canProceedFromScreen2 = inputs.providers > 0 && inputs.annualEncounters > 0;
+  const canProceedFromScreen2 = inputs.providers > 0 && inputs.annualEncounters > 0 && inputs.utilization > 0;
 
   const goToStep = (step: number) => {
     if (step < 1 || step > TOTAL_SCREENS) return;
@@ -76,15 +74,13 @@ export default function AmbientNarrativeFlow({
       case 2:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 3:
-        return <Screen3Performance onNext={handleNext} onBack={handleBack} />;
+        return <Screen3Domains onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return <Screen4Domains onNext={handleNext} onBack={handleBack} />;
+        return <Screen4Score onNext={handleNext} onBack={handleBack} />;
       case 5:
-        return <Screen5Score onNext={handleNext} onBack={handleBack} />;
+        return <Screen5Gap onNext={handleNext} onBack={handleBack} />;
       case 6:
-        return <Screen6Gap onNext={handleNext} onBack={handleBack} />;
-      case 7:
-        return <Screen7Invitation onBack={handleBack} onBackToJourney={onBackToJourney} />;
+        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} />;
       default:
         return null;
     }

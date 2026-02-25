@@ -19,24 +19,16 @@ The Measure path follows a 5-page narrative flow:
 
 Key calculation: `calculateExpansionResults()` in measureCalculator.ts accepts optional `targetAdoption` and `targetProviders` params (defaults 85% and totalProviders for backward compatibility). Computes Deepen, Expand, and combined opportunity values with per-provider economics.
 
-### Switch Path (14-Screen Ambient AI Assessment)
-The Switch path is a 14-screen premium narrative flow for prospects migrating from other ambient AI solutions:
-1. **Entry Gate** (StepEntryGate): Full-screen self-identification with three pills, conditional response fade-in, 1.8s auto-advance
-2. **The Hidden Operating System** (StepHiddenOperatingSystem): Thesis framing, CTA "Show Me"
-3. **Your Organization** (StepYourOrganization): Baseline inputs (providers, encounters), right panel conditional on first input
-4. **Uncertainty Calibration** (StepMeasurementReality): Tile-based inputs with updated subtexts
-5. **Benchmark Mirror** (StepBenchmarkMirror): Three-tier maturity visualization with pulsing indicator, dynamic gap calculation
-6. **Enterprise Focus** (StepEnterprisePressureMap): Accountability framing, pressure map
-7. **Capacity Creation** (StepPillarCapacity): Loss-framing opening with FTE calculation, directional CTA
-8. **Revenue & Yield** (StepPillarYield): Loss-framing opening with failed capture language
-9. **Workforce Stability** (StepPillarWorkforce): Loss-framing opening with volatility language
-10. **Enterprise Risk** (StepPillarRisk): Loss-framing opening with readiness score
-11. **Enterprise Capture Score** (StepEnterpriseCaptureScore): Full-screen centered score reveal with industry avg (34) and top quartile (71) benchmarks
-12. **Enterprise Value Synthesis** (StepEnterpriseValueSynthesis): Reframing statement, pillar breakdown, leakage drivers
-13. **The Cost of Inaction** (StepTheMath): Current solution cost input, 3-year projection chart, delay cost analysis
-14. **Documentation Intelligence Gap** (StepTheInvitation): Verdict line, gap bar visualization, intervention priority, invitation card, PDF export
+### Switch Path (6-Screen Ambient AI Assessment)
+The Switch path is a 6-screen premium narrative flow for assessing ambient AI documentation maturity:
+1. **Provocation** (Screen1Provocation): Full-screen thesis framing with CTA
+2. **Baseline** (Screen2Baseline): Providers, encounters, utilization slider (with 45% industry / 76% Abridge benchmark pills), advanced toggle for revenuePerVisit ($200 default) and providerRate ($150 default), dark sidebar with documented encounters calculation
+3. **Domains** (Screen4Domains): 4-domain assessment (Capacity, Revenue, Workforce, Risk) with 4 activation levels each. Dormant sliders (no fill until touched), BenchmarkContext pills (gray, never pre-filled), FormulaDisplay (small italic mono text below every calculated output), persistent domain progress sidebar, "Not yet measured" for unmeasured domains. Per-domain per-level inputs matching spec.
+4. **Score** (Screen3Score): Documentation Intelligence Score with 4-tier dynamic narratives (0-25 early stages, 26-50 beginning capture listing domains below L3, 51-75 actively managing focusing lowest domain, 76-100 institutionalized). Domain value summary shows "Not yet measured" for unmeasured domains; total only sums hasValue domains.
+5. **Gap Analysis** (Screen5Gap): Enterprise value display with domain breakdown, 3-year projection chart, cost of waiting. Shows "Not yet measured" for domains without inputs; total only sums measured domains.
+6. **Summary** (Screen6Invitation): Hero section with score + measured value, domain performance table, invitation card, PDF export. All values respect hasValue flags.
 
-Key design patterns: Loss framing over gain framing, directional CTAs, no celebratory tone, statements over questions (except Entry and Exit screens), enterprise-grade executive tone.
+Key UX rules: "Not yet measured" replaces $0 for unset inputs; totals only sum domains with hasValue=true; dormant sliders; benchmarks as gray context text; all inputs/card selections persist across domain navigation; domain progress sidebar always visible.
 
 ### Calculation Architecture
 -   **Two calculation engines**: Classic SwitchPath.tsx (driver-level calculations) and computePillars.ts (narrative flow pillar calculations)

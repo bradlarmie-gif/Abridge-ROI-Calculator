@@ -3,59 +3,14 @@ import { motion } from "framer-motion";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { DOMAIN_ORDER, DOMAIN_LABELS, DOMAIN_WEIGHTS, ACTIVATION_LABELS, scoreToActivationLevel, type Domain } from "./domainCalculations";
 
 interface Screen3Props {
   onNext: () => void;
   onBack: () => void;
 }
 
-type DomainKey = 'capacity' | 'revenue' | 'workforce' | 'risk';
-
-const DOMAIN_WEIGHTS: Record<DomainKey, number> = {
-  capacity: 0.30,
-  revenue: 0.25,
-  workforce: 0.25,
-  risk: 0.20,
-};
-
-const DOMAIN_LABELS: Record<DomainKey, string> = {
-  capacity: 'Capacity',
-  revenue: 'Revenue',
-  workforce: 'Workforce',
-  risk: 'Risk',
-};
-
-const DOMAIN_ORDER: DomainKey[] = ['capacity', 'revenue', 'workforce', 'risk'];
-
-const ACTIVATION_THRESHOLDS: Record<DomainKey, Record<number, string>> = {
-  capacity: { 15: 'Time Saved, Not Deployed', 35: 'Ad Hoc Access Relief', 65: 'Structured Access Expansion', 90: 'Institutionalized Capacity Strategy' },
-  revenue: { 10: 'Documentation Neutral', 30: 'Anecdotal Coding Lift', 62: 'Measured Yield Integrity', 88: 'Financial Governance Embedded' },
-  workforce: { 20: 'Pajama Time Reduced', 40: 'Work Out of Work Reduced', 65: 'Turnover Risk Managed', 85: 'Labor Volatility Strategically Reduced' },
-  risk: { 15: 'Cleaner Clinical Notes', 38: 'Audit Awareness', 62: 'Reporting Friction Reduced', 90: 'Governed Compliance Infrastructure' },
-};
-
-function getActivationLabel(domain: DomainKey, score: number): string {
-  const thresholds = ACTIVATION_THRESHOLDS[domain];
-  const bases = Object.keys(thresholds).map(Number).sort((a, b) => b - a);
-  for (const base of bases) {
-    if (score >= base - 5) return thresholds[base];
-  }
-  return thresholds[bases[bases.length - 1]];
-}
-
-function nextLevelScore(current: number): number {
-  if (current < 35) return 35;
-  if (current < 65) return 65;
-  if (current < 90) return 90;
-  return current;
-}
-
-const OPPORTUNITY_STATEMENTS: Record<DomainKey, string> = {
-  capacity: 'Recovered time is not being systematically deployed into enterprise value.',
-  revenue: 'Documentation fidelity is not yet connected to revenue integrity strategy.',
-  workforce: 'After-hours burden is not yet measured as a leading retention indicator.',
-  risk: 'Documentation infrastructure is not yet positioned as the foundation for what comes next.',
-};
+type DomainKey = Domain;
 
 function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number; duration?: number; delay?: number }) {
   const [current, setCurrent] = useState(0);
@@ -121,6 +76,13 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
     risk: inputs.riskGap || 0,
   }), [inputs.capacityGap, inputs.revenueGap, inputs.workforceGap, inputs.riskGap]);
 
+  const domainHasValue: Record<DomainKey, boolean> = useMemo(() => ({
+    capacity: inputs.capacityHasValue || false,
+    revenue: inputs.revenueHasValue || false,
+    workforce: inputs.workforceHasValue || false,
+    risk: inputs.riskHasValue || false,
+  }), [inputs.capacityHasValue, inputs.revenueHasValue, inputs.workforceHasValue, inputs.riskHasValue]);
+
   const documentationScore = useMemo(() => Math.round(
     (domainScores.capacity * 0.30) +
     (domainScores.revenue * 0.25) +
@@ -132,34 +94,44 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
     return DOMAIN_ORDER.reduce((low, d) => domainScores[d] < domainScores[low] ? d : low, DOMAIN_ORDER[0]);
   }, [domainScores]);
 
-  const improvedDomainScore = nextLevelScore(domainScores[lowestDomain]);
-  const improvementDelta = improvedDomainScore - domainScores[lowestDomain];
-  const improvedTotal = Math.round(documentationScore + (improvementDelta * DOMAIN_WEIGHTS[lowestDomain]));
+  const domainsBelowL3 = useMemo(() => {
+    return DOMAIN_ORDER.filter(d => {
+      const level = scoreToActivationLevel(d, domainScores[d]);
+      return level < 3;
+    });
+  }, [domainScores]);
 
   const getVerdict = (score: number) => {
-    if (score < 34) return {
-      headline: 'Below the industry average.',
-      body: 'Your documentation infrastructure is in early activation. Significant enterprise value is available across all four domains \u2014 none of it requires new technology.',
+    if (score <= 25) return {
+      headline: 'Early stages of ambient ROI.',
+      body: 'Your organization is in the early stages of ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured.',
     };
-    if (score <= 50) return {
-      headline: 'At the industry average.',
-      body: 'Most organizations that deploy ambient AI land here. The gap to top quartile is not incremental. It is a fundamentally different relationship with documentation infrastructure.',
-    };
-    if (score <= 70) return {
-      headline: 'Above the industry average.',
-      body: 'You have activated more than most. The remaining gap to top quartile is concentrated in specific domains \u2014 and addressable with the right infrastructure.',
-    };
-    if (score <= 85) return {
-      headline: 'Approaching top-quartile performance.',
-      body: 'Strong documentation intelligence. The remaining opportunity is in the domains where activation is still partial.',
+    if (score <= 50) {
+      const belowL3Names = domainsBelowL3.map(d => DOMAIN_LABELS[d].toLowerCase()).join(', ');
+      return {
+        headline: 'Beginning to capture ambient ROI.',
+        body: `Your organization is beginning to capture ambient ROI, but significant opportunity remains across ${belowL3Names || 'key domains'}.`,
+      };
+    }
+    if (score <= 75) return {
+      headline: 'Actively managing ambient ROI.',
+      body: `Your organization is actively managing ambient ROI across multiple domains. Focus on ${DOMAIN_LABELS[lowestDomain].toLowerCase()} to reach full maturity.`,
     };
     return {
-      headline: 'Top-quartile documentation intelligence.',
-      body: 'Your organization is among the highest performers in documentation infrastructure activation. The remaining opportunity is in optimization, not activation.',
+      headline: 'Institutionalized documentation intelligence.',
+      body: 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.',
     };
   };
 
   const verdict = getVerdict(documentationScore);
+
+  const totalGap = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainHasValue[d]) sum += domainGaps[d];
+    }
+    return sum;
+  }, [domainGaps, domainHasValue]);
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -190,35 +162,38 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
-              {DOMAIN_ORDER.map((domain, idx) => (
-                <div key={domain}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + idx * 0.15, duration: 0.5 }}
-                  >
-                    <div className="flex items-center gap-4 h-12" data-testid={`domain-row-${domain}`}>
-                      <div className="w-[35%]">
-                        <p className="font-semibold text-sm text-black leading-tight">
-                          {DOMAIN_LABELS[domain]}
-                        </p>
-                        <p className="text-xs text-[#888888] italic">
-                          {getActivationLabel(domain, domainScores[domain])}
+              {DOMAIN_ORDER.map((domain, idx) => {
+                const level = scoreToActivationLevel(domain, domainScores[domain]);
+                return (
+                  <div key={domain}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + idx * 0.15, duration: 0.5 }}
+                    >
+                      <div className="flex items-center gap-4 h-12" data-testid={`domain-row-${domain}`}>
+                        <div className="w-[35%]">
+                          <p className="font-semibold text-sm text-black leading-tight">
+                            {DOMAIN_LABELS[domain]}
+                          </p>
+                          <p className="text-xs text-[#888888] italic">
+                            {ACTIVATION_LABELS[domain][level]}
+                          </p>
+                        </div>
+                        <div className="w-[45%]">
+                          <AnimatedBar percent={domainScores[domain]} delay={400 + idx * 150 + 100} height={5} />
+                        </div>
+                        <p className="font-bold text-sm text-black w-[20%] text-right" data-testid={`domain-score-${domain}`}>
+                          {domainScores[domain]} / 100
                         </p>
                       </div>
-                      <div className="w-[45%]">
-                        <AnimatedBar percent={domainScores[domain]} delay={400 + idx * 150 + 100} height={5} />
-                      </div>
-                      <p className="font-bold text-sm text-black w-[20%] text-right" data-testid={`domain-score-${domain}`}>
-                        {domainScores[domain]} / 100
-                      </p>
-                    </div>
-                  </motion.div>
-                  {idx < DOMAIN_ORDER.length - 1 && (
-                    <div className="h-px bg-[#E5E7EB]/50" />
-                  )}
-                </div>
-              ))}
+                    </motion.div>
+                    {idx < DOMAIN_ORDER.length - 1 && (
+                      <div className="h-px bg-[#E5E7EB]/50" />
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="h-px bg-[#E5E7EB] mt-4" />
 
@@ -279,23 +254,33 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 4.2, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10" data-testid="card-primary-opportunity">
-              <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
-                Primary Opportunity — {DOMAIN_LABELS[lowestDomain]}
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-domain-values">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Domain Value Summary
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
-              <p className="text-base font-semibold text-black leading-relaxed mb-4">
-                {OPPORTUNITY_STATEMENTS[lowestDomain]}
-              </p>
-              <p className="font-bold text-3xl text-[#EA2C00] leading-none" data-testid="text-opportunity-value">
-                {formatDollar(domainGaps[lowestDomain])}
-              </p>
-              <p className="text-sm text-[#888888] mt-1">
-                estimated annual opportunity in this domain
-              </p>
-              <div className="h-px bg-[#E5E7EB] my-4" />
-              <p className="text-sm text-[#888888] leading-relaxed">
-                Improving your score in {DOMAIN_LABELS[lowestDomain].toLowerCase()} by one activation level would move your overall Documentation Intelligence Score from {documentationScore} to an estimated {improvedTotal}.
+
+              {DOMAIN_ORDER.map((domain, idx) => (
+                <div key={domain}>
+                  <div className="flex items-center justify-between py-3" data-testid={`domain-value-row-${domain}`}>
+                    <span className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</span>
+                    <span className={`font-bold text-base ${domainHasValue[domain] ? 'text-black' : 'text-[#888888]'}`}>
+                      {domainHasValue[domain] ? formatDollar(domainGaps[domain]) : 'Not yet measured'}
+                    </span>
+                  </div>
+                  {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                </div>
+              ))}
+
+              <div className="h-px bg-[#E5E7EB] mt-1" />
+              <div className="bg-white/60 rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
+                <span className="font-semibold text-sm text-black">Total Measured Value</span>
+                <span className="font-bold text-xl text-[#EA2C00]" data-testid="value-total-measured">
+                  {totalGap > 0 ? formatDollar(totalGap) : 'Not yet measured'}
+                </span>
+              </div>
+              <p className="text-xs text-[#888888] italic mt-2">
+                Total includes only domains with measured values.
               </p>
             </div>
           </motion.div>

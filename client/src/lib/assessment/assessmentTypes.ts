@@ -70,6 +70,8 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   qualityReportingFriction: "manageable" as const,
   structuredDataUsability: "some" as const,
   entryEstimate: null,
+  revenuePerVisit: 200,
+  providerRate: 150,
   capacityScore: 0,
   capacityGap: 0,
   revenueScore: 0,
@@ -78,6 +80,10 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   workforceGap: 0,
   riskScore: 0,
   riskGap: 0,
+  capacityHasValue: false,
+  revenueHasValue: false,
+  workforceHasValue: false,
+  riskHasValue: false,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

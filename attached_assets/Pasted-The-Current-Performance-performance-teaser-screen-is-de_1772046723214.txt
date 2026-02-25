@@ -1,0 +1,593 @@
+The "Current Performance" / performance teaser screen is deleted. UX stays clean — same aesthetic, same Abridge brand feel. No new colors, no redesign. Just restructured content and updated math.
+
+SCREEN 1: BASELINE INPUTS
+Header: YOUR ORGANIZATION
+Subhead: Two inputs. Benchmarks handle the rest.
+Standard Inputs (always visible)
+1. Physicians and APPs using ambient documentation
+
+Type: number input
+Placeholder: 50
+No default value pre-filled — let user enter
+
+2. Annual encounters where ambient is available
+
+Type: number input
+Placeholder: 100,000
+Below field: "Help me estimate" link (keep existing)
+
+3. Utilization Rate
+
+Label: "What % of eligible encounters are being documented?"
+Type: slider, range 10%-100%, step 1%
+NO default position — slider starts empty/unset. User must interact.
+Below slider show two benchmark pills (same style as current):
+
+Gray pill: ~45% Industry avg
+Red/Abridge pill: 76% Abridge avg
+
+
+Below benchmarks, small text: "Based on published industry data and Abridge deployment experience."
+Dynamic commentary below based on value:
+
+Below 45%: "Below industry average — significant headroom to benchmark."
+45-75%: "At or above industry average. Room to reach Abridge benchmark."
+76%+: "At or above Abridge average utilization."
+
+
+
+Advanced Toggle
+Collapsible section labeled "Advanced inputs" — collapsed by default.
+4. Average revenue per visit
+
+Type: number input with $ prefix
+Default: 200
+Helper text: "Average visit revenue ($). Used in capacity and revenue calculations."
+
+5. Blended provider hourly rate
+
+Type: number input with $ prefix
+Default: 150
+Helper text: "Blended hourly rate for provider time. Used in workforce calculations."
+
+Sidebar (right side, dark card — same style as current "YOUR INPUTS" card)
+Header: YOUR BASELINE
+Once inputs are provided, show calculated values:
+Documented Encounters
+[encounters × utilization rate]
+[if below 76%: "+X,XXX at Abridge avg" in red]
+
+Encounters per Provider per Day
+[encounters / providers / 250]
+
+Benchmarks used: Abridge avg 76% utilization.
+Based on production deployment data.
+If utilization is not yet set, show: "Set your utilization rate to see baseline calculations."
+Navigation
+
+Button: "See Capacity Reality →"
+"Back" link
+
+Engine Variables (calculated, stored in state, used by all domains)
+javascriptdocumentedEncounters = annualEncounters * utilizationRate
+revenuePerVisit = advancedRevenuePerVisit || 200
+providerRate = advancedProviderRate || 150
+adminRate = 100  // fixed, used for in-clinic burden
+abstractionRate = 75  // fixed, used for compliance/reporting
+workingDays = 250
+workingWeeks = 52
+encountersPerProviderPerDay = annualEncounters / providers / workingDays
+
+DELETE: CURRENT PERFORMANCE SCREEN
+Remove the "Current Performance" screen entirely. The utilization slider and benchmark comparisons now live on Screen 1. The time saved input moves to Capacity Level 1.
+
+SCREEN 2: CAPACITY DOMAIN
+Header: WHERE DOES RECOVERED TIME ACTUALLY GO?
+Subhead: Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.
+Maturity Selection (same 2×2 card grid)
+Card 1: Time Saved, Not Deployed
+Providers are faster. Schedules and panels are unchanged.
+Card 2: Informal Access Absorption
+Recovered time informally absorbed. No scheduling redesign.
+Card 3: Structured Access Expansion
+Schedules and templates redesigned around recovered time.
+Card 4: Institutionalized Capacity Strategy
+Capacity targets embedded in panel planning and FTE models.
+Level-Specific Inputs (REFINE YOUR INPUTS section)
+Level 1 — Time Saved, Not Deployed
+Input A: Time Saved per Documented Encounter
+
+Type: slider, range 1-8 min, step 0.5
+NO default position — unset until user interacts
+Benchmark pills below:
+
+Gray: 1.5–2.5 min Most tools
+Red: 3.0 min Abridge avg
+
+
+Small text: "Based on published industry data and Abridge deployment experience."
+Checkbox below: ☐ I haven't measured this precisely
+
+If checked: slider disappears, output shows "Time savings not yet measured. This is the first metric to establish."
+
+
+
+Estimated Impact Card (right sidebar, dark):
+If time saved is entered:
+ESTIMATED IMPACT
+$0
+
+Your providers are recovering an estimated [X] hours
+annually — [Y] FTE equivalent. None of this time is
+being structurally redeployed. Schedules and panel
+sizes are unchanged.
+
+[hours] = [documentedEncounters] × [timeSaved] / 60
+[FTE] = [hours] / 2,080
+
+DOMAIN PROGRESS
+Capacity    Level 1
+Revenue     —
+Workforce   —
+Risk        —
+If time saved is NOT entered (checkbox checked or slider untouched):
+ESTIMATED IMPACT
+—
+
+Time savings not yet measured. Enter estimated
+time saved per encounter, or check "I haven't
+measured this" to continue.
+
+DOMAIN PROGRESS
+Capacity    Level 1
+Revenue     —
+Workforce   —
+Risk        —
+IMPORTANT: The recoveredHours value calculated here is stored in state and used by Level 2.
+Level 2 — Informal Access Absorption
+Input A: Time Saved per Documented Encounter
+
+SAME input as Level 1. If user already entered it at Level 1 and then switches to Level 2, preserve the value. If they come directly to Level 2, show the same slider.
+Same benchmarks, same checkbox behavior.
+
+Input B: Estimated Redeployment Rate
+
+Label: "What % of recovered time is being used for additional patient access?"
+Type: slider, range 5%-50%, step 1%
+NO default position — unset until user interacts
+Benchmark text (not pills, just italic): "Organizations at this stage typically report 15-25%. Without scheduling changes, absorption is limited."
+
+Estimated Impact Card:
+If BOTH inputs provided:
+ESTIMATED IMPACT
+$[capacityValue]
+
+At [X]% informal redeployment, approximately
+[redeployedHours] recovered hours are translating
+into [additionalVisits] additional visits — estimated
+at $[capacityValue] annually.
+
+[redeployedHours] = [recoveredHours] × [redeploymentPct]
+[additionalVisits] = [redeployedHours] × 3 visits/hr
+[capacityValue] = [additionalVisits] × [revenuePerVisit]
+
+DOMAIN PROGRESS
+Capacity    Level 2
+Revenue     —
+Workforce   —
+Risk        —
+Note on visits/hr: Using 3 visits per hour (20-min average encounter) as a conversion factor. This should be a fixed assumption shown in the formula, not an input.
+If inputs missing:
+ESTIMATED IMPACT
+—
+
+Enter time saved and redeployment rate to
+calculate capacity impact.
+Level 3 — Structured Access Expansion
+Input A: Additional Patients per Provider per Month
+
+Label: "Additional patients seen per provider per month due to scheduling redesign"
+Type: number input
+Placeholder: empty
+NO default
+Benchmark text: "Abridge customers with structured access redesign report 3-8 additional patients/provider/month"
+
+Revenue per visit inherited from baseline (shown but not editable here — editable in baseline advanced).
+Estimated Impact Card:
+If input provided:
+ESTIMATED IMPACT
+$[capacityValue]
+
+Your scheduling redesign is generating [annualAdditionalVisits]
+additional visits annually across [providers] providers —
+estimated at $[capacityValue] in annual capacity value.
+
+[annualAdditionalVisits] = [additionalPatientsPerMonth] × [providers] × 12
+[capacityValue] = [annualAdditionalVisits] × [revenuePerVisit]
+
+DOMAIN PROGRESS
+Capacity    Level 3
+Revenue     —
+Workforce   —
+Risk        —
+Level 4 — Institutionalized Capacity Strategy
+Input A: Net Visit Growth per Provider per Month
+
+Label: "Net visit growth per provider per month driven by recovered capacity"
+Type: number input
+Placeholder: empty
+NO default
+Benchmark text: "Top-performing Abridge deployments model 5-10 net visits/provider/month in capacity planning"
+
+Input B: Providers in Capacity Model
+
+Label: "Number of providers included in capacity modeling"
+Type: number input
+Default: inherit from baseline provider count
+Helper: "May differ from total provider count if capacity modeling is phased"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[capacityValue]
+
+Your institutionalized capacity strategy is modeling
+[annualGrowth] net visit growth across [providersInModel]
+providers — $[capacityValue] in annual strategic capacity.
+
+[annualGrowth] = [netGrowth] × [providersInModel] × 12
+[capacityValue] = [annualGrowth] × [revenuePerVisit]
+
+DOMAIN PROGRESS
+Capacity    Level 4
+Revenue     —
+Workforce   —
+Risk        —
+Navigation
+
+Button: "See Revenue Impact →"
+"Back" link
+
+
+SCREEN 3: REVENUE DOMAIN
+Header: WHAT IS DOCUMENTATION FIDELITY WORTH TO YOUR REVENUE CYCLE?
+Subhead: Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.
+Maturity Cards
+Card 1: Documentation Neutral
+Workflow improved. Revenue impact not yet measured.
+Card 2: Anecdotal Coding Lift
+Coding improvements observed but not systematically tracked.
+Card 3: Measured Yield Integrity
+Yield variance actively measured against documentation changes.
+Card 4: Financial Governance Embedded
+Documentation integrated into revenue cycle oversight.
+Level-Specific Inputs
+Level 1 — Documentation Neutral
+Input: None.
+Estimated Impact Card:
+ESTIMATED IMPACT
+Not yet measured
+
+You have not yet measured the revenue impact of
+documentation changes. Revenue cycle is operating on
+whatever documentation gives them — but no one is
+tracking whether ambient documentation is changing
+what gets coded or billed.
+
+Abridge customers who measure documentation-driven
+yield typically identify 0.5–2% improvement in the
+first year.
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level 1
+Workforce   —
+Risk        —
+IMPORTANT: Do NOT show a dollar amount. Show "Not yet measured." This is intentional.
+Level 2 — Anecdotal Coding Lift
+Input A: Estimated Yield Improvement
+
+Label: "Estimated improvement in coding yield since deployment"
+Type: slider, range 0.5%-5%, step 0.1%
+NO default — unset
+Benchmark text: "Abridge customers reporting anecdotal lift estimate 1-3%"
+
+Estimated Impact Card:
+If input provided:
+ESTIMATED IMPACT
+$[revenueImpact]
+
+At an estimated [yieldDelta]% yield improvement,
+documentation-driven revenue impact is approximately
+$[revenueImpact] annually. This is directional —
+based on your team's observation, not independent
+measurement.
+
+[revenueImpact] = [documentedEncounters] × [revenuePerVisit] × [yieldDelta]
+Directional modeling. Not independently verified.
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level 2
+Workforce   —
+Risk        —
+Level 3 — Measured Yield Integrity
+Input A: Measured Yield Lift
+
+Label: "Measured yield lift or wRVU delta since deployment"
+Type: number input with % suffix
+Placeholder: empty
+NO default
+Benchmark text: "Abridge customers with measured yield tracking report 1.5-4% verified improvement"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[revenueImpact]
+
+Your measured [yieldLift]% yield improvement represents
+$[revenueImpact] in verified annual revenue impact.
+Based on your organization's own data.
+
+[revenueImpact] = [documentedEncounters] × [revenuePerVisit] × [yieldLift]
+Verified by organizational measurement.
+Level 4 — Financial Governance Embedded
+Input A: Recognized Revenue Change
+
+Label: "Recognized revenue change attributed to documentation improvements"
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Benchmark text: "Abridge enterprise customers with financial governance report $200K-$1M+ in recognized documentation-driven revenue"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[recognizedRevenue]
+
+Your organization has recognized $[recognizedRevenue] in
+documentation-driven revenue impact through financial
+governance.
+
+Recognized revenue as reported in financial governance.
+Navigation
+
+Button: "See Workforce Impact →"
+"Back" link
+
+
+SCREEN 4: WORKFORCE DOMAIN
+Header: WHAT IS DOCUMENTATION BURDEN COSTING YOUR WORKFORCE?
+Subhead: Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.
+Maturity Cards
+Card 1: Pajama Time Reduced
+Less after-hours charting. Labor strategy unchanged.
+Card 2: In-Clinic Burden Reduced
+Chart editing and reconciliation workload measurably lower.
+Card 3: Turnover Risk Managed
+Attrition tracked against documentation burden reduction.
+Card 4: Labor Volatility Strategically Reduced
+Agency and overtime exposure structurally declining.
+Level-Specific Inputs
+Level 1 — Pajama Time Reduced
+Input A: After-Hours Reduction
+
+Label: "Estimated hours per provider per week of after-hours documentation reduced"
+Type: slider, range 0.5-5 hrs, step 0.5
+NO default — unset
+Benchmark text: "Abridge deployments report 1-3 hrs/week reduction in after-hours documentation"
+
+Estimated Impact Card:
+If input provided:
+ESTIMATED IMPACT
+[burdenHours] hours eliminated
+
+[afterHoursReduction] hrs/week across [providers]
+providers = [burdenHours] hours of after-hours burden
+eliminated annually. That's [hoursPerProvider] hours per
+provider per year returned to personal time.
+
+[burdenHours] = [afterHoursReduction] × [providers] × 52
+[hoursPerProvider] = [afterHoursReduction] × 52
+Burden-equivalent value: $[burdenValue] at $[providerRate]/hr
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level [X]
+Workforce   Level 1
+Risk        —
+KEY CHANGE: Hours is the headline metric, not dollars. Dollar value shown in small supporting text.
+Level 2 — In-Clinic Burden Reduced
+Input A: Edit/Review Time Saved
+
+Label: "Minutes saved per provider per day in chart editing, correction, and reconciliation"
+Type: slider, range 5-30 min, step 1
+NO default — unset
+Benchmark text: "Abridge deployments report 10-20 min/day reduction in chart editing and review"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+[savedHours] hours eliminated
+
+[minutesSaved] min/day across [providers] providers =
+[savedHours] hours of in-clinic administrative burden
+eliminated annually.
+
+[savedHours] = [minutesSaved] × [providers] × 250 / 60
+Burden-equivalent value: $[burdenValue] at $100/hr administrative rate
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level [X]
+Workforce   Level 2
+Risk        —
+Level 3 — Turnover Risk Managed
+Input A: Current Turnover Rate
+
+Label: "Annual physician turnover rate"
+Type: number input with % suffix
+Placeholder: empty
+NO default
+Benchmark text: "National physician turnover averages 6-8% annually"
+
+Input B: Replacement Cost per Provider
+
+Label: "Average cost to recruit and onboard a replacement"
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Benchmark text: "Industry average: $250K-$500K per physician replacement"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[turnoverExposure] in annual exposure
+
+At [turnoverRate]% turnover across [providers] providers,
+approximately [burdenAttributable] departure(s) per year
+may be attributable to documentation burden. At
+$[replacementCost] per replacement, this represents
+$[turnoverExposure] in annual turnover exposure.
+
+[atRiskProviders] = [providers] × [turnoverRate]
+[burdenAttributable] = [atRiskProviders] × 25%
+[turnoverExposure] = [burdenAttributable] × [replacementCost]
+Attribution: ~25% of physician turnover attributed to
+administrative burden (AMA/AAMC industry estimates).
+Level 4 — Labor Volatility Strategically Reduced
+Input A: Agency Spend Avoided
+
+Label: "Monthly reduction in agency or locum spend"
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Benchmark text: "Abridge enterprise customers report $5K-$30K/month in agency spend reduction"
+
+Input B: Overtime Reduction
+
+Label: "Monthly reduction in overtime spend"
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Benchmark text: "Abridge enterprise customers report $5K-$20K/month in overtime reduction"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[annualSavings]
+
+Your organization is reducing labor volatility by an
+estimated $[annualSavings] annually through reduced
+agency and overtime spend.
+
+[annualSavings] = ([agencyReduction] + [overtimeReduction]) × 12
+Navigation
+
+Button: "See Risk Exposure →"
+"Back" link
+
+
+SCREEN 5: RISK DOMAIN
+Header: IS YOUR DOCUMENTATION INFRASTRUCTURE READY FOR WHAT COMES NEXT?
+Subhead: Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.
+Maturity Cards
+Card 1: Cleaner Clinical Notes
+Note quality improved. Audit posture unchanged.
+Card 2: Audit Awareness
+Documentation defensibility actively under review.
+Card 3: Compliance Reporting Streamlined
+Reporting and abstraction workload measurably reduced.
+Card 4: Governed Compliance Infrastructure
+Compliance review integrated with structured data strategy.
+Level-Specific Inputs
+Level 1 — Cleaner Clinical Notes
+Input: None.
+Estimated Impact Card:
+ESTIMATED IMPACT
+Not yet measured
+
+Your documentation quality has improved, but your
+compliance and audit infrastructure hasn't changed
+to leverage it. Cleaner notes are foundational —
+but only when measured.
+
+Abridge customers who actively review documentation
+defensibility report measurable improvements in
+audit readiness.
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level [X]
+Workforce   Level [X]
+Risk        Level 1
+Level 2 — Audit Awareness
+Input A: Estimated Defensibility Improvement
+
+Label: "Estimated improvement in documentation defensibility since deployment"
+Type: slider, range 5%-30%, step 1%
+NO default — unset
+Benchmark text: "Abridge customers actively reviewing defensibility estimate 10-20% improvement"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+Directional improvement
+
+Your organization estimates a [defensibilityImprovement]%
+improvement in documentation defensibility. This hasn't
+been translated to a dollar value — but it signals
+active monitoring of compliance posture.
+
+Defensibility improvements reduce exposure to coding
+audits, payer recoupment, and RAC/MAC reviews.
+
+DOMAIN PROGRESS
+Capacity    Level [X]
+Revenue     Level [X]
+Workforce   Level [X]
+Risk        Level 2
+NOTE: No dollar value at this level. The insight is qualitative — they're paying attention but haven't quantified. That's the point.
+Level 3 — Compliance Reporting Streamlined
+Input A: Reporting Hours Saved per Month
+
+Label: "Hours saved per month in compliance/quality reporting and chart abstraction"
+Type: number input
+Placeholder: empty
+NO default
+Benchmark text: "Abridge customers report 10-40 hrs/month in compliance reporting and abstraction time savings"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[annualSavings]
+
+Your organization is saving an estimated [annualHours]
+hours annually in compliance reporting and chart
+abstraction — valued at $[annualSavings].
+
+[annualHours] = [hoursSaved] × 12
+[annualSavings] = [annualHours] × $75/hr abstraction rate
+Level 4 — Governed Compliance Infrastructure
+Input A: Audit Findings Reduced
+
+Label: "Reduction in documentation-related audit findings since deployment"
+Type: number input with % suffix
+Placeholder: empty
+NO default
+Benchmark text: "Abridge enterprise customers report 15-30% reduction in documentation-related audit findings"
+
+Input B: Compliance Exposure Estimate
+
+Label: "Estimated annual compliance exposure"
+Type: number input with $ prefix
+Placeholder: empty
+NO default
+Helper text: "Revenue change tied to documentation improvements, recognized in financial reporting"
+
+Estimated Impact Card:
+ESTIMATED IMPACT
+$[riskReduction]
+
+Your organization has reduced documentation-related
+audit findings by [auditReduction]%, addressing an
+estimated $[riskReduction] of your $[complianceExposure]
+annual compliance exposure.
+
+[riskReduction] = [complianceExposure] × [auditReduction]
+Navigation
+
+Button: "See My Score →"
+"Back" link

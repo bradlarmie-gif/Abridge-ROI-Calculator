@@ -4,6 +4,7 @@ import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import {
   type Domain, type ActivationLevel,
@@ -11,6 +12,7 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
+  type DomainFeedback,
 } from "./domainCalculations";
 
 interface Screen4Props {
@@ -19,10 +21,10 @@ interface Screen4Props {
 }
 
 const DOMAIN_CTA: Record<Domain, string> = {
-  capacity: 'See Revenue Impact',
-  revenue: 'See Workforce Impact',
-  workforce: 'See Risk Exposure',
-  risk: 'See My Score',
+  capacity: 'See Revenue Impact \u2192',
+  revenue: 'See Workforce Impact \u2192',
+  workforce: 'See Risk Exposure \u2192',
+  risk: 'See My Score \u2192',
 };
 
 type DomainState = {
@@ -50,7 +52,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned \u2014 and whether your organization has a system for capturing it.',
     cards: [
       { level: 1, label: 'Time Saved, Not Deployed', description: 'Providers are faster. Schedules and panels are unchanged.' },
-      { level: 2, label: 'Ad Hoc Access Relief', description: 'Recovered time informally absorbed. No scheduling redesign.' },
+      { level: 2, label: 'Informal Access Absorption', description: 'Recovered time informally absorbed. No scheduling redesign.' },
       { level: 3, label: 'Structured Access Expansion', description: 'Schedules and templates redesigned around recovered time.' },
       { level: 4, label: 'Institutionalized Capacity Strategy', description: 'Capacity targets embedded in panel planning and FTE models.' },
     ],
@@ -72,7 +74,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
     cards: [
       { level: 1, label: 'Pajama Time Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
-      { level: 2, label: 'Work Out of Work Reduced', description: 'Chart editing and reconciliation workload measurably lower.' },
+      { level: 2, label: 'In-Clinic Burden Reduced', description: 'Chart editing and reconciliation workload measurably lower.' },
       { level: 3, label: 'Turnover Risk Managed', description: 'Attrition tracked against documentation burden reduction.' },
       { level: 4, label: 'Labor Volatility Strategically Reduced', description: 'Agency and overtime exposure structurally declining.' },
     ],
@@ -84,84 +86,24 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     cards: [
       { level: 1, label: 'Cleaner Clinical Notes', description: 'Note quality improved. Audit posture unchanged.' },
       { level: 2, label: 'Audit Awareness', description: 'Documentation defensibility actively under review.' },
-      { level: 3, label: 'Reporting Friction Reduced', description: 'Reporting and abstraction workload measurably reduced.' },
+      { level: 3, label: 'Compliance Reporting Streamlined', description: 'Reporting and abstraction workload measurably reduced.' },
       { level: 4, label: 'Governed Compliance Infrastructure', description: 'Compliance review integrated with structured data strategy.' },
     ],
   },
 };
 
-function InputField({ label, description, prefix, suffix, value, onChange, placeholder, testId }: {
-  label: string; description: string; prefix?: string; suffix?: string;
-  value: number; onChange: (v: number) => void; placeholder?: string; testId: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-black mb-1">{label}</label>
-      <p className="text-sm text-[#888888] mb-2">{description}</p>
-      <div className="flex items-center gap-2">
-        {prefix && <span className="text-sm text-[#888888]">{prefix}</span>}
-        <FormattedNumberInput
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder || '0'}
-          className="w-full h-12 bg-white border-[#E5E7EB]"
-          data-testid={testId}
-        />
-        {suffix && <span className="text-sm text-[#888888]">{suffix}</span>}
-      </div>
-    </div>
-  );
+function BenchmarkContext({ text }: { text: string }) {
+  return <p className="text-xs text-[#999999] italic mt-2">{text}</p>;
 }
 
-function SliderField({ label, description, value, onChange, min, max, step, display, testId }: {
-  label: string; description: string; value: number; onChange: (v: number) => void;
-  min: number; max: number; step: number; display: string; testId: string;
-}) {
+function FormulaDisplay({ formula }: { formula: string }) {
+  if (!formula) return null;
   return (
-    <div>
-      <label className="block text-sm font-medium text-black mb-1">{label}</label>
-      <p className="text-sm text-[#888888] mb-3">{description}</p>
-      <div className="flex items-center gap-4">
-        <Slider
-          min={min}
-          max={max}
-          step={step}
-          value={[value]}
-          onValueChange={(v) => onChange(v[0])}
-          className="flex-1"
-          data-testid={testId}
-        />
-        <span className="font-bold text-lg text-black min-w-[60px] text-right">{display}</span>
-      </div>
-    </div>
-  );
-}
-
-function PillSelector({ label, description, options, value, onChange, testId }: {
-  label: string; description: string; options: string[]; value: string;
-  onChange: (v: string) => void; testId: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-black mb-1">{label}</label>
-      <p className="text-sm text-[#888888] mb-3">{description}</p>
-      <div className="flex flex-wrap gap-3">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onChange(opt)}
-            className={`rounded-full px-5 py-2.5 text-sm cursor-pointer transition-all ${
-              value === opt
-                ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
-                : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"
-            }`}
-            data-testid={`${testId}-${opt}`}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
+    <div className="mt-3 pt-3 border-t border-white/10">
+      <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Formula</p>
+      {formula.split('\n').map((line, i) => (
+        <p key={i} className="text-[11px] text-white/50 italic leading-relaxed font-mono">{line}</p>
+      ))}
     </div>
   );
 }
@@ -181,7 +123,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
   const utilization = inputs.utilization || 45;
-  const timeSavings = inputs.timeSavedPerEncounter || 2.0;
+  const revenuePerVisit = inputs.revenuePerVisit || 200;
+  const providerRate = inputs.providerRate || 150;
+  const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
 
   const currentState = domainStates[activeDomain];
   const config = DOMAIN_CONFIGS[activeDomain];
@@ -203,23 +147,26 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }));
   }, [activeDomain]);
 
-  const feedback = useMemo(() => {
+  const feedback = useMemo((): DomainFeedback | null => {
     if (!currentState.activationLevel) return null;
     const level = currentState.activationLevel;
     const inp = currentState.inputs;
     switch (activeDomain) {
-      case 'capacity': return computeCapacityFeedback(level, inp, providers, timeSavings);
-      case 'revenue': return computeRevenueFeedback(level, inp, annualEncounters, utilization);
-      case 'workforce': return computeWorkforceFeedback(level, inp, providers);
-      case 'risk': return computeRiskFeedback(level, inp, annualEncounters, utilization);
+      case 'capacity': return computeCapacityFeedback(level, inp, providers, documentedEncounters, revenuePerVisit, providerRate);
+      case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit);
+      case 'workforce': return computeWorkforceFeedback(level, inp, providers, providerRate);
+      case 'risk': return computeRiskFeedback(level, inp);
     }
-  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, annualEncounters, utilization, timeSavings]);
+  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate]);
 
   const handleAdvance = () => {
-    if (currentState.activationLevel && feedback) {
+    if (currentState.activationLevel) {
       const score = computeDomainScore(activeDomain, currentState.activationLevel, currentState.inputs);
+      const gapValue = feedback?.value || 0;
+      const hasValue = feedback?.hasValue || false;
       dispatch(assessmentActions.updateInput(`${activeDomain}Score` as keyof typeof inputs, score));
-      dispatch(assessmentActions.updateInput(`${activeDomain}Gap` as keyof typeof inputs, feedback.value));
+      dispatch(assessmentActions.updateInput(`${activeDomain}Gap` as keyof typeof inputs, gapValue));
+      dispatch(assessmentActions.updateInput(`${activeDomain}HasValue` as keyof typeof inputs, hasValue));
     }
 
     const idx = DOMAIN_ORDER.indexOf(activeDomain);
@@ -242,6 +189,525 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   };
 
   const activeIdx = DOMAIN_ORDER.indexOf(activeDomain);
+
+  const timeSavedSliderSet = (currentState.inputs.timeSaved as number) > 0;
+  const unmeasuredTimeChecked = currentState.inputs.unmeasuredTime === 'true';
+
+  const renderCapacityInputs = () => {
+    const level = currentState.activationLevel;
+    if (!level) return null;
+
+    const timeSavedValue = (currentState.inputs.timeSaved as number) || 0;
+
+    const timeSavedSection = (
+      <div className="mb-6" key="time-saved">
+        <label className="block text-sm font-medium text-black mb-1">
+          Time saved per documented encounter
+        </label>
+        <p className="text-sm text-[#888888] mb-3">Minutes recovered per encounter using ambient documentation</p>
+
+        <div className="text-center mb-3">
+          {timeSavedSliderSet && !unmeasuredTimeChecked ? (
+            <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{timeSavedValue.toFixed(1)} min</span>
+          ) : (
+            <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 min</span>
+          )}
+        </div>
+
+        {!unmeasuredTimeChecked && (
+          <Slider
+            min={1}
+            max={8}
+            step={0.5}
+            value={[timeSavedValue || 3]}
+            onValueChange={(v) => setDomainInput('timeSaved', v[0])}
+            className="w-full mb-3"
+            dormant={!timeSavedSliderSet}
+            data-testid="slider-time-saved"
+          />
+        )}
+
+        <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
+            <span className="font-bold">1.5\u20132.5 min</span> Most tools
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
+            <span className="font-bold">3.0 min</span> Abridge avg
+          </span>
+        </div>
+        <BenchmarkContext text="Based on published industry data and Abridge deployment experience." />
+
+        <div className="flex items-center gap-2.5 mt-4">
+          <Checkbox
+            id="unmeasured-time"
+            checked={unmeasuredTimeChecked}
+            onCheckedChange={(checked) => {
+              if (checked === true) {
+                setDomainInput('unmeasuredTime', 'true');
+              } else {
+                setDomainInput('unmeasuredTime', 'false');
+              }
+            }}
+            data-testid="checkbox-unmeasured-time"
+          />
+          <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
+            I haven't measured this precisely
+          </label>
+        </div>
+
+        {unmeasuredTimeChecked && (
+          <p className="text-sm text-[#888888] italic mt-2">
+            Time savings not yet measured. This is the first metric to establish.
+          </p>
+        )}
+      </div>
+    );
+
+    if (level === 1) {
+      return timeSavedSection;
+    }
+
+    if (level === 2) {
+      const redeploySet = (currentState.inputs.redeploymentRate as number) > 0;
+      return (
+        <>
+          {timeSavedSection}
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Estimated redeployment rate
+            </label>
+            <p className="text-sm text-[#888888] mb-3">What % of recovered time is being used for additional patient access?</p>
+            <div className="text-center mb-3">
+              {redeploySet ? (
+                <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.redeploymentRate}%</span>
+              ) : (
+                <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+              )}
+            </div>
+            <Slider
+              min={5}
+              max={50}
+              step={1}
+              value={[(currentState.inputs.redeploymentRate as number) || 15]}
+              onValueChange={(v) => setDomainInput('redeploymentRate', v[0])}
+              className="w-full"
+              dormant={!redeploySet}
+              data-testid="slider-redeployment"
+            />
+            <BenchmarkContext text="Organizations at this stage typically report 15\u201325%. Without scheduling changes, absorption is limited." />
+          </div>
+        </>
+      );
+    }
+
+    if (level === 3) {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Additional patients per provider per month
+          </label>
+          <p className="text-sm text-[#888888] mb-3">Additional patients seen per provider per month due to scheduling redesign</p>
+          <FormattedNumberInput
+            value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
+            onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-additional-patients"
+          />
+          <BenchmarkContext text="Abridge customers with structured access redesign report 3\u20138 additional patients/provider/month" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Net visit growth per provider per month
+          </label>
+          <p className="text-sm text-[#888888] mb-2">Net visit growth per provider per month driven by recovered capacity</p>
+          <FormattedNumberInput
+            value={(currentState.inputs.netVisitGrowth as number) || 0}
+            onChange={(v) => setDomainInput('netVisitGrowth', v)}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-net-visit-growth"
+          />
+          <BenchmarkContext text="Top-performing Abridge deployments model 5\u201310 net visits/provider/month in capacity planning" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Providers in capacity model
+          </label>
+          <p className="text-sm text-[#888888] mb-2">May differ from total provider count if capacity modeling is phased</p>
+          <FormattedNumberInput
+            value={(currentState.inputs.providersInModel as number) || providers}
+            onChange={(v) => setDomainInput('providersInModel', v)}
+            placeholder={String(providers)}
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-providers-in-model"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderRevenueInputs = () => {
+    const level = currentState.activationLevel;
+    if (!level) return null;
+
+    if (level === 1) {
+      return (
+        <p className="text-sm text-[#888888] italic">
+          No additional inputs at this level. Your organization has not yet measured documentation-driven revenue impact.
+        </p>
+      );
+    }
+
+    if (level === 2) {
+      const yieldSet = (currentState.inputs.yieldImprovement as number) > 0;
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Estimated improvement in coding yield
+          </label>
+          <p className="text-sm text-[#888888] mb-3">Estimated improvement in coding yield since deployment</p>
+          <div className="text-center mb-3">
+            {yieldSet ? (
+              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.yieldImprovement}%</span>
+            ) : (
+              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+            )}
+          </div>
+          <Slider
+            min={0.5}
+            max={5}
+            step={0.1}
+            value={[(currentState.inputs.yieldImprovement as number) || 1]}
+            onValueChange={(v) => setDomainInput('yieldImprovement', v[0])}
+            className="w-full"
+            dormant={!yieldSet}
+            data-testid="slider-yield-improvement"
+          />
+          <BenchmarkContext text="Abridge customers reporting anecdotal lift estimate 1\u20133%" />
+        </div>
+      );
+    }
+
+    if (level === 3) {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Measured yield lift or wRVU delta since deployment
+          </label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.measuredYieldLift as number) || 0}
+              onChange={(v) => setDomainInput('measuredYieldLift', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-measured-yield"
+            />
+            <span className="text-sm text-[#888888]">%</span>
+          </div>
+          <BenchmarkContext text="Abridge customers with measured yield tracking report 1.5\u20134% verified improvement" />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <label className="block text-sm font-medium text-black mb-1">
+          Recognized revenue change attributed to documentation improvements
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#888888]">$</span>
+          <FormattedNumberInput
+            value={(currentState.inputs.recognizedRevenue as number) || 0}
+            onChange={(v) => setDomainInput('recognizedRevenue', v)}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-recognized-revenue"
+          />
+        </div>
+        <BenchmarkContext text="Abridge enterprise customers with financial governance report $200K\u2013$1M+ in recognized documentation-driven revenue" />
+      </div>
+    );
+  };
+
+  const renderWorkforceInputs = () => {
+    const level = currentState.activationLevel;
+    if (!level) return null;
+
+    if (level === 1) {
+      const afterHoursSet = (currentState.inputs.afterHoursReduction as number) > 0;
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Estimated hours per provider per week of after-hours documentation reduced
+          </label>
+          <div className="text-center mb-3">
+            {afterHoursSet ? (
+              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.afterHoursReduction} hrs/wk</span>
+            ) : (
+              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 hrs/wk</span>
+            )}
+          </div>
+          <Slider
+            min={0.5}
+            max={5}
+            step={0.5}
+            value={[(currentState.inputs.afterHoursReduction as number) || 2]}
+            onValueChange={(v) => setDomainInput('afterHoursReduction', v[0])}
+            className="w-full"
+            dormant={!afterHoursSet}
+            data-testid="slider-after-hours"
+          />
+          <BenchmarkContext text="Abridge deployments report 1\u20133 hrs/week reduction in after-hours documentation" />
+        </div>
+      );
+    }
+
+    if (level === 2) {
+      const editTimeSet = (currentState.inputs.editTimeSaved as number) > 0;
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Minutes saved per provider per day in chart editing, correction, and reconciliation
+          </label>
+          <div className="text-center mb-3">
+            {editTimeSet ? (
+              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.editTimeSaved} min/day</span>
+            ) : (
+              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 min/day</span>
+            )}
+          </div>
+          <Slider
+            min={5}
+            max={30}
+            step={1}
+            value={[(currentState.inputs.editTimeSaved as number) || 15]}
+            onValueChange={(v) => setDomainInput('editTimeSaved', v[0])}
+            className="w-full"
+            dormant={!editTimeSet}
+            data-testid="slider-edit-time"
+          />
+          <BenchmarkContext text="Abridge deployments report 10\u201320 min/day reduction in chart editing and review" />
+        </div>
+      );
+    }
+
+    if (level === 3) {
+      return (
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Annual physician turnover rate
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.turnoverRate as number) || 0}
+                onChange={(v) => setDomainInput('turnoverRate', v)}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-turnover-rate"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="National physician turnover averages 6\u20138% annually" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Average cost to recruit and onboard a replacement
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={(currentState.inputs.replacementCost as number) || 0}
+                onChange={(v) => setDomainInput('replacementCost', v)}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-replacement-cost"
+              />
+            </div>
+            <BenchmarkContext text="Industry average: $250K\u2013$500K per physician replacement" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Monthly reduction in agency or locum spend
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.agencyReduction as number) || 0}
+              onChange={(v) => setDomainInput('agencyReduction', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-agency-reduction"
+            />
+          </div>
+          <BenchmarkContext text="Abridge enterprise customers report $5K\u2013$30K/month in agency spend reduction" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Monthly reduction in overtime spend
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.overtimeReduction as number) || 0}
+              onChange={(v) => setDomainInput('overtimeReduction', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-overtime-reduction"
+            />
+          </div>
+          <BenchmarkContext text="Abridge enterprise customers report $5K\u2013$20K/month in overtime reduction" />
+        </div>
+      </div>
+    );
+  };
+
+  const renderRiskInputs = () => {
+    const level = currentState.activationLevel;
+    if (!level) return null;
+
+    if (level === 1) {
+      return (
+        <p className="text-sm text-[#888888] italic">
+          No additional inputs at this level. Documentation quality has improved, but audit infrastructure hasn't changed.
+        </p>
+      );
+    }
+
+    if (level === 2) {
+      const defenseSet = (currentState.inputs.defensibilityImprovement as number) > 0;
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Estimated improvement in documentation defensibility since deployment
+          </label>
+          <div className="text-center mb-3">
+            {defenseSet ? (
+              <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.defensibilityImprovement}%</span>
+            ) : (
+              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+            )}
+          </div>
+          <Slider
+            min={5}
+            max={30}
+            step={1}
+            value={[(currentState.inputs.defensibilityImprovement as number) || 10]}
+            onValueChange={(v) => setDomainInput('defensibilityImprovement', v[0])}
+            className="w-full"
+            dormant={!defenseSet}
+            data-testid="slider-defensibility"
+          />
+          <BenchmarkContext text="Abridge customers actively reviewing defensibility estimate 10\u201320% improvement" />
+        </div>
+      );
+    }
+
+    if (level === 3) {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Hours saved per month in compliance/quality reporting and chart abstraction
+          </label>
+          <FormattedNumberInput
+            value={(currentState.inputs.reportingHoursSaved as number) || 0}
+            onChange={(v) => setDomainInput('reportingHoursSaved', v)}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-reporting-hours"
+          />
+          <BenchmarkContext text="Abridge customers report 10\u201340 hrs/month in compliance reporting and abstraction time savings" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Reduction in documentation-related audit findings since deployment
+          </label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.auditFindingsReduced as number) || 0}
+              onChange={(v) => setDomainInput('auditFindingsReduced', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-audit-findings"
+            />
+            <span className="text-sm text-[#888888]">%</span>
+          </div>
+          <BenchmarkContext text="Abridge enterprise customers report 15\u201330% reduction in documentation-related audit findings" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Estimated annual compliance exposure
+          </label>
+          <p className="text-xs text-[#888888] mb-2">Revenue change tied to documentation improvements, recognized in financial reporting</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.complianceExposure as number) || 0}
+              onChange={(v) => setDomainInput('complianceExposure', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-compliance-exposure"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDomainInputs = () => {
+    switch (activeDomain) {
+      case 'capacity': return renderCapacityInputs();
+      case 'revenue': return renderRevenueInputs();
+      case 'workforce': return renderWorkforceInputs();
+      case 'risk': return renderRiskInputs();
+    }
+  };
+
+  const renderImpactValue = (fb: DomainFeedback) => {
+    if (fb.headlineMetric) {
+      return (
+        <p className="font-bold text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
+          {fb.headlineMetric}
+        </p>
+      );
+    }
+    if (!fb.hasValue && fb.value === null) {
+      return (
+        <p className="font-bold text-2xl text-white/40 leading-[1.1] mb-4" data-testid="text-feedback-value">
+          Not yet measured
+        </p>
+      );
+    }
+    if (fb.value === 0) {
+      return (
+        <p className="font-bold text-4xl text-white/50 leading-[1.1] mb-4" data-testid="text-feedback-value">
+          $0
+        </p>
+      );
+    }
+    return (
+      <p className="font-bold text-4xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
+        {formatDollar(fb.value || 0)}
+      </p>
+    );
+  };
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -280,6 +746,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         className="text-center mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        key={`header-${activeDomain}`}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-domain-headline">
           {config.headline}
@@ -345,86 +812,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     Refine Your Inputs
                   </p>
                   <div className="h-px bg-[#E5E7EB] mb-6" />
-                  {/* CAPACITY inputs */}
-                  {activeDomain === 'capacity' && currentState.activationLevel === 1 && (
-                    <p className="text-sm text-[#888888] italic">
-                      No additional inputs required. You are experiencing efficiency, not capacity.
-                    </p>
-                  )}
-                  {activeDomain === 'capacity' && currentState.activationLevel === 2 && (
-                    <SliderField label="Estimated Redeployment" description="What % of recovered time is being used for additional visits?" value={(currentState.inputs.redeployment as number) || 10} onChange={(v) => setDomainInput('redeployment', v)} min={0} max={25} step={1} display={`${(currentState.inputs.redeployment as number) || 10}%`} testId="slider-redeployment" />
-                  )}
-                  {activeDomain === 'capacity' && currentState.activationLevel === 3 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Additional Patients per Month" description="New patients seen due to schedule or template changes" value={(currentState.inputs.additionalPatients as number) || 0} onChange={(v) => setDomainInput('additionalPatients', v)} testId="input-additional-patients" />
-                      <InputField label="Revenue per Visit" description="Average visit revenue ($)" prefix="$" value={(currentState.inputs.revenuePerVisit as number) || 200} onChange={(v) => setDomainInput('revenuePerVisit', v)} testId="input-revenue-per-visit" />
-                    </div>
-                  )}
-                  {activeDomain === 'capacity' && currentState.activationLevel === 4 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Net Visit Growth per Provider per Month" description="Additional visits per provider driven by recovered capacity" value={(currentState.inputs.visitGrowthPerProvider as number) || 0} onChange={(v) => setDomainInput('visitGrowthPerProvider', v)} testId="input-visit-growth" />
-                      <InputField label="Revenue per Visit" description="Average visit revenue ($)" prefix="$" value={(currentState.inputs.revenuePerVisit as number) || 200} onChange={(v) => setDomainInput('revenuePerVisit', v)} testId="input-revenue-per-visit" />
-                    </div>
-                  )}
-
-                  {/* REVENUE inputs */}
-                  {activeDomain === 'revenue' && currentState.activationLevel === 1 && (
-                    <p className="text-sm text-[#888888] italic">
-                      No additional inputs required. Conservative baseline yield only.
-                    </p>
-                  )}
-                  {activeDomain === 'revenue' && currentState.activationLevel === 2 && (
-                    <SliderField label="Estimated Yield Delta" description="Estimated improvement in coding yield since deployment (%)" value={(currentState.inputs.yieldDelta as number) || 2} onChange={(v) => setDomainInput('yieldDelta', v)} min={0} max={10} step={0.5} display={`${(currentState.inputs.yieldDelta as number) || 2}%`} testId="slider-yield-delta" />
-                  )}
-                  {activeDomain === 'revenue' && currentState.activationLevel === 3 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Measured Yield Lift or wRVU Delta (%)" description="Measured improvement in yield or wRVU since deployment" suffix="%" value={(currentState.inputs.measuredYieldLift as number) || 0} onChange={(v) => setDomainInput('measuredYieldLift', v)} testId="input-measured-yield" />
-                    </div>
-                  )}
-                  {activeDomain === 'revenue' && currentState.activationLevel === 4 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Recognized Revenue Change ($)" description="Revenue change tied to documentation improvements, recognized in financial reporting" prefix="$" value={(currentState.inputs.recognizedRevenue as number) || 0} onChange={(v) => setDomainInput('recognizedRevenue', v)} testId="input-recognized-revenue" />
-                    </div>
-                  )}
-
-                  {/* WORKFORCE inputs */}
-                  {activeDomain === 'workforce' && currentState.activationLevel === 1 && (
-                    <SliderField label="After-Hours Reduction" description="Estimated hours per provider per week of after-hours documentation reduced" value={(currentState.inputs.afterHoursReduction as number) || 2} onChange={(v) => setDomainInput('afterHoursReduction', v)} min={0} max={8} step={0.5} display={`${(currentState.inputs.afterHoursReduction as number) || 2} hrs / week`} testId="slider-after-hours" />
-                  )}
-                  {activeDomain === 'workforce' && currentState.activationLevel === 2 && (
-                    <SliderField label="Edit / Review Time Saved" description="Minutes saved per provider per day in editing, correction, and chart reconciliation" value={(currentState.inputs.editTimeSaved as number) || 15} onChange={(v) => setDomainInput('editTimeSaved', v)} min={0} max={60} step={5} display={`${(currentState.inputs.editTimeSaved as number) || 15} min / day`} testId="slider-edit-time" />
-                  )}
-                  {activeDomain === 'workforce' && currentState.activationLevel === 3 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Current Turnover Rate (%)" description="Annual physician turnover rate" suffix="%" value={(currentState.inputs.turnoverRate as number) || 8} onChange={(v) => setDomainInput('turnoverRate', v)} testId="input-turnover-rate" />
-                      <InputField label="Replacement Cost per Provider ($)" description="Average cost to recruit and onboard a replacement" prefix="$" value={(currentState.inputs.replacementCost as number) || 400000} onChange={(v) => setDomainInput('replacementCost', v)} testId="input-replacement-cost" />
-                    </div>
-                  )}
-                  {activeDomain === 'workforce' && currentState.activationLevel === 4 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Agency Spend Avoided ($/month)" description="Monthly reduction in agency or locum spend" prefix="$" value={(currentState.inputs.agencyAvoided as number) || 0} onChange={(v) => setDomainInput('agencyAvoided', v)} testId="input-agency-avoided" />
-                      <InputField label="Overtime Reduction ($/month)" description="Monthly reduction in overtime spend" prefix="$" value={(currentState.inputs.overtimeReduction as number) || 0} onChange={(v) => setDomainInput('overtimeReduction', v)} testId="input-overtime-reduction" />
-                    </div>
-                  )}
-
-                  {/* RISK inputs */}
-                  {activeDomain === 'risk' && currentState.activationLevel === 1 && (
-                    <p className="text-sm text-[#888888] italic">
-                      No additional inputs required. Cleaner clinical notes are the baseline.
-                    </p>
-                  )}
-                  {activeDomain === 'risk' && currentState.activationLevel === 2 && (
-                    <SliderField label="Estimated Defensibility Improvement" description="Estimated improvement in documentation defensibility since deployment (%)" value={(currentState.inputs.defensibilityImprovement as number) || 10} onChange={(v) => setDomainInput('defensibilityImprovement', v)} min={0} max={50} step={5} display={`${(currentState.inputs.defensibilityImprovement as number) || 10}%`} testId="slider-defensibility" />
-                  )}
-                  {activeDomain === 'risk' && currentState.activationLevel === 3 && (
-                    <InputField label="Reporting Hours Reduced per Month" description="Hours saved in quality reporting and chart abstraction per month" value={(currentState.inputs.reportingHoursReduced as number) || 0} onChange={(v) => setDomainInput('reportingHoursReduced', v)} testId="input-reporting-hours" />
-                  )}
-                  {activeDomain === 'risk' && currentState.activationLevel === 4 && (
-                    <div className="flex flex-col gap-5">
-                      <InputField label="Audit Findings Reduced (%)" description="Reduction in audit findings since deployment" suffix="%" value={(currentState.inputs.auditFindingsReduced as number) || 0} onChange={(v) => setDomainInput('auditFindingsReduced', v)} testId="input-audit-findings" />
-                      <InputField label="Compliance Exposure Estimate ($)" description="Estimated annual compliance exposure reduced" prefix="$" value={(currentState.inputs.complianceExposure as number) || 0} onChange={(v) => setDomainInput('complianceExposure', v)} testId="input-compliance-exposure" />
-                    </div>
-                  )}
+                  {renderDomainInputs()}
                 </div>
               </motion.div>
             )}
@@ -439,58 +827,70 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           <div className={STEP_FOOTER_SPACER_CLASS} />
         </div>
 
-        {feedback && (
-          <motion.div
-            className="w-full lg:w-[320px] flex-shrink-0"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            key={`feedback-${activeDomain}-${currentState.activationLevel}`}
-          >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="card-domain-feedback">
-              <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
-                Estimated Impact
-              </p>
+        <motion.div
+          className="w-full lg:w-[320px] flex-shrink-0"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          key={`sidebar-${activeDomain}`}
+        >
+          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="card-domain-feedback">
+            <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
+              Estimated Impact
+            </p>
 
-              <p className="font-bold text-4xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
-                {formatDollar(Math.max(0, feedback.value))}
-              </p>
+            {feedback ? (
+              <>
+                {renderImpactValue(feedback)}
 
-              <div className="h-px bg-white/10 my-4" />
+                <div className="h-px bg-white/10 my-4" />
 
-              <p className="text-sm text-white/80 leading-relaxed mb-4">
-                {feedback.context}
-              </p>
+                <p className="text-sm text-white/80 leading-relaxed mb-4">
+                  {feedback.context}
+                </p>
 
-              <p className="text-xs text-white/40 italic leading-relaxed">
-                {feedback.footnote}
-              </p>
+                {feedback.footnote && (
+                  <p className="text-xs text-white/40 italic leading-relaxed">
+                    {feedback.footnote}
+                  </p>
+                )}
 
-              <div className="h-px bg-white/10 my-5" />
+                <FormulaDisplay formula={feedback.formula} />
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">\u2014</p>
+                <div className="h-px bg-white/10 my-4" />
+                <p className="text-sm text-white/50 leading-relaxed">
+                  Select your organization's maturity level to see estimated impact.
+                </p>
+              </>
+            )}
 
-              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-                Domain Progress
-              </p>
-              <div className="space-y-2">
-                {DOMAIN_ORDER.map((d) => {
-                  const isActive = d === activeDomain;
-                  const dState = domainStates[d];
-                  const hasValue = dState.activationLevel !== null;
-                  return (
-                    <div key={d} className="flex items-center justify-between text-sm">
-                      <span className={isActive ? 'text-white font-medium' : 'text-white/50'}>
-                        {DOMAIN_LABELS[d]}
-                      </span>
-                      <span className={hasValue ? 'text-white font-semibold' : 'text-white/30'}>
-                        {hasValue ? `Level ${dState.activationLevel}` : '\u2014'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+              Domain Progress
+            </p>
+            <div className="space-y-2">
+              {DOMAIN_ORDER.map((d) => {
+                const isActive = d === activeDomain;
+                const dState = domainStates[d];
+                const hasLevel = dState.activationLevel !== null;
+                return (
+                  <div key={d} className="flex items-center justify-between text-sm">
+                    <span className={isActive ? 'text-white font-medium' : 'text-white/50'}>
+                      {DOMAIN_LABELS[d]}
+                    </span>
+                    <span className={hasLevel ? 'text-white font-semibold' : 'text-white/30'}>
+                      {hasLevel ? `Level ${dState.activationLevel}` : '\u2014'}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

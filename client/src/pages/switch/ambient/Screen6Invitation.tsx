@@ -74,7 +74,12 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const utilization = inputs.utilization || 45;
   const timeSavings = inputs.timeSavedPerEncounter || 2.0;
 
-  const HAIRCUT = 0.60;
+  const domainHasValue: Record<string, boolean> = useMemo(() => ({
+    capacity: inputs.capacityHasValue || false,
+    revenue: inputs.revenueHasValue || false,
+    workforce: inputs.workforceHasValue || false,
+    risk: inputs.riskHasValue || false,
+  }), [inputs.capacityHasValue, inputs.revenueHasValue, inputs.workforceHasValue, inputs.riskHasValue]);
 
   const domainData = useMemo(() => {
     const scores: Record<string, number> = {
@@ -90,25 +95,30 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
       risk: inputs.riskGap || 0,
     };
 
-    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; primaryOpportunity: string }> = {};
+    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; hasValue: boolean; primaryOpportunity: string }> = {};
     for (const d of DOMAIN_ORDER) {
       const level = scoreToActivationLevel(d, scores[d]);
       r[d] = {
         activationLevel: level,
         activationLabel: ACTIVATION_LABELS[d][level],
         score: scores[d],
-        gapValue: Math.round(gaps[d] * HAIRCUT),
+        gapValue: gaps[d],
+        hasValue: domainHasValue[d],
         primaryOpportunity: opportunityText[d]?.[level] || '',
       };
     }
     return r;
-  }, [inputs]);
+  }, [inputs, domainHasValue]);
 
   const displayedTotal = useMemo(() => {
-    const totalGap = (inputs.capacityGap || 0) + (inputs.revenueGap || 0) +
-      (inputs.workforceGap || 0) + (inputs.riskGap || 0);
-    return Math.round(totalGap * HAIRCUT);
-  }, [inputs]);
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainHasValue[d]) sum += (inputs as any)[`${d}Gap`] || 0;
+    }
+    return sum;
+  }, [inputs, domainHasValue]);
+
+  const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
 
   const displayedMonthly = Math.round(displayedTotal / 12);
   const displayedDaily = Math.round(displayedTotal / 365);
@@ -197,11 +207,19 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <div className="hidden sm:block w-px h-20 bg-white/10" />
 
             <div>
-              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Unrealized Value</p>
-              <p className="text-[48px] md:text-[56px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
-                {formatDollar(displayedTotal)}
-              </p>
-              <p className="text-lg text-white/30 font-normal mt-1">annually</p>
+              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
+              {hasMeasuredDomains ? (
+                <>
+                  <p className="text-[48px] md:text-[56px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+                    {formatDollar(displayedTotal)}
+                  </p>
+                  <p className="text-lg text-white/30 font-normal mt-1">annually</p>
+                </>
+              ) : (
+                <p className="text-[32px] font-bold text-white/30 leading-none" data-testid="hero-total-value">
+                  Not yet measured
+                </p>
+              )}
             </div>
           </div>
 
@@ -284,7 +302,9 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                           </div>
                         </div>
                         <span className="text-sm font-bold text-black w-[40px] text-right">{d?.score || 0}</span>
-                        <span className="text-sm font-bold text-[#EA2C00] w-[80px] text-right">{formatDollar(d?.gapValue || 0)}</span>
+                        <span className={`text-sm font-bold w-[80px] text-right ${d?.hasValue ? 'text-[#EA2C00]' : 'text-[#888888]'}`}>
+                          {d?.hasValue ? formatDollar(d.gapValue) : 'Not measured'}
+                        </span>
                       </div>
                     </div>
                     {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
@@ -294,8 +314,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
 
               <div className="h-px bg-[#E5E7EB] mt-2" />
               <div className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between">
-                <span className="font-semibold text-sm text-black">Total Annual Gap</span>
-                <span className="font-bold text-xl text-[#EA2C00]" data-testid="text-total-gap">{formatDollar(displayedTotal)}</span>
+                <span className="font-semibold text-sm text-black">Total Measured Value</span>
+                <span className="font-bold text-xl text-[#EA2C00]" data-testid="text-total-gap">
+                  {hasMeasuredDomains ? formatDollar(displayedTotal) : 'Not yet measured'}
+                </span>
               </div>
             </div>
           </motion.div>
@@ -427,45 +449,56 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               Enterprise Value
             </p>
 
-            <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">
-              {formatDollar(displayedTotal)}
-            </p>
-            <p className="text-xs text-white/40 mb-4">unrealized annually</p>
-
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <div>
-                <p className="text-white font-bold text-lg leading-none" data-testid="panel-monthly">
-                  ${displayedMonthly.toLocaleString()}
+            {hasMeasuredDomains ? (
+              <>
+                <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">
+                  {formatDollar(displayedTotal)}
                 </p>
-                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
-              </div>
-              <div>
-                <p className="text-white font-bold text-lg leading-none" data-testid="panel-daily">
-                  ${displayedDaily.toLocaleString()}
+                <p className="text-xs text-white/40 mb-4">measured annually</p>
+
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div>
+                    <p className="text-white font-bold text-lg leading-none" data-testid="panel-monthly">
+                      ${displayedMonthly.toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-lg leading-none" data-testid="panel-daily">
+                      ${displayedDaily.toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+                  </div>
+                </div>
+
+                <div className="h-px bg-white/10 my-5" />
+
+                <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+                  Cost of Waiting
                 </p>
-                <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
-              </div>
-            </div>
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Cost of Waiting
-            </p>
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/60">Wait 6 months</span>
-                <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-6mo">
-                  {formatDollarFull(permanentlyLost6mo)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/60">Wait 12 months</span>
-                <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-12mo">
-                  {formatDollarFull(permanentlyLost12mo)}
-                </span>
-              </div>
-            </div>
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Wait 6 months</span>
+                    <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-6mo">
+                      {formatDollarFull(permanentlyLost6mo)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/60">Wait 12 months</span>
+                    <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-12mo">
+                      {formatDollarFull(permanentlyLost12mo)}
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-xl text-white/30 leading-none mb-1" data-testid="panel-total-value">
+                  Not yet measured
+                </p>
+                <p className="text-xs text-white/40 mb-4">complete domain inputs to see value</p>
+              </>
+            )}
 
             <div className="h-px bg-white/10 my-5" />
 
@@ -476,7 +509,9 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               {DOMAIN_ORDER.map((domain) => (
                 <div key={domain} className="flex items-center justify-between text-sm">
                   <span className="text-white/60">{DOMAIN_LABELS[domain]}</span>
-                  <span className="text-white font-semibold">{formatDollar(domainData[domain]?.gapValue || 0)}</span>
+                  <span className={domainData[domain]?.hasValue ? "text-white font-semibold" : "text-white/30 text-xs"}>
+                    {domainData[domain]?.hasValue ? formatDollar(domainData[domain].gapValue) : 'Not measured'}
+                  </span>
                 </div>
               ))}
             </div>
