@@ -11,6 +11,7 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
+  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS,
   type DomainFeedback,
 } from "./domainCalculations";
 
@@ -83,10 +84,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Is your documentation infrastructure ready for what comes next?',
     reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
     cards: [
-      { level: 1, label: 'Cleaner Clinical Notes', description: 'Note quality improved. Audit posture unchanged.' },
-      { level: 2, label: 'Audit Awareness', description: 'Documentation defensibility actively under review.' },
-      { level: 3, label: 'Compliance Reporting Streamlined', description: 'Reporting and abstraction workload measurably reduced.' },
-      { level: 4, label: 'Governed Compliance Infrastructure', description: 'Compliance review integrated with structured data strategy.' },
+      { level: 1, label: 'Better Notes, Same Infrastructure', description: 'Documentation quality improved. Nothing downstream has changed.' },
+      { level: 2, label: 'Active Quality Monitoring', description: 'Documentation completeness and specificity are being tracked.' },
+      { level: 3, label: 'Downstream Systems Connected', description: 'Quality reporting, CDI, or coding workflows are leveraging improved documentation.' },
+      { level: 4, label: 'Documentation as Strategic Data Asset', description: 'Structured documentation informs payer, quality, and compliance strategy.' },
     ],
   },
 };
@@ -532,6 +533,25 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     );
   };
 
+  const toggleCheckboxItem = (key: string, index: number) => {
+    const current = (currentState.inputs[key] as string) || '';
+    const set = new Set(current.split(',').filter(Boolean));
+    const idx = String(index);
+    if (set.has(idx)) set.delete(idx); else set.add(idx);
+    setDomainInput(key, Array.from(set).join(','));
+  };
+
+  const isChecked = (key: string, index: number): boolean => {
+    const current = (currentState.inputs[key] as string) || '';
+    return current.split(',').filter(Boolean).includes(String(index));
+  };
+
+  const MONITORING_OPTIONS = [
+    { id: 'not_yet', label: "Not yet — we know notes are better but haven't formalized tracking" },
+    { id: 'spot_checks', label: 'Spot checks — informal review, anecdotal feedback from CDI or coding' },
+    { id: 'systematic', label: 'Systematic tracking — structured audits or dashboards measuring documentation attributes' },
+  ];
+
   const renderRiskInputs = () => {
     const level = currentState.activationLevel;
     if (!level) return null;
@@ -539,46 +559,109 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       return (
         <p className="text-sm text-[#888888] italic">
-          No additional inputs at this level. Documentation quality has improved, but audit infrastructure hasn't changed.
+          No additional inputs at this level. Documentation quality improved. Nothing downstream has changed.
         </p>
       );
     }
 
     if (level === 2) {
+      const approach = currentState.inputs.monitoringApproach as string | undefined;
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Estimated improvement in documentation defensibility since deployment
-          </label>
-          <div className="flex items-center gap-2">
-            <FormattedNumberInput
-              value={(currentState.inputs.defensibilityImprovement as number) || 0}
-              onChange={(v) => setDomainInput('defensibilityImprovement', Math.min(100, Math.max(0, v)))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-defensibility"
-            />
-            <span className="text-sm text-[#888888]">%</span>
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-3">
+              How is your organization monitoring documentation quality?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {MONITORING_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('monitoringApproach', opt.id)}
+                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                    approach === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-monitoring-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <BenchmarkContext text="Abridge customers actively reviewing defensibility estimate 10–20% improvement" />
+
+          <AnimatePresence>
+            {approach === 'systematic' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-3">
+                  What documentation attributes are you tracking?
+                </label>
+                <div className="flex flex-col gap-2.5">
+                  {QUALITY_ATTRIBUTES.map((attr, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <Checkbox
+                        id={`quality-attr-${i}`}
+                        checked={isChecked('qualityAttributes', i)}
+                        onCheckedChange={() => toggleCheckboxItem('qualityAttributes', i)}
+                        data-testid={`checkbox-quality-${i}`}
+                      />
+                      <label htmlFor={`quality-attr-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                        {attr}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <BenchmarkContext text="Abridge customers who begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity." />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
 
     if (level === 3) {
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Hours saved per month in compliance/quality reporting and chart abstraction
-          </label>
-          <FormattedNumberInput
-            value={(currentState.inputs.reportingHoursSaved as number) || 0}
-            onChange={(v) => setDomainInput('reportingHoursSaved', v)}
-            placeholder=""
-            className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-reporting-hours"
-          />
-          <BenchmarkContext text="Abridge customers report 10–40 hrs/month in compliance reporting and abstraction time savings" />
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-3">
+              Which downstream workflows have been impacted by improved documentation?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {DOWNSTREAM_WORKFLOWS.map((wf, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <Checkbox
+                    id={`workflow-${i}`}
+                    checked={isChecked('connectedWorkflows', i)}
+                    onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
+                    data-testid={`checkbox-workflow-${i}`}
+                  />
+                  <label htmlFor={`workflow-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                    {wf}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Estimated total hours saved per month across connected workflows
+            </label>
+            <FormattedNumberInput
+              value={(currentState.inputs.workflowHoursSaved as number) || 0}
+              onChange={(v) => setDomainInput('workflowHoursSaved', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-workflow-hours"
+            />
+            <BenchmarkContext text="Abridge customers with connected workflows report 10–40 hrs/month in combined efficiency gains" />
+          </div>
         </div>
       );
     }
@@ -586,36 +669,44 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Reduction in documentation-related audit findings since deployment
+          <label className="block text-sm font-medium text-black mb-3">
+            Where does documentation quality factor into organizational strategy?
           </label>
-          <div className="flex items-center gap-2">
-            <FormattedNumberInput
-              value={(currentState.inputs.auditFindingsReduced as number) || 0}
-              onChange={(v) => setDomainInput('auditFindingsReduced', v)}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-audit-findings"
-            />
-            <span className="text-sm text-[#888888]">%</span>
+          <div className="flex flex-col gap-2.5">
+            {STRATEGIC_INTEGRATIONS.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <Checkbox
+                  id={`strategic-${i}`}
+                  checked={isChecked('strategicIntegrations', i)}
+                  onCheckedChange={() => toggleCheckboxItem('strategicIntegrations', i)}
+                  data-testid={`checkbox-strategic-${i}`}
+                />
+                <label htmlFor={`strategic-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                  {item}
+                </label>
+              </div>
+            ))}
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report 15–30% reduction in documentation-related audit findings" />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Estimated annual compliance exposure
+            Can you estimate the annual strategic value?
           </label>
-          <p className="text-xs text-[#888888] mb-2">Revenue change tied to documentation improvements, recognized in financial reporting</p>
+          <p className="text-xs text-[#888888] mb-2">
+            This is hard to quantify precisely. If you can estimate the combined value of documentation-driven improvements across payer, quality, compliance, and risk programs — enter it here. If not, leave blank.
+          </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
-              value={(currentState.inputs.complianceExposure as number) || 0}
-              onChange={(v) => setDomainInput('complianceExposure', v)}
+              value={(currentState.inputs.strategicValue as number) || 0}
+              onChange={(v) => setDomainInput('strategicValue', Math.max(0, v))}
               placeholder=""
               className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-compliance-exposure"
+              data-testid="input-strategic-value"
             />
           </div>
+          <BenchmarkContext text="Abridge enterprise customers at this level report $100K–$500K+ in attributed strategic value" />
         </div>
       </div>
     );
@@ -795,9 +886,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <div className="h-px bg-white/10 my-4" />
 
-                <p className="text-sm text-white/80 leading-relaxed mb-4">
-                  {feedback.context}
-                </p>
+                <div className="text-sm text-white/80 leading-relaxed mb-4 space-y-2">
+                  {feedback.context.split('\n').filter(Boolean).map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
 
                 {feedback.footnote && (
                   <p className="text-xs text-white/40 italic leading-relaxed">

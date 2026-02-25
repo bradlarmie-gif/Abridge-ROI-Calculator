@@ -373,6 +373,46 @@ export function computeWorkforceFeedback(
   };
 }
 
+const QUALITY_ATTRIBUTES = [
+  'Note completeness (all relevant elements captured)',
+  'Diagnostic specificity (ICD-10 precision)',
+  'HCC / risk adjustment alignment',
+  'Quality measure documentation (HEDIS, MIPS gaps)',
+  'Compliance defensibility (audit-readiness)',
+];
+
+const DOWNSTREAM_WORKFLOWS = [
+  'CDI query volume reduced (fewer queries because notes are more complete)',
+  'Coding accuracy improved (fewer rejections, faster turnaround)',
+  'Quality measure capture improved (HEDIS, MIPS, Stars gap closure)',
+  'Prior authorization documentation streamlined',
+  'Chart abstraction time reduced (registries, research, reporting)',
+  'Risk adjustment / HCC capture improved',
+];
+
+const STRATEGIC_INTEGRATIONS = [
+  'Payer contract negotiations (documentation supports rate/quality arguments)',
+  'Value-based care program design (documentation feeds quality metrics)',
+  'Compliance / audit governance (documentation quality is a governed metric)',
+  'Risk management / malpractice review (documentation defensibility is tracked)',
+  'Workforce / FTE modeling (documentation efficiency informs staffing)',
+];
+
+export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS };
+
+function parseCheckedItems(csv: string | undefined, allItems: string[]): { checked: string[]; unchecked: string[] } {
+  if (!csv) return { checked: [], unchecked: [...allItems] };
+  const checkedSet = new Set(csv.split(',').filter(Boolean));
+  const checked = allItems.filter((_, i) => checkedSet.has(String(i)));
+  const unchecked = allItems.filter((_, i) => !checkedSet.has(String(i)));
+  return { checked, unchecked };
+}
+
+function shortLabel(item: string): string {
+  const paren = item.indexOf('(');
+  return paren > 0 ? item.substring(0, paren).trim() : item;
+}
+
 export function computeRiskFeedback(
   level: ActivationLevel,
   inputs: Record<string, number | string>,
@@ -382,80 +422,150 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'Your documentation quality has improved, but your compliance and audit infrastructure hasn\'t changed to leverage it. Cleaner notes are foundational — but only when measured.',
-      formula: '',
-      footnote: 'Abridge customers who actively review documentation defensibility report measurable improvements in audit readiness.',
-    };
-  }
-
-  if (level === 2) {
-    const defensibilityImprovement = inputs.defensibilityImprovement as number | undefined;
-    if (!defensibilityImprovement || defensibilityImprovement <= 0) {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        context: 'Enter estimated defensibility improvement to see directional assessment.',
-        formula: '',
-        footnote: '',
-      };
-    }
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: true,
-      headlineMetric: 'Directional improvement',
-      context: `Your organization estimates a ${defensibilityImprovement}% improvement in documentation defensibility. This hasn't been translated to a dollar value — but it signals active monitoring of compliance posture.`,
-      formula: 'Defensibility improvements reduce exposure to coding audits, payer recoupment, and RAC/MAC reviews.',
-      footnote: 'No dollar value at this level. The insight is qualitative.',
-    };
-  }
-
-  if (level === 3) {
-    const reportingHours = inputs.reportingHoursSaved as number | undefined;
-    if (!reportingHours || reportingHours <= 0) {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        context: 'Enter hours saved per month in compliance reporting to calculate operational savings.',
-        formula: '',
-        footnote: '',
-      };
-    }
-    const abstractionRate = 75;
-    const annualHours = reportingHours * 12;
-    const annualSavings = Math.round(annualHours * abstractionRate);
-    return {
-      label: 'Estimated Impact',
-      value: annualSavings,
-      hasValue: true,
-      context: `Your organization is saving an estimated ${annualHours.toLocaleString()} hours annually in compliance reporting and chart abstraction — valued at ${formatDollar(annualSavings)}.`,
-      formula: `[annualHours] = ${reportingHours} hrs/mo × 12 = ${annualHours}\n[annualSavings] = ${annualHours} × $75/hr abstraction rate = ${formatDollar(annualSavings)}`,
-      footnote: 'Abstraction rate: $75/hr industry standard.',
-    };
-  }
-
-  const auditReduction = inputs.auditFindingsReduced as number | undefined;
-  const complianceExposure = inputs.complianceExposure as number | undefined;
-  if (!auditReduction || !complianceExposure || auditReduction <= 0 || complianceExposure <= 0) {
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      context: 'Enter audit findings reduction and compliance exposure estimate to calculate risk reduction.',
+      context: 'Your documentation quality has improved — but nothing downstream has changed to leverage it. Quality reporting, CDI workflows, coding processes, and compliance reviews are operating the same way they did before deployment.\n\nThe foundation is there. The question is whether your organization is building on it.',
       formula: '',
       footnote: '',
     };
   }
-  const riskReduction = Math.round(complianceExposure * (auditReduction / 100));
+
+  if (level === 2) {
+    const approach = inputs.monitoringApproach as string | undefined;
+    if (!approach) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        context: 'Select how your organization is monitoring documentation quality to see your assessment.',
+        formula: '',
+        footnote: '',
+      };
+    }
+    if (approach === 'not_yet') {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: '—',
+        context: 'Documentation quality monitoring hasn\'t started. This means your organization has no baseline for measuring what improved documentation is worth downstream. This is the single most important next step.\n\nAbridge customers who begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity.',
+        formula: '',
+        footnote: '',
+      };
+    }
+    if (approach === 'spot_checks') {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Informal monitoring',
+        context: 'Your organization is informally reviewing documentation quality. This is a start — but spot checks don\'t scale and can\'t drive organizational strategy. Consider formalizing a review cadence and measurement framework.\n\nAbridge customers who formalize monitoring review 500–2,000 encounters/month for documentation quality.',
+        formula: '',
+        footnote: '',
+      };
+    }
+    const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
+    const count = checked.length;
+    if (count === 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Systematic tracking',
+        context: 'You indicated systematic tracking — select which documentation attributes are being tracked.',
+        formula: '',
+        footnote: '',
+      };
+    }
+    const trackedList = checked.map(shortLabel).join(', ');
+    const untrackedList = unchecked.map(shortLabel).join(', ');
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} of 5 quality dimensions tracked`,
+      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}. This positions you to connect documentation improvements to downstream value.\n\nTracked: ${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked: ${untrackedList}` : ''}\n\nOrganizations tracking 4+ attributes are positioned to move to Level 3 — connecting documentation quality to downstream operational workflows.`,
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  if (level === 3) {
+    const { checked, unchecked } = parseCheckedItems(inputs.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS);
+    const hoursSaved = inputs.workflowHoursSaved as number | undefined;
+    const count = checked.length;
+    const checkedLabels = checked.map(shortLabel).join(', ');
+    const uncheckedLabels = unchecked.map(shortLabel).join(', ');
+
+    if (count === 0 && (!hoursSaved || hoursSaved <= 0)) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        context: 'Select which downstream workflows have been impacted and enter hours saved to calculate operational impact.',
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    if (count > 0 && (!hoursSaved || hoursSaved <= 0)) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: `${count} workflow${count > 1 ? 's' : ''} connected`,
+        context: `Your documentation infrastructure is connected to ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter estimated hours saved to calculate operational impact.${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels}` : ''}`,
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    const annualHours = (hoursSaved || 0) * 12;
+    const annualSavings = Math.round(annualHours * 75);
+    return {
+      label: 'Estimated Impact',
+      value: annualSavings,
+      hasValue: true,
+      context: `Your documentation infrastructure is driving measurable efficiency across ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedLabels}\n\n${annualHours.toLocaleString()} hours recaptured annually — valued at ${formatDollar(annualSavings)}.${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels}` : ''}`,
+      formula: `[annualHours] = ${hoursSaved} × 12 = ${annualHours}\n[annualSavings] = ${annualHours} × $75/hr = ${formatDollar(annualSavings)}`,
+      footnote: 'Rate: $75/hr blended abstraction/administrative rate.',
+    };
+  }
+
+  const { checked, unchecked } = parseCheckedItems(inputs.strategicIntegrations as string, STRATEGIC_INTEGRATIONS);
+  const strategicValue = inputs.strategicValue as number | undefined;
+  const count = checked.length;
+  const checkedLabels = checked.map(shortLabel).join(', ');
+  const uncheckedLabels = unchecked.map(shortLabel).join(', ');
+
+  if (count === 0 && (!strategicValue || strategicValue <= 0)) {
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      context: 'Select where documentation quality factors into organizational strategy to see your assessment.',
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  if (count > 0 && (!strategicValue || strategicValue <= 0)) {
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} strategic integration${count > 1 ? 's' : ''}`,
+      context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nThis is the highest level of documentation infrastructure maturity. Quantified impact not yet estimated — but strategic integration drives compounding value across the organization.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+      formula: '',
+      footnote: '',
+    };
+  }
+
   return {
     label: 'Estimated Impact',
-    value: riskReduction,
+    value: strategicValue || 0,
     hasValue: true,
-    context: `Your organization has reduced documentation-related audit findings by ${auditReduction}%, addressing an estimated ${formatDollar(riskReduction)} of your ${formatDollar(complianceExposure)} annual compliance exposure.`,
-    formula: `[riskReduction] = ${formatDollar(complianceExposure)} × ${auditReduction}% = ${formatDollar(riskReduction)}`,
-    footnote: 'Based on audit findings reduction applied to stated compliance exposure.',
+    context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nEstimated annual strategic value: ${formatDollar(strategicValue || 0)}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    formula: '',
+    footnote: '',
   };
 }
 
