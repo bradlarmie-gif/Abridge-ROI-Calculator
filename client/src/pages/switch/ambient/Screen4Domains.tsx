@@ -49,7 +49,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
     headline: 'Where does recovered time actually go?',
-    reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned \u2014 and whether your organization has a system for capturing it.',
+    reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.',
     cards: [
       { level: 1, label: 'Time Saved, Not Deployed', description: 'Providers are faster. Schedules and panels are unchanged.' },
       { level: 2, label: 'Informal Access Absorption', description: 'Recovered time informally absorbed. No scheduling redesign.' },
@@ -60,7 +60,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   revenue: {
     label: 'REVENUE',
     headline: 'What is documentation fidelity worth to your revenue cycle?',
-    reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned \u2014 or leaking it.',
+    reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
     cards: [
       { level: 1, label: 'Documentation Neutral', description: 'Workflow improved. Revenue impact not yet measured.' },
       { level: 2, label: 'Anecdotal Coding Lift', description: 'Coding improvements observed but not systematically tracked.' },
@@ -82,7 +82,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   risk: {
     label: 'RISK',
     headline: 'Is your documentation infrastructure ready for what comes next?',
-    reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete, defensible documentation at scale.',
+    reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
     cards: [
       { level: 1, label: 'Cleaner Clinical Notes', description: 'Note quality improved. Audit posture unchanged.' },
       { level: 2, label: 'Audit Awareness', description: 'Documentation defensibility actively under review.' },
@@ -210,7 +210,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           {timeSavedSliderSet && !unmeasuredTimeChecked ? (
             <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{timeSavedValue.toFixed(1)} min</span>
           ) : (
-            <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 min</span>
+            <span className="text-3xl font-bold text-[#CCCCCC]">— min</span>
           )}
         </div>
 
@@ -229,7 +229,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
-            <span className="font-bold">1.5\u20132.5 min</span> Most tools
+            <span className="font-bold">1.5–2.5 min</span> Most tools
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
             <span className="font-bold">3.0 min</span> Abridge avg
@@ -281,7 +281,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {redeploySet ? (
                 <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.redeploymentRate}%</span>
               ) : (
-                <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+                <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
               )}
             </div>
             <Slider
@@ -294,7 +294,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               dormant={!redeploySet}
               data-testid="slider-redeployment"
             />
-            <BenchmarkContext text="Organizations at this stage typically report 15\u201325%. Without scheduling changes, absorption is limited." />
+            <BenchmarkContext text="Organizations at this stage typically report 15–25%. Without scheduling changes, absorption is limited." />
           </div>
         </>
       );
@@ -314,7 +314,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-additional-patients"
           />
-          <BenchmarkContext text="Abridge customers with structured access redesign report 3\u20138 additional patients/provider/month" />
+          <BenchmarkContext text="Abridge customers with structured access redesign report 3–8 additional patients/provider/month" />
         </div>
       );
     }
@@ -333,7 +333,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-net-visit-growth"
           />
-          <BenchmarkContext text="Top-performing Abridge deployments model 5\u201310 net visits/provider/month in capacity planning" />
+          <BenchmarkContext text="Top-performing Abridge deployments model 5–10 net visits/provider/month in capacity planning" />
         </div>
         <div>
           <label className="block text-sm font-medium text-black mb-1">
@@ -376,7 +376,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {yieldSet ? (
               <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.yieldImprovement}%</span>
             ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+              <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
             )}
           </div>
           <Slider
@@ -389,7 +389,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             dormant={!yieldSet}
             data-testid="slider-yield-improvement"
           />
-          <BenchmarkContext text="Abridge customers reporting anecdotal lift estimate 1\u20133%" />
+          <BenchmarkContext text="Abridge customers reporting anecdotal lift estimate 1–3%" />
         </div>
       );
     }
@@ -410,7 +410,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888]">%</span>
           </div>
-          <BenchmarkContext text="Abridge customers with measured yield tracking report 1.5\u20134% verified improvement" />
+          <BenchmarkContext text="Abridge customers with measured yield tracking report 1.5–4% verified improvement" />
         </div>
       );
     }
@@ -430,7 +430,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             data-testid="input-recognized-revenue"
           />
         </div>
-        <BenchmarkContext text="Abridge enterprise customers with financial governance report $200K\u2013$1M+ in recognized documentation-driven revenue" />
+        <BenchmarkContext text="Abridge enterprise customers with financial governance report $200K–$1M+ in recognized documentation-driven revenue" />
       </div>
     );
   };
@@ -450,7 +450,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {afterHoursSet ? (
               <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.afterHoursReduction} hrs/wk</span>
             ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 hrs/wk</span>
+              <span className="text-3xl font-bold text-[#CCCCCC]">— hrs/wk</span>
             )}
           </div>
           <Slider
@@ -463,7 +463,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             dormant={!afterHoursSet}
             data-testid="slider-after-hours"
           />
-          <BenchmarkContext text="Abridge deployments report 1\u20133 hrs/week reduction in after-hours documentation" />
+          <BenchmarkContext text="Abridge deployments report 1–3 hrs/week reduction in after-hours documentation" />
         </div>
       );
     }
@@ -479,7 +479,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {editTimeSet ? (
               <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.editTimeSaved} min/day</span>
             ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 min/day</span>
+              <span className="text-3xl font-bold text-[#CCCCCC]">— min/day</span>
             )}
           </div>
           <Slider
@@ -492,7 +492,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             dormant={!editTimeSet}
             data-testid="slider-edit-time"
           />
-          <BenchmarkContext text="Abridge deployments report 10\u201320 min/day reduction in chart editing and review" />
+          <BenchmarkContext text="Abridge deployments report 10–20 min/day reduction in chart editing and review" />
         </div>
       );
     }
@@ -514,7 +514,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               />
               <span className="text-sm text-[#888888]">%</span>
             </div>
-            <BenchmarkContext text="National physician turnover averages 6\u20138% annually" />
+            <BenchmarkContext text="National physician turnover averages 6–8% annually" />
           </div>
           <div>
             <label className="block text-sm font-medium text-black mb-1">
@@ -530,7 +530,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="input-replacement-cost"
               />
             </div>
-            <BenchmarkContext text="Industry average: $250K\u2013$500K per physician replacement" />
+            <BenchmarkContext text="Industry average: $250K–$500K per physician replacement" />
           </div>
         </div>
       );
@@ -552,7 +552,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-agency-reduction"
             />
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report $5K\u2013$30K/month in agency spend reduction" />
+          <BenchmarkContext text="Abridge enterprise customers report $5K–$30K/month in agency spend reduction" />
         </div>
         <div>
           <label className="block text-sm font-medium text-black mb-1">
@@ -568,7 +568,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-overtime-reduction"
             />
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report $5K\u2013$20K/month in overtime reduction" />
+          <BenchmarkContext text="Abridge enterprise customers report $5K–$20K/month in overtime reduction" />
         </div>
       </div>
     );
@@ -597,7 +597,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {defenseSet ? (
               <span className="text-3xl font-bold text-[#1A1A1A] tabular-nums">{currentState.inputs.defensibilityImprovement}%</span>
             ) : (
-              <span className="text-3xl font-bold text-[#CCCCCC]">\u2014 %</span>
+              <span className="text-3xl font-bold text-[#CCCCCC]">— %</span>
             )}
           </div>
           <Slider
@@ -610,7 +610,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             dormant={!defenseSet}
             data-testid="slider-defensibility"
           />
-          <BenchmarkContext text="Abridge customers actively reviewing defensibility estimate 10\u201320% improvement" />
+          <BenchmarkContext text="Abridge customers actively reviewing defensibility estimate 10–20% improvement" />
         </div>
       );
     }
@@ -628,7 +628,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-reporting-hours"
           />
-          <BenchmarkContext text="Abridge customers report 10\u201340 hrs/month in compliance reporting and abstraction time savings" />
+          <BenchmarkContext text="Abridge customers report 10–40 hrs/month in compliance reporting and abstraction time savings" />
         </div>
       );
     }
@@ -649,7 +649,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888]">%</span>
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report 15\u201330% reduction in documentation-related audit findings" />
+          <BenchmarkContext text="Abridge enterprise customers report 15–30% reduction in documentation-related audit findings" />
         </div>
         <div>
           <label className="block text-sm font-medium text-black mb-1">
@@ -859,7 +859,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               </>
             ) : (
               <>
-                <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">\u2014</p>
+                <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">—</p>
                 <div className="h-px bg-white/10 my-4" />
                 <p className="text-sm text-white/50 leading-relaxed">
                   Select your organization's maturity level to see estimated impact.
@@ -883,7 +883,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       {DOMAIN_LABELS[d]}
                     </span>
                     <span className={hasLevel ? 'text-white font-semibold' : 'text-white/30'}>
-                      {hasLevel ? `Level ${dState.activationLevel}` : '\u2014'}
+                      {hasLevel ? `Level ${dState.activationLevel}` : '—'}
                     </span>
                   </div>
                 );

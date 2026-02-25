@@ -97,9 +97,9 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hrs recovered (${fte} FTE)`,
-      context: `Your providers are recovering an estimated ${recoveredHours.toLocaleString()} hours annually \u2014 ${fte} FTE equivalent. None of this time is being structurally redeployed. Schedules and panel sizes are unchanged.`,
-      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters \u00d7 ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'Redeployment = 0%. No dollar value claimed at this level \u2014 time is recovered but not yet deployed.',
+      context: `Your providers are recovering an estimated ${recoveredHours.toLocaleString()} hours annually — ${fte} FTE equivalent. None of this time is being structurally redeployed. Schedules and panel sizes are unchanged.`,
+      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
+      footnote: 'Redeployment = 0%. No dollar value claimed at this level — time is recovered but not yet deployed.',
     };
   }
 
@@ -125,8 +125,8 @@ export function computeCapacityFeedback(
       label: 'Estimated Impact',
       value: capacityValue,
       hasValue: true,
-      context: `At ${redeployPct}% informal redeployment, approximately ${redeployedHours.toLocaleString()} recovered hours are translating into ${additionalVisits.toLocaleString()} additional visits \u2014 estimated at ${formatDollar(capacityValue)} annually.`,
-      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} \u00d7 ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[redeployedHours] = ${recoveredHours.toLocaleString()} \u00d7 ${redeployPct}% = ${redeployedHours.toLocaleString()}\n[additionalVisits] = ${redeployedHours.toLocaleString()} \u00d7 3 visits/hr = ${additionalVisits.toLocaleString()}\n[capacityValue] = ${additionalVisits.toLocaleString()} \u00d7 ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
+      context: `At ${redeployPct}% informal redeployment, approximately ${redeployedHours.toLocaleString()} recovered hours are translating into ${additionalVisits.toLocaleString()} additional visits — estimated at ${formatDollar(capacityValue)} annually.`,
+      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[redeployedHours] = ${recoveredHours.toLocaleString()} × ${redeployPct}% = ${redeployedHours.toLocaleString()}\n[additionalVisits] = ${redeployedHours.toLocaleString()} × 3 visits/hr = ${additionalVisits.toLocaleString()}\n[capacityValue] = ${additionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
       footnote: 'Using 3 visits per hour (20-min average encounter) as conversion factor.',
     };
   }
@@ -149,8 +149,8 @@ export function computeCapacityFeedback(
       label: 'Estimated Impact',
       value: capacityValue,
       hasValue: true,
-      context: `Your scheduling redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${providers} providers \u2014 estimated at ${formatDollar(capacityValue)} in annual capacity value.`,
-      formula: `[annualAdditionalVisits] = ${additionalPatients} patients/mo \u00d7 ${providers} providers \u00d7 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} \u00d7 ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
+      context: `Your scheduling redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${providers} providers — estimated at ${formatDollar(capacityValue)} in annual capacity value.`,
+      formula: `[annualAdditionalVisits] = ${additionalPatients} patients/mo × ${providers} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
       footnote: 'Revenue per visit inherited from baseline inputs.',
     };
   }
@@ -173,9 +173,9 @@ export function computeCapacityFeedback(
     label: 'Estimated Impact',
     value: capacityValue,
     hasValue: true,
-    context: `Your institutionalized capacity strategy is modeling ${annualGrowth.toLocaleString()} net visit growth across ${providersInModel} providers \u2014 ${formatDollar(capacityValue)} in annual strategic capacity.`,
-    formula: `[annualGrowth] = ${netGrowth} visits/mo \u00d7 ${providersInModel} providers \u00d7 12 = ${annualGrowth.toLocaleString()}\n[capacityValue] = ${annualGrowth.toLocaleString()} \u00d7 ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
-    footnote: 'Net visit growth per provider \u00d7 providers in capacity model \u00d7 revenue per visit \u00d7 12.',
+    context: `Your institutionalized capacity strategy is modeling ${annualGrowth.toLocaleString()} net visit growth across ${providersInModel} providers — ${formatDollar(capacityValue)} in annual strategic capacity.`,
+    formula: `[annualGrowth] = ${netGrowth} visits/mo × ${providersInModel} providers × 12 = ${annualGrowth.toLocaleString()}\n[capacityValue] = ${annualGrowth.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
+    footnote: 'Net visit growth per provider × providers in capacity model × revenue per visit × 12.',
   };
 }
 
@@ -190,9 +190,9 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'You have not yet measured the revenue impact of documentation changes. Revenue cycle is operating on whatever documentation gives them \u2014 but no one is tracking whether ambient documentation is changing what gets coded or billed.',
+      context: 'You have not yet measured the revenue impact of documentation changes. Revenue cycle is operating on whatever documentation gives them — but no one is tracking whether ambient documentation is changing what gets coded or billed.',
       formula: '',
-      footnote: 'Abridge customers who measure documentation-driven yield typically identify 0.5\u20132% improvement in the first year.',
+      footnote: 'Abridge customers who measure documentation-driven yield typically identify 0.5–2% improvement in the first year.',
     };
   }
 
@@ -213,8 +213,8 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: revenueImpact,
       hasValue: true,
-      context: `At an estimated ${yieldDelta}% yield improvement, documentation-driven revenue impact is approximately ${formatDollar(revenueImpact)} annually. This is directional \u2014 based on your team's observation, not independent measurement.`,
-      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters \u00d7 ${formatDollar(revenuePerVisit)} \u00d7 ${yieldDelta}% = ${formatDollar(revenueImpact)}`,
+      context: `At an estimated ${yieldDelta}% yield improvement, documentation-driven revenue impact is approximately ${formatDollar(revenueImpact)} annually. This is directional — based on your team's observation, not independent measurement.`,
+      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${yieldDelta}% = ${formatDollar(revenueImpact)}`,
       footnote: 'Directional modeling. Not independently verified.',
     };
   }
@@ -237,7 +237,7 @@ export function computeRevenueFeedback(
       value: revenueImpact,
       hasValue: true,
       context: `Your measured ${yieldLift}% yield improvement represents ${formatDollar(revenueImpact)} in verified annual revenue impact. Based on your organization's own data.`,
-      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters \u00d7 ${formatDollar(revenuePerVisit)} \u00d7 ${yieldLift}% = ${formatDollar(revenueImpact)}`,
+      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${yieldLift}% = ${formatDollar(revenueImpact)}`,
       footnote: 'Verified by organizational measurement.',
     };
   }
@@ -290,7 +290,7 @@ export function computeWorkforceFeedback(
       hasValue: true,
       headlineMetric: `${burdenHours.toLocaleString()} hours eliminated`,
       context: `${afterHoursReduction} hrs/week across ${providers} providers = ${burdenHours.toLocaleString()} hours of after-hours burden eliminated annually. That's ${hoursPerProvider.toLocaleString()} hours per provider per year returned to personal time.`,
-      formula: `[burdenHours] = ${afterHoursReduction} hrs/wk \u00d7 ${providers} providers \u00d7 52 weeks = ${burdenHours.toLocaleString()}\n[hoursPerProvider] = ${afterHoursReduction} \u00d7 52 = ${hoursPerProvider}\nBurden-equivalent value: ${formatDollar(burdenValue)} at ${formatDollar(providerRate)}/hr`,
+      formula: `[burdenHours] = ${afterHoursReduction} hrs/wk × ${providers} providers × 52 weeks = ${burdenHours.toLocaleString()}\n[hoursPerProvider] = ${afterHoursReduction} × 52 = ${hoursPerProvider}\nBurden-equivalent value: ${formatDollar(burdenValue)} at ${formatDollar(providerRate)}/hr`,
       footnote: 'Hours is the headline metric. Dollar value shown as burden-equivalent context.',
     };
   }
@@ -316,7 +316,7 @@ export function computeWorkforceFeedback(
       hasValue: true,
       headlineMetric: `${savedHours.toLocaleString()} hours eliminated`,
       context: `${minutesSaved} min/day across ${providers} providers = ${savedHours.toLocaleString()} hours of in-clinic administrative burden eliminated annually.`,
-      formula: `[savedHours] = ${minutesSaved} min/day \u00d7 ${providers} providers \u00d7 250 days / 60 = ${savedHours.toLocaleString()}\nBurden-equivalent value: ${formatDollar(burdenValue)} at $100/hr administrative rate`,
+      formula: `[savedHours] = ${minutesSaved} min/day × ${providers} providers × 250 days / 60 = ${savedHours.toLocaleString()}\nBurden-equivalent value: ${formatDollar(burdenValue)} at $100/hr administrative rate`,
       footnote: 'Administrative rate used for in-clinic burden calculation.',
     };
   }
@@ -342,7 +342,7 @@ export function computeWorkforceFeedback(
       value: turnoverExposure,
       hasValue: true,
       context: `At ${turnoverRate}% turnover across ${providers} providers, approximately ${burdenAttributable.toFixed(1)} departure(s) per year may be attributable to documentation burden. At ${formatDollar(replacementCost)} per replacement, this represents ${formatDollar(turnoverExposure)} in annual turnover exposure.`,
-      formula: `[atRiskProviders] = ${providers} \u00d7 ${turnoverRate}% = ${atRiskProviders.toFixed(1)}\n[burdenAttributable] = ${atRiskProviders.toFixed(1)} \u00d7 25% = ${burdenAttributable.toFixed(1)}\n[turnoverExposure] = ${burdenAttributable.toFixed(1)} \u00d7 ${formatDollar(replacementCost)} = ${formatDollar(turnoverExposure)}`,
+      formula: `[atRiskProviders] = ${providers} × ${turnoverRate}% = ${atRiskProviders.toFixed(1)}\n[burdenAttributable] = ${atRiskProviders.toFixed(1)} × 25% = ${burdenAttributable.toFixed(1)}\n[turnoverExposure] = ${burdenAttributable.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(turnoverExposure)}`,
       footnote: 'Attribution: ~25% of physician turnover attributed to administrative burden (AMA/AAMC industry estimates).',
     };
   }
@@ -368,8 +368,8 @@ export function computeWorkforceFeedback(
     value: annualSavings,
     hasValue: true,
     context: `Your organization is reducing labor volatility by an estimated ${formatDollar(annualSavings)} annually through reduced agency and overtime spend.`,
-    formula: `[annualSavings] = (${formatDollar(agencyReduction || 0)} agency + ${formatDollar(overtimeReduction || 0)} overtime) \u00d7 12 = ${formatDollar(annualSavings)}`,
-    footnote: 'Agency spend avoided + overtime reduction \u00d7 12 months.',
+    formula: `[annualSavings] = (${formatDollar(agencyReduction || 0)} agency + ${formatDollar(overtimeReduction || 0)} overtime) × 12 = ${formatDollar(annualSavings)}`,
+    footnote: 'Agency spend avoided + overtime reduction × 12 months.',
   };
 }
 
@@ -382,7 +382,7 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'Your documentation quality has improved, but your compliance and audit infrastructure hasn\'t changed to leverage it. Cleaner notes are foundational \u2014 but only when measured.',
+      context: 'Your documentation quality has improved, but your compliance and audit infrastructure hasn\'t changed to leverage it. Cleaner notes are foundational — but only when measured.',
       formula: '',
       footnote: 'Abridge customers who actively review documentation defensibility report measurable improvements in audit readiness.',
     };
@@ -405,7 +405,7 @@ export function computeRiskFeedback(
       value: null,
       hasValue: true,
       headlineMetric: 'Directional improvement',
-      context: `Your organization estimates a ${defensibilityImprovement}% improvement in documentation defensibility. This hasn't been translated to a dollar value \u2014 but it signals active monitoring of compliance posture.`,
+      context: `Your organization estimates a ${defensibilityImprovement}% improvement in documentation defensibility. This hasn't been translated to a dollar value — but it signals active monitoring of compliance posture.`,
       formula: 'Defensibility improvements reduce exposure to coding audits, payer recoupment, and RAC/MAC reviews.',
       footnote: 'No dollar value at this level. The insight is qualitative.',
     };
@@ -430,8 +430,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: annualSavings,
       hasValue: true,
-      context: `Your organization is saving an estimated ${annualHours.toLocaleString()} hours annually in compliance reporting and chart abstraction \u2014 valued at ${formatDollar(annualSavings)}.`,
-      formula: `[annualHours] = ${reportingHours} hrs/mo \u00d7 12 = ${annualHours}\n[annualSavings] = ${annualHours} \u00d7 $75/hr abstraction rate = ${formatDollar(annualSavings)}`,
+      context: `Your organization is saving an estimated ${annualHours.toLocaleString()} hours annually in compliance reporting and chart abstraction — valued at ${formatDollar(annualSavings)}.`,
+      formula: `[annualHours] = ${reportingHours} hrs/mo × 12 = ${annualHours}\n[annualSavings] = ${annualHours} × $75/hr abstraction rate = ${formatDollar(annualSavings)}`,
       footnote: 'Abstraction rate: $75/hr industry standard.',
     };
   }
@@ -454,7 +454,7 @@ export function computeRiskFeedback(
     value: riskReduction,
     hasValue: true,
     context: `Your organization has reduced documentation-related audit findings by ${auditReduction}%, addressing an estimated ${formatDollar(riskReduction)} of your ${formatDollar(complianceExposure)} annual compliance exposure.`,
-    formula: `[riskReduction] = ${formatDollar(complianceExposure)} \u00d7 ${auditReduction}% = ${formatDollar(riskReduction)}`,
+    formula: `[riskReduction] = ${formatDollar(complianceExposure)} × ${auditReduction}% = ${formatDollar(riskReduction)}`,
     footnote: 'Based on audit findings reduction applied to stated compliance exposure.',
   };
 }

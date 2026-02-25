@@ -62,7 +62,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
   const utilInsight = useMemo(() => {
     if (!utilSet) return null;
-    if (utilization < 45) return "Below industry average \u2014 significant headroom to benchmark.";
+    if (utilization < 45) return "Below industry average — significant headroom to benchmark.";
     if (utilization <= 75) return "At or above industry average. Room to reach Abridge benchmark.";
     return "At or above Abridge average utilization.";
   }, [utilSet, utilization]);
@@ -163,7 +163,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   {utilSet ? (
                     <span className="text-4xl font-bold text-[#1A1A1A] tabular-nums">{utilization}%</span>
                   ) : (
-                    <span className="text-4xl font-bold text-[#CCCCCC]">\u2014 %</span>
+                    <span className="text-4xl font-bold text-[#CCCCCC]">— %</span>
                   )}
                 </div>
 
@@ -308,19 +308,19 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
               <div className="flex justify-between">
                 <span className="text-white/50">Providers</span>
                 <span className="text-white font-semibold" data-testid="text-rail-providers">
-                  {inputs.providers > 0 ? inputs.providers.toLocaleString() : "\u2014"}
+                  {inputs.providers > 0 ? inputs.providers.toLocaleString() : "—"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-white/50">Encounters</span>
                 <span className="text-white font-semibold" data-testid="text-rail-encounters">
-                  {inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "\u2014"}
+                  {inputs.annualEncounters > 0 ? inputs.annualEncounters.toLocaleString() : "—"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-white/50">Utilization</span>
                 <span className="text-white font-semibold" data-testid="text-rail-utilization">
-                  {utilSet ? `${utilization}%` : "\u2014"}
+                  {utilSet ? `${utilization}%` : "—"}
                 </span>
               </div>
             </div>
@@ -336,7 +336,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                       {documentedEncounters.toLocaleString()}
                     </p>
                     <p className="text-xs text-white/30 italic mt-1">
-                      {inputs.annualEncounters.toLocaleString()} \u00d7 {utilization}%
+                      {inputs.annualEncounters.toLocaleString()} × {utilization}%
                     </p>
                     {utilization < ABRIDGE_UTIL && (
                       <p className="text-xs text-[#EA2C00] font-semibold mt-1">

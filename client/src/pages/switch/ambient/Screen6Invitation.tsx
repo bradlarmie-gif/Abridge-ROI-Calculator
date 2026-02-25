@@ -34,7 +34,7 @@ interface Screen6Props {
 const DOMAIN_OPS: Record<string, { meaning: string; action: string }> = {
   capacity: {
     meaning: 'Your utilization gap represents clinical supply that exists in your operations but never reaches your enterprise.',
-    action: 'Closing it requires systematic adoption infrastructure \u2014 not training.',
+    action: 'Closing it requires systematic adoption infrastructure — not training.',
   },
   revenue: {
     meaning: 'Your efficiency gap compounds across every documented encounter, affecting coding accuracy and reimbursement integrity.',
