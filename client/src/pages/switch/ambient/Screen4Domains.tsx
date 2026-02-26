@@ -384,11 +384,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             ))}
           </div>
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Estimated FTEs avoided or redeployed
-          </label>
+          <label className="block text-sm font-medium text-black mb-1">Estimated FTEs redeployed</label>
           <FormattedNumberInput
             value={(currentState.inputs.fteAvoided as number) || 0}
             onChange={(v) => setDomainInput('fteAvoided', Math.max(0, v))}
