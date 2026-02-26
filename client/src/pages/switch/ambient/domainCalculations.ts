@@ -20,10 +20,10 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Capacity Modeled into Workforce Planning',
   },
   revenue: {
-    1: 'Documentation Neutral',
-    2: 'Anecdotal Coding Lift',
-    3: 'Measured Yield Integrity',
-    4: 'Financial Governance Embedded',
+    1: 'Revenue Cycle Unaware',
+    2: 'Anecdotal Revenue Signal',
+    3: 'Impact Measured',
+    4: 'Revenue Cycle Integration',
   },
   workforce: {
     1: 'Pajama Time Reduced',
@@ -216,75 +216,219 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'You have not yet measured the revenue impact of documentation changes. Revenue cycle is operating on whatever documentation gives them — but no one is tracking whether ambient documentation is changing what gets coded or billed.',
-      formula: '',
-      footnote: 'Abridge customers who measure documentation-driven yield typically identify 0.5–2% improvement in the first year.',
-    };
-  }
-
-  if (level === 2) {
-    const yieldDelta = inputs.yieldImprovement as number | undefined;
-    if (!yieldDelta || yieldDelta <= 0) {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        context: 'Enter estimated yield improvement to calculate directional revenue impact.',
-        formula: '',
-        footnote: '',
-      };
-    }
-    const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (yieldDelta / 100));
-    return {
-      label: 'Estimated Impact',
-      value: revenueImpact,
-      hasValue: true,
-      context: `At an estimated ${yieldDelta}% yield improvement, documentation-driven revenue impact is approximately ${formatDollar(revenueImpact)} annually. This is directional — based on your team's observation, not independent measurement.`,
-      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${yieldDelta}% = ${formatDollar(revenueImpact)}`,
-      footnote: 'Directional modeling. Not independently verified.',
-    };
-  }
-
-  if (level === 3) {
-    const yieldLift = inputs.measuredYieldLift as number | undefined;
-    if (!yieldLift || yieldLift <= 0) {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        context: 'Enter measured yield lift to calculate verified revenue impact.',
-        formula: '',
-        footnote: '',
-      };
-    }
-    const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (yieldLift / 100));
-    return {
-      label: 'Estimated Impact',
-      value: revenueImpact,
-      hasValue: true,
-      context: `Your measured ${yieldLift}% yield improvement represents ${formatDollar(revenueImpact)} in verified annual revenue impact. Based on your organization's own data.`,
-      formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${yieldLift}% = ${formatDollar(revenueImpact)}`,
-      footnote: 'Verified by organizational measurement.',
-    };
-  }
-
-  const recognizedRevenue = inputs.recognizedRevenue as number | undefined;
-  if (!recognizedRevenue || recognizedRevenue <= 0) {
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      context: 'Enter the recognized revenue change tied to documentation improvements.',
+      context: 'Your revenue cycle has not yet evaluated how ambient documentation is affecting coding, billing, or collections. This is the most common starting point — and the biggest blind spot.\n\nEvery encounter generates documentation that determines how it gets coded, what gets billed, and whether it gets paid. If no one is looking at whether that documentation changed, the revenue impact is invisible.\n\nOrganizations who connect revenue cycle to documentation quality typically identify measurable impact within 90 days of analysis.',
       formula: '',
       footnote: '',
     };
   }
+
+  if (level === 2) {
+    const { checked, unchecked } = parseCheckedItems(inputs.revenueSignals as string, REVENUE_SIGNALS);
+    const noneObserved = inputs.revenueNoneObserved === 'true';
+    const count = checked.length;
+
+    if (noneObserved) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: '\u2014',
+        context: 'Your revenue cycle hasn\'t observed documentation-driven changes yet. This may mean the impact isn\'t there — or it may mean no one has asked. Consider connecting your CDI or coding team with ambient documentation data to look for signals.',
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    if (count === 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        context: 'Select which revenue signals your organization has observed, or indicate that none have been observed yet.',
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    const checkedLabels = checked.map(shortLabel).join(', ');
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} revenue signal${count > 1 ? 's' : ''} observed`,
+      context: `Your revenue cycle has observed ${count} area${count > 1 ? 's' : ''} where documentation changes may be affecting revenue:\n${checkedLabels}\n\nThese signals haven\'t been formally measured — but they indicate that documentation quality is flowing downstream. The next step is isolating the impact.\n\nOrganizations who formalize measurement of these signals have reported 1\u20133% improvement in coding yield.`,
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  if (level === 3) {
+    const metricType = inputs.revenueMetricType as string | undefined;
+    if (!metricType) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        context: 'Select what you measured to see your revenue impact calculation.',
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    if (metricType === 'wrvu') {
+      const wrvuDelta = inputs.measuredWrvuDelta as number | undefined;
+      if (!wrvuDelta || wrvuDelta <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          context: 'Enter your measured wRVU change per encounter to calculate revenue impact.',
+          formula: '',
+          footnote: '',
+        };
+      }
+      const conversionFactor = 36.04;
+      const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
+      return {
+        label: 'Estimated Impact',
+        value: revenueImpact,
+        hasValue: true,
+        context: `Your measured wRVU change of ${wrvuDelta} per encounter across ${documentedEncounters.toLocaleString()} documented encounters represents an estimated ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data.`,
+        formula: `[revenueImpact] = ${wrvuDelta} wRVU \u00d7 ${documentedEncounters.toLocaleString()} encounters \u00d7 $${conversionFactor} (CMS conversion factor) = ${formatDollar(revenueImpact)}`,
+        footnote: 'Conversion factor: $36.04 (CMS national average). Adjust in advanced settings if your payer mix differs.',
+      };
+    }
+
+    if (metricType === 'collections') {
+      const collectionsDelta = inputs.measuredCollectionsDelta as number | undefined;
+      if (!collectionsDelta || collectionsDelta <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          context: 'Enter your measured collections change per encounter to calculate revenue impact.',
+          formula: '',
+          footnote: '',
+        };
+      }
+      const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
+      return {
+        label: 'Estimated Impact',
+        value: revenueImpact,
+        hasValue: true,
+        context: `Your measured collections increase of ${formatDollar(collectionsDelta)} per encounter across ${documentedEncounters.toLocaleString()} documented encounters represents ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data.`,
+        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} \u00d7 ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}`,
+        footnote: 'Based on your organization\'s measured data.',
+      };
+    }
+
+    if (metricType === 'revenue_pct') {
+      const revenuePct = inputs.measuredRevenuePct as number | undefined;
+      if (!revenuePct || revenuePct <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          context: 'Enter your measured revenue change percentage to calculate impact.',
+          formula: '',
+          footnote: '',
+        };
+      }
+      const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (revenuePct / 100));
+      return {
+        label: 'Estimated Impact',
+        value: revenueImpact,
+        hasValue: true,
+        context: `Your measured ${revenuePct}% revenue improvement across ${documentedEncounters.toLocaleString()} documented encounters at ${formatDollar(revenuePerVisit)}/visit represents ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data.`,
+        formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters \u00d7 ${formatDollar(revenuePerVisit)} \u00d7 ${revenuePct}% = ${formatDollar(revenueImpact)}`,
+        footnote: 'Based on your organization\'s measured data.',
+      };
+    }
+
+    if (metricType === 'denial_rate') {
+      const denialReduction = inputs.measuredDenialReduction as number | undefined;
+      const monthlyDenials = inputs.monthlyDenials as number | undefined;
+      const avgDenialValue = inputs.avgDenialValue as number | undefined;
+
+      if (!denialReduction || denialReduction <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          context: 'Enter your measured denial rate reduction to see impact.',
+          formula: '',
+          footnote: '',
+        };
+      }
+
+      if (monthlyDenials && monthlyDenials > 0 && avgDenialValue && avgDenialValue > 0) {
+        const annualImpact = Math.round(monthlyDenials * (denialReduction / 100) * avgDenialValue * 12);
+        return {
+          label: 'Estimated Impact',
+          value: annualImpact,
+          hasValue: true,
+          context: `Your documentation-related denial rate has decreased by ${denialReduction}%. Across ${monthlyDenials} monthly denials at ${formatDollar(avgDenialValue)} average value, this represents ${formatDollar(annualImpact)} in annual impact.\n\nBased on your organization's measured data.`,
+          formula: `[annualImpact] = ${monthlyDenials} denials/mo \u00d7 ${denialReduction}% \u00d7 ${formatDollar(avgDenialValue)} \u00d7 12 = ${formatDollar(annualImpact)}`,
+          footnote: 'Based on your organization\'s measured data.',
+        };
+      }
+
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: `Denial rate reduced ${denialReduction}%`,
+        context: `Your documentation-related denial rate has decreased by ${denialReduction}%. Dollar impact depends on your denial volume and average denial value \u2014 enter these below to calculate.\n\nBased on your organization's measured data.`,
+        formula: '',
+        footnote: '',
+      };
+    }
+
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      context: 'Select what you measured to see your revenue impact calculation.',
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  const { checked, unchecked } = parseCheckedItems(inputs.revenueIntegrations as string, REVENUE_INTEGRATIONS);
+  const recognizedRevenue = inputs.recognizedRevenue as number | undefined;
+  const count = checked.length;
+  const checkedLabels = checked.map(shortLabel).join(', ');
+  const uncheckedLabels = unchecked.map(shortLabel).join(', ');
+
+  if (count === 0 && (!recognizedRevenue || recognizedRevenue <= 0)) {
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      context: 'Select how documentation quality is integrated into revenue cycle operations to see your assessment.',
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  if (count > 0 && (!recognizedRevenue || recognizedRevenue <= 0)) {
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} integration${count > 1 ? 's' : ''} active`,
+      context: `Documentation quality is integrated into ${count} revenue cycle operation${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter your organization's attributed annual revenue to calculate impact. If this number doesn't exist yet, that's the next step \u2014 formalizing the attribution.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+      formula: '',
+      footnote: '',
+    };
+  }
+
   return {
     label: 'Estimated Impact',
-    value: recognizedRevenue,
+    value: recognizedRevenue || 0,
     hasValue: true,
-    context: `Your organization has recognized ${formatDollar(recognizedRevenue)} in documentation-driven revenue impact through financial governance.`,
-    formula: 'Recognized revenue as reported in financial governance.',
+    context: `Documentation quality is integrated into ${count} revenue cycle operation${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nYour organization formally attributes ${formatDollar(recognizedRevenue || 0)} in annual revenue to documentation quality improvements.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    formula: '',
     footnote: '',
   };
 }
@@ -368,8 +512,8 @@ export function computeWorkforceFeedback(
       value: turnoverExposure,
       hasValue: true,
       context: `At ${turnoverRate}% turnover across ${providers} providers, approximately ${burdenAttributable.toFixed(1)} departure(s) per year may be attributable to documentation burden. At ${formatDollar(replacementCost)} per replacement, this represents ${formatDollar(turnoverExposure)} in annual turnover exposure.`,
-      formula: `[atRiskProviders] = ${providers} × ${turnoverRate}% = ${atRiskProviders.toFixed(1)}\n[burdenAttributable] = ${atRiskProviders.toFixed(1)} × 25% = ${burdenAttributable.toFixed(1)}\n[turnoverExposure] = ${burdenAttributable.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(turnoverExposure)}`,
-      footnote: 'Attribution: ~25% of physician turnover attributed to administrative burden (AMA/AAMC industry estimates).',
+      formula: `[atRiskProviders] = ${providers} \u00d7 ${turnoverRate}% = ${atRiskProviders.toFixed(1)}\n[burdenAttributable] = ${atRiskProviders.toFixed(1)} \u00d7 25% (midpoint of 15\u201330% range) = ${burdenAttributable.toFixed(1)}\n[turnoverExposure] = ${burdenAttributable.toFixed(1)} \u00d7 ${formatDollar(replacementCost)} = ${formatDollar(turnoverExposure)}`,
+      footnote: 'Attribution: Industry research suggests 15\u201330% of turnover decisions involve administrative burden as a contributing factor (AMA, AAMC).',
     };
   }
 
@@ -424,7 +568,23 @@ const STRATEGIC_INTEGRATIONS = [
   'Workforce / FTE modeling (documentation efficiency informs staffing)',
 ];
 
-export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS };
+const REVENUE_SIGNALS = [
+  'Fewer CDI queries (notes are more complete upfront)',
+  'More specific diagnosis coding (ICD-10 specificity improved)',
+  'Improved HCC / risk adjustment capture',
+  'Fewer claim denials related to documentation',
+  'Faster coding turnaround (less back-and-forth)',
+];
+
+const REVENUE_INTEGRATIONS = [
+  'Ongoing wRVU or collections monitoring linked to documentation',
+  'CDI workflow incorporates ambient documentation review',
+  'Denial management tracks documentation-related root causes',
+  'Revenue cycle dashboards include documentation quality metrics',
+  'Payer negotiations reference documentation-driven outcomes',
+];
+
+export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS, REVENUE_INTEGRATIONS };
 
 function parseCheckedItems(csv: string | undefined, allItems: string[]): { checked: string[]; unchecked: string[] } {
   if (!csv) return { checked: [], unchecked: [...allItems] };
@@ -472,7 +632,7 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: '—',
-        context: 'Documentation quality monitoring hasn\'t started. This means your organization has no baseline for measuring what improved documentation is worth downstream. This is the single most important next step.\n\nAbridge customers who begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity.',
+        context: 'Documentation quality monitoring hasn\'t started. This means your organization has no baseline for measuring what improved documentation is worth downstream. This is the single most important next step.\n\nOrganizations that begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity.',
         formula: '',
         footnote: '',
       };
@@ -483,7 +643,7 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Informal monitoring',
-        context: 'Your organization is informally reviewing documentation quality. This is a start — but spot checks don\'t scale and can\'t drive organizational strategy. Consider formalizing a review cadence and measurement framework.\n\nAbridge customers who formalize monitoring review 500–2,000 encounters/month for documentation quality.',
+        context: 'Your organization is informally reviewing documentation quality. This is a start — but spot checks don\'t scale and can\'t drive organizational strategy. Consider formalizing a review cadence and measurement framework.\n\nOrganizations that formalize monitoring typically review 500–2,000 encounters/month for documentation quality.',
         formula: '',
         footnote: '',
       };

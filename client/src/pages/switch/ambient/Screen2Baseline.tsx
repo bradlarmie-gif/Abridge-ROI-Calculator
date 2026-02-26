@@ -194,10 +194,10 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     data-testid="pill-util-abridge"
                   >
                     <span className="font-bold">76%</span>
-                    <span>Abridge avg</span>
+                    <span>Observed avg</span>
                   </button>
                 </div>
-                <p className="text-[10px] text-[#999] text-center mt-2">Based on published industry data and Abridge deployment experience.</p>
+                <p className="text-[10px] text-[#999] text-center mt-2">Based on published industry data and aggregated deployment experience.</p>
 
                 <AnimatePresence>
                   {utilInsight && (
@@ -331,7 +331,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     </p>
                     {utilization < ABRIDGE_UTIL && (
                       <p className="text-xs text-[#EA2C00] font-semibold mt-1">
-                        +{encounterGap.toLocaleString()} at Abridge avg
+                        +{encounterGap.toLocaleString()} at observed avg
                       </p>
                     )}
                   </div>
@@ -349,7 +349,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
                 <div className="h-px bg-white/10 my-5" />
                 <p className="text-xs text-white/30 italic leading-relaxed">
-                  Benchmarks used: Abridge avg 76% utilization. Based on production deployment data.
+                  Benchmarks used: 76% utilization observed across deployments. Individual results vary.
                 </p>
               </>
             )}

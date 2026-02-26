@@ -11,7 +11,7 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
-  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS,
+  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS, REVENUE_INTEGRATIONS,
   type DomainFeedback,
 } from "./domainCalculations";
 
@@ -62,10 +62,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'What is documentation fidelity worth to your revenue cycle?',
     reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
     cards: [
-      { level: 1, label: 'Documentation Neutral', description: 'Workflow improved. Revenue impact not yet measured.' },
-      { level: 2, label: 'Anecdotal Coding Lift', description: 'Coding improvements observed but not systematically tracked.' },
-      { level: 3, label: 'Measured Yield Integrity', description: 'Yield variance actively measured against documentation changes.' },
-      { level: 4, label: 'Financial Governance Embedded', description: 'Documentation integrated into revenue cycle oversight.' },
+      { level: 1, label: 'Revenue Cycle Unaware', description: 'Revenue cycle has not evaluated documentation changes from ambient.' },
+      { level: 2, label: 'Anecdotal Revenue Signal', description: 'Coding or billing teams report changes, but no formal analysis completed.' },
+      { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue change quantified.' },
+      { level: 4, label: 'Revenue Cycle Integration', description: 'Documentation quality is an ongoing, managed input to revenue cycle performance.' },
     ],
   },
   workforce: {
@@ -399,6 +399,20 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     );
   };
 
+  const REVENUE_METRIC_OPTIONS = [
+    { id: 'wrvu', label: 'wRVU change per encounter' },
+    { id: 'collections', label: 'Collections change per encounter' },
+    { id: 'revenue_pct', label: 'Overall revenue change (%) attributed to documentation' },
+    { id: 'denial_rate', label: 'Denial rate reduction (%)' },
+  ];
+
+  const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
+    wrvu: 'Organizations measuring wRVU impact have reported 0.05\u20130.15 wRVU increase per encounter.',
+    collections: 'Organizations measuring collections impact have reported $3\u2013$10 increase per encounter.',
+    revenue_pct: 'Organizations measuring overall revenue impact have reported 1\u20134% improvement.',
+    denial_rate: 'Organizations measuring denial rates have reported 5\u201315% reduction in documentation-related denials.',
+  };
+
   const renderRevenueInputs = () => {
     const level = currentState.activationLevel;
     if (!level) return null;
@@ -406,70 +420,257 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       return (
         <p className="text-sm text-[#888888] italic">
-          No additional inputs at this level. Your organization has not yet measured documentation-driven revenue impact.
+          No additional inputs at this level. Revenue cycle has not evaluated documentation changes from ambient.
         </p>
       );
     }
 
     if (level === 2) {
+      const noneObserved = currentState.inputs.revenueNoneObserved === 'true';
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Estimated improvement in coding yield
-          </label>
-          <p className="text-sm text-[#888888] mb-3">Estimated improvement in coding yield since deployment</p>
-          <div className="flex items-center gap-2">
-            <FormattedNumberInput
-              value={(currentState.inputs.yieldImprovement as number) || 0}
-              onChange={(v) => setDomainInput('yieldImprovement', Math.min(100, Math.max(0, v)))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-yield-improvement"
-            />
-            <span className="text-sm text-[#888888]">%</span>
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-3">
+              What signals has your revenue cycle observed?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {REVENUE_SIGNALS.map((signal, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <Checkbox
+                    id={`revenue-signal-${i}`}
+                    checked={!noneObserved && isChecked('revenueSignals', i)}
+                    onCheckedChange={() => {
+                      if (noneObserved) setDomainInput('revenueNoneObserved', 'false');
+                      toggleCheckboxItem('revenueSignals', i);
+                    }}
+                    disabled={noneObserved}
+                    data-testid={`checkbox-revenue-signal-${i}`}
+                  />
+                  <label htmlFor={`revenue-signal-${i}`} className={`text-sm cursor-pointer select-none leading-snug ${noneObserved ? 'text-[#999]' : 'text-[#525252]'}`}>
+                    {signal}
+                  </label>
+                </div>
+              ))}
+              <div className="h-px bg-[#E5E7EB] my-1" />
+              <div className="flex items-start gap-2.5">
+                <Checkbox
+                  id="revenue-none-observed"
+                  checked={noneObserved}
+                  onCheckedChange={(checked) => {
+                    if (checked === true) {
+                      setDomainInput('revenueNoneObserved', 'true');
+                      setDomainInput('revenueSignals', '');
+                    } else {
+                      setDomainInput('revenueNoneObserved', 'false');
+                    }
+                  }}
+                  data-testid="checkbox-revenue-none"
+                />
+                <label htmlFor="revenue-none-observed" className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                  None observed yet
+                </label>
+              </div>
+            </div>
           </div>
-          <BenchmarkContext text="Organizations at this stage have reported 1–3% improvement. Based on aggregated deployment experience." />
         </div>
       );
     }
 
     if (level === 3) {
+      const metricType = currentState.inputs.revenueMetricType as string | undefined;
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Measured yield lift or wRVU delta since deployment
-          </label>
-          <div className="flex items-center gap-2">
-            <FormattedNumberInput
-              value={(currentState.inputs.measuredYieldLift as number) || 0}
-              onChange={(v) => setDomainInput('measuredYieldLift', v)}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-measured-yield"
-            />
-            <span className="text-sm text-[#888888]">%</span>
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-3">
+              What did you measure?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {REVENUE_METRIC_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('revenueMetricType', opt.id)}
+                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                    metricType === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-metric-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <BenchmarkContext text="Organizations with measured yield tracking have reported 1.5–4% verified improvement." />
+
+          <AnimatePresence>
+            {metricType === 'wrvu' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-1">
+                  Measured wRVU change per encounter since deployment
+                </label>
+                <FormattedNumberInput
+                  value={(currentState.inputs.measuredWrvuDelta as number) || 0}
+                  onChange={(v) => setDomainInput('measuredWrvuDelta', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-wrvu-delta"
+                  step={0.01}
+                />
+                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.wrvu} />
+              </motion.div>
+            )}
+            {metricType === 'collections' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-1">
+                  Measured collections change per encounter since deployment
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.measuredCollectionsDelta as number) || 0}
+                    onChange={(v) => setDomainInput('measuredCollectionsDelta', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-collections-delta"
+                  />
+                </div>
+                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.collections} />
+              </motion.div>
+            )}
+            {metricType === 'revenue_pct' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-1">
+                  Measured revenue change (%) attributed to documentation
+                </label>
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={(currentState.inputs.measuredRevenuePct as number) || 0}
+                    onChange={(v) => setDomainInput('measuredRevenuePct', Math.min(100, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-revenue-pct"
+                  />
+                  <span className="text-sm text-[#888888]">%</span>
+                </div>
+                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.revenue_pct} />
+              </motion.div>
+            )}
+            {metricType === 'denial_rate' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-1">
+                  Measured denial rate reduction since deployment
+                </label>
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={(currentState.inputs.measuredDenialReduction as number) || 0}
+                    onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-denial-reduction"
+                  />
+                  <span className="text-sm text-[#888888]">%</span>
+                </div>
+                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.denial_rate} />
+
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Average monthly documentation-related denials
+                    </label>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.monthlyDenials as number) || 0}
+                      onChange={(v) => setDomainInput('monthlyDenials', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-monthly-denials"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Average denial value
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={(currentState.inputs.avgDenialValue as number) || 0}
+                        onChange={(v) => setDomainInput('avgDenialValue', Math.max(0, v))}
+                        placeholder=""
+                        className="w-full h-12 bg-white border-[#E5E7EB]"
+                        data-testid="input-avg-denial-value"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
 
     return (
-      <div>
-        <label className="block text-sm font-medium text-black mb-1">
-          Recognized revenue change attributed to documentation improvements
-        </label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-[#888888]">$</span>
-          <FormattedNumberInput
-            value={(currentState.inputs.recognizedRevenue as number) || 0}
-            onChange={(v) => setDomainInput('recognizedRevenue', v)}
-            placeholder=""
-            className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-recognized-revenue"
-          />
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-3">
+            How is documentation quality integrated into revenue cycle?
+          </label>
+          <div className="flex flex-col gap-2.5">
+            {REVENUE_INTEGRATIONS.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <Checkbox
+                  id={`revenue-integration-${i}`}
+                  checked={isChecked('revenueIntegrations', i)}
+                  onCheckedChange={() => toggleCheckboxItem('revenueIntegrations', i)}
+                  data-testid={`checkbox-revenue-integration-${i}`}
+                />
+                <label htmlFor={`revenue-integration-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                  {item}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
-        <BenchmarkContext text="Abridge enterprise customers with financial governance report $200K–$1M+ in recognized documentation-driven revenue" />
+
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Recognized annual revenue attributed to documentation quality
+          </label>
+          <p className="text-xs text-[#888888] mb-2">
+            Annual revenue impact that your organization formally attributes to documentation improvements. This should be a number your CFO or revenue cycle VP would stand behind.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.recognizedRevenue as number) || 0}
+              onChange={(v) => setDomainInput('recognizedRevenue', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-recognized-revenue"
+            />
+          </div>
+          <BenchmarkContext text="Organizations with revenue cycle integration have reported $200K\u2013$1M+ in attributed revenue." />
+        </div>
       </div>
     );
   };
@@ -494,7 +695,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
           </div>
-          <BenchmarkContext text="Abridge deployments report 1–3 hrs/week reduction in after-hours documentation" />
+          <BenchmarkContext text="Organizations using ambient documentation have reported 1–3 hrs/week reduction in after-hours documentation." />
         </div>
       );
     }
@@ -515,7 +716,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
           </div>
-          <BenchmarkContext text="Abridge deployments report 10–20 min/day reduction in chart editing and review" />
+          <BenchmarkContext text="Organizations using ambient documentation have reported 10–20 min/day reduction in chart editing and review." />
         </div>
       );
     }
@@ -575,7 +776,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-agency-reduction"
             />
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report $5K–$30K/month in agency spend reduction" />
+          <BenchmarkContext text="Organizations at this maturity level have reported $5K–$30K/month in agency spend reduction." />
         </div>
         <div>
           <label className="block text-sm font-medium text-black mb-1">
@@ -591,7 +792,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-overtime-reduction"
             />
           </div>
-          <BenchmarkContext text="Abridge enterprise customers report $5K–$20K/month in overtime reduction" />
+          <BenchmarkContext text="Organizations at this maturity level have reported $5K–$20K/month in overtime reduction." />
         </div>
       </div>
     );
@@ -668,7 +869,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     </div>
                   ))}
                 </div>
-                <BenchmarkContext text="Abridge customers who begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity." />
+                <BenchmarkContext text="Organizations that begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity." />
               </motion.div>
             )}
           </AnimatePresence>
@@ -711,7 +912,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-workflow-hours"
             />
-            <BenchmarkContext text="Abridge customers with connected workflows report 10–40 hrs/month in combined efficiency gains" />
+            <BenchmarkContext text="Organizations with connected workflows have reported 10–40 hrs/month in combined efficiency gains." />
           </div>
         </div>
       );
@@ -757,7 +958,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-strategic-value"
             />
           </div>
-          <BenchmarkContext text="Abridge enterprise customers at this level report $100K–$500K+ in attributed strategic value" />
+          <BenchmarkContext text="Organizations at the highest maturity level have reported $100K–$500K+ in attributed strategic value." />
         </div>
       </div>
     );
@@ -950,6 +1151,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 )}
 
                 <FormulaDisplay formula={feedback.formula} />
+
+                <p className="text-[10px] text-white/30 italic mt-3">
+                  Estimates based on your inputs. Individual results vary.
+                </p>
               </>
             ) : (
               <>

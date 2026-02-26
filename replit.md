@@ -22,13 +22,17 @@ Key calculation: `calculateExpansionResults()` in measureCalculator.ts accepts o
 ### Switch Path (6-Screen Ambient AI Assessment)
 The Switch path is a 6-screen premium narrative flow for assessing ambient AI documentation maturity:
 1. **Provocation** (Screen1Provocation): Full-screen thesis framing with CTA
-2. **Baseline** (Screen2Baseline): Providers, encounters, utilization slider (with 45% industry / 76% Abridge benchmark pills), advanced toggle for revenuePerVisit ($200 default) and providerRate ($150 default), dark sidebar with documented encounters calculation
-3. **Domains** (Screen4Domains): 4-domain assessment (Capacity, Revenue, Workforce, Risk) with 4 activation levels each. Dormant sliders (no fill until touched), BenchmarkContext pills (gray, never pre-filled), FormulaDisplay (small italic mono text below every calculated output), persistent domain progress sidebar, "Not yet measured" for unmeasured domains. Per-domain per-level inputs matching spec.
+2. **Baseline** (Screen2Baseline): Providers, encounters, utilization number input (with 45% industry / 76% observed avg benchmark pills), advanced toggle for revenuePerVisit ($200 default) and providerRate ($150 default), dark sidebar with documented encounters calculation
+3. **Domains** (Screen4Domains): 4-domain assessment (Capacity, Revenue, Workforce, Risk) with 4 activation levels each. Number inputs (no sliders), BenchmarkContext pills (gray, never pre-filled), FormulaDisplay (small italic mono text below every calculated output), persistent domain progress sidebar, "Not yet measured" for unmeasured domains, per-card disclaimer. Per-domain per-level inputs matching spec.
 4. **Score** (Screen3Score): Documentation Intelligence Score with 4-tier dynamic narratives (0-25 early stages, 26-50 beginning capture listing domains below L3, 51-75 actively managing focusing lowest domain, 76-100 institutionalized). Domain value summary shows "Not yet measured" for unmeasured domains; total only sums hasValue domains.
 5. **Gap Analysis** (Screen5Gap): Enterprise value display with domain breakdown, 3-year projection chart, cost of waiting. Shows "Not yet measured" for domains without inputs; total only sums measured domains.
 6. **Summary** (Screen6Invitation): Hero section with score + measured value, domain performance table, invitation card, PDF export. All values respect hasValue flags.
 
-Key UX rules: "Not yet measured" replaces $0 for unset inputs; totals only sum domains with hasValue=true; dormant sliders; benchmarks as gray context text; all inputs/card selections persist across domain navigation; domain progress sidebar always visible.
+Key UX rules: "Not yet measured" replaces $0 for unset inputs; totals only sum domains with hasValue=true; number inputs (no sliders); benchmarks as gray context text using observational language (no product claims); all inputs/card selections persist across domain navigation; domain progress sidebar always visible; per-card and global disclaimers present.
+
+**Revenue Domain Levels:** Revenue Cycle Unaware → Anecdotal Revenue Signal (multi-select checkbox signals) → Impact Measured (choose metric type: wRVU/collections/revenue%/denial rate, dynamic calculation per type) → Revenue Cycle Integration (integration checkboxes + attributed revenue $). Level 3 formulas: wRVU×encounters×$36.04 CMS conversion, collections×encounters, encounters×rev/visit×%, denials/mo×reduction%×avgValue×12.
+
+**Legal Language Standards:** All benchmark text uses observational framing ("Organizations at this stage have reported X") — no causal claims. Turnover attribution uses 25% midpoint of 15–30% range (AMA/AAMC). Per-card disclaimer: "Estimates based on your inputs. Individual results vary." Global disclaimer on Screen6 includes no-guarantee language.
 
 ### Calculation Architecture
 -   **Two calculation engines**: Classic SwitchPath.tsx (driver-level calculations) and computePillars.ts (narrative flow pillar calculations)

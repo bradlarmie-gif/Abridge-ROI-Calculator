@@ -419,7 +419,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
           </motion.div>
 
           <p className="text-center text-xs text-[#888888] leading-relaxed mt-8 mb-4">
-            Conservative estimates based on Abridge deployment benchmarks. Methodology available on request.
+            All estimates are directional and based on the inputs you provide and aggregated deployment experience. They do not guarantee specific financial outcomes. Individual results vary. Methodology available on request.
           </p>
         </div>
 

@@ -1,0 +1,268 @@
+# WORKFORCE DOMAIN — Refined
+
+**"What is documentation burden costing your workforce?"**
+
+**Subhead:** Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.
+
+## The Organizational Journey
+
+1. Providers report less after-hours work (personal time reclaimed)
+2. In-clinic documentation burden is measurably lower (operational efficiency)
+3. Turnover is being tracked against burden reduction (retention risk managed)
+4. Labor costs are structurally changing — less agency, less locum (financial proof)
+
+Each level is a deeper organizational commitment — from "providers feel better" to "we can prove it in our labor spend."
+
+---
+
+## Level 1 — Pajama Time Reduced
+
+**The org story:** "Our providers tell us they're spending less time charting at night and on weekends. We believe them. But we haven't changed anything about staffing, scheduling, or labor strategy."
+
+**Card text:**
+> **Pajama Time Reduced**
+> Less after-hours charting. Labor strategy unchanged.
+
+**Input:** Estimated hours per provider per week of after-hours documentation reduced
+- Type: number input, hrs/wk suffix
+- NO default
+- Benchmark: *"Organizations using ambient documentation have reported 1-3 hrs/week reduction in after-hours documentation. Based on aggregated deployment experience."*
+
+**Output (if entered):**
+```
+ESTIMATED IMPACT
+[burdenHours] hours reclaimed annually
+
+[afterHoursReduction] hrs/week across [providers]
+providers = [burdenHours] hours of after-hours
+documentation burden eliminated annually.
+
+That's [hoursPerProvider] hours per provider per year
+returned to personal time.
+
+[burdenHours] = [afterHoursReduction] × [providers] × 52
+[hoursPerProvider] = [afterHoursReduction] × 52
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**KEY DESIGN DECISION: Hours is the headline, not dollars.**
+
+Why: "2,600 hours of pajama time eliminated" is emotionally powerful and operationally honest. A dollar figure here would require a rate assumption that's debatable (is after-hours time worth $150/hr? $75/hr? $0 because they're salaried?). Hours are inarguable.
+
+**The holy shit moment:** "That's a full hour per provider per week back with their families — and we haven't done anything strategic with that yet."
+
+---
+
+## Level 2 — Burden Measured and Validated
+
+**RENAMED from "In-Clinic Burden Reduced"**
+
+**The org story:** "We're not just hearing anecdotally that things are better. We've measured in-clinic time savings, and we've surveyed our providers. We have data on both the operational side and the provider experience side."
+
+**Card text:**
+> **Burden Measured and Validated**
+> In-clinic time savings quantified. Provider sentiment captured.
+
+**Why this is the right Level 2:** Level 1 is about after-hours relief — something providers report informally. Level 2 is where the org gets intentional: they measure in-clinic efficiency AND they run a clinician survey. These two data points together — operational measurement + provider voice — are what make the workforce story credible. Without the survey, you're guessing how providers feel. Without the time measurement, the survey is just vibes.
+
+**Input A:** Minutes saved per provider per day in chart editing, correction, and reconciliation
+- Type: number input, min/day suffix
+- NO default
+- Benchmark: *"Organizations at this stage have reported 10-20 min/day reduction in chart editing and review. Based on aggregated deployment experience."*
+
+**Input B:** Have you conducted a clinician survey since deploying ambient documentation?
+- Type: single select
+  - "Not yet"
+  - "Yes — informal pulse survey"
+  - "Yes — structured survey (e.g., burnout, satisfaction, documentation burden)"
+
+**If "Not yet":**
+Show note: *"A clinician survey is the fastest way to validate what your operational data is showing. Without provider voice, burden reduction is an assumption."*
+
+**If "Yes — informal pulse":**
+Show note: *"Informal feedback is a start. Consider a structured survey measuring documentation burden, satisfaction, and likelihood to stay — this data becomes critical at Level 3."*
+
+**If "Yes — structured survey":**
+Show Input C:
+
+**Input C:** What did your survey show? (multi-select checkboxes)
+- ☐ Reduced documentation burden reported
+- ☐ Improved work-life balance reported
+- ☐ Improved satisfaction with documentation workflow
+- ☐ Increased likelihood to stay / reduced intent to leave
+- ☐ More time with patients reported
+
+**Output (if time savings + survey data provided):**
+```
+ESTIMATED IMPACT
+[savedHours] hours reclaimed annually
+[checkedCount] survey finding(s) validated
+
+[minutesSaved] min/day across [providers] providers
+= [savedHours] hours of in-clinic documentation
+burden eliminated annually.
+
+That's [annualPerProvider] hours per provider per year
+redirected from documentation editing to patient care.
+
+Your clinician survey validates [checkedCount] area(s)
+of provider-reported improvement:
+[list of checked items]
+
+[savedHours] = [minutesSaved] × [providers] × 250 / 60
+[annualPerProvider] = [minutesSaved] × 250 / 60
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Output (if time savings but no survey):**
+```
+ESTIMATED IMPACT
+[savedHours] hours reclaimed annually
+
+[minutesSaved] min/day across [providers] providers
+= [savedHours] hours of in-clinic documentation
+burden eliminated annually.
+
+Provider survey not yet conducted. Operational data
+shows burden reduction — clinician voice would
+validate and strengthen this finding.
+
+[savedHours] = [minutesSaved] × [providers] × 250 / 60
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**The holy shit moment (two versions):**
+- If they have survey data: "We have the numbers AND the providers are confirming it. This is a real story."
+- If they don't: "We have the operational data but we've never asked our providers. That's a gap."
+
+---
+
+## Level 3 — Retention Risk Quantified
+
+**The org story:** "We know our turnover rate. We know what it costs to replace a provider. And we're connecting documentation burden reduction to retention — the survey data from Level 2 is part of how we're making that case internally."
+
+**Card text:**
+> **Retention Risk Quantified**
+> Turnover exposure calculated against documentation burden.
+
+**Input A:** Annual physician turnover rate
+- Type: number input, % suffix
+- NO default
+- Benchmark: *"National physician turnover averages 6-8% annually (AAMC)."*
+
+**Input B:** Average cost to recruit and onboard a replacement
+- Type: number input, $ prefix
+- NO default
+- Benchmark: *"Industry estimates for physician replacement range from $250K-$500K (AAMC, Physician Recruitment studies)."*
+
+**Output (if both entered):**
+```
+ESTIMATED IMPACT
+$[turnoverExposure] in annual retention exposure
+
+At [turnoverRate]% turnover across [providers] providers,
+your organization expects approximately [totalTurnover]
+departure(s) per year. At $[replacementCost] per
+replacement, total annual turnover cost is $[totalCost].
+
+Industry research suggests administrative burden is a
+contributing factor in physician turnover. The portion
+of this exposure addressable through documentation
+burden reduction represents a significant retention
+opportunity.
+
+[totalTurnover] = [providers] × [turnoverRate]
+[totalCost] = [totalTurnover] × [replacementCost]
+
+Based on your inputs and published industry research.
+Estimates are directional. Individual results vary.
+```
+
+**What changed from before:** No Input C asking the user to guess a burden attribution percentage. Instead, the output shows total turnover cost and frames documentation burden as "a contributing factor" — citing industry research without asserting a specific percentage. The user sees the total exposure and understands that even a fraction of it tied to documentation burden is significant.
+
+**Why this is better:** The math is simple: turnover rate × providers × replacement cost = total exposure. No made-up attribution multiplier. The narrative does the work: "Industry research says burden drives turnover. Here's your total turnover cost. You do the math on how much documentation burden contributes." That's a conversation starter, not a calculator output.
+
+**The holy shit moment:** "We're spending $1.6M a year on physician turnover. Even if 10% of that is documentation-related, that's $160K."
+
+---
+
+## Level 4 — Labor Spend Structurally Reduced
+
+**RENAMED from "Labor Volatility Strategically Reduced"**
+
+**The org story:** "We can see it in our actual labor spend. Agency and locum costs are down. We're attributing at least part of that to documentation burden reduction and the retention improvements it's driving."
+
+**Card text:**
+> **Labor Spend Structurally Reduced**
+> Agency and locum spend declining. Workforce costs structurally improving.
+
+**Why this is Level 4:** Agency/locum spend reduction is the financial proof that everything upstream (less pajama time → less in-clinic burden → better retention) is actually working. This is the lagging indicator. You can't get here without doing Levels 1-3 first. Almost nobody is here yet.
+
+**Input A:** Monthly reduction in agency or locum spend
+- Type: number input, $ prefix
+- NO default
+- Benchmark: *"Organizations at the highest maturity level have reported $5K-$30K/month in agency and locum spend reduction. Based on aggregated deployment experience."*
+
+**Output (if entered):**
+```
+ESTIMATED IMPACT
+$[annualSavings] annually
+
+Your organization has reduced agency and locum spend
+by an estimated $[monthlyReduction]/month —
+$[annualSavings] annually.
+
+This is the financial proof that documentation burden
+reduction is translating to structural workforce cost
+improvement.
+
+[annualSavings] = [monthlyReduction] × 12
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**The holy shit moment:** For the rare org here: "We can prove this in our actual spend." For everyone else looking at this level: "We're nowhere near being able to say that."
+
+---
+
+## What About Overtime?
+
+**Drop it.** Providers are salaried — they don't generate overtime in the traditional sense. The "overtime" cost of documentation burden shows up in:
+- After-hours time (Level 1 — captured as hours)
+- Burnout-driven turnover (Level 3 — captured as retention exposure)
+- Agency/locum spend to cover gaps (Level 4 — captured as labor spend)
+
+Adding an overtime input creates confusion about what it means for salaried providers and adds a field that most orgs can't populate. The costs are already captured through the other levels.
+
+## What About Patient Experience?
+
+**Don't include it as a level or input.** Here's why:
+
+1. **Attribution is nearly impossible.** Press Ganey scores go up for dozens of reasons. Isolating "ambient documentation made providers more present" is a research project, not a calculator input.
+
+2. **No CFO puts a dollar value on it.** Patient experience is a quality metric, not a financial metric. Trying to dollarize it weakens the domain.
+
+3. **It's a supporting narrative, not a measurement.** When you present this assessment, you can SAY "and by the way, organizations also report improved patient experience scores" as a qualitative add. But it doesn't belong in a maturity model asking for inputs and producing calculations.
+
+4. **It dilutes the workforce story.** The workforce domain has a clean arc: personal time → clinical time → retention → labor costs. Patient experience doesn't fit that arc.
+
+If you want to reference it, add a one-line contextual note at the domain level:
+> *"Note: Organizations also report improved patient experience scores attributed to reduced documentation distraction during encounters. This is a qualitative benefit not modeled in this assessment."*
+
+---
+
+## The Progression
+
+1 → 2: "We went from after-hours relief to in-clinic efficiency"
+2 → 3: "We went from measuring burden reduction to connecting it to retention"  
+3 → 4: "We went from understanding the risk to proving it in our labor spend"
+
+## Level Distribution (Estimated)
+
+- Level 1: 45% of organizations (almost everyone sees pajama time reduction)
+- Level 2: 30% (many can estimate in-clinic time savings)
+- Level 3: 20% (fewer are connecting to turnover data)
+- Level 4: 5% (almost nobody can prove it in agency/locum spend yet)
