@@ -1,0 +1,290 @@
+Ambient Assessment: Nursing Edition
+What This Is
+A pre-ROI strategic conversation. Before anyone talks about time savings, before anyone opens a calculator, before anyone sees a number — this assessment helps nursing leadership understand where documentation burden is creating cost and risk in their organization, and which value pathways would matter most if that burden were reduced.
+The output isn't a dollar figure. It's clarity. The nursing executive walks away knowing: "Our biggest exposure from documentation burden is in overtime and retention. That's where we should focus the ROI conversation." Or: "Actually, our biggest issue is bedside time and quality documentation — the financial case is secondary to the clinical case."
+That clarity is what makes the ROI conversation productive when it happens. And it positions Abridge as the partner who helped them think about it before anyone asked them to buy anything.
+How It's Different from Outpatient
+Outpatient Ambient AssessmentNursing EditionAudienceOrganizations WITH ambient deployedOrganizations CONSIDERING ambient for nursingPurposeMeasure how well they're capturing valueDiscover where value would show upStructureMaturity model (4 domains × 4 levels)Value pathway discovery (understand your burden landscape)OutputScore + gap analysis + roadmapBurden profile + pathway prioritization + conversation frameworkTone"Here's where you stand""Here's what we're seeing — let's explore what matters for you"Leads toWorking session to deepen strategyROI calculator conversation with clear pathway focus
+The Core Idea
+Nursing documentation burden is real but it shows up differently at every organization. Some hospitals are drowning in overtime from end-of-shift charting. Some are hemorrhaging money on travel nurses because they can't retain staff. Some are focused on getting nurses back to the bedside. Some are worried about documentation quality and survey readiness.
+The mistake most vendors make is jumping straight to "we'll save you 20 minutes per shift" and then trying to turn that into a dollar figure. The nursing executive's reaction is: "Okay but 20 minutes of what? And where does that value actually land for us?"
+The Ambient Assessment: Nursing Edition answers that question FIRST. It says: "Before we talk about time savings, let's understand your documentation burden landscape. Where is it costing you the most? What would matter most if it were reduced?"
+Then, when you're ready for the ROI conversation, you're not starting from scratch. You're starting from: "We know our biggest pathways are OT and retention. Show me what the numbers look like for those."
+
+The Flow
+Screen 1: Your Nursing Program
+Header:
+YOUR NURSING PROGRAM
+Help us understand your organization so we can explore where documentation burden may be creating cost and risk.
+Inputs:
+
+Staffed beds
+Nurse FTEs in scope
+Bed occupancy rate (slider, benchmark: "Most hospitals run 75-90%")
+
+These are simple, non-threatening inputs. Every CNO knows these numbers. No adoption rate question here — they don't have the product yet.
+Sidebar: Shows derived numbers as they enter data (patient days/year, shifts/year). Simple math, transparent.
+
+Screen 2: Your Documentation Burden
+Header:
+UNDERSTANDING YOUR DOCUMENTATION BURDEN
+Before we explore where value could show up, let's understand where documentation time is going today.
+This screen isn't about Abridge. It's about THEIR current state. It helps them articulate what they already know but may not have quantified.
+Section: Where Nurses Spend Documentation Time
+DOCUMENTATION TIME PER SHIFT
+
+How much time do your nurses currently spend on
+documentation per shift?
+
+Flowsheets and assessments      [___] min
+Care plans and updates          [___] min
+Handoff documentation           [___] min
+Other charting                  [___] min
+
+Total estimated documentation time: [sum] min/shift
+
+Most organizations report 2-3 hours per shift spent
+on documentation. Based on published nursing workflow
+studies.
+Not everyone will know these breakdowns. That's fine — they can estimate or skip the breakdown and just enter a total. The point is getting them to think about where the time goes.
+Section: How Documentation Burden Shows Up
+WHERE DO YOU FEEL THE IMPACT?
+
+Select the areas where documentation burden is most
+affecting your nursing program today:
+
+☐ Nurses regularly stay late to finish charting
+☐ Documentation is cited in engagement or satisfaction surveys
+☐ New nurses struggle with documentation workload during onboarding
+☐ Experienced nurses mention documentation as a frustration
+☐ Documentation time reduces time available for direct patient care
+☐ Flowsheet completeness or consistency is a concern
+☐ Handoff documentation quality varies significantly
+☐ Documentation burden is mentioned in exit interviews
+☐ We rely on agency or travel nurses partly due to staffing challenges
+☐ Overtime driven by end-of-shift charting is a budget concern
+These checkboxes aren't inputs for a calculation. They're a self-assessment of where burden is showing up. The checked items will inform which value pathways get highlighted on the next screen.
+Sidebar:
+YOUR BURDEN PROFILE
+
+Documentation time: [X] min/shift
+[X] of 10 burden indicators selected
+
+Top areas: [list of checked items, grouped]
+
+Screen 3: Your Value Pathways
+Header:
+WHERE COULD REDUCED DOCUMENTATION BURDEN CREATE VALUE?
+Based on your burden profile, these are the pathways most likely to matter for your organization.
+Key design decision: The pathways are ORDERED based on what they checked on Screen 2. If they checked overtime-related items, OT Reduction shows first. If they checked retention-related items, Retention shows first. The pathways they didn't signal are still visible but shown as secondary.
+Each pathway has three sections: why it matters, a few questions to explore relevance, and what a conversation about this pathway would look like.
+
+Pathway 1: Overtime and Schedule Adherence
+OVERTIME AND SCHEDULE ADHERENCE
+When documentation finishes faster, shifts end closer to
+scheduled time.
+
+HOW THIS SHOWS UP
+Nurses staying 15-30 minutes past shift end to complete
+charting. Over hundreds of shifts, this becomes a
+meaningful budget line.
+
+EXPLORE THIS FOR YOUR ORGANIZATION
+
+Is end-of-shift charting a meaningful contributor
+to overtime at your organization?
+○ Not really — our OT is driven by patient volume and acuity
+○ Somewhat — it's a factor but not the primary one
+○ Yes — nurses regularly stay late to finish documentation
+
+[If somewhat or yes:]
+Estimated average OT minutes per nurse per shift
+attributable to documentation: [___] min
+
+WHAT THIS PATHWAY MEANS
+If documentation time per shift were reduced, a portion
+of that time would come directly off end-of-shift
+overtime. The size of the impact depends on how much
+of your current OT is documentation-driven — which is
+what we'd quantify together in a deeper conversation.
+
+Pathway 2: Nurse Retention
+NURSE RETENTION
+Documentation burden is consistently cited as a driver
+of nursing burnout. Burnout drives turnover. Turnover
+is one of the most expensive line items in nursing
+operations.
+
+HOW THIS SHOWS UP
+Experienced nurses leaving. Exit interviews mentioning
+workload. Engagement scores declining. The connection
+to documentation is real but rarely quantified.
+
+EXPLORE THIS FOR YOUR ORGANIZATION
+
+What is your current annual RN turnover rate?
+[___] %
+National average: 18-22% (NSI Nursing Solutions)
+
+Is documentation burden a factor in nurse satisfaction
+or turnover at your organization?
+○ We haven't specifically tracked this
+○ Anecdotally — it comes up but we haven't measured
+○ Yes — it appears in surveys or exit data
+
+WHAT THIS PATHWAY MEANS
+Turnover at your scale represents approximately
+[nurseFTEs × turnoverRate × $50K midpoint] in annual
+replacement costs. The portion connected to
+documentation burden is what we'd explore together.
+Even a modest impact on retention has an outsized
+financial effect.
+
+[departures] = [nurseFTEs] × [turnoverRate]
+Using $50K midpoint replacement cost (NSI range: $40K-$65K).
+
+Pathway 3: Agency and Travel Nurse Reliance
+AGENCY AND TRAVEL NURSE RELIANCE
+If retention improves, the downstream effect is reduced
+need for agency and travel nurses. This is a longer-term
+pathway but often the largest dollar figure.
+
+HOW THIS SHOWS UP
+Travel nurse contracts. Agency spend as a growing line
+item. Premium labor costs that compress margins.
+
+EXPLORE THIS FOR YOUR ORGANIZATION
+
+Is your organization currently relying on agency
+or travel nurses?
+○ No — we're fully staffed with permanent nurses
+○ Minimal — occasional use for seasonal coverage
+○ Moderate — regular use to fill gaps
+○ Significant — we depend on agency/travel for staffing
+
+[If moderate or significant:]
+Estimated monthly agency/travel nurse spend:
+$ [___] /month
+
+WHAT THIS PATHWAY MEANS
+Agency reliance is a symptom of retention challenges.
+If documentation burden reduction contributes to
+better retention over 6-12 months, the downstream
+effect on agency spend could be substantial. This
+is a longer-term conversation — but for organizations
+spending $[X]/month on agency, even a modest reduction
+is meaningful.
+
+Pathway 4: Time at the Bedside
+TIME AT THE BEDSIDE
+When nurses spend less time documenting, that time
+can go to direct patient care. This is hard to put
+a dollar value on — but it's often the most important
+pathway to nursing leadership.
+
+HOW THIS SHOWS UP
+Nurses spending more time at workstations than at
+bedsides. Patient experience scores that could be
+higher. Care quality metrics that depend on
+observation and presence.
+
+EXPLORE THIS FOR YOUR ORGANIZATION
+
+Is increasing bedside time a strategic priority
+for your nursing program?
+○ Not a current focus
+○ Yes — it's something we talk about
+○ Yes — it's a key initiative with metrics
+
+Are you tracking bedside time or direct care hours?
+○ No
+○ Informally
+○ Yes — we measure it
+
+WHAT THIS PATHWAY MEANS
+If documentation time per shift were reduced by even
+15-20 minutes, that time could return to direct
+patient care. Across [nurseFTEs] nurses over a year,
+that's [hours] additional bedside hours. The connection
+to patient experience, safety, and quality outcomes
+is well-established — though it requires more than
+documentation changes alone.
+
+Pathway 5: Documentation Quality and Compliance
+DOCUMENTATION QUALITY AND COMPLIANCE
+Structured, consistent documentation supports audit
+readiness, survey preparedness, and quality reporting.
+
+HOW THIS SHOWS UP
+Inconsistent flowsheet completion. Gaps in assessment
+documentation. Variability in handoff notes. Quality
+reporting that requires manual chart abstraction.
+
+EXPLORE THIS FOR YOUR ORGANIZATION
+
+Is documentation completeness or consistency a
+concern for your nursing program?
+○ Not a significant issue
+○ Somewhat — we see variability but it's manageable
+○ Yes — it's a known gap that affects quality
+  reporting or compliance
+
+WHAT THIS PATHWAY MEANS
+Documentation quality improvements are hard to
+dollarize directly. But they reduce compliance risk,
+support survey readiness, and build the foundation
+for nursing quality initiatives. For organizations
+where documentation variability is a known issue,
+this pathway may matter as much as the financial ones.
+
+Screen 4: Your Pathway Summary
+Header:
+YOUR VALUE PATHWAY PROFILE
+Based on your organization's burden landscape, here's where reduced documentation time is most likely to create value.
+PATHWAY RELEVANCE
+
+                              Relevance    Data Available
+Overtime & Schedule           High         Some
+Retention                     High         Limited
+Agency Reduction              Moderate     Yes
+Bedside Time                  High         No
+Documentation Quality         Low          No
+Relevance is derived from their Screen 2 checkboxes and Screen 3 answers. "High" if they selected relevant burden indicators AND answered "somewhat" or "yes" on the pathway questions. "Moderate" if partial. "Low" if they indicated it's not a significant issue.
+Data Available: "Yes" if they entered numbers. "Some" if they answered qualitative questions. "Limited" if they answered the relevance question but didn't enter data. "No" if they skipped it.
+Below the table — the narrative:
+YOUR ASSESSMENT
+
+Your organization's documentation burden is most likely
+to create measurable value through overtime reduction
+and nurse retention. These are your primary pathways.
+
+Bedside time is a strategic priority but hasn't been
+measured yet — establishing metrics here would strengthen
+the case.
+
+Agency spend is moderate and could see downstream effects
+if retention improves over time.
+
+When you're ready to explore specific numbers, these
+pathways will be the focus of a deeper ROI conversation.
+Dynamic, 3-4 sentences, based on their pathway relevance ranking.
+
+Screen 5: Next Step
+Header:
+READY TO GO DEEPER?
+You've identified where documentation burden is creating
+the most cost and risk in your nursing program. The next
+step is exploring what those pathways look like with
+real numbers — specific to your organization.
+
+We offer a deeper working session where we model your
+highest-relevance pathways together. It's strategic
+planning, not a product demonstration.
+
+[Request a Deeper Conversation →]     [Export My Assessment]
+
+What the PDF Export Contains
+Page 1: Cover (Ambient Assessment: Nursing Edition, organization name, date, facilitator)
+Page 2: Burden Profile (documentation time per shift, burden indicators checked, summary)
+Page 3: Value Pathways (all five pathways with relevance level, data entered, and key findings)
+Page 4: Pathway Summary + Next Steps (the narrative, the relevance table, and the CTA)
