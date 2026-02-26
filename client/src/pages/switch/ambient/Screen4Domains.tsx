@@ -52,9 +52,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.',
     cards: [
       { level: 1, label: 'Time Saved, Not Deployed', description: 'Providers are faster. Schedules and panels are unchanged.' },
-      { level: 2, label: 'Informal Access Absorption', description: 'Recovered time informally absorbed. No scheduling redesign.' },
-      { level: 3, label: 'Structured Access Expansion', description: 'Schedules and templates redesigned around recovered time.' },
-      { level: 4, label: 'Institutionalized Capacity Strategy', description: 'Capacity targets embedded in panel planning and FTE models.' },
+      { level: 2, label: 'Measured, Not Redesigned', description: 'Time savings tracked and quantified. Operational changes not yet implemented.' },
+      { level: 3, label: 'Access Redesigned', description: 'Schedules, templates, or panels changed based on recovered capacity.' },
+      { level: 4, label: 'Capacity Modeled into Workforce Planning', description: 'Recovered capacity is a variable in hiring, expansion, and FTE decisions.' },
     ],
   },
   revenue: {
@@ -192,11 +192,26 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   const unmeasuredTimeChecked = currentState.inputs.unmeasuredTime === 'true';
 
+  const toggleCheckboxItem = (key: string, index: number) => {
+    const current = (currentState.inputs[key] as string) || '';
+    const set = new Set(current.split(',').filter(Boolean));
+    const idx = String(index);
+    if (set.has(idx)) set.delete(idx); else set.add(idx);
+    setDomainInput(key, Array.from(set).join(','));
+  };
+
+  const isChecked = (key: string, index: number): boolean => {
+    const current = (currentState.inputs[key] as string) || '';
+    return current.split(',').filter(Boolean).includes(String(index));
+  };
+
   const renderCapacityInputs = () => {
     const level = currentState.activationLevel;
     if (!level) return null;
 
     const timeSavedValue = (currentState.inputs.timeSaved as number) || 0;
+
+    const showUnmeasuredCheckbox = level === 1;
 
     const timeSavedSection = (
       <div className="mb-6" key="time-saved">
@@ -205,7 +220,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </label>
         <p className="text-sm text-[#888888] mb-3">Minutes recovered per encounter using ambient documentation</p>
 
-        {!unmeasuredTimeChecked && (
+        {!(showUnmeasuredCheckbox && unmeasuredTimeChecked) && (
           <div className="flex items-center gap-2 mb-3">
             <FormattedNumberInput
               value={timeSavedValue}
@@ -228,28 +243,32 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
         <BenchmarkContext text="Based on published industry data and Abridge deployment experience." />
 
-        <div className="flex items-center gap-2.5 mt-4">
-          <Checkbox
-            id="unmeasured-time"
-            checked={unmeasuredTimeChecked}
-            onCheckedChange={(checked) => {
-              if (checked === true) {
-                setDomainInput('unmeasuredTime', 'true');
-              } else {
-                setDomainInput('unmeasuredTime', 'false');
-              }
-            }}
-            data-testid="checkbox-unmeasured-time"
-          />
-          <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
-            I haven't measured this precisely
-          </label>
-        </div>
+        {showUnmeasuredCheckbox && (
+          <>
+            <div className="flex items-center gap-2.5 mt-4">
+              <Checkbox
+                id="unmeasured-time"
+                checked={unmeasuredTimeChecked}
+                onCheckedChange={(checked) => {
+                  if (checked === true) {
+                    setDomainInput('unmeasuredTime', 'true');
+                  } else {
+                    setDomainInput('unmeasuredTime', 'false');
+                  }
+                }}
+                data-testid="checkbox-unmeasured-time"
+              />
+              <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
+                I haven't measured this precisely
+              </label>
+            </div>
 
-        {unmeasuredTimeChecked && (
-          <p className="text-sm text-[#888888] italic mt-2">
-            Time savings not yet measured. This is the first metric to establish.
-          </p>
+            {unmeasuredTimeChecked && (
+              <p className="text-sm text-[#888888] italic mt-2">
+                Time savings not yet measured. This is the first metric to establish.
+              </p>
+            )}
+          </>
         )}
       </div>
     );
@@ -259,26 +278,59 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
+      const capacityAggregated = currentState.inputs.capacityAggregated as string | undefined;
+      const calculatedHours = timeSavedValue > 0 ? Math.round(documentedEncounters * timeSavedValue / 60) : 0;
       return (
         <>
           {timeSavedSection}
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Estimated redeployment rate
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-black mb-3">
+              Have you calculated total recovered capacity across your deployment?
             </label>
-            <p className="text-sm text-[#888888] mb-3">What % of recovered time is being used for additional patient access?</p>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.redeploymentRate as number) || 0}
-                onChange={(v) => setDomainInput('redeploymentRate', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-redeployment"
-              />
-              <span className="text-sm text-[#888888]">%</span>
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'no', label: "No — we have time-per-encounter data but haven't aggregated it" },
+                { id: 'yes', label: 'Yes — we know our total recovered hours' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('capacityAggregated', opt.id)}
+                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                    capacityAggregated === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-aggregated-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-            <BenchmarkContext text="Organizations at this stage typically report 15–25%. Without scheduling changes, absorption is limited." />
           </div>
+
+          <AnimatePresence>
+            {capacityAggregated === 'yes' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-medium text-black mb-1">
+                  Confirmed recovered hours annually
+                </label>
+                <p className="text-xs text-[#888888] mb-2">Calculated from your inputs. Adjust if your organization has measured a different number.</p>
+                <FormattedNumberInput
+                  value={(currentState.inputs.confirmedHours as number) || calculatedHours}
+                  onChange={(v) => setDomainInput('confirmedHours', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-confirmed-hours"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       );
     }
@@ -287,9 +339,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Additional patients per provider per month
+            Additional patients seen per provider per month
           </label>
-          <p className="text-sm text-[#888888] mb-3">Additional patients seen per provider per month due to scheduling redesign</p>
+          <p className="text-sm text-[#888888] mb-3">Due to scheduling redesign, template changes, or panel expansion</p>
           <FormattedNumberInput
             value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
             onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
@@ -297,39 +349,54 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-additional-patients"
           />
-          <BenchmarkContext text="Abridge customers with structured access redesign report 3–8 additional patients/provider/month" />
+          <BenchmarkContext text="Abridge customers with access redesign report 3–8 additional patients/provider/month" />
         </div>
       );
     }
 
+    const CAPACITY_PLANNING_OPTIONS = [
+      'Avoided or deferred new hires (absorbed growth with existing providers)',
+      'Redeployed providers to underserved panels or new sites',
+      'Absorbed patient volume growth without adding FTEs',
+      'Factored into annual FTE / staffing models',
+      'Used in business case for new service lines or locations',
+    ];
+
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Net visit growth per provider per month
+          <label className="block text-sm font-medium text-black mb-3">
+            How is recovered capacity being used in planning?
           </label>
-          <p className="text-sm text-[#888888] mb-2">Net visit growth per provider per month driven by recovered capacity</p>
-          <FormattedNumberInput
-            value={(currentState.inputs.netVisitGrowth as number) || 0}
-            onChange={(v) => setDomainInput('netVisitGrowth', v)}
-            placeholder=""
-            className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-net-visit-growth"
-          />
-          <BenchmarkContext text="Top-performing Abridge deployments model 5–10 net visits/provider/month in capacity planning" />
+          <div className="flex flex-col gap-2.5">
+            {CAPACITY_PLANNING_OPTIONS.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <Checkbox
+                  id={`capacity-planning-${i}`}
+                  checked={isChecked('capacityPlanningAreas', i)}
+                  onCheckedChange={() => toggleCheckboxItem('capacityPlanningAreas', i)}
+                  data-testid={`checkbox-capacity-planning-${i}`}
+                />
+                <label htmlFor={`capacity-planning-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                  {item}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
+
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Providers in capacity model
+            Estimated FTEs avoided or redeployed
           </label>
-          <p className="text-sm text-[#888888] mb-2">May differ from total provider count if capacity modeling is phased</p>
           <FormattedNumberInput
-            value={(currentState.inputs.providersInModel as number) || providers}
-            onChange={(v) => setDomainInput('providersInModel', v)}
-            placeholder={String(providers)}
+            value={(currentState.inputs.fteAvoided as number) || 0}
+            onChange={(v) => setDomainInput('fteAvoided', Math.max(0, v))}
+            placeholder=""
             className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-providers-in-model"
+            data-testid="input-fte-avoided"
           />
+          <BenchmarkContext text="Abridge enterprise customers modeling capacity into workforce planning report 1–3 FTE equivalent impact" />
         </div>
       </div>
     );
@@ -531,19 +598,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
       </div>
     );
-  };
-
-  const toggleCheckboxItem = (key: string, index: number) => {
-    const current = (currentState.inputs[key] as string) || '';
-    const set = new Set(current.split(',').filter(Boolean));
-    const idx = String(index);
-    if (set.has(idx)) set.delete(idx); else set.add(idx);
-    setDomainInput(key, Array.from(set).join(','));
-  };
-
-  const isChecked = (key: string, index: number): boolean => {
-    const current = (currentState.inputs[key] as string) || '';
-    return current.split(',').filter(Boolean).includes(String(index));
   };
 
   const MONITORING_OPTIONS = [

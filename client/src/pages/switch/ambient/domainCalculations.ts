@@ -15,9 +15,9 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
     1: 'Time Saved, Not Deployed',
-    2: 'Informal Access Absorption',
-    3: 'Structured Access Expansion',
-    4: 'Institutionalized Capacity Strategy',
+    2: 'Measured, Not Redesigned',
+    3: 'Access Redesigned',
+    4: 'Capacity Modeled into Workforce Planning',
   },
   revenue: {
     1: 'Documentation Neutral',
@@ -32,10 +32,10 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Labor Volatility Strategically Reduced',
   },
   risk: {
-    1: 'Cleaner Clinical Notes',
-    2: 'Audit Awareness',
-    3: 'Compliance Reporting Streamlined',
-    4: 'Governed Compliance Infrastructure',
+    1: 'Better Notes, Same Infrastructure',
+    2: 'Active Quality Monitoring',
+    3: 'Downstream Systems Connected',
+    4: 'Documentation as Strategic Data Asset',
   },
 };
 
@@ -105,29 +105,31 @@ export function computeCapacityFeedback(
 
   if (level === 2) {
     const ts = (inputs.timeSaved as number) || 0;
-    const redeployPct = inputs.redeploymentRate as number | undefined;
-    const hasRedeployment = redeployPct !== undefined && redeployPct > 0;
-    if (!hasTimeSaved || !hasRedeployment) {
+    const aggregated = inputs.capacityAggregated as string | undefined;
+    if (!hasTimeSaved && !unmeasuredChecked) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Enter time saved and redeployment rate to calculate capacity impact.',
+        context: 'Enter time saved per encounter to see your recovered capacity.',
         formula: '',
         footnote: '',
       };
     }
-    const recoveredHours = Math.round(documentedEncounters * ts / 60);
-    const redeployedHours = Math.round(recoveredHours * (redeployPct! / 100));
-    const additionalVisits = Math.round(redeployedHours * 3);
-    const capacityValue = Math.round(additionalVisits * revenuePerVisit);
+    const calculatedHours = Math.round(documentedEncounters * ts / 60);
+    const recoveredHours = aggregated === 'yes' && (inputs.confirmedHours as number) > 0
+      ? (inputs.confirmedHours as number)
+      : calculatedHours;
+    const fte = (recoveredHours / 2080).toFixed(1);
+    const benchmarkValue = formatDollar(Math.round(5 * providers * 12 * revenuePerVisit));
     return {
       label: 'Estimated Impact',
-      value: capacityValue,
-      hasValue: true,
-      context: `At ${redeployPct}% informal redeployment, approximately ${redeployedHours.toLocaleString()} recovered hours are translating into ${additionalVisits.toLocaleString()} additional visits — estimated at ${formatDollar(capacityValue)} annually.`,
-      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[redeployedHours] = ${recoveredHours.toLocaleString()} × ${redeployPct}% = ${redeployedHours.toLocaleString()}\n[additionalVisits] = ${redeployedHours.toLocaleString()} × 3 visits/hr = ${additionalVisits.toLocaleString()}\n[capacityValue] = ${additionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
-      footnote: 'Using 3 visits per hour (20-min average encounter) as conversion factor.',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified — $0 deployed`,
+      context: `Your organization has quantified ${recoveredHours.toLocaleString()} recovered hours annually (${fte} FTE equivalent). This time is measured but not yet converted to additional access or volume. No scheduling or template changes have been implemented.\n\nThe gap between measurement and action is where most organizations stall.\n\nAbridge customers who move from measurement to redesign (Level 3) typically capture ${benchmarkValue} in annual capacity value.`,
+      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${calculatedHours.toLocaleString()}${aggregated === 'yes' ? `\n[confirmedHours] = ${recoveredHours.toLocaleString()} (organization-confirmed)` : ''}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
+      footnote: 'Dollar value: $0 — time is quantified but not yet deployed through operational changes.',
     };
   }
 
@@ -138,7 +140,7 @@ export function computeCapacityFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Enter additional patients per provider per month to calculate capacity impact.',
+        context: 'Enter additional patients seen per provider per month to calculate capacity impact.',
         formula: '',
         footnote: '',
       };
@@ -149,33 +151,57 @@ export function computeCapacityFeedback(
       label: 'Estimated Impact',
       value: capacityValue,
       hasValue: true,
-      context: `Your scheduling redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${providers} providers — estimated at ${formatDollar(capacityValue)} in annual capacity value.`,
-      formula: `[annualAdditionalVisits] = ${additionalPatients} patients/mo × ${providers} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
+      context: `Your access redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${providers} providers — estimated at ${formatDollar(capacityValue)}.`,
+      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${providers} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
       footnote: 'Revenue per visit inherited from baseline inputs.',
     };
   }
 
-  const netGrowth = inputs.netVisitGrowth as number | undefined;
-  const providersInModel = (inputs.providersInModel as number) || providers;
-  if (!netGrowth || netGrowth <= 0) {
+  const CAPACITY_PLANNING_LABELS = [
+    'Avoided or deferred new hires',
+    'Redeployed providers to underserved panels or new sites',
+    'Absorbed patient volume growth without adding FTEs',
+    'Factored into annual FTE / staffing models',
+    'Used in business case for new service lines or locations',
+  ];
+  const planningCsv = inputs.capacityPlanningAreas as string | undefined;
+  const fteAvoided = inputs.fteAvoided as number | undefined;
+  const checkedSet = new Set((planningCsv || '').split(',').filter(Boolean));
+  const checkedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => checkedSet.has(String(i)));
+  const uncheckedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => !checkedSet.has(String(i)));
+  const planCount = checkedLabels.length;
+
+  if (planCount === 0 && (!fteAvoided || fteAvoided <= 0)) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'Enter net visit growth per provider per month to calculate capacity impact.',
+      context: 'Select how recovered capacity is being used in planning to see your assessment.',
       formula: '',
       footnote: '',
     };
   }
-  const annualGrowth = netGrowth * providersInModel * 12;
-  const capacityValue = Math.round(annualGrowth * revenuePerVisit);
+
+  if (planCount > 0 && (!fteAvoided || fteAvoided <= 0)) {
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${planCount} planning area${planCount > 1 ? 's' : ''} connected`,
+      context: `Recovered capacity is a variable in ${planCount} workforce planning area${planCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter estimated FTEs avoided or redeployed to calculate impact.${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+      formula: '',
+      footnote: '',
+    };
+  }
+
+  const capacityValue = Math.round((fteAvoided || 0) * providerRate * 2080);
   return {
     label: 'Estimated Impact',
     value: capacityValue,
     hasValue: true,
-    context: `Your institutionalized capacity strategy is modeling ${annualGrowth.toLocaleString()} net visit growth across ${providersInModel} providers — ${formatDollar(capacityValue)} in annual strategic capacity.`,
-    formula: `[annualGrowth] = ${netGrowth} visits/mo × ${providersInModel} providers × 12 = ${annualGrowth.toLocaleString()}\n[capacityValue] = ${annualGrowth.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
-    footnote: 'Net visit growth per provider × providers in capacity model × revenue per visit × 12.',
+    context: `Recovered capacity is a variable in ${planCount} workforce planning area${planCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\n${fteAvoided} FTE equivalent in avoided hiring or redeployment — valued at ${formatDollar(capacityValue)} annually.${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+    formula: `[capacityValue] = ${fteAvoided} FTE × ${formatDollar(providerRate)}/hr × 2,080 hrs = ${formatDollar(capacityValue)}`,
+    footnote: 'This represents hiring cost avoided or redeployed provider capacity, not additional visit revenue.',
   };
 }
 

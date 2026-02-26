@@ -1,0 +1,210 @@
+# CAPACITY DOMAIN — Refined
+
+**"Where does recovered time actually go?"**
+
+## The Organizational Journey
+
+Think of it from the ops leader's perspective:
+
+1. First, they realize time is being saved (but it's invisible — nothing changed)
+2. Then, they start intentionally tracking and planning around it
+3. Then, they redesign operations to capture it
+4. Then, it becomes part of how they plan the business
+
+Each level is a **decision the organization made**, not just a number getting bigger.
+
+---
+
+## Level 1 — Time Saved, Not Deployed
+
+**The org story:** "Our providers love it. They're faster. But we haven't changed anything about how we schedule or how many patients we see."
+
+**Card text:**
+> **Time Saved, Not Deployed**
+> Providers are faster. Schedules and panels are unchanged.
+
+**Input:** Time saved per documented encounter (number input, min suffix)
+- Benchmark: `1.5–2.5 min Most tools` | `3.0 min Abridge avg`
+- Checkbox: "I haven't measured this precisely"
+
+**Output if entered:**
+```
+Your providers are recovering an estimated [X] hours
+annually — [Y] FTE equivalent. None of this time is
+being structurally redeployed.
+
+[recoveredHours] = [documentedEncounters] × [timeSaved] / 60
+[FTE] = [recoveredHours] / 2,080
+```
+Dollar value: **$0 in deployed capacity.**
+
+**Why this level exists:** This is the wake-up call. Most orgs stop here and call it a win because providers are happier. The tool shows them: satisfaction is not ROI.
+
+---
+
+## Level 2 — Measured, Not Redesigned
+
+**RENAMED from "Informal Access Absorption"**
+
+**The org story:** "We know how much time we're saving. We've looked at the data. We might have had conversations with scheduling about it. But we haven't actually changed templates, schedules, or panel sizes yet."
+
+**Card text:**
+> **Measured, Not Redesigned**
+> Time savings tracked and quantified. Operational changes not yet implemented.
+
+**Why this is the right Level 2:** The jump from Level 1 to Level 2 isn't "some time is accidentally being redeployed." It's "we've moved from anecdotal to intentional." The org has done the work to understand what's happening — they've measured time savings, they've calculated recovered hours, maybe they've benchmarked against peers. But they haven't pulled the trigger on operational changes.
+
+This is where most orgs that are *trying* to get value are stuck. They have the data. They haven't acted on it.
+
+**Input A:** Time saved per documented encounter (same as Level 1 — persists if already entered)
+
+**Input B:** Have you calculated total recovered capacity across your deployment?
+- Type: single select
+  - "No — we have time-per-encounter data but haven't aggregated it"
+  - "Yes — we know our total recovered hours"
+
+**If "Yes":** Show the calculated recovered hours from the engine (documentedEncounters × timeSaved / 60) and let them confirm or override:
+
+**Input C (if Yes):** Confirmed recovered hours annually
+- Type: number input, pre-populated with calculated value
+- Helper: *"Calculated from your inputs. Adjust if your organization has measured a different number."*
+
+**Output:**
+```
+ESTIMATED IMPACT
+[recoveredHours] hours quantified — $0 deployed
+
+Your organization has quantified [recoveredHours]
+recovered hours annually ([FTE] FTE equivalent).
+This time is measured but not yet converted to
+additional access or volume. No scheduling or
+template changes have been implemented.
+
+The gap between measurement and action is where
+most organizations stall.
+
+Abridge customers who move from measurement to
+redesign (Level 3) typically capture $[benchmarkValue]
+in annual capacity value.
+```
+
+**The dollar value is still $0** — but now the output explicitly names the gap: "measured but not acted on." And the Abridge benchmark for Level 3 creates forward pull.
+
+**Why NOT "informal absorption":** The old Level 2 asked for an "estimated redeployment rate" which is a number nobody actually has. If time is being informally absorbed, the org doesn't know the rate — that's what makes it informal. Asking them to guess a percentage undermines credibility. The new Level 2 is honest: "You've measured it. You haven't changed anything yet."
+
+---
+
+## Level 3 — Access Redesigned
+
+**RENAMED from "Structured Access Expansion"**
+
+**The org story:** "We took the recovered time data and actually changed something. We modified templates, adjusted scheduling, opened new slots, or expanded panels. We can count the additional patients."
+
+**Card text:**
+> **Access Redesigned**
+> Schedules, templates, or panels changed based on recovered capacity.
+
+**Why this is the right Level 3:** This is the first level where recovered time turns into real dollars. The org made an operational decision — they changed how they schedule, they adjusted templates, they opened slots. The additional patients per month isn't a guess; it's a measurable outcome of a specific operational change.
+
+**Input A:** Additional patients seen per provider per month
+- Type: number input
+- Placeholder: empty
+- NO default
+- Benchmark: *"Abridge customers with access redesign report 3-8 additional patients/provider/month"*
+
+Revenue per visit inherited from baseline.
+
+**Output:**
+```
+ESTIMATED IMPACT
+$[capacityValue]
+
+Your access redesign is generating [annualVisits]
+additional visits annually across [providers]
+providers — estimated at $[capacityValue].
+
+[annualVisits] = [additionalPatients] × [providers] × 12
+[capacityValue] = [annualVisits] × [revenuePerVisit]
+```
+
+**The holy shit moment:** This is where the math gets real. 5 additional patients × 50 providers × 12 months × $200/visit = $600K. That's not theoretical — that's visits that happened because someone changed the schedule.
+
+---
+
+## Level 4 — Capacity Modeled into Workforce Planning
+
+**RENAMED from "Institutionalized Capacity Strategy"**
+
+**The org story:** "Recovered capacity isn't just filling existing schedules — it's changing how we plan. We're using it to avoid hiring, delay expansion, absorb growth, or redeploy providers to underserved panels or new service lines."
+
+**Card text:**
+> **Capacity Modeled into Workforce Planning**
+> Recovered capacity is a variable in hiring, expansion, and FTE decisions.
+
+**Why this is the right Level 4:** The distinction from Level 3 is NOT "more visits per provider." It's that recovered capacity has become a planning input at the organizational level. Level 3 = "we changed schedules to see more patients." Level 4 = "we avoided hiring 2 FTEs because recovered capacity absorbed the growth" or "we redeployed 3 providers to a new clinic because existing providers could handle the volume."
+
+This is genuinely rare. This is when the CFO and COO are using ambient-recovered capacity in their models.
+
+**Input A:** How is recovered capacity being used in planning? (multi-select checkboxes)
+- ☐ Avoided or deferred new hires (absorbed growth with existing providers)
+- ☐ Redeployed providers to underserved panels or new sites
+- ☐ Absorbed patient volume growth without adding FTEs
+- ☐ Factored into annual FTE / staffing models
+- ☐ Used in business case for new service lines or locations
+
+**Input B:** Estimated FTEs avoided or redeployed
+- Type: number input (can be decimal, e.g., 1.5)
+- Placeholder: empty
+- NO default
+- Benchmark: *"Abridge enterprise customers modeling capacity into workforce planning report 1-3 FTE equivalent impact"*
+
+**Output if checkboxes + FTE entered:**
+```
+ESTIMATED IMPACT
+$[capacityValue] in workforce planning value
+
+Recovered capacity is a variable in [checkedCount]
+workforce planning area(s):
+[list of checked items]
+
+[fteAvoided] FTE equivalent in avoided hiring or
+redeployment — valued at $[capacityValue] annually.
+
+[capacityValue] = [fteAvoided] × [providerRate] × 2,080
+This represents hiring cost avoided or redeployed
+provider capacity, not additional visit revenue.
+```
+
+**Output if only checkboxes (no FTE number):**
+```
+ESTIMATED IMPACT
+[checkedCount] planning area(s) connected
+
+Recovered capacity is a variable in [checkedCount]
+workforce planning area(s):
+[list of checked items]
+
+Enter estimated FTEs avoided or redeployed to
+calculate impact.
+```
+
+**The holy shit moment:** "We could be using recovered capacity to avoid hiring, and we haven't even thought about it." For the rare org at Level 4, the output validates that they're doing something almost nobody else is.
+
+---
+
+## Summary of Changes
+
+| | Old | New | Why |
+|---|---|---|---|
+| Level 1 | Time Saved, Not Deployed | Time Saved, Not Deployed | No change — solid |
+| Level 2 | Informal Access Absorption (guess a redeployment %) | Measured, Not Redesigned (have you quantified it?) | Old input was a guess nobody has. New level is about the measurement-to-action gap. |
+| Level 3 | Structured Access Expansion | Access Redesigned | Same concept, cleaner name. The input (additional patients/month) stays the same. |
+| Level 4 | Institutionalized Capacity Strategy (net visits/month — confusing overlap with L3) | Capacity Modeled into Workforce Planning (FTEs avoided/redeployed) | Completely different framing. L3 = more visits. L4 = changed how you plan the workforce. Distinct, aspirational, real. |
+
+## The Progression Feels Right Because:
+
+1 → 2: "We went from not knowing to knowing"
+2 → 3: "We went from knowing to acting"
+3 → 4: "We went from tactical action to strategic planning"
+
+Each step is a real organizational decision, not just a bigger number.
