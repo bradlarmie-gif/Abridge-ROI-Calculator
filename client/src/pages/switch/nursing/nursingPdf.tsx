@@ -4,317 +4,284 @@ import {
   Text,
   View,
   StyleSheet,
-  pdf,
   Font,
+  pdf,
 } from "@react-pdf/renderer";
-import { savePdfBlob } from "@/lib/pdf-save";
-import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
-import manropeRegular from "../../../assets/fonts/manrope-regular.ttf";
-import manropeBold from "../../../assets/fonts/manrope-bold.ttf";
-import type { NursingDomain, NursingDomainState, NursingBaselineInputs } from "./nursingTypes";
-import { NURSING_DOMAIN_ORDER, NURSING_DOMAIN_LABELS, LEVEL_LABELS, SCORE_MAP } from "./nursingTypes";
+import type { NursingPriority, NursingBaselineInputs } from "./nursingTypes";
+import { PRIORITY_CONFIGS } from "./nursingTypes";
 import {
   derivePatientDays,
   deriveShiftsPerYear,
-  computeTotalScore,
-  getScoreLabel,
-  generateScoreNarrative,
-  computePriorityPathways,
-  computeDomainFeedback,
+  buildConnection,
+  classifyPathways,
+  generatePrimaryPathwaySummary,
+  getRecommendedFocus,
 } from "./nursingCalculations";
 
 Font.register({
   family: "Manrope",
   fonts: [
-    { src: manropeRegular, fontWeight: 400 },
-    { src: manropeBold, fontWeight: 700 },
+    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk59FO_F87jxeN7B.ttf", fontWeight: 400 },
+    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk7jFO_F87jxeN7B.ttf", fontWeight: 600 },
+    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk7LFO_F87jxeN7B.ttf", fontWeight: 700 },
   ],
 });
 
-const colors = {
-  background: "#FFFFFF",
-  cards: "#F5F0EB",
-  primary: "#EA2C00",
-  text: "#1A1A1A",
-  secondary: "#666666",
-  tertiary: "#999999",
-  border: "#E0E0E0",
-  dark: "#1A1A1A",
+const c = {
+  red: "#EA2C00",
+  black: "#1A1A1A",
+  dark: "#333333",
+  mid: "#666666",
+  light: "#999999",
+  border: "#E5E7EB",
+  bg: "#F5F0EB",
   white: "#FFFFFF",
 };
 
 const s = StyleSheet.create({
-  page: {
-    padding: 54,
-    paddingBottom: 50,
-    fontFamily: "Manrope",
-    backgroundColor: colors.background,
-  },
-  pageNum: {
-    position: "absolute",
-    bottom: 24,
-    right: 54,
-    fontSize: 8,
-    color: colors.tertiary,
-  },
-  sectionLabel: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: colors.primary,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: colors.text,
-    marginBottom: 6,
-  },
-  subheading: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: colors.text,
-    marginBottom: 6,
-  },
-  body: {
-    fontSize: 10,
-    color: colors.secondary,
-    lineHeight: 1.6,
-    marginBottom: 8,
-  },
-  card: {
-    backgroundColor: colors.cards,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-  },
-  darkCard: {
-    backgroundColor: colors.dark,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
-  },
-  label: {
-    fontSize: 9,
-    color: colors.tertiary,
-    marginBottom: 2,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: colors.text,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 10,
-  },
-  disclaimer: {
-    position: "absolute",
-    bottom: 36,
-    left: 54,
-    right: 54,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 8,
-  },
-  disclaimerText: {
-    fontSize: 7.5,
-    color: colors.tertiary,
-    lineHeight: 1.5,
-  },
+  page: { padding: 50, fontFamily: "Manrope", fontSize: 10, color: c.dark },
+  coverPage: { padding: 50, fontFamily: "Manrope", backgroundColor: c.black, justifyContent: "center" },
+  sectionLabel: { fontSize: 8, fontWeight: 700, color: c.red, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 6 },
+  heading: { fontSize: 20, fontWeight: 700, color: c.black, marginBottom: 8 },
+  subheading: { fontSize: 14, fontWeight: 700, color: c.black, marginBottom: 6 },
+  body: { fontSize: 9, color: c.dark, lineHeight: 1.6, marginBottom: 6 },
+  small: { fontSize: 8, color: c.light, lineHeight: 1.5 },
+  divider: { height: 1, backgroundColor: c.border, marginVertical: 10 },
+  card: { backgroundColor: c.bg, borderRadius: 8, padding: 14, marginBottom: 10 },
+  row: { flexDirection: "row" as const, justifyContent: "space-between" as const, marginBottom: 4 },
+  rowLabel: { fontSize: 9, color: c.mid },
+  rowValue: { fontSize: 9, fontWeight: 600, color: c.black },
+  prioritySelected: { fontSize: 9, color: c.black, marginBottom: 3 },
+  priorityUnselected: { fontSize: 9, color: c.light, marginBottom: 3 },
+  connectionCard: { borderLeftWidth: 3, borderLeftColor: c.red, paddingLeft: 10, marginBottom: 12 },
+  pathwayPrimary: { backgroundColor: c.bg, borderRadius: 6, padding: 10, marginBottom: 8 },
+  pathwaySupporting: { backgroundColor: "#F9F9F9", borderRadius: 6, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: c.border },
+  footer: { position: "absolute" as const, bottom: 30, left: 50, right: 50, flexDirection: "row" as const, justifyContent: "space-between" as const },
+  footerText: { fontSize: 7, color: c.light },
 });
 
-function BaselineAndScorePage({ baseline, domainStates }: {
+function CoverPage({ orgName, facilitator }: { orgName: string; facilitator: string }) {
+  return (
+    <Page size="LETTER" style={s.coverPage}>
+      <Text style={{ fontSize: 8, fontWeight: 700, color: c.red, letterSpacing: 3, marginBottom: 20 }}>
+        ABRIDGE
+      </Text>
+      <Text style={{ fontSize: 28, fontWeight: 700, color: c.white, marginBottom: 8 }}>
+        Ambient Assessment
+      </Text>
+      <Text style={{ fontSize: 16, fontWeight: 400, color: "rgba(255,255,255,0.6)", marginBottom: 30 }}>
+        Nursing Edition
+      </Text>
+      <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginBottom: 20 }} />
+      <Text style={{ fontSize: 12, fontWeight: 600, color: c.white, marginBottom: 4 }}>
+        {orgName}
+      </Text>
+      {facilitator && (
+        <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.5)" }}>
+          Prepared by {facilitator}
+        </Text>
+      )}
+      <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 8 }}>
+        {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+      </Text>
+    </Page>
+  );
+}
+
+function BaselinePrioritiesPage({
+  baseline,
+  selectedPriorities,
+}: {
   baseline: NursingBaselineInputs;
-  domainStates: Record<NursingDomain, NursingDomainState>;
+  selectedPriorities: NursingPriority[];
 }) {
   const patientDays = derivePatientDays(baseline);
   const shifts = deriveShiftsPerYear(baseline);
-  const totalScore = computeTotalScore(domainStates);
-  const scoreLabel = getScoreLabel(totalScore, domainStates);
 
   return (
     <Page size="LETTER" style={s.page}>
-      <Text style={s.sectionLabel}>Program Profile & Score</Text>
-      <Text style={s.heading}>Nursing Documentation Readiness</Text>
-      <View style={s.divider} />
+      <Text style={s.sectionLabel}>Program Profile & Priorities</Text>
+      <Text style={s.heading}>Your Nursing Program</Text>
 
       <View style={s.card}>
-        <Text style={{ ...s.label, marginBottom: 6 }}>Program Profile</Text>
-        <View style={{ flexDirection: "row", gap: 20, marginBottom: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.label}>Staffed beds</Text>
-            <Text style={s.value}>{baseline.staffedBeds || "—"}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.label}>Nurse FTEs</Text>
-            <Text style={s.value}>{baseline.nurseFTEs || "—"}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.label}>Occupancy</Text>
-            <Text style={s.value}>{baseline.bedOccupancy}%</Text>
-          </View>
-        </View>
-        <View style={{ flexDirection: "row", gap: 20 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.label}>Patient days/year</Text>
-            <Text style={{ ...s.value, fontSize: 13 }}>{patientDays > 0 ? patientDays.toLocaleString() : "—"}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.label}>Shifts/year</Text>
-            <Text style={{ ...s.value, fontSize: 13 }}>{shifts > 0 ? shifts.toLocaleString() : "—"}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={s.card}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12 }}>
-          <View>
-            <Text style={s.label}>Your Score</Text>
-            <Text style={{ fontSize: 36, fontWeight: 700, color: colors.text }}>{totalScore}<Text style={{ fontSize: 18, color: colors.tertiary }}> / 100</Text></Text>
-          </View>
-          <Text style={{ fontSize: 10, fontWeight: 700, color: colors.primary, textTransform: "uppercase", letterSpacing: 1 }}>
-            {scoreLabel}
-          </Text>
-        </View>
-      </View>
-
-      <View style={s.card}>
-        <Text style={{ ...s.label, marginBottom: 8 }}>Domain Breakdown</Text>
         <View style={s.row}>
-          <Text style={{ fontSize: 9, fontWeight: 700, color: colors.tertiary, flex: 2 }}>DOMAIN</Text>
-          <Text style={{ fontSize: 9, fontWeight: 700, color: colors.tertiary, flex: 2, textAlign: "center" }}>LEVEL</Text>
-          <Text style={{ fontSize: 9, fontWeight: 700, color: colors.tertiary, flex: 1, textAlign: "right" }}>SCORE</Text>
+          <Text style={s.rowLabel}>Staffed beds</Text>
+          <Text style={s.rowValue}>{baseline.staffedBeds.toLocaleString()}</Text>
         </View>
-        {NURSING_DOMAIN_ORDER.map((d) => {
-          const level = domainStates[d].level;
-          const score = level ? SCORE_MAP[level] : 0;
+        <View style={s.row}>
+          <Text style={s.rowLabel}>Nurse FTEs</Text>
+          <Text style={s.rowValue}>{baseline.nurseFTEs.toLocaleString()}</Text>
+        </View>
+        <View style={s.row}>
+          <Text style={s.rowLabel}>Bed occupancy</Text>
+          <Text style={s.rowValue}>{baseline.bedOccupancy}%</Text>
+        </View>
+        <View style={s.divider} />
+        <View style={s.row}>
+          <Text style={s.rowLabel}>Patient days / year</Text>
+          <Text style={s.rowValue}>{patientDays.toLocaleString()}</Text>
+        </View>
+        <View style={s.row}>
+          <Text style={s.rowLabel}>Shifts / year</Text>
+          <Text style={s.rowValue}>{shifts.toLocaleString()}</Text>
+        </View>
+      </View>
+
+      <View style={{ marginTop: 14 }}>
+        <Text style={s.sectionLabel}>Your Priorities</Text>
+        {PRIORITY_CONFIGS.map(config => {
+          const isSelected = selectedPriorities.includes(config.id);
           return (
-            <View key={d} style={s.row}>
-              <Text style={{ fontSize: 10, color: colors.text, flex: 2 }}>{NURSING_DOMAIN_LABELS[d]}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, flex: 2, textAlign: "center" }}>
-                {level ? `Level ${level} — ${LEVEL_LABELS[d][level]}` : '—'}
-              </Text>
-              <Text style={{ fontSize: 10, fontWeight: 700, color: colors.text, flex: 1, textAlign: "right" }}>
-                {score}/25
-              </Text>
+            <Text key={config.id} style={isSelected ? s.prioritySelected : s.priorityUnselected}>
+              {isSelected ? "[x]" : "[ ]"} {config.title}
+            </Text>
+          );
+        })}
+      </View>
+
+      <View style={s.footer}>
+        <Text style={s.footerText}>Abridge Nursing Assessment</Text>
+        <Text style={s.footerText}>Page 2</Text>
+      </View>
+    </Page>
+  );
+}
+
+function ConnectionsPage({
+  baseline,
+  selectedPriorities,
+}: {
+  baseline: NursingBaselineInputs;
+  selectedPriorities: NursingPriority[];
+}) {
+  const connections = selectedPriorities.map(p => buildConnection(p, baseline));
+
+  return (
+    <Page size="LETTER" style={s.page}>
+      <Text style={s.sectionLabel}>Where Ambient Fits</Text>
+      <Text style={s.heading}>Priority Connections</Text>
+
+      {connections.map(conn => {
+        const config = PRIORITY_CONFIGS.find(c => c.id === conn.priority)!;
+        return (
+          <View key={conn.priority} style={s.connectionCard}>
+            <Text style={{ fontSize: 10, fontWeight: 700, color: c.black, marginBottom: 4 }}>
+              {config.title}
+            </Text>
+            <Text style={s.body}>{conn.howItConnects}</Text>
+            {conn.whatResearchSays && (
+              <Text style={s.small}>{conn.whatResearchSays}</Text>
+            )}
+            <Text style={{ ...s.small, marginTop: 4 }}>
+              Connection: {conn.bars.map(b => `${b.label ? b.label + ': ' : ''}${b.filled}/${b.total}`).join(' | ')}
+            </Text>
+          </View>
+        );
+      })}
+
+      <View style={s.footer}>
+        <Text style={s.footerText}>Abridge Nursing Assessment</Text>
+        <Text style={s.footerText}>Page 3</Text>
+      </View>
+    </Page>
+  );
+}
+
+function AlignmentPage({
+  baseline,
+  selectedPriorities,
+}: {
+  baseline: NursingBaselineInputs;
+  selectedPriorities: NursingPriority[];
+}) {
+  const pathways = classifyPathways(selectedPriorities, baseline);
+  const primaryLabel = generatePrimaryPathwaySummary(selectedPriorities);
+  const recommendedFocus = getRecommendedFocus(selectedPriorities);
+
+  const primary = pathways.filter(p => p.role === "primary");
+  const supporting = pathways.filter(p => p.role === "supporting");
+
+  return (
+    <Page size="LETTER" style={s.page}>
+      <Text style={s.sectionLabel}>Your Investment Case</Text>
+      <Text style={s.heading}>Strategic Alignment</Text>
+
+      <View style={s.pathwayPrimary}>
+        <Text style={{ fontSize: 8, fontWeight: 700, color: c.red, letterSpacing: 1.5, marginBottom: 4 }}>
+          PRIMARY PATHWAY
+        </Text>
+        <Text style={{ fontSize: 13, fontWeight: 700, color: c.black, marginBottom: 6 }}>
+          {primaryLabel}
+        </Text>
+        {primary.map(p => {
+          const config = PRIORITY_CONFIGS.find(cfg => cfg.id === p.priority)!;
+          return (
+            <View key={p.priority} style={{ marginBottom: 6 }}>
+              <Text style={{ fontSize: 9, fontWeight: 600, color: c.black }}>→ {config.title}</Text>
+              <Text style={s.body}>{p.narrative}</Text>
             </View>
           );
         })}
       </View>
 
-      <Text style={s.pageNum}>2</Text>
-    </Page>
-  );
-}
-
-function PriorityPathwaysPage({ baseline, domainStates }: {
-  baseline: NursingBaselineInputs;
-  domainStates: Record<NursingDomain, NursingDomainState>;
-}) {
-  const priorities = computePriorityPathways(domainStates, baseline);
-  const narrative = generateScoreNarrative(domainStates, baseline);
-
-  return (
-    <Page size="LETTER" style={s.page}>
-      <Text style={s.sectionLabel}>Priority Pathways</Text>
-      <Text style={s.heading}>Where Documentation Burden Reduction Matters Most</Text>
-      <View style={s.divider} />
-
-      {priorities.map((p, i) => {
-        const feedback = computeDomainFeedback(p.domain, p.level, domainStates[p.domain].inputs, baseline);
-        return (
-          <View key={p.domain} style={{ ...s.card, marginBottom: 10 }}>
-            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-              <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, justifyContent: "center", alignItems: "center" }}>
-                <Text style={{ fontSize: 10, fontWeight: 700, color: colors.white }}>{i + 1}</Text>
+      {supporting.length > 0 && (
+        <View style={s.pathwaySupporting}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 4 }}>
+            SUPPORTING ARGUMENTS
+          </Text>
+          {supporting.map(p => {
+            const config = PRIORITY_CONFIGS.find(cfg => cfg.id === p.priority)!;
+            return (
+              <View key={p.priority} style={{ marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, fontWeight: 600, color: c.dark }}>— {config.title}</Text>
+                <Text style={s.body}>{p.narrative}</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, fontWeight: 700, color: colors.text, marginBottom: 2 }}>
-                  {NURSING_DOMAIN_LABELS[p.domain]}
-                </Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 6 }}>
-                  Level {p.level} — {p.levelLabel}
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  {feedback.context.split('\n').filter(Boolean).slice(0, 2).join(' ')}
-                </Text>
-              </View>
-            </View>
-          </View>
-        );
-      })}
+            );
+          })}
+        </View>
+      )}
 
-      <View style={s.darkCard}>
-        <Text style={{ fontSize: 8, fontWeight: 700, color: colors.primary, letterSpacing: 2, marginBottom: 8 }}>YOUR ASSESSMENT</Text>
-        <Text style={{ fontSize: 10, color: "#CCCCCC", lineHeight: 1.6 }}>{narrative}</Text>
+      {recommendedFocus.length > 0 && (
+        <View style={{ marginTop: 14 }}>
+          <Text style={s.sectionLabel}>Recommended ROI Focus</Text>
+          {recommendedFocus.map((f, i) => (
+            <Text key={i} style={{ fontSize: 9, color: c.black, marginBottom: 2 }}>
+              {f.startsWith("Supporting") ? f : `→ ${f}`}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      <View style={s.footer}>
+        <Text style={s.footerText}>Abridge Nursing Assessment</Text>
+        <Text style={s.footerText}>Page 4</Text>
       </View>
-
-      <View style={{ ...s.card, marginTop: 12 }}>
-        <Text style={s.subheading}>Next Steps</Text>
-        <Text style={s.body}>
-          This assessment identifies where documentation burden creates the most pressure in your nursing program.
-          The next step is a deeper working session where we model your priority pathways with specific time savings
-          scenarios and your organization's data.
-        </Text>
-        <Text style={{ fontSize: 10, fontWeight: 700, color: colors.primary }}>
-          Contact: partnerships@abridge.com
-        </Text>
-      </View>
-
-      <View style={s.disclaimer}>
-        <Text style={s.disclaimerText}>
-          This is an organizational self-assessment designed to identify where documentation burden may be creating pressure.
-          All estimates are based on your inputs and industry benchmarks. Individual results will vary. This assessment does not
-          constitute financial advice or a guarantee of outcomes.
-        </Text>
-      </View>
-
-      <Text style={s.pageNum}>3</Text>
     </Page>
-  );
-}
-
-function NursingPdfDocument({ baseline, domainStates, orgName, facilitator }: {
-  baseline: NursingBaselineInputs;
-  domainStates: Record<NursingDomain, NursingDomainState>;
-  orgName: string;
-  facilitator: string;
-}) {
-  return (
-    <Document>
-      <PDFCoverPage
-        reportLabel="AMBIENT ASSESSMENT"
-        title="Nursing Edition"
-        subtitle="Documentation Readiness Assessment"
-        clientName={orgName}
-        preparedBy={facilitator || "Abridge Partner Success"}
-        disclaimerText="This assessment is for strategic planning purposes. All calculations are based on organizational self-reported data and industry benchmarks."
-      />
-      <BaselineAndScorePage baseline={baseline} domainStates={domainStates} />
-      <PriorityPathwaysPage baseline={baseline} domainStates={domainStates} />
-    </Document>
   );
 }
 
 export async function generateNursingPdf(
   baseline: NursingBaselineInputs,
-  domainStates: Record<NursingDomain, NursingDomainState>,
+  selectedPriorities: NursingPriority[],
   orgName: string,
   facilitator: string,
-): Promise<void> {
-  const doc = <NursingPdfDocument baseline={baseline} domainStates={domainStates} orgName={orgName} facilitator={facilitator} />;
+) {
+  const doc = (
+    <Document>
+      <CoverPage orgName={orgName} facilitator={facilitator} />
+      <BaselinePrioritiesPage baseline={baseline} selectedPriorities={selectedPriorities} />
+      <ConnectionsPage baseline={baseline} selectedPriorities={selectedPriorities} />
+      <AlignmentPage baseline={baseline} selectedPriorities={selectedPriorities} />
+    </Document>
+  );
+
   const blob = await pdf(doc).toBlob();
-  const filename = `Nursing-Assessment-${orgName.replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`;
-  await savePdfBlob(blob, filename, "Ambient Assessment: Nursing Edition");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `nursing-assessment-${orgName.toLowerCase().replace(/\s+/g, "-")}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

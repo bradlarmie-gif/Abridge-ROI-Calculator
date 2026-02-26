@@ -1,13 +1,12 @@
 import { useState, useCallback } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import type { NursingDomain, NursingDomainState, NursingBaselineInputs } from "./nursingTypes";
-import { DEFAULT_BASELINE, createEmptyDomainStates } from "./nursingTypes";
-import { hasAnyDomainSelected } from "./nursingCalculations";
+import type { NursingPriority, NursingBaselineInputs } from "./nursingTypes";
+import { DEFAULT_BASELINE } from "./nursingTypes";
 import NursingScreen1Program from "./NursingScreen1Program";
-import NursingDomainScreen from "./NursingDomainScreen";
-import NursingScoreScreen from "./NursingScoreScreen";
-import NursingPrioritiesScreen from "./NursingPrioritiesScreen";
+import NursingScreen2Priorities from "./NursingScreen2Priorities";
+import NursingScreen3Connections from "./NursingScreen3Connections";
+import NursingScreen4Alignment from "./NursingScreen4Alignment";
 import NursingNextStepScreen from "./NursingNextStepScreen";
 
 interface NursingAssessmentFlowProps {
@@ -19,35 +18,35 @@ const TOTAL_SCREENS = 5;
 
 const STEP_NAMES = [
   "Your Program",
-  "Pressure Points",
-  "Assessment",
   "Priorities",
+  "Where Ambient Fits",
+  "Your Investment Case",
   "Next Steps",
 ];
 
 export default function NursingAssessmentFlow({ onBack, onBackToJourney }: NursingAssessmentFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [baseline, setBaseline] = useState<NursingBaselineInputs>({ ...DEFAULT_BASELINE });
-  const [domainStates, setDomainStates] = useState<Record<NursingDomain, NursingDomainState>>(createEmptyDomainStates);
+  const [selectedPriorities, setSelectedPriorities] = useState<NursingPriority[]>([]);
 
   const updateBaseline = useCallback(<K extends keyof NursingBaselineInputs>(key: K, value: NursingBaselineInputs[K]) => {
     setBaseline(prev => ({ ...prev, [key]: value }));
   }, []);
 
   const canProceedFromProgram = baseline.staffedBeds > 0 && baseline.nurseFTEs > 0;
-  const canProceedFromDomains = hasAnyDomainSelected(domainStates);
+  const canProceedFromPriorities = selectedPriorities.length > 0;
 
   const goToStep = (step: number) => {
     if (step < 1 || step > TOTAL_SCREENS) return;
-    if (step > currentStep && currentStep === 1 && !canProceedFromProgram) return;
-    if (step > 2 && !canProceedFromDomains) return;
+    if (step > 1 && !canProceedFromProgram) return;
+    if (step > 2 && !canProceedFromPriorities) return;
     setCurrentStep(step);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromProgram) return;
-    if (currentStep === 2 && !canProceedFromDomains) return;
+    if (currentStep === 2 && !canProceedFromPriorities) return;
     goToStep(currentStep + 1);
   };
 
@@ -77,28 +76,28 @@ export default function NursingAssessmentFlow({ onBack, onBackToJourney }: Nursi
         );
       case 2:
         return (
-          <NursingDomainScreen
+          <NursingScreen2Priorities
             baseline={baseline}
-            domainStates={domainStates}
-            setDomainStates={setDomainStates}
+            selectedPriorities={selectedPriorities}
+            setSelectedPriorities={setSelectedPriorities}
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 3:
         return (
-          <NursingScoreScreen
+          <NursingScreen3Connections
             baseline={baseline}
-            domainStates={domainStates}
+            selectedPriorities={selectedPriorities}
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 4:
         return (
-          <NursingPrioritiesScreen
+          <NursingScreen4Alignment
             baseline={baseline}
-            domainStates={domainStates}
+            selectedPriorities={selectedPriorities}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -107,7 +106,7 @@ export default function NursingAssessmentFlow({ onBack, onBackToJourney }: Nursi
         return (
           <NursingNextStepScreen
             baseline={baseline}
-            domainStates={domainStates}
+            selectedPriorities={selectedPriorities}
             onBack={handleBack}
           />
         );

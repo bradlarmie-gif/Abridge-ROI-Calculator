@@ -1,0 +1,312 @@
+Screen 1: Your Nursing Program
+Header:
+YOUR NURSING PROGRAM
+Tell us about your organization.
+Inputs:
+
+Staffed beds
+Nurse FTEs
+Bed occupancy rate (slider, benchmark: "Most hospitals 75-90%")
+
+Same as before. Simple, fast, every CNO knows these.
+Button: "Continue →"
+
+Screen 2: What Is Your Nursing Program Trying to Solve?
+Header:
+WHAT MATTERS MOST RIGHT NOW?
+Every nursing program is under pressure. But not every organization is under the same pressure. Understanding what you're trying to solve is the first step toward knowing where technology investments should focus.
+Instruction:
+Select the priorities that are most relevant to your nursing program right now. You can select as many as apply — but try to identify the top 2-3 that are driving your strategic conversations today.
+Priority cards (selectable, multi-select — the CNO clicks the ones that resonate):
+☐ KEEP OUR NURSES
+  Retention is a top concern. We're losing experienced
+  nurses and the cost of replacing them is unsustainable.
+
+☐ CONTROL LABOR COSTS
+  Overtime, agency spend, or premium labor costs are
+  putting pressure on our margins.
+
+☐ REDUCE BURNOUT
+  Our nurses are exhausted. Documentation is one of
+  the biggest contributors to workload strain.
+
+☐ GET NURSES BACK TO THE BEDSIDE
+  Documentation pulls nurses away from patients. We
+  want more time for direct care.
+
+☐ IMPROVE DOCUMENTATION QUALITY
+  Flowsheet completeness, assessment consistency, or
+  handoff quality are gaps that affect compliance
+  and care continuity.
+
+☐ PREPARE FOR THE FUTURE
+  We want to build a documentation infrastructure that
+  supports AI, automation, and data-driven nursing
+  practice.
+Sidebar updates as they select:
+YOUR PRIORITIES
+[List of selected items]
+
+[X] of 6 selected
+No scores. No levels. Just: what matters to you?
+Button: "See Where Ambient Fits →"
+
+Screen 3: How Each Priority Connects to Ambient Documentation
+Header:
+WHERE AMBIENT NURSING DOCUMENTATION FITS
+Based on your priorities, here's how reducing flowsheet documentation time connects to what you're trying to solve — and where it doesn't.
+For each priority they selected, show a card explaining the connection. For priorities they DIDN'T select, show them collapsed/grayed at the bottom as "Other pathways — not selected as a current priority."
+The key: some connections are STRONG and DIRECT. Some are INDIRECT. Some are WEAK. Be honest about which is which. That honesty is what makes this credible.
+
+If "KEEP OUR NURSES" selected:
+KEEP OUR NURSES → STRONG CONNECTION
+
+How it connects:
+Documentation burden is one of the most frequently cited
+sources of nursing frustration and burnout. Burnout is
+the leading driver of voluntary turnover. Reducing the
+time nurses spend on flowsheets directly addresses one
+of the root causes of attrition.
+
+What the research says:
+Nurses spend 2-3 hours per shift on documentation.
+Documentation burden consistently ranks in the top 3
+drivers of nursing burnout across published surveys.
+
+What this means for ROI:
+When retention is your primary goal, the ROI model
+should focus on turnover cost avoidance — not on
+dollarizing every minute saved. A focused retention
+case at your scale could look like:
+
+[nurseFTEs] nurses × [X]% turnover × $[Y] replacement
+= $[total] in annual turnover cost
+
+Even a modest improvement in retention — 1-2 fewer
+departures per year — changes the math significantly.
+
+CONNECTION STRENGTH: ████████████ Direct
+
+If "CONTROL LABOR COSTS" selected:
+CONTROL LABOR COSTS → DIRECT FOR OT, INDIRECT FOR AGENCY
+
+How it connects:
+If end-of-shift charting is driving overtime, reducing
+documentation time directly reduces OT. If agency spend
+is driven by turnover, the connection is indirect —
+reduced burden → better retention → less agency need.
+That second pathway is real but takes 6-12 months.
+
+What to focus the ROI on:
+Be specific about which labor cost you're solving.
+OT reduction from documentation? That's direct and
+measurable in 30-60 days. Agency reduction from
+better retention? That's a longer-term case.
+
+The ROI model should focus on the labor cost driver
+that's most directly connected to documentation time.
+Trying to model both in one business case dilutes
+the story.
+
+CONNECTION STRENGTH:
+  Overtime     ████████████ Direct
+  Agency spend ██████░░░░░░ Indirect (via retention)
+
+If "REDUCE BURNOUT" selected:
+REDUCE BURNOUT → STRONG CONNECTION
+
+How it connects:
+Documentation is one of the most controllable drivers
+of nursing workload. Unlike patient acuity or staffing
+ratios — which are hard to change quickly — documentation
+time can be reduced through technology. Giving nurses
+15-20 minutes back per shift is tangible relief.
+
+What this means for ROI:
+Burnout itself is hard to dollarize. But the
+consequences of burnout are not: turnover, sick time,
+disengagement, medical errors. The ROI model should
+connect burnout reduction to the downstream consequence
+your organization cares about most.
+
+If it's turnover → model the retention pathway.
+If it's patient safety → model the quality pathway.
+If it's just "our nurses need relief" → the case
+may be more about workforce strategy than financial ROI.
+
+CONNECTION STRENGTH: ████████████ Direct (cause)
+  The dollar case depends on which consequence you model.
+
+If "GET NURSES BACK TO THE BEDSIDE" selected:
+GET NURSES BACK TO THE BEDSIDE → DIRECT CONNECTION, HARD TO DOLLARIZE
+
+How it connects:
+Every minute saved on documentation is a minute that
+could go to direct patient care. At [nurseFTEs] nurses
+and 260 shifts per year, even 15 minutes per shift
+= [calculated] hours back at the bedside annually.
+
+What this means for ROI:
+This is the most emotionally compelling case and the
+hardest to turn into a dollar figure. Bedside time
+doesn't directly generate revenue in nursing. Its value
+shows up in patient experience (HCAHPS), safety
+outcomes, and nurse satisfaction — all of which are
+real but harder to attribute.
+
+If bedside time is your primary motivation, the
+business case may need to be built around the strategic
+value to nursing practice and patient experience —
+supported by financial pathways like retention or OT,
+not led by them.
+
+CONNECTION STRENGTH: ████████████ Direct (time)
+  Financial case: ██████░░░░░░ Requires supporting pathways
+
+If "IMPROVE DOCUMENTATION QUALITY" selected:
+IMPROVE DOCUMENTATION QUALITY → MODERATE CONNECTION
+
+How it connects:
+Ambient documentation can improve flowsheet completeness
+and consistency by structuring the documentation process.
+But quality improvement also depends on clinical practice,
+workflow design, and governance — not just the tool.
+
+What this means for ROI:
+Documentation quality is harder to tie directly to
+financial outcomes. Its value shows up in audit
+readiness, survey preparedness, and reduced rework —
+but quantifying those requires measurement that most
+organizations haven't done yet.
+
+If documentation quality is a priority, the business
+case is about risk reduction and compliance posture
+rather than financial return. It's a strong supporting
+argument but rarely the lead story in an ROI model.
+
+CONNECTION STRENGTH: ████████░░░░ Moderate
+  Depends on current quality gaps and measurement
+
+If "PREPARE FOR THE FUTURE" selected:
+PREPARE FOR THE FUTURE → FOUNDATIONAL, NOT IMMEDIATE ROI
+
+How it connects:
+Structured, complete nursing documentation is the
+foundation for everything coming next in clinical AI:
+predictive models, automated quality reporting,
+decision support, care planning intelligence. You
+can't build on documentation that isn't there.
+
+What this means for ROI:
+This is a strategic infrastructure argument, not a
+short-term financial case. It's powerful for
+organizations that are thinking 2-3 years ahead —
+but it won't carry an ROI model on its own.
+
+Use this as a strategic layer on top of a more
+immediate pathway (retention, OT, bedside time).
+
+CONNECTION STRENGTH: ██████████░░ Strong (strategic)
+  Immediate financial ROI: ████░░░░░░░░ Weak
+
+Screen 4: Your Strategic Alignment
+Header:
+YOUR INVESTMENT CASE
+Based on your priorities, here's how to build the strongest case for ambient nursing documentation at your organization.
+Primary pathway section:
+Look at what they selected and identify the 1-2 pathways with the strongest connection. Show these as their primary investment case.
+YOUR PRIMARY PATHWAY
+
+Based on your priorities, the strongest investment case
+for your organization is:
+
+RETENTION + OVERTIME REDUCTION
+
+You identified "Keep Our Nurses" and "Control Labor Costs"
+as top priorities. Both have direct connections to
+documentation burden reduction:
+
+- Retention: reducing documentation frustration addresses
+  a root cause of nursing burnout and turnover. At your
+  scale, this is a $[turnoverCost] annual exposure.
+
+- Overtime: if end-of-shift charting is contributing to
+  OT, reducing documentation time directly reduces OT
+  costs. This is measurable within 30-60 days.
+
+These should be the focus of your ROI model. Other
+pathways (bedside time, documentation quality) can
+support the case but shouldn't lead it.
+The tool picks the primary pathway(s) based on a simple priority map:
+Priority selected              → Primary pathway
+Keep Our Nurses                → Retention (strong)
+Control Labor Costs            → OT / Agency (strong)
+Reduce Burnout                 → Retention (strong, via burnout)
+Get Nurses Back to Bedside     → Bedside time (strong but hard to dollarize)
+Improve Documentation Quality  → Quality (moderate, supporting)
+Prepare for the Future         → Infrastructure (strategic, supporting)
+If they selected 2-3 priorities with strong connections, show those as the primary pathway. If they only selected moderate or strategic priorities, be honest: "Your priorities are important but harder to build a traditional financial ROI case around. Consider whether a retention or labor cost pathway could serve as the financial anchor, with your primary priorities as supporting arguments."
+Supporting pathways section:
+SUPPORTING ARGUMENTS
+
+These priorities you selected are real and important,
+but they strengthen the case rather than carry it:
+
+- Bedside time: [X] hours annually returned to direct
+  care. Powerful for nursing leadership and patient
+  experience — but hard to dollarize on its own.
+
+- Documentation quality: supports compliance and survey
+  readiness. Valuable as a strategic argument alongside
+  the financial case.
+Pathways NOT selected:
+NOT A CURRENT PRIORITY
+
+These pathways weren't selected as priorities for your
+organization right now:
+
+- Agency reduction — not a current cost driver
+- Future infrastructure — not a near-term focus
+
+That's fine. A focused investment case built on what
+you actually care about is stronger than one that
+tries to capture everything.
+
+Screen 5: Next Step
+Header:
+READY TO BUILD THE CASE?
+You've identified what your nursing program is trying
+to solve and where ambient documentation fits. The next
+step is modeling the numbers — focused on the pathway(s)
+that matter most for your organization.
+
+Your recommended ROI focus:
+→ Retention impact (turnover cost avoidance)
+→ OT reduction (direct documentation time savings)
+
+We offer a focused working session where we model
+these specific pathways together with your
+organization's data.
+
+[Build My ROI Model →]     [Export My Assessment]
+"Build My ROI Model" takes them into the existing ROI calculator — but now the facilitator knows exactly which value drivers to turn on and which to skip. The conversation is focused from the start.
+
+The Sidebar (persists throughout)
+YOUR PRIORITIES
+
+☑ Keep Our Nurses
+☑ Control Labor Costs
+☑ Reduce Burnout
+☐ Get Nurses Back to Bedside
+☐ Improve Documentation Quality
+☐ Prepare for the Future
+
+YOUR BASELINE
+Staffed beds         [X]
+Nurse FTEs           [X]
+Occupancy            [X]%
+Shifts / year        [calculated]
+
+RECOMMENDED FOCUS
+Primary: Retention + OT Reduction
+Supporting: Burnout relief
