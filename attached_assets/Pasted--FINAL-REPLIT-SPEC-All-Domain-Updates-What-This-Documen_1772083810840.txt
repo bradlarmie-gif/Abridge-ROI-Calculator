@@ -1,0 +1,944 @@
+# FINAL REPLIT SPEC — All Domain Updates
+
+## What This Document Is
+
+This is the complete, final specification for updating all four domain screens in the Ambient AI assessment path. It covers every level, every input, every formula, every output message, and every edge case. Paste this into Replit and have the AI implement these changes.
+
+The design principle: a senior executive should be able to sit with you for 30-45 minutes, go through all four domains, and walk away understanding exactly where their organization stands — and what they're not doing. Every screen should feel like a conversation, not a form.
+
+---
+
+## GLOBAL RULES (apply to all domains)
+
+### Input Rules
+- NO input should ever have a pre-filled default value on sliders or number fields (exception: revenue per visit and provider rate in baseline advanced settings)
+- Every empty input shows "—" or "Not yet measured" in the impact card, NEVER "$0"
+- All benchmark text uses this pattern: *"Organizations at this stage have reported [X]. Based on aggregated deployment experience."* — never "Abridge customers report"
+- Every formula is shown in small italic text below the output
+- Every rate assumption ($75/hr, $150/hr, etc.) is labeled explicitly in the formula display
+
+### Impact Card Rules
+- Always show "Estimates based on your inputs. Individual results vary." at the bottom
+- When inputs are missing, show what to enter: "Enter [X] to calculate impact"
+- Never show $0 for missing data — show "—" or "Not yet measured"
+- Hours-based outputs show hours as the headline, dollar equivalents in supporting text only (Workforce L1 and L2)
+
+### Working Assumptions (used across domains)
+```
+FTE_HOURS = 2,080
+WORKING_DAYS = 230  ← CHANGED FROM 250 (more accurate for clinical providers)
+WORKING_WEEKS = 52
+ABSTRACTION_RATE = 75  // $/hr for compliance/quality work
+CMS_CONVERSION_FACTOR = 36.04  // for wRVU calculations
+```
+
+---
+
+## SCREEN 1: BASELINE INPUTS
+
+### Standard Inputs
+1. **Physicians and APPs using ambient documentation** — number input, placeholder "50"
+2. **Annual encounters where ambient is available** — number input, placeholder "100,000", keep existing "Help me estimate" link
+3. **What % of encounters use ambient documentation?** — slider, 10-100%, no default position
+   - Benchmark pills: `~45% Industry avg` | `76% Abridge avg`
+   - Below: *"Based on published industry data and Abridge deployment experience."*
+   - Dynamic text below slider based on value:
+     - Below 45%: *"Below industry average — significant adoption headroom."*
+     - 45-75%: *"At or above industry average. Room to reach top-performing benchmarks."*
+     - 76%+: *"Above average utilization across deployments."*
+
+### Advanced Toggle (collapsed by default, labeled "Adjust assumptions")
+4. **Revenue per visit** — $ input, default $200, helper: *"Blended average visit revenue. Used in capacity and revenue calculations. Adjust if your specialty or payer mix differs significantly."*
+5. **Provider hourly rate** — $ input, default $150, helper: *"Blended hourly rate for provider time. Used in workforce and capacity calculations."*
+6. **CMS wRVU conversion factor** — $ input, default $36.04, helper: *"National CMS conversion factor. Adjust to match your payer mix if calculating wRVU-based revenue impact."*
+
+### Sidebar (right, dark card)
+Header: YOUR BASELINE
+```
+Documented Encounters
+[encounters × utilization]
+[if below 76%: "+X,XXX at top-performing utilization" in red]
+
+Encounters per Provider per Day
+[encounters / providers / 230]
+```
+
+### Button: "See Capacity Reality →"
+
+---
+
+## SCREEN 2: CAPACITY
+
+### Header
+**WHERE DOES RECOVERED TIME ACTUALLY GO?**
+Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.
+
+### Cards (2×2 grid)
+
+```
+1. Time Saved, Not Deployed
+   Providers are faster. Schedules and panels are unchanged.
+
+2. Measured, Not Redesigned
+   Time savings tracked and quantified. Operational changes not yet implemented.
+
+3. Access Redesigned
+   Schedules, templates, or panels changed based on recovered capacity.
+
+4. Capacity Modeled into Workforce Planning
+   Recovered capacity is a variable in hiring, expansion, and FTE decisions.
+```
+
+### Level 1 — Time Saved, Not Deployed
+
+**REFINE YOUR INPUTS:**
+
+```
+Time saved per documented encounter
+Minutes recovered per encounter using ambient documentation
+[___] min
+☐ I haven't measured this precisely
+
+1.5–2.5 min Most tools | 3.0 min Abridge avg
+Based on published industry data and Abridge deployment experience.
+```
+
+If checkbox checked: input disappears, impact card shows "Time savings not yet measured. This is the first metric to establish."
+
+**ESTIMATED IMPACT (if time entered):**
+```
+$0
+
+Your providers are recovering an estimated [X] hours
+annually — [Y] FTE equivalent. None of this time is
+being structurally redeployed. Schedules and panel
+sizes are unchanged.
+
+recoveredHours = documentedEncounters × timeSaved / 60
+FTE = recoveredHours / 2,080
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 2 — Measured, Not Redesigned
+
+**REFINE YOUR INPUTS:**
+
+```
+Time saved per documented encounter
+[Same input as Level 1 — if already entered, preserve value]
+[___] min
+☐ I haven't measured this precisely
+
+Have you calculated total recovered capacity across your deployment?
+○ No — we have per-encounter data but haven't aggregated it
+○ Yes — we know our total recovered hours
+```
+
+If "Yes" selected, show the calculated number and let them confirm:
+```
+Based on your inputs, your estimated recovered hours annually: [X]
+Does this match your organization's calculation? [___] (editable override)
+```
+
+**ESTIMATED IMPACT (if time entered):**
+```
+$0 deployed
+
+Your organization has quantified [X] recovered hours
+annually — [Y] FTE equivalent. This time is measured
+but not yet converted to additional access or volume.
+
+recoveredHours = documentedEncounters × timeSaved / 60
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 3 — Access Redesigned
+
+**REFINE YOUR INPUTS:**
+
+```
+Additional patients per provider per month
+Additional patients seen per provider per month due to scheduling redesign
+[___]
+
+Organizations at this stage have reported 3-8 additional
+patients/provider/month. Based on aggregated deployment experience.
+
+Providers with redesigned schedules (optional)
+If only some providers have redesigned schedules, enter the count.
+Defaults to your total provider count if left blank.
+[___] (placeholder shows total provider count e.g. "50")
+
+Revenue per visit: $[X] (from baseline — adjust in baseline settings)
+```
+
+**ESTIMATED IMPACT (if patients entered):**
+```
+$[capacityValue]
+
+Your access redesign is generating [annualVisits]
+additional visits annually across [providersRedesigned]
+providers — estimated at $[capacityValue].
+
+annualVisits = additionalPatients × providersRedesigned × 12
+capacityValue = annualVisits × revenuePerVisit
+
+Using blended revenue per visit of $[X]. Adjust in
+baseline settings if incremental visit mix differs.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 4 — Capacity Modeled into Workforce Planning
+
+**REFINE YOUR INPUTS:**
+
+```
+How is recovered capacity being used in planning?
+☐ Avoided or deferred new hires
+☐ Redeployed providers to underserved panels or new sites
+☐ Absorbed patient volume growth without adding FTEs
+☐ Factored into annual FTE / staffing models
+☐ Used in business case for new service lines or locations
+
+Estimated FTEs avoided or redeployed
+[___]
+Organizations at the highest maturity level have reported 1-3
+FTE equivalent impact. Based on aggregated deployment experience.
+```
+
+**ESTIMATED IMPACT (if checkboxes + FTE entered):**
+```
+$[capacityValue] in workforce planning value
+
+Recovered capacity is a variable in [checkedCount]
+planning area(s):
+[list of checked items]
+
+[fteAvoided] FTE equivalent in avoided hiring or
+redeployment — valued at $[capacityValue] annually
+in compensation equivalent.
+
+capacityValue = fteAvoided × providerRate × 2,080
+Actual avoided cost including recruitment, onboarding,
+and ramp-up is typically higher.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**If only checkboxes, no FTE:**
+```
+[checkedCount] planning area(s) connected
+
+Recovered capacity is a variable in [checkedCount]
+planning area(s):
+[list of checked items]
+
+Enter estimated FTEs avoided or redeployed to
+calculate financial impact.
+```
+
+### Button: "See Revenue Impact →"
+
+---
+
+## SCREEN 3: REVENUE
+
+### Header
+**WHAT IS DOCUMENTATION FIDELITY WORTH TO YOUR REVENUE CYCLE?**
+Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.
+
+### Cards
+
+```
+1. Revenue Cycle Unaware
+   Revenue cycle has not evaluated documentation changes from ambient.
+
+2. Anecdotal Revenue Signal
+   Coding or billing teams report changes, but no formal analysis completed.
+
+3. Impact Measured
+   Before/after analysis completed. Documentation-driven revenue change quantified.
+
+4. Revenue Cycle Integration
+   Documentation quality is an ongoing, managed input to revenue cycle performance.
+```
+
+### Level 1 — Revenue Cycle Unaware
+
+**REFINE YOUR INPUTS:**
+```
+No additional inputs at this level. Your organization has not
+yet measured documentation-driven revenue impact.
+```
+
+**ESTIMATED IMPACT:**
+```
+Not yet measured
+
+Your revenue cycle has not yet evaluated how ambient
+documentation is affecting coding, billing, or
+collections.
+
+Every encounter generates documentation that determines
+how it gets coded, what gets billed, and whether it
+gets paid. If no one is looking at whether that
+documentation changed, the revenue impact is invisible.
+
+Organizations who connect revenue cycle to documentation
+quality typically identify measurable impact within
+90 days of analysis. Based on aggregated deployment
+experience.
+```
+
+### Level 2 — Anecdotal Revenue Signal
+
+**REFINE YOUR INPUTS:**
+```
+What signals has your revenue cycle observed?
+☐ Fewer CDI queries (notes are more complete upfront)
+☐ More specific diagnosis coding (ICD-10 specificity improved)
+☐ Improved HCC / risk adjustment capture
+☐ Fewer claim denials related to documentation
+☐ Faster coding turnaround (less back-and-forth)
+```
+
+**ESTIMATED IMPACT (if any checked):**
+```
+[checkedCount] revenue signal(s) observed
+
+Your revenue cycle has observed changes in
+[checkedCount] area(s):
+[list of checked items]
+
+These signals suggest documentation quality is flowing
+downstream — but the impact hasn't been formally
+measured. The next step is isolating the financial effect.
+
+Organizations who formalize measurement of these signals
+have reported 1-3% improvement in coding-related revenue.
+Based on aggregated deployment experience.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**If "none" or nothing checked:**
+```
+—
+
+No revenue signals observed yet. This may mean the
+impact isn't visible — or it may mean no one has asked
+your CDI or coding team. Consider connecting with them
+to look for signals.
+```
+
+### Level 3 — Impact Measured
+
+**REFINE YOUR INPUTS:**
+```
+What did you measure?
+○ wRVU change per encounter
+○ Collections change per encounter ($)
+○ Overall revenue change attributed to documentation (%)
+○ Denial rate reduction (%)
+
+[Dynamic input based on selection above]
+```
+
+**If wRVU selected:**
+```
+Measured wRVU change per encounter since deployment
+[___] wRVU
+
+Organizations with measured wRVU tracking have reported
+0.05-0.15 wRVU increase per encounter. Based on
+aggregated deployment experience.
+
+Conversion factor: $[conversionFactor] (adjust in baseline settings)
+```
+
+**Impact:**
+```
+$[revenueImpact]
+
+Your measured wRVU change of [wrvuDelta] per encounter
+across [documentedEncounters] documented encounters
+represents an estimated $[revenueImpact] in annual
+revenue impact.
+
+revenueImpact = wrvuDelta × documentedEncounters × conversionFactor
+
+Using CMS conversion factor of $[X]. Adjust in baseline
+settings to match your payer mix.
+
+Based on your organization's measured data. Attribution to
+documentation should account for other variables affecting
+wRVU. This reflects your reported measurement.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**If Collections selected:**
+```
+Measured collections change per encounter since deployment
+$ [___]
+
+Organizations with measured collections tracking have
+reported $3-$10 increase per encounter. Based on
+aggregated deployment experience.
+```
+
+**Impact:**
+```
+$[revenueImpact]
+
+Your measured collections increase of $[delta] per
+encounter across [documentedEncounters] documented
+encounters represents $[revenueImpact] in annual
+revenue impact.
+
+revenueImpact = collectionsDelta × documentedEncounters
+
+Based on your organization's measured data.
+Estimates based on your inputs. Individual results vary.
+```
+
+**If Revenue % selected:**
+```
+Measured revenue change attributed to documentation (%)
+[___] %
+
+Organizations with measured revenue tracking have
+reported 1-4% improvement. Based on aggregated
+deployment experience.
+```
+
+**Impact:**
+```
+$[revenueImpact]
+
+Your measured [pct]% revenue improvement across
+[documentedEncounters] encounters at $[revPerVisit]/visit
+represents $[revenueImpact] in annual revenue impact.
+
+revenueImpact = documentedEncounters × revenuePerVisit × revenuePct
+
+Based on your organization's measured data.
+Estimates based on your inputs. Individual results vary.
+```
+
+**If Denial Rate selected:**
+```
+Measured denial rate reduction since deployment (%)
+[___] %
+
+Organizations measuring denial rates have reported
+5-15% reduction in documentation-related denials. Based
+on aggregated deployment experience.
+```
+
+**Impact (qualitative — no dollar conversion):**
+```
+Denial rate reduced [pct]%
+
+Your documentation-related denial rate has decreased
+by [pct]%. This reduces revenue leakage and
+rework across your revenue cycle.
+
+To estimate dollar impact, multiply your average monthly
+documentation-related denial volume by the reduction
+percentage and your average denial value.
+
+Based on your organization's measured data.
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 4 — Revenue Cycle Integration
+
+**REFINE YOUR INPUTS:**
+```
+Where is documentation quality integrated into revenue cycle?
+☐ Ongoing wRVU or collections monitoring linked to documentation
+☐ CDI workflow incorporates ambient documentation review
+☐ Denial management tracks documentation-related root causes
+☐ Revenue cycle dashboards include documentation quality metrics
+☐ Payer negotiations reference documentation-driven outcomes
+
+Recognized annual revenue attributed to documentation improvements
+$ [___]
+This should be a number your CFO or revenue cycle VP would stand
+behind — formally attributed, not estimated.
+
+Organizations with formalized revenue attribution have reported
+$200K-$1M+ in recognized documentation-driven revenue. Based on
+aggregated deployment experience.
+```
+
+**ESTIMATED IMPACT (checkboxes + dollar):**
+```
+$[recognizedRevenue]
+
+Documentation quality is integrated into [checkedCount]
+revenue cycle operation(s):
+[list of checked items]
+
+Your organization formally attributes $[recognizedRevenue]
+in annual revenue to documentation quality.
+
+Not yet integrated:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**If only checkboxes:**
+```
+[checkedCount] integration(s) active
+
+Documentation quality is integrated into [checkedCount]
+revenue cycle operation(s):
+[list of checked items]
+
+Enter your organization's attributed revenue to
+calculate financial impact.
+
+Not yet integrated:
+[list of unchecked items]
+```
+
+### Button: "See Workforce Impact →"
+
+---
+
+## SCREEN 4: WORKFORCE
+
+### Header
+**WHAT IS DOCUMENTATION BURDEN COSTING YOUR WORKFORCE?**
+Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.
+
+### Cards
+
+```
+1. Pajama Time Reduced
+   Less after-hours charting. Labor strategy unchanged.
+
+2. Burden Measured and Validated
+   In-clinic time savings quantified. Provider sentiment captured.
+
+3. Retention Risk Quantified
+   Turnover exposure calculated against documentation burden.
+
+4. Labor Spend Structurally Reduced
+   Agency and locum spend declining. Workforce costs structurally improving.
+```
+
+### Level 1 — Pajama Time Reduced
+
+**REFINE YOUR INPUTS:**
+```
+Estimated hours per provider per week of after-hours documentation reduced
+[___] hrs/wk
+
+Organizations using ambient documentation have reported 1-3
+hrs/week reduction in after-hours documentation. Based on
+aggregated deployment experience.
+```
+
+**ESTIMATED IMPACT:**
+```
+[burdenHours] hours reclaimed
+
+[afterHours] hrs/week across [providers] providers
+= [burdenHours] hours of after-hours documentation
+burden eliminated annually.
+
+That's [perProvider] hours per provider per year
+returned to personal time.
+
+burdenHours = afterHoursReduction × providers × 52
+perProvider = afterHoursReduction × 52
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 2 — Burden Measured and Validated
+
+**REFINE YOUR INPUTS:**
+```
+Minutes saved per provider per day in chart editing, correction,
+and reconciliation
+[___] min/day
+
+Organizations at this stage have reported 10-20 min/day reduction
+in chart editing and review. Based on aggregated deployment experience.
+
+Have you conducted a clinician survey since deploying ambient documentation?
+○ Not yet
+○ Yes — informal pulse survey
+○ Yes — structured survey (burnout, satisfaction, documentation burden)
+```
+
+**If "Not yet" selected, show below radio:**
+*A clinician survey is the fastest way to validate what your operational data is showing. Without provider voice, burden reduction is an assumption.*
+
+**If "Informal pulse" selected:**
+*Informal feedback is a start. A structured survey measuring documentation burden, satisfaction, and likelihood to stay strengthens the evidence significantly.*
+
+**If "Structured survey" selected, show checkboxes:**
+```
+What did your survey show?
+☐ Reduced documentation burden reported
+☐ Improved work-life balance reported
+☐ Improved satisfaction with documentation workflow
+☐ Increased likelihood to stay / reduced intent to leave
+☐ More time with patients reported
+```
+
+**ESTIMATED IMPACT (if minutes entered):**
+```
+[savedHours] hours reclaimed
+
+[minutesSaved] min/day across [providers] providers
+= [savedHours] hours of in-clinic documentation
+burden eliminated annually.
+
+That's [perProvider] hours per provider per year
+redirected from documentation editing to patient care.
+
+savedHours = minutesSaved × providers × 230 / 60
+perProvider = minutesSaved × 230 / 60
+Using 230 clinical working days per year.
+
+[If survey completed:]
+CLINICIAN SURVEY: [checkedCount] finding(s) validated.
+[list of checked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 3 — Retention Risk Quantified
+
+**REFINE YOUR INPUTS:**
+```
+Annual physician turnover rate
+[___] %
+National physician turnover averages 6-8% annually (AAMC).
+
+Average cost to recruit and onboard a replacement
+$ [___]
+Industry estimates range from $250K-$500K per physician
+replacement (AAMC, Physician Recruitment studies).
+```
+
+**ESTIMATED IMPACT:**
+```
+$[totalTurnoverCost] in annual turnover cost
+
+At [turnoverRate]% turnover across [providers] providers,
+your organization expects approximately [departures]
+departure(s) per year. At $[replacementCost] per
+replacement, total annual turnover cost is $[totalCost].
+
+Industry research suggests administrative burden is a
+contributing factor in physician turnover. The portion
+of this exposure addressable through documentation
+burden reduction represents a significant retention
+opportunity.
+
+departures = providers × turnoverRate
+totalTurnoverCost = departures × replacementCost
+
+Based on your inputs and published industry research.
+Estimates are directional. Individual results vary.
+```
+
+### Level 4 — Labor Spend Structurally Reduced
+
+**REFINE YOUR INPUTS:**
+```
+Monthly reduction in agency or locum spend
+$ [___]
+
+Organizations at the highest maturity level have reported
+$5K-$30K/month in agency and locum spend reduction. Based
+on aggregated deployment experience.
+```
+
+**ESTIMATED IMPACT:**
+```
+$[annualSavings] annually
+
+Your organization has reduced agency and locum spend
+by an estimated $[monthlyReduction]/month —
+$[annualSavings] annually.
+
+annualSavings = monthlyReduction × 12
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Button: "See Risk Exposure →"
+
+---
+
+## SCREEN 5: RISK
+
+### Header
+**IS YOUR DOCUMENTATION INFRASTRUCTURE READY FOR WHAT COMES NEXT?**
+Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.
+
+### Cards
+
+```
+1. Better Notes, Same Infrastructure
+   Documentation quality improved. Nothing downstream has changed.
+
+2. Active Quality Monitoring
+   Documentation completeness and specificity are being tracked.
+
+3. Downstream Systems Connected
+   Quality reporting, CDI, or coding workflows are leveraging
+   improved documentation.
+
+4. Documentation as Strategic Data Asset
+   Structured documentation informs payer, quality, and compliance strategy.
+```
+
+### Level 1 — Better Notes, Same Infrastructure
+
+**REFINE YOUR INPUTS:**
+```
+No additional inputs at this level. Documentation quality improved.
+Nothing downstream has changed.
+```
+
+**ESTIMATED IMPACT:**
+```
+—
+
+Your documentation quality has improved — but nothing
+downstream has changed to leverage it. Quality reporting,
+CDI workflows, coding processes, and compliance reviews
+are operating the same way they did before deployment.
+
+The foundation is there. The question is whether your
+organization is building on it.
+```
+
+### Level 2 — Active Quality Monitoring
+
+**REFINE YOUR INPUTS:**
+```
+How is your organization monitoring documentation quality?
+○ Not yet — we know notes are better but haven't formalized tracking
+○ Spot checks — informal review, anecdotal feedback from CDI or coding
+○ Systematic tracking — structured audits or dashboards measuring
+  documentation attributes
+```
+
+NO option pre-selected. Impact card on load:
+```
+—
+
+Select how your organization is monitoring documentation
+quality to see your assessment.
+```
+
+**If "Not yet" selected:**
+```
+—
+
+Documentation quality monitoring hasn't started yet. If
+no one is reviewing documentation attributes — even
+informally — your organization may be at Level 1 for
+this domain.
+
+The single most important next step is establishing
+any form of documentation quality review.
+
+Organizations that begin systematic monitoring have
+reported 15-30% improvement in documentation
+completeness and specificity. Based on aggregated
+deployment experience.
+```
+
+**If "Spot checks":**
+```
+Informal monitoring active
+
+Your organization is informally reviewing documentation
+quality through spot checks and anecdotal feedback.
+This is a meaningful step — but informal processes don't
+scale and can't drive organizational strategy.
+
+Consider formalizing a review cadence and measurement
+framework to move toward Level 3.
+```
+
+**If "Systematic tracking" — show additional checkboxes:**
+```
+What documentation attributes are you tracking?
+☐ Note completeness (all relevant elements captured)
+☐ Diagnostic specificity (ICD-10 precision)
+☐ HCC / risk adjustment alignment
+☐ Quality measure documentation (HEDIS, MIPS gaps)
+☐ Compliance defensibility (audit-readiness)
+```
+
+**Impact:**
+```
+[checkedCount] of 5 quality dimensions tracked
+
+Your organization is systematically tracking
+[checkedCount] documentation quality attribute(s):
+[list of checked items]
+
+Not yet tracked:
+[list of unchecked items]
+
+Organizations tracking 4+ attributes are well-positioned
+to connect documentation quality to downstream workflows
+(Level 3).
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 3 — Downstream Systems Connected
+
+**REFINE YOUR INPUTS:**
+```
+Which downstream workflows have been impacted by improved documentation?
+☐ CDI query volume reduced (fewer queries because notes are more complete)
+☐ Coding accuracy improved (fewer rejections, faster turnaround)
+☐ Quality measure capture improved (HEDIS, MIPS, Stars gap closure)
+☐ Prior authorization documentation streamlined
+☐ Chart abstraction time reduced (registries, research, reporting)
+☐ Risk adjustment / HCC capture improved
+
+If known: estimated hours saved per month across these workflows
+[___] (optional)
+
+Organizations with connected downstream workflows have reported
+10-40 hrs/month in combined efficiency gains. Based on aggregated
+deployment experience.
+```
+
+**ESTIMATED IMPACT (checkboxes only, no hours):**
+```
+[checkedCount] downstream workflow(s) connected
+
+Your documentation infrastructure is driving improvement
+across [checkedCount] downstream workflow(s):
+[list of checked items]
+
+Not yet connected:
+[list of unchecked items]
+
+The workflows you haven't connected represent untapped
+operational value from your documentation foundation.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**ESTIMATED IMPACT (checkboxes + hours):**
+```
+$[annualSavings] in operational value
+
+Your documentation infrastructure is driving improvement
+across [checkedCount] downstream workflow(s):
+[list of checked items]
+
+[annualHours] hours recaptured annually — valued
+at $[annualSavings].
+
+annualHours = hoursSaved × 12
+annualSavings = annualHours × $75/hr
+Rate: $75/hr blended abstraction/administrative rate.
+
+Not yet connected:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Level 4 — Documentation as Strategic Data Asset
+
+**REFINE YOUR INPUTS:**
+```
+Where does documentation quality factor into organizational strategy?
+☐ Payer contract negotiations (documentation supports rate/quality arguments)
+☐ Value-based care program design (documentation feeds quality metrics)
+☐ Compliance / audit governance (documentation quality is a governed metric)
+☐ Clinical documentation review (documentation completeness tracked for
+  risk oversight)
+☐ Workforce / FTE modeling (documentation efficiency informs staffing)
+
+Can you estimate the annual strategic value? (optional)
+$ [___]
+This is hard to quantify precisely. If you can estimate the combined
+value of documentation-driven improvements across payer, quality,
+compliance, and risk programs — enter it here. If not, leave blank.
+
+Organizations at the highest maturity level have reported $100K-$500K+
+in attributed strategic value. Based on aggregated deployment experience.
+```
+
+**ESTIMATED IMPACT (checkboxes + dollar):**
+```
+$[strategicValue]
+
+Your organization treats documentation as a strategic
+data asset across [checkedCount] governance area(s):
+[list of checked items]
+
+Estimated annual strategic value: $[strategicValue].
+
+Not yet integrated:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**ESTIMATED IMPACT (checkboxes only):**
+```
+[checkedCount] strategic integration(s)
+
+Your organization treats documentation as a strategic
+data asset across [checkedCount] governance area(s):
+[list of checked items]
+
+Not yet integrated:
+[list of unchecked items]
+
+Quantified impact not yet estimated. Strategic
+integration drives compounding value across the
+organization.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+### Button: "See My Score →"
+
+---
+
+## IMPLEMENTATION NOTES
+
+1. **Capacity L1 and L2 share the time saved input.** If entered at L1 and user switches to L2, preserve the value. If user goes directly to L2, show the input. At L3 and L4, this input does NOT appear.
+
+2. **Capacity L3 has an optional "providers with redesigned schedules" field.** Defaults to total provider count from baseline. User can override downward. Formula uses this number instead of total providers.
+
+3. **Revenue L3 denial rate is qualitative only.** Shows the percentage, does NOT attempt dollar conversion. Explains how the user can calculate it themselves.
+
+4. **Workforce L2 uses 230 working days** (not 250). This is more accurate for clinical providers accounting for PTO, CME, and holidays.
+
+5. **Risk L2 radio buttons have NO default selection.** User must choose before impact card shows content.
+
+6. **Risk L3 hours input is labeled "optional"** and the domain works with just checkboxes.
+
+7. **All inputs persist** when navigating between domains. If user goes back to Capacity after completing Revenue, all Capacity inputs remain.
+
+8. **All level selections persist** per domain across navigation.
+
+9. **Revenue L3 CMS conversion factor** is adjustable in baseline advanced settings. Default $36.04. Shown in formula when wRVU is selected.
