@@ -4,15 +4,16 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { staggerContainer, staggerItem } from "@/components/PageTransition";
 import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
-import type { NursingInputs } from "./nursingTypes";
+import type { NursingDomain, NursingDomainState, NursingBaselineInputs } from "./nursingTypes";
 import { generateNursingPdf } from "./nursingPdf";
 
-interface Screen5Props {
-  inputs: NursingInputs;
+interface NextStepScreenProps {
+  baseline: NursingBaselineInputs;
+  domainStates: Record<NursingDomain, NursingDomainState>;
   onBack: () => void;
 }
 
-export default function NursingScreen5NextStep({ inputs, onBack }: Screen5Props) {
+export default function NursingNextStepScreen({ baseline, domainStates, onBack }: NextStepScreenProps) {
   const [showExportModal, setShowExportModal] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [facilitator, setFacilitator] = useState("");
@@ -21,7 +22,7 @@ export default function NursingScreen5NextStep({ inputs, onBack }: Screen5Props)
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      await generateNursingPdf(inputs, orgName || "Your Organization", facilitator);
+      await generateNursingPdf(baseline, domainStates, orgName || "Your Organization", facilitator);
     } catch (e) {
       console.error("PDF export failed:", e);
     } finally {
@@ -43,19 +44,19 @@ export default function NursingScreen5NextStep({ inputs, onBack }: Screen5Props)
             className="text-2xl md:text-3xl font-bold text-black mb-3 font-abridge uppercase tracking-tight"
             data-testid="text-nursing-nextstep-headline"
           >
-            Ready to Go Deeper?
+            Want to See What These Pathways Look Like with Real Numbers?
           </h1>
           <p className="text-base text-[#888888] max-w-xl mx-auto leading-relaxed">
-            You've identified where documentation burden is creating the most cost and risk in your nursing program. 
-            The next step is exploring what those pathways look like with real numbers — specific to your organization.
+            You've identified where documentation burden is creating the most pressure in your nursing program.
+            The next step is modeling what those pathways look like with specific time savings scenarios and your organization's data.
           </p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="mb-8">
           <div className="bg-[#F5F0EB] rounded-xl p-8">
             <p className="text-sm text-[#666666] leading-relaxed mb-6">
-              We offer a deeper working session where we model your highest-relevance pathways together. 
-              It's strategic planning, not a product demonstration.
+              We offer a deeper working session where we walk through the numbers together — focused on the
+              pathways that matter most for your organization.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -88,9 +89,9 @@ export default function NursingScreen5NextStep({ inputs, onBack }: Screen5Props)
             <button
               onClick={onBack}
               className="text-sm text-[#888] hover:text-[#1A1A1A] transition-colors"
-              data-testid="button-nursing-back-5"
+              data-testid="button-nursing-back-nextstep"
             >
-              Back to Summary
+              Back to Priority Pathways
             </button>
           </div>
         </motion.div>
