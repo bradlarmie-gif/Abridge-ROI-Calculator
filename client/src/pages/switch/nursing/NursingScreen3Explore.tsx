@@ -92,9 +92,14 @@ function RadioGroup({
       {options.map(opt => {
         const isSelected = value === opt.value;
         return (
-          <label
+          <div
             key={opt.value}
-            className={`flex items-center gap-3 cursor-pointer rounded-lg border px-3.5 py-3 transition-all active:scale-[0.99] ${
+            role="radio"
+            aria-checked={isSelected}
+            tabIndex={0}
+            onClick={() => onChange(opt.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(opt.value); } }}
+            className={`flex items-center gap-3 cursor-pointer rounded-lg border px-3.5 py-3 transition-all active:scale-[0.99] select-none ${
               isSelected
                 ? 'border-[#EA2C00] bg-[#EA2C00]/5'
                 : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
@@ -105,7 +110,7 @@ function RadioGroup({
               {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />}
             </div>
             <span className={`text-sm leading-relaxed ${isSelected ? 'text-black font-medium' : 'text-[#333333]'}`}>{opt.label}</span>
-          </label>
+          </div>
         );
       })}
     </div>
