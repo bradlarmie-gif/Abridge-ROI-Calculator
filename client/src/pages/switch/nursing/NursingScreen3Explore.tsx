@@ -51,16 +51,27 @@ function CheckboxGroup({
   };
   return (
     <div className="space-y-2">
-      {items.map((item, idx) => (
-        <label key={idx} className="flex items-start gap-2.5 cursor-pointer group" data-testid={`${testPrefix}-${idx}`}>
-          <Checkbox
-            checked={checked.includes(idx)}
-            onCheckedChange={() => toggle(idx)}
-            className="mt-0.5"
-          />
-          <span className="text-sm text-[#333333] leading-relaxed group-hover:text-[#1A1A1A]">{item}</span>
-        </label>
-      ))}
+      {items.map((item, idx) => {
+        const isChecked = checked.includes(idx);
+        return (
+          <label
+            key={idx}
+            className={`flex items-start gap-3 cursor-pointer group rounded-lg border px-3.5 py-3 transition-all active:scale-[0.99] ${
+              isChecked
+                ? 'border-[#EA2C00] bg-[#FFF5F2]'
+                : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+            }`}
+            data-testid={`${testPrefix}-${idx}`}
+          >
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={() => toggle(idx)}
+              className="mt-0.5"
+            />
+            <span className={`text-sm leading-relaxed ${isChecked ? 'text-[#1A1A1A]' : 'text-[#333333]'}`}>{item}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -78,14 +89,25 @@ function RadioGroup({
 }) {
   return (
     <div className="space-y-2">
-      {options.map(opt => (
-        <label key={opt.value} className="flex items-start gap-2.5 cursor-pointer group" data-testid={`${testPrefix}-${opt.value}`}>
-          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${value === opt.value ? 'border-[#EA2C00]' : 'border-[#CCCCCC] group-hover:border-[#999]'}`}>
-            {value === opt.value && <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />}
-          </div>
-          <span className="text-sm text-[#333333] leading-relaxed">{opt.label}</span>
-        </label>
-      ))}
+      {options.map(opt => {
+        const isSelected = value === opt.value;
+        return (
+          <label
+            key={opt.value}
+            className={`flex items-center gap-3 cursor-pointer rounded-lg border px-3.5 py-3 transition-all active:scale-[0.99] ${
+              isSelected
+                ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+            }`}
+            data-testid={`${testPrefix}-${opt.value}`}
+          >
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? 'border-[#EA2C00]' : 'border-[#CCCCCC]'}`}>
+              {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />}
+            </div>
+            <span className={`text-sm leading-relaxed ${isSelected ? 'text-black font-medium' : 'text-[#333333]'}`}>{opt.label}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }

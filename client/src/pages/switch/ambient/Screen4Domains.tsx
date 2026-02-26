@@ -297,7 +297,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   key={opt.id}
                   type="button"
                   onClick={() => setDomainInput('capacityAggregated', opt.id)}
-                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
                     capacityAggregated === opt.id
                       ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
                       : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
@@ -385,19 +385,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             How is recovered capacity being used in planning?
           </label>
           <div className="flex flex-col gap-2.5">
-            {CAPACITY_PLANNING_OPTIONS.map((item, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <Checkbox
-                  id={`capacity-planning-${i}`}
-                  checked={isChecked('capacityPlanningAreas', i)}
-                  onCheckedChange={() => toggleCheckboxItem('capacityPlanningAreas', i)}
-                  data-testid={`checkbox-capacity-planning-${i}`}
-                />
-                <label htmlFor={`capacity-planning-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
-                  {item}
+            {CAPACITY_PLANNING_OPTIONS.map((item, i) => {
+              const checked = isChecked('capacityPlanningAreas', i);
+              return (
+                <label
+                  key={i}
+                  htmlFor={`capacity-planning-${i}`}
+                  className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                    checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                >
+                  <Checkbox
+                    id={`capacity-planning-${i}`}
+                    checked={checked}
+                    onCheckedChange={() => toggleCheckboxItem('capacityPlanningAreas', i)}
+                    data-testid={`checkbox-capacity-planning-${i}`}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm text-[#525252] select-none leading-snug">
+                    {item}
+                  </span>
                 </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <div>
@@ -450,25 +460,40 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               What signals has your revenue cycle observed?
             </label>
             <div className="flex flex-col gap-2.5">
-              {REVENUE_SIGNALS.map((signal, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <Checkbox
-                    id={`revenue-signal-${i}`}
-                    checked={!noneObserved && isChecked('revenueSignals', i)}
-                    onCheckedChange={() => {
-                      if (noneObserved) setDomainInput('revenueNoneObserved', 'false');
-                      toggleCheckboxItem('revenueSignals', i);
-                    }}
-                    disabled={noneObserved}
-                    data-testid={`checkbox-revenue-signal-${i}`}
-                  />
-                  <label htmlFor={`revenue-signal-${i}`} className={`text-sm cursor-pointer select-none leading-snug ${noneObserved ? 'text-[#999]' : 'text-[#525252]'}`}>
-                    {signal}
+              {REVENUE_SIGNALS.map((signal, i) => {
+                const checked = !noneObserved && isChecked('revenueSignals', i);
+                return (
+                  <label
+                    key={i}
+                    htmlFor={`revenue-signal-${i}`}
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                      noneObserved ? 'border-[#E5E7EB] bg-[#F9FAFB] opacity-50' : checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                  >
+                    <Checkbox
+                      id={`revenue-signal-${i}`}
+                      checked={checked}
+                      onCheckedChange={() => {
+                        if (noneObserved) setDomainInput('revenueNoneObserved', 'false');
+                        toggleCheckboxItem('revenueSignals', i);
+                      }}
+                      disabled={noneObserved}
+                      data-testid={`checkbox-revenue-signal-${i}`}
+                      className="mt-0.5"
+                    />
+                    <span className={`text-sm select-none leading-snug ${noneObserved ? 'text-[#999]' : 'text-[#525252]'}`}>
+                      {signal}
+                    </span>
                   </label>
-                </div>
-              ))}
+                );
+              })}
               <div className="h-px bg-[#E5E7EB] my-1" />
-              <div className="flex items-start gap-2.5">
+              <label
+                htmlFor="revenue-none-observed"
+                className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                  noneObserved ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}
+              >
                 <Checkbox
                   id="revenue-none-observed"
                   checked={noneObserved}
@@ -481,11 +506,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     }
                   }}
                   data-testid="checkbox-revenue-none"
+                  className="mt-0.5"
                 />
-                <label htmlFor="revenue-none-observed" className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
+                <span className="text-sm text-[#525252] select-none leading-snug">
                   None observed yet
-                </label>
-              </div>
+                </span>
+              </label>
             </div>
           </div>
         </div>
@@ -506,7 +532,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   key={opt.id}
                   type="button"
                   onClick={() => setDomainInput('revenueMetricType', opt.id)}
-                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
                     metricType === opt.id
                       ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
                       : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
@@ -622,19 +648,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             How is documentation quality integrated into revenue cycle?
           </label>
           <div className="flex flex-col gap-2.5">
-            {REVENUE_INTEGRATIONS.map((item, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <Checkbox
-                  id={`revenue-integration-${i}`}
-                  checked={isChecked('revenueIntegrations', i)}
-                  onCheckedChange={() => toggleCheckboxItem('revenueIntegrations', i)}
-                  data-testid={`checkbox-revenue-integration-${i}`}
-                />
-                <label htmlFor={`revenue-integration-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
-                  {item}
+            {REVENUE_INTEGRATIONS.map((item, i) => {
+              const checked = isChecked('revenueIntegrations', i);
+              return (
+                <label
+                  key={i}
+                  htmlFor={`revenue-integration-${i}`}
+                  className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                    checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                >
+                  <Checkbox
+                    id={`revenue-integration-${i}`}
+                    checked={checked}
+                    onCheckedChange={() => toggleCheckboxItem('revenueIntegrations', i)}
+                    data-testid={`checkbox-revenue-integration-${i}`}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm text-[#525252] select-none leading-snug">
+                    {item}
+                  </span>
                 </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -729,17 +765,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {SURVEY_OPTIONS.map((opt) => (
                 <label
                   key={opt.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
                     surveyType === opt.id
                       ? 'border-[#EA2C00] bg-[#EA2C00]/5'
                       : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                   }`}
                   data-testid={`radio-survey-${opt.id}`}
                 >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     surveyType === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {surveyType === opt.id && <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />}
+                    {surveyType === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-black">{opt.label}</span>
                   <input
@@ -773,19 +809,24 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 What did your survey show?
               </label>
               <div className="flex flex-col gap-2">
-                {SURVEY_FINDINGS.map((finding, i) => (
-                  <label
-                    key={i}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] bg-white hover:border-[#D1D5DB] cursor-pointer transition-all"
-                    data-testid={`checkbox-survey-finding-${i}`}
-                  >
-                    <Checkbox
-                      checked={isChecked('surveyFindings', i)}
-                      onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
-                    />
-                    <span className="text-sm text-black">{finding}</span>
-                  </label>
-                ))}
+                {SURVEY_FINDINGS.map((finding, i) => {
+                  const checked = isChecked('surveyFindings', i);
+                  return (
+                    <label
+                      key={i}
+                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid={`checkbox-survey-finding-${i}`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
+                      />
+                      <span className="text-sm text-black">{finding}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -882,17 +923,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {MONITORING_OPTIONS.map((opt) => (
                 <label
                   key={opt.id}
-                  className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3.5 sm:p-4 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
                     approach === opt.id
                       ? 'border-[#EA2C00] bg-[#EA2C00]/5'
                       : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                   }`}
                   data-testid={`radio-monitoring-${opt.id}`}
                 >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     approach === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {approach === opt.id && <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />}
+                    {approach === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-[#525252]">{opt.label}</span>
                   <input
@@ -920,19 +961,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   What documentation attributes are you tracking?
                 </label>
                 <div className="flex flex-col gap-2.5">
-                  {QUALITY_ATTRIBUTES.map((attr, i) => (
-                    <div key={i} className="flex items-start gap-2.5">
-                      <Checkbox
-                        id={`quality-attr-${i}`}
-                        checked={isChecked('qualityAttributes', i)}
-                        onCheckedChange={() => toggleCheckboxItem('qualityAttributes', i)}
-                        data-testid={`checkbox-quality-${i}`}
-                      />
-                      <label htmlFor={`quality-attr-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
-                        {attr}
+                  {QUALITY_ATTRIBUTES.map((attr, i) => {
+                    const checked = isChecked('qualityAttributes', i);
+                    return (
+                      <label
+                        key={i}
+                        htmlFor={`quality-attr-${i}`}
+                        className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                          checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                        }`}
+                      >
+                        <Checkbox
+                          id={`quality-attr-${i}`}
+                          checked={checked}
+                          onCheckedChange={() => toggleCheckboxItem('qualityAttributes', i)}
+                          data-testid={`checkbox-quality-${i}`}
+                          className="mt-0.5"
+                        />
+                        <span className="text-sm text-[#525252] select-none leading-snug">
+                          {attr}
+                        </span>
                       </label>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <BenchmarkContext text="Organizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience." />
               </motion.div>
@@ -950,19 +1001,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               Which downstream workflows have been impacted by improved documentation?
             </label>
             <div className="flex flex-col gap-2.5">
-              {DOWNSTREAM_WORKFLOWS.map((wf, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <Checkbox
-                    id={`workflow-${i}`}
-                    checked={isChecked('connectedWorkflows', i)}
-                    onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
-                    data-testid={`checkbox-workflow-${i}`}
-                  />
-                  <label htmlFor={`workflow-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
-                    {wf}
+              {DOWNSTREAM_WORKFLOWS.map((wf, i) => {
+                const checked = isChecked('connectedWorkflows', i);
+                return (
+                  <label
+                    key={i}
+                    htmlFor={`workflow-${i}`}
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                  >
+                    <Checkbox
+                      id={`workflow-${i}`}
+                      checked={checked}
+                      onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
+                      data-testid={`checkbox-workflow-${i}`}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-[#525252] select-none leading-snug">
+                      {wf}
+                    </span>
                   </label>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -993,19 +1054,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             Where does documentation quality factor into organizational strategy?
           </label>
           <div className="flex flex-col gap-2.5">
-            {STRATEGIC_INTEGRATIONS.map((item, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <Checkbox
-                  id={`strategic-${i}`}
-                  checked={isChecked('strategicIntegrations', i)}
-                  onCheckedChange={() => toggleCheckboxItem('strategicIntegrations', i)}
-                  data-testid={`checkbox-strategic-${i}`}
-                />
-                <label htmlFor={`strategic-${i}`} className="text-sm text-[#525252] cursor-pointer select-none leading-snug">
-                  {item}
+            {STRATEGIC_INTEGRATIONS.map((item, i) => {
+              const checked = isChecked('strategicIntegrations', i);
+              return (
+                <label
+                  key={i}
+                  htmlFor={`strategic-${i}`}
+                  className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                    checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                >
+                  <Checkbox
+                    id={`strategic-${i}`}
+                    checked={checked}
+                    onCheckedChange={() => toggleCheckboxItem('strategicIntegrations', i)}
+                    data-testid={`checkbox-strategic-${i}`}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm text-[#525252] select-none leading-snug">
+                    {item}
+                  </span>
                 </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -1072,17 +1143,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
-      <div className="flex items-center justify-center gap-3 mb-10">
+      <div className="flex items-center justify-center gap-1.5 sm:gap-3 mb-10">
         {DOMAIN_ORDER.map((d, idx) => {
           const isActive = d === activeDomain;
           const isComplete = idx < activeIdx;
 
           return (
-            <div key={d} className="flex items-center gap-3">
+            <div key={d} className="flex items-center gap-1.5 sm:gap-3">
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => isComplete && setActiveDomain(d)}
-                  className={`text-xs font-medium uppercase tracking-[1.5px] mb-2 ${
+                  className={`text-[10px] sm:text-xs font-medium uppercase tracking-[1px] sm:tracking-[1.5px] mb-2 px-1 py-1 ${
                     isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888]'
                   }`}
                   data-testid={`domain-label-${d}`}
@@ -1098,7 +1169,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 />
               </div>
               {idx < DOMAIN_ORDER.length - 1 && (
-                <div className="w-8 h-px bg-[#D1D5DB] mt-5" />
+                <div className="w-4 sm:w-8 h-px bg-[#D1D5DB] mt-5" />
               )}
             </div>
           );
@@ -1119,15 +1190,34 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </p>
       </motion.div>
 
+      <motion.div
+        className="lg:hidden bg-[#1A1A1A] rounded-xl px-4 py-3 mb-6 flex items-center justify-between"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        key={`mobile-strip-${activeDomain}-${feedback?.value}`}
+        data-testid="mobile-impact-strip"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
+          <div className="w-px h-4 bg-white/10" />
+          <span className="text-sm font-bold text-white">
+            {feedback ? (feedback.hasValue ? formatDollar(feedback.value || 0) : '$0') : '—'}
+          </span>
+        </div>
+        <span className="text-[10px] text-white/40 uppercase tracking-wider">
+          {activeIdx + 1} of {DOMAIN_ORDER.length}
+        </span>
+      </motion.div>
+
       <div className="flex flex-col lg:flex-row gap-10">
         <div className="flex-1 max-w-[700px]">
-          <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8">
+          <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
               Where is your organization today?
             </p>
             <div className="h-px bg-[#E5E7EB] mb-6" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {config.cards.map((card, cardIdx) => {
                 const isSelected = currentState.activationLevel === card.level;
                 return (
@@ -1138,10 +1228,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: cardIdx * 0.06, ease: "easeOut" }}
                     onClick={() => setActivation(card.level)}
-                    className={`rounded-lg p-5 text-left min-h-[110px] transition-all cursor-pointer ${
+                    className={`rounded-lg p-4 sm:p-5 text-left min-h-[110px] transition-all cursor-pointer active:scale-[0.98] ${
                       isSelected
-                        ? "bg-[#EA2C00]/5 border-2 border-[#EA2C00]"
-                        : "bg-white/80 border border-[#E5E7EB]"
+                        ? "bg-[#EA2C00]/5 border-2 border-[#EA2C00] shadow-sm"
+                        : "bg-white/80 border border-[#E5E7EB] hover:border-[#D1D5DB]"
                     }`}
                     data-testid={`activation-card-${activeDomain}-${card.level}`}
                   >
@@ -1170,7 +1260,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="mb-8"
               >
-                <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10">
+                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10">
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     Refine Your Inputs
                   </p>
@@ -1191,7 +1281,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
 
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="hidden lg:block w-[320px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
