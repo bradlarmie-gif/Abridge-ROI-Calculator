@@ -32,7 +32,9 @@ Key UX rules: "Not yet measured" replaces $0 for unset inputs; totals only sum d
 
 **Revenue Domain Levels:** Revenue Cycle Unaware → Anecdotal Revenue Signal (multi-select checkbox signals) → Impact Measured (choose metric type: wRVU/collections/revenue%/denial rate, dynamic calculation per type) → Revenue Cycle Integration (integration checkboxes + attributed revenue $). Level 3 formulas: wRVU×encounters×$36.04 CMS conversion, collections×encounters, encounters×rev/visit×%, denials/mo×reduction%×avgValue×12.
 
-**Legal Language Standards:** All benchmark text uses observational framing ("Organizations at this stage have reported X") — no causal claims. Turnover attribution uses 25% midpoint of 15–30% range (AMA/AAMC). Per-card disclaimer: "Estimates based on your inputs. Individual results vary." Global disclaimer on Screen6 includes no-guarantee language.
+**Workforce Domain Levels:** Pajama Time Reduced (hrs/wk after-hours reduction, hours headline) → Burden Measured and Validated (min/day savings + clinician survey radio with conditional findings checkboxes) → Retention Risk Quantified (turnover rate × providers × replacement cost, no attribution multiplier) → Labor Spend Structurally Reduced (agency/locum monthly × 12, no overtime input). L1/L2 show hours as headline metric; dollar burden-equivalent stored for downstream aggregation.
+
+**Legal Language Standards:** All benchmark text uses observational framing ("Organizations at this stage have reported X") — no causal claims. Turnover L3 shows total exposure with narrative framing ("administrative burden is a contributing factor") — no 25% multiplier applied. Per-card disclaimer: "Estimates based on your inputs. Individual results vary." Global disclaimer on Screen6 includes no-guarantee language.
 
 ### Calculation Architecture
 -   **Two calculation engines**: Classic SwitchPath.tsx (driver-level calculations) and computePillars.ts (narrative flow pillar calculations)

@@ -27,9 +27,9 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
   },
   workforce: {
     1: 'Pajama Time Reduced',
-    2: 'In-Clinic Burden Reduced',
-    3: 'Turnover Risk Managed',
-    4: 'Labor Volatility Strategically Reduced',
+    2: 'Burden Measured and Validated',
+    3: 'Retention Risk Quantified',
+    4: 'Labor Spend Structurally Reduced',
   },
   risk: {
     1: 'Better Notes, Same Infrastructure',
@@ -433,6 +433,14 @@ export function computeRevenueFeedback(
   };
 }
 
+const SURVEY_FINDING_LABELS = [
+  'Reduced documentation burden reported',
+  'Improved work-life balance reported',
+  'Improved satisfaction with documentation workflow',
+  'Increased likelihood to stay / reduced intent to leave',
+  'More time with patients reported',
+];
+
 export function computeWorkforceFeedback(
   level: ActivationLevel,
   inputs: Record<string, number | string>,
@@ -458,15 +466,21 @@ export function computeWorkforceFeedback(
       label: 'Estimated Impact',
       value: burdenValue,
       hasValue: true,
-      headlineMetric: `${burdenHours.toLocaleString()} hours eliminated`,
-      context: `${afterHoursReduction} hrs/week across ${providers} providers = ${burdenHours.toLocaleString()} hours of after-hours burden eliminated annually. That's ${hoursPerProvider.toLocaleString()} hours per provider per year returned to personal time.`,
-      formula: `[burdenHours] = ${afterHoursReduction} hrs/wk × ${providers} providers × 52 weeks = ${burdenHours.toLocaleString()}\n[hoursPerProvider] = ${afterHoursReduction} × 52 = ${hoursPerProvider}\nBurden-equivalent value: ${formatDollar(burdenValue)} at ${formatDollar(providerRate)}/hr`,
-      footnote: 'Hours is the headline metric. Dollar value shown as burden-equivalent context.',
+      headlineMetric: `${burdenHours.toLocaleString()} hours reclaimed annually`,
+      context: `${afterHoursReduction} hrs/week across ${providers} providers = ${burdenHours.toLocaleString()} hours of after-hours documentation burden eliminated annually.\n\nThat's ${hoursPerProvider.toLocaleString()} hours per provider per year returned to personal time.`,
+      formula: `[burdenHours] = ${afterHoursReduction} × ${providers} × 52 = ${burdenHours.toLocaleString()}\n[hoursPerProvider] = ${afterHoursReduction} × 52 = ${hoursPerProvider}`,
+      footnote: '',
     };
   }
 
   if (level === 2) {
     const minutesSaved = inputs.editTimeSaved as number | undefined;
+    const surveyType = inputs.surveyType as string | undefined;
+    const surveyFindingsStr = inputs.surveyFindings as string | undefined;
+    const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];
+    const checkedCount = checkedFindings.length;
+    const checkedLabels = checkedFindings.map(i => SURVEY_FINDING_LABELS[i]).filter(Boolean);
+
     if (!minutesSaved || minutesSaved <= 0) {
       return {
         label: 'Estimated Impact',
@@ -477,17 +491,27 @@ export function computeWorkforceFeedback(
         footnote: '',
       };
     }
-    const adminRate = 100;
     const savedHours = Math.round(minutesSaved * providers * 250 / 60);
-    const burdenValue = Math.round(savedHours * adminRate);
+    const annualPerProvider = Math.round(minutesSaved * 250 / 60);
+    const burdenValue = Math.round(savedHours * providerRate);
+
+    const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
+    const surveyNarrative = hasSurveyData
+      ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`
+      : surveyType === 'not_yet' || surveyType === 'informal' || !surveyType
+        ? '\n\nProvider survey not yet conducted or informal only. Operational data shows burden reduction — clinician voice would validate and strengthen this finding.'
+        : '';
+
     return {
       label: 'Estimated Impact',
       value: burdenValue,
       hasValue: true,
-      headlineMetric: `${savedHours.toLocaleString()} hours eliminated`,
-      context: `${minutesSaved} min/day across ${providers} providers = ${savedHours.toLocaleString()} hours of in-clinic administrative burden eliminated annually.`,
-      formula: `[savedHours] = ${minutesSaved} min/day × ${providers} providers × 250 days / 60 = ${savedHours.toLocaleString()}\nBurden-equivalent value: ${formatDollar(burdenValue)} at $100/hr administrative rate`,
-      footnote: 'Administrative rate used for in-clinic burden calculation.',
+      headlineMetric: hasSurveyData
+        ? `${savedHours.toLocaleString()} hours reclaimed · ${checkedCount} survey finding(s)`
+        : `${savedHours.toLocaleString()} hours reclaimed annually`,
+      context: `${minutesSaved} min/day across ${providers} providers = ${savedHours.toLocaleString()} hours of in-clinic documentation burden eliminated annually.\n\nThat's ${annualPerProvider.toLocaleString()} hours per provider per year redirected from documentation editing to patient care.${surveyNarrative}`,
+      formula: `[savedHours] = ${minutesSaved} × ${providers} × 250 / 60 = ${savedHours.toLocaleString()}\n[annualPerProvider] = ${minutesSaved} × 250 / 60 = ${annualPerProvider}`,
+      footnote: '',
     };
   }
 
@@ -499,47 +523,44 @@ export function computeWorkforceFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Enter annual turnover rate and replacement cost to calculate turnover exposure.',
+        context: 'Enter annual turnover rate and replacement cost to calculate retention exposure.',
         formula: '',
         footnote: '',
       };
     }
-    const atRiskProviders = providers * (turnoverRate / 100);
-    const burdenAttributable = atRiskProviders * 0.25;
-    const turnoverExposure = Math.round(burdenAttributable * replacementCost);
+    const totalTurnover = providers * (turnoverRate / 100);
+    const totalCost = Math.round(totalTurnover * replacementCost);
     return {
       label: 'Estimated Impact',
-      value: turnoverExposure,
+      value: totalCost,
       hasValue: true,
-      context: `At ${turnoverRate}% turnover across ${providers} providers, approximately ${burdenAttributable.toFixed(1)} departure(s) per year may be attributable to documentation burden. At ${formatDollar(replacementCost)} per replacement, this represents ${formatDollar(turnoverExposure)} in annual turnover exposure.`,
-      formula: `[atRiskProviders] = ${providers} \u00d7 ${turnoverRate}% = ${atRiskProviders.toFixed(1)}\n[burdenAttributable] = ${atRiskProviders.toFixed(1)} \u00d7 25% (midpoint of 15\u201330% range) = ${burdenAttributable.toFixed(1)}\n[turnoverExposure] = ${burdenAttributable.toFixed(1)} \u00d7 ${formatDollar(replacementCost)} = ${formatDollar(turnoverExposure)}`,
-      footnote: 'Attribution: Industry research suggests 15\u201330% of turnover decisions involve administrative burden as a contributing factor (AMA, AAMC).',
+      headlineMetric: `${formatDollar(totalCost)} in annual retention exposure`,
+      context: `At ${turnoverRate}% turnover across ${providers} providers, your organization expects approximately ${totalTurnover.toFixed(1)} departure(s) per year. At ${formatDollar(replacementCost)} per replacement, total annual turnover cost is ${formatDollar(totalCost)}.\n\nIndustry research suggests administrative burden is a contributing factor in physician turnover. The portion of this exposure addressable through documentation burden reduction represents a significant retention opportunity.`,
+      formula: `[totalTurnover] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}`,
+      footnote: 'Based on your inputs and published industry research. Estimates are directional. Individual results vary.',
     };
   }
 
   const agencyReduction = inputs.agencyReduction as number | undefined;
-  const overtimeReduction = inputs.overtimeReduction as number | undefined;
-  const hasAgency = agencyReduction !== undefined && agencyReduction > 0;
-  const hasOvertime = overtimeReduction !== undefined && overtimeReduction > 0;
-  if (!hasAgency && !hasOvertime) {
+  if (!agencyReduction || agencyReduction <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      context: 'Enter monthly agency spend avoided and/or overtime reduction to calculate labor volatility impact.',
+      context: 'Enter monthly agency or locum spend reduction to calculate labor cost impact.',
       formula: '',
       footnote: '',
     };
   }
-  const monthly = (agencyReduction || 0) + (overtimeReduction || 0);
-  const annualSavings = Math.round(monthly * 12);
+  const annualSavings = Math.round(agencyReduction * 12);
   return {
     label: 'Estimated Impact',
     value: annualSavings,
     hasValue: true,
-    context: `Your organization is reducing labor volatility by an estimated ${formatDollar(annualSavings)} annually through reduced agency and overtime spend.`,
-    formula: `[annualSavings] = (${formatDollar(agencyReduction || 0)} agency + ${formatDollar(overtimeReduction || 0)} overtime) × 12 = ${formatDollar(annualSavings)}`,
-    footnote: 'Agency spend avoided + overtime reduction × 12 months.',
+    headlineMetric: `${formatDollar(annualSavings)} annually`,
+    context: `Your organization has reduced agency and locum spend by an estimated ${formatDollar(agencyReduction)}/month — ${formatDollar(annualSavings)} annually.\n\nThis is the financial proof that documentation burden reduction is translating to structural workforce cost improvement.`,
+    formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}`,
+    footnote: '',
   };
 }
 

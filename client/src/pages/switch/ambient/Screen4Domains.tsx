@@ -74,9 +74,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
     cards: [
       { level: 1, label: 'Pajama Time Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
-      { level: 2, label: 'In-Clinic Burden Reduced', description: 'Chart editing and reconciliation workload measurably lower.' },
-      { level: 3, label: 'Turnover Risk Managed', description: 'Attrition tracked against documentation burden reduction.' },
-      { level: 4, label: 'Labor Volatility Strategically Reduced', description: 'Agency and overtime exposure structurally declining.' },
+      { level: 2, label: 'Burden Measured and Validated', description: 'In-clinic time savings quantified. Provider sentiment captured.' },
+      { level: 3, label: 'Retention Risk Quantified', description: 'Turnover exposure calculated against documentation burden.' },
+      { level: 4, label: 'Labor Spend Structurally Reduced', description: 'Agency and locum spend declining. Workforce costs structurally improving.' },
     ],
   },
   risk: {
@@ -700,23 +700,109 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       );
     }
 
+    const SURVEY_OPTIONS = [
+      { id: 'not_yet', label: 'Not yet' },
+      { id: 'informal', label: 'Yes — informal pulse survey' },
+      { id: 'structured', label: 'Yes — structured survey (e.g., burnout, satisfaction, documentation burden)' },
+    ];
+
+    const SURVEY_FINDINGS = [
+      'Reduced documentation burden reported',
+      'Improved work-life balance reported',
+      'Improved satisfaction with documentation workflow',
+      'Increased likelihood to stay / reduced intent to leave',
+      'More time with patients reported',
+    ];
+
     if (level === 2) {
+      const surveyType = (currentState.inputs.surveyType as string) || '';
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Minutes saved per provider per day in chart editing, correction, and reconciliation
-          </label>
-          <div className="flex items-center gap-2">
-            <FormattedNumberInput
-              value={(currentState.inputs.editTimeSaved as number) || 0}
-              onChange={(v) => setDomainInput('editTimeSaved', Math.max(0, v))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-edit-time"
-            />
-            <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Minutes saved per provider per day in chart editing, correction, and reconciliation
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.editTimeSaved as number) || 0}
+                onChange={(v) => setDomainInput('editTimeSaved', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-edit-time"
+              />
+              <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
+            </div>
+            <BenchmarkContext text="Organizations at this stage have reported 10–20 min/day reduction in chart editing and review. Based on aggregated deployment experience." />
           </div>
-          <BenchmarkContext text="Organizations using ambient documentation have reported 10–20 min/day reduction in chart editing and review." />
+
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              Have you conducted a clinician survey since deploying ambient documentation?
+            </label>
+            <div className="flex flex-col gap-2">
+              {SURVEY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    surveyType === opt.id
+                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-survey-${opt.id}`}
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    surveyType === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {surveyType === opt.id && <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />}
+                  </div>
+                  <span className="text-sm text-black">{opt.label}</span>
+                  <input
+                    type="radio"
+                    name="surveyType"
+                    value={opt.id}
+                    checked={surveyType === opt.id}
+                    onChange={() => setDomainInput('surveyType', opt.id)}
+                    className="sr-only"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {surveyType === 'not_yet' && (
+            <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+              A clinician survey is the fastest way to validate what your operational data is showing. Without provider voice, burden reduction is an assumption.
+            </p>
+          )}
+
+          {surveyType === 'informal' && (
+            <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+              Informal feedback is a start. Consider a structured survey measuring documentation burden, satisfaction, and likelihood to stay — this data becomes critical at Level 3.
+            </p>
+          )}
+
+          {surveyType === 'structured' && (
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                What did your survey show?
+              </label>
+              <div className="flex flex-col gap-2">
+                {SURVEY_FINDINGS.map((finding, i) => (
+                  <label
+                    key={i}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] bg-white hover:border-[#D1D5DB] cursor-pointer transition-all"
+                    data-testid={`checkbox-survey-finding-${i}`}
+                  >
+                    <Checkbox
+                      checked={isChecked('surveyFindings', i)}
+                      onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
+                    />
+                    <span className="text-sm text-black">{finding}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -738,7 +824,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               />
               <span className="text-sm text-[#888888]">%</span>
             </div>
-            <BenchmarkContext text="National physician turnover averages 6–8% annually" />
+            <BenchmarkContext text="National physician turnover averages 6–8% annually (AAMC)." />
           </div>
           <div>
             <label className="block text-sm font-medium text-black mb-1">
@@ -754,46 +840,28 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="input-replacement-cost"
               />
             </div>
-            <BenchmarkContext text="Industry average: $250K–$500K per physician replacement" />
+            <BenchmarkContext text="Industry estimates for physician replacement range from $250K–$500K (AAMC, Physician Recruitment studies)." />
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col gap-5">
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Monthly reduction in agency or locum spend
-          </label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#888888]">$</span>
-            <FormattedNumberInput
-              value={(currentState.inputs.agencyReduction as number) || 0}
-              onChange={(v) => setDomainInput('agencyReduction', v)}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-agency-reduction"
-            />
-          </div>
-          <BenchmarkContext text="Organizations at this maturity level have reported $5K–$30K/month in agency spend reduction." />
+      <div>
+        <label className="block text-sm font-medium text-black mb-1">
+          Monthly reduction in agency or locum spend
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#888888]">$</span>
+          <FormattedNumberInput
+            value={(currentState.inputs.agencyReduction as number) || 0}
+            onChange={(v) => setDomainInput('agencyReduction', v)}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-agency-reduction"
+          />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Monthly reduction in overtime spend
-          </label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#888888]">$</span>
-            <FormattedNumberInput
-              value={(currentState.inputs.overtimeReduction as number) || 0}
-              onChange={(v) => setDomainInput('overtimeReduction', v)}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-overtime-reduction"
-            />
-          </div>
-          <BenchmarkContext text="Organizations at this maturity level have reported $5K–$20K/month in overtime reduction." />
-        </div>
+        <BenchmarkContext text="Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
       </div>
     );
   };
@@ -1012,14 +1080,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           return (
             <div key={d} className="flex items-center gap-3">
               <div className="flex flex-col items-center">
-                <span
+                <button
+                  onClick={() => isComplete && setActiveDomain(d)}
                   className={`text-xs font-medium uppercase tracking-[1.5px] mb-2 ${
-                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black' : 'text-[#888888]'
+                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888]'
                   }`}
                   data-testid={`domain-label-${d}`}
+                  disabled={!isComplete && !isActive}
                 >
                   {DOMAIN_LABELS[d]}
-                </span>
+                </button>
                 <span
                   className={`w-2 h-2 rounded-full ${
                     isActive ? 'bg-[#EA2C00]' : isComplete ? 'bg-black' : 'bg-[#D1D5DB]'

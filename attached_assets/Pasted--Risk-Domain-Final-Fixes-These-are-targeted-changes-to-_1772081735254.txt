@@ -1,0 +1,184 @@
+# Risk Domain — Final Fixes
+
+These are targeted changes to the current Risk domain implementation. The level structure is correct. These are polish fixes to make it airtight.
+
+---
+
+## Level 1 — Better Notes, Same Infrastructure
+**No changes needed.** This is clean. No inputs, output text is strong.
+
+---
+
+## Level 2 — Active Quality Monitoring
+
+### Fix 1: Don't pre-select the radio option
+The "Not yet" option should NOT be pre-selected when the user arrives at Level 2. All three radio options should be unselected. The estimated impact card should show:
+
+```
+ESTIMATED IMPACT
+—
+
+Select how your organization is monitoring
+documentation quality to see your assessment.
+```
+
+### Fix 2: Handle the "Not yet" selection gracefully
+If someone selects Level 2 but then picks "Not yet" in the radio:
+
+```
+ESTIMATED IMPACT
+—
+
+Documentation quality monitoring hasn't started yet.
+If no one is reviewing documentation attributes —
+even informally — your organization may be at Level 1
+for this domain.
+
+The single most important next step is establishing
+any form of documentation quality review.
+
+Organizations that begin systematic monitoring have
+reported 15-30% improvement in documentation
+completeness and specificity. Based on aggregated
+deployment experience.
+```
+
+This gently suggests they might be Level 1 without forcing them to change. They can stay at Level 2 if they want — it's their self-assessment.
+
+### Fix 3: "Spot checks" and "Systematic tracking" outputs
+
+**If "Spot checks":**
+```
+ESTIMATED IMPACT
+Informal monitoring active
+
+Your organization is informally reviewing documentation
+quality through spot checks and anecdotal feedback.
+This is a meaningful step — but informal processes
+don't scale and can't drive organizational strategy.
+
+Consider formalizing a review cadence and measurement
+framework to move toward Level 3.
+
+Organizations with formalized monitoring have reported
+measurable improvements in documentation completeness,
+coding specificity, and audit readiness. Based on
+aggregated deployment experience.
+```
+
+**If "Systematic tracking":**
+Show the checkbox input (what attributes are you tracking). Current implementation looks correct — keep the 5 checkboxes. Output should show:
+
+```
+ESTIMATED IMPACT
+[checkedCount] of 5 quality dimensions tracked
+
+Your organization is systematically tracking
+[checkedCount] documentation quality attribute(s):
+[list of checked items]
+
+Not yet tracked:
+[list of unchecked items]
+
+Organizations tracking 4+ attributes are well-positioned
+to connect documentation quality to downstream workflows
+(Level 3).
+
+Estimates based on your inputs. Individual results vary.
+```
+
+---
+
+## Level 3 — Downstream Systems Connected
+
+### Fix 1: Make hours input optional
+The checkboxes should work independently. The hours input is supplementary.
+
+Reframe the hours input label:
+- Old: "Estimated total hours saved per month across connected workflows"
+- **New:** "If known: estimated hours saved per month across these workflows"
+- Add helper text: *"Optional. If you can estimate the combined time savings across the workflows you selected, enter it here. If not, the workflow connections above are the primary assessment."*
+
+### Fix 2: Output without hours entered
+
+If checkboxes selected but no hours:
+```
+ESTIMATED IMPACT
+[checkedCount] downstream workflow(s) connected
+
+Your documentation infrastructure is driving
+improvement across [checkedCount] downstream
+workflow(s):
+[list of checked items]
+
+Not yet connected:
+[list of unchecked items]
+
+The workflows you haven't connected represent
+untapped operational value from your documentation
+foundation.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+If checkboxes AND hours:
+```
+ESTIMATED IMPACT
+$[annualSavings] in operational value
+
+Your documentation infrastructure is driving
+improvement across [checkedCount] downstream
+workflow(s):
+[list of checked items]
+
+[annualHours] hours recaptured annually — valued
+at $[annualSavings].
+
+[annualHours] = [hoursSaved] × 12
+[annualSavings] = [annualHours] × $75/hr
+Rate: $75/hr blended abstraction/administrative rate.
+
+Not yet connected:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+---
+
+## Level 4 — Documentation as Strategic Data Asset
+
+### Fix 1: Soften the malpractice checkbox
+- Old: "Risk management / malpractice review (documentation defensibility is tracked)"
+- **New:** "Clinical documentation review (documentation completeness tracked as part of risk oversight)"
+
+This keeps it about documentation completeness as an organizational practice without claiming malpractice protection.
+
+### Fix 2: Update all benchmark text to legal-safe language
+- Old: "Abridge enterprise customers at this level report $100K-$500K+ in attributed strategic value"
+- **New:** "Organizations at the highest maturity level have reported $100K-$500K+ in attributed strategic value. Based on aggregated deployment experience."
+
+---
+
+## Legal Language — Apply Across All Risk Levels
+
+Update ALL benchmark text in the Risk domain to remove "Abridge customers" and replace with "Organizations" + "Based on aggregated deployment experience."
+
+Specifically:
+- Level 2 benchmark: "Organizations that begin systematic monitoring have reported 15-30% improvement..."
+- Level 3 benchmark: "Organizations with connected downstream workflows have reported 10-40 hrs/month in combined efficiency gains. Based on aggregated deployment experience."
+- Level 4 benchmark: "Organizations at the highest maturity level have reported $100K-$500K+ in attributed strategic value. Based on aggregated deployment experience."
+
+---
+
+## Summary
+
+| Fix | Level | What |
+|---|---|---|
+| Don't pre-select radio | Level 2 | All options unselected on load |
+| Handle "Not yet" at Level 2 | Level 2 | Gently suggest they may be Level 1 |
+| Hours input optional | Level 3 | Checkboxes work alone; hours supplementary |
+| Soften malpractice checkbox | Level 4 | "Clinical documentation review" not "malpractice" |
+| Legal-safe benchmark language | All levels | "Organizations have reported" not "Abridge customers report" |
+
+Everything else stays as-is. The level structure, the progression, the checkbox approach at Levels 3 and 4 — all solid. These are the final polish items.
