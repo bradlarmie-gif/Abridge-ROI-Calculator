@@ -20,15 +20,20 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
   const [facilitator, setFacilitator] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
+  const [exportError, setExportError] = useState<string | false>(false);
+
   const handleExport = async () => {
     setIsExporting(true);
+    setExportError(false);
     try {
       await generateNursingPdf(baseline, selectedPriorities, inputs, orgName || "Your Organization", facilitator);
-    } catch (e) {
-      console.error("PDF export failed:", e);
+      setShowExportModal(false);
+    } catch (e: any) {
+      const msg = e?.message || String(e);
+      console.error("PDF export failed:", msg, e);
+      setExportError(msg);
     } finally {
       setIsExporting(false);
-      setShowExportModal(false);
     }
   };
 
@@ -139,6 +144,10 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
                 />
               </div>
             </div>
+
+            {exportError && (
+              <p className="text-sm text-red-600 mb-3" data-testid="text-export-error">{exportError}</p>
+            )}
 
             <div className="flex gap-3">
               <Button
