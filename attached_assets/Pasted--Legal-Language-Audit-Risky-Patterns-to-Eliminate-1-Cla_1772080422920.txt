@@ -1,0 +1,154 @@
+# Legal Language Audit
+
+## Risky Patterns to Eliminate
+
+### 1. Claiming Abridge Causes Outcomes
+**Problem:** Anywhere we say "Abridge customers report X% improvement" it implies Abridge caused the improvement. Legal will flag this as an unsubstantiated claim, especially if it's used in sales materials.
+
+**Current examples:**
+- "Abridge customers who measure documentation-driven yield typically identify 0.5–2% improvement"
+- "Abridge deployments report 1-3 hrs/week reduction in after-hours documentation"
+- "Abridge customers with structured access redesign report 3-8 additional patients/provider/month"
+- "Top-performing Abridge deployments model 5-10 net visits/provider/month"
+- "Abridge enterprise customers with financial governance report $200K-$1M+"
+
+**Fix:** Reframe ALL benchmarks as observational, not causal. Use language like:
+- "Across Abridge deployments, organizations have observed..."
+- "Based on deployment data, organizations using ambient documentation have reported..."
+- Or even safer: just drop the Abridge name from benchmarks entirely and say "Organizations at this maturity level typically report..." — this makes it industry framing, not product claims.
+
+**Recommendation:** Pick one pattern and use it everywhere. Safest option:
+
+> *"Organizations at this stage have reported [X]. Based on aggregated deployment experience."*
+
+No Abridge name in the benchmark itself. The Abridge brand is already all over the tool — you don't need it in the data claims too. This also makes the tool feel less like a sales pitch and more like an industry framework, which is what you want.
+
+### 2. Specific Numbers Without Sources
+**Problem:** Any specific benchmark number (76% utilization, 3.0 min/encounter, 0.05-0.15 wRVU, etc.) needs to either be sourced or clearly labeled as directional.
+
+**Current examples:**
+- "76% Abridge avg" utilization
+- "3.0 min Abridge avg" time saved
+- "1-3% improvement in coding yield"
+- "$250K-$500K per physician replacement"
+- "~25% of physician turnover attributed to administrative burden"
+
+**Fix for each type:**
+
+**Internal Abridge data (76% utilization, 3.0 min):**
+- These are fine IF they're real and you can back them up internally.
+- Label: *"Based on aggregated Abridge deployment data. Individual results vary."*
+- Do NOT say "Abridge average" — say "observed across Abridge deployments" to avoid implying a guaranteed benchmark.
+
+**Industry data (turnover rates, replacement costs, admin burden attribution):**
+- Must cite a source or use ranges with "industry estimates suggest."
+- The 25% turnover attribution to admin burden — this needs a citation (AMA, AAMC) or needs to be softened: *"Industry research suggests administrative burden is a contributing factor in physician turnover."* Don't put a specific percentage unless you can cite it.
+- Replacement cost: *"Industry estimates for physician replacement range from $250K to over $500K (AAMC, Physician Recruitment Study)."*
+
+**Abridge customer outcomes (wRVU changes, patients/month, revenue):**
+- Must say "reported" not "achieved" — you're sharing what customers told you, not guaranteeing results.
+- Add: *"Individual results vary based on organization size, specialty, and deployment maturity."*
+
+### 3. Implying Guaranteed ROI
+**Problem:** The tool is called an "ROI Calculator." Legal may want it called an "ROI Assessment" or "ROI Estimator" to avoid implying guaranteed returns.
+
+**Examples of risky framing:**
+- "Estimated at $78K annually" — sounds like a promise
+- "Represents $400K in annual turnover exposure" — sounds definitive
+
+**Fix:** Use qualified language:
+- "Estimated impact based on your inputs" (already doing this in many places — good)
+- Add a global disclaimer at the bottom of every impact card or on the final score: *"All estimates are directional and based on the inputs you provide. Actual results depend on organizational execution, deployment maturity, and market conditions. This tool does not guarantee specific financial outcomes."*
+- Consider renaming from "ROI Calculator" to **"Ambient ROI Assessment"** or **"Documentation Intelligence Assessment"** — less promise, more framework.
+
+### 4. Medical / Clinical Outcome Claims
+**Problem:** Anything that suggests ambient documentation improves clinical quality, patient outcomes, or safety.
+
+**Current examples:**
+- "Documentation defensibility" implies malpractice protection
+- "Compliance exposure" implies regulatory risk reduction
+- "Cleaner clinical notes" implies clinical quality improvement
+
+**Fix:** Stay in operational and financial language. Avoid:
+- Any claim about patient outcomes
+- Any claim about clinical quality (note quality is fine — clinical quality is not)
+- Any claim about malpractice risk reduction specifically
+- "Defensibility" is okay as long as it's about documentation completeness, not about legal protection
+
+**Safe language:**
+- "Documentation completeness and specificity" ✅
+- "Documentation supports coding accuracy" ✅
+- "Improved note quality" ✅
+- "Reduces your malpractice risk" ❌
+- "Protects you in audits" ❌
+- "Documentation completeness may support audit readiness" ✅ (qualified)
+
+### 5. Competitor References
+**Problem:** The tool is designed to help dethrone competitors, but it should never name them or imply they're deficient.
+
+**Current state:** You're clean on this — no competitor names anywhere. Keep it that way.
+
+**One caution:** "Most tools: 1.5–2.5 min" in the time saved benchmark. This implicitly positions other tools as inferior. Consider: *"Industry range: 1.5–3.0+ min depending on tool and specialty."* This avoids the comparison without losing the benchmark.
+
+### 6. The Turnover Attribution Problem
+**Problem:** "~25% of physician turnover attributed to administrative burden" is a specific claim that, if wrong or misattributed, could undermine the entire tool's credibility.
+
+**Fix:** Either:
+- **Option A:** Cite a specific study. The AMA and AAMC have published on burnout/turnover drivers. Find the exact study and reference it.
+- **Option B:** Remove the specific percentage. Instead: *"Research indicates administrative burden is a significant driver of physician turnover. Enter your organization's estimated attribution below."* Then make the 25% an adjustable input, not a fixed assumption.
+
+**Recommendation:** Option B is safer and more defensible. Let the user set the attribution percentage. Show a range: *"Industry research suggests 15-30% of turnover decisions involve administrative burden as a contributing factor."* Let them pick within that range.
+
+---
+
+## Recommended Global Disclaimers
+
+### On every Estimated Impact card (small text at bottom):
+> *Estimates based on your inputs. Individual results vary.*
+
+### On the final score screen:
+> *This assessment provides directional estimates based on the inputs you provide and aggregated deployment experience. It does not guarantee specific financial outcomes. All calculations use the assumptions shown and should be validated against your organization's own data. Benchmarks reflect ranges observed across deployments and published industry research; individual results depend on organizational context, execution, and market conditions.*
+
+### On any screen with Abridge benchmarks:
+> *Benchmarks based on aggregated deployment data. Individual results vary by organization, specialty, and deployment maturity.*
+
+---
+
+## Revised Benchmark Language Templates
+
+Instead of:
+> "Abridge customers reporting anecdotal lift estimate 1-3%"
+
+Use:
+> *"Organizations at this stage have reported 1-3% improvement. Based on aggregated deployment experience."*
+
+Instead of:
+> "Abridge deployments report 1-3 hrs/week reduction"
+
+Use:
+> *"Organizations using ambient documentation have reported 1-3 hrs/week reduction in after-hours documentation."*
+
+Instead of:
+> "Top-performing Abridge deployments model 5-10 net visits"
+
+Use:
+> *"Organizations at the highest maturity level have reported 1-3 FTE equivalent impact in workforce planning."*
+
+Instead of:
+> "Abridge enterprise customers with financial governance report $200K-$1M+"
+
+Use:
+> *"Organizations with formalized revenue attribution have reported $200K-$1M+ in recognized documentation-driven revenue."*
+
+---
+
+## Summary of Changes Needed
+
+| Issue | Risk Level | Fix |
+|---|---|---|
+| "Abridge customers report X" claims | HIGH | Reframe as "Organizations have reported X" or "Based on aggregated deployment experience" |
+| Specific unsourced percentages (25% turnover, 0.7% exposure) | HIGH | Cite sources or make them user-adjustable ranges |
+| Implying guaranteed ROI | MEDIUM | Add global disclaimers, consider renaming to "Assessment" |
+| Medical/clinical outcome claims | MEDIUM | Stay in operational/financial language, avoid malpractice/clinical quality claims |
+| "Most tools: 1.5-2.5 min" comparison | LOW | Reframe as industry range |
+| Competitor implications | LOW | Already clean — maintain |
