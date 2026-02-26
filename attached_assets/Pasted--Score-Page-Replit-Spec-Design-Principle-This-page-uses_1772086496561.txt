@@ -1,0 +1,197 @@
+# Score Page — Replit Spec
+
+## Design Principle
+
+This page uses the EXACT same layout, typography, card treatment, and color palette as every other page in the tool. Same white background. Same warm gray cards. Same dark sidebar card. Same bold serif headers. Same Abridge red for accents. Nothing new.
+
+---
+
+## Layout
+
+Same two-column layout used throughout the tool: main content area on the left, dark sidebar card on the right.
+
+### Main Content Area (left)
+
+**Header (same style as domain headers):**
+```
+YOUR SCORE
+Ambient Assessment Score across four domains
+```
+
+**Card 1: HOW YOUR SCORE IS BUILT**
+
+Same warm gray card background as "WHERE IS YOUR ORGANIZATION TODAY?" cards on domain pages.
+
+Four rows. Each row shows:
+- Domain name (bold) + level name (gray, below) on the left
+- Thin horizontal bar (Abridge red filled, light gray unfilled) in the middle
+- Score "X / 25" on the right
+
+```
+HOW YOUR SCORE IS BUILT
+
+Capacity                                              19 / 25
+Access Redesigned
+[████████████████████████████████████████░░░░░░░░░░░]
+
+Revenue                                               12 / 25
+Anecdotal Revenue Signal
+[████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░]
+
+Workforce                                             19 / 25
+Retention Risk Quantified
+[████████████████████████████████████████░░░░░░░░░░░]
+
+Risk                                                   6 / 25
+Better Notes, Same Infrastructure
+[██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]
+
+───────────────────────────────────────────────────
+Documentation Intelligence Score              57 / 100
+```
+
+The total row at the bottom uses the same bar treatment but slightly bolder — same style as the existing total row in the Domain Value Summary.
+
+Each domain row is clickable — navigates back to that domain with inputs preserved.
+
+**Card 2: ASSESSMENT**
+
+Same warm gray card. Below the score card.
+
+```
+ASSESSMENT
+
+Actively managing in some areas. Significant opportunity remains.
+
+Your organization is actively managing ambient ROI in Capacity
+and Workforce, but Revenue and Risk remain in early stages.
+Your biggest opportunity is in Revenue — no one has connected
+documentation quality to how your organization gets paid.
+```
+
+- First line bold (the headline assessment)
+- Body text in regular weight gray, same as description text throughout the tool
+- 2-3 sentences max
+
+**Dynamic headline logic:**
+```
+Score 0-30:   "Early stages. Significant opportunity across all domains."
+Score 31-50:  "Emerging awareness. Key domains remain unmeasured."
+Score 51-70:  "Actively managing in some areas. Significant opportunity remains."
+Score 71-85:  "Strategically managed. Closing the final gaps."
+Score 86-100: "Best in class across domains."
+```
+
+**Dynamic body text logic:**
+
+Names strong domains (Level 3+) and weak domains (Level 1-2). Always names the single lowest domain as "biggest opportunity" with a one-line domain-specific insight.
+
+Domain-specific insight lines:
+```
+Capacity L1: "Recovered time isn't being tracked or deployed."
+Capacity L2: "Recovered time is measured but not being converted to access."
+Revenue L1:  "No one has connected documentation quality to how your organization gets paid."
+Revenue L2:  "Revenue signals observed but not measured."
+Workforce L1: "After-hours burden reduced but broader workforce impact isn't tracked."
+Workforce L2: "Burden is measured but not connected to retention or labor costs."
+Risk L1:     "Documentation quality improved but nothing downstream has changed."
+Risk L2:     "Quality monitoring started but downstream workflows aren't connected."
+```
+
+Tiebreaker order if domains have the same score: Risk > Revenue > Workforce > Capacity.
+
+**Methodology link:**
+
+Below the assessment card, small gray text:
+*"How is this calculated?"*
+
+Expands inline (same accordion/expand pattern if used elsewhere in the tool, or just appears as a paragraph below):
+
+> Each domain contributes up to 25 points based on the maturity level you selected. Level 1 = 6 pts, Level 2 = 12 pts, Level 3 = 19 pts, Level 4 = 25 pts. Your total score reflects how intentionally your organization is managing the value created by ambient documentation.
+
+### Sidebar (right, dark card — same as ESTIMATED IMPACT cards throughout)
+
+```
+DOCUMENTATION INTELLIGENCE SCORE
+
+         57
+        / 100
+
+[████████████████████████████░░░░░░░░░░░]
+
+Early deployment         25
+Measured                 50
+Strategically managed    75
+Best in class           100
+
+
+DOMAIN SCORES
+
+Capacity        19
+Revenue         12
+Workforce       19
+Risk             6
+```
+
+- Score number large and prominent (same treatment as the dollar figures like "$78K" in the existing impact cards — same font, same weight, just bigger)
+- Horizontal bar below it, Abridge red filled, same style as any other bar in the tool
+- Maturity band labels below the bar as reference points, small gray text
+- Domain scores listed below, same format as the existing DOMAIN PROGRESS section on every domain page
+
+This sidebar is essentially a compact version of what's on the left — the executive can glance at it and get everything in 3 seconds while the left side provides the detail.
+
+### Navigation
+
+```
+Back                    [See What This Is Costing You →]
+```
+
+Same button style and placement as every other page in the tool. "Back" link on the left, red CTA button on the right.
+
+### Disclaimer
+
+Small gray text below the button area, same size as benchmark text throughout:
+
+> *This score reflects organizational self-assessment across four domains. It does not guarantee specific financial outcomes. Individual results vary.*
+
+---
+
+## Score Calculation
+
+```javascript
+const SCORE_MAP = { 1: 6, 2: 12, 3: 19, 4: 25 };
+
+const totalScore =
+  SCORE_MAP[capacityLevel] +
+  SCORE_MAP[revenueLevel] +
+  SCORE_MAP[workforceLevel] +
+  SCORE_MAP[riskLevel];
+```
+
+Score ranges:
+- All Level 1s = 24
+- All Level 2s = 48
+- All Level 3s = 76
+- All Level 4s = 100
+- Typical org (mix of L1-L2) = 30-48
+
+---
+
+## What's NOT on This Page
+
+- No dollar values or financial summary (that's the next page)
+- No new colors, fonts, layouts, or visual patterns
+- No gauge charts, speedometers, or badges
+- No "Industry average" or "Abridge average" benchmarks (not yet earned with data)
+
+---
+
+## Summary of Changes from Current Implementation
+
+1. Remove the "Industry average: 34" and "Top quartile: 71" from the sidebar. Replace with maturity band reference points (25, 50, 75, 100).
+2. Remove the Domain Value Summary section entirely (moves to next page).
+3. Update score calculation to use 6/12/19/25 point values per level.
+4. Add dynamic assessment narrative with headline + body text.
+5. Add "How is this calculated?" expandable text.
+6. Make domain rows in the breakdown clickable (navigate back to domain).
+7. Keep the same two-column layout, same card styles, same typography, same colors as every other page.

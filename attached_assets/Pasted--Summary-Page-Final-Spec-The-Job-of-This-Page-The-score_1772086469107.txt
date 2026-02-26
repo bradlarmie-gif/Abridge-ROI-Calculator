@@ -1,0 +1,344 @@
+# Summary Page — Final Spec
+
+## The Job of This Page
+
+The score page was the mirror. The cost page was the weight. This page is the relief.
+
+The executive is uncomfortable. They've seen their maturity gaps and the cost of inaction. Now they need to feel like there's a clear path forward — and that the person who built this assessment is the one who can help them walk it.
+
+This page should take 60 seconds to read and leave them with two things: a roadmap they can reference tomorrow, and a reason to have a deeper conversation.
+
+---
+
+## Layout
+
+Same two-column layout. Same card treatments. Same everything.
+
+### Hero Section (dark card, full width — same treatment as the assessment narrative on the score page)
+
+```
+AMBIENT ASSESSMENT
+
+YOUR SCORE                    MEASURED VALUE
+    [score]                      $[totalMeasured]
+    / 100                        annually
+
+[maturity bar with position marker]
+Early deployment    Measured    Strategically managed    Best in class
+
+Your organization is [dynamic one-line summary based on score].
+```
+
+This is a COMPACT recap — not a repeat of the score page. One dark card, score on the left, measured value on the right, one-line narrative below. The executive glances at this and remembers where they are. Takes 3 seconds.
+
+**Dynamic one-line summary:**
+```
+0-30:  "in the early stages of capturing ambient ROI"
+31-50: "beginning to measure ambient ROI but significant opportunity remains"
+51-70: "actively managing ambient ROI with room to deepen"
+71-85: "strategically managing ambient ROI across most domains"
+86+:   "operating at best-in-class documentation intelligence"
+```
+
+---
+
+### Card 1: YOUR STRATEGIC ROADMAP
+
+This is the centerpiece of the summary page. Same warm gray card.
+
+```
+YOUR STRATEGIC ROADMAP
+Based on your assessment, these are the highest-value
+focus areas for your organization.
+```
+
+Show domains ordered by OPPORTUNITY (lowest maturity first), not by domain order. Each domain gets a compact block:
+
+**Format per domain:**
+
+```
+[DOMAIN NAME] — Currently Level [X]
+[One-sentence description of where they are]
+[One-sentence description of what the next level means for the organization]
+```
+
+**Capacity roadmap text by level:**
+
+```
+Level 1:
+CAPACITY — Currently Level 1
+You're recovering time but haven't quantified the total across your deployment.
+Understanding your aggregate recovered capacity is the first step toward
+making strategic decisions about how to use it.
+
+Level 2:
+CAPACITY — Currently Level 2
+You've quantified your recovered capacity but haven't made operational
+changes to deploy it.
+The organizations capturing the most value from recovered time are the
+ones who have intentionally redesigned how that time is used.
+
+Level 3:
+CAPACITY — Currently Level 3
+You've redesigned access and are generating measurable capacity value.
+The next frontier is using recovered capacity as a planning input for
+hiring, expansion, and service line decisions.
+
+Level 4:
+CAPACITY — Currently Level 4
+Recovered capacity is embedded in your workforce planning. Continue
+expanding and deepening measurement across the organization.
+```
+
+**Revenue roadmap text by level:**
+
+```
+Level 1:
+REVENUE — Currently Level 1
+Your revenue cycle hasn't engaged with the documentation change.
+The single highest-value conversation you can start is between your
+ambient deployment team and your CDI or coding leadership.
+
+Level 2:
+REVENUE — Currently Level 2
+Your revenue cycle has noticed signals but hasn't measured the impact.
+Moving from anecdotal observation to formal measurement is what turns
+signals into a financial story.
+
+Level 3:
+REVENUE — Currently Level 3
+You've measured documentation-driven revenue impact.
+Formalizing this as an ongoing, governed metric — not a one-time
+study — is what separates measurement from management.
+
+Level 4:
+REVENUE — Currently Level 4
+Documentation quality is integrated into revenue cycle operations.
+Continue expanding governance and connecting documentation quality
+to payer strategy.
+```
+
+**Workforce roadmap text by level:**
+
+```
+Level 1:
+WORKFORCE — Currently Level 1
+Providers report less after-hours work but the broader impact
+isn't being tracked.
+Combining operational measurement with clinician feedback gives your
+organization a complete picture of how burden reduction is landing.
+
+Level 2:
+WORKFORCE — Currently Level 2
+You've measured in-clinic burden reduction and captured provider sentiment.
+Understanding what turnover is costing your organization — and how much
+of it connects to documentation burden — is the next layer of insight.
+
+Level 3:
+WORKFORCE — Currently Level 3
+You've quantified turnover exposure against documentation burden.
+The long-term proof is in labor spend — tracking agency and locum
+costs against burden reduction over time.
+
+Level 4:
+WORKFORCE — Currently Level 4
+Documentation burden reduction is showing up in your labor spend.
+Continue validating the trend and connecting it to long-term
+workforce strategy.
+```
+
+**Risk roadmap text by level:**
+
+```
+Level 1:
+RISK — Currently Level 1
+Your documentation is better but nothing downstream has changed.
+Establishing any form of quality measurement — even informal —
+is the foundation for everything that follows.
+
+Level 2:
+RISK — Currently Level 2
+You're monitoring documentation quality across [X] dimension(s).
+Connecting that quality to the workflows that depend on it — CDI,
+coding, quality reporting — is where operational value begins to surface.
+
+Level 3:
+RISK — Currently Level 3
+You've connected [X] downstream workflow(s) to documentation quality.
+The strategic opportunity is in making documentation quality a variable
+in organizational decisions — payer strategy, value-based care design,
+compliance governance.
+
+Level 4:
+RISK — Currently Level 4
+Your documentation infrastructure is a strategic data asset. Continue
+expanding its role in organizational strategy and positioning for
+next-generation AI applications.
+```
+
+---
+
+### Card 2: ASSESSMENT DETAILS
+
+Compact reference card with their key data points. Same warm gray card.
+
+```
+ASSESSMENT DETAILS
+
+DOMAIN PERFORMANCE
+
+Capacity       Level [X] — [Level Name]         [score]/25
+               [dollar value or hours or —]
+
+Revenue        Level [X] — [Level Name]         [score]/25
+               [dollar value or signals or —]
+
+Workforce      Level [X] — [Level Name]         [score]/25
+               [dollar value or hours or —]
+
+Risk           Level [X] — [Level Name]         [score]/25
+               [qualitative output or —]
+
+───────────────────────────────────────────────
+Total Score                                      [X]/100
+Measured Value                                   $[X]
+
+BASELINE INPUTS
+Providers:            [X]
+Annual encounters:    [X]
+Utilization:          [X]%
+Time saved:           [X] min (or "Not measured")
+Revenue per visit:    $[X]
+```
+
+This is the reference section. When the executive looks at the export later or shares it with someone, this is where they check the inputs and outputs.
+
+---
+
+### Card 3: NEXT STEP
+
+Same warm gray card. This is the closing.
+
+```
+NEXT STEP
+
+WOULD YOU LIKE TO EXPLORE WHAT DOCUMENTATION
+INTELLIGENCE LOOKS LIKE AT YOUR SCALE?
+
+This is not a product demonstration. It is a
+strategic working session where we walk through
+your organization's specific opportunities across
+each domain and build a roadmap together.
+
+[Request a Working Session →]     [Export My Assessment]
+```
+
+Two buttons side by side:
+- **"Request a Working Session →"** — red/Abridge CTA button (primary). Links to scheduling or a form.
+- **"Export My Assessment"** — outlined/secondary button. Generates a PDF or shareable document with their score, domain breakdown, roadmap, and assessment details.
+
+The language "strategic working session" is intentional. Not a demo. Not a sales call. A working session. That's what earns the meeting.
+
+"This is not a product demonstration" is the line that builds trust. It says: we're not going to pitch you. We're going to work.
+
+---
+
+### Dark Sidebar (right)
+
+```
+ASSESSMENT SUMMARY
+
+[score]
+/ 100
+Ambient Assessment Score
+
+───────────────────────────
+
+MEASURED VALUE
+
+$[totalMeasured]
+annually
+
+$[monthly]        $[daily]
+/ MONTH           / DAY
+
+───────────────────────────
+
+DOMAIN SCORES
+
+Capacity        [X]
+Revenue         [X]
+Workforce       [X]
+Risk            [X]
+
+───────────────────────────
+
+YOUR INPUTS
+
+Providers            [X]
+Encounters / yr      [X]
+Utilization          [X]%
+Time saved           [X] min
+
+───────────────────────────
+
+Completed [date]
+
+Based on organizational self-assessment.
+Estimates are directional.
+Individual results vary.
+```
+
+The sidebar is a clean summary card that mirrors what the export PDF would look like. Date-stamped. All key numbers in one place.
+
+---
+
+### Disclaimer (bottom of page)
+
+> *This assessment provides directional estimates based on organizational self-assessment and the inputs you provide. It does not guarantee specific financial outcomes. Benchmarks reflect maturity-based scoring and aggregated deployment data. Roadmap guidance is general — specific implementation should be tailored to your organization. Individual results vary. Methodology available on request.*
+
+---
+
+## What the Export PDF Should Contain
+
+When they click "Export My Assessment," generate a clean document with:
+
+1. **Header:** Ambient Assessment — [Date]
+2. **Score:** [X] / 100 with maturity band
+3. **Domain breakdown:** 4 domains with level, score, and measured value
+4. **Strategic roadmap:** The 4 domain blocks from Card 1 (current level + next step)
+5. **Gap summary:** Deployment reality table (their numbers vs. benchmark)
+6. **Baseline inputs:** All their entered values
+7. **Disclaimer**
+
+No cost-of-waiting numbers in the export. No aggressive financial projections. The export should feel like a strategic assessment document, not a sales pitch. When the executive forwards it to their COO, it should read like something a consultant produced — thoughtful, specific, and credible.
+
+---
+
+## What This Page Does NOT Have
+
+- No repeat of the full score page (just a compact hero recap)
+- No repeat of the cost page graph or cost-of-waiting numbers
+- No "highest-leverage opportunity" callout with a big dollar figure (that was the cost page)
+- No aggressive language about what they're losing
+- No product features or competitive positioning
+
+## What This Page DOES Have
+
+- A compact hero reminding them of their score and measured value (3 seconds)
+- A strategic roadmap with specific, credible next steps per domain (60 seconds to read)
+- Their assessment details for reference (when they share it)
+- A next step that feels like a strategic partnership, not a sales funnel
+- An export they can share without embarrassment
+
+---
+
+## Summary of Changes from Current Implementation
+
+1. Replace the dark hero section with a compact recap (score + measured value + one-line narrative, not a full repeat of the score page)
+2. Remove "Highest-Leverage Opportunity" card with the big dollar figure (that story was told on the cost page)
+3. Remove the Domain Performance section with bars (already on score page — don't repeat)
+4. ADD the Strategic Roadmap card (4 domains, current level, what the next level means)
+5. ADD the Assessment Details card (compact reference with all key numbers)
+6. UPDATE the Next Step card language: "strategic working session" not "product demonstration." Add "Export My Assessment" button.
+7. Sidebar: add date stamp, add baseline inputs, keep it as a clean summary reference
