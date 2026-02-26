@@ -36,6 +36,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Component-Driven UI**: Utilizes reusable components like `PathwayCard` for progressive disclosure and maintainability.
 -   **Configuration-driven**: ROI levers and properties are externally managed for flexibility.
 -   **Pure Functions**: Encapsulated ROI calculation logic ensures reliability.
+-   **Qualitative Driver Handling**: When users select only qualitative drivers (e.g., Clinician Wellbeing without retention calculation, Rounding Efficiency, HCAHPS, Bedside Time), both the in-app model summary and PDF export show "Qualitative Assessment" or "Not Measured" instead of misleading "$0" values. The `qualitativeDrivers` field in `ExplorePDFData` tracks which drivers are non-dollarized. PDF pages adapt: Page 1 shows "Qualitative Assessment" header, Page 2 lists qualitative drivers with contextual labels, Page 3 shows a qualitative value framework instead of 3-year projections, and Page 4 uses em-dashes instead of zero values.
 
 ## External Dependencies
 

@@ -43,6 +43,16 @@ export default function ExploreModel({
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
 
+  const hasQualitativeDrivers = useMemo(() => {
+    const { timeDriverInputs: t, docQualityInputs: d } = state;
+    if (state.careSetting === 'outpatient') return t.wellbeingEnabled && !t.calculateRetentionValue;
+    if (state.careSetting === 'ed') return t.wellbeingEnabled;
+    if (state.careSetting === 'inpatient') return (t.wellbeingEnabled && !t.calculateRetentionValue) || t.ipRoundingEnabled;
+    if (state.careSetting === 'nursing') return d.nursingHcahpsEnabled || t.nursingCareTimeEnabled;
+    return false;
+  }, [state]);
+  const isQualitativeOnly = totalValue === 0 && hasQualitativeDrivers;
+
   // Calculate patient access and cost reduction separately
   const { timeDriverInputs, docQualityInputs } = state;
   
@@ -507,6 +517,19 @@ export default function ExploreModel({
         ? Math.round(netAnnualValue * (expandedProviders / state.nursingStaffedBeds) * (expandedUtilization / state.utilizationPercent))
         : Math.round(netAnnualValue * (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent));
 
+      const qualitativeDrivers: string[] = [];
+      if (state.careSetting === 'outpatient') {
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
+      } else if (state.careSetting === 'ed') {
+        if (timeDriverInputs.wellbeingEnabled) qualitativeDrivers.push('Clinician Wellbeing');
+      } else if (state.careSetting === 'inpatient') {
+        if (timeDriverInputs.ipRoundingEnabled) qualitativeDrivers.push('Rounding Efficiency');
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
+      } else if (state.careSetting === 'nursing') {
+        if (state.docQualityInputs.nursingHcahpsEnabled) qualitativeDrivers.push('HCAHPS Improvement');
+        if (state.timeDriverInputs.nursingCareTimeEnabled) qualitativeDrivers.push('Bedside Time');
+      }
+
       const pdfData: ExplorePDFData = {
         careSetting: state.careSetting as ExplorePDFData['careSetting'],
         clientName,
@@ -524,6 +547,7 @@ export default function ExploreModel({
         netAnnualValue,
         roi,
         drivers,
+        qualitativeDrivers,
         fullScaleProviders: expandedProviders,
         fullScaleUtilization: expandedUtilization,
         fullScaleValue,
@@ -647,18 +671,27 @@ export default function ExploreModel({
 
           {/* Label */}
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[2px] mb-3">
-            Projected Net Value
+            {isQualitativeOnly ? "Assessment Type" : "Projected Net Value"}
           </p>
 
           {/* Hero Number */}
-          <p className="text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
-            {formatCurrency(netAnnualValue)}
-          </p>
-          <p className="text-xl text-[#888888] mb-4">/ year</p>
+          {isQualitativeOnly ? (
+            <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
+              Qualitative Assessment
+            </p>
+          ) : (
+            <p className="text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
+              {formatCurrency(netAnnualValue)}
+            </p>
+          )}
+          {!isQualitativeOnly && <p className="text-xl text-[#888888] mb-4">/ year</p>}
+          {isQualitativeOnly && <p className="text-sm text-[#888888] mb-4">Strategic value — not dollarized</p>}
 
           {/* Subtext */}
           <p className="text-base text-[#888888] mb-8">
-            {formatCurrency(totalValue)} value – {formatCurrency(annualInvestment)} investment
+            {isQualitativeOnly
+              ? "Enable quantitative levers to build a financial case"
+              : `${formatCurrency(totalValue)} value – ${formatCurrency(annualInvestment)} investment`}
           </p>
 
           {/* Stat Cards */}
