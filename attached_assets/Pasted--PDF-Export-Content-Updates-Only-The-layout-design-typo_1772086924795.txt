@@ -1,0 +1,218 @@
+# PDF Export — Content Updates Only
+
+The layout, design, typography, logo placement, and page structure are all perfect. Do not change any of that. These are ONLY content updates to match the assessment logic we've built.
+
+---
+
+## PAGE 1 (Cover)
+
+**Change the subtitle text:**
+- Old: "Documentation Intelligence Assessment"
+- New: Keep "Ambient Assessment" as the title (already correct)
+
+**Change the description:**
+- Old: "A structured analysis of the enterprise value flowing through your documentation infrastructure — where it is being captured, where it is leaking, and what closing the gap is worth."
+- New: "A structured analysis of how your organization is capturing value from ambient documentation — across capacity, revenue, workforce, and infrastructure readiness."
+
+**Change the disclaimer at the bottom:**
+- Old: "This assessment is for strategic planning purposes. All calculations are based on self-reported inputs and Abridge deployment benchmarks. Conservative haircuts are applied to all estimates."
+- New: "This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
+
+---
+
+## PAGE 2 (Your Score)
+
+**Score section — remove "Industry average" and "Top-quartile" benchmarks:**
+- Old: "Industry average 34 / 100" and "Top-quartile 71 / 100"
+- New: Replace with maturity bands:
+  ```
+  Early deployment        25
+  Measured                50
+  Strategically managed   75
+  Best in class          100
+  ```
+
+**Change the score label:**
+- Old: "Documentation Intelligence"
+- New: "Ambient Assessment Score"
+
+**Dynamic narrative below the score** (replaces "Approaching top-quartile performance. The remaining opportunity is in optimization."):
+- Use the same dynamic assessment text from the score page. Examples:
+  - Score 0-30: "Your organization is in the early stages of capturing ambient ROI. Significant opportunity exists across all four domains."
+  - Score 31-50: "Your organization is beginning to measure ambient ROI. Key domains remain unmeasured."
+  - Score 51-70: "Your organization is actively managing ambient ROI in some domains. Significant opportunity remains in [lowest domain]."
+  - Score 71-85: "Your organization is strategically managing ambient ROI across most domains. Focus on [lowest domain] to close the remaining gap."
+  - Score 86+: "Your organization is operating at the highest level of ambient maturity across domains."
+
+**"Unrealized Enterprise Value" section:**
+- Change header from "Unrealized Enterprise Value" to "Measured Value"
+- Keep the dollar figure, monthly breakdown, and per-provider breakdown
+- Change the tagline:
+  - Old: "Already in your operations. Already earned. Not yet realized."
+  - New: "Based on the domains where your organization has entered data. Additional value may exist in unmeasured domains."
+
+**Your Inputs section:** Keep as-is. The inputs listed are correct.
+
+---
+
+## PAGE 3 (The Four Domains)
+
+**Section header:**
+- Keep "The Four Domains" and "Where Enterprise Value Lives"
+- Change the subtitle:
+  - Old: "Each domain reflects your self-reported activation level and the enterprise value currently uncaptured. Domain weights: Capacity 30% · Revenue 25% · Workforce 25% · Risk 20%."
+  - New: "Each domain reflects your organization's self-assessed maturity level. All four domains contribute equally to your Ambient Assessment Score."
+
+**Domain weights:** Change to equal weighting (25% each) to match our scoring logic. Remove the 30/25/25/20 split.
+
+**Update level names per domain to match what we've built:**
+
+CAPACITY levels:
+```
+Level 1: Time Saved, Not Deployed
+Level 2: Measured, Not Redesigned
+Level 3: Access Redesigned
+Level 4: Capacity Modeled into Workforce Planning
+```
+
+REVENUE levels:
+```
+Level 1: Revenue Cycle Unaware
+Level 2: Anecdotal Revenue Signal
+Level 3: Impact Measured
+Level 4: Revenue Cycle Integration
+```
+
+WORKFORCE levels:
+```
+Level 1: Pajama Time Reduced
+Level 2: Burden Measured and Validated
+Level 3: Retention Risk Quantified
+Level 4: Labor Spend Structurally Reduced
+```
+
+RISK levels:
+```
+Level 1: Better Notes, Same Infrastructure
+Level 2: Active Quality Monitoring
+Level 3: Downstream Systems Connected
+Level 4: Documentation as Strategic Data Asset
+```
+
+**Update domain descriptions:**
+
+CAPACITY:
+- Old: "Recovered time that becomes additional patient slots, reduced overtime, or operational efficiency. At your scale, undeployed capacity represents clinical supply currently evaporating."
+- New: "Where does recovered time actually go? Most organizations save time with ambient but haven't structurally converted it to capacity. Your level reflects how intentionally your organization deploys recovered time."
+
+REVENUE:
+- Keep the current description, it's good. Just update: "Coding accuracy, HCC capture, and denial prevention driven by complete clinical notes. Every encounter either captures or leaks revenue through your documentation infrastructure."
+
+WORKFORCE:
+- Old: "After-hours charting is the leading predictor of burnout, and burnout drives turnover. At $500K–$1M per physician replacement, this is an existential budget line item."
+- New: "Documentation burden drives after-hours work, in-clinic inefficiency, and turnover. Your level reflects how deeply your organization is measuring and managing the workforce impact of burden reduction."
+
+RISK:
+- Old: "Audit defensibility, quality reporting, and readiness for clinical AI. Every AI initiative your organization plans requires a structured documentation foundation."
+- New: "Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete documentation at scale. Your level reflects whether your organization is building on that foundation or sitting on it."
+
+**Update the KPI indicators below each domain:**
+
+CAPACITY:
+- Old: Panel utilization rate / Overtime-locum dependency / Patient access wait times / Slot fill rate
+- New: Time saved per encounter / Recovered hours annually / Additional patients per month / FTEs avoided or redeployed
+
+REVENUE:
+- Old: E/M level distribution / HCC recapture rate / Denial rate by category / Payer mix optimization
+- New: Revenue signals observed / wRVU or collections change / Yield improvement measured / Revenue formally attributed
+
+WORKFORCE:
+- Old: After-hours documentation time / Provider satisfaction scores / Turnover rate by tenure / Burnout survey results
+- New: After-hours reduction / In-clinic time saved / Clinician survey findings / Turnover exposure quantified
+
+RISK:
+- Old: Audit readiness score / Note completeness rate / Structured data usability / Quality reporting accuracy
+- New: Quality dimensions tracked / Downstream workflows connected / Hours saved in reporting / Strategic integrations active
+
+**Dollar values per domain:**
+- Show the measured value from the assessment if they entered data for that domain
+- Show "—" if no measured value (not "$0" and not "$0 annual gap")
+- Label it as the measured value, not as "annual gap"
+
+**Score display per domain:**
+- Use the scoring we built: Level 1 = 6, Level 2 = 12, Level 3 = 19, Level 4 = 25
+- Show as "[X] / 25" not "[X] / 100"
+- The percentage bar for each domain fills proportionally to the score out of 25
+
+---
+
+## PAGE 4 (Cost of Inaction)
+
+**"Monthly Value Uncaptured" and "Daily Value Uncaptured":**
+- These are fine conceptually but the source numbers need to come from the gap analysis logic — the difference between current measured value and strategic action value (using low-end next-level projections)
+- If the gap can't be calculated (no measured values entered), show: "Enter domain data to calculate cost of inaction"
+
+**Three-Year Projection table:**
+- Keep the format
+- "Act now" line uses the strategic action annual value (low-end projections)
+- "Wait 6 months" and "Wait 12 months" show the permanently lost value
+- Change "Permanently lost" column header to "Value forgone" (less aggressive, more defensible)
+
+**"What This Means" section:**
+- This should be dynamic, pulling their actual inputs and the key finding
+- Template: "Your organization has [X] providers generating [Y] encounters annually. At [Z]% utilization and [A] minutes saved per encounter, your documentation infrastructure is returning value. [Dynamic sentence about their biggest gap from the assessment narrative]. The gap between current performance and strategic action represents approximately $[gap] annually."
+- Keep it to 3-4 sentences max
+
+---
+
+## PAGE 5 (Transparency + Next Steps)
+
+**"How We Calculate This" — update assumptions table:**
+
+```
+ASSUMPTION                          YOUR VALUE      BENCHMARK
+Providers on ambient                [X]             Varies by org
+Annual encounters                   [X]             Varies by org
+Utilization rate                    [X]%            76% (deployment avg)
+Time saved per encounter            [X] min         3.0 min (deployment avg)
+Revenue per visit                   $[X]            $200 default
+Provider hourly rate                $[X]            $150 default
+Working days per year               230             Clinical standard
+CMS wRVU conversion factor          $36.04          CMS published
+Abstraction rate                    $75/hr          Industry standard
+FTE hours                           2,080           Standard
+```
+
+**Remove the "Conservative realization haircut" row and all references to "40% haircut."** We don't use a blanket haircut in our model. Every number traces directly to their inputs × published assumptions. The haircut concept undermines the transparency — if we're applying an arbitrary 40% reduction, it implies the raw numbers aren't trustworthy. Our model is already conservative by design (low-end ranges, industry midpoints, no compounding). Don't discount on top of that.
+
+**Change the explanation text:**
+- Old: "We would rather show a smaller number you can defend than a larger number that falls apart under scrutiny. All gap values reflect a 40% conservative haircut applied after calculation."
+- New: "Every number in this assessment traces directly to your inputs and the assumptions listed above. We use published industry data and conservative benchmark ranges. No additional discounting is applied — the estimates are designed to be defensible as presented."
+
+**"Next Steps" section:**
+
+Keep the two-column layout. Update the content:
+
+Left column:
+```
+Validate Your Inputs
+Replace self-reported estimates with operational data
+where available: EHR timestamps for documentation time,
+HR records for turnover and replacement costs, revenue
+cycle data for coding yield.
+Timeline: 2-4 weeks
+```
+
+Right column:
+```
+Request a Working Session
+A 30-minute strategic session to walk through your
+domain scores, explore your highest-opportunity areas,
+and discuss what the next level looks like for your
+organization.
+This is not a product demonstration.
+```
+
+**Final disclaimer:**
+- Old: "This assessment is for strategic planning purposes. All calculations are based on self-reported inputs and Abridge deployment benchmarks. The models are directional — the real answers come from your data."
+- New: "This assessment provides directional estimates based on organizational self-assessment and your inputs. It does not guarantee specific financial outcomes. Benchmarks reflect aggregated deployment data. Individual results depend on organizational context and execution."

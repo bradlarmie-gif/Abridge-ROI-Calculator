@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useAssessment } from "@/lib/assessment";
-import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
+import { formatDollar } from "./ambientCalculator";
 import {
   generateAmbientAssessmentPDF,
   opportunityText,
@@ -24,6 +24,7 @@ import {
   DOMAIN_ORDER,
   DOMAIN_LABELS,
   type Domain,
+  type ActivationLevel,
 } from "./domainCalculations";
 
 interface Screen6Props {
@@ -31,34 +32,92 @@ interface Screen6Props {
   onBackToJourney?: () => void;
 }
 
-const DOMAIN_OPS: Record<string, { meaning: string; action: string }> = {
+const ROADMAP_TEXT: Record<Domain, Record<ActivationLevel, { line1: string; line2: string }>> = {
   capacity: {
-    meaning: 'Your utilization gap represents clinical supply that exists in your operations but never reaches your enterprise.',
-    action: 'Closing it requires systematic adoption infrastructure — not training.',
+    1: {
+      line1: "You're recovering time but haven't quantified the total across your deployment.",
+      line2: "Understanding your aggregate recovered capacity is the first step toward making strategic decisions about how to use it.",
+    },
+    2: {
+      line1: "You've quantified your recovered capacity but haven't made operational changes to deploy it.",
+      line2: "The organizations capturing the most value from recovered time are the ones who have intentionally redesigned how that time is used.",
+    },
+    3: {
+      line1: "You've redesigned access and are generating measurable capacity value.",
+      line2: "The next frontier is using recovered capacity as a planning input for hiring, expansion, and service line decisions.",
+    },
+    4: {
+      line1: "Recovered capacity is embedded in your workforce planning.",
+      line2: "Continue expanding and deepening measurement across the organization.",
+    },
   },
   revenue: {
-    meaning: 'Your efficiency gap compounds across every documented encounter, affecting coding accuracy and reimbursement integrity.',
-    action: 'Closing it requires deeper workflow integration at the documentation layer.',
+    1: {
+      line1: "Your revenue cycle hasn't engaged with the documentation change.",
+      line2: "The single highest-value conversation you can start is between your ambient deployment team and your CDI or coding leadership.",
+    },
+    2: {
+      line1: "Your revenue cycle has noticed signals but hasn't measured the impact.",
+      line2: "Moving from anecdotal observation to formal measurement is what turns signals into a financial story.",
+    },
+    3: {
+      line1: "You've measured documentation-driven revenue impact.",
+      line2: "Formalizing this as an ongoing, governed metric — not a one-time study — is what separates measurement from management.",
+    },
+    4: {
+      line1: "Documentation quality is integrated into revenue cycle operations.",
+      line2: "Continue expanding governance and connecting documentation quality to payer strategy.",
+    },
   },
   workforce: {
-    meaning: 'After-hours documentation burden is a direct input to turnover risk and premium labor cost.',
-    action: 'Closing it requires reducing documentation time to below the burnout threshold.',
+    1: {
+      line1: "Providers report less after-hours work but the broader impact isn't being tracked.",
+      line2: "Combining operational measurement with clinician feedback gives your organization a complete picture of how burden reduction is landing.",
+    },
+    2: {
+      line1: "You've measured in-clinic burden reduction and captured provider sentiment.",
+      line2: "Understanding what turnover is costing your organization — and how much of it connects to documentation burden — is the next layer of insight.",
+    },
+    3: {
+      line1: "You've quantified turnover exposure against documentation burden.",
+      line2: "The long-term proof is in labor spend — tracking agency and locum costs against burden reduction over time.",
+    },
+    4: {
+      line1: "Documentation burden reduction is showing up in your labor spend.",
+      line2: "Continue validating the trend and connecting it to long-term workforce strategy.",
+    },
   },
   risk: {
-    meaning: 'Your documentation completeness posture may affect audit readiness, quality reporting, and automation readiness.',
-    action: 'Closing it requires structured, defensible notes produced at scale.',
+    1: {
+      line1: "Your documentation is better but nothing downstream has changed.",
+      line2: "Establishing any form of quality measurement — even informal — is the foundation for everything that follows.",
+    },
+    2: {
+      line1: "You're monitoring documentation quality.",
+      line2: "Connecting that quality to the workflows that depend on it — CDI, coding, quality reporting — is where operational value begins to surface.",
+    },
+    3: {
+      line1: "You've connected downstream workflows to documentation quality.",
+      line2: "The strategic opportunity is in making documentation quality a variable in organizational decisions — payer strategy, value-based care design, compliance governance.",
+    },
+    4: {
+      line1: "Your documentation infrastructure is a strategic data asset.",
+      line2: "Continue expanding its role in organizational strategy and positioning for next-generation AI applications.",
+    },
   },
 };
 
-export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Props) {
+function getScoreSummaryLine(score: number): string {
+  if (score <= 30) return "in the early stages of capturing ambient ROI";
+  if (score <= 50) return "beginning to measure ambient ROI but significant opportunity remains";
+  if (score <= 70) return "actively managing ambient ROI with room to deepen";
+  if (score <= 85) return "strategically managing ambient ROI across most domains";
+  return "operating at best-in-class documentation intelligence";
+}
+
+export default function Screen6Invitation({ onBack }: Screen6Props) {
   const { state } = useAssessment();
   const { inputs } = state;
-
-  const result = useMemo(() => calculateAmbientScore(
-    inputs.providers, inputs.annualEncounters,
-    inputs.utilization || 45, inputs.timeSavedPerEncounter || 2.0,
-    inputs.dataMode,
-  ), [inputs]);
 
   const [showForm, setShowForm] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -72,7 +131,8 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
   const utilization = inputs.utilization || 45;
-  const timeSavings = inputs.timeSavedPerEncounter || 2.0;
+  const timeSavings = inputs.timeSavedPerEncounter || 0;
+  const revenuePerVisit = inputs.revenuePerVisit || 200;
 
   const domainHasValue: Record<string, boolean> = useMemo(() => ({
     capacity: inputs.capacityHasValue || false,
@@ -110,6 +170,11 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
     return r;
   }, [inputs, domainHasValue]);
 
+  const totalScore = useMemo(() => {
+    return (inputs.capacityScore || 0) + (inputs.revenueScore || 0) +
+           (inputs.workforceScore || 0) + (inputs.riskScore || 0);
+  }, [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
+
   const displayedTotal = useMemo(() => {
     let sum = 0;
     for (const d of DOMAIN_ORDER) {
@@ -123,7 +188,19 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   const displayedMonthly = Math.round(displayedTotal / 12);
   const displayedDaily = Math.round(displayedTotal / 365);
 
-  const topDomainOps = DOMAIN_OPS[result.topDomain];
+  const roadmapDomains = useMemo(() => {
+    return [...DOMAIN_ORDER].sort((a, b) => {
+      const scoreA = domainData[a]?.score || 0;
+      const scoreB = domainData[b]?.score || 0;
+      return scoreA - scoreB;
+    });
+  }, [domainData]);
+
+  const assessmentDate = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      month: "long", day: "numeric", year: "numeric"
+    });
+  }, []);
 
   const dt = displayedTotal;
   const actNow3yr = Math.round(dt * 3.45);
@@ -153,7 +230,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
         annualEncounters,
         utilization,
         timeSavings,
-        documentationScore: result.score,
+        documentationScore: totalScore,
         totalAnnualGap: dt,
         monthlyGap: displayedMonthly,
         dailyGap: displayedDaily,
@@ -181,25 +258,21 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   return (
     <div>
       <motion.div
-        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-12 md:py-16 mb-10"
+        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-10 md:py-12 mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="max-w-[800px] mx-auto text-center">
           <p className="text-[10px] font-medium text-white/40 uppercase tracking-[2px] mb-6" data-testid="text-hero-label">
-            Documentation Intelligence Assessment
+            Ambient Assessment
           </p>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-10 font-abridge uppercase tracking-tight" data-testid="text-screen6-heading">
-            Your Assessment
-          </h1>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 mb-8">
             <div>
               <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
-              <p className="text-[64px] md:text-[80px] font-bold text-white leading-none" data-testid="hero-score-value">
-                {result.score}
+              <p className="text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
+                {totalScore}
               </p>
               <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
             </div>
@@ -210,13 +283,13 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
               {hasMeasuredDomains ? (
                 <>
-                  <p className="text-[48px] md:text-[56px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+                  <p className="text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
                     {formatDollar(displayedTotal)}
                   </p>
                   <p className="text-lg text-white/30 font-normal mt-1">annually</p>
                 </>
               ) : (
-                <p className="text-[32px] font-bold text-white/30 leading-none" data-testid="hero-total-value">
+                <p className="text-[28px] font-bold text-white/30 leading-none" data-testid="hero-total-value">
                   Not yet measured
                 </p>
               )}
@@ -227,7 +300,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden relative">
               <div
                 className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(result.score, 100)}%` }}
+                style={{ width: `${Math.min(totalScore, 100)}%` }}
               />
               <div className="absolute -top-0.5" style={{ left: '25%', transform: 'translateX(-50%)' }}>
                 <div className="w-px h-3 bg-white/30" />
@@ -240,16 +313,15 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               </div>
             </div>
             <div className="flex justify-between mt-2">
-              <span className="text-[10px] text-white/30">0</span>
-              <span className="text-[10px] text-white/40">25</span>
-              <span className="text-[10px] text-white/40">50</span>
-              <span className="text-[10px] text-white/40">75</span>
-              <span className="text-[10px] text-white/30">100</span>
+              <span className="text-[10px] text-white/40">Early deployment</span>
+              <span className="text-[10px] text-white/40">Measured</span>
+              <span className="text-[10px] text-white/40">Strategically managed</span>
+              <span className="text-[10px] text-white/40">Best in class</span>
             </div>
           </div>
 
           <p className="text-sm text-white/50 leading-relaxed max-w-[500px] mx-auto" data-testid="text-capture-line">
-            You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
+            Your organization is {getScoreSummaryLine(totalScore)}.
           </p>
         </div>
       </motion.div>
@@ -262,17 +334,36 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-top-opportunity">
-              <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
-                Highest-Leverage Opportunity — {DOMAIN_LABELS[result.topDomain as Domain] || 'Capacity'}
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-roadmap">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Your Strategic Roadmap
               </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
-              <p className="text-[#EA2C00] font-bold text-3xl leading-none mb-3" data-testid="text-top-domain-value">
-                {formatDollarFull(result.topDomainValue)} <span className="text-base font-normal text-[#888888]">annually</span>
+              <div className="h-px bg-[#E5E7EB] mb-2" />
+              <p className="text-sm text-[#888888] leading-relaxed mb-6">
+                Based on your assessment, these are the highest-value focus areas for your organization.
               </p>
-              <p className="text-sm text-[#888888] leading-relaxed">
-                {topDomainOps.meaning} {topDomainOps.action}
-              </p>
+
+              {roadmapDomains.map((domain, idx) => {
+                const d = domainData[domain];
+                const level = d?.activationLevel || 1;
+                const roadmap = ROADMAP_TEXT[domain as Domain][level as ActivationLevel];
+                return (
+                  <div key={domain} data-testid={`roadmap-${domain}`}>
+                    <div className="py-4">
+                      <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px] mb-2">
+                        {DOMAIN_LABELS[domain as Domain]} — Currently Level {level}
+                      </p>
+                      <p className="text-sm text-black leading-relaxed mb-1">
+                        {roadmap.line1}
+                      </p>
+                      <p className="text-sm text-[#888888] leading-relaxed">
+                        {roadmap.line2}
+                      </p>
+                    </div>
+                    {idx < roadmapDomains.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -281,35 +372,35 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-domain-summary">
+            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-assessment-details">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Domain Performance
+                Assessment Details
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
+
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1px] mb-4">
+                Domain Performance
+              </p>
 
               {DOMAIN_ORDER.map((domain, idx) => {
                 const d = domainData[domain];
                 return (
                   <div key={domain}>
-                    <div className="flex items-center justify-between py-3" data-testid={`summary-domain-${domain}`}>
+                    <div className="flex items-start justify-between py-3" data-testid={`detail-domain-${domain}`}>
                       <div className="flex-1">
-                        <p className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</p>
-                        <p className="text-xs text-[#888888] italic">{d?.activationLabel}</p>
+                        <p className="font-semibold text-sm text-black">
+                          {DOMAIN_LABELS[domain]}
+                        </p>
+                        <p className="text-xs text-[#888888]">
+                          Level {d?.activationLevel} — {d?.activationLabel}
+                        </p>
+                        <p className="text-xs text-[#888888] mt-0.5">
+                          {d?.hasValue ? formatDollar(d.gapValue) : '—'}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="w-[100px]">
-                          <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
-                              style={{ width: `${((d?.score || 0) / 25) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-bold text-black w-[40px] text-right">{d?.score || 0}</span>
-                        <span className={`text-sm font-bold w-[80px] text-right ${d?.hasValue ? 'text-[#EA2C00]' : 'text-[#888888]'}`}>
-                          {d?.hasValue ? formatDollar(d.gapValue) : 'Not measured'}
-                        </span>
-                      </div>
+                      <p className="font-bold text-sm text-black" data-testid={`detail-score-${domain}`}>
+                        {d?.score || 0}/25
+                      </p>
                     </div>
                     {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
                   </div>
@@ -317,11 +408,45 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               })}
 
               <div className="h-px bg-[#E5E7EB] mt-2" />
-              <div className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between">
-                <span className="font-semibold text-sm text-black">Total Measured Value</span>
-                <span className="font-bold text-xl text-[#EA2C00]" data-testid="text-total-gap">
-                  {hasMeasuredDomains ? formatDollar(displayedTotal) : 'Not yet measured'}
-                </span>
+              <div className="bg-white/60 rounded-lg px-5 py-4 mt-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-sm text-black">Total Score</span>
+                  <span className="font-bold text-lg text-black" data-testid="detail-total-score">{totalScore}/100</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-sm text-black">Measured Value</span>
+                  <span className="font-bold text-lg text-[#EA2C00]" data-testid="detail-total-value">
+                    {hasMeasuredDomains ? formatDollar(displayedTotal) : 'Not yet measured'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-px bg-[#E5E7EB] mt-6 mb-4" />
+
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1px] mb-3">
+                Baseline Inputs
+              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#888888]">Providers</span>
+                  <span className="font-medium text-black">{providers}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#888888]">Annual encounters</span>
+                  <span className="font-medium text-black">{annualEncounters.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#888888]">Utilization</span>
+                  <span className="font-medium text-black">{utilization}%</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#888888]">Time saved</span>
+                  <span className="font-medium text-black">{timeSavings > 0 ? `${timeSavings} min` : 'Not measured'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#888888]">Revenue per visit</span>
+                  <span className="font-medium text-black">${revenuePerVisit}</span>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -338,10 +463,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
               <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
-                Would you like to see what documentation intelligence looks like at your scale?
+                Would you like to explore what documentation intelligence looks like at your scale?
               </h2>
               <p className="text-sm text-[#888888] leading-relaxed mb-6">
-                This is not a product demonstration. It is a 30-minute working session.
+                This is not a product demonstration. It is a strategic working session where we walk through your organization's specific opportunities across each domain and build a roadmap together.
               </p>
 
               {!showForm && !formSubmitted && (
@@ -422,8 +547,8 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             </div>
           </motion.div>
 
-          <p className="text-center text-xs text-[#888888] leading-relaxed mt-8 mb-4">
-            All estimates are directional and based on the inputs you provide and aggregated deployment experience. They do not guarantee specific financial outcomes. Individual results vary. Methodology available on request.
+          <p className="text-xs text-[#888888] leading-relaxed mt-8 mb-4 italic" data-testid="text-summary-disclaimer">
+            This assessment provides directional estimates based on organizational self-assessment and the inputs you provide. It does not guarantee specific financial outcomes. Benchmarks reflect maturity-based scoring and aggregated deployment data. Roadmap guidance is general — specific implementation should be tailored to your organization. Individual results vary. Methodology available on request.
           </p>
         </div>
 
@@ -441,16 +566,16 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
 
             <div className="flex items-end gap-3 mb-1">
               <span className="text-white font-bold text-[48px] leading-none" data-testid="panel-score">
-                {result.score}
+                {totalScore}
               </span>
               <span className="text-white/30 text-lg mb-1">/ 100</span>
             </div>
-            <p className="text-xs text-white/40 mb-5">Documentation Intelligence Score</p>
+            <p className="text-xs text-white/40 mb-5">Ambient Assessment Score</p>
 
             <div className="h-px bg-white/10 my-4" />
 
             <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Enterprise Value
+              Measured Value
             </p>
 
             {hasMeasuredDomains ? (
@@ -458,7 +583,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                 <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">
                   {formatDollar(displayedTotal)}
                 </p>
-                <p className="text-xs text-white/40 mb-4">measured annually</p>
+                <p className="text-xs text-white/40 mb-4">annually</p>
 
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div>
@@ -474,26 +599,6 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                     <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
                 </div>
-
-                <div className="h-px bg-white/10 my-5" />
-
-                <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-                  Cost of Waiting
-                </p>
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Wait 6 months</span>
-                    <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-6mo">
-                      {formatDollarFull(permanentlyLost6mo)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Wait 12 months</span>
-                    <span className="font-bold text-sm text-[#EA2C00]" data-testid="panel-wait-12mo">
-                      {formatDollarFull(permanentlyLost12mo)}
-                    </span>
-                  </div>
-                </div>
               </>
             ) : (
               <>
@@ -507,14 +612,14 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <div className="h-px bg-white/10 my-5" />
 
             <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Domain Gaps
+              Domain Scores
             </p>
             <div className="space-y-2">
               {DOMAIN_ORDER.map((domain) => (
                 <div key={domain} className="flex items-center justify-between text-sm">
                   <span className="text-white/60">{DOMAIN_LABELS[domain]}</span>
-                  <span className={domainData[domain]?.hasValue ? "text-white font-semibold" : "text-white/30 text-xs"}>
-                    {domainData[domain]?.hasValue ? formatDollar(domainData[domain].gapValue) : 'Not measured'}
+                  <span className="text-white font-semibold" data-testid={`panel-domain-score-${domain}`}>
+                    {domainData[domain]?.score || 0}
                   </span>
                 </div>
               ))}
@@ -540,9 +645,16 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/50">Time saved</span>
-                <span className="text-white/80 font-medium">{timeSavings} min</span>
+                <span className="text-white/80 font-medium">{timeSavings > 0 ? `${timeSavings} min` : '—'}</span>
               </div>
             </div>
+
+            <div className="h-px bg-white/10 my-5" />
+
+            <p className="text-xs text-white/40 mb-2">Completed {assessmentDate}</p>
+            <p className="text-xs text-white/40 leading-relaxed italic">
+              Based on organizational self-assessment. Estimates are directional. Individual results vary.
+            </p>
 
           </div>
         </motion.div>
