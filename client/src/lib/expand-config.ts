@@ -54,7 +54,7 @@ export const METRIC_CONFIGS: Record<MetricId, MetricConfig> = {
     iconBg: "bg-blue-50",
     iconColor: "text-blue-600",
     unit: "min",
-    benchmarkText: "Average reduction: 3-5 min per encounter",
+    benchmarkText: "Average reduction: 2-4.5 min per encounter",
     isPositiveGood: false,
     step: 0.1,
     benchmarkRange: {

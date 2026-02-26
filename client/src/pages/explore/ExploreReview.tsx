@@ -102,12 +102,12 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     if (isED) {
       switch (state.timePathScenario) {
         case 'conservative': return 'Conservative (2 min)';
-        case 'typical': return 'Typical (4 min)';
-        case 'aggressive': return 'Aggressive (6 min)';
+        case 'typical': return 'Typical (3 min)';
+        case 'aggressive': return 'Aggressive (4 min)';
       }
     }
     switch (state.timePathScenario) {
-      case 'conservative': return 'Conservative (1.5 min)';
+      case 'conservative': return 'Conservative (2 min)';
       case 'typical': return 'Typical (3 min)';
       case 'aggressive': return 'Aggressive (4.5 min)';
     }

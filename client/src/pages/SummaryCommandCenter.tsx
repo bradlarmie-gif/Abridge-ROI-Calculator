@@ -475,7 +475,7 @@ export default function SummaryCommandCenter({
     
     // Determine retention lift based on hours per provider
     const eligibleEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
-    const hoursReturned = (eligibleEncounters * 2.5) / 60; // 2.5 min saved per encounter
+    const hoursReturned = (eligibleEncounters * 3) / 60; // 3 min saved per encounter
     const wellbeingAllocation = 25; // Default 25% to wellbeing
     const hoursToWellbeing = hoursReturned * (wellbeingAllocation / 100);
     const hoursPerProviderAnnual = hoursToWellbeing / Math.max(1, pilotUnits);
@@ -540,7 +540,7 @@ export default function SummaryCommandCenter({
       encounters: pilotUnits * encountersPerUnit,
       utilizationRate: pilotUtilization,
       costPerMonth: pricePerUnit,
-      timeSavedPerEncounter: 2.5,
+      timeSavedPerEncounter: 3,
       driverResults,
     };
 

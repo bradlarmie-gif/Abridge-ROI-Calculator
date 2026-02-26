@@ -231,7 +231,7 @@ type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
 
 const POSTURE_PRESETS: Record<Exclude<ValuePosture, "custom">, { minutes: number; realization: number; wrvu: number }> = {
   conservative: { minutes: 2, realization: 10, wrvu: 3 },
-  typical: { minutes: 2.5, realization: 20, wrvu: 5 },
+  typical: { minutes: 3, realization: 20, wrvu: 5 },
   aggressive: { minutes: 4, realization: 30, wrvu: 7 },
 };
 
@@ -343,9 +343,9 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
       {
         title: "STEP 1: TIME RETURNED",
         steps: [
-          { label: "Minutes saved per encounter", value: "2.5 min", note: "(typical)" },
+          { label: "Minutes saved per encounter", value: "3 min", note: "(typical)" },
           { label: "Documented encounters", value: "52,000" },
-          { label: "Hours returned annually", value: "2,167 hrs" },
+          { label: "Hours returned annually", value: "2,600 hrs" },
         ],
       },
       {
@@ -353,30 +353,30 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
         steps: [
           { label: "Not all time becomes new visits", value: "", note: "(admin, rest, etc)" },
           { label: "Realization factor", value: "20%", note: "(typical)" },
-          { label: "Usable hours", value: "433 hrs" },
+          { label: "Usable hours", value: "520 hrs" },
         ],
       },
       {
         title: "STEP 3: NEW VISIT CAPACITY",
         steps: [
-          { label: "Usable hours", value: "433" },
+          { label: "Usable hours", value: "520" },
           { label: "Avg visit duration", value: "30 min" },
-          { label: "Additional visits possible", value: "866 visits" },
+          { label: "Additional visits possible", value: "1,040 visits" },
           { label: "Assumes sufficient patient demand to fill additional capacity", value: "", note: "warning" },
         ],
       },
       {
         title: "STEP 4: REVENUE IMPACT",
         steps: [
-          { label: "Additional visits", value: "866" },
+          { label: "Additional visits", value: "1,040" },
           { label: "Net revenue per visit", value: "$200" },
-          { label: "Annual value", value: "$173,200" },
+          { label: "Annual value", value: "$208,000" },
         ],
       },
     ],
     keyVariables: ["Provider count", "Visit volume", "Revenue per visit", "Capacity conversion %"],
-    rangeData: { conservative: "$80k-120k", typical: "$150k-200k" },
-    referenceValue: 173200,
+    rangeData: { conservative: "$80k-120k", typical: "$180k-250k" },
+    referenceValue: 208000,
   },
   wrvu: {
     id: "wrvu",
@@ -429,23 +429,23 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
       {
         title: "STEP 1: HOURS RETURNED",
         steps: [
-          { label: "Minutes saved per encounter", value: "2.5 min" },
+          { label: "Minutes saved per encounter", value: "3 min" },
           { label: "Documented encounters", value: "52,000" },
-          { label: "Total hours returned", value: "2,167 hrs" },
+          { label: "Total hours returned", value: "2,600 hrs" },
         ],
       },
       {
         title: "STEP 2: AFTER-HOURS REDUCTION",
         steps: [
-          { label: "Total hours returned", value: "2,167 hrs" },
+          { label: "Total hours returned", value: "2,600 hrs" },
           { label: "% after-hours documentation", value: "20%", note: "(typical)" },
-          { label: "Premium labor hours avoided", value: "433 hrs" },
+          { label: "Premium labor hours avoided", value: "520 hrs" },
         ],
       },
       {
         title: "STEP 3: COST SAVINGS",
         steps: [
-          { label: "Premium hours avoided", value: "433" },
+          { label: "Premium hours avoided", value: "520" },
           { label: "Blended premium rate", value: "$145-250/hr" },
           { label: "Annual value", value: "$185,000" },
         ],
@@ -2233,7 +2233,7 @@ export default function ObjectiveSelectionScreen({
       numberOfProviders: effectiveClinicians,
       annualOutpatientEncounters: effectiveEncounters,
       abridgeUtilizationPct: utilizationPercent ?? 70,
-      minutesSavedPerEncounter: effectiveMinutesSaved ?? 2.5,
+      minutesSavedPerEncounter: effectiveMinutesSaved ?? 3,
       monthlyCostPerProvider:
         pricingModel === "per-clinician" ? (perClinicianCost ?? 0) : 0,
       implementationCostYear1: implementationEnabled
@@ -3735,7 +3735,7 @@ export default function ObjectiveSelectionScreen({
                                         />
                                         <span className="text-sm text-neutral-500">min</span>
                                       </div>
-                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 3-5 min</p>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 2-4.5 min</p>
                                     </div>
                                     <div>
                                       <label className="text-xs text-neutral-600 mb-1 block">Avg nurse hourly rate</label>
@@ -4140,7 +4140,7 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <div className="text-sm font-medium text-neutral-800">{driverContent.label}</div>
                                     <div className="text-[13px] text-[#6B7280] mt-0.5 ml-5">
-                                      {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 2.5} per encounter`}
+                                      {leverId === "patientAccess" && `Minutes saved: ${effectiveMinutesSaved || 3} per encounter`}
                                       {leverId === "wrvu" && `Documentation lift: ${wrvuSensitivity || 5}%`}
                                       {leverId === "overtime" && `After-hours reduction: ${ftOvertimeAfterHoursReduction || 20}%`}
                                       {leverId === "workforce" && `Turnover reduction via burnout relief`}
@@ -4238,7 +4238,7 @@ export default function ObjectiveSelectionScreen({
                                   <>
                                     <div>• Minutes saved</div>
                                     <div className="text-right tabular-nums">2.0 min</div>
-                                    <div className="text-right tabular-nums">2.5 min</div>
+                                    <div className="text-right tabular-nums">3.0 min</div>
                                     <div className="text-right tabular-nums">4.0 min</div>
                                   </>
                                 )}
@@ -4669,7 +4669,7 @@ export default function ObjectiveSelectionScreen({
                                         <div>
                                           <label className="text-sm font-medium text-neutral-600">Minutes saved per encounter</label>
                                           <div className="flex items-center gap-2 mt-1">
-                                            <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{effectiveMinutesSaved ?? 2.5} min</span>
+                                            <span className="px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono bg-neutral-50 text-neutral-500 w-28">{effectiveMinutesSaved ?? 3} min</span>
                                           </div>
                                           <p className="text-xs text-neutral-400 mt-1 italic">(Inherited from Patient Access)</p>
                                         </div>

@@ -163,7 +163,7 @@ export function transformToInpatientPDFData(
   clientName?: string,
   preparedBy?: string
 ): InpatientPDFData {
-  const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 2.5;
+  const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 3;
   const eligibleEncounters = Math.round(modelResults.encounters * (modelResults.utilizationRate / 100));
   const hoursReturned = Math.round((eligibleEncounters * timeSavedPerEncounter) / 60);
 

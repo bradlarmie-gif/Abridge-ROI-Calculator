@@ -46,7 +46,7 @@ export default function StepEfficiencyReality({
 
       <p className="text-[17px] text-[#4B4B4B] leading-[1.75] mb-10">
         Most ambient tools return 1.5\u20132 minutes per encounter.
-        Abridge averages 4 minutes through deeper workflow integration.
+        Abridge averages 3 minutes through deeper workflow integration.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

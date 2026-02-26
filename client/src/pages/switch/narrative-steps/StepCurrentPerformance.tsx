@@ -11,7 +11,7 @@ interface StepCurrentPerformanceProps {
 }
 
 const ABRIDGE_UTIL = 76;
-const ABRIDGE_TIME = 4.0;
+const ABRIDGE_TIME = 3.0;
 const INDUSTRY_UTIL = 45;
 const INDUSTRY_TIME = 2.0;
 
@@ -354,7 +354,7 @@ export default function StepCurrentPerformance({
               active={timeSet && timeSaved === INDUSTRY_TIME}
             />
             <BenchmarkChip
-              value="4.0 min"
+              value="3.0 min"
               label="Abridge average"
               variant="abridge"
               onClick={() => handleTimeChange(ABRIDGE_TIME)}

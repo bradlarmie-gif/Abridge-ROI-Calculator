@@ -118,7 +118,7 @@ interface DriverInputs {
   };
   patientAccess: {
     // Step 1: Time Returned
-    timeSavedPerEncounter: number;     // Minutes saved per encounter (default 2.5)
+    timeSavedPerEncounter: number;     // Minutes saved per encounter (default 3)
     // Step 2: Time Allocated to Access
     accessAllocation: number;          // % of saved time → access potential (default 33%)
     // Step 3: Conversion to Visits
@@ -413,7 +413,7 @@ export default function ModelBuilder({
       locumHourlyRate: 275,          // $275/hr locum cost (including agency fees)
     },
     patientAccess: {
-      timeSavedPerEncounter: 2.5,      // 2.5 min saved per encounter
+      timeSavedPerEncounter: 3,      // 3 min saved per encounter
       accessAllocation: 25,            // 25% of saved time → access potential
       conversionRate: 40,              // 40% of access time → actual visits
       timePerVisit: 30,                // 30 min per visit
@@ -3056,7 +3056,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Abridge specifically impacts ED throughput through faster documentation (2.5 min/encounter), reduced after-visit work, and improved handoffs. Industry data suggests ambient AI accounts for 30-40% of measurable throughput improvements when combined with other ED optimization efforts.
+            Abridge specifically impacts ED throughput through faster documentation (3 min/encounter), reduced after-visit work, and improved handoffs. Industry data suggests ambient AI accounts for 30-40% of measurable throughput improvements when combined with other ED optimization efforts.
           </p>
         </div>
 

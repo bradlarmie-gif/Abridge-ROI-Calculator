@@ -30,12 +30,12 @@ export default function ExploreTimeSavings({
   }, [state.annualEncounters, state.utilizationPercent]);
 
   const scenarioMinutes: Record<string, number> = isED 
-    ? { conservative: 1, typical: 2, aggressive: 3 }
+    ? { conservative: 2, typical: 3, aggressive: 4 }
     : isInpatient
       ? { conservative: 15, typical: 30, aggressive: 40 }  // Per admission for hospitalists
       : isNursing
         ? { conservative: 15, typical: 20, aggressive: 30 }  // Per shift for nursing
-        : { conservative: 2, typical: 4, aggressive: 6 };
+        : { conservative: 2, typical: 3, aggressive: 4.5 };
 
   // Nursing: Shift-based calculation (260 shifts/year per nurse FTE)
   const nursingShiftsPerYear = useMemo(() => {
@@ -164,10 +164,10 @@ export default function ExploreTimeSavings({
                 {isNursing
                   ? "Nurses spend 2-3 hours per shift on documentation\u2014flowsheets, assessments, care plans, and handoffs. For the documentation types Abridge supports, we typically see 15-30 minutes saved per shift."
                   : isED 
-                    ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
+                    ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 2-4 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
                     : isInpatient
                       ? "Hospitalists document across the patient stay—H&Ps, progress notes, discharge summaries. Abridge reduces documentation time across all of these. Across inpatient implementations, hospitalists typically save 15-40 minutes per admission on total documentation time."
-                      : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
+                      : "Across implementations, providers typically save 2-4.5 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
                 }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">

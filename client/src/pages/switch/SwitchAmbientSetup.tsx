@@ -52,8 +52,8 @@ const advancedMetrics: AdvancedMetric[] = [
     description: 'Time in notes per appointment',
     source: 'Clarity data',
     unit: 'min/encounter',
-    benchmark: '3-5 min',
-    benchmarkValue: 4,
+    benchmark: '2-4.5 min',
+    benchmarkValue: 3,
     recommended: true,
     icon: Clock,
     min: 0,
@@ -331,7 +331,7 @@ export default function SwitchAmbientSetup({
                 <div className="flex items-center justify-center gap-2 p-3 bg-emerald-50 rounded-lg">
                   <Sparkles className="w-4 h-4 text-emerald-600" />
                   <span className="text-sm text-emerald-700">
-                    Abridge avg: <strong>3-5 min</strong>
+                    Abridge avg: <strong>2-4.5 min</strong>
                   </span>
                 </div>
               </section>

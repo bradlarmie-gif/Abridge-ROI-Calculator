@@ -169,10 +169,10 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   you retain.
                 </p>
                 <p>
-                  Time savings per encounter are smaller here — 1-3 minutes vs. 4-6 in outpatient — 
+                  Time savings per encounter are smaller here — 2-4 minutes vs. 2-4.5 in outpatient — 
                   because ED documentation is already faster-paced with more templated workflows. But 
                   the ED is a volume engine. At 40,000-80,000 visits per year, those minutes compound 
-                  into something real. Two minutes across 50,000 visits is 1,600 hours of physician time.
+                  into something real. Three minutes across 50,000 visits is 2,500 hours of physician time.
                 </p>
                 <p>
                   The harder question is: where does that time go? In outpatient, you can trace 
@@ -460,8 +460,8 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Time saved per encounter</td>
-                            <td className="py-3">1-3 minutes</td>
-                            <td className="py-3">2 minutes</td>
+                            <td className="py-3">2-4 minutes</td>
+                            <td className="py-3">3 minutes</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">

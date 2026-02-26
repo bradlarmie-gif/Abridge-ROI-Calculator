@@ -65,8 +65,8 @@ const METRIC_CONFIGS: PresetMetricConfig[] = [
     tooltip: "This is gross time savings — before accounting for time spent reviewing or correcting AI output. We'll calculate the net impact on the next screen.",
     presets: [
       { label: "1 min", value: 1 },
-      { label: "2.5 min", value: 2.5 },
-      { label: "4 min", value: 4 },
+      { label: "3 min", value: 3 },
+      { label: "4.5 min", value: 4.5 },
     ],
     unit: " min",
     maxValue: 6,
@@ -74,7 +74,7 @@ const METRIC_CONFIGS: PresetMetricConfig[] = [
     step: 0.5,
     inputKey: "timeSavedPerEncounter",
     testId: "slider-efficiency",
-    benchmarkLabel: "What we typically see: 3-5 min",
+    benchmarkLabel: "What we typically see: 2-4.5 min",
     benchmark: ABRIDGE_BENCHMARKS.timeSavedAvg,
   },
   {

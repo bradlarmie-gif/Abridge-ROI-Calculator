@@ -166,7 +166,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                   Nursing is the hardest setting to model ROI—and the most important to get right.
                 </p>
                 <p>
-                  In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path 
+                  In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path 
                   to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
                 </p>
                 <p>

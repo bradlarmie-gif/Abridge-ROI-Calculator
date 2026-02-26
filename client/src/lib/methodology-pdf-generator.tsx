@@ -482,7 +482,7 @@ export const outpatientMethodologyData: MethodologyPDFData = {
     },
   ],
   assumptions: [
-    { name: "Time saved per encounter", range: "2-6 min", defaultValue: "4 min", source: "Abridge customer data" },
+    { name: "Time saved per encounter", range: "2-4.5 min", defaultValue: "3 min", source: "Abridge customer data" },
     { name: "Additional capacity %", range: "5-15%", defaultValue: "10%", source: "Time reallocation studies" },
     { name: "wRVU per visit", range: "$1.50-2.50", defaultValue: "$2.00", source: "MGMA benchmarks" },
     { name: "HCC capture improvement", range: "5-15%", defaultValue: "10%", source: "RAF optimization studies" },
@@ -534,7 +534,7 @@ export const edMethodologyData: MethodologyPDFData = {
     },
   ],
   assumptions: [
-    { name: "Time saved per encounter", range: "1-3 min", defaultValue: "2 min", source: "ED workflow studies" },
+    { name: "Time saved per encounter", range: "2-4 min", defaultValue: "3 min", source: "ED workflow studies" },
     { name: "LWBS rate baseline", range: "2-5%", defaultValue: "3%", source: "ED benchmarks" },
     { name: "LWBS recovery rate", range: "10-30%", defaultValue: "20%", source: "Flow improvement studies" },
     { name: "Average ED claim", range: "$200-400", defaultValue: "$300", source: "Payer mix data" },

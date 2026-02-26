@@ -434,7 +434,7 @@ function Page1() {
       
       <SectionHeader title="THE CONTEXT" isFirst />
       <Text style={styles.bodyText}>
-        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
+        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
       </Text>
       
       <SectionHeader title="TWO VALUE CATEGORIES" />

@@ -36,7 +36,7 @@ function Page1() {
         Outpatient medicine has the clearest path from documentation time to revenue. Physicians bill for each encounter. More encounters, more wRVUs, more revenue. This billing relationship creates a direct value chain.
       </Text>
       <Text style={styles.bodyText}>
-        When a physician saves 4 minutes per visit, that time can become additional patient capacity, or it can stay in their pocket as work-life balance. Either way, the value is traceable. Documentation quality also matters--wRVU lift from accurate coding, HCC capture for MA populations, denial prevention.
+        When a physician saves 3 minutes per visit, that time can become additional patient capacity, or it can stay in their pocket as work-life balance. Either way, the value is traceable. Documentation quality also matters--wRVU lift from accurate coding, HCC capture for MA populations, denial prevention.
       </Text>
       
       <SectionHeader title="TWO VALUE CATEGORIES" />
@@ -69,7 +69,7 @@ function Page1() {
           <Badge type="direct" />
           <Text style={styles.mechanismTitle}>PATIENT ACCESS (CAPACITY)</Text>
           <Text style={styles.mechanismText}>
-            If physicians use saved time to see more patients, that's additional revenue. 4 min/visit × 20 visits = 80 min/day. Convert some portion to additional visits.
+            If physicians use saved time to see more patients, that's additional revenue. 3 min/visit × 20 visits = 60 min/day. Convert some portion to additional visits.
           </Text>
           <Text style={[styles.cardLabel, { marginTop: 4 }]}>THE CALCULATION</Text>
           <Text style={styles.mechanismText}>
@@ -213,8 +213,8 @@ function Page3() {
         </View>
         <View style={styles.tableRow}>
           <Text style={[styles.tableCell, { flex: 2.5 }]}>Time saved per encounter</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-6 min</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>4 min</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>2-4.5 min</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>3 min</Text>
           <Text style={[styles.tableCell, { flex: 2 }]}>Abridge customer data</Text>
         </View>
         <View style={[styles.tableRow, styles.tableRowAlt]}>
