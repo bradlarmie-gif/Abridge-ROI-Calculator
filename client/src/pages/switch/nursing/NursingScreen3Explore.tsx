@@ -21,7 +21,9 @@ import {
   computeRetentionImpact,
   computeStaffingImpact,
   computeBedsideImpact,
+  getOTNarrative,
   fmtDollar,
+  RESEARCH_NOTE,
 } from "./nursingCalculations";
 
 interface Screen3Props {
@@ -108,6 +110,7 @@ export default function NursingScreen3Explore({
 
   const retentionImpact = useMemo(() => computeRetentionImpact(inputs.retention, baseline), [inputs.retention, baseline]);
   const staffingImpact = useMemo(() => computeStaffingImpact(inputs.staffingCosts, baseline), [inputs.staffingCosts, baseline]);
+  const otNarrative = useMemo(() => getOTNarrative(inputs.staffingCosts, baseline), [inputs.staffingCosts, baseline]);
   const bedsideImpact = useMemo(() => computeBedsideImpact(inputs.bedsidePresence, baseline), [inputs.bedsidePresence, baseline]);
 
   return (
@@ -187,18 +190,33 @@ export default function NursingScreen3Explore({
                 />
 
                 {inputs.staffingCosts.costPressures.includes(0) && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-black mb-1">Estimated average minutes per nurse per shift staying late for documentation</label>
-                    <div className="flex items-center gap-1 max-w-[200px]">
-                      <FormattedNumberInput
-                        value={inputs.staffingCosts.otMinPerShift}
-                        onChange={v => setInputs(prev => ({ ...prev, staffingCosts: { ...prev.staffingCosts, otMinPerShift: v } }))}
-                        placeholder="e.g. 20"
-                        data-testid="input-ot-minutes"
-                      />
-                      <span className="text-sm text-[#888]">min</span>
+                  <>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-black mb-1">Estimated average minutes per nurse per shift staying late for documentation</label>
+                      <div className="flex items-center gap-1 max-w-[200px]">
+                        <FormattedNumberInput
+                          value={inputs.staffingCosts.otMinPerShift}
+                          onChange={v => setInputs(prev => ({ ...prev, staffingCosts: { ...prev.staffingCosts, otMinPerShift: v } }))}
+                          placeholder="e.g. 20"
+                          data-testid="input-ot-minutes"
+                        />
+                        <span className="text-sm text-[#888]">min</span>
+                      </div>
                     </div>
-                  </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-black mb-2">How often does end-of-shift documentation drive overtime?</label>
+                      <RadioGroup
+                        options={[
+                          { value: 'occasionally', label: 'Occasionally — a few times per week per unit' },
+                          { value: 'frequently', label: 'Frequently — most shifts on most units' },
+                          { value: 'almost_always', label: 'Almost always — it\'s the norm' },
+                        ]}
+                        value={inputs.staffingCosts.otFrequency}
+                        onChange={v => setInputs(prev => ({ ...prev, staffingCosts: { ...prev.staffingCosts, otFrequency: v as any } }))}
+                        testPrefix="radio-ot-frequency"
+                      />
+                    </div>
+                  </>
                 )}
 
                 {inputs.staffingCosts.costPressures.includes(2) && (
@@ -390,7 +408,7 @@ export default function NursingScreen3Explore({
                   <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Nurse Retention</p>
                   {retentionImpact.totalCost > 0 ? (
                     <div>
-                      <p className="text-sm font-bold text-white" data-testid="text-retention-cost">{fmtDollar(retentionImpact.totalCost)} in annual turnover cost</p>
+                      <p className="text-sm font-bold text-white" data-testid="text-retention-cost">{fmtDollar(retentionImpact.totalCost)} in annual turnover cost at your organization</p>
                       <p className="text-[11px] text-white/50 mt-1">{retentionImpact.departures} nurses replaced per year at {fmtDollar(inputs.retention.replacementCost)} each</p>
                       {inputs.retention.interventions.length > 0 && (
                         <p className="text-[11px] text-white/40 mt-0.5">{inputs.retention.interventions.length} intervention(s) active</p>
@@ -407,16 +425,13 @@ export default function NursingScreen3Explore({
               {selectedPriorities.includes('staffingCosts') && (
                 <div>
                   <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Staffing Costs</p>
-                  {(staffingImpact.annualOTHours > 0 || staffingImpact.annualAgency > 0) ? (
+                  {(otNarrative || staffingImpact.annualAgency > 0) ? (
                     <div>
-                      {staffingImpact.annualOTHours > 0 && (
-                        <p className="text-sm font-bold text-white" data-testid="text-ot-hours">{staffingImpact.annualOTHours.toLocaleString()} hours of documentation-driven OT</p>
+                      {otNarrative && (
+                        <p className="text-xs text-white/70 leading-relaxed" data-testid="text-ot-narrative">{otNarrative}</p>
                       )}
                       {staffingImpact.annualAgency > 0 && (
-                        <p className="text-sm font-bold text-white" data-testid="text-agency-spend">{fmtDollar(staffingImpact.annualAgency)} in annual agency spend</p>
-                      )}
-                      {staffingImpact.annualOTHours > 0 && (
-                        <p className="text-[10px] text-white/30 font-mono mt-2">annualOTHours = {inputs.staffingCosts.otMinPerShift} x {baseline.nurseFTEs} x 260 / 60</p>
+                        <p className="text-sm font-bold text-white mt-1" data-testid="text-agency-spend">{fmtDollar(staffingImpact.annualAgency)} in annual agency spend</p>
                       )}
                     </div>
                   ) : (
@@ -495,6 +510,7 @@ export default function NursingScreen3Explore({
 
             <div className="h-px bg-white/10 my-4" />
             <p className="text-[10px] text-white/30 italic">Estimates based on your inputs. Individual results vary.</p>
+            <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>
       </motion.div>

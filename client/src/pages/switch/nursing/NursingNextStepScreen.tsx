@@ -77,7 +77,7 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
         <motion.div variants={staggerItem} className="mb-8">
           <div className="bg-[#F5F0EB] rounded-xl p-8">
             <p className="text-sm text-[#666666] leading-relaxed mb-6">
-              If you'd like to explore what these priorities look like with more specific modeling, we're happy to walk through the numbers together.
+              If this raised questions or surfaced areas you'd like to explore further, we're always happy to continue the conversation.
             </p>
 
             <Button
@@ -86,7 +86,7 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
               onClick={() => window.open("mailto:partnerships@abridge.com?subject=Nursing Assessment — Conversation Request", "_blank")}
               data-testid="button-schedule-conversation"
             >
-              Schedule a Conversation
+              Continue the Conversation
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>

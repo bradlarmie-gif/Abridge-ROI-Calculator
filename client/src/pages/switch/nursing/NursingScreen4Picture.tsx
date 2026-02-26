@@ -12,6 +12,7 @@ import {
   fmtDollar,
   computeRetentionImpact,
   computeStaffingImpact,
+  RESEARCH_NOTE,
 } from "./nursingCalculations";
 
 interface Screen4Props {
@@ -191,6 +192,7 @@ export default function NursingScreen4Picture({
 
             <div className="h-px bg-white/10 my-4" />
             <p className="text-[10px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
+            <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>
       </motion.div>

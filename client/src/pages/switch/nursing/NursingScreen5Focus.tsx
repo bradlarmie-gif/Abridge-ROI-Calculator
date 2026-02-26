@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { staggerContainer, staggerItem } from "@/components/PageTransition";
 import type { NursingPriority, NursingBaselineInputs, AllPriorityInputs } from "./nursingTypes";
@@ -11,6 +11,7 @@ import {
   countDataPoints,
   fmtDollar,
   computeRetentionImpact,
+  RESEARCH_NOTE,
 } from "./nursingCalculations";
 
 interface Screen5Props {
@@ -32,6 +33,7 @@ export default function NursingScreen5Focus({
   const summaries = useMemo(() => selectedPriorities.map(p => buildPrioritySummary(p, inputs, baseline)), [selectedPriorities, inputs, baseline]);
   const dataPoints = countDataPoints(selectedPriorities, inputs);
   const retentionImpact = computeRetentionImpact(inputs.retention, baseline);
+  const [methodologyOpen, setMethodologyOpen] = useState(false);
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -52,32 +54,28 @@ export default function NursingScreen5Focus({
             How to Think About the Investment Case
           </h1>
           <p className="text-base text-[#888888] mb-8 max-w-xl leading-relaxed">
-            Based on your priorities, here's how we'd think about framing the conversation for your organization.
+            Based on your priorities, there are several ways to position an investment in documentation technology. The right framing depends on your organization's internal dynamics.
           </p>
 
           <motion.div variants={staggerItem} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">Your Situation</p>
-            <p className="text-sm text-[#333333] leading-relaxed mb-6">{focus.situation}</p>
-
-            {focus.framing.length > 0 && (
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">How to Frame the Conversation</p>
-                <div className="space-y-4">
-                  {focus.framing.map((para, i) => {
-                    const lines = para.split('\n');
-                    const title = lines[0];
-                    const body = lines.slice(1).join('\n');
-                    return (
-                      <div key={i}>
-                        <p className="text-sm font-semibold text-[#1A1A1A] mb-1">{title}</p>
-                        {body && <p className="text-sm text-[#333333] leading-relaxed">{body}</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <p className="text-sm text-[#333333] leading-relaxed">{focus.situation}</p>
           </motion.div>
+
+          {focus.framingOptions.length > 0 && (
+            <motion.div variants={staggerItem} className="mb-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Ways to Frame the Conversation</p>
+              <div className="space-y-4">
+                {focus.framingOptions.map((option, i) => (
+                  <div key={i} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
+                    <p className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide mb-2">{option.title}</p>
+                    <p className="text-sm text-[#333333] leading-relaxed mb-3">{option.body}</p>
+                    <p className="text-[11px] text-[#999999]">Best audience: {option.audience}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {focus.evaluation.length > 0 && (
             <motion.div variants={staggerItem} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-6">
@@ -98,6 +96,28 @@ export default function NursingScreen5Focus({
               </p>
             </motion.div>
           )}
+
+          <motion.div variants={staggerItem} className="mb-6">
+            <button
+              onClick={() => setMethodologyOpen(!methodologyOpen)}
+              className="flex items-center gap-2 text-sm text-[#888888] hover:text-[#1A1A1A] transition-colors"
+              data-testid="button-methodology-toggle"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${methodologyOpen ? 'rotate-180' : ''}`} />
+              About this assessment
+            </button>
+            {methodologyOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3 bg-[#F9F9F9] border border-[#E5E7EB] rounded-xl p-6"
+              >
+                <p className="text-sm text-[#666666] leading-relaxed">
+                  This assessment reflects your organization's self-reported priorities, interventions, and data. No assumptions are made about the impact of any specific technology. Connection statements between documentation burden and organizational outcomes reference published nursing workforce research (NSI, ANA, AMN Healthcare). All calculations use only the inputs you provided. This assessment is designed to help frame strategic conversations — it is not a financial projection or ROI model.
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
 
           <div className="mt-8">
             <StepFooter
@@ -193,6 +213,7 @@ export default function NursingScreen5Focus({
 
             <div className="h-px bg-white/10 my-4" />
             <p className="text-[10px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
+            <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>
       </motion.div>

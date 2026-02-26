@@ -16,7 +16,9 @@ import {
   generateFocusNarrative,
   computeRetentionImpact,
   computeStaffingImpact,
+  getOTNarrative,
   fmtDollar,
+  RESEARCH_NOTE,
 } from "./nursingCalculations";
 
 Font.register({
@@ -169,10 +171,10 @@ function PrioritiesPage({
             <Text style={s.rowValue}>{inputs.staffingCosts.otMinPerShift} min/shift</Text>
           </View>
         )}
-        {staffingImpact.annualOTHours > 0 && (
+        {inputs.staffingCosts.otFrequency && (
           <View style={s.row}>
-            <Text style={s.rowLabel}>Annual OT hours</Text>
-            <Text style={s.rowValue}>{staffingImpact.annualOTHours.toLocaleString()}</Text>
+            <Text style={s.rowLabel}>OT frequency</Text>
+            <Text style={s.rowValue}>{inputs.staffingCosts.otFrequency === 'occasionally' ? 'Occasional' : inputs.staffingCosts.otFrequency === 'frequently' ? 'Frequent' : 'Almost always'}</Text>
           </View>
         )}
         {staffingImpact.annualAgency > 0 && (
@@ -266,20 +268,16 @@ function FocusPage({
         <Text style={s.body}>{focus.situation}</Text>
       </View>
 
-      {focus.framing.length > 0 && (
+      {focus.framingOptions.length > 0 && (
         <View style={{ marginTop: 6 }}>
-          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 6 }}>HOW TO FRAME THE CONVERSATION</Text>
-          {focus.framing.map((para, i) => {
-            const lines = para.split('\n');
-            const title = lines[0];
-            const body = lines.slice(1).join(' ');
-            return (
-              <View key={i} style={{ marginBottom: 8 }}>
-                <Text style={{ fontSize: 9, fontWeight: 700, color: c.black, marginBottom: 2 }}>{title}</Text>
-                {body && <Text style={s.body}>{body}</Text>}
-              </View>
-            );
-          })}
+          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 6 }}>WAYS TO FRAME THE CONVERSATION</Text>
+          {focus.framingOptions.map((option, i) => (
+            <View key={i} style={{ marginBottom: 8 }}>
+              <Text style={{ fontSize: 9, fontWeight: 700, color: c.black, marginBottom: 2 }}>{option.title}</Text>
+              <Text style={s.body}>{option.body}</Text>
+              <Text style={{ fontSize: 7, color: c.light }}>Best audience: {option.audience}</Text>
+            </View>
+          ))}
         </View>
       )}
 
@@ -303,6 +301,14 @@ function FocusPage({
         <Text style={{ fontSize: 9, color: c.mid }}>
           Contact: partnerships@abridge.com
         </Text>
+      </View>
+
+      <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: c.border, paddingTop: 8 }}>
+        <Text style={{ fontSize: 7, fontWeight: 600, color: c.light, marginBottom: 3 }}>ABOUT THIS ASSESSMENT</Text>
+        <Text style={{ fontSize: 7, color: c.light, lineHeight: 1.5 }}>
+          This assessment reflects your organization's self-reported priorities, interventions, and data. No assumptions are made about the impact of any specific technology. Connection statements reference published nursing workforce research (NSI, ANA, AMN Healthcare). All calculations use only the inputs you provided.
+        </Text>
+        <Text style={{ fontSize: 7, color: c.light, lineHeight: 1.5, marginTop: 3 }}>{RESEARCH_NOTE}</Text>
       </View>
 
       <Text style={s.disclaimer}>{DISCLAIMER}</Text>

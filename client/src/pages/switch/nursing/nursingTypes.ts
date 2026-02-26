@@ -137,6 +137,7 @@ export interface RetentionInputs {
 export interface StaffingCostsInputs {
   costPressures: number[];
   otMinPerShift: number;
+  otFrequency: '' | 'occasionally' | 'frequently' | 'almost_always';
   agencyMonthlySpend: number;
   costInterventions: number[];
 }
@@ -175,7 +176,7 @@ export interface AllPriorityInputs {
 export function createEmptyPriorityInputs(): AllPriorityInputs {
   return {
     retention: { turnoverRate: 0, replacementCost: 0, interventions: [] },
-    staffingCosts: { costPressures: [], otMinPerShift: 0, agencyMonthlySpend: 0, costInterventions: [] },
+    staffingCosts: { costPressures: [], otMinPerShift: 0, otFrequency: '', agencyMonthlySpend: 0, costInterventions: [] },
     wellbeing: { pressures: [], surveyStatus: '', surveyFindings: [] },
     bedsidePresence: { bedsidePriority: '', measuringBedside: '', docHoursPerShift: 0 },
     docQuality: { concerns: [], measuringQuality: '' },
