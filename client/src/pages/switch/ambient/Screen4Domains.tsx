@@ -393,7 +393,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-fte-avoided"
           />
-          <BenchmarkContext text="Abridge enterprise customers modeling capacity into workforce planning report 1–3 FTE equivalent impact" />
+          <BenchmarkContext text="Abridge enterprise customers modeling capacity into workforce planning report 1–2 FTE equivalent impact" />
         </div>
       </div>
     );
