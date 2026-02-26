@@ -1,0 +1,545 @@
+# Ambient Assessment: Nursing Edition
+
+## The Soul of This Assessment
+
+A CNO or VP of Nursing is thinking about five things every day: can I keep my nurses, can I afford my staffing model, are my nurses burned out, are my patients getting enough attention, and is my documentation defensible. Those are the strategic questions.
+
+This assessment doesn't ask them to estimate minutes per flowsheet. It asks them to reflect on where their nursing program is under pressure — and then helps them see where reducing documentation burden could matter most. It's a strategic conversation about their nursing program that happens to surface where ambient documentation fits.
+
+The outpatient version asks: "How mature is your ambient ROI strategy?"
+The nursing version asks: **"Where is your nursing program under the most pressure — and where would reduced documentation burden make the biggest difference?"**
+
+## Important Constraint
+
+Abridge for nursing is focused on **flowsheet documentation** specifically. That's the product reality. The assessment should be honest about this — it's about documentation burden broadly, but the intervention we're discussing is flowsheet time savings. The pathways we explore are the ones that connect to that specific time savings.
+
+---
+
+## The Structure
+
+Same feel as outpatient: baseline inputs → strategic domains → summary. But instead of maturity levels (which don't apply because they don't have the product yet), each domain asks the CNO to assess where they are today and whether that area is under pressure. The assessment reveals their pressure points and connects them to how documentation burden reduction could help.
+
+**Four domains, mirroring the strategic concerns of nursing leadership:**
+
+1. **Workforce Stability** — Are you keeping your nurses?
+2. **Labor Cost** — Can you afford your staffing model?
+3. **Nurse Experience** — Are your nurses spending time where it matters?
+4. **Care Quality and Compliance** — Is your documentation supporting quality and safety?
+
+---
+
+## The Flow
+
+### Screen 1: Your Nursing Program
+
+**Header:**
+YOUR NURSING PROGRAM
+Tell us about your organization so we can explore where documentation burden may be creating pressure.
+
+**Inputs:**
+- Staffed beds (number input, placeholder "e.g., 200")
+- Nurse FTEs (number input, placeholder "e.g., 300")
+- Bed occupancy rate (slider, benchmark: "Most hospitals 75-90%")
+
+**Sidebar:**
+```
+Your Baseline
+Staffed beds          [X]
+Nurse FTEs            [X]
+Occupancy rate        [X]%
+Patient days / year   [calculated]
+Shifts / year         [nurseFTEs × 260]
+```
+
+Simple. Three inputs. Every CNO knows these. No adoption rate, no time savings — they don't have the product yet.
+
+**Button:** "Explore Your Pressure Points →"
+
+---
+
+### Screen 2: WORKFORCE STABILITY
+
+**Header:**
+ARE YOU KEEPING YOUR NURSES?
+Nursing turnover is one of the most expensive and disruptive challenges in healthcare. Understanding what's driving it is the first step toward addressing it.
+
+**Card: WHERE IS YOUR ORGANIZATION TODAY?**
+
+Four cards, same 2×2 grid as outpatient:
+
+```
+1. Turnover is Manageable
+   Retention is stable. No urgent workforce concerns.
+
+2. Turnover is Elevated
+   You're losing nurses at a rate that's creating operational
+   and financial strain.
+
+3. Turnover is a Strategic Threat
+   Retention challenges are affecting care delivery, labor
+   costs, and organizational stability.
+
+4. Retention is Actively Managed
+   Your organization has a retention strategy with measured
+   outcomes and targeted interventions.
+```
+
+**REFINE YOUR INPUTS (based on level selected):**
+
+Level 1:
+```
+No additional inputs needed. Your retention is stable.
+```
+
+Level 2:
+```
+Annual RN turnover rate
+[___] %
+National average: 18-22% (NSI Nursing Solutions)
+
+Average cost to replace an RN
+$ [___]
+Industry range: $40K-$65K per RN (NSI Nursing Solutions)
+```
+
+Level 3:
+```
+Annual RN turnover rate
+[___] %
+
+Average cost to replace an RN
+$ [___]
+
+What is driving turnover? (select all that apply)
+☐ Workload and staffing ratios
+☐ Documentation and administrative burden
+☐ Compensation
+☐ Leadership and culture
+☐ Schedule flexibility
+☐ Burnout
+```
+
+Level 4:
+```
+Annual RN turnover rate
+[___] %
+
+Average cost to replace an RN
+$ [___]
+
+What retention interventions are in place?
+☐ Compensation adjustments
+☐ Scheduling flexibility programs
+☐ Workload reduction initiatives
+☐ Documentation burden reduction
+☐ Mentorship and career development
+☐ Burnout prevention programs
+```
+
+**ESTIMATED IMPACT sidebar:**
+
+Level 1:
+```
+ESTIMATED IMPACT
+Your retention is stable
+
+If your organization maintains low turnover, the
+value of documentation burden reduction in this
+domain is primarily preventive — protecting the
+stability you already have.
+```
+
+Level 2 (if turnover + cost entered):
+```
+ESTIMATED IMPACT
+$[totalCost] in annual turnover cost
+
+At [turnoverRate]% turnover across [nurseFTEs] nurses,
+your organization replaces approximately [departures]
+nurses per year at $[cost] each.
+
+Documentation burden is consistently cited as a
+contributing factor in nursing burnout and turnover.
+Reducing it doesn't solve retention alone — but it
+addresses one of the most frequently cited pain points.
+
+[departures] = [nurseFTEs] × [turnoverRate]
+[totalCost] = [departures] × [replacementCost]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+Level 3 (if turnover + cost + drivers entered):
+```
+ESTIMATED IMPACT
+$[totalCost] in annual turnover cost
+[checkedCount] turnover driver(s) identified
+
+Your organization has identified [checkedCount] factors
+driving turnover:
+[list of checked items]
+
+[If "Documentation and administrative burden" is checked:]
+Documentation burden is one of your identified turnover
+drivers. This is the area most directly addressable
+through ambient documentation for nursing.
+
+[If not checked:]
+Documentation burden wasn't identified as a primary
+driver. However, it often contributes indirectly through
+its effect on workload and burnout — both of which
+you did identify.
+```
+
+Level 4:
+```
+ESTIMATED IMPACT
+$[totalCost] in annual turnover cost
+[checkedCount] intervention(s) active
+
+Your organization has [checkedCount] retention
+intervention(s) in place:
+[list of checked items]
+
+[If "Documentation burden reduction" is checked:]
+Documentation burden reduction is already part of your
+retention strategy. Ambient documentation for nursing
+would deepen this intervention specifically around
+flowsheet and assessment documentation time.
+
+[If not checked:]
+Documentation burden reduction isn't currently part of
+your retention strategy. It's one of the most common
+nurse-reported frustrations and a practical intervention
+that complements your existing programs.
+```
+
+**Button:** "See Labor Cost Impact →"
+
+---
+
+### Screen 3: LABOR COST
+
+**Header:**
+CAN YOU AFFORD YOUR STAFFING MODEL?
+Overtime, agency spend, and premium labor are symptoms of a staffing model under pressure. Understanding the drivers helps identify where relief is possible.
+
+**Cards:**
+
+```
+1. Labor Costs Are Stable
+   OT and agency usage are within budget. No significant pressure.
+
+2. Overtime Is Elevated
+   End-of-shift charting and documentation workload are
+   contributing to OT costs.
+
+3. Agency Reliance Is Growing
+   Staffing gaps from turnover are being filled with agency
+   or travel nurses at premium rates.
+
+4. Labor Strategy Is Proactive
+   Your organization is actively managing OT, agency, and
+   staffing mix with data and targeted interventions.
+```
+
+**REFINE YOUR INPUTS:**
+
+Level 1:
+```
+No additional inputs needed.
+```
+
+Level 2:
+```
+Is end-of-shift documentation a factor in nursing overtime?
+○ Not significantly
+○ Yes — nurses regularly stay late to finish charting
+
+[If yes:]
+Estimated OT minutes per nurse per shift attributable
+to documentation
+[___] min
+```
+
+Level 3:
+```
+Monthly agency or travel nurse spend
+$ [___] /month
+
+What percentage of agency reliance is driven by
+retention challenges?
+○ Minimal — mostly seasonal or census-driven
+○ Moderate — partly driven by open positions from turnover
+○ Significant — directly tied to our inability to retain
+```
+
+Level 4:
+```
+Monthly agency or travel nurse spend
+$ [___] /month
+
+What labor management interventions are in place?
+☐ OT monitoring and management
+☐ Agency spend reduction programs
+☐ Internal float pool
+☐ Predictive staffing models
+☐ Documentation efficiency initiatives
+```
+
+**ESTIMATED IMPACT sidebar:** (follows same pattern — shows their data, connects to documentation burden where relevant, honest about where the connection is direct vs. indirect)
+
+**Button:** "See Nurse Experience Impact →"
+
+---
+
+### Screen 4: NURSE EXPERIENCE
+
+**Header:**
+ARE YOUR NURSES SPENDING TIME WHERE IT MATTERS?
+Documentation pulls nurses away from patients. The question is how much — and whether your organization is measuring it.
+
+**Cards:**
+
+```
+1. Documentation Is a Known Burden
+   Nurses report spending significant time on documentation.
+   No formal measurement of bedside time impact.
+
+2. Bedside Time Is a Priority
+   Your organization has identified bedside time as a
+   strategic goal. Measurement may be informal.
+
+3. Experience Is Being Measured
+   You're tracking nurse satisfaction, bedside time, or
+   documentation burden through surveys or operational data.
+
+4. Experience Strategy Is Integrated
+   Nurse experience metrics are part of organizational
+   quality and performance frameworks.
+```
+
+**REFINE YOUR INPUTS:**
+
+Level 1:
+```
+No additional inputs. This is the most common starting
+point — documentation burden is acknowledged but not
+measured.
+```
+
+Level 2:
+```
+Is increasing bedside time a stated organizational goal?
+○ It's discussed but not formalized
+○ Yes — it's a nursing leadership priority
+○ Yes — it's part of organizational quality goals
+
+Have you conducted a nursing documentation burden survey?
+○ Not yet
+○ Informally
+○ Yes — structured survey
+```
+
+Level 3:
+```
+What are you measuring?
+☐ Nursing satisfaction / engagement scores
+☐ Documentation time per shift
+☐ Bedside time or direct care hours
+☐ Documentation burden survey results
+☐ HCAHPS / patient experience scores
+```
+
+Level 4:
+```
+Where do nurse experience metrics factor into
+organizational strategy?
+☐ Quality program goals
+☐ Nursing leadership performance metrics
+☐ Magnet or pathway to excellence initiatives
+☐ Patient experience improvement programs
+☐ Technology investment decisions
+```
+
+**ESTIMATED IMPACT sidebar:** Qualitative at all levels. Show hours that could be returned to bedside based on their nurse FTEs and shift count, but frame it as possibility not projection. "If documentation time per shift were reduced by 15-20 minutes, [X] hours annually could be redirected to direct patient care across your nursing program."
+
+**Button:** "See Documentation Quality Impact →"
+
+---
+
+### Screen 5: CARE QUALITY AND COMPLIANCE
+
+**Header:**
+IS YOUR DOCUMENTATION SUPPORTING QUALITY AND SAFETY?
+Flowsheet completeness, assessment consistency, and handoff quality directly affect patient safety, survey readiness, and compliance.
+
+**Cards:**
+
+```
+1. Documentation Quality Is Variable
+   Flowsheet completeness and consistency vary across units
+   and shifts. Not formally measured.
+
+2. Quality Gaps Are Known
+   Your organization has identified documentation quality
+   issues that affect compliance or care delivery.
+
+3. Quality Is Being Measured
+   Documentation completeness, consistency, or audit
+   readiness are actively tracked.
+
+4. Quality Is Governed
+   Documentation quality is part of your compliance
+   framework and quality improvement programs.
+```
+
+**REFINE YOUR INPUTS:**
+
+Level 1:
+```
+No additional inputs. Documentation quality hasn't been
+formally assessed.
+```
+
+Level 2:
+```
+Where have you identified documentation quality gaps?
+☐ Flowsheet completeness varies across shifts
+☐ Assessment documentation is inconsistent
+☐ Handoff documentation quality is uneven
+☐ Care plan updates are frequently incomplete
+☐ Audit or survey findings cite documentation gaps
+```
+
+Level 3:
+```
+What documentation quality metrics are you tracking?
+☐ Flowsheet completion rates
+☐ Assessment documentation compliance
+☐ Handoff quality metrics
+☐ Audit readiness scores
+☐ Documentation-related quality events
+```
+
+Level 4:
+```
+Where does documentation quality factor into governance?
+☐ Quality committee reporting
+☐ Regulatory compliance framework
+☐ Magnet or pathway to excellence documentation
+☐ Patient safety event review
+☐ Nursing performance metrics
+```
+
+**ESTIMATED IMPACT sidebar:** Qualitative. "Your organization has identified [X] documentation quality gaps. Structured, consistent flowsheet documentation through ambient technology addresses completeness and consistency at the point of care — before gaps reach compliance review."
+
+**Button:** "See My Assessment →"
+
+---
+
+### Screen 6: YOUR ASSESSMENT
+
+**Header:**
+YOUR NURSING PROGRAM ASSESSMENT
+Where documentation burden is creating the most pressure — and where reducing it could make the biggest difference.
+
+**Same layout as outpatient score page:** Score on the left, domain breakdown, narrative.
+
+**Scoring:** Same logic as outpatient. 25 points per domain. Level 1 = 6, Level 2 = 12, Level 3 = 19, Level 4 = 25. Score out of 100.
+
+But reframe the score label:
+
+```
+YOUR SCORE
+[X] / 100
+
+NURSING DOCUMENTATION READINESS
+
+Not yet assessed    Pressure identified    Actively measuring    Strategically managed
+      25                   50                     75                      100
+```
+
+**Domain breakdown:**
+```
+Workforce Stability        Level [X] — [name]       [score]/25
+Labor Cost                 Level [X] — [name]       [score]/25
+Nurse Experience           Level [X] — [name]       [score]/25
+Care Quality               Level [X] — [name]       [score]/25
+```
+
+**Narrative:**
+Dynamic 2-3 sentences identifying their highest-pressure domains and where documentation burden reduction would have the most impact. Same approach as outpatient — name the strongest and weakest domains, give a one-line insight about the biggest opportunity.
+
+---
+
+### Screen 7: WHERE DOCUMENTATION BURDEN REDUCTION MATTERS MOST
+
+**This replaces the outpatient "Cost of Standing Still" page.**
+
+Instead of showing cost of inaction (they don't have the product yet), show where the conversation should focus:
+
+```
+YOUR PRIORITY PATHWAYS
+
+Based on your assessment, reducing documentation burden
+through ambient flowsheet documentation would have the
+most meaningful impact in these areas:
+
+1. WORKFORCE STABILITY (Level 3 — Turnover is a Strategic Threat)
+   $[totalTurnoverCost] in annual turnover cost.
+   Documentation burden is one of your identified drivers.
+   Reducing flowsheet documentation time addresses one of
+   the most frequently cited pain points for nurses.
+
+2. LABOR COST (Level 2 — Overtime is Elevated)
+   End-of-shift charting is contributing to OT.
+   If documentation time per shift were reduced by 15-20
+   minutes, a portion of that time would come directly
+   off end-of-shift overtime.
+
+3. NURSE EXPERIENCE (Level 2 — Bedside Time Is a Priority)
+   Increasing bedside time is a priority but not yet measured.
+   Establishing documentation time and bedside time metrics
+   would create the baseline for understanding impact.
+```
+
+Ordered by relevance (highest level + most pressure indicators). Only show the top 2-3. If a domain is Level 1 with no pressure indicators, don't feature it here.
+
+---
+
+### Screen 8: NEXT STEP
+
+```
+NEXT STEP
+
+WANT TO SEE WHAT THESE PATHWAYS LOOK LIKE
+WITH REAL NUMBERS?
+
+You've identified where documentation burden is creating
+the most pressure in your nursing program. The next step
+is modeling what those pathways look like with specific
+time savings scenarios and your organization's data.
+
+We offer a deeper working session where we walk through
+the numbers together — focused on the pathways that
+matter most for your organization.
+
+[Request a Working Session →]     [Export My Assessment]
+```
+
+The working session IS the ROI calculator conversation — but now it's focused on their priority pathways instead of being a cold fishing expedition.
+
+---
+
+## Why This Version Has Soul
+
+1. **It meets the CNO where they are.** Workforce stability, labor cost, nurse experience, care quality — these are the four things keeping nursing leadership up at night. The assessment is organized around THEIR concerns, not around a product's features.
+
+2. **The level selection is strategic self-reflection, not a quiz.** "Is turnover manageable, elevated, a strategic threat, or actively managed?" — a CNO can answer that in 2 seconds and it immediately frames the conversation.
+
+3. **It doesn't pretend to know their numbers.** If they don't enter turnover rate, it doesn't guess. If OT isn't their issue, it says so. The honesty is the credibility.
+
+4. **It connects to flowsheets without being about flowsheets.** The assessment is about nursing program strategy. The connection to ambient flowsheet documentation is natural and organic — it surfaces where documentation burden is creating pressure, and then shows where reducing it would help. The product fits the problem, not the other way around.
+
+5. **It flows naturally into the ROI calculator.** The assessment says "your priority pathways are retention and OT." The ROI calculator models those pathways. The CNO walks into the ROI conversation already knowing what matters. That's a 10x better conversation than starting cold.
