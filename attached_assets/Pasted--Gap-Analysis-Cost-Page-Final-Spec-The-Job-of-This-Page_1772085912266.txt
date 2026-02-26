@@ -1,0 +1,385 @@
+# Gap Analysis / Cost Page — Final Spec
+
+## The Job of This Page
+
+This page answers ONE question: "What is standing still costing my organization?"
+
+It does NOT tell them what to do. That's the summary page. This page creates the weight. The summary page gives the relief.
+
+---
+
+## Layout
+
+Same two-column layout. Main content left, dark sidebar right.
+
+### Header
+
+```
+THE COST OF STANDING STILL
+What your organization could capture — and what every month of delay costs.
+```
+
+---
+
+### Card 1: YOUR DEPLOYMENT REALITY
+
+Same warm gray card. Simple comparison table.
+
+```
+YOUR DEPLOYMENT REALITY
+
+                           You          Benchmark
+Utilization                40%          76%
+Time saved / encounter     2.5 min      3.0 min
+Documented encounters      40,000       76,000
+Hours recovered annually   1,667        3,800
+```
+
+Below:
+```
+Benchmarks reflect top-performing deployment averages.
+Based on aggregated deployment data.
+```
+
+If time saved not entered: show "—" in their column, benchmark still shows 3.0 min.
+If utilization at or above 76%: no gap shown for that row.
+
+---
+
+### Card 2: WHAT EACH LEVEL IS WORTH
+
+For each domain, show their current level and what the NEXT level would unlock. Not the dream state. Just one step forward.
+
+**Key tone principles:**
+- Strategic partner voice, not sales voice
+- Never tell them what to do operationally ("see more patients," "present to your CMO")
+- Show what becomes visible or quantifiable at the next level
+- Let them connect the dots on what actions to take
+- Dollar ranges where math supports it, qualitative framing where it doesn't
+
+**CAPACITY domain-specific text by current level:**
+
+Level 1 (Time Saved, Not Deployed):
+```
+CAPACITY — Level 1
+Next level: Measured, Not Redesigned
+
+Your organization is recovering time but hasn't quantified
+the total. Aggregating time savings across your deployment
+gives you a recovered capacity number that becomes the
+foundation for every strategic conversation about what
+to do with it.
+```
+
+Level 2 (Measured, Not Redesigned):
+```
+CAPACITY — Level 2
+Next level: Access Redesigned
+
+You've quantified [X] recovered hours annually. The
+question your organization hasn't answered yet is
+whether that time can be structurally converted into
+access. Organizations who answer that question typically
+find $[low]-$[high] in annual capacity value.
+
+[3] × [providers] × 12 × $[revPerVisit] = $[low]
+[5] × [providers] × 12 × $[revPerVisit] = $[high]
+Range based on 3-5 additional patients/provider/month.
+```
+
+Level 3 (Access Redesigned):
+```
+CAPACITY — Level 3
+Next level: Capacity Modeled into Workforce Planning
+
+You're generating $[currentValue] in capacity value
+through access redesign. The next level of maturity
+is using recovered capacity as a planning variable —
+informing hiring decisions, site expansion, and
+service line strategy. Organizations at this level
+report 1-3 FTE equivalent impact in workforce planning.
+
+1 FTE × $[providerRate] × 2,080 = $[low]
+3 FTE × $[providerRate] × 2,080 = $[high]
+```
+
+Level 4:
+```
+CAPACITY — Level 4
+You're at the highest maturity level. Continue deepening
+measurement and expanding across the organization.
+```
+
+**REVENUE domain-specific text by current level:**
+
+Level 1 (Revenue Cycle Unaware):
+```
+REVENUE — Level 1
+Next level: Anecdotal Revenue Signal
+
+Your revenue cycle hasn't engaged with the documentation
+change yet. The first step is simply asking whether
+coding, CDI, or billing teams have noticed anything
+different. Most organizations are surprised by what
+surfaces when they ask.
+```
+
+Level 2 (Anecdotal Revenue Signal):
+```
+REVENUE — Level 2
+Next level: Impact Measured
+
+You've identified [X] revenue signals but haven't
+quantified the impact. Organizations who move from
+signals to measurement typically find 2-7% improvement
+in coding-related revenue. At your encounter volume,
+even 2% represents $[lowEstimate] annually.
+
+[documentedEncounters] × $[revPerVisit] × 2% = $[lowEstimate]
+[documentedEncounters] × $[revPerVisit] × 7% = $[highEstimate]
+```
+
+Level 3 (Impact Measured):
+```
+REVENUE — Level 3
+Next level: Revenue Cycle Integration
+
+You've measured $[currentValue] in documentation-driven
+revenue impact. The next level of maturity is making
+documentation quality an ongoing, governed input to
+revenue cycle operations — not a one-time study.
+Organizations at this level treat documentation quality
+the way they treat charge capture: continuously
+monitored and optimized.
+```
+
+Level 4:
+```
+REVENUE — Level 4
+You're at the highest maturity level. Continue deepening
+integration and expanding documentation quality governance
+across revenue cycle operations.
+```
+
+**WORKFORCE domain-specific text by current level:**
+
+Level 1 (Pajama Time Reduced):
+```
+WORKFORCE — Level 1
+Next level: Burden Measured and Validated
+
+Your providers report less after-hours work. The next
+step is understanding the full picture — in-clinic
+burden reduction and provider sentiment. A structured
+clinician survey combined with operational measurement
+turns anecdotal relief into an organizational data point.
+```
+
+Level 2 (Burden Measured and Validated):
+```
+WORKFORCE — Level 2
+Next level: Retention Risk Quantified
+
+You've measured [X] hours of burden reduction and
+[if survey: validated it with provider feedback]. The
+question your organization hasn't answered is what
+turnover is costing you — and how much of that cost
+is connected to documentation burden. At industry-average
+turnover (6-8%) and replacement costs ($250K-$500K),
+the annual exposure at your scale is significant.
+
+[providers] × 7% × $350K = $[midpoint] in total
+annual turnover cost (industry midpoints).
+```
+
+Level 3 (Retention Risk Quantified):
+```
+WORKFORCE — Level 3
+Next level: Labor Spend Structurally Reduced
+
+You've quantified $[currentValue] in turnover exposure.
+The next level of maturity is seeing documentation
+burden reduction show up in actual labor spend —
+reduced agency reliance, reduced locum usage.
+Organizations at this level report $5K-$30K/month
+in agency and locum spend reduction.
+
+$5K × 12 = $60K annually (low end)
+$30K × 12 = $360K annually (high end)
+```
+
+Level 4:
+```
+WORKFORCE — Level 4
+You're at the highest maturity level. Continue tracking
+agency and locum spend against documentation burden
+metrics to validate the long-term trend.
+```
+
+**RISK domain-specific text by current level:**
+
+Level 1 (Better Notes, Same Infrastructure):
+```
+RISK — Level 1
+Next level: Active Quality Monitoring
+
+Your documentation is better — but no one is measuring
+how or why. Without quality monitoring, you have no
+baseline for what improved documentation is actually
+worth downstream. Establishing any form of measurement
+is the foundation for everything that follows.
+```
+
+Level 2 (Active Quality Monitoring):
+```
+RISK — Level 2
+Next level: Downstream Systems Connected
+
+You're tracking [X] quality dimension(s). The next step
+is connecting documentation quality to the workflows
+that depend on it — CDI, coding, quality reporting,
+chart abstraction. Each connection unlocks operational
+efficiency and positions your documentation infrastructure
+for what's coming: AI-driven CDI, automated quality
+reporting, and structured data for payer negotiations.
+```
+
+Level 3 (Downstream Systems Connected):
+```
+RISK — Level 3
+Next level: Documentation as Strategic Data Asset
+
+You've connected [X] downstream workflow(s), saving
+an estimated $[value if entered] annually. The next level
+is making documentation quality a strategic input —
+informing payer strategy, value-based care design,
+and compliance governance. This is where documentation
+stops being a clinical byproduct and becomes
+organizational intelligence.
+```
+
+Level 4:
+```
+RISK — Level 4
+You're at the highest maturity level. Your documentation
+infrastructure is positioned for next-generation AI
+applications — from automated prior authorization to
+predictive quality reporting. Continue expanding the
+data asset across organizational strategy.
+```
+
+---
+
+### Card 3: 3-YEAR PROJECTION
+
+Same graph as current implementation. Two lines.
+
+**Updated labels:**
+- Dashed gray: **"Current trajectory"**
+- Solid Abridge red: **"With strategic action"**
+
+```
+3-YEAR PROJECTION
+Cumulative value: current trajectory vs. strategic action
+```
+
+**Calculation:**
+```
+currentAnnual = sum of measured dollar values across domains
+strategicAnnual = sum of next-level projections (using low-end
+                  of ranges shown in Card 2)
+
+For each time point:
+  currentCumulative = currentAnnual × (months / 12)
+  strategicCumulative = strategicAnnual × (months / 12)
+```
+
+Use LOW END of all ranges for the strategic line. This keeps it conservative and defensible. The gap will still be significant.
+
+**Below the graph:**
+```
+Over 36 months, the gap between your current trajectory
+and strategic action is approximately $[gap].
+
+Projections based on your inputs and next-level benchmark
+ranges (low end). Actual results depend on organizational
+execution. Individual results vary.
+```
+
+---
+
+### Dark Sidebar (right)
+
+```
+VALUE AT A GLANCE
+
+$[totalMeasured]
+measured annually
+
+$[monthlyMeasured]   $[weeklyMeasured]   $[dailyMeasured]
+/ MONTH              / WEEK              / DAY
+
+───────────────────────────
+
+WITH STRATEGIC ACTION
+
+$[strategicAnnual]
+projected annually (low-end estimates)
+
+Gap: +$[annualGap] / year
+
+───────────────────────────
+
+COST OF WAITING
+
+Every month:     $[monthlyGap]
+Wait 6 months:   $[6moGap]
+Wait 12 months:  $[12moGap]
+
+───────────────────────────
+
+DOMAIN VALUES
+
+Capacity       $[X] or —
+Revenue        $[X] or —
+Workforce      [X] hrs or $[X]
+Risk           $[X] or —
+
+Based on your inputs and next-level
+projections. Individual results vary.
+```
+
+---
+
+### Navigation
+
+```
+Back                    [See My Summary →]
+```
+
+The summary page is where the 90-day roadmap, the export, and the "what to do" lives. This page is just the cost. The weight. The uncomfortable truth.
+
+---
+
+### Disclaimer (bottom)
+
+> *Projections are directional estimates based on your inputs and published benchmark data. Ranges reflect next-level maturity modeling using conservative assumptions. Actual results depend on organizational execution and market conditions. Individual results vary.*
+
+---
+
+## What This Page Does NOT Have
+
+- No 90-day roadmap (that's the summary page)
+- No "present to your CMO" directives
+- No operational instructions ("see more patients")
+- No export or share functionality (that's the summary page)
+- No aggressive language about what they "must" do
+
+## What This Page DOES Have
+
+- Their deployment reality vs. benchmark (the mirror)
+- What the next level unlocks for each domain (the possibility)
+- The 3-year projection showing divergence (the cost of waiting)
+- The sidebar making the monthly cost visceral (the urgency)
+
+The tone throughout is a strategic partner showing you your own data and helping you understand what it means. Not telling you what to do. Not selling. Just showing.

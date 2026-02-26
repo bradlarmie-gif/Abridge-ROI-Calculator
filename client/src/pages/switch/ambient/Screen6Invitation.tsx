@@ -229,17 +229,21 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                 className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full transition-all duration-700"
                 style={{ width: `${Math.min(result.score, 100)}%` }}
               />
-              <div className="absolute -top-0.5" style={{ left: '34%', transform: 'translateX(-50%)' }}>
-                <div className="w-px h-3 bg-white/40" />
+              <div className="absolute -top-0.5" style={{ left: '25%', transform: 'translateX(-50%)' }}>
+                <div className="w-px h-3 bg-white/30" />
               </div>
-              <div className="absolute -top-0.5" style={{ left: '71%', transform: 'translateX(-50%)' }}>
-                <div className="w-px h-3 bg-white/70" />
+              <div className="absolute -top-0.5" style={{ left: '50%', transform: 'translateX(-50%)' }}>
+                <div className="w-px h-3 bg-white/30" />
+              </div>
+              <div className="absolute -top-0.5" style={{ left: '75%', transform: 'translateX(-50%)' }}>
+                <div className="w-px h-3 bg-white/30" />
               </div>
             </div>
             <div className="flex justify-between mt-2">
               <span className="text-[10px] text-white/30">0</span>
-              <span className="text-[10px] text-white/40">Avg: 34</span>
-              <span className="text-[10px] text-white/50">Top: 71</span>
+              <span className="text-[10px] text-white/40">25</span>
+              <span className="text-[10px] text-white/40">50</span>
+              <span className="text-[10px] text-white/40">75</span>
               <span className="text-[10px] text-white/30">100</span>
             </div>
           </div>
@@ -297,7 +301,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
                           <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                             <div
                               className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
-                              style={{ width: `${d?.score || 0}%` }}
+                              style={{ width: `${((d?.score || 0) / 25) * 100}%` }}
                             />
                           </div>
                         </div>

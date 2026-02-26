@@ -56,14 +56,10 @@ export interface DomainFeedback {
   headlineMetric?: string;
 }
 
-export function computeDomainScore(domain: Domain, level: ActivationLevel, _inputs: Record<string, number | string>): number {
-  const baseScores: Record<Domain, Record<number, number>> = {
-    capacity: { 1: 15, 2: 35, 3: 65, 4: 90 },
-    revenue: { 1: 10, 2: 30, 3: 62, 4: 88 },
-    workforce: { 1: 20, 2: 40, 3: 65, 4: 85 },
-    risk: { 1: 15, 2: 38, 3: 62, 4: 90 },
-  };
-  return baseScores[domain]?.[level] || 0;
+export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
+
+export function computeDomainScore(_domain: Domain, level: ActivationLevel, _inputs: Record<string, number | string>): number {
+  return SCORE_MAP[level] || 0;
 }
 
 export function computeCapacityFeedback(
@@ -795,16 +791,10 @@ export function computeGapForDomain(
   return { value: feedback.value || 0, hasValue: feedback.hasValue };
 }
 
-export function scoreToActivationLevel(domain: Domain, score: number): ActivationLevel {
-  const thresholds: Record<Domain, number[]> = {
-    capacity: [15, 35, 65, 90],
-    revenue: [10, 30, 62, 88],
-    workforce: [20, 40, 65, 85],
-    risk: [15, 38, 62, 90],
-  };
-  const bases = thresholds[domain];
-  for (let i = bases.length - 1; i >= 0; i--) {
-    if (score >= bases[i] - 5) return (i + 1) as ActivationLevel;
-  }
+export function scoreToActivationLevel(_domain: Domain, score: number): ActivationLevel {
+  if (score >= 25) return 4;
+  if (score >= 19) return 3;
+  if (score >= 12) return 2;
+  if (score >= 6) return 1;
   return 1;
 }

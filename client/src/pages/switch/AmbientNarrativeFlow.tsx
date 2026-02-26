@@ -76,7 +76,7 @@ export default function AmbientNarrativeFlow({
       case 3:
         return <Screen3Domains onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return <Screen4Score onNext={handleNext} onBack={handleBack} />;
+        return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={() => goToStep(3)} />;
       case 5:
         return <Screen5Gap onNext={handleNext} onBack={handleBack} />;
       case 6:
