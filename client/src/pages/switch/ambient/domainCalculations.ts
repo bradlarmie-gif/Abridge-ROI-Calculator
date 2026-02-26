@@ -145,14 +145,15 @@ export function computeCapacityFeedback(
         footnote: '',
       };
     }
-    const annualAdditionalVisits = additionalPatients * providers * 12;
+    const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
+    const annualAdditionalVisits = additionalPatients * redesignedProviders * 12;
     const capacityValue = Math.round(annualAdditionalVisits * revenuePerVisit);
     return {
       label: 'Estimated Impact',
       value: capacityValue,
       hasValue: true,
-      context: `Your access redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${providers} providers — estimated at ${formatDollar(capacityValue)}.`,
-      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${providers} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
+      context: `Your access redesign is generating ${annualAdditionalVisits.toLocaleString()} additional visits annually across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} with redesigned schedules — estimated at ${formatDollar(capacityValue)}.`,
+      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
       footnote: 'Revenue per visit inherited from baseline inputs.',
     };
   }
@@ -210,6 +211,7 @@ export function computeRevenueFeedback(
   inputs: Record<string, number | string>,
   documentedEncounters: number,
   revenuePerVisit: number,
+  conversionFactor: number = 33,
 ): DomainFeedback {
   if (level === 1) {
     return {
@@ -287,7 +289,6 @@ export function computeRevenueFeedback(
           footnote: '',
         };
       }
-      const conversionFactor = 36.04;
       const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
       return {
         label: 'Estimated Impact',
@@ -295,7 +296,7 @@ export function computeRevenueFeedback(
         hasValue: true,
         context: `Your measured wRVU change of ${wrvuDelta} per encounter across ${documentedEncounters.toLocaleString()} documented encounters represents an estimated ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data.`,
         formula: `[revenueImpact] = ${wrvuDelta} wRVU \u00d7 ${documentedEncounters.toLocaleString()} encounters \u00d7 $${conversionFactor} (CMS conversion factor) = ${formatDollar(revenueImpact)}`,
-        footnote: 'Conversion factor: $36.04 (CMS national average). Adjust in advanced settings if your payer mix differs.',
+        footnote: `Conversion factor: $${conversionFactor} (CMS). Adjustable in baseline advanced settings.`,
       };
     }
 
@@ -347,8 +348,6 @@ export function computeRevenueFeedback(
 
     if (metricType === 'denial_rate') {
       const denialReduction = inputs.measuredDenialReduction as number | undefined;
-      const monthlyDenials = inputs.monthlyDenials as number | undefined;
-      const avgDenialValue = inputs.avgDenialValue as number | undefined;
 
       if (!denialReduction || denialReduction <= 0) {
         return {
@@ -361,24 +360,12 @@ export function computeRevenueFeedback(
         };
       }
 
-      if (monthlyDenials && monthlyDenials > 0 && avgDenialValue && avgDenialValue > 0) {
-        const annualImpact = Math.round(monthlyDenials * (denialReduction / 100) * avgDenialValue * 12);
-        return {
-          label: 'Estimated Impact',
-          value: annualImpact,
-          hasValue: true,
-          context: `Your documentation-related denial rate has decreased by ${denialReduction}%. Across ${monthlyDenials} monthly denials at ${formatDollar(avgDenialValue)} average value, this represents ${formatDollar(annualImpact)} in annual impact.\n\nBased on your organization's measured data.`,
-          formula: `[annualImpact] = ${monthlyDenials} denials/mo \u00d7 ${denialReduction}% \u00d7 ${formatDollar(avgDenialValue)} \u00d7 12 = ${formatDollar(annualImpact)}`,
-          footnote: 'Based on your organization\'s measured data.',
-        };
-      }
-
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
         headlineMetric: `Denial rate reduced ${denialReduction}%`,
-        context: `Your documentation-related denial rate has decreased by ${denialReduction}%. Dollar impact depends on your denial volume and average denial value \u2014 enter these below to calculate.\n\nBased on your organization's measured data.`,
+        context: `Your documentation-related denial rate has decreased by ${denialReduction}%.\n\nTo estimate dollar impact: multiply your average monthly documentation-related denials by the reduction percentage, then by average denial value, then by 12.\n\nExample: 50 denials/mo × ${denialReduction}% × $500 avg value × 12 = ${formatDollar(Math.round(50 * (denialReduction / 100) * 500 * 12))}/year.\n\nBased on your organization's measured data.`,
         formula: '',
         footnote: '',
       };
@@ -491,8 +478,8 @@ export function computeWorkforceFeedback(
         footnote: '',
       };
     }
-    const savedHours = Math.round(minutesSaved * providers * 250 / 60);
-    const annualPerProvider = Math.round(minutesSaved * 250 / 60);
+    const savedHours = Math.round(minutesSaved * providers * 230 / 60);
+    const annualPerProvider = Math.round(minutesSaved * 230 / 60);
     const burdenValue = Math.round(savedHours * providerRate);
 
     const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
@@ -510,7 +497,7 @@ export function computeWorkforceFeedback(
         ? `${savedHours.toLocaleString()} hours reclaimed · ${checkedCount} survey finding(s)`
         : `${savedHours.toLocaleString()} hours reclaimed annually`,
       context: `${minutesSaved} min/day across ${providers} providers = ${savedHours.toLocaleString()} hours of in-clinic documentation burden eliminated annually.\n\nThat's ${annualPerProvider.toLocaleString()} hours per provider per year redirected from documentation editing to patient care.${surveyNarrative}`,
-      formula: `[savedHours] = ${minutesSaved} × ${providers} × 250 / 60 = ${savedHours.toLocaleString()}\n[annualPerProvider] = ${minutesSaved} × 250 / 60 = ${annualPerProvider}`,
+      formula: `[savedHours] = ${minutesSaved} × ${providers} × 230 / 60 = ${savedHours.toLocaleString()}\n[annualPerProvider] = ${minutesSaved} × 230 / 60 = ${annualPerProvider}`,
       footnote: '',
     };
   }
@@ -787,6 +774,7 @@ export function computeGapForDomain(
   utilization: number,
   revenuePerVisit: number,
   providerRate: number,
+  conversionFactor: number = 33,
 ): { value: number; hasValue: boolean } {
   const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
   let feedback: DomainFeedback;
@@ -795,7 +783,7 @@ export function computeGapForDomain(
       feedback = computeCapacityFeedback(level, inputs, providers, documentedEncounters, revenuePerVisit, providerRate);
       break;
     case 'revenue':
-      feedback = computeRevenueFeedback(level, inputs, documentedEncounters, revenuePerVisit);
+      feedback = computeRevenueFeedback(level, inputs, documentedEncounters, revenuePerVisit, conversionFactor);
       break;
     case 'workforce':
       feedback = computeWorkforceFeedback(level, inputs, providers, providerRate);

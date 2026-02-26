@@ -153,11 +153,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const inp = currentState.inputs;
     switch (activeDomain) {
       case 'capacity': return computeCapacityFeedback(level, inp, providers, documentedEncounters, revenuePerVisit, providerRate);
-      case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit);
+      case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
       case 'workforce': return computeWorkforceFeedback(level, inp, providers, providerRate);
       case 'risk': return computeRiskFeedback(level, inp);
     }
-  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate]);
+  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor]);
 
   const handleAdvance = () => {
     if (currentState.activationLevel) {
@@ -337,19 +337,34 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 3) {
       return (
-        <div>
-          <label className="block text-sm font-medium text-black mb-1">
-            Additional patients seen per provider per month
-          </label>
-          <p className="text-sm text-[#888888] mb-3">Due to scheduling redesign, template changes, or panel expansion</p>
-          <FormattedNumberInput
-            value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
-            onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
-            placeholder=""
-            className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-additional-patients"
-          />
-          <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients/provider/month." />
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Additional patients seen per provider per month
+            </label>
+            <p className="text-sm text-[#888888] mb-3">Due to scheduling redesign, template changes, or panel expansion</p>
+            <FormattedNumberInput
+              value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
+              onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-additional-patients"
+            />
+            <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients/provider/month." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Providers with redesigned schedules
+            </label>
+            <p className="text-xs text-[#888888] mb-2">Defaults to your total provider count. Override if only a subset has redesigned schedules.</p>
+            <FormattedNumberInput
+              value={(currentState.inputs.redesignedProviders as number) || 0}
+              onChange={(v) => setDomainInput('redesignedProviders', Math.max(0, v))}
+              placeholder={`${providers}`}
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-redesigned-providers"
+            />
+          </div>
         </div>
       );
     }
@@ -592,36 +607,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   <span className="text-sm text-[#888888]">%</span>
                 </div>
                 <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.denial_rate} />
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Average monthly documentation-related denials
-                    </label>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.monthlyDenials as number) || 0}
-                      onChange={(v) => setDomainInput('monthlyDenials', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-monthly-denials"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      Average denial value
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-[#888888]">$</span>
-                      <FormattedNumberInput
-                        value={(currentState.inputs.avgDenialValue as number) || 0}
-                        onChange={(v) => setDomainInput('avgDenialValue', Math.max(0, v))}
-                        placeholder=""
-                        className="w-full h-12 bg-white border-[#E5E7EB]"
-                        data-testid="input-avg-denial-value"
-                      />
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

@@ -29,6 +29,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   const utilization = inputs.utilization || 0;
   const revenuePerVisit = inputs.revenuePerVisit || 200;
   const providerRate = inputs.providerRate || 150;
+  const conversionFactor = inputs.conversionFactor || 33;
 
   const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);
   const encountersPerDay = useMemo(() => {
@@ -51,7 +52,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
   const encountersPerProviderPerDay = useMemo(() => {
     if (!inputs.providers || !inputs.annualEncounters) return 0;
-    return Math.round(inputs.annualEncounters / inputs.providers / 250);
+    return Math.round(inputs.annualEncounters / inputs.providers / 230);
   }, [inputs.providers, inputs.annualEncounters]);
 
   const handleUtilChange = (val: number) => {
@@ -272,6 +273,23 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                           />
                         </div>
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          CMS wRVU conversion factor
+                        </label>
+                        <p className="text-xs text-[#888888] mb-2">Medicare conversion factor applied to wRVU calculations. Default $33.</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-[#888888]">$</span>
+                          <FormattedNumberInput
+                            value={conversionFactor}
+                            onChange={(v) => updateInput("conversionFactor", v || 33)}
+                            placeholder="33"
+                            className="w-full h-12 bg-white border-[#E5E7EB]"
+                            data-testid="input-conversion-factor"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -342,7 +360,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                       {encountersPerProviderPerDay}
                     </p>
                     <p className="text-xs text-white/30 italic mt-1">
-                      {inputs.annualEncounters.toLocaleString()} / {inputs.providers} / 250
+                      {inputs.annualEncounters.toLocaleString()} / {inputs.providers} / 230
                     </p>
                   </div>
                 </div>

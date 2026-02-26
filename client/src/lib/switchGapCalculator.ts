@@ -43,6 +43,7 @@ export interface SwitchInputs {
   entryEstimate: number | null;
   revenuePerVisit: number;
   providerRate: number;
+  conversionFactor: number;
   capacityScore: number;
   capacityGap: number;
   revenueScore: number;

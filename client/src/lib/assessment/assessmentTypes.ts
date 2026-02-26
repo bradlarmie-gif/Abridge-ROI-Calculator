@@ -72,6 +72,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   entryEstimate: null,
   revenuePerVisit: 200,
   providerRate: 150,
+  conversionFactor: 33,
   capacityScore: 0,
   capacityGap: 0,
   revenueScore: 0,
