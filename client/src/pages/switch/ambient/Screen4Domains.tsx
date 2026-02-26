@@ -167,6 +167,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       dispatch(assessmentActions.updateInput(`${activeDomain}Score` as keyof typeof inputs, score));
       dispatch(assessmentActions.updateInput(`${activeDomain}Gap` as keyof typeof inputs, gapValue));
       dispatch(assessmentActions.updateInput(`${activeDomain}HasValue` as keyof typeof inputs, hasValue));
+      dispatch(assessmentActions.updateInput(`${activeDomain}HeadlineMetric` as keyof typeof inputs, feedback?.headlineMetric || ''));
     }
 
     const idx = DOMAIN_ORDER.indexOf(activeDomain);

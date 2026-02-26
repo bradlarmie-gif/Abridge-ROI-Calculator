@@ -155,7 +155,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
       risk: inputs.riskGap || 0,
     };
 
-    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; hasValue: boolean; primaryOpportunity: string }> = {};
+    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; hasValue: boolean; headlineMetric: string; primaryOpportunity: string }> = {};
     for (const d of DOMAIN_ORDER) {
       const level = scoreToActivationLevel(d, scores[d]);
       r[d] = {
@@ -164,6 +164,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
         score: scores[d],
         gapValue: gaps[d],
         hasValue: domainHasValue[d],
+        headlineMetric: (inputs as any)[`${d}HeadlineMetric`] || '',
         primaryOpportunity: opportunityText[d]?.[level] || '',
       };
     }
@@ -217,6 +218,37 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
     setExportModalOpen(true);
   };
 
+  const assessmentNarrative = useMemo(() => {
+    const domainLevels: Record<string, number> = {};
+    for (const d of DOMAIN_ORDER) {
+      domainLevels[d] = domainData[d]?.activationLevel || 1;
+    }
+    const TIEBREAKER: (typeof DOMAIN_ORDER[number])[] = ['risk', 'revenue', 'workforce', 'capacity'];
+    let lowestDomain = TIEBREAKER[0];
+    let lowestLevel = domainLevels[lowestDomain];
+    for (const d of TIEBREAKER) {
+      if (domainLevels[d] < lowestLevel) { lowestDomain = d; lowestLevel = domainLevels[d]; }
+    }
+    const strongDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]);
+    const weakDomains = DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d]);
+
+    const INSIGHTS: Record<string, Record<1|2, string>> = {
+      capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
+      revenue: { 1: "No one has connected documentation quality to how your organization gets paid.", 2: "Revenue signals observed but not measured." },
+      workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
+      risk: { 1: "Documentation quality improved but nothing downstream has changed.", 2: "Quality monitoring started but downstream workflows aren't connected." },
+    };
+    const insightLevel = Math.min(lowestLevel, 2) as 1|2;
+    const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';
+    const lowestLabel = DOMAIN_LABELS[lowestDomain as Domain].toLowerCase();
+
+    if (totalScore <= 30) return `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 50) return `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 70) return `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 85) return `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${lowestLabel} to reach full maturity \u2014 ${domainInsight.toLowerCase()}`;
+    return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';
+  }, [domainData, totalScore]);
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -242,6 +274,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
         revenuePerVisit,
         providerRate: inputs.providerRate || 150,
         conversionFactor: inputs.conversionFactor || 33,
+        assessmentNarrative,
         domains: {
           capacity: domainData.capacity as any,
           revenue: domainData.revenue as any,

@@ -1,0 +1,97 @@
+# PDF Export — Content Fixes
+
+Keep the exact same layout, design, typography, colors, and page structure. Only update the content described below.
+
+---
+
+## PAGE 1 (Cover) — No changes needed. It's correct.
+
+---
+
+## PAGE 2 (Your Score)
+
+**Problem:** The "Measured Value" section shows $911K with "$76K per month" and "$18K per provider / yr." But this is the SCORE page. We decided to keep financial data off the score page and let the maturity score be the focus. The money lives on the cost page.
+
+**Fix:** Replace the "Measured Value" section with the assessment narrative. The right side of this page should be:
+
+```
+YOUR ASSESSMENT
+
+[Dynamic 2-3 sentence narrative from the score page]
+
+Example: "Your organization is actively managing ambient
+ROI in Workforce and Risk, but Capacity and Revenue
+remain in early stages. Your biggest opportunity is in
+Revenue — no one has connected documentation quality
+to how your organization gets paid."
+```
+
+Keep the YOUR INPUTS section at the bottom — that's useful reference data.
+
+**Also fix:** The "Hours reclaimed: 0 hrs" and "Time saved: 0 min" entries. If the user didn't enter time saved, show "—" not "0 min." Zero implies they measured it and it's zero. Dash means they haven't entered it. Same for hours reclaimed and FTE equivalent — show "—" if the inputs that drive them aren't entered.
+
+---
+
+## PAGE 3 (The Four Domains)
+
+**This page is mostly right. A few content fixes:**
+
+**Fix 1:** The measured value column should show the ACTUAL output from each domain — not just dollars. Match what the estimated impact card showed during the assessment:
+
+- If the domain produced a dollar value: show it (e.g., "$875K" for Workforce)
+- If the domain produced hours: show hours (e.g., "3,125 hrs" for Workforce L2 if that's what they entered)
+- If the domain produced qualitative output: show it (e.g., "4 signals observed" for Revenue L2, or "3 of 5 dimensions tracked" for Risk L2)
+- If no data entered: show "—"
+
+Right now it shows "—" for domains that actually have qualitative data (like Revenue L2 where they may have checked signal boxes). The qualitative findings ARE outputs — show them.
+
+**Fix 2:** The KPI indicators at the bottom of each domain (the four gray items) should only highlight the ones that are relevant to their selected level, not show all four equally. If they're at Capacity Level 2, "Time saved per encounter" and "Recovered hours annually" are relevant. "Additional patients per month" and "FTEs avoided or redeployed" are future levels. Consider bolding or highlighting the KPIs that match their current level and keeping the rest in lighter gray to show the progression.
+
+---
+
+## PAGE 4 (Cost of Inaction)
+
+**Problem 1:** "This is not aspirational revenue. It is value already flowing through your documentation infrastructure that is not being systematically realized." — This is aggressive and makes a claim about value that may not be supportable. If most of their domains show "—" for measured value, the numbers on this page are projections, not "value already flowing."
+
+**Fix:** Change to: "Based on your assessment and next-level projections. These estimates reflect what strategic action across your four domains could unlock."
+
+**Problem 2:** "Delay doesn't pause the loss. Every month at current activation permanently forfeits $76K in enterprise value that cannot be retroactively recovered." — Too aggressive. Sounds like a scare tactic.
+
+**Fix:** Change to: "Every month at current maturity levels represents an opportunity to capture additional value across your four domains."
+
+**Problem 3:** The "What This Means" section says "At 60% utilization and 0 minutes saved per encounter, your documentation infrastructure is returning value." — If time saved is 0, it's not returning value. This is a data issue — the narrative shouldn't say "returning value" when the inputs show zero.
+
+**Fix:** Make this dynamic:
+- If time saved is entered: "At [X]% utilization and [Y] minutes saved per encounter, your documentation infrastructure is returning [Z] hours annually."
+- If time saved is NOT entered: "At [X]% utilization, your organization hasn't yet measured time savings per encounter. Establishing this metric is the foundation for understanding capacity value."
+
+The "What This Means" section should always be 3-4 sentences that make sense given THEIR specific inputs. If they left things blank, acknowledge it rather than generating a sentence with zeros.
+
+**Problem 4:** The monthly/daily value uncaptured and the 3-year projection should only use numbers that are actually grounded in entered data or clearly labeled next-level projections. Right now it's unclear whether $76K/month comes from measured data or projections.
+
+**Fix:** Add a label under the monthly number:
+- If based on measured data: "Based on your measured inputs"
+- If based on projections: "Based on next-level projections across your domains"
+- If mixed: "Based on measured inputs and next-level projections"
+
+---
+
+## PAGE 5 (Transparency + Next Steps)
+
+**Problem:** The CMS wRVU conversion factor shows "$33" but our default is $36.04. This should pull from whatever value is in the baseline (either the default or what the user adjusted it to).
+
+**Fix:** Make sure all values in the assumptions table pull dynamically from the actual assessment inputs, including any advanced settings the user changed.
+
+**Everything else on this page is correct.** The assumptions table format, the "no additional discounting" language, the next steps section, the disclaimer — all good.
+
+---
+
+## ONE ADDITIONAL FIX ACROSS ALL PAGES
+
+Anywhere the PDF shows "0" for a value that wasn't entered (as opposed to actually being zero), change to "—". This applies to:
+- Time saved: 0 min → "—" if not entered
+- Hours reclaimed: 0 hrs → "—" if derived from unentered time saved
+- FTE equivalent: 0.0 → "—" if derived from unentered time saved
+- Any domain measured value that shows $0 because inputs weren't provided → "—"
+
+The rule: "0" means "we measured it and it's zero." "—" means "not yet entered." These are different things and the PDF should reflect that.

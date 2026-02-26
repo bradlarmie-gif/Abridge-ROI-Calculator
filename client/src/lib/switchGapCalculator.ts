@@ -56,6 +56,10 @@ export interface SwitchInputs {
   revenueHasValue: boolean;
   workforceHasValue: boolean;
   riskHasValue: boolean;
+  capacityHeadlineMetric: string;
+  revenueHeadlineMetric: string;
+  workforceHeadlineMetric: string;
+  riskHeadlineMetric: string;
 }
 
 export interface GapItem {

@@ -85,6 +85,10 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   revenueHasValue: false,
   workforceHasValue: false,
   riskHasValue: false,
+  capacityHeadlineMetric: '',
+  revenueHeadlineMetric: '',
+  workforceHeadlineMetric: '',
+  riskHeadlineMetric: '',
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
