@@ -62,8 +62,8 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   const utilInsight = useMemo(() => {
     if (!utilSet) return null;
     if (utilization < 45) return "Below industry average — significant headroom to benchmark.";
-    if (utilization <= 75) return "At or above industry average. Room to reach Abridge benchmark.";
-    return "At or above Abridge average utilization.";
+    if (utilization <= 75) return "At or above industry average. Room to reach observed deployment benchmark.";
+    return "At or above observed deployment average.";
   }, [utilSet, utilization]);
 
   return (

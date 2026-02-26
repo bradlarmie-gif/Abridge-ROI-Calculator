@@ -127,7 +127,7 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours quantified — $0 deployed`,
-      context: `Your organization has quantified ${recoveredHours.toLocaleString()} recovered hours annually (${fte} FTE equivalent). This time is measured but not yet converted to additional access or volume. No scheduling or template changes have been implemented.\n\nThe gap between measurement and action is where most organizations stall.\n\nAbridge customers who move from measurement to redesign (Level 3) typically capture ${benchmarkValue} in annual capacity value.`,
+      context: `Your organization has quantified ${recoveredHours.toLocaleString()} recovered hours annually (${fte} FTE equivalent). This time is measured but not yet converted to additional access or volume. No scheduling or template changes have been implemented.\n\nThe gap between measurement and action is where most organizations stall.\n\nOrganizations who move from measurement to redesign (Level 3) typically capture ${benchmarkValue} in annual capacity value.`,
       formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${calculatedHours.toLocaleString()}${aggregated === 'yes' ? `\n[confirmedHours] = ${recoveredHours.toLocaleString()} (organization-confirmed)` : ''}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
       footnote: 'Dollar value: $0 — time is quantified but not yet deployed through operational changes.',
     };

@@ -235,13 +235,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
-            <span className="font-bold">1.5–2.5 min</span> Most tools
+            <span className="font-bold">1.5–3.0+ min</span> Industry range
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
-            <span className="font-bold">3.0 min</span> Abridge avg
+            <span className="font-bold">3.0 min</span> Observed across deployments
           </span>
         </div>
-        <BenchmarkContext text="Based on published industry data and Abridge deployment experience." />
+        <BenchmarkContext text="Based on published industry data and aggregated deployment experience." />
 
         {showUnmeasuredCheckbox && (
           <>
@@ -349,7 +349,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-additional-patients"
           />
-          <BenchmarkContext text="Abridge customers with access redesign report 3–8 additional patients/provider/month" />
+          <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients/provider/month." />
         </div>
       );
     }
@@ -393,7 +393,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-fte-avoided"
           />
-          <BenchmarkContext text="Abridge enterprise customers modeling capacity into workforce planning report 1–2 FTE equivalent impact" />
+          <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent impact in workforce planning." />
         </div>
       </div>
     );
@@ -428,7 +428,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888]">%</span>
           </div>
-          <BenchmarkContext text="Abridge customers reporting anecdotal lift estimate 1–3%" />
+          <BenchmarkContext text="Organizations at this stage have reported 1–3% improvement. Based on aggregated deployment experience." />
         </div>
       );
     }
@@ -449,7 +449,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888]">%</span>
           </div>
-          <BenchmarkContext text="Abridge customers with measured yield tracking report 1.5–4% verified improvement" />
+          <BenchmarkContext text="Organizations with measured yield tracking have reported 1.5–4% verified improvement." />
         </div>
       );
     }

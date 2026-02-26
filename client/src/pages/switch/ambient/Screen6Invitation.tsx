@@ -45,7 +45,7 @@ const DOMAIN_OPS: Record<string, { meaning: string; action: string }> = {
     action: 'Closing it requires reducing documentation time to below the burnout threshold.',
   },
   risk: {
-    meaning: 'Your documentation defensibility posture creates structural exposure in audit, quality reporting, and automation readiness.',
+    meaning: 'Your documentation completeness posture may affect audit readiness, quality reporting, and automation readiness.',
     action: 'Closing it requires structured, defensible notes produced at scale.',
   },
 };

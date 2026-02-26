@@ -1,0 +1,286 @@
+# REVENUE DOMAIN — Refined
+
+**"What is documentation fidelity worth to your revenue cycle?"**
+
+## The Real Organizational Journey for Revenue
+
+The question isn't "do you have a yield number." The question is: **has anyone in your organization connected documentation quality to how you get paid?**
+
+Revenue cycle sits downstream of documentation. Better documentation → more specific coding → fewer denials → better collections → higher wRVUs. But that chain has to be connected. Most orgs have never connected it.
+
+The journey:
+
+1. Nobody has looked at whether documentation changes affected revenue
+2. Revenue cycle has noticed something, but can't isolate the documentation variable
+3. Someone has actually measured a before/after tied to documentation
+4. Documentation quality is a managed input to revenue cycle performance
+
+---
+
+## Level 1 — Revenue Cycle Unaware
+
+**The org story:** "Revenue cycle doesn't know we deployed ambient. Or they know, but nobody has asked whether it changed anything about how encounters code, bill, or collect."
+
+**Card text:**
+> **Revenue Cycle Unaware**
+> Revenue cycle has not evaluated documentation changes from ambient.
+
+**Why this is better than "Documentation Neutral":** The old Level 1 said "workflow improved, revenue not measured" — which is vague and could apply to anything. The new Level 1 is specific: your revenue cycle team hasn't even engaged with the documentation change. That's a concrete organizational gap, not just an absence of data.
+
+**Input:** None.
+
+**Output:**
+```
+ESTIMATED IMPACT
+Not yet measured
+
+Your revenue cycle has not yet evaluated how ambient
+documentation is affecting coding, billing, or
+collections. This is the most common starting point —
+and the biggest blind spot.
+
+Every encounter generates documentation that determines
+how it gets coded, what gets billed, and whether it
+gets paid. If no one is looking at whether that
+documentation changed, the revenue impact is invisible.
+
+Abridge customers who connect revenue cycle to
+documentation quality typically identify measurable
+impact within 90 days of analysis.
+```
+
+**The holy shit moment:** "Our revenue cycle team doesn't even know this is happening."
+
+---
+
+## Level 2 — Anecdotal Revenue Signal
+
+**The org story:** "Our coders, CDI team, or billing staff have mentioned that something is different. Maybe fewer queries. Maybe more specific diagnoses showing up. Maybe HCC capture looks better. But nobody has run a formal analysis."
+
+**Card text:**
+> **Anecdotal Revenue Signal**
+> Coding or billing teams report changes, but no formal analysis completed.
+
+**Why this is the right Level 2:** The jump from Level 1 is that revenue cycle is *aware* something changed. They're seeing signals. But there's no analysis connecting documentation to dollars. This is where most orgs that have had conversations across departments end up.
+
+**Input A: What signals has your revenue cycle observed?** (multi-select checkboxes)
+- ☐ Fewer CDI queries (notes are more complete upfront)
+- ☐ More specific diagnosis coding (ICD-10 specificity improved)
+- ☐ Improved HCC / risk adjustment capture
+- ☐ Fewer claim denials related to documentation
+- ☐ Faster coding turnaround (less back-and-forth)
+- ☐ None observed yet
+
+**Output (if any boxes checked):**
+```
+ESTIMATED IMPACT
+[checkedCount] revenue signal(s) observed
+
+Your revenue cycle has observed [checkedCount] area(s)
+where documentation changes may be affecting revenue:
+
+[list of checked items]
+
+These signals haven't been formally measured — but they
+indicate that documentation quality is flowing downstream.
+The next step is isolating the impact.
+
+Abridge customers who formalize measurement of these
+signals report 1-3% improvement in coding yield
+(wRVU or collections basis).
+```
+
+**Output (if "None observed yet" checked):**
+```
+ESTIMATED IMPACT
+—
+
+Your revenue cycle hasn't observed documentation-driven
+changes yet. This may mean the impact isn't there — or
+it may mean no one has asked. Consider connecting your
+CDI or coding team with ambient documentation data to
+look for signals.
+```
+
+**Why NOT a % input here:** The old Level 2 asked for "estimated yield improvement" — a number nobody at this stage has. The new version asks a question anyone can answer: "has your coding/billing team noticed anything different?" Checkboxes are honest. A percentage input at this stage is a fabrication.
+
+**The holy shit moment:** "We've seen 4 of these 5 signals and nobody has run the numbers."
+
+---
+
+## Level 3 — Impact Measured
+
+**The org story:** "We've actually done the analysis. We compared wRVUs, collections, denial rates, or coding specificity before and after ambient deployment. We have a number."
+
+**Card text:**
+> **Impact Measured**
+> Before/after analysis completed. Documentation-driven revenue change quantified.
+
+**Why this is the right Level 3:** This is a real organizational achievement. Someone did the work — pulled the data, controlled for variables (or at least tried), and produced a number. The distinction from Level 2 is that Level 2 has signals, Level 3 has measurement.
+
+**Input A: What did you measure?** (single select — this determines the input type)
+- "wRVU change per encounter"
+- "Collections change per encounter"  
+- "Overall revenue change (%) attributed to documentation"
+- "Denial rate reduction (%)"
+
+**Input B: What was the measured change?**
+- Dynamic based on selection above:
+  - If wRVU: number input, label "Measured wRVU change per encounter since deployment"
+  - If collections: $ input, label "Measured collections change per encounter since deployment"
+  - If revenue %: % input, label "Measured revenue change (%) attributed to documentation"
+  - If denial rate: % input, label "Measured denial rate reduction since deployment"
+
+- NO defaults on any
+- Benchmark text (adapts to selection):
+  - wRVU: *"Abridge customers measuring wRVU impact report 0.05-0.15 wRVU increase per encounter"*
+  - Collections: *"Abridge customers measuring collections impact report $3-$10 increase per encounter"*
+  - Revenue %: *"Abridge customers measuring overall revenue impact report 1-4% improvement"*
+  - Denial rate: *"Abridge customers measuring denial rates report 5-15% reduction in documentation-related denials"*
+
+**Output (dynamic based on metric type):**
+
+For wRVU:
+```
+ESTIMATED IMPACT
+$[revenueImpact]
+
+Your measured wRVU change of [wrvuDelta] per encounter
+across [documentedEncounters] documented encounters
+represents an estimated $[revenueImpact] in annual
+revenue impact.
+
+[revenueImpact] = [wrvuDelta] × [documentedEncounters] × [conversionFactor]
+Conversion factor: $36.04 (CMS national average).
+Adjust in advanced settings if your payer mix differs.
+
+Based on your organization's measured data.
+```
+
+For collections:
+```
+ESTIMATED IMPACT
+$[revenueImpact]
+
+Your measured collections increase of $[collectionsDelta]
+per encounter across [documentedEncounters] documented
+encounters represents $[revenueImpact] in annual
+revenue impact.
+
+[revenueImpact] = [collectionsDelta] × [documentedEncounters]
+Based on your organization's measured data.
+```
+
+For revenue %:
+```
+ESTIMATED IMPACT
+$[revenueImpact]
+
+Your measured [revenuePct]% revenue improvement across
+[documentedEncounters] documented encounters at
+$[revenuePerVisit]/visit represents $[revenueImpact]
+in annual revenue impact.
+
+[revenueImpact] = [documentedEncounters] × [revenuePerVisit] × [revenuePct]
+Based on your organization's measured data.
+```
+
+For denial rate:
+```
+ESTIMATED IMPACT
+Denial rate reduced [denialReduction]%
+
+Your documentation-related denial rate has decreased
+by [denialReduction]%. Dollar impact depends on your
+denial volume and average denial value — enter these
+in the fields below to calculate.
+
+[Optional additional inputs if denial selected:]
+- Average monthly documentation-related denials (count)
+- Average denial value ($)
+[annualImpact] = [monthlyDenials] × [denialReduction] × [avgDenialValue] × 12
+```
+
+**The holy shit moment:** "When we actually measured it, 0.08 wRVU per encounter across 40,000 encounters is $115K."
+
+---
+
+## Level 4 — Revenue Cycle Integration
+
+**The org story:** "Documentation quality isn't something we measured once. It's an ongoing input to revenue cycle operations. We track it. We report on it. CDI, coding, and revenue cycle leadership treat documentation quality as a managed variable."
+
+**Card text:**
+> **Revenue Cycle Integration**
+> Documentation quality is an ongoing, managed input to revenue cycle performance.
+
+**Why this is the right Level 4:** The distinction from Level 3 isn't a bigger number. It's that the measurement is continuous, governed, and integrated into how revenue cycle operates. Level 3 = "we ran an analysis." Level 4 = "this is how we run revenue cycle now."
+
+**Input A: How is documentation quality integrated into revenue cycle?** (multi-select checkboxes)
+- ☐ Ongoing wRVU or collections monitoring linked to documentation
+- ☐ CDI workflow incorporates ambient documentation review
+- ☐ Denial management tracks documentation-related root causes
+- ☐ Revenue cycle dashboards include documentation quality metrics
+- ☐ Payer negotiations reference documentation-driven outcomes
+
+**Input B: Recognized annual revenue attributed to documentation quality**
+- Type: $ input
+- Placeholder: empty
+- NO default
+- Helper: *"Annual revenue impact that your organization formally attributes to documentation improvements. This should be a number your CFO or revenue cycle VP would stand behind."*
+- Benchmark: *"Abridge enterprise customers with revenue cycle integration report $200K-$1M+ in attributed revenue"*
+
+**Output:**
+```
+ESTIMATED IMPACT
+$[recognizedRevenue]
+
+Documentation quality is integrated into [checkedCount]
+revenue cycle operation(s):
+[list of checked items]
+
+Your organization formally attributes $[recognizedRevenue]
+in annual revenue to documentation quality improvements.
+
+Not yet integrated:
+[list of unchecked items]
+```
+
+If no dollar value but checkboxes selected:
+```
+ESTIMATED IMPACT
+[checkedCount] integration(s) active
+
+Documentation quality is integrated into [checkedCount]
+revenue cycle operation(s):
+[list of checked items]
+
+Enter your organization's attributed annual revenue
+to calculate impact. If this number doesn't exist yet,
+that's the next step — formalizing the attribution.
+
+Not yet integrated:
+[list of unchecked items]
+```
+
+**The holy shit moment:** "We integrated documentation into one revenue cycle workflow. There are four others we haven't touched."
+
+---
+
+## Summary of Changes
+
+| | Old | New | Why |
+|---|---|---|---|
+| Level 1 | Documentation Neutral (vague) | Revenue Cycle Unaware | Specific: rev cycle hasn't engaged with doc changes |
+| Level 2 | Anecdotal Coding Lift (guess a yield %) | Anecdotal Revenue Signal (checkboxes of what they've noticed) | Checkboxes are honest. A % estimate at this stage is fabricated. |
+| Level 3 | Measured Yield Integrity (enter a yield %) | Impact Measured (choose your metric, enter your measurement) | Flexible — orgs measure different things (wRVU, collections, denials, %). Let them use THEIR metric. |
+| Level 4 | Financial Governance Embedded (enter a $ amount) | Revenue Cycle Integration (checkboxes + attributed $) | Not just a number — shows how documentation is woven into rev cycle operations. Gap visualization via unchecked boxes. |
+
+## The Progression
+
+1 → 2: "We went from nobody looking to someone noticing"
+2 → 3: "We went from noticing to measuring"
+3 → 4: "We went from a one-time measurement to ongoing integration"
+
+## Why "Yield" Is Gone
+
+"Yield" is finance/rev cycle jargon that means different things to different people. Some think collections per encounter. Some think wRVU per encounter. Some think net revenue after denials. By letting the user choose their metric at Level 3, you meet them where they are. The word "yield" never appears. Instead: wRVU change, collections change, revenue change, denial reduction. Plain language that any ops leader understands.
