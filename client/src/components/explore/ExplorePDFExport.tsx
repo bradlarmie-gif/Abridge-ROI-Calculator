@@ -357,19 +357,23 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
   const isNursing = data.careSetting === "nursing";
   const unitCount = isNursing ? (data.nursingStaffedBeds || data.providers) : data.providers;
-  const perUnit = unitCount > 0 ? Math.round(data.netAnnualValue / unitCount) : 0;
+
+  const derivedTotalValue = timeTotal + docTotal;
+  const derivedNetValue = derivedTotalValue - data.annualInvestment;
+  const derivedRoi = data.annualInvestment > 0 ? derivedTotalValue / data.annualInvestment : 0;
+  const perUnit = unitCount > 0 ? Math.round(derivedNetValue / unitCount) : 0;
 
   const qualDrivers = data.qualitativeDrivers || [];
   const hasQualitative = qualDrivers.length > 0;
-  const isQualitativeOnly = hasQualitative && data.totalValue === 0;
+  const isQualitativeOnly = hasQualitative && derivedTotalValue === 0;
   const timeIsQualitativeOnly = timeTotal === 0 && hasQualitative;
   const docIsNotMeasured = docTotal === 0 && docDrivers.length === 0;
 
-  const year1Value = data.totalValue;
+  const year1Value = derivedTotalValue;
   const year1Cost = data.annualInvestment + safe(data.implementationCost);
-  const year2Value = Math.round(data.totalValue * 1.1);
+  const year2Value = Math.round(derivedTotalValue * 1.1);
   const year2Cost = data.annualInvestment;
-  const year3Value = Math.round(data.totalValue * 1.21);
+  const year3Value = Math.round(derivedTotalValue * 1.21);
   const year3Cost = data.annualInvestment;
   const cumulative1 = year1Value - year1Cost;
   const cumulative2 = cumulative1 + (year2Value - year2Cost);
@@ -379,7 +383,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const fullScaleMultiplier = unitCount > 0
     ? (data.fullScaleProviders / unitCount) * (data.fullScaleUtilization / Math.max(data.utilizationPercent, 1))
     : 1;
-  const fullScaleNetValue = Math.round(data.netAnnualValue * fullScaleMultiplier);
+  const fullScaleNetValue = Math.round(derivedNetValue * fullScaleMultiplier);
   const fullScaleInvestment = Math.round(data.annualInvestment * (data.fullScaleProviders / Math.max(unitCount, 1)));
   const perUnitFullScale = data.fullScaleProviders > 0 ? Math.round(fullScaleNetValue / data.fullScaleProviders) : 0;
 
@@ -414,7 +418,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   {isQualitativeOnly ? "ASSESSMENT TYPE" : "PROJECTED NET ANNUAL VALUE"}
                 </Text>
                 <Text style={{ fontSize: isQualitativeOnly ? 24 : 36, fontWeight: "bold", color: colors.primary }}>
-                  {isQualitativeOnly ? "Qualitative Assessment" : fmtCurrency(data.netAnnualValue)}
+                  {isQualitativeOnly ? "Qualitative Assessment" : fmtCurrency(derivedNetValue)}
                 </Text>
               </View>
             </View>
@@ -634,7 +638,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 {isQualitativeOnly ? "ASSESSMENT TYPE" : "PROJECTED ANNUAL VALUE"}
               </Text>
               <Text style={{ fontSize: isQualitativeOnly ? 18 : 28, fontWeight: "bold", color: colors.primary }}>
-                {isQualitativeOnly ? "Qualitative Assessment" : fmtCurrency(data.netAnnualValue)}
+                {isQualitativeOnly ? "Qualitative Assessment" : fmtCurrency(derivedNetValue)}
               </Text>
             </View>
             {!isQualitativeOnly && (
@@ -741,7 +745,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     CURRENT MODEL
                   </Text>
                   <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                    {fmtCurrency(data.netAnnualValue)}/yr
+                    {fmtCurrency(derivedNetValue)}/yr
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary }}>
                     {fmtNum(unitCount)} {config.providerTypePlural}
@@ -803,7 +807,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               {isNursing ? `${fmtNum(data.hoursReturned)} hours saved.` : `${fmtNum(data.encounters)} encounters.`}
             </Text>
             <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
-              {isQualitativeOnly ? "Qualitative Assessment" : `${fmtCurrency(data.netAnnualValue)} projected net value.`}
+              {isQualitativeOnly ? "Qualitative Assessment" : `${fmtCurrency(derivedNetValue)} projected net value.`}
             </Text>
             {!isQualitativeOnly && (
               <Text style={{ fontSize: 11, color: colors.secondary }}>
@@ -890,7 +894,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   {isQualitativeOnly ? "Assessment Type" : "Net Annual Value"}
                 </Text>
                 <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>
-                  {isQualitativeOnly ? "Qualitative" : fmtCurrency(data.netAnnualValue)}
+                  {isQualitativeOnly ? "Qualitative" : fmtCurrency(derivedNetValue)}
                 </Text>
               </View>
             </View>
@@ -912,7 +916,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
                       <Text style={{ fontSize: 9, color: colors.secondary }}>Year 1 ROI</Text>
-                      <Text style={{ fontSize: 9, color: colors.secondary }}>{data.roi.toFixed(1)}{"\u00D7"}</Text>
+                      <Text style={{ fontSize: 9, color: colors.secondary }}>{derivedRoi.toFixed(1)}{"\u00D7"}</Text>
                     </View>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
                       <Text style={{ fontSize: 9, color: colors.secondary }}>Year 3 Cumulative</Text>

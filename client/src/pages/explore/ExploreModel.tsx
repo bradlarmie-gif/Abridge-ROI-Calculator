@@ -128,17 +128,19 @@ export default function ExploreModel({
   // Inpatient-specific calculations
   const isInpatient = state.careSetting === 'inpatient';
 
-  // Inpatient: Clinician Wellbeing Retention Value
-  const ipWellbeingRetentionValue = useMemo(() => {
-    if (!isInpatient || !timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
-    const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+  const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+
+  const clinicianRetentionValue = useMemo(() => {
+    if (!timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
+    if (state.careSetting === 'nursing') return 0;
     const retentionPercent = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-    // Use the same property names as ExploreFlow for consistency
     const providersLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
     const burnoutRelated = providersLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
     const retained = burnoutRelated * (retentionPercent / 100);
     return Math.round(retained * timeDriverInputs.replacementCost);
-  }, [isInpatient, state.numberOfProviders, timeDriverInputs]);
+  }, [state.numberOfProviders, state.careSetting, timeDriverInputs]);
+
+  const ipWellbeingRetentionValue = clinicianRetentionValue;
 
   // Inpatient: DRG Accuracy Value
   const ipDrgValue = useMemo(() => {
@@ -389,6 +391,17 @@ export default function ExploreModel({
             inputs: { realizationRate: docQualityInputs.denialsRealization },
           });
         }
+        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0) {
+          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
+          drivers.push({
+            id: 'clinicianRetention', name: 'Clinician Retention', value: clinicianRetentionValue, category: 'time',
+            calcSteps: [
+              `${state.numberOfProviders} providers \u00D7 ${timeDriverInputs.annualTurnoverRate}% turnover \u00D7 ${timeDriverInputs.burnoutRelatedTurnover}% burnout-related`,
+              `\u00D7 ${impactPct}% Abridge impact \u00D7 $${timeDriverInputs.replacementCost.toLocaleString()} replacement cost`,
+              `= ${fmtK(clinicianRetentionValue)}/year`,
+            ],
+          });
+        }
       } else if (state.careSetting === 'ed') {
         if (timeDriverInputs.edLwbsEnabled && (edLwbsValue > 0 || edAdmissionCaptureValue > 0)) {
           const combined = edLwbsValue + edAdmissionCaptureValue;
@@ -400,6 +413,23 @@ export default function ExploreModel({
               `LWBS: ${fmtK(edLwbsValue)} + Admissions: ${fmtK(edAdmissionCaptureValue)} = ${fmtK(combined)}/year`,
             ],
             inputs: { realizationRate: timeDriverInputs.edLwbsRealization },
+          });
+        }
+        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+          drivers.push({
+            id: 'edCostReduction', name: 'Cost Reduction', value: costReductionValue, category: 'time',
+            calcSteps: [`Estimated annual cost reduction: ${fmtK(costReductionValue)}/year`],
+          });
+        }
+        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0) {
+          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
+          drivers.push({
+            id: 'edRetention', name: 'Clinician Retention', value: clinicianRetentionValue, category: 'time',
+            calcSteps: [
+              `${state.numberOfProviders} physicians \u00D7 ${timeDriverInputs.annualTurnoverRate}% turnover \u00D7 ${timeDriverInputs.burnoutRelatedTurnover}% burnout-related`,
+              `\u00D7 ${impactPct}% Abridge impact \u00D7 $${timeDriverInputs.replacementCost.toLocaleString()} replacement cost`,
+              `= ${fmtK(clinicianRetentionValue)}/year`,
+            ],
           });
         }
         if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
@@ -426,8 +456,14 @@ export default function ExploreModel({
           });
         }
       } else if (state.careSetting === 'inpatient') {
+        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+          drivers.push({
+            id: 'ipCostReduction', name: 'Cost Reduction', value: costReductionValue, category: 'time',
+            calcSteps: [`Estimated annual cost reduction: ${fmtK(costReductionValue)}/year`],
+          });
+        }
         if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
-          const impactPct = timeDriverInputs.retentionImpactScenario === 'conservative' ? 20 : timeDriverInputs.retentionImpactScenario === 'typical' ? 30 : 40;
+          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
           drivers.push({
             id: 'inpatientRetention', name: 'Hospitalist Retention', value: ipWellbeingRetentionValue, category: 'time',
             calcSteps: [
@@ -457,17 +493,6 @@ export default function ExploreModel({
               `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
               `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query = ${fmtK(ipCdiValue)}/year`,
             ],
-          });
-        }
-        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
-          drivers.push({
-            id: 'inpatientDenials', name: 'Denial Prevention', value: denialsValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.denialRate}% \u00D7 ${docQualityInputs.unappealableRate}% doc-related`,
-              `\u00D7 ${denialsScenarios[docQualityInputs.denialsScenario]}% prevented \u00D7 $${docQualityInputs.avgClaimValue.toLocaleString()}/claim`,
-              `= ${fmtK(denialsValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.denialsRealization },
           });
         }
       } else if (state.careSetting === 'nursing') {
@@ -521,7 +546,7 @@ export default function ExploreModel({
       if (state.careSetting === 'outpatient') {
         if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
       } else if (state.careSetting === 'ed') {
-        if (timeDriverInputs.wellbeingEnabled) qualitativeDrivers.push('Clinician Wellbeing');
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
       } else if (state.careSetting === 'inpatient') {
         if (timeDriverInputs.ipRoundingEnabled) qualitativeDrivers.push('Rounding Efficiency');
         if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
