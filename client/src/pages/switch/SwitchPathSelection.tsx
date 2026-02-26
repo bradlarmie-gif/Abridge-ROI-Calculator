@@ -25,7 +25,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
       />
       <UnifiedHeaderSpacer />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-8 md:py-12">
+      <main className="relative z-10 max-w-5xl mx-auto px-6 py-8 md:py-12">
         <div className="text-center mb-12 md:mb-14">
           <p 
             className="text-[9px] font-semibold uppercase tracking-[2px] mb-6"
@@ -43,7 +43,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
           <button
             onClick={() => onSelectPath("ambient-ai")}
             onMouseEnter={() => setHoveredPath("ambient-ai")}
@@ -53,7 +53,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               backgroundColor: '#F5F0EB',
               border: hoveredPath === "ambient-ai" ? '2px solid #EA2C00' : '2px solid transparent',
               borderRadius: '12px',
-              padding: '28px',
+              padding: '24px',
               minHeight: '280px',
               transform: hoveredPath === "ambient-ai" ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredPath === "ambient-ai" ? '0 4px 16px rgba(234,44,0,0.08)' : 'none',
@@ -61,15 +61,15 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             }}
             data-testid="button-path-ambient"
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-3">
               <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >
-                <Mic className="w-5 h-5 text-[#1A1A1A]" />
+                <Mic className="w-4 h-4 text-[#1A1A1A]" />
               </div>
               <ArrowRight 
                 className="w-4 h-4 transition-all duration-300"
@@ -80,35 +80,35 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               />
             </div>
             
-            <h2 className="text-xl font-bold text-[#1A1A1A] mb-1">
+            <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
               Ambient AI
             </h2>
             
-            <p className="text-[13px] text-[#666666] mb-5">
+            <p className="text-[13px] text-[#666666] mb-4">
               Currently using an AI documentation solution
             </p>
             
-            <div className="space-y-2.5 mb-5">
+            <div className="space-y-2 mb-5">
               <p 
                 className="text-[9px] font-semibold uppercase tracking-[2px]"
                 style={{ color: '#EA2C00' }}
               >
                 WHAT YOU'LL DISCOVER
               </p>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <TrendingUp className="w-3 h-3 text-blue-500" />
                 </div>
-                <span>How your implementation compares to what we typically see</span>
+                <span>How your implementation compares</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Search className="w-3 h-3 text-purple-500" />
                 </div>
-                <span>Where the gaps are — and what's driving them</span>
+                <span>Where the gaps are and what's driving them</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <DollarSign className="w-3 h-3 text-emerald-500" />
                 </div>
                 <span>The annual value opportunity ahead</span>
@@ -117,12 +117,12 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
 
             <div className="flex-1" />
             
-            <div className="flex items-center justify-between pt-4 border-t border-[#E0E0E0]/50">
+            <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
               <span className="text-[10px] text-[#999999] font-medium">
-                6-step guided analysis
+                5-step analysis
               </span>
               <span className="text-[10px] text-[#999999] font-medium">
-                ~5 minutes
+                ~5 min
               </span>
             </div>
           </button>
@@ -136,7 +136,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               backgroundColor: '#F5F0EB',
               border: hoveredPath === "human-scribes" ? '2px solid #EA2C00' : '2px solid transparent',
               borderRadius: '12px',
-              padding: '28px',
+              padding: '24px',
               minHeight: '280px',
               transform: hoveredPath === "human-scribes" ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredPath === "human-scribes" ? '0 4px 16px rgba(234,44,0,0.08)' : 'none',
@@ -144,15 +144,15 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             }}
             data-testid="button-path-scribes"
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-3">
               <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >
-                <Users className="w-5 h-5 text-[#1A1A1A]" />
+                <Users className="w-4 h-4 text-[#1A1A1A]" />
               </div>
               <ArrowRight 
                 className="w-4 h-4 transition-all duration-300"
@@ -163,49 +163,49 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               />
             </div>
             
-            <h2 className="text-xl font-bold text-[#1A1A1A] mb-1">
+            <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
               Human Scribes
             </h2>
             
-            <p className="text-[13px] text-[#666666] mb-5">
+            <p className="text-[13px] text-[#666666] mb-4">
               In-person or virtual scribe program
             </p>
             
-            <div className="space-y-2.5 mb-5">
+            <div className="space-y-2 mb-5">
               <p 
                 className="text-[9px] font-semibold uppercase tracking-[2px]"
                 style={{ color: '#EA2C00' }}
               >
                 WHAT YOU'LL DISCOVER
               </p>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <DollarSign className="w-3 h-3 text-amber-600" />
                 </div>
-                <span>The true cost of your scribe program — including hidden overhead</span>
+                <span>True cost of your scribe program</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <BarChart3 className="w-3 h-3 text-slate-600" />
                 </div>
                 <span>What full coverage would actually cost</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Users className="w-3 h-3 text-blue-500" />
                 </div>
-                <span>What 100% coverage would look like — with and without scribes</span>
+                <span>100% coverage with and without scribes</span>
               </div>
             </div>
 
             <div className="flex-1" />
             
-            <div className="flex items-center justify-between pt-4 border-t border-[#E0E0E0]/50">
+            <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
               <span className="text-[10px] text-[#999999] font-medium">
-                2-step program analysis
+                2-step analysis
               </span>
               <span className="text-[10px] text-[#999999] font-medium">
-                ~3 minutes
+                ~3 min
               </span>
             </div>
           </button>
@@ -219,7 +219,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               backgroundColor: '#F5F0EB',
               border: hoveredPath === "nursing" ? '2px solid #EA2C00' : '2px solid transparent',
               borderRadius: '12px',
-              padding: '28px',
+              padding: '24px',
               minHeight: '280px',
               transform: hoveredPath === "nursing" ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredPath === "nursing" ? '0 4px 16px rgba(234,44,0,0.08)' : 'none',
@@ -227,15 +227,15 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             }}
             data-testid="button-path-nursing"
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-3">
               <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ 
                   backgroundColor: '#FFFFFF',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >
-                <Heart className="w-5 h-5 text-[#1A1A1A]" />
+                <Heart className="w-4 h-4 text-[#1A1A1A]" />
               </div>
               <ArrowRight 
                 className="w-4 h-4 transition-all duration-300"
@@ -246,49 +246,49 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
               />
             </div>
             
-            <h2 className="text-xl font-bold text-[#1A1A1A] mb-1">
+            <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
               Nursing
             </h2>
             
-            <p className="text-[13px] text-[#666666] mb-5">
+            <p className="text-[13px] text-[#666666] mb-4">
               Exploring ambient for nursing programs
             </p>
             
-            <div className="space-y-2.5 mb-5">
+            <div className="space-y-2 mb-5">
               <p 
                 className="text-[9px] font-semibold uppercase tracking-[2px]"
                 style={{ color: '#EA2C00' }}
               >
                 WHAT YOU'LL DISCOVER
               </p>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-rose-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-rose-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <ClipboardList className="w-3 h-3 text-rose-500" />
                 </div>
-                <span>Where documentation burden creates cost and risk</span>
+                <span>Where burden creates cost and risk</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-teal-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-teal-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Compass className="w-3 h-3 text-teal-600" />
                 </div>
-                <span>Which value pathways matter most for your program</span>
+                <span>Which value pathways matter most</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#333333]">
-                <div className="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-2 text-xs text-[#333333]">
+                <div className="w-5 h-5 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <TrendingUp className="w-3 h-3 text-amber-600" />
                 </div>
-                <span>How to frame the ROI conversation strategically</span>
+                <span>How to frame the ROI conversation</span>
               </div>
             </div>
 
             <div className="flex-1" />
             
-            <div className="flex items-center justify-between pt-4 border-t border-[#E0E0E0]/50">
+            <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
               <span className="text-[10px] text-[#999999] font-medium">
-                5-step pathway discovery
+                5-step discovery
               </span>
               <span className="text-[10px] text-[#999999] font-medium">
-                ~5 minutes
+                ~5 min
               </span>
             </div>
           </button>
