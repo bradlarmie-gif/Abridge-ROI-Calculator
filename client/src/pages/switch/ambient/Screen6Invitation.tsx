@@ -239,6 +239,9 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
         wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
         permanentlyLost6mo,
         permanentlyLost12mo,
+        revenuePerVisit,
+        providerRate: inputs.providerRate || 150,
+        conversionFactor: inputs.conversionFactor || 33,
         domains: {
           capacity: domainData.capacity as any,
           revenue: domainData.revenue as any,

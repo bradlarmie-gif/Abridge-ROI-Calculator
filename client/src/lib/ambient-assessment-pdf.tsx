@@ -39,6 +39,9 @@ export interface AmbientAssessmentPDFData {
   wait12mo3yr: number;
   permanentlyLost6mo: number;
   permanentlyLost12mo: number;
+  revenuePerVisit?: number;
+  providerRate?: number;
+  conversionFactor?: number;
   domains: {
     capacity: DomainData;
     revenue: DomainData;
@@ -52,6 +55,7 @@ export interface DomainData {
   activationLabel: string;
   score: number;
   gapValue: number;
+  hasValue?: boolean;
   keyInput?: string;
   primaryOpportunity: string;
 }
@@ -169,12 +173,24 @@ const activationColors: Record<1 | 2 | 3 | 4, string> = {
   4: "#EA2C00",
 };
 
-const getScoreVerdict = (score: number): string => {
-  if (score < 34) return "Below the industry average. Significant enterprise value is available across all four domains.";
-  if (score <= 50) return "At the industry average. The gap to top quartile is not incremental \u2014 it is structural.";
-  if (score <= 70) return "Above the industry average. The remaining gap is concentrated in specific domains.";
-  if (score <= 85) return "Approaching top-quartile performance. The remaining opportunity is in optimization.";
-  return "Top-quartile documentation intelligence. Focused on continuous optimization.";
+const TIEBREAKER_ORDER = ['risk', 'revenue', 'workforce', 'capacity'] as const;
+
+const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string => {
+  const domainOrder = ['capacity', 'revenue', 'workforce', 'risk'] as const;
+  const levels = Object.fromEntries(domainOrder.map(d => [d, data.domains[d].activationLevel]));
+  let lowest = TIEBREAKER_ORDER[0] as string;
+  let lowestLevel = levels[lowest];
+  for (const d of TIEBREAKER_ORDER) {
+    if (levels[d] < lowestLevel) { lowest = d; lowestLevel = levels[d]; }
+  }
+  const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
+  const lowestName = domainLabels[lowest].toLowerCase();
+
+  if (score <= 30) return `Your organization is in the early stages of capturing ambient ROI. Significant opportunity exists across all four domains.`;
+  if (score <= 50) return `Your organization is beginning to measure ambient ROI. Key domains remain unmeasured.`;
+  if (score <= 70) return `Your organization is actively managing ambient ROI in some domains. Significant opportunity remains in ${lowestName}.`;
+  if (score <= 85) return `Your organization is strategically managing ambient ROI across most domains. Focus on ${lowestName} to close the remaining gap.`;
+  return "Your organization is operating at the highest level of ambient maturity across domains.";
 };
 
 function PageFooter({ pageNum, total, orgName }: { pageNum: number; total: number; orgName: string }) {
@@ -204,33 +220,32 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
             <View style={{ width: 100, height: 6, backgroundColor: colors.border, borderRadius: 3, marginBottom: 8 }}>
               <View style={{ height: 6, backgroundColor: colors.primary, borderRadius: 3, width: `${data.documentationScore}%` }} />
             </View>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase" }}>Documentation Intelligence</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase" }}>Ambient Assessment Score</Text>
           </View>
 
           <View style={styles.col}>
             <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 12, marginBottom: 8 }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-                <Text style={{ fontSize: 9.5, color: colors.secondary }}>Industry average</Text>
-                <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>34 / 100</Text>
-              </View>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-                <Text style={{ fontSize: 9.5, color: colors.secondary }}>Top-quartile</Text>
-                <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>71 / 100</Text>
-              </View>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 9.5, color: colors.secondary }}>Your organization</Text>
-                <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primary }}>{data.documentationScore} / 100</Text>
-              </View>
+              {[
+                { label: "Early deployment", value: "25" },
+                { label: "Measured", value: "50" },
+                { label: "Strategically managed", value: "75" },
+                { label: "Best in class", value: "100" },
+              ].map((band, i, arr) => (
+                <View key={band.label} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: i < arr.length - 1 ? 6 : 0, paddingBottom: i < arr.length - 1 ? 6 : 0, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                  <Text style={{ fontSize: 9.5, color: colors.secondary }}>{band.label}</Text>
+                  <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>{band.value}</Text>
+                </View>
+              ))}
             </View>
             <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.5 }}>
-              {getScoreVerdict(data.documentationScore)}
+              {getScoreVerdict(data.documentationScore, data)}
             </Text>
           </View>
         </View>
 
         <View style={styles.thickDivider} />
 
-        <Text style={styles.sectionLabel}>UNREALIZED ENTERPRISE VALUE</Text>
+        <Text style={styles.sectionLabel}>MEASURED VALUE</Text>
 
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={styles.col}>
@@ -268,7 +283,7 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
               ))}
             </View>
             <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
-              Already in your operations. Already earned. Not yet realized.
+              Based on the domains where your organization has entered data. Additional value may exist in unmeasured domains.
             </Text>
           </View>
         </View>
@@ -283,31 +298,32 @@ const domainMeta: Record<string, { name: string; question: string; description: 
   capacity: {
     name: "Capacity",
     question: "What happened to the time ambient AI returned?",
-    description: "Recovered time that becomes additional patient slots, reduced overtime, or operational efficiency. At your scale, undeployed capacity represents clinical supply currently evaporating.",
-    drivers: ["Panel utilization rate", "Overtime / locum dependency", "Patient access wait times", "Slot fill rate"],
+    description: "Where does recovered time actually go? Most organizations save time with ambient but haven't structurally converted it to capacity. Your level reflects how intentionally your organization deploys recovered time.",
+    drivers: ["Time saved per encounter", "Recovered hours annually", "Additional patients per month", "FTEs avoided or redeployed"],
   },
   revenue: {
     name: "Revenue",
     question: "What is documentation fidelity worth to your revenue cycle?",
-    description: "Coding accuracy, HCC capture, and denial prevention driven by complete clinical notes. Every encounter either captures or leaks value through your documentation infrastructure.",
-    drivers: ["E/M level distribution", "HCC recapture rate", "Denial rate by category", "Payer mix optimization"],
+    description: "Coding accuracy, HCC capture, and denial prevention driven by complete clinical notes. Every encounter either captures or leaks revenue through your documentation infrastructure.",
+    drivers: ["Revenue signals observed", "wRVU or collections change", "Yield improvement measured", "Revenue formally attributed"],
   },
   workforce: {
     name: "Workforce",
     question: "What is documentation burden costing your workforce?",
-    description: "After-hours charting is the leading predictor of burnout, and burnout drives turnover. At $500K\u2013$1M per physician replacement, this is an existential budget line item.",
-    drivers: ["After-hours documentation time", "Provider satisfaction scores", "Turnover rate by tenure", "Burnout survey results"],
+    description: "Documentation burden drives after-hours work, in-clinic inefficiency, and turnover. Your level reflects how deeply your organization is measuring and managing the workforce impact of burden reduction.",
+    drivers: ["After-hours reduction", "In-clinic time saved", "Clinician survey findings", "Turnover exposure quantified"],
   },
   risk: {
     name: "Risk",
     question: "Is your documentation ready for what comes next?",
-    description: "Audit defensibility, quality reporting, and readiness for clinical AI. Every AI initiative your organization plans requires a structured documentation foundation.",
-    drivers: ["Audit readiness score", "Note completeness rate", "Structured data usability", "Quality reporting accuracy"],
+    description: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. Your level reflects whether your organization is building on that foundation or sitting on it.",
+    drivers: ["Quality dimensions tracked", "Downstream workflows connected", "Hours saved in reporting", "Strategic integrations active"],
   },
 };
 
 function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
   const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
+  const SCORE_MAP: Record<number, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
 
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
@@ -315,7 +331,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
         <Text style={styles.sectionLabel}>THE FOUR DOMAINS</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Where Enterprise Value Lives</Text>
         <Text style={styles.body}>
-          Each domain reflects your self-reported activation level and the enterprise value currently uncaptured. Domain weights: Capacity 30% {"\u00B7"} Revenue 25% {"\u00B7"} Workforce 25% {"\u00B7"} Risk 20%.
+          Each domain reflects your organization{"\u2019"}s self-assessed maturity level. All four domains contribute equally to your Ambient Assessment Score.
         </Text>
 
         <View style={styles.divider} />
@@ -324,6 +340,9 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
           const domain = data.domains[key];
           const meta = domainMeta[key];
           const accentColor = activationColors[domain.activationLevel];
+          const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
+          const barPercent = (domainScore / 25) * 100;
+          const hasValue = domain.hasValue !== false && domain.gapValue > 0;
 
           return (
             <View key={key}>
@@ -333,19 +352,19 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{meta.question}</Text>
-                      <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Activation: {domain.activationLabel} {"\u00B7"} Score: {domain.score}/100</Text>
+                      <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Level {domain.activationLevel}: {domain.activationLabel} {"\u00B7"} Score: {domainScore}/25</Text>
                     </View>
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmt(domain.gapValue)}</Text>
-                      <Text style={{ fontSize: 8, color: colors.tertiary }}>annual gap</Text>
+                      <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{hasValue ? fmt(domain.gapValue) : "\u2014"}</Text>
+                      {hasValue && <Text style={{ fontSize: 8, color: colors.tertiary }}>measured value</Text>}
                     </View>
                   </View>
 
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
                     <View style={{ flex: 1, height: 4, backgroundColor: colors.border, borderRadius: 2 }}>
-                      <View style={{ height: 4, backgroundColor: accentColor, borderRadius: 2, width: `${domain.score}%` }} />
+                      <View style={{ height: 4, backgroundColor: accentColor, borderRadius: 2, width: `${barPercent}%` }} />
                     </View>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, width: 30, textAlign: "right" }}>{domain.score}%</Text>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, width: 40, textAlign: "right" }}>{domainScore}/25</Text>
                   </View>
 
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>{meta.description}</Text>
@@ -373,6 +392,13 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
 function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
   const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
   const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
+  const hasData = data.totalAnnualGap > 0;
+
+  const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
+  const lowestDomain = (['risk', 'revenue', 'workforce', 'capacity'] as const).reduce((lowest, d) =>
+    data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
+  );
+  const lowestName = domainLabels[lowestDomain].toLowerCase();
 
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
@@ -388,16 +414,16 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={[styles.col, { backgroundColor: colors.dark, borderRadius: 4, padding: 16 }]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Monthly Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 6 }}>{fmt(data.monthlyGap)}</Text>
+            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 6 }}>{hasData ? fmt(data.monthlyGap) : "\u2014"}</Text>
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {fmt(perProvider)} per provider {"\u00B7"} ${perEncounter} per encounter
+              {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate cost of inaction"}
             </Text>
           </View>
           <View style={[styles.col, { backgroundColor: colors.dark, borderRadius: 4, padding: 16 }]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Daily Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 6 }}>{fmt(data.dailyGap)}</Text>
+            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 6 }}>{hasData ? fmt(data.dailyGap) : "\u2014"}</Text>
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              Every business day your organization does not systematically capture this value.
+              {hasData ? "Every business day your organization does not systematically capture this value." : "Enter domain data to calculate cost of inaction"}
             </Text>
           </View>
         </View>
@@ -410,7 +436,7 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
           <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 7, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
             <Text style={{ flex: 2.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>SCENARIO</Text>
             <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primaryText, textAlign: "center" }}>3-YEAR VALUE</Text>
-            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary, textAlign: "center" }}>PERMANENTLY LOST</Text>
+            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary, textAlign: "center" }}>VALUE FORGONE</Text>
           </View>
           {[
             { label: "Act now", value3yr: data.actNow3yr, lost: null },
@@ -435,7 +461,10 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
 
         <Text style={styles.sectionLabel}>WHAT THIS MEANS</Text>
         <Text style={styles.body}>
-          Your organization has {data.providers} providers generating {data.annualEncounters.toLocaleString()} encounters annually. At {data.utilization}% utilization and {data.timeSavings} minutes saved per encounter, the documentation infrastructure is returning value {"\u2014"} but not at the rate the underlying data supports. The gap between current performance and systematic enterprise capture is {fmt(data.totalAnnualGap)} annually.
+          {hasData
+            ? `Your organization has ${data.providers} providers generating ${data.annualEncounters.toLocaleString()} encounters annually. At ${data.utilization}% utilization and ${data.timeSavings} minutes saved per encounter, your documentation infrastructure is returning value. Your biggest opportunity is in ${lowestName}. The gap between current performance and strategic action represents approximately ${fmt(data.totalAnnualGap)} annually.`
+            : `Your organization has ${data.providers} providers generating ${data.annualEncounters.toLocaleString()} encounters annually. Enter domain-specific data to calculate the gap between current performance and strategic action.`
+          }
         </Text>
 
         <PageFooter pageNum={3} total={4} orgName={data.organizationName} />
@@ -445,18 +474,13 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
 }
 
 function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
-  const topDomain = (["capacity", "revenue", "workforce", "risk"] as const)
-    .map((k) => ({ key: k, gap: data.domains[k].gapValue }))
-    .sort((a, b) => b.gap - a.gap)[0];
-  const topDomainName = domainMeta[topDomain.key].name;
-
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>TRANSPARENCY</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>How We Calculate This</Text>
         <Text style={styles.body}>
-          Every number in this assessment is derived from your inputs, applied against Abridge deployment benchmarks and published healthcare data. We apply a conservative haircut to all estimates.
+          Every number in this assessment traces directly to your inputs and the assumptions listed below. We use published industry data and conservative benchmark ranges. No additional discounting is applied {"\u2014"} the estimates are designed to be defensible as presented.
         </Text>
 
         <View style={styles.divider} />
@@ -467,16 +491,18 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
           <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 6, paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
             <Text style={{ flex: 3, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>ASSUMPTION</Text>
             <Text style={{ flex: 1.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>YOUR VALUE</Text>
-            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary }}>INDUSTRY RANGE</Text>
+            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary }}>BENCHMARK</Text>
           </View>
           {[
-            { assumption: "Providers on ambient AI", yours: String(data.providers), range: "Varies by org" },
+            { assumption: "Providers on ambient", yours: String(data.providers), range: "Varies by org" },
             { assumption: "Annual encounters", yours: data.annualEncounters.toLocaleString(), range: "Varies by org" },
-            { assumption: "Utilization rate", yours: `${data.utilization}%`, range: "30\u201375%" },
-            { assumption: "Time saved per encounter", yours: `${data.timeSavings} min`, range: "2\u20136 minutes" },
-            { assumption: "Abridge utilization benchmark", yours: "76%", range: "Production data" },
-            { assumption: "Abridge time benchmark", yours: "3.0 min", range: "Production data" },
-            { assumption: "Conservative realization haircut", yours: "40%", range: "Standard" },
+            { assumption: "Utilization rate", yours: `${data.utilization}%`, range: "76% (deployment avg)" },
+            { assumption: "Time saved per encounter", yours: `${data.timeSavings} min`, range: "3.0 min (deployment avg)" },
+            { assumption: "Revenue per visit", yours: `$${data.revenuePerVisit || 200}`, range: "$200 default" },
+            { assumption: "Provider hourly rate", yours: `$${data.providerRate || 150}`, range: "$150 default" },
+            { assumption: "Working days per year", yours: "230", range: "Clinical standard" },
+            { assumption: "CMS wRVU conversion factor", yours: `$${data.conversionFactor || 33}`, range: "CMS published" },
+            { assumption: "FTE hours", yours: "2,080", range: "Standard" },
           ].map((row, i, arr) => (
             <View key={row.assumption} style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 10, backgroundColor: i % 2 === 1 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
               <Text style={{ flex: 3, fontSize: 8.5, color: colors.primaryText }}>{row.assumption}</Text>
@@ -486,12 +512,6 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
           ))}
         </View>
 
-        <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            We would rather show a smaller number you can defend than a larger number that falls apart under scrutiny. All gap values reflect a 40% conservative haircut applied after calculation.
-          </Text>
-        </View>
-
         <View style={styles.thickDivider} />
 
         <Text style={styles.sectionLabel}>NEXT STEPS</Text>
@@ -499,16 +519,16 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
           <View style={[styles.col, styles.cardBg, { padding: 12 }]}>
             <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 6 }}>Validate Your Inputs</Text>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>
-              Replace self-reported estimates with actual data: EHR timestamps for documentation time, payroll records for overtime, claims data for E/M distributions.
+              Replace self-reported estimates with operational data where available: EHR timestamps for documentation time, HR records for turnover and replacement costs, revenue cycle data for coding yield.
             </Text>
             <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Timeline: 1{"\u2013"}2 weeks</Text>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Timeline: 2{"\u2013"}4 weeks</Text>
             </View>
           </View>
           <View style={[styles.col, { backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 12, paddingVertical: 10 }]}>
             <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 6 }}>Request a Working Session</Text>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>
-              A 30-minute session to walk through your domain scores, identify your highest-leverage opportunity ({topDomainName}: {fmt(topDomain.gap)}), and build a measurement plan for the first 90 days.
+              A 30-minute strategic session to walk through your domain scores, explore your highest-opportunity areas, and discuss what the next level looks like for your organization. This is not a product demonstration.
             </Text>
             <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
               <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Strategic planning, not a demo</Text>
@@ -519,7 +539,7 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={styles.divider} />
 
         <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-          This assessment is for strategic planning purposes. All calculations are based on self-reported inputs and Abridge deployment benchmarks. The models are directional {"\u2014"} the real answers come from your data.
+          This assessment provides directional estimates based on organizational self-assessment and your inputs. It does not guarantee specific financial outcomes. Benchmarks reflect aggregated deployment data. Individual results depend on organizational context and execution.
         </Text>
 
         <PageFooter pageNum={4} total={4} orgName={data.organizationName} />
@@ -531,12 +551,12 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
 const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData }) => (
   <Document>
     <PDFCoverPage
-      reportLabel="Documentation Intelligence Assessment"
+      reportLabel="Ambient Assessment"
       title="Ambient Assessment"
-      subtitle={`A structured analysis of the enterprise value flowing through your documentation infrastructure \u2014 where it is being captured, where it is leaking, and what closing the gap is worth.`}
+      subtitle={`A structured analysis of how your organization is capturing value from ambient documentation \u2014 across capacity, revenue, workforce, and infrastructure readiness.`}
       clientName={data.organizationName || "Your Organization"}
       preparedBy={data.preparedBy || "Abridge Partner Success"}
-      disclaimerText="This assessment is for strategic planning purposes. All calculations are based on self-reported inputs and Abridge deployment benchmarks. Conservative haircuts are applied to all estimates."
+      disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
     />
     <Page1ScoreAndValue data={data} />
     <Page2Domains data={data} />
@@ -547,28 +567,28 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
 
 const opportunityText: Record<string, Record<number, string>> = {
   capacity: {
-    1: "Recovered time reduces friction but is not structurally deployed. At your scale, this represents clinical supply currently evaporating.",
-    2: "Ad hoc access relief is occurring, but without formal scheduling redesign the captured value remains limited.",
-    3: "Structured access expansion is delivering results. Visit templates and schedules are intentionally driving throughput.",
-    4: "Institutionalized capacity strategy. Recovered time is embedded into panel planning and FTE modeling.",
+    1: "Providers are faster, but schedules and panels are unchanged. Recovered time isn't being tracked or deployed.",
+    2: "Time savings are measured but not being converted to additional access or volume. No scheduling or template changes implemented.",
+    3: "Structured access expansion is delivering results. Schedules and templates are redesigned based on recovered capacity.",
+    4: "Recovered capacity is embedded into workforce planning, hiring decisions, and FTE models.",
   },
   revenue: {
-    1: "Documentation is workflow-neutral \u2014 coding integrity and reimbursement accuracy are not actively measured.",
-    2: "Anecdotal coding lift has been observed, but the impact is not measured systematically.",
-    3: "Measured yield integrity is delivering verified revenue impact tied to documentation improvements.",
-    4: "Financial governance embedded. Documentation intelligence is recognized in revenue cycle oversight and financial reporting.",
+    1: "Revenue cycle has not evaluated how ambient documentation is affecting coding, billing, or collections.",
+    2: "Coding or billing teams report changes, but no formal before/after analysis completed.",
+    3: "Before/after analysis completed. Documentation-driven revenue change quantified and measured.",
+    4: "Documentation quality is an ongoing, managed input to revenue cycle performance and financial reporting.",
   },
   workforce: {
-    1: "Pajama time is reduced, improving provider satisfaction, but labor strategy remains unchanged.",
-    2: "Administrative correction and chart reconciliation workload is measurably decreasing.",
-    3: "Turnover risk is being managed \u2014 attrition and staffing volatility tracked against documentation burden.",
-    4: "Labor volatility is structurally reduced through documentation intelligence. Agency and overtime exposure declining.",
+    1: "After-hours charting reduced, improving provider satisfaction, but labor strategy remains unchanged.",
+    2: "In-clinic documentation burden measured and validated. Provider sentiment captured through surveys.",
+    3: "Turnover exposure calculated against documentation burden. Retention risk quantified.",
+    4: "Agency and locum spend declining. Workforce costs structurally improving through burden reduction.",
   },
   risk: {
-    1: "Cleaner clinical notes improve documentation completeness, but audit posture and reporting friction remain unchanged.",
-    2: "Audit awareness is improving \u2014 documentation defensibility is being discussed and occasionally reviewed.",
-    3: "Reporting friction is measurably reduced. Quality reporting and chart abstraction workload declining.",
-    4: "Governed compliance infrastructure. Documentation intelligence is embedded into compliance review and structured data automation.",
+    1: "Documentation quality improved but nothing downstream has changed. Same infrastructure, better notes.",
+    2: "Documentation completeness and specificity are being tracked. Quality monitoring is active.",
+    3: "Quality reporting, CDI, or coding workflows are leveraging improved documentation.",
+    4: "Structured documentation informs payer, quality, and compliance strategy as a strategic data asset.",
   },
 };
 
