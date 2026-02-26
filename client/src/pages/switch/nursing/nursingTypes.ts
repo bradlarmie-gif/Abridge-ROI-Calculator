@@ -1,18 +1,18 @@
 export type NursingPriority =
   | 'retention'
-  | 'laborCosts'
-  | 'burnout'
-  | 'bedsideTime'
+  | 'staffingCosts'
+  | 'wellbeing'
+  | 'bedsidePresence'
   | 'docQuality'
-  | 'future';
+  | 'futureReadiness';
 
 export const NURSING_PRIORITIES: NursingPriority[] = [
   'retention',
-  'laborCosts',
-  'burnout',
-  'bedsideTime',
+  'staffingCosts',
+  'wellbeing',
+  'bedsidePresence',
   'docQuality',
-  'future',
+  'futureReadiness',
 ];
 
 export interface PriorityConfig {
@@ -24,62 +24,35 @@ export interface PriorityConfig {
 export const PRIORITY_CONFIGS: PriorityConfig[] = [
   {
     id: 'retention',
-    title: 'Keep Our Nurses',
-    description: 'Retention is a top concern. We\'re losing experienced nurses and the cost of replacing them is unsustainable.',
+    title: 'Nurse Retention',
+    description: 'Experienced nurses are leaving. The cost of replacing them is straining the organization.',
   },
   {
-    id: 'laborCosts',
-    title: 'Control Labor Costs',
-    description: 'Overtime, agency spend, or premium labor costs are putting pressure on our margins.',
+    id: 'staffingCosts',
+    title: 'Staffing Costs',
+    description: 'Overtime, agency, and travel nurse reliance are creating unsustainable cost pressure.',
   },
   {
-    id: 'burnout',
-    title: 'Reduce Burnout',
-    description: 'Our nurses are exhausted. Documentation is one of the biggest contributors to workload strain.',
+    id: 'wellbeing',
+    title: 'Nurse Wellbeing',
+    description: 'Workload, administrative burden, and work-life balance are affecting how nurses feel about their jobs.',
   },
   {
-    id: 'bedsideTime',
-    title: 'Get Nurses Back to the Bedside',
-    description: 'Documentation pulls nurses away from patients. We want more time for direct care.',
+    id: 'bedsidePresence',
+    title: 'Bedside Presence',
+    description: 'Nurses are spending too much time away from patients. Documentation is a primary competing demand for their time.',
   },
   {
     id: 'docQuality',
-    title: 'Improve Documentation Quality',
-    description: 'Flowsheet completeness, assessment consistency, or handoff quality are gaps that affect compliance and care continuity.',
+    title: 'Documentation Quality',
+    description: 'Flowsheet gaps, inconsistent assessments, or documentation variability are affecting compliance or care continuity.',
   },
   {
-    id: 'future',
-    title: 'Prepare for the Future',
-    description: 'We want to build a documentation infrastructure that supports AI, automation, and data-driven nursing practice.',
+    id: 'futureReadiness',
+    title: 'Future Readiness',
+    description: 'Positioning the nursing program for clinical AI, value-based care, Magnet, or data-driven practice.',
   },
 ];
-
-export type ConnectionStrength = 'direct' | 'moderate' | 'indirect' | 'strategic';
-
-export interface ConnectionBar {
-  label: string;
-  strength: ConnectionStrength;
-  filled: number;
-  total: number;
-}
-
-export interface PriorityConnection {
-  priority: NursingPriority;
-  headline: string;
-  howItConnects: string;
-  whatResearchSays?: string;
-  whatItMeansForROI: string;
-  bars: ConnectionBar[];
-}
-
-export type PathwayRole = 'primary' | 'supporting' | 'notSelected';
-
-export interface PathwayClassification {
-  priority: NursingPriority;
-  role: PathwayRole;
-  label: string;
-  narrative: string;
-}
 
 export interface NursingBaselineInputs {
   staffedBeds: number;
@@ -90,5 +63,122 @@ export interface NursingBaselineInputs {
 export const DEFAULT_BASELINE: NursingBaselineInputs = {
   staffedBeds: 0,
   nurseFTEs: 0,
-  bedOccupancy: 80,
+  bedOccupancy: 85,
 };
+
+export const RETENTION_INTERVENTIONS = [
+  'Compensation and pay structure adjustments',
+  'Scheduling flexibility programs',
+  'Workload reduction initiatives',
+  'Documentation and administrative burden reduction',
+  'Mentorship and career development',
+  'Wellness and resilience programs',
+  'Shared governance and nurse voice',
+];
+
+export const STAFFING_COST_PRESSURES = [
+  'End-of-shift overtime from documentation',
+  'General overtime from staffing shortages',
+  'Agency and travel nurse reliance',
+  'Premium pay and incentive costs',
+  'Unfilled positions creating coverage gaps',
+];
+
+export const STAFFING_COST_INTERVENTIONS = [
+  'OT monitoring and reduction programs',
+  'Agency spend reduction targets',
+  'Internal float pool development',
+  'Scheduling optimization',
+  'Staffing model redesign',
+  'Workflow and documentation efficiency improvements',
+];
+
+export const WELLBEING_PRESSURES = [
+  'Nurses regularly staying late to finish charting',
+  'Documentation cited in satisfaction or engagement surveys',
+  'Burnout mentioned in exit interviews or stay conversations',
+  'New nurses struggling with documentation workload',
+  'Experienced nurses expressing frustration with admin tasks',
+  'Work-life balance concerns related to after-shift work',
+];
+
+export const WELLBEING_SURVEY_FINDINGS = [
+  'Documentation burden rated as a top concern',
+  'Time spent on documentation reported as excessive',
+  'Documentation affects willingness to stay',
+  'Documentation affects job satisfaction',
+  'Nurses want technology to reduce documentation',
+];
+
+export const DOC_QUALITY_CONCERNS = [
+  'Flowsheet completeness varies across shifts or units',
+  'Assessment documentation is inconsistent',
+  'Handoff documentation quality is uneven',
+  'Care plan updates are frequently incomplete',
+  'Audit or survey findings cite documentation gaps',
+  'Documentation variability is a known concern',
+];
+
+export const FUTURE_INITIATIVES = [
+  'Magnet designation or Pathway to Excellence',
+  'Clinical AI readiness and pilot programs',
+  'Value-based care nursing initiatives',
+  'Data-driven staffing and workforce analytics',
+  'Nursing informatics maturity',
+  'Structured documentation for quality reporting',
+];
+
+export interface RetentionInputs {
+  turnoverRate: number;
+  replacementCost: number;
+  interventions: number[];
+}
+
+export interface StaffingCostsInputs {
+  costPressures: number[];
+  otMinPerShift: number;
+  agencyMonthlySpend: number;
+  costInterventions: number[];
+}
+
+export interface WellbeingInputs {
+  pressures: number[];
+  surveyStatus: '' | 'not_yet' | 'informal' | 'structured';
+  surveyFindings: number[];
+}
+
+export interface BedsidePresenceInputs {
+  bedsidePriority: '' | 'conversation' | 'leadership_priority' | 'org_quality_goal';
+  measuringBedside: '' | 'no' | 'informal' | 'yes';
+  docHoursPerShift: number;
+}
+
+export interface DocQualityInputs {
+  concerns: number[];
+  measuringQuality: '' | 'no' | 'informal' | 'yes';
+}
+
+export interface FutureReadinessInputs {
+  initiatives: number[];
+  techMaturity: '' | 'early' | 'developing' | 'advanced' | 'leading';
+}
+
+export interface AllPriorityInputs {
+  retention: RetentionInputs;
+  staffingCosts: StaffingCostsInputs;
+  wellbeing: WellbeingInputs;
+  bedsidePresence: BedsidePresenceInputs;
+  docQuality: DocQualityInputs;
+  futureReadiness: FutureReadinessInputs;
+}
+
+export function createEmptyPriorityInputs(): AllPriorityInputs {
+  return {
+    retention: { turnoverRate: 0, replacementCost: 0, interventions: [] },
+    staffingCosts: { costPressures: [], otMinPerShift: 0, agencyMonthlySpend: 0, costInterventions: [] },
+    wellbeing: { pressures: [], surveyStatus: '', surveyFindings: [] },
+    bedsidePresence: { bedsidePriority: '', measuringBedside: '', docHoursPerShift: 0 },
+    docQuality: { concerns: [], measuringQuality: '' },
+    futureReadiness: { initiatives: [], techMaturity: '' },
+  };
+}

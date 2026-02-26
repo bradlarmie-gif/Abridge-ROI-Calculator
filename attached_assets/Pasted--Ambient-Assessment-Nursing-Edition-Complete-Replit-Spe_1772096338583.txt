@@ -1,0 +1,670 @@
+# Ambient Assessment: Nursing Edition — Complete Replit Spec
+
+## What This Is
+
+A strategic alignment tool for nursing leadership. Before anyone talks about ROI or time savings, this helps a CNO or CNIO get clear on what their nursing program is trying to accomplish and where reducing documentation burden fits into that picture.
+
+The output is clarity: "For our organization, the case for investing in nursing documentation technology is about workload relief and retention — and here's how we'd frame that conversation internally."
+
+Same UX, same brand, same card treatments, same typography as the outpatient Ambient Assessment. Different structure because the problem is different.
+
+---
+
+## SCREEN 1: YOUR NURSING PROGRAM
+
+**Header:**
+YOUR NURSING PROGRAM
+Tell us about your organization.
+
+**Inputs:**
+
+```
+DEPLOYMENT SIZE
+
+Staffed Beds                    Nurse FTEs
+[___]                           [___]
+e.g., 200                      e.g., 300
+Licensed beds with              Full-time equivalent nurses
+active nursing staff            in scope
+
+BED OCCUPANCY
+
+[============slider============] 85%
+Most hospitals run 75-90% occupancy
+```
+
+**Sidebar (dark card):**
+```
+Your Baseline
+Deployment summary
+
+Staffed Beds            —
+Nurse FTEs              —
+Occupancy Rate          85%
+Patient Days / Year     —
+Shifts / Year           —
+
+THE MATH
+— nurse FTEs
+× 260 shifts/year
+= — shifts
+```
+
+Shifts/year = nurseFTEs × 260 (5 shifts/week × 52 weeks). Show the math like the outpatient version does.
+
+**Button:** "Continue →"
+
+---
+
+## SCREEN 2: WHAT IS YOUR NURSING PROGRAM FOCUSED ON?
+
+**Header:**
+WHAT IS YOUR NURSING PROGRAM FOCUSED ON?
+Every nursing program has strategic priorities. Understanding yours helps us explore where documentation burden fits into the picture — and where it doesn't.
+
+**Subhead:**
+Select the priorities that are driving your strategic conversations right now.
+
+**Six priority cards (multi-select, same card treatment as the outpatient domain maturity cards — warm gray background, selectable with red border when active):**
+
+```
+☐ NURSE RETENTION
+  Experienced nurses are leaving. The cost of
+  replacing them is straining the organization.
+
+☐ STAFFING COSTS
+  Overtime, agency, and travel nurse reliance
+  are creating unsustainable cost pressure.
+
+☐ NURSE WELLBEING
+  Workload, administrative burden, and work-life
+  balance are affecting how nurses feel about
+  their jobs.
+
+☐ BEDSIDE PRESENCE
+  Nurses are spending too much time away from
+  patients. Documentation is a primary competing
+  demand for their time.
+
+☐ DOCUMENTATION QUALITY
+  Flowsheet gaps, inconsistent assessments, or
+  documentation variability are affecting compliance
+  or care continuity.
+
+☐ FUTURE READINESS
+  Positioning the nursing program for clinical AI,
+  value-based care, Magnet, or data-driven practice.
+```
+
+**Sidebar updates as they select:**
+```
+YOUR PRIORITIES
+
+☑ Nurse Retention
+☑ Staffing Costs
+☑ Nurse Wellbeing
+☐ Bedside Presence
+☐ Documentation Quality
+☐ Future Readiness
+
+[X] of 6 selected
+```
+
+**Button:** "Explore Your Priorities →"
+
+---
+
+## SCREEN 3: EXPLORING EACH PRIORITY
+
+This is the heart of the assessment. For each priority they selected, show a dedicated section with two parts: what's happening at their organization, and how documentation burden connects to this priority. Each priority is its own card on the page, stacked vertically.
+
+**Header:**
+YOUR PRIORITIES
+Help us understand what each of these looks like at your organization.
+
+---
+
+### If NURSE RETENTION selected:
+
+```
+NURSE RETENTION
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+Annual RN turnover rate
+[___] %
+National average: 18-22% (NSI Nursing Solutions, 2024)
+
+Average cost to replace an RN
+$ [___]
+Industry range: $40K-$65K per RN (NSI Nursing Solutions)
+
+What is your organization doing to address retention?
+☐ Compensation and pay structure adjustments
+☐ Scheduling flexibility programs
+☐ Workload reduction initiatives
+☐ Documentation and administrative burden reduction
+☐ Mentorship and career development
+☐ Wellness and resilience programs
+☐ Shared governance and nurse voice
+```
+
+**Estimated Impact sidebar for this priority (if turnover + cost entered):**
+```
+NURSE RETENTION
+
+$[totalCost] in annual turnover cost
+
+[departures] nurses replaced per year
+at $[cost] each
+
+[interventionCount] intervention(s) active
+
+departures = nurseFTEs × turnoverRate
+totalCost = departures × replacementCost
+
+Estimates based on your inputs.
+Individual results vary.
+```
+
+---
+
+### If STAFFING COSTS selected:
+
+```
+STAFFING COSTS
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+Where is cost pressure coming from?
+☐ End-of-shift overtime from documentation
+☐ General overtime from staffing shortages
+☐ Agency and travel nurse reliance
+☐ Premium pay and incentive costs
+☐ Unfilled positions creating coverage gaps
+
+[If "End-of-shift overtime from documentation" checked:]
+Estimated average minutes per nurse per shift
+staying late for documentation
+[___] min
+
+[If "Agency and travel nurse reliance" checked:]
+Current monthly agency / travel nurse spend
+$ [___] /month
+
+What is your organization doing to manage staffing costs?
+☐ OT monitoring and reduction programs
+☐ Agency spend reduction targets
+☐ Internal float pool development
+☐ Scheduling optimization
+☐ Staffing model redesign
+☐ Workflow and documentation efficiency improvements
+```
+
+**Estimated Impact sidebar (dynamic based on what they entered):**
+
+If OT minutes entered:
+```
+STAFFING COSTS
+
+End-of-shift documentation contributing
+approximately [otMinutes] min/nurse/shift
+in overtime.
+
+Across [nurseFTEs] nurses, that's approximately
+[annualOTHours] hours of documentation-driven
+OT annually.
+
+annualOTHours = otMinutes × nurseFTEs × 260 / 60
+
+Estimates based on your inputs.
+```
+
+If agency spend entered:
+```
+$[monthlyAgency]/month in agency spend
+$[annualAgency] annually
+```
+
+If both:
+```
+[annualOTHours] hours of documentation-driven OT
+$[annualAgency] in annual agency spend
+```
+
+---
+
+### If NURSE WELLBEING selected:
+
+```
+NURSE WELLBEING
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+Where is wellbeing pressure showing up?
+☐ Nurses regularly staying late to finish charting
+☐ Documentation cited in satisfaction or engagement surveys
+☐ Burnout mentioned in exit interviews or stay conversations
+☐ New nurses struggling with documentation workload
+☐ Experienced nurses expressing frustration with admin tasks
+☐ Work-life balance concerns related to after-shift work
+
+Have you conducted a nursing documentation burden
+or satisfaction survey?
+○ Not yet
+○ Informally — pulse checks or anecdotal feedback
+○ Yes — structured survey with results
+
+[If "Yes — structured survey":]
+What did it show?
+☐ Documentation burden rated as a top concern
+☐ Time spent on documentation reported as excessive
+☐ Documentation affects willingness to stay
+☐ Documentation affects job satisfaction
+☐ Nurses want technology to reduce documentation
+```
+
+**Estimated Impact sidebar:**
+```
+NURSE WELLBEING
+
+[checkedCount] area(s) where wellbeing pressure
+is visible:
+[list of checked items from first question]
+
+[If survey conducted:]
+Survey findings: [checkedCount] finding(s)
+[list]
+
+[If no survey:]
+A structured documentation burden survey would
+establish a baseline for understanding the
+scope of the challenge.
+
+Estimates based on your inputs.
+```
+
+---
+
+### If BEDSIDE PRESENCE selected:
+
+```
+BEDSIDE PRESENCE
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+Is increasing time at the bedside a stated
+organizational priority?
+○ It comes up in conversation but isn't formalized
+○ It's a nursing leadership priority
+○ It's part of organizational quality or experience goals
+
+Are you currently measuring bedside time or
+direct care hours?
+○ No
+○ Informally — observation or estimation
+○ Yes — tracked through technology or time studies
+
+Estimated hours per shift nurses spend on
+documentation (all types)
+[___] hrs
+Most organizations report 2-3 hours per shift.
+```
+
+**Estimated Impact sidebar:**
+```
+BEDSIDE PRESENCE
+
+[If documentation hours entered:]
+At [docHours] hours of documentation per shift
+across [nurseFTEs] nurses, your nursing program
+spends approximately [annualDocHours] hours
+annually on documentation.
+
+annualDocHours = docHours × nurseFTEs × 260
+
+Time redirected to the bedside is time redirected
+to patients.
+```
+
+---
+
+### If DOCUMENTATION QUALITY selected:
+
+```
+DOCUMENTATION QUALITY
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+Where have you identified quality concerns?
+☐ Flowsheet completeness varies across shifts or units
+☐ Assessment documentation is inconsistent
+☐ Handoff documentation quality is uneven
+☐ Care plan updates are frequently incomplete
+☐ Audit or survey findings cite documentation gaps
+☐ Documentation variability is a known concern
+
+Are you currently measuring documentation quality?
+○ No — we know there are gaps but haven't measured
+○ Informally — spot checks and anecdotal feedback
+○ Yes — tracked through audits, dashboards, or reviews
+```
+
+**Estimated Impact sidebar:**
+```
+DOCUMENTATION QUALITY
+
+[checkedCount] quality concern(s) identified:
+[list]
+
+[If measuring: "Actively tracking quality metrics"]
+[If informal: "Informal monitoring in place"]
+[If not measuring: "Quality gaps identified but not
+yet formally measured"]
+```
+
+---
+
+### If FUTURE READINESS selected:
+
+```
+FUTURE READINESS
+
+WHAT DOES THIS LOOK LIKE AT YOUR ORGANIZATION?
+
+What are you working toward?
+☐ Magnet designation or Pathway to Excellence
+☐ Clinical AI readiness and pilot programs
+☐ Value-based care nursing initiatives
+☐ Data-driven staffing and workforce analytics
+☐ Nursing informatics maturity
+☐ Structured documentation for quality reporting
+
+How would you describe your nursing program's
+technology maturity?
+○ Early — still primarily paper or basic EHR workflows
+○ Developing — using EHR effectively, exploring innovation
+○ Advanced — actively piloting new technology and AI
+○ Leading — technology is embedded in nursing strategy
+```
+
+**Estimated Impact sidebar:**
+```
+FUTURE READINESS
+
+[checkedCount] strategic initiative(s):
+[list]
+
+Technology maturity: [selected level]
+
+Structured, complete documentation is the foundation
+for every initiative you identified. Without it,
+clinical AI, quality reporting, and data-driven
+practice can't reach their potential.
+```
+
+---
+
+## SCREEN 4: YOUR STRATEGIC PICTURE
+
+**Header:**
+YOUR STRATEGIC PICTURE
+Here's what you told us about your nursing program — and how documentation burden connects to your priorities.
+
+Same two-column layout. Main content left, sidebar right.
+
+**Main content: one card per selected priority, ordered by how much data they provided (most data first).**
+
+Each card shows:
+
+```
+[PRIORITY NAME]
+[One-sentence summary of their situation based on their inputs]
+[One-sentence connecting documentation burden to this priority]
+```
+
+**Example cards:**
+
+```
+NURSE RETENTION
+Your organization replaces approximately 54 nurses per
+year at $52K each — $2.8M in annual turnover cost.
+You're pursuing 4 interventions including workload
+reduction and documentation burden reduction.
+
+Documentation time is one of the most consistent sources
+of nursing frustration. Reducing it doesn't solve
+retention alone, but it addresses a pain point that
+nurses cite in surveys and exit interviews across
+the industry.
+```
+
+```
+STAFFING COSTS
+End-of-shift documentation is contributing approximately
+20 minutes of overtime per nurse per shift — an estimated
+1,733 hours of documentation-driven OT annually. Monthly
+agency spend is $45K.
+
+Documentation-driven overtime is one of the most
+directly addressable cost drivers in nursing operations.
+Agency reliance connects indirectly through retention —
+when nurses stay longer, staffing gaps shrink.
+```
+
+```
+NURSE WELLBEING
+Wellbeing pressure is visible in 4 areas including
+late-shift charting and satisfaction survey results.
+Your structured survey identified documentation burden
+as a top concern and a factor in willingness to stay.
+
+When nurses identify documentation as a primary
+frustration, it becomes one of the clearest intervention
+points for improving the work environment.
+```
+
+**For unselected priorities (collapsed or at the bottom, lighter treatment):**
+
+```
+NOT SELECTED AS CURRENT PRIORITIES
+
+Bedside Presence · Documentation Quality · Future Readiness
+
+These weren't identified as priorities for your nursing
+program right now. Your strategic picture focuses on
+what matters to your organization today.
+```
+
+**Sidebar:**
+```
+YOUR ASSESSMENT
+
+Priorities selected       3 of 6
+Data points provided      [X]
+
+YOUR PRIORITIES
+☑ Nurse Retention        $2.8M exposure
+☑ Staffing Costs         1,733 OT hrs + $540K agency
+☑ Nurse Wellbeing        4 pressure areas + survey
+
+KEY NUMBERS
+Nurse FTEs               300
+Turnover rate            18%
+Annual replacements      54
+Replacement cost         $52K
+Documentation OT         20 min/shift
+Agency spend             $45K/month
+
+Based on your inputs.
+Individual results vary.
+```
+
+---
+
+## SCREEN 5: YOUR RECOMMENDED FOCUS
+
+**Header:**
+HOW TO THINK ABOUT THE INVESTMENT CASE
+Based on your priorities, here's how we'd think about framing the conversation for your organization.
+
+**Main card:**
+
+```
+YOUR SITUATION
+
+Your nursing program is focused on retention, staffing
+costs, and nurse wellbeing. Documentation burden
+connects to all three — but not in the same way or
+on the same timeline.
+
+HOW TO FRAME THE CONVERSATION
+
+Lead with nurse wellbeing.
+Your survey data shows documentation is a top concern
+for your nurses. When you can show that a specific
+intervention directly addresses the thing nurses are
+telling you is a problem, that's a compelling starting
+point. It's immediate, it's tangible, and nurses will
+feel the difference.
+
+Anchor the financial case in overtime.
+End-of-shift documentation is contributing an estimated
+1,733 hours of OT annually at your organization. This
+is the most measurable near-term financial metric
+because the connection between documentation time
+and end-of-shift OT is direct.
+
+Build the longer-term case around retention.
+Your turnover rate represents $2.8M in annual cost.
+Documentation burden is one of the factors your
+organization has identified. The retention impact
+builds over time — as workload improves, satisfaction
+improves, and the decision to stay becomes easier for
+your nurses. This is a 6-12 month story, not a
+30-day story.
+
+WHAT THIS MEANS FOR EVALUATING TECHNOLOGY
+
+Any investment in documentation technology for nursing
+should be evaluated against these priorities. The
+questions to ask:
+
+• Does it meaningfully reduce documentation time
+  during and after the shift?
+• Can we measure the impact on overtime within
+  60-90 days?
+• Will nurses actually feel the difference in their
+  daily workflow?
+• Does it position us to address retention over
+  the longer term?
+
+If the answer to these questions is yes, the
+investment case aligns with what your nursing
+program is trying to accomplish.
+```
+
+**This section doesn't mention Abridge.** It mentions "documentation technology" and "any investment in this space." The CNO reads evaluation criteria that Abridge happens to meet — but the tool never says that. The tool gives them a framework for evaluating. The conversation about Abridge specifically happens naturally after.
+
+**If they only selected priorities with weak documentation connections (e.g., only "Future Readiness"):**
+
+```
+YOUR SITUATION
+
+Your nursing program is focused on future readiness —
+building the infrastructure for clinical AI, value-based
+care, and data-driven practice.
+
+Documentation burden reduction supports this goal by
+creating the structured, complete documentation
+foundation these initiatives require. However, the
+financial case for documentation technology is
+typically stronger when paired with a more immediate
+priority like retention, staffing costs, or wellbeing.
+
+HOW TO THINK ABOUT IT
+
+If documentation technology investment needs a
+near-term financial justification, consider whether
+retention or staffing cost pressures — even if they
+aren't your top strategic priority today — could
+provide the financial anchor for a business case
+that also advances your future readiness goals.
+```
+
+Honest. Helpful. Not pushy.
+
+---
+
+## SCREEN 6: WHAT COMES NEXT
+
+**Header:**
+WHAT COMES NEXT
+
+```
+You now have a clearer picture of where your nursing
+program is under pressure and how documentation burden
+connects to your priorities.
+
+Whether you're evaluating technology, building a
+business case internally, or just trying to understand
+the landscape — this assessment is yours to use
+however it's most helpful.
+
+[Export My Assessment]
+
+If you'd like to explore what these priorities look
+like with more specific modeling, we're happy to
+walk through the numbers together.
+
+[Schedule a Conversation →]
+```
+
+Two separate actions. Export is primary — they get their assessment regardless. The conversation is secondary and framed as an offer, not a push.
+
+The language "we're happy to walk through the numbers together" is warm and collaborative. Not "request a working session" or "build your ROI model." Just: we're here if you want to go deeper.
+
+---
+
+## SIDEBAR (persists across all screens after Screen 1)
+
+Updates progressively as they move through the assessment:
+
+Screen 2: Shows selected priorities
+Screen 3: Adds data points as they enter them
+Screen 4: Shows full summary with key numbers
+Screen 5-6: Same as Screen 4
+
+---
+
+## GLOBAL UX RULES (same as outpatient)
+
+1. No input has a pre-filled default value on number fields
+2. Checkboxes are never pre-checked
+3. Radio buttons are never pre-selected
+4. Empty inputs show "—" in the sidebar, never "0"
+5. All benchmark text: "National average: X (Source)" — never "Abridge reports"
+6. All estimates labeled: "Estimates based on your inputs. Individual results vary."
+7. All inputs persist when navigating between screens
+8. Same card treatments, typography, colors, and spacing as outpatient
+
+---
+
+## PDF EXPORT (4 pages)
+
+**Page 1:** Cover
+Ambient Assessment: Nursing Edition
+Organization name, date, facilitator name
+Same design as outpatient cover
+
+**Page 2:** Your Priorities
+Which priorities they selected, their baseline inputs (beds, FTEs, occupancy), and key data points they entered (turnover rate, replacement cost, OT minutes, agency spend, survey findings)
+
+**Page 3:** Strategic Picture
+One block per selected priority showing their situation and how documentation burden connects. Same content as Screen 4.
+
+**Page 4:** Recommended Focus + Next Steps
+How to frame the conversation. The evaluation criteria. Contact for deeper conversation.
+
+Same disclaimer on every page:
+> This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Individual results vary.

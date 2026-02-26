@@ -41,29 +41,33 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
 
           <div className="space-y-6">
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <label className="block text-sm font-medium text-black mb-2">Staffed beds</label>
-              <FormattedNumberInput
-                value={baseline.staffedBeds}
-                onChange={(v) => updateBaseline("staffedBeds", v)}
-                placeholder="e.g. 300"
-                data-testid="input-staffed-beds"
-              />
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Deployment Size</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">Staffed Beds</label>
+                  <FormattedNumberInput
+                    value={baseline.staffedBeds}
+                    onChange={(v) => updateBaseline("staffedBeds", v)}
+                    placeholder="e.g. 200"
+                    data-testid="input-staffed-beds"
+                  />
+                  <p className="text-[11px] text-[#999999] mt-1">Licensed beds with active nursing staff</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">Nurse FTEs</label>
+                  <FormattedNumberInput
+                    value={baseline.nurseFTEs}
+                    onChange={(v) => updateBaseline("nurseFTEs", v)}
+                    placeholder="e.g. 300"
+                    data-testid="input-nurse-ftes"
+                  />
+                  <p className="text-[11px] text-[#999999] mt-1">Full-time equivalent nurses in scope</p>
+                </div>
+              </div>
             </div>
 
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <label className="block text-sm font-medium text-black mb-2">Nurse FTEs in scope</label>
-              <FormattedNumberInput
-                value={baseline.nurseFTEs}
-                onChange={(v) => updateBaseline("nurseFTEs", v)}
-                placeholder="e.g. 200"
-                data-testid="input-nurse-ftes"
-              />
-            </div>
-
-            <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <label className="block text-sm font-medium text-black mb-2">
-                Bed occupancy rate
-              </label>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Bed Occupancy</p>
               <div className="flex items-center gap-4">
                 <input
                   type="range"
@@ -79,7 +83,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
                   {baseline.bedOccupancy}%
                 </span>
               </div>
-              <p className="text-xs text-[#999999] mt-2">Most hospitals run 75–90%</p>
+              <p className="text-xs text-[#999999] mt-2">Most hospitals run 75-90% occupancy</p>
             </div>
           </div>
 
@@ -87,7 +91,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
             <StepFooter
               onBack={onBack}
               onNext={onNext}
-              nextLabel="Continue →"
+              nextLabel="Continue"
               nextDisabled={!canProceed}
               nextTestId="button-nursing-next-1"
               backTestId="button-nursing-back-1"
@@ -102,25 +106,46 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
           transition={{ duration: 0.4, delay: 0.3 }}
         >
           <div className="bg-[#1A1A1A] text-white rounded-xl p-6">
-            <p className="text-[9px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-4">
+            <p className="text-[9px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
               Your Baseline
             </p>
+            <p className="text-[10px] text-white/40 mb-4">Deployment summary</p>
             <div className="h-px bg-white/10 mb-4" />
 
-            <div className="space-y-4">
-              <div>
-                <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Patient days / year</p>
-                <p className="text-xl font-bold text-white" data-testid="text-patient-days">
-                  {baseline.staffedBeds > 0 ? patientDays.toLocaleString() : "—"}
-                </p>
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between">
+                <span className="text-white/40">Staffed Beds</span>
+                <span className="text-white font-medium" data-testid="text-sidebar-beds">{baseline.staffedBeds > 0 ? baseline.staffedBeds.toLocaleString() : '—'}</span>
               </div>
-              <div>
-                <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Shifts / year</p>
-                <p className="text-xl font-bold text-white" data-testid="text-shifts-year">
-                  {baseline.nurseFTEs > 0 ? shiftsPerYear.toLocaleString() : "—"}
-                </p>
+              <div className="flex justify-between">
+                <span className="text-white/40">Nurse FTEs</span>
+                <span className="text-white font-medium" data-testid="text-sidebar-ftes">{baseline.nurseFTEs > 0 ? baseline.nurseFTEs.toLocaleString() : '—'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Occupancy Rate</span>
+                <span className="text-white font-medium">{baseline.bedOccupancy}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Patient Days / Year</span>
+                <span className="text-white font-medium" data-testid="text-patient-days">{baseline.staffedBeds > 0 ? derivePatientDays(baseline).toLocaleString() : '—'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Shifts / Year</span>
+                <span className="text-white font-medium" data-testid="text-shifts-year">{baseline.nurseFTEs > 0 ? shiftsPerYear.toLocaleString() : '—'}</span>
               </div>
             </div>
+
+            {baseline.nurseFTEs > 0 && (
+              <>
+                <div className="h-px bg-white/10 my-4" />
+                <p className="text-[9px] font-semibold uppercase tracking-[2px] text-white/40 mb-2">The Math</p>
+                <div className="text-[11px] text-white/50 font-mono space-y-0.5">
+                  <p>{baseline.nurseFTEs.toLocaleString()} nurse FTEs</p>
+                  <p>x 260 shifts/year</p>
+                  <p>= {shiftsPerYear.toLocaleString()} shifts</p>
+                </div>
+              </>
+            )}
           </div>
         </motion.aside>
       </motion.div>

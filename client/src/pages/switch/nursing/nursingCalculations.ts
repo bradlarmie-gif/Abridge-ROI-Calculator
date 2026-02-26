@@ -1,12 +1,24 @@
 import type {
   NursingPriority,
   NursingBaselineInputs,
-  PriorityConnection,
-  ConnectionBar,
-  PathwayClassification,
-  PathwayRole,
+  AllPriorityInputs,
+  RetentionInputs,
+  StaffingCostsInputs,
+  WellbeingInputs,
+  BedsidePresenceInputs,
+  DocQualityInputs,
+  FutureReadinessInputs,
 } from './nursingTypes';
-import { PRIORITY_CONFIGS } from './nursingTypes';
+import {
+  RETENTION_INTERVENTIONS,
+  STAFFING_COST_PRESSURES,
+  STAFFING_COST_INTERVENTIONS,
+  WELLBEING_PRESSURES,
+  WELLBEING_SURVEY_FINDINGS,
+  DOC_QUALITY_CONCERNS,
+  FUTURE_INITIATIVES,
+  PRIORITY_CONFIGS,
+} from './nursingTypes';
 
 export function derivePatientDays(baseline: NursingBaselineInputs): number {
   return Math.round(baseline.staffedBeds * (baseline.bedOccupancy / 100) * 365);
@@ -16,308 +28,302 @@ export function deriveShiftsPerYear(baseline: NursingBaselineInputs): number {
   return Math.round(baseline.nurseFTEs * 260);
 }
 
-export function deriveBedsideHoursRecovered(baseline: NursingBaselineInputs): number {
-  const shifts = deriveShiftsPerYear(baseline);
-  return Math.round((17.5 * shifts) / 60);
-}
-
-function formatNumber(n: number): string {
+function fmt(n: number): string {
   return n.toLocaleString();
 }
 
-export function buildConnection(
+function fmtDollar(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+export { fmtDollar };
+
+export function computeRetentionImpact(inputs: RetentionInputs, baseline: NursingBaselineInputs) {
+  const departures = inputs.turnoverRate > 0 ? Math.round(baseline.nurseFTEs * (inputs.turnoverRate / 100)) : 0;
+  const totalCost = departures * inputs.replacementCost;
+  return { departures, totalCost };
+}
+
+export function computeStaffingImpact(inputs: StaffingCostsInputs, baseline: NursingBaselineInputs) {
+  const shiftsPerYear = deriveShiftsPerYear(baseline);
+  const hasDocOT = inputs.costPressures.includes(0);
+  const hasAgency = inputs.costPressures.includes(2);
+  const annualOTHours = hasDocOT && inputs.otMinPerShift > 0
+    ? Math.round((inputs.otMinPerShift * baseline.nurseFTEs * 260) / 60)
+    : 0;
+  const annualAgency = hasAgency && inputs.agencyMonthlySpend > 0
+    ? inputs.agencyMonthlySpend * 12
+    : 0;
+  return { annualOTHours, annualAgency, hasDocOT, hasAgency };
+}
+
+export function computeBedsideImpact(inputs: BedsidePresenceInputs, baseline: NursingBaselineInputs) {
+  const annualDocHours = inputs.docHoursPerShift > 0
+    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 260)
+    : 0;
+  return { annualDocHours };
+}
+
+export interface PrioritySummary {
+  priority: NursingPriority;
+  situation: string;
+  connection: string;
+  sidebarLine: string;
+}
+
+export function buildPrioritySummary(
   priority: NursingPriority,
+  inputs: AllPriorityInputs,
   baseline: NursingBaselineInputs,
-): PriorityConnection {
-  const shifts = deriveShiftsPerYear(baseline);
-  const bedsideHours = deriveBedsideHoursRecovered(baseline);
-
+): PrioritySummary {
   switch (priority) {
-    case 'retention':
+    case 'retention': {
+      const r = inputs.retention;
+      const { departures, totalCost } = computeRetentionImpact(r, baseline);
+      let situation = '';
+      let sidebarLine = '';
+      if (r.turnoverRate > 0 && r.replacementCost > 0) {
+        situation = `Your organization replaces approximately ${fmt(departures)} nurses per year at ${fmtDollar(r.replacementCost)} each — ${fmtDollar(totalCost)} in annual turnover cost.`;
+        if (r.interventions.length > 0) {
+          const labels = r.interventions.map(i => RETENTION_INTERVENTIONS[i]).filter(Boolean);
+          situation += ` You're pursuing ${r.interventions.length} intervention${r.interventions.length > 1 ? 's' : ''} including ${labels.slice(0, 2).join(' and ').toLowerCase()}.`;
+        }
+        sidebarLine = `${fmtDollar(totalCost)} exposure`;
+      } else {
+        situation = 'Nurse retention was identified as a priority. Enter your turnover rate and replacement cost to see the estimated impact.';
+        sidebarLine = 'Data needed';
+      }
       return {
         priority,
-        headline: 'Keep Our Nurses → Strong Connection',
-        howItConnects:
-          'Documentation burden is one of the most frequently cited sources of nursing frustration and burnout. Burnout is the leading driver of voluntary turnover. Reducing the time nurses spend on flowsheets directly addresses one of the root causes of attrition.',
-        whatResearchSays:
-          'Nurses spend 2–3 hours per shift on documentation. Documentation burden consistently ranks in the top 3 drivers of nursing burnout across published surveys.',
-        whatItMeansForROI:
-          `When retention is your primary goal, the ROI model should focus on turnover cost avoidance — not on dollarizing every minute saved. A focused retention case at your scale could look like:\n\n${formatNumber(baseline.nurseFTEs)} nurses × [X]% turnover × $[Y] replacement cost = $[total] in annual turnover cost\n\nEven a modest improvement in retention — 1–2 fewer departures per year — changes the math significantly.`,
-        bars: [{ label: '', strength: 'direct', filled: 12, total: 12 }],
+        situation,
+        connection: 'Documentation time is one of the most consistent sources of nursing frustration. Reducing it doesn\'t solve retention alone, but it addresses a pain point that nurses cite in surveys and exit interviews across the industry.',
+        sidebarLine,
       };
+    }
 
-    case 'laborCosts':
+    case 'staffingCosts': {
+      const s = inputs.staffingCosts;
+      const { annualOTHours, annualAgency, hasDocOT, hasAgency } = computeStaffingImpact(s, baseline);
+      let situation = '';
+      const parts: string[] = [];
+      if (hasDocOT && s.otMinPerShift > 0) {
+        parts.push(`End-of-shift documentation is contributing approximately ${s.otMinPerShift} minutes of overtime per nurse per shift — an estimated ${fmt(annualOTHours)} hours of documentation-driven OT annually`);
+      }
+      if (hasAgency && s.agencyMonthlySpend > 0) {
+        parts.push(`Monthly agency spend is ${fmtDollar(s.agencyMonthlySpend)}`);
+      }
+      situation = parts.length > 0 ? parts.join('. ') + '.' : 'Staffing costs were identified as a priority. Enter details to see the estimated impact.';
+      let sidebarLine = '';
+      const sidebarParts: string[] = [];
+      if (annualOTHours > 0) sidebarParts.push(`${fmt(annualOTHours)} OT hrs`);
+      if (annualAgency > 0) sidebarParts.push(`${fmtDollar(annualAgency)} agency`);
+      sidebarLine = sidebarParts.length > 0 ? sidebarParts.join(' + ') : 'Data needed';
       return {
         priority,
-        headline: 'Control Labor Costs → Direct for OT, Indirect for Agency',
-        howItConnects:
-          'If end-of-shift charting is driving overtime, reducing documentation time directly reduces OT. If agency spend is driven by turnover, the connection is indirect — reduced burden → better retention → less agency need. That second pathway is real but takes 6–12 months.',
-        whatItMeansForROI:
-          'Be specific about which labor cost you\'re solving. OT reduction from documentation? That\'s direct and measurable in 30–60 days. Agency reduction from better retention? That\'s a longer-term case.\n\nThe ROI model should focus on the labor cost driver that\'s most directly connected to documentation time. Trying to model both in one business case dilutes the story.',
-        bars: [
-          { label: 'Overtime', strength: 'direct', filled: 12, total: 12 },
-          { label: 'Agency spend', strength: 'indirect', filled: 6, total: 12 },
-        ],
+        situation,
+        connection: 'Documentation-driven overtime is one of the most directly addressable cost drivers in nursing operations. Agency reliance connects indirectly through retention — when nurses stay longer, staffing gaps shrink.',
+        sidebarLine,
       };
+    }
 
-    case 'burnout':
+    case 'wellbeing': {
+      const w = inputs.wellbeing;
+      let situation = '';
+      const pressureLabels = w.pressures.map(i => WELLBEING_PRESSURES[i]).filter(Boolean);
+      if (pressureLabels.length > 0) {
+        situation = `Wellbeing pressure is visible in ${w.pressures.length} area${w.pressures.length > 1 ? 's' : ''} including ${pressureLabels.slice(0, 2).join(' and ').toLowerCase()}.`;
+      }
+      if (w.surveyStatus === 'structured' && w.surveyFindings.length > 0) {
+        const findingLabels = w.surveyFindings.map(i => WELLBEING_SURVEY_FINDINGS[i]).filter(Boolean);
+        situation += ` Your structured survey identified ${findingLabels.slice(0, 2).join(' and ').toLowerCase()}.`;
+      } else if (w.surveyStatus === 'informal') {
+        situation += ' Informal pulse checks have been conducted.';
+      }
+      if (!situation) situation = 'Nurse wellbeing was identified as a priority. Tell us more about what this looks like at your organization.';
+      let sidebarLine = '';
+      const sidebarParts: string[] = [];
+      if (w.pressures.length > 0) sidebarParts.push(`${w.pressures.length} pressure area${w.pressures.length > 1 ? 's' : ''}`);
+      if (w.surveyStatus === 'structured') sidebarParts.push('survey');
+      sidebarLine = sidebarParts.length > 0 ? sidebarParts.join(' + ') : 'Data needed';
       return {
         priority,
-        headline: 'Reduce Burnout → Strong Connection',
-        howItConnects:
-          'Documentation is one of the most controllable drivers of nursing workload. Unlike patient acuity or staffing ratios — which are hard to change quickly — documentation time can be reduced through technology. Giving nurses 15–20 minutes back per shift is tangible relief.',
-        whatItMeansForROI:
-          'Burnout itself is hard to dollarize. But the consequences of burnout are not: turnover, sick time, disengagement, medical errors. The ROI model should connect burnout reduction to the downstream consequence your organization cares about most.\n\nIf it\'s turnover → model the retention pathway.\nIf it\'s patient safety → model the quality pathway.\nIf it\'s just "our nurses need relief" → the case may be more about workforce strategy than financial ROI.',
-        bars: [
-          { label: '', strength: 'direct', filled: 12, total: 12 },
-        ],
+        situation,
+        connection: 'When nurses identify documentation as a primary frustration, it becomes one of the clearest intervention points for improving the work environment.',
+        sidebarLine,
       };
+    }
 
-    case 'bedsideTime':
+    case 'bedsidePresence': {
+      const b = inputs.bedsidePresence;
+      const { annualDocHours } = computeBedsideImpact(b, baseline);
+      let situation = '';
+      if (b.docHoursPerShift > 0) {
+        situation = `At ${b.docHoursPerShift} hours of documentation per shift across ${fmt(baseline.nurseFTEs)} nurses, your nursing program spends approximately ${fmt(annualDocHours)} hours annually on documentation.`;
+      } else {
+        situation = 'Bedside presence was identified as a priority. Enter your estimated documentation hours per shift to see the impact.';
+      }
+      const sidebarLine = annualDocHours > 0 ? `${fmt(annualDocHours)} doc hrs/yr` : 'Data needed';
       return {
         priority,
-        headline: 'Get Nurses Back to the Bedside → Direct Connection, Hard to Dollarize',
-        howItConnects:
-          `Every minute saved on documentation is a minute that could go to direct patient care. At ${formatNumber(baseline.nurseFTEs)} nurses and 260 shifts per year, even 15 minutes per shift = ${formatNumber(bedsideHours)} hours back at the bedside annually.`,
-        whatItMeansForROI:
-          'This is the most emotionally compelling case and the hardest to turn into a dollar figure. Bedside time doesn\'t directly generate revenue in nursing. Its value shows up in patient experience (HCAHPS), safety outcomes, and nurse satisfaction — all of which are real but harder to attribute.\n\nIf bedside time is your primary motivation, the business case may need to be built around the strategic value to nursing practice and patient experience — supported by financial pathways like retention or OT, not led by them.',
-        bars: [
-          { label: '', strength: 'direct', filled: 12, total: 12 },
-          { label: 'Financial case', strength: 'indirect', filled: 6, total: 12 },
-        ],
+        situation,
+        connection: 'Time redirected from documentation to the bedside is time redirected to patients. Every minute saved is a minute available for direct care.',
+        sidebarLine,
       };
+    }
 
-    case 'docQuality':
+    case 'docQuality': {
+      const d = inputs.docQuality;
+      const concernLabels = d.concerns.map(i => DOC_QUALITY_CONCERNS[i]).filter(Boolean);
+      let situation = '';
+      if (concernLabels.length > 0) {
+        situation = `${d.concerns.length} documentation quality concern${d.concerns.length > 1 ? 's' : ''} identified including ${concernLabels.slice(0, 2).join(' and ').toLowerCase()}.`;
+      }
+      if (d.measuringQuality === 'yes') {
+        situation += ' Actively tracking quality metrics through audits, dashboards, or reviews.';
+      } else if (d.measuringQuality === 'informal') {
+        situation += ' Informal monitoring in place through spot checks and anecdotal feedback.';
+      } else if (d.measuringQuality === 'no') {
+        situation += ' Quality gaps identified but not yet formally measured.';
+      }
+      if (!situation) situation = 'Documentation quality was identified as a priority. Tell us more about what this looks like at your organization.';
+      const sidebarLine = d.concerns.length > 0 ? `${d.concerns.length} concern${d.concerns.length > 1 ? 's' : ''}` : 'Data needed';
       return {
         priority,
-        headline: 'Improve Documentation Quality → Moderate Connection',
-        howItConnects:
-          'Ambient documentation can improve flowsheet completeness and consistency by structuring the documentation process. But quality improvement also depends on clinical practice, workflow design, and governance — not just the tool.',
-        whatItMeansForROI:
-          'Documentation quality is harder to tie directly to financial outcomes. Its value shows up in audit readiness, survey preparedness, and reduced rework — but quantifying those requires measurement that most organizations haven\'t done yet.\n\nIf documentation quality is a priority, the business case is about risk reduction and compliance posture rather than financial return. It\'s a strong supporting argument but rarely the lead story in an ROI model.',
-        bars: [
-          { label: '', strength: 'moderate', filled: 8, total: 12 },
-        ],
+        situation,
+        connection: 'Structured, consistent flowsheet documentation addresses completeness and consistency at the point of care — before gaps reach compliance review.',
+        sidebarLine,
       };
+    }
 
-    case 'future':
+    case 'futureReadiness': {
+      const f = inputs.futureReadiness;
+      const initLabels = f.initiatives.map(i => FUTURE_INITIATIVES[i]).filter(Boolean);
+      let situation = '';
+      if (initLabels.length > 0) {
+        situation = `${f.initiatives.length} strategic initiative${f.initiatives.length > 1 ? 's' : ''} in progress including ${initLabels.slice(0, 2).join(' and ').toLowerCase()}.`;
+      }
+      if (f.techMaturity) {
+        const labels: Record<string, string> = {
+          early: 'Early — still primarily paper or basic EHR workflows',
+          developing: 'Developing — using EHR effectively, exploring innovation',
+          advanced: 'Advanced — actively piloting new technology and AI',
+          leading: 'Leading — technology is embedded in nursing strategy',
+        };
+        situation += ` Technology maturity: ${labels[f.techMaturity] || f.techMaturity}.`;
+      }
+      if (!situation) situation = 'Future readiness was identified as a priority. Tell us more about your strategic initiatives.';
+      const sidebarLine = f.initiatives.length > 0 ? `${f.initiatives.length} initiative${f.initiatives.length > 1 ? 's' : ''}` : 'Data needed';
       return {
         priority,
-        headline: 'Prepare for the Future → Foundational, Not Immediate ROI',
-        howItConnects:
-          'Structured, complete nursing documentation is the foundation for everything coming next in clinical AI: predictive models, automated quality reporting, decision support, care planning intelligence. You can\'t build on documentation that isn\'t there.',
-        whatItMeansForROI:
-          'This is a strategic infrastructure argument, not a short-term financial case. It\'s powerful for organizations that are thinking 2–3 years ahead — but it won\'t carry an ROI model on its own.\n\nUse this as a strategic layer on top of a more immediate pathway (retention, OT, bedside time).',
-        bars: [
-          { label: '', strength: 'direct', filled: 10, total: 12 },
-          { label: 'Immediate financial ROI', strength: 'strategic', filled: 4, total: 12 },
-        ],
+        situation,
+        connection: 'Structured, complete documentation is the foundation for every initiative you identified. Without it, clinical AI, quality reporting, and data-driven practice can\'t reach their potential.',
+        sidebarLine,
       };
+    }
   }
 }
 
-const PRIORITY_STRENGTH: Record<NursingPriority, 'strong' | 'moderate' | 'strategic'> = {
-  retention: 'strong',
-  laborCosts: 'strong',
-  burnout: 'strong',
-  bedsideTime: 'moderate',
-  docQuality: 'moderate',
-  future: 'strategic',
-};
-
-const PATHWAY_LABELS: Record<NursingPriority, string> = {
-  retention: 'Retention (turnover cost avoidance)',
-  laborCosts: 'OT / Agency (labor cost reduction)',
-  burnout: 'Retention (via burnout reduction)',
-  bedsideTime: 'Bedside time (direct care hours)',
-  docQuality: 'Documentation quality (compliance & risk)',
-  future: 'Infrastructure (strategic foundation)',
-};
-
-export function classifyPathways(
+export function countDataPoints(
   selected: NursingPriority[],
+  inputs: AllPriorityInputs,
+): number {
+  let count = 0;
+  if (selected.includes('retention')) {
+    if (inputs.retention.turnoverRate > 0) count++;
+    if (inputs.retention.replacementCost > 0) count++;
+    count += inputs.retention.interventions.length;
+  }
+  if (selected.includes('staffingCosts')) {
+    count += inputs.staffingCosts.costPressures.length;
+    if (inputs.staffingCosts.otMinPerShift > 0) count++;
+    if (inputs.staffingCosts.agencyMonthlySpend > 0) count++;
+    count += inputs.staffingCosts.costInterventions.length;
+  }
+  if (selected.includes('wellbeing')) {
+    count += inputs.wellbeing.pressures.length;
+    if (inputs.wellbeing.surveyStatus) count++;
+    count += inputs.wellbeing.surveyFindings.length;
+  }
+  if (selected.includes('bedsidePresence')) {
+    if (inputs.bedsidePresence.bedsidePriority) count++;
+    if (inputs.bedsidePresence.measuringBedside) count++;
+    if (inputs.bedsidePresence.docHoursPerShift > 0) count++;
+  }
+  if (selected.includes('docQuality')) {
+    count += inputs.docQuality.concerns.length;
+    if (inputs.docQuality.measuringQuality) count++;
+  }
+  if (selected.includes('futureReadiness')) {
+    count += inputs.futureReadiness.initiatives.length;
+    if (inputs.futureReadiness.techMaturity) count++;
+  }
+  return count;
+}
+
+const STRONG_PRIORITIES: NursingPriority[] = ['retention', 'staffingCosts', 'wellbeing'];
+
+export function generateFocusNarrative(
+  selected: NursingPriority[],
+  inputs: AllPriorityInputs,
   baseline: NursingBaselineInputs,
-): PathwayClassification[] {
-  const all = PRIORITY_CONFIGS.map(c => c.id);
-  const result: PathwayClassification[] = [];
+): { situation: string; framing: string[]; evaluation: string[] } {
+  const strong = selected.filter(p => STRONG_PRIORITIES.includes(p));
+  const titles = selected.map(p => PRIORITY_CONFIGS.find(c => c.id === p)!.title.toLowerCase());
+  const situation = `Your nursing program is focused on ${titles.join(', ')}. Documentation burden connects to ${selected.length > 1 ? 'all of these' : 'this'} — but not ${selected.length > 1 ? 'in the same way or on the same timeline' : 'in isolation'}.`;
 
-  const selectedStrong = selected.filter(p => PRIORITY_STRENGTH[p] === 'strong');
-  const selectedModerate = selected.filter(p => PRIORITY_STRENGTH[p] === 'moderate');
-  const selectedStrategic = selected.filter(p => PRIORITY_STRENGTH[p] === 'strategic');
+  const framing: string[] = [];
+  const evaluation: string[] = [
+    'Does it meaningfully reduce documentation time during and after the shift?',
+  ];
 
-  for (const p of all) {
-    if (!selected.includes(p)) {
-      result.push({
-        priority: p,
-        role: 'notSelected',
-        label: PATHWAY_LABELS[p],
-        narrative: `Not selected as a current priority.`,
-      });
-      continue;
+  if (selected.includes('wellbeing')) {
+    const w = inputs.wellbeing;
+    if (w.surveyStatus === 'structured' && w.surveyFindings.length > 0) {
+      framing.push('Lead with nurse wellbeing.\nYour survey data shows documentation is a top concern for your nurses. When you can show that a specific intervention directly addresses the thing nurses are telling you is a problem, that\'s a compelling starting point. It\'s immediate, it\'s tangible, and nurses will feel the difference.');
+    } else if (w.pressures.length > 0) {
+      framing.push('Lead with nurse wellbeing.\nWellbeing pressure is visible in your organization. When nurses identify documentation as a frustration, addressing it becomes one of the clearest intervention points for improving the work environment.');
     }
+    evaluation.push('Will nurses actually feel the difference in their daily workflow?');
+  }
 
-    let role: PathwayRole;
-    let narrative: string;
-    const strength = PRIORITY_STRENGTH[p];
+  if (selected.includes('staffingCosts')) {
+    const s = inputs.staffingCosts;
+    const { annualOTHours } = computeStaffingImpact(s, baseline);
+    if (annualOTHours > 0) {
+      framing.push(`Anchor the financial case in overtime.\nEnd-of-shift documentation is contributing an estimated ${fmt(annualOTHours)} hours of OT annually at your organization. This is the most measurable near-term financial metric because the connection between documentation time and end-of-shift OT is direct.`);
+      evaluation.push('Can we measure the impact on overtime within 60-90 days?');
+    } else if (s.costPressures.length > 0) {
+      framing.push('Anchor the financial case in staffing costs.\nYour organization identified staffing cost pressure. Connecting documentation time savings to specific cost drivers — particularly overtime — creates the most measurable near-term case.');
+    }
+  }
 
-    if (strength === 'strong') {
-      role = 'primary';
-      narrative = buildPrimaryNarrative(p, baseline);
-    } else if (strength === 'moderate') {
-      if (selectedStrong.length > 0) {
-        role = 'supporting';
-        narrative = buildSupportingNarrative(p, baseline);
-      } else {
-        role = 'primary';
-        narrative = buildPrimaryNarrative(p, baseline);
-      }
+  if (selected.includes('retention')) {
+    const r = inputs.retention;
+    const { totalCost } = computeRetentionImpact(r, baseline);
+    if (totalCost > 0) {
+      framing.push(`Build the longer-term case around retention.\nYour turnover rate represents ${fmtDollar(totalCost)} in annual cost. Documentation burden is one of the factors your organization has identified. The retention impact builds over time — as workload improves, satisfaction improves, and the decision to stay becomes easier for your nurses. This is a 6-12 month story, not a 30-day story.`);
     } else {
-      if (selectedStrong.length > 0 || selectedModerate.length > 0) {
-        role = 'supporting';
-        narrative = buildSupportingNarrative(p, baseline);
-      } else {
-        role = 'primary';
-        narrative = buildPrimaryNarrative(p, baseline);
-      }
+      framing.push('Build the longer-term case around retention.\nRetention is a priority for your organization. The connection between documentation burden reduction and retention is real but builds over time — typically 6-12 months for measurable impact.');
     }
-
-    result.push({ priority: p, role, label: PATHWAY_LABELS[p], narrative });
+    evaluation.push('Does it position us to address retention over the longer term?');
   }
 
-  result.sort((a, b) => {
-    const order: Record<PathwayRole, number> = { primary: 0, supporting: 1, notSelected: 2 };
-    return order[a.role] - order[b.role];
-  });
-
-  return result;
-}
-
-function buildPrimaryNarrative(p: NursingPriority, baseline: NursingBaselineInputs): string {
-  const shifts = deriveShiftsPerYear(baseline);
-  const bedsideHours = deriveBedsideHoursRecovered(baseline);
-  switch (p) {
-    case 'retention':
-      return `Reducing documentation frustration addresses a root cause of nursing burnout and turnover. At your scale of ${formatNumber(baseline.nurseFTEs)} nurses, even a modest improvement in retention changes the financial equation significantly.`;
-    case 'laborCosts':
-      return `If end-of-shift charting is contributing to OT, reducing documentation time directly reduces OT costs. This is measurable within 30–60 days. Agency spend driven by turnover is an indirect but real longer-term pathway.`;
-    case 'burnout':
-      return `Documentation is one of the most controllable sources of nursing workload. Giving nurses 15–20 minutes back per shift across ${formatNumber(shifts)} annual shifts is tangible relief that connects to retention and safety outcomes.`;
-    case 'bedsideTime':
-      return `At your scale, reducing documentation time by 15–20 minutes per shift could return approximately ${formatNumber(bedsideHours)} hours annually to direct patient care. Powerful for patient experience and nurse satisfaction.`;
-    case 'docQuality':
-      return `Structured, consistent flowsheet documentation through ambient technology addresses completeness and consistency at the point of care — before gaps reach compliance review.`;
-    case 'future':
-      return `Structured, complete nursing documentation is the foundation for predictive models, automated quality reporting, and decision support. This is a strategic infrastructure investment.`;
+  if (selected.includes('bedsidePresence')) {
+    const { annualDocHours } = computeBedsideImpact(inputs.bedsidePresence, baseline);
+    if (annualDocHours > 0) {
+      framing.push(`Support with bedside time.\nYour organization spends approximately ${fmt(annualDocHours)} hours annually on nursing documentation. Time redirected from documentation to direct patient care is the most emotionally compelling argument — even if it's harder to dollarize.`);
+    }
   }
-}
-
-function buildSupportingNarrative(p: NursingPriority, baseline: NursingBaselineInputs): string {
-  const bedsideHours = deriveBedsideHoursRecovered(baseline);
-  switch (p) {
-    case 'bedsideTime':
-      return `${formatNumber(bedsideHours)} hours annually returned to direct care. Powerful for nursing leadership and patient experience — but hard to dollarize on its own.`;
-    case 'docQuality':
-      return `Supports compliance and survey readiness. Valuable as a strategic argument alongside the financial case.`;
-    case 'future':
-      return `Strategic foundation for clinical AI and data-driven nursing practice. Strengthens the long-term case but won't carry an ROI model alone.`;
-    default:
-      return buildPrimaryNarrative(p, baseline);
-  }
-}
-
-export function generatePrimaryPathwaySummary(selected: NursingPriority[]): string {
-  const strong = selected.filter(p => PRIORITY_STRENGTH[p] === 'strong');
-  const moderate = selected.filter(p => PRIORITY_STRENGTH[p] === 'moderate');
-  const strategic = selected.filter(p => PRIORITY_STRENGTH[p] === 'strategic');
-
-  if (strong.length === 0 && moderate.length === 0 && strategic.length === 0) {
-    return 'Select your priorities to see your recommended investment pathway.';
-  }
-
-  if (strong.length > 0) {
-    const labels = strong.map(p => {
-      switch (p) {
-        case 'retention': return 'Retention';
-        case 'laborCosts': return 'OT Reduction';
-        case 'burnout': return 'Burnout Relief → Retention';
-        default: return '';
-      }
-    }).filter(Boolean);
-    return labels.join(' + ');
-  }
-
-  if (moderate.length > 0) {
-    const labels = moderate.map(p => {
-      switch (p) {
-        case 'bedsideTime': return 'Bedside Time';
-        case 'docQuality': return 'Documentation Quality';
-        default: return '';
-      }
-    }).filter(Boolean);
-    return labels.join(' + ');
-  }
-
-  return 'Strategic Infrastructure';
-}
-
-export function generateAlignmentNarrative(
-  selected: NursingPriority[],
-  baseline: NursingBaselineInputs,
-): string {
-  const strong = selected.filter(p => PRIORITY_STRENGTH[p] === 'strong');
 
   if (strong.length === 0) {
-    return 'Your priorities are important but harder to build a traditional financial ROI case around. Consider whether a retention or labor cost pathway could serve as the financial anchor, with your primary priorities as supporting arguments.';
+    return {
+      situation: `Your nursing program is focused on ${titles.join(' and ')}. Documentation burden reduction supports ${selected.length > 1 ? 'these goals' : 'this goal'} by creating the structured, complete documentation foundation ${selected.length > 1 ? 'these initiatives' : 'this initiative'} require${selected.length > 1 ? '' : 's'}. However, the financial case for documentation technology is typically stronger when paired with a more immediate priority like retention, staffing costs, or wellbeing.`,
+      framing: ['If documentation technology investment needs a near-term financial justification, consider whether retention or staffing cost pressures — even if they aren\'t your top strategic priority today — could provide the financial anchor for a business case that also advances your other goals.'],
+      evaluation,
+    };
   }
 
-  const parts: string[] = [];
-  if (selected.includes('retention')) {
-    parts.push(`Retention: reducing documentation frustration addresses a root cause of nursing burnout and turnover. At your scale of ${formatNumber(baseline.nurseFTEs)} nurses, this is a significant annual exposure.`);
-  }
-  if (selected.includes('laborCosts')) {
-    parts.push('Overtime: if end-of-shift charting is contributing to OT, reducing documentation time directly reduces OT costs. This is measurable within 30–60 days.');
-  }
-  if (selected.includes('burnout')) {
-    parts.push('Burnout: documentation is one of the most controllable sources of workload strain. The ROI connects through its downstream consequences — turnover, sick time, and safety incidents.');
-  }
-
-  return parts.join('\n\n');
-}
-
-export function getRecommendedFocus(selected: NursingPriority[]): string[] {
-  const focus: string[] = [];
-  const strong = selected.filter(p => PRIORITY_STRENGTH[p] === 'strong');
-  const supporting = selected.filter(p => PRIORITY_STRENGTH[p] !== 'strong');
-
-  if (selected.includes('retention') || selected.includes('burnout')) {
-    focus.push('Retention impact (turnover cost avoidance)');
-  }
-  if (selected.includes('laborCosts')) {
-    focus.push('OT reduction (direct documentation time savings)');
-  }
-  if (focus.length === 0 && selected.includes('bedsideTime')) {
-    focus.push('Bedside time recovery (direct care hours)');
-  }
-  if (focus.length === 0 && selected.includes('docQuality')) {
-    focus.push('Documentation quality (compliance & risk reduction)');
-  }
-  if (focus.length === 0 && selected.includes('future')) {
-    focus.push('Strategic infrastructure (data-driven nursing)');
-  }
-  if (supporting.length > 0 && focus.length > 0) {
-    const labels = supporting.map(p => {
-      switch (p) {
-        case 'bedsideTime': return 'Bedside time';
-        case 'docQuality': return 'Documentation quality';
-        case 'future': return 'Future readiness';
-        case 'burnout': return 'Burnout relief';
-        default: return '';
-      }
-    }).filter(Boolean);
-    if (labels.length > 0) {
-      focus.push(`Supporting: ${labels.join(', ')}`);
-    }
-  }
-
-  return focus;
+  return { situation, framing, evaluation };
 }

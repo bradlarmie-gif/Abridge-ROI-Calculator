@@ -7,15 +7,16 @@ import {
   Font,
   pdf,
 } from "@react-pdf/renderer";
-import type { NursingPriority, NursingBaselineInputs } from "./nursingTypes";
+import type { NursingPriority, NursingBaselineInputs, AllPriorityInputs } from "./nursingTypes";
 import { PRIORITY_CONFIGS } from "./nursingTypes";
 import {
   derivePatientDays,
   deriveShiftsPerYear,
-  buildConnection,
-  classifyPathways,
-  generatePrimaryPathwaySummary,
-  getRecommendedFocus,
+  buildPrioritySummary,
+  generateFocusNarrative,
+  computeRetentionImpact,
+  computeStaffingImpact,
+  fmtDollar,
 } from "./nursingCalculations";
 
 Font.register({
@@ -43,7 +44,7 @@ const s = StyleSheet.create({
   coverPage: { padding: 50, fontFamily: "Manrope", backgroundColor: c.black, justifyContent: "center" },
   sectionLabel: { fontSize: 8, fontWeight: 700, color: c.red, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 6 },
   heading: { fontSize: 20, fontWeight: 700, color: c.black, marginBottom: 8 },
-  subheading: { fontSize: 14, fontWeight: 700, color: c.black, marginBottom: 6 },
+  subheading: { fontSize: 12, fontWeight: 700, color: c.black, marginBottom: 6 },
   body: { fontSize: 9, color: c.dark, lineHeight: 1.6, marginBottom: 6 },
   small: { fontSize: 8, color: c.light, lineHeight: 1.5 },
   divider: { height: 1, backgroundColor: c.border, marginVertical: 10 },
@@ -53,12 +54,13 @@ const s = StyleSheet.create({
   rowValue: { fontSize: 9, fontWeight: 600, color: c.black },
   prioritySelected: { fontSize: 9, color: c.black, marginBottom: 3 },
   priorityUnselected: { fontSize: 9, color: c.light, marginBottom: 3 },
-  connectionCard: { borderLeftWidth: 3, borderLeftColor: c.red, paddingLeft: 10, marginBottom: 12 },
-  pathwayPrimary: { backgroundColor: c.bg, borderRadius: 6, padding: 10, marginBottom: 8 },
-  pathwaySupporting: { backgroundColor: "#F9F9F9", borderRadius: 6, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: c.border },
+  summaryCard: { borderLeftWidth: 3, borderLeftColor: c.red, paddingLeft: 10, marginBottom: 12 },
   footer: { position: "absolute" as const, bottom: 30, left: 50, right: 50, flexDirection: "row" as const, justifyContent: "space-between" as const },
   footerText: { fontSize: 7, color: c.light },
+  disclaimer: { fontSize: 7, color: c.light, fontStyle: "italic" as const, marginTop: 10 },
 });
+
+const DISCLAIMER = "This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Individual results vary.";
 
 function CoverPage({ orgName, facilitator }: { orgName: string; facilitator: string }) {
   return (
@@ -84,26 +86,34 @@ function CoverPage({ orgName, facilitator }: { orgName: string; facilitator: str
       <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 8 }}>
         {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
       </Text>
+      <View style={s.footer}>
+        <Text style={{ fontSize: 7, color: "rgba(255,255,255,0.2)" }}>{DISCLAIMER}</Text>
+      </View>
     </Page>
   );
 }
 
-function BaselinePrioritiesPage({
+function PrioritiesPage({
   baseline,
   selectedPriorities,
+  inputs,
 }: {
   baseline: NursingBaselineInputs;
   selectedPriorities: NursingPriority[];
+  inputs: AllPriorityInputs;
 }) {
   const patientDays = derivePatientDays(baseline);
   const shifts = deriveShiftsPerYear(baseline);
+  const retentionImpact = computeRetentionImpact(inputs.retention, baseline);
+  const staffingImpact = computeStaffingImpact(inputs.staffingCosts, baseline);
 
   return (
     <Page size="LETTER" style={s.page}>
-      <Text style={s.sectionLabel}>Program Profile & Priorities</Text>
-      <Text style={s.heading}>Your Nursing Program</Text>
+      <Text style={s.sectionLabel}>Your Priorities</Text>
+      <Text style={s.heading}>Program Profile & Key Data</Text>
 
       <View style={s.card}>
+        <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 8 }}>DEPLOYMENT</Text>
         <View style={s.row}>
           <Text style={s.rowLabel}>Staffed beds</Text>
           <Text style={s.rowValue}>{baseline.staffedBeds.toLocaleString()}</Text>
@@ -127,8 +137,8 @@ function BaselinePrioritiesPage({
         </View>
       </View>
 
-      <View style={{ marginTop: 14 }}>
-        <Text style={s.sectionLabel}>Your Priorities</Text>
+      <View style={{ marginTop: 10 }}>
+        <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 8 }}>PRIORITIES SELECTED</Text>
         {PRIORITY_CONFIGS.map(config => {
           const isSelected = selectedPriorities.includes(config.id);
           return (
@@ -139,6 +149,47 @@ function BaselinePrioritiesPage({
         })}
       </View>
 
+      <View style={{ marginTop: 10 }}>
+        <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 8 }}>KEY DATA POINTS</Text>
+        {inputs.retention.turnoverRate > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Turnover rate</Text>
+            <Text style={s.rowValue}>{inputs.retention.turnoverRate}%</Text>
+          </View>
+        )}
+        {retentionImpact.totalCost > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Annual turnover cost</Text>
+            <Text style={s.rowValue}>{fmtDollar(retentionImpact.totalCost)}</Text>
+          </View>
+        )}
+        {inputs.staffingCosts.otMinPerShift > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Documentation OT</Text>
+            <Text style={s.rowValue}>{inputs.staffingCosts.otMinPerShift} min/shift</Text>
+          </View>
+        )}
+        {staffingImpact.annualOTHours > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Annual OT hours</Text>
+            <Text style={s.rowValue}>{staffingImpact.annualOTHours.toLocaleString()}</Text>
+          </View>
+        )}
+        {staffingImpact.annualAgency > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Annual agency spend</Text>
+            <Text style={s.rowValue}>{fmtDollar(staffingImpact.annualAgency)}</Text>
+          </View>
+        )}
+        {inputs.bedsidePresence.docHoursPerShift > 0 && (
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Doc hours/shift</Text>
+            <Text style={s.rowValue}>{inputs.bedsidePresence.docHoursPerShift} hrs</Text>
+          </View>
+        )}
+      </View>
+
+      <Text style={s.disclaimer}>{DISCLAIMER}</Text>
       <View style={s.footer}>
         <Text style={s.footerText}>Abridge Nursing Assessment</Text>
         <Text style={s.footerText}>Page 2</Text>
@@ -147,38 +198,45 @@ function BaselinePrioritiesPage({
   );
 }
 
-function ConnectionsPage({
+function StrategicPicturePage({
   baseline,
   selectedPriorities,
+  inputs,
 }: {
   baseline: NursingBaselineInputs;
   selectedPriorities: NursingPriority[];
+  inputs: AllPriorityInputs;
 }) {
-  const connections = selectedPriorities.map(p => buildConnection(p, baseline));
+  const summaries = selectedPriorities.map(p => buildPrioritySummary(p, inputs, baseline));
+  const unselected = PRIORITY_CONFIGS.filter(cfg => !selectedPriorities.includes(cfg.id));
 
   return (
     <Page size="LETTER" style={s.page}>
-      <Text style={s.sectionLabel}>Where Ambient Fits</Text>
-      <Text style={s.heading}>Priority Connections</Text>
+      <Text style={s.sectionLabel}>Strategic Picture</Text>
+      <Text style={s.heading}>Your Priorities & Documentation Burden</Text>
 
-      {connections.map(conn => {
-        const config = PRIORITY_CONFIGS.find(c => c.id === conn.priority)!;
+      {summaries.map(summary => {
+        const config = PRIORITY_CONFIGS.find(cfg => cfg.id === summary.priority)!;
         return (
-          <View key={conn.priority} style={s.connectionCard}>
+          <View key={summary.priority} style={s.summaryCard}>
             <Text style={{ fontSize: 10, fontWeight: 700, color: c.black, marginBottom: 4 }}>
               {config.title}
             </Text>
-            <Text style={s.body}>{conn.howItConnects}</Text>
-            {conn.whatResearchSays && (
-              <Text style={s.small}>{conn.whatResearchSays}</Text>
-            )}
-            <Text style={{ ...s.small, marginTop: 4 }}>
-              Connection: {conn.bars.map(b => `${b.label ? b.label + ': ' : ''}${b.filled}/${b.total}`).join(' | ')}
-            </Text>
+            <Text style={s.body}>{summary.situation}</Text>
+            <Text style={{ ...s.body, fontStyle: "italic" as const, color: c.mid }}>{summary.connection}</Text>
           </View>
         );
       })}
 
+      {unselected.length > 0 && (
+        <View style={{ marginTop: 8 }}>
+          <Text style={{ fontSize: 8, color: c.light, marginBottom: 4 }}>
+            Not selected: {unselected.map(u => u.title).join(', ')}
+          </Text>
+        </View>
+      )}
+
+      <Text style={s.disclaimer}>{DISCLAIMER}</Text>
       <View style={s.footer}>
         <Text style={s.footerText}>Abridge Nursing Assessment</Text>
         <Text style={s.footerText}>Page 3</Text>
@@ -187,71 +245,67 @@ function ConnectionsPage({
   );
 }
 
-function AlignmentPage({
+function FocusPage({
   baseline,
   selectedPriorities,
+  inputs,
 }: {
   baseline: NursingBaselineInputs;
   selectedPriorities: NursingPriority[];
+  inputs: AllPriorityInputs;
 }) {
-  const pathways = classifyPathways(selectedPriorities, baseline);
-  const primaryLabel = generatePrimaryPathwaySummary(selectedPriorities);
-  const recommendedFocus = getRecommendedFocus(selectedPriorities);
-
-  const primary = pathways.filter(p => p.role === "primary");
-  const supporting = pathways.filter(p => p.role === "supporting");
+  const focus = generateFocusNarrative(selectedPriorities, inputs, baseline);
 
   return (
     <Page size="LETTER" style={s.page}>
-      <Text style={s.sectionLabel}>Your Investment Case</Text>
-      <Text style={s.heading}>Strategic Alignment</Text>
+      <Text style={s.sectionLabel}>Recommended Focus + Next Steps</Text>
+      <Text style={s.heading}>How to Frame the Investment Case</Text>
 
-      <View style={s.pathwayPrimary}>
-        <Text style={{ fontSize: 8, fontWeight: 700, color: c.red, letterSpacing: 1.5, marginBottom: 4 }}>
-          PRIMARY PATHWAY
-        </Text>
-        <Text style={{ fontSize: 13, fontWeight: 700, color: c.black, marginBottom: 6 }}>
-          {primaryLabel}
-        </Text>
-        {primary.map(p => {
-          const config = PRIORITY_CONFIGS.find(cfg => cfg.id === p.priority)!;
-          return (
-            <View key={p.priority} style={{ marginBottom: 6 }}>
-              <Text style={{ fontSize: 9, fontWeight: 600, color: c.black }}>→ {config.title}</Text>
-              <Text style={s.body}>{p.narrative}</Text>
-            </View>
-          );
-        })}
+      <View style={s.card}>
+        <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 6 }}>YOUR SITUATION</Text>
+        <Text style={s.body}>{focus.situation}</Text>
       </View>
 
-      {supporting.length > 0 && (
-        <View style={s.pathwaySupporting}>
-          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 4 }}>
-            SUPPORTING ARGUMENTS
-          </Text>
-          {supporting.map(p => {
-            const config = PRIORITY_CONFIGS.find(cfg => cfg.id === p.priority)!;
+      {focus.framing.length > 0 && (
+        <View style={{ marginTop: 6 }}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 6 }}>HOW TO FRAME THE CONVERSATION</Text>
+          {focus.framing.map((para, i) => {
+            const lines = para.split('\n');
+            const title = lines[0];
+            const body = lines.slice(1).join(' ');
             return (
-              <View key={p.priority} style={{ marginBottom: 4 }}>
-                <Text style={{ fontSize: 9, fontWeight: 600, color: c.dark }}>— {config.title}</Text>
-                <Text style={s.body}>{p.narrative}</Text>
+              <View key={i} style={{ marginBottom: 8 }}>
+                <Text style={{ fontSize: 9, fontWeight: 700, color: c.black, marginBottom: 2 }}>{title}</Text>
+                {body && <Text style={s.body}>{body}</Text>}
               </View>
             );
           })}
         </View>
       )}
 
-      {recommendedFocus.length > 0 && (
-        <View style={{ marginTop: 14 }}>
-          <Text style={s.sectionLabel}>Recommended ROI Focus</Text>
-          {recommendedFocus.map((f, i) => (
-            <Text key={i} style={{ fontSize: 9, color: c.black, marginBottom: 2 }}>
-              {f.startsWith("Supporting") ? f : `→ ${f}`}
-            </Text>
+      {focus.evaluation.length > 0 && (
+        <View style={{ marginTop: 6 }}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: c.mid, letterSpacing: 1.5, marginBottom: 6 }}>EVALUATION CRITERIA</Text>
+          {focus.evaluation.map((q, i) => (
+            <Text key={i} style={{ ...s.body, paddingLeft: 10 }}>• {q}</Text>
           ))}
+          <Text style={s.body}>
+            If the answer to these questions is yes, the investment case aligns with what your nursing program is trying to accomplish.
+          </Text>
         </View>
       )}
 
+      <View style={{ marginTop: 14, backgroundColor: c.bg, borderRadius: 6, padding: 12 }}>
+        <Text style={{ fontSize: 9, fontWeight: 600, color: c.black, marginBottom: 4 }}>What Comes Next</Text>
+        <Text style={s.body}>
+          Whether you're evaluating technology, building a business case internally, or just trying to understand the landscape — this assessment is yours to use however it's most helpful.
+        </Text>
+        <Text style={{ fontSize: 9, color: c.mid }}>
+          Contact: partnerships@abridge.com
+        </Text>
+      </View>
+
+      <Text style={s.disclaimer}>{DISCLAIMER}</Text>
       <View style={s.footer}>
         <Text style={s.footerText}>Abridge Nursing Assessment</Text>
         <Text style={s.footerText}>Page 4</Text>
@@ -263,15 +317,16 @@ function AlignmentPage({
 export async function generateNursingPdf(
   baseline: NursingBaselineInputs,
   selectedPriorities: NursingPriority[],
+  inputs: AllPriorityInputs,
   orgName: string,
   facilitator: string,
 ) {
   const doc = (
     <Document>
       <CoverPage orgName={orgName} facilitator={facilitator} />
-      <BaselinePrioritiesPage baseline={baseline} selectedPriorities={selectedPriorities} />
-      <ConnectionsPage baseline={baseline} selectedPriorities={selectedPriorities} />
-      <AlignmentPage baseline={baseline} selectedPriorities={selectedPriorities} />
+      <PrioritiesPage baseline={baseline} selectedPriorities={selectedPriorities} inputs={inputs} />
+      <StrategicPicturePage baseline={baseline} selectedPriorities={selectedPriorities} inputs={inputs} />
+      <FocusPage baseline={baseline} selectedPriorities={selectedPriorities} inputs={inputs} />
     </Document>
   );
 

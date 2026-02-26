@@ -1,0 +1,240 @@
+# Nursing Edition — A+ Audit
+
+## What's Already Strong (keep these)
+
+**The six priorities are right.** Retention, staffing costs, wellbeing, bedside presence, documentation quality, future readiness — these are the actual strategic conversations happening in nursing leadership. No changes needed to the priority framing.
+
+**The intervention checkboxes are right.** Asking what they're doing about each priority is a legitimate strategic question. Keep them.
+
+**The "let them own the connection" approach is right.** Not tagging interventions, not making product claims. The tool reflects their situation and connects it to documentation burden through industry observations, not Abridge claims.
+
+**The evaluation criteria framing is right.** Giving them questions to ask of ANY technology investment, not pushing Abridge specifically. This is the trust-builder.
+
+**The export-first CTA is right.** They get their assessment regardless of whether they want a follow-up. Low pressure.
+
+---
+
+## What Needs to Change for A+
+
+### Problem 1: We're generating numbers we shouldn't be
+
+The turnover cost calculation on Screen 3:
+```
+departures = nurseFTEs × turnoverRate
+totalCost = departures × replacementCost
+```
+
+This is fine — it's their inputs multiplied together. But we need to be careful about how we frame the output. Right now the sidebar says "$2.8M in annual turnover cost." That's accurate math from their inputs, but the implied connection — "and ambient documentation will reduce this" — is something we should never let the tool suggest.
+
+**Fix:** The output should always be framed as THEIR organizational reality, not as an opportunity for ambient. Change:
+
+```
+Before: "$2.8M in annual turnover cost"
+After:  "$2.8M in annual turnover cost at your organization"
+```
+
+And the narrative should never say "this is addressable through documentation burden reduction." Instead: "Documentation burden is consistently cited as a factor in nursing turnover across the industry. Your organization identified [X] turnover drivers including [list]."
+
+We present their data. We connect it to published research about burden. We never close the loop with "and therefore ambient documentation will fix this."
+
+### Problem 2: The OT calculation makes an assumption we can't defend
+
+The overtime section says:
+```
+annualOTHours = otMinutes × nurseFTEs × 260 / 60
+```
+
+This assumes EVERY nurse on EVERY shift stays late for documentation. That's almost certainly not true. Some shifts end on time. Some nurses are faster. Some units have different documentation loads.
+
+**Fix:** Either:
+- Add a qualifying question: "What percentage of shifts involve documentation-related overtime?" and multiply by that percentage. OR
+- Soften the output language: "If documentation contributes [X] minutes of overtime on shifts where it occurs, and this affects a meaningful portion of your [shifts/year] annual shifts, the aggregate impact is significant." Don't calculate a specific total unless they can give you a realistic frequency.
+
+**Recommended approach:** Add one more input to the staffing costs section:
+
+```
+How often does end-of-shift documentation
+drive overtime?
+○ Occasionally — a few times per week per unit
+○ Frequently — most shifts on most units
+○ Almost always — it's the norm
+```
+
+Then the output can reference frequency without calculating a precise number from a bad assumption:
+
+```
+Occasionally: "Documentation-driven OT happens
+periodically at your organization. The aggregate
+impact depends on frequency and scale."
+
+Frequently: "Documentation-driven OT is a regular
+occurrence across your units. At [otMinutes] minutes
+per affected shift, the cumulative hours are
+meaningful."
+
+Almost always: "Documentation-driven OT is the norm
+at your organization. At [otMinutes] minutes across
+the majority of [shifts/year] annual shifts, this
+represents a substantial volume of overtime hours."
+```
+
+No specific annual hours calculation unless they confirm it's happening on most shifts. This is more honest and more defensible.
+
+### Problem 3: The recommended focus section is doing too much interpretation
+
+The "How to Frame the Conversation" section tells them:
+- Lead with wellbeing
+- Anchor in overtime
+- Build around retention
+
+This is strategic guidance — which is great. But we're making assumptions about THEIR organization's internal dynamics. Maybe their CFO doesn't care about OT. Maybe their CEO only listens to retention numbers. Maybe their board is focused on patient experience.
+
+**Fix:** Instead of prescribing the framing, present the options and let them decide. Change from:
+
+```
+Lead with nurse wellbeing.
+Anchor the financial case in overtime.
+Build the longer-term case around retention.
+```
+
+To:
+
+```
+WAYS TO FRAME THE CONVERSATION
+
+Based on your priorities, there are several ways
+to position an investment in documentation technology.
+The right framing depends on your organization's
+internal dynamics.
+
+WELLBEING AND WORKLOAD RELIEF
+Your survey data shows documentation is a top concern.
+This framing resonates with nursing leadership and
+frontline nurses. It's immediate and tangible.
+Best audience: CNO, nursing councils, frontline leaders
+
+FINANCIAL: OVERTIME REDUCTION
+End-of-shift documentation is contributing to OT
+at your organization. This framing provides a
+measurable near-term financial metric.
+Best audience: CFO, VP of Operations, finance committee
+
+STRATEGIC: RETENTION AND WORKFORCE STABILITY
+Your turnover rate represents $2.8M in annual cost.
+Documentation burden is one of the factors your
+organization has identified. This framing positions
+the investment as a workforce strategy.
+Best audience: CHRO, CMO, executive leadership
+```
+
+Now they're choosing their framing based on who they need to convince — not being told what to lead with. Much more useful in practice.
+
+### Problem 4: The connection paragraphs on Screen 4 are making soft claims
+
+The current text says things like:
+```
+"Documentation time is one of the most consistent
+sources of nursing frustration."
+```
+
+This is a claim. Where's the source? If a researcher asks "says who?" we need an answer.
+
+**Fix:** Every connection statement should either cite a source or be framed as "based on published research."
+
+```
+Before: "Documentation time is one of the most
+consistent sources of nursing frustration."
+
+After: "Published nursing workforce research
+consistently identifies documentation burden as
+a top contributor to nurse dissatisfaction and
+burnout (ANA, NSI, AMN Healthcare surveys)."
+```
+
+We don't need a footnote on every line, but every claim about documentation burden and its effects should reference that it comes from published research, not from Abridge.
+
+Key sources to reference throughout:
+- NSI Nursing Solutions — turnover data, replacement costs
+- ANA (American Nurses Association) — burden and burnout data
+- AMN Healthcare — workforce survey data
+- KLAS — nursing documentation time studies
+- Published time-and-motion studies for nursing documentation hours
+
+Add a general source note at the bottom of Screen 3 and Screen 4:
+```
+Industry data referenced from NSI Nursing Solutions,
+ANA, and AMN Healthcare workforce surveys. Specific
+citations available on request.
+```
+
+### Problem 5: Screen 6 still has a subtle sales push
+
+```
+"If you'd like to explore what these priorities look
+like with more specific modeling, we're happy to walk
+through the numbers together."
+```
+
+This is warm and low-pressure, which is good. But "walk through the numbers together" still implies an ROI modeling session with Abridge.
+
+**Fix:** Make it even more neutral:
+
+```
+"If this raised questions or surfaced areas you'd like
+to explore further, we're always happy to continue
+the conversation."
+
+[Export My Assessment]     [Continue the Conversation →]
+```
+
+"Continue the conversation" is the most neutral possible CTA. It doesn't promise ROI modeling. It doesn't promise a working session. It just says: we can keep talking about this.
+
+### Problem 6: We need a methodology note
+
+The outpatient version has "How is this calculated?" as an expandable link. The nursing version should have the same — but for the nursing edition, the methodology is about how priorities are assessed, not how a score is calculated.
+
+**Add to Screen 4 or Screen 5:**
+
+```
+"About this assessment" (expandable)
+
+This assessment reflects your organization's
+self-reported priorities, interventions, and data.
+No assumptions are made about the impact of any
+specific technology. Connection statements between
+documentation burden and organizational outcomes
+reference published nursing workforce research
+(NSI, ANA, AMN Healthcare). All calculations use
+only the inputs you provided. This assessment is
+designed to help frame strategic conversations —
+it is not a financial projection or ROI model.
+```
+
+---
+
+## Summary of Changes for A+
+
+| Issue | Current State | Fix |
+|---|---|---|
+| Turnover cost framing | Implies ambient can address it | Frame as organizational reality, cite research for burden connection |
+| OT calculation | Assumes every nurse every shift | Add frequency question, don't calculate total unless frequency supports it |
+| Recommended focus | Prescribes the framing | Present framing options with audience context, let them choose |
+| Connection statements | Unsourced claims about burden | Reference published research (NSI, ANA, AMN Healthcare) |
+| Screen 6 CTA | "Walk through numbers together" | "Continue the conversation" — more neutral |
+| Methodology | Missing | Add "About this assessment" expandable note |
+
+---
+
+## After These Changes, What Makes It A+
+
+1. **Every number traces to their input.** No assumptions, no estimates, no benchmarks presented as their reality. Their data × simple math = their output.
+
+2. **Every claim about documentation burden cites published research.** Not Abridge data. Not "we've seen." Published, verifiable sources that any researcher can check.
+
+3. **The tool never closes the loop between "documentation burden is a problem" and "ambient documentation is the solution."** It presents the problem (their data), connects it to research (published sources), and gives them a framework for evaluation (questions to ask of any technology). The connection to Abridge happens in the conversation, not in the tool.
+
+4. **The CNO owns every conclusion.** They chose their priorities. They entered their data. They selected their interventions. They chose their framing. The tool reflected it all back with context and research. Nothing was prescribed.
+
+5. **A skeptic finds nothing to attack.** No inflated numbers. No unsourced claims. No product efficacy statements. No assumptions baked into formulas. Every output is either their data, published industry data, or a clearly labeled framework. The tool is a mirror with research context — nothing more.
+
+That's A+ work. That's the top .5%.

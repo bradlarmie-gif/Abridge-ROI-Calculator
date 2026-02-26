@@ -2,12 +2,10 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { staggerContainer, staggerItem } from "@/components/PageTransition";
-import type { NursingPriority, NursingBaselineInputs } from "./nursingTypes";
+import type { NursingPriority } from "./nursingTypes";
 import { PRIORITY_CONFIGS } from "./nursingTypes";
-import { deriveShiftsPerYear } from "./nursingCalculations";
 
 interface Screen2Props {
-  baseline: NursingBaselineInputs;
   selectedPriorities: NursingPriority[];
   setSelectedPriorities: (priorities: NursingPriority[]) => void;
   onNext: () => void;
@@ -15,7 +13,6 @@ interface Screen2Props {
 }
 
 export default function NursingScreen2Priorities({
-  baseline,
   selectedPriorities,
   setSelectedPriorities,
   onNext,
@@ -30,7 +27,6 @@ export default function NursingScreen2Priorities({
   };
 
   const canProceed = selectedPriorities.length > 0;
-  const shiftsPerYear = deriveShiftsPerYear(baseline);
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -42,20 +38,19 @@ export default function NursingScreen2Priorities({
       >
         <motion.div className="flex-1 max-w-[700px]" variants={staggerItem}>
           <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
-            What Matters Most Right Now?
+            Strategic Priorities
           </p>
           <h1
             className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight"
             data-testid="text-priorities-headline"
           >
-            What is your nursing program trying to solve?
+            What is your nursing program focused on?
           </h1>
           <p className="text-base text-[#888888] mb-3 max-w-xl leading-relaxed">
-            Every nursing program is under pressure. But not every organization is under the same pressure.
-            Understanding what you're trying to solve is the first step toward knowing where technology investments should focus.
+            Every nursing program has strategic priorities. Understanding yours helps us explore where documentation burden fits into the picture — and where it doesn't.
           </p>
-          <p className="text-sm text-[#666666] mb-8 max-w-xl leading-relaxed">
-            Select the priorities that are most relevant to your nursing program right now. Try to identify the top 2–3 that are driving your strategic conversations today.
+          <p className="text-sm text-[#666666] mb-8 max-w-xl">
+            Select the priorities that are driving your strategic conversations right now.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,7 +94,7 @@ export default function NursingScreen2Priorities({
             <StepFooter
               onBack={onBack}
               onNext={onNext}
-              nextLabel="See Where Ambient Fits →"
+              nextLabel="Explore Your Priorities"
               nextDisabled={!canProceed}
               nextTestId="button-nursing-next-2"
               backTestId="button-nursing-back-2"
@@ -123,12 +118,16 @@ export default function NursingScreen2Priorities({
               <p className="text-sm text-white/40 italic">No priorities selected yet</p>
             ) : (
               <div className="space-y-2 mb-4">
-                {selectedPriorities.map(id => {
-                  const config = PRIORITY_CONFIGS.find(c => c.id === id)!;
+                {PRIORITY_CONFIGS.map(config => {
+                  const isSelected = selectedPriorities.includes(config.id);
                   return (
-                    <div key={id} className="flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#EA2C00] flex-shrink-0" />
-                      <p className="text-sm text-white/80">{config.title}</p>
+                    <div key={config.id} className="flex items-center gap-2">
+                      <div className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#EA2C00]' : 'border border-white/20'}`}>
+                        {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                      </div>
+                      <p className={`text-sm ${isSelected ? 'text-white/80' : 'text-white/30'}`}>
+                        {config.title}
+                      </p>
                     </div>
                   );
                 })}
@@ -136,32 +135,9 @@ export default function NursingScreen2Priorities({
             )}
 
             <div className="h-px bg-white/10 my-4" />
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-white/40" data-testid="text-priority-count">
               {selectedPriorities.length} of 6 selected
             </p>
-
-            <div className="h-px bg-white/10 my-4" />
-            <p className="text-[9px] font-semibold uppercase tracking-[2px] text-white/40 mb-3">
-              Your Baseline
-            </p>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-white/40">Staffed beds</span>
-                <span className="text-white font-medium">{baseline.staffedBeds.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/40">Nurse FTEs</span>
-                <span className="text-white font-medium">{baseline.nurseFTEs.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/40">Occupancy</span>
-                <span className="text-white font-medium">{baseline.bedOccupancy}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/40">Shifts / year</span>
-                <span className="text-white font-medium">{shiftsPerYear.toLocaleString()}</span>
-              </div>
-            </div>
           </div>
         </motion.aside>
       </motion.div>
