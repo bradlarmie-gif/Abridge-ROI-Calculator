@@ -170,7 +170,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           Your Score
         </h1>
         <p className="text-base text-[#888888]">
-          Documentation Intelligence Score across four domains
+          Ambient Assessment Score across four domains
         </p>
       </motion.div>
 
