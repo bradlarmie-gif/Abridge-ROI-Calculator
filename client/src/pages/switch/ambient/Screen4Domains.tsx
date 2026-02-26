@@ -885,7 +885,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
-      const approach = currentState.inputs.monitoringApproach as string | undefined;
+      const approach = currentState.inputs.monitoringApproach as string || '';
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -894,19 +894,30 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             </label>
             <div className="flex flex-col gap-2.5">
               {MONITORING_OPTIONS.map((opt) => (
-                <button
+                <label
                   key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('monitoringApproach', opt.id)}
-                  className={`rounded-lg p-4 text-left text-sm transition-all cursor-pointer ${
+                  className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
                     approach === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                   }`}
                   data-testid={`radio-monitoring-${opt.id}`}
                 >
-                  {opt.label}
-                </button>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    approach === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {approach === opt.id && <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />}
+                  </div>
+                  <span className="text-sm text-[#525252]">{opt.label}</span>
+                  <input
+                    type="radio"
+                    name="monitoringApproach"
+                    value={opt.id}
+                    checked={approach === opt.id}
+                    onChange={() => setDomainInput('monitoringApproach', opt.id)}
+                    className="sr-only"
+                  />
+                </label>
               ))}
             </div>
           </div>
@@ -937,7 +948,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     </div>
                   ))}
                 </div>
-                <BenchmarkContext text="Organizations that begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity." />
+                <BenchmarkContext text="Organizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience." />
               </motion.div>
             )}
           </AnimatePresence>
@@ -971,8 +982,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              Estimated total hours saved per month across connected workflows
+              If known: estimated hours saved per month across these workflows
             </label>
+            <p className="text-xs text-[#888888] mb-2">
+              Optional. If you can estimate the combined time savings across the workflows you selected, enter it here. If not, the workflow connections above are the primary assessment.
+            </p>
             <FormattedNumberInput
               value={(currentState.inputs.workflowHoursSaved as number) || 0}
               onChange={(v) => setDomainInput('workflowHoursSaved', Math.max(0, v))}
@@ -980,7 +994,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-workflow-hours"
             />
-            <BenchmarkContext text="Organizations with connected workflows have reported 10–40 hrs/month in combined efficiency gains." />
+            <BenchmarkContext text="Organizations with connected workflows have reported 10–40 hrs/month in combined efficiency gains. Based on aggregated deployment experience." />
           </div>
         </div>
       );
@@ -1026,7 +1040,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-strategic-value"
             />
           </div>
-          <BenchmarkContext text="Organizations at the highest maturity level have reported $100K–$500K+ in attributed strategic value." />
+          <BenchmarkContext text="Organizations at the highest maturity level have reported $100K–$500K+ in attributed strategic value. Based on aggregated deployment experience." />
         </div>
       </div>
     );

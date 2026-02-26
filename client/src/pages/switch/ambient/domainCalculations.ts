@@ -585,7 +585,7 @@ const STRATEGIC_INTEGRATIONS = [
   'Payer contract negotiations (documentation supports rate/quality arguments)',
   'Value-based care program design (documentation feeds quality metrics)',
   'Compliance / audit governance (documentation quality is a governed metric)',
-  'Risk management / malpractice review (documentation defensibility is tracked)',
+  'Clinical documentation review (documentation completeness tracked as part of risk oversight)',
   'Workforce / FTE modeling (documentation efficiency informs staffing)',
 ];
 
@@ -642,6 +642,7 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
+        headlineMetric: '—',
         context: 'Select how your organization is monitoring documentation quality to see your assessment.',
         formula: '',
         footnote: '',
@@ -653,7 +654,7 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: '—',
-        context: 'Documentation quality monitoring hasn\'t started. This means your organization has no baseline for measuring what improved documentation is worth downstream. This is the single most important next step.\n\nOrganizations that begin systematic monitoring typically discover 15–30% improvement in documentation completeness and specificity.',
+        context: 'Documentation quality monitoring hasn\'t started yet. If no one is reviewing documentation attributes — even informally — your organization may be at Level 1 for this domain.\n\nThe single most important next step is establishing any form of documentation quality review.\n\nOrganizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience.',
         formula: '',
         footnote: '',
       };
@@ -663,8 +664,8 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Informal monitoring',
-        context: 'Your organization is informally reviewing documentation quality. This is a start — but spot checks don\'t scale and can\'t drive organizational strategy. Consider formalizing a review cadence and measurement framework.\n\nOrganizations that formalize monitoring typically review 500–2,000 encounters/month for documentation quality.',
+        headlineMetric: 'Informal monitoring active',
+        context: 'Your organization is informally reviewing documentation quality through spot checks and anecdotal feedback. This is a meaningful step — but informal processes don\'t scale and can\'t drive organizational strategy.\n\nConsider formalizing a review cadence and measurement framework to move toward Level 3.\n\nOrganizations with formalized monitoring have reported measurable improvements in documentation completeness, coding specificity, and audit readiness. Based on aggregated deployment experience.',
         formula: '',
         footnote: '',
       };
@@ -682,14 +683,14 @@ export function computeRiskFeedback(
         footnote: '',
       };
     }
-    const trackedList = checked.map(shortLabel).join(', ');
-    const untrackedList = unchecked.map(shortLabel).join(', ');
+    const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${count} of 5 quality dimensions tracked`,
-      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}. This positions you to connect documentation improvements to downstream value.\n\nTracked: ${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked: ${untrackedList}` : ''}\n\nOrganizations tracking 4+ attributes are positioned to move to Level 3 — connecting documentation quality to downstream operational workflows.`,
+      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nOrganizations tracking 4+ attributes are well-positioned to connect documentation quality to downstream workflows (Level 3).`,
       formula: '',
       footnote: '',
     };
@@ -699,15 +700,15 @@ export function computeRiskFeedback(
     const { checked, unchecked } = parseCheckedItems(inputs.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS);
     const hoursSaved = inputs.workflowHoursSaved as number | undefined;
     const count = checked.length;
-    const checkedLabels = checked.map(shortLabel).join(', ');
-    const uncheckedLabels = unchecked.map(shortLabel).join(', ');
+    const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
 
     if (count === 0 && (!hoursSaved || hoursSaved <= 0)) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Select which downstream workflows have been impacted and enter hours saved to calculate operational impact.',
+        context: 'Select which downstream workflows have been impacted to see your assessment.',
         formula: '',
         footnote: '',
       };
@@ -717,9 +718,9 @@ export function computeRiskFeedback(
       return {
         label: 'Estimated Impact',
         value: null,
-        hasValue: false,
-        headlineMetric: `${count} workflow${count > 1 ? 's' : ''} connected`,
-        context: `Your documentation infrastructure is connected to ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter estimated hours saved to calculate operational impact.${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels}` : ''}`,
+        hasValue: true,
+        headlineMetric: `${count} downstream workflow${count > 1 ? 's' : ''} connected`,
+        context: `Your documentation infrastructure is driving improvement across ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedList}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}\n\nThe workflows you haven't connected represent untapped operational value from your documentation foundation.` : ''}`,
         formula: '',
         footnote: '',
       };
@@ -731,9 +732,10 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: annualSavings,
       hasValue: true,
-      context: `Your documentation infrastructure is driving measurable efficiency across ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedLabels}\n\n${annualHours.toLocaleString()} hours recaptured annually — valued at ${formatDollar(annualSavings)}.${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels}` : ''}`,
-      formula: `[annualHours] = ${hoursSaved} × 12 = ${annualHours}\n[annualSavings] = ${annualHours} × $75/hr = ${formatDollar(annualSavings)}`,
-      footnote: 'Rate: $75/hr blended abstraction/administrative rate.',
+      headlineMetric: `${formatDollar(annualSavings)} in operational value`,
+      context: `Your documentation infrastructure is driving improvement across ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedList}\n\n${annualHours.toLocaleString()} hours recaptured annually — valued at ${formatDollar(annualSavings)}.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      formula: `[annualHours] = ${hoursSaved} × 12 = ${annualHours}\n[annualSavings] = ${annualHours} × $75/hr = ${formatDollar(annualSavings)}\nRate: $75/hr blended abstraction/administrative rate.`,
+      footnote: '',
     };
   }
 

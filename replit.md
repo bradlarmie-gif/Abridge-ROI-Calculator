@@ -34,6 +34,8 @@ Key UX rules: "Not yet measured" replaces $0 for unset inputs; totals only sum d
 
 **Workforce Domain Levels:** Pajama Time Reduced (hrs/wk after-hours reduction, hours headline) → Burden Measured and Validated (min/day savings + clinician survey radio with conditional findings checkboxes) → Retention Risk Quantified (turnover rate × providers × replacement cost, no attribution multiplier) → Labor Spend Structurally Reduced (agency/locum monthly × 12, no overtime input). L1/L2 show hours as headline metric; dollar burden-equivalent stored for downstream aggregation.
 
+**Risk Domain Levels:** Better Notes, Same Infrastructure (no inputs, narrative only) → Active Quality Monitoring (radio: not_yet/spot_checks/systematic with conditional quality attribute checkboxes; no pre-selection) → Downstream Systems Connected (workflow checkboxes + optional hours input; checkboxes work independently, hours labeled "If known") → Documentation as Strategic Data Asset (strategic integration checkboxes + optional $ value; "Clinical documentation review" replaces malpractice language).
+
 **Legal Language Standards:** All benchmark text uses observational framing ("Organizations at this stage have reported X") — no causal claims. Turnover L3 shows total exposure with narrative framing ("administrative burden is a contributing factor") — no 25% multiplier applied. Per-card disclaimer: "Estimates based on your inputs. Individual results vary." Global disclaimer on Screen6 includes no-guarantee language.
 
 ### Calculation Architecture
