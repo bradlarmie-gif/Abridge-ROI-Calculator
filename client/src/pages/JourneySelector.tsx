@@ -1,4 +1,4 @@
-import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight, ArrowRight } from "lucide-react";
+import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -165,17 +165,17 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               data-testid="card-switch"
             >
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
-                <ArrowLeftRight className="w-6 h-6 text-[#EA2C00]" />
+                <ClipboardCheck className="w-6 h-6 text-[#EA2C00]" />
               </div>
               
               <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-switch-tagline">
-                Using another solution?
+                Understand your organization
               </p>
               <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-switch-title">
-                Switch
+                Assess
               </h3>
               <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-switch-description">
-                See how your current AI is performing—and what's possible with the right partnership.
+                Evaluate your current documentation approach — for providers or nursing — and discover where value lives.
               </p>
               
               <Button
@@ -187,7 +187,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 }}
                 data-testid="card-switch-button"
               >
-                Run the Assessment
+                Start an Assessment
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </motion.div>

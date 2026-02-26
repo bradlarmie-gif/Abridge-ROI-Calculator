@@ -3,6 +3,7 @@ import SwitchPathSelection from "./SwitchPathSelection";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
+import NursingAssessmentFlow from "./nursing/NursingAssessmentFlow";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 import { PageTransition } from "@/components/PageTransition";
 import { CinematicTransition } from "@/components/CinematicTransition";
@@ -14,7 +15,7 @@ interface SwitchUnifiedFlowProps {
   onExploreAmbientAI?: (providers: number, encounters: number) => void;
 }
 
-type FlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scribe-analysis";
+type FlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scribe-analysis" | "nursing-flow";
 
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
   const [phase, setPhase] = useState<FlowPhase>("path-selection");
@@ -40,9 +41,11 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     trainingCostPerScribe: 5000,
   });
 
-  const handleSelectPath = (path: "ambient-ai" | "human-scribes") => {
+  const handleSelectPath = (path: "ambient-ai" | "human-scribes" | "nursing") => {
     if (path === "ambient-ai") {
       setPhase("ambient-flow");
+    } else if (path === "nursing") {
+      setPhase("nursing-flow");
     } else {
       setPhase("scribe-assessment");
     }
@@ -112,6 +115,14 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
             onBack={handleBackFromScribeAnalysis}
             onBackToJourney={onBackToJourney}
             onExploreAmbientAI={onExploreAmbientAI}
+          />
+        );
+
+      case "nursing-flow":
+        return (
+          <NursingAssessmentFlow
+            onBack={handleBackToPathSelection}
+            onBackToJourney={onBackToJourney}
           />
         );
       

@@ -41,7 +41,7 @@ interface UnifiedHeaderProps {
 
 const PATH_LABELS: Record<PathType, string> = {
   explore: "Explore",
-  switch: "Switch",
+  switch: "Assess",
   expand: "Expand",
   measure: "Measure",
 };
