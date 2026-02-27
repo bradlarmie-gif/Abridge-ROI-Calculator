@@ -46,7 +46,7 @@ export default function ExploreModel({
   const hasQualitativeDrivers = useMemo(() => {
     const { timeDriverInputs: t, docQualityInputs: d } = state;
     if (state.careSetting === 'outpatient') return t.wellbeingEnabled && !t.calculateRetentionValue;
-    if (state.careSetting === 'ed') return t.wellbeingEnabled;
+    if (state.careSetting === 'ed') return t.wellbeingEnabled && !t.calculateRetentionValue;
     if (state.careSetting === 'inpatient') return (t.wellbeingEnabled && !t.calculateRetentionValue) || t.ipRoundingEnabled;
     if (state.careSetting === 'nursing') return d.nursingHcahpsEnabled || t.nursingCareTimeEnabled;
     return false;
@@ -843,11 +843,22 @@ export default function ExploreModel({
                     {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
                     )}
+                    {timeDriverInputs.costReductionEnabled && costReductionValue > 0 && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">• Cost Reduction</span>
+                          <span className="font-semibold text-black">{formatCurrency(costReductionValue)}</span>
+                        </div>
+                      </>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver3}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                     </div>
-                    {timeDriverInputs.wellbeingEnabled && (
+                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                    )}
+                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                     )}
                   </>
@@ -884,9 +895,12 @@ export default function ExploreModel({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver3}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                     </div>
-                    {timeDriverInputs.wellbeingEnabled && (
+                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                    )}
+                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                     )}
                   </>
