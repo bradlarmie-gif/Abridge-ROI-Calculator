@@ -256,7 +256,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingShiftsPerNurseYear: 260,
   nursingMinutesPerShift: 30,
   timePathScenario: null,
-  minutesSavedPerEncounter: 4,
+  minutesSavedPerEncounter: 3,
   timeAllocation: {
     patientAccess: 15,
     patientExperience: 0,
@@ -443,7 +443,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       setState(() => {
         const fresh = { ...DEFAULT_EXPLORE_STATE, careSetting: newCareSetting };
         if (newCareSetting === 'ed') {
-          fresh.minutesSavedPerEncounter = 2;
+          fresh.minutesSavedPerEncounter = 3;
           fresh.docQualityInputs = {
             ...fresh.docQualityInputs,
             currentWrvu: 2.5,
@@ -451,7 +451,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
             avgClaimValue: 300,
           };
         } else if (newCareSetting === 'inpatient') {
-          fresh.minutesSavedPerEncounter = 3;
+          fresh.minutesSavedPerEncounter = 30;
         }
         return fresh;
       });
