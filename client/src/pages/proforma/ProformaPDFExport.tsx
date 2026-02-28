@@ -166,13 +166,291 @@ function unitLabel(careSetting: string, plural = true): string {
   return plural ? label : label.replace(/s$/, "");
 }
 
-const TOTAL_PAGES = 7;
+interface EnrichedDriver {
+  id: string;
+  name: string;
+  value: number;
+  category: "time" | "documentation";
+  onset: string;
+  calcSteps: string[];
+  calibrationNote?: string;
+}
 
-const PageFooter = ({ pageNum }: { pageNum: number }) => (
+const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
+const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+
+function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver[] {
+  const s = snapshot.fullExploreState;
+  const t = s.timeDriverInputs;
+  const d = s.docQualityInputs;
+  const cs = snapshot.careSetting;
+  const fmtK = (n: number) => Math.abs(n) >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`;
+  const eligibleEncounters = s.annualEncounters * (s.utilizationPercent / 100);
+  const totalHoursSaved = snapshot.totalHoursSaved;
+  const result: EnrichedDriver[] = [];
+
+  if (cs === "outpatient") {
+    const paDriver = snapshot.drivers.find(dd => dd.id === "patientAccess");
+    if (paDriver && paDriver.value > 0) {
+      const hoursTowardCapacity = totalHoursSaved * (t.capacityPercent / 100);
+      const potentialVisits = hoursTowardCapacity * (60 / t.visitDuration);
+      result.push({
+        ...paDriver, calcSteps: [
+          `${totalHoursSaved.toLocaleString()} hrs \u00D7 ${t.capacityPercent}% toward capacity = ${Math.round(hoursTowardCapacity).toLocaleString()} hrs`,
+          `${Math.round(hoursTowardCapacity).toLocaleString()} hrs \u00D7 (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
+          `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(paDriver.value)}/year`,
+        ],
+      });
+    }
+    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
+    if (crDriver && crDriver.value > 0) {
+      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
+    }
+    const wrvuDriver = snapshot.drivers.find(dd => dd.id === "wrvu");
+    if (wrvuDriver && wrvuDriver.value > 0) {
+      const wrvuLiftPct = wrvuScenarios[d.wrvuScenario] || 5;
+      result.push({
+        ...wrvuDriver, calcSteps: [
+          `${d.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
+          `\u00D7 $${d.conversionFactor}/wRVU \u00D7 ${d.wrvuRealization}% realization`,
+          `= ${fmtK(wrvuDriver.value)}/year`,
+        ],
+      });
+    }
+    const hccDriver = snapshot.drivers.find(dd => dd.id === "hcc");
+    if (hccDriver && hccDriver.value > 0) {
+      result.push({
+        ...hccDriver, calcSteps: [
+          `MA patients \u00D7 gap rate \u00D7 recapture rate \u00D7 RAF value`,
+          `\u00D7 ${d.hccRealization}% realization`,
+          `= ${fmtK(hccDriver.value)}/year`,
+        ],
+      });
+    }
+    const denDriver = snapshot.drivers.find(dd => dd.id === "denials");
+    if (denDriver && denDriver.value > 0) {
+      result.push({
+        ...denDriver, calcSteps: [
+          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
+          `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
+          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim = ${fmtK(denDriver.value)}/year`,
+        ],
+      });
+    }
+    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
+    if (retDriver && retDriver.value > 0) {
+      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
+      result.push({
+        ...retDriver, calcSteps: [
+          `${s.numberOfProviders} providers \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
+          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
+          `= ${fmtK(retDriver.value)}/year`,
+        ],
+      });
+    }
+  } else if (cs === "ed") {
+    const lwbsDriver = snapshot.drivers.find(dd => dd.id === "edLwbs");
+    const admDriver = snapshot.drivers.find(dd => dd.id === "edAdmission");
+    if (lwbsDriver && lwbsDriver.value > 0) {
+      result.push({
+        ...lwbsDriver, calcSteps: [
+          `${s.annualEncounters.toLocaleString()} enc \u00D7 ${t.edLwbsRate}% LWBS \u00D7 ${t.edLwbsReduction}% reduction`,
+          `Recovered patients \u00D7 $${t.edRevenuePerVisit}/visit \u00D7 ${t.edLwbsRealization}% realization`,
+          `= ${fmtK(lwbsDriver.value)}/year`,
+        ],
+      });
+    }
+    if (admDriver && admDriver.value > 0) {
+      result.push({
+        ...admDriver, calcSteps: [
+          `Recovered patients \u00D7 ${t.edAdmissionRate}% admission rate`,
+          `\u00D7 $${t.edAdmissionRevenue.toLocaleString()} admission revenue \u00D7 ${t.edAdmissionRealization}% realization`,
+          `= ${fmtK(admDriver.value)}/year`,
+        ],
+      });
+    }
+    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
+    if (crDriver && crDriver.value > 0) {
+      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
+    }
+    const wrvuDriver = snapshot.drivers.find(dd => dd.id === "wrvu");
+    if (wrvuDriver && wrvuDriver.value > 0) {
+      const wrvuLiftPct = wrvuScenarios[d.wrvuScenario] || 5;
+      result.push({
+        ...wrvuDriver, calcSteps: [
+          `${d.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
+          `\u00D7 $${d.conversionFactor}/wRVU \u00D7 ${d.wrvuRealization}% realization`,
+          `= ${fmtK(wrvuDriver.value)}/year`,
+        ],
+      });
+    }
+    const denDriver = snapshot.drivers.find(dd => dd.id === "denials");
+    if (denDriver && denDriver.value > 0) {
+      result.push({
+        ...denDriver, calcSteps: [
+          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
+          `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
+          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim = ${fmtK(denDriver.value)}/year`,
+        ],
+      });
+    }
+    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
+    if (retDriver && retDriver.value > 0) {
+      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
+      result.push({
+        ...retDriver, calcSteps: [
+          `${s.numberOfProviders} physicians \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
+          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
+          `= ${fmtK(retDriver.value)}/year`,
+        ],
+      });
+    }
+  } else if (cs === "inpatient") {
+    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
+    if (crDriver && crDriver.value > 0) {
+      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
+    }
+    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
+    if (retDriver && retDriver.value > 0) {
+      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
+      result.push({
+        ...retDriver, calcSteps: [
+          `${s.numberOfProviders} hospitalists \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
+          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
+          `= ${fmtK(retDriver.value)}/year`,
+        ],
+      });
+    }
+    const drgDriver = snapshot.drivers.find(dd => dd.id === "ipDrg");
+    if (drgDriver && drgDriver.value > 0) {
+      const captureRate = d.ipDrgScenario === "conservative" ? 15 : d.ipDrgScenario === "typical" ? 20 : 25;
+      result.push({
+        ...drgDriver, calcSteps: [
+          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.ipDrgAtRiskRate}% at-risk \u00D7 ${captureRate}% captured`,
+          `\u00D7 ${d.ipDrgWeightIncrease} wt increase \u00D7 $${d.ipDrgBasePayment.toLocaleString()} base`,
+          `\u00D7 ${d.ipDrgRealization}% realization = ${fmtK(drgDriver.value)}/year`,
+        ],
+      });
+    }
+    const cdiDriver = snapshot.drivers.find(dd => dd.id === "ipCdi");
+    if (cdiDriver && cdiDriver.value > 0) {
+      const reductionRate = d.ipCdiScenario === "conservative" ? 15 : d.ipCdiScenario === "typical" ? 25 : 35;
+      result.push({
+        ...cdiDriver, calcSteps: [
+          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
+          `\u00D7 $${d.ipCdiCostPerQuery}/query = ${fmtK(cdiDriver.value)}/year`,
+        ],
+      });
+    }
+  } else if (cs === "nursing") {
+    const otDriver = snapshot.drivers.find(dd => dd.id === "nursingOt");
+    if (otDriver && otDriver.value > 0) {
+      const otHours = Math.round(totalHoursSaved * (t.nursingOtReductionPercent / 100));
+      result.push({
+        ...otDriver, calcSteps: [
+          `${totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${t.nursingOtReductionPercent}% OT conversion = ${otHours.toLocaleString()} OT hrs`,
+          `${otHours.toLocaleString()} \u00D7 $${t.nursingOtHourlyRate}/hr = ${fmtK(otDriver.value)}/year`,
+        ],
+      });
+    }
+    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
+    if (retDriver && retDriver.value > 0) {
+      const impactRate = nursingRetentionImpactRates[t.retentionImpactScenario] || 15;
+      result.push({
+        ...retDriver, calcSteps: [
+          `${s.numberOfProviders} FTEs \u00D7 ${t.nursingTurnoverRate}% turnover \u00D7 40% burnout-related`,
+          `\u00D7 ${impactRate}% impact \u00D7 $${t.nursingReplacementCost.toLocaleString()} replacement`,
+          `= ${fmtK(retDriver.value)}/year`,
+        ],
+      });
+    }
+    const hapiDriver = snapshot.drivers.find(dd => dd.id === "nursingHapi");
+    if (hapiDriver && hapiDriver.value > 0) {
+      result.push({
+        ...hapiDriver, calcSteps: [
+          `Patient days \u00D7 HAPI rate \u00D7 ${d.nursingHapiPreventionRate}% prevention \u00D7 $${d.nursingHapiCost.toLocaleString()}/event`,
+          `= ${fmtK(hapiDriver.value)}/year`,
+        ],
+        calibrationNote: "Potential value based on adverse event prevention rates.",
+      });
+    }
+    const fallsDriver = snapshot.drivers.find(dd => dd.id === "nursingFalls");
+    if (fallsDriver && fallsDriver.value > 0) {
+      result.push({
+        ...fallsDriver, calcSteps: [
+          `Patient days \u00D7 falls rate \u00D7 ${d.nursingFallsPreventionRate}% prevention \u00D7 $${d.nursingFallsCost.toLocaleString()}/event`,
+          `= ${fmtK(fallsDriver.value)}/year`,
+        ],
+        calibrationNote: "Potential value based on adverse event prevention rates.",
+      });
+    }
+  }
+
+  for (const driver of snapshot.drivers) {
+    if (!result.find(r => r.id === driver.id)) {
+      result.push({ ...driver, calcSteps: [`Annual value: ${fmtK(driver.value)}/year`] });
+    }
+  }
+
+  return result;
+}
+
+function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
+  const s = snapshot.fullExploreState;
+  const t = s.timeDriverInputs;
+  const d = s.docQualityInputs;
+  const cs = snapshot.careSetting;
+  const lines: string[] = [];
+
+  if (cs === "nursing") {
+    lines.push(`${s.nursingStaffedBeds} staffed beds \u00B7 ${s.numberOfProviders} nurse FTEs`);
+  } else {
+    lines.push(`${s.numberOfProviders} ${unitLabel(cs)} \u00B7 ${s.annualEncounters.toLocaleString()} encounters/yr`);
+  }
+  lines.push(`${s.utilizationPercent}% utilization \u00B7 ${s.minutesSavedPerEncounter} min saved/encounter`);
+
+  if (cs === "outpatient") {
+    if (t.patientAccessEnabled) lines.push(`Capacity: ${t.capacityPercent}% \u00B7 ${t.visitDuration}min visits \u00B7 $${t.revenuePerVisit}/visit`);
+    if (d.wrvuEnabled) lines.push(`wRVU: ${d.wrvuScenario} scenario \u00B7 ${d.wrvuRealization}% realization`);
+    if (d.hccEnabled) lines.push(`HCC: ${d.hccRealization}% realization`);
+    if (d.denialsEnabled) lines.push(`Denials: ${d.denialRate}% rate \u00B7 ${d.denialsScenario} scenario \u00B7 ${d.denialsRealization}% realization`);
+  } else if (cs === "ed") {
+    if (t.edLwbsEnabled) lines.push(`LWBS: ${t.edLwbsRate}% rate \u00B7 ${t.edLwbsReduction}% reduction \u00B7 $${t.edRevenuePerVisit}/visit`);
+    if (d.wrvuEnabled) lines.push(`Level-of-Service: ${d.wrvuScenario} scenario \u00B7 ${d.wrvuRealization}% realization`);
+    if (d.denialsEnabled) lines.push(`Denials: ${d.denialRate}% rate \u00B7 ${d.denialsScenario} scenario`);
+  } else if (cs === "inpatient") {
+    if (d.ipDrgEnabled) lines.push(`DRG: ${d.ipDrgScenario} scenario \u00B7 ${d.ipDrgRealization}% realization`);
+    if (d.ipCdiEnabled) lines.push(`CDI: ${d.ipCdiScenario} scenario \u00B7 ${d.ipCdiQueryRate}% query rate`);
+  } else if (cs === "nursing") {
+    if (t.nursingOtEnabled) lines.push(`OT: ${t.nursingOtReductionPercent}% reduction \u00B7 $${t.nursingOtHourlyRate}/hr`);
+    if (t.nursingRetentionEnabled) lines.push(`Retention: ${t.nursingTurnoverRate}% turnover \u00B7 $${t.nursingReplacementCost.toLocaleString()} replacement`);
+  }
+
+  if (t.wellbeingEnabled && t.calculateRetentionValue && cs !== "nursing") {
+    lines.push(`Retention: ${t.annualTurnoverRate}% turnover \u00B7 ${t.retentionImpactScenario} impact`);
+  }
+  if (t.costReductionEnabled && t.estimatedCostReduction > 0) {
+    lines.push(`Cost reduction: $${t.estimatedCostReduction.toLocaleString()}/yr`);
+  }
+
+  return lines;
+}
+
+function getMathPageCount(settings: ProformaSettingSnapshot[]): number {
+  const totalDrivers = settings.reduce((sum, s) => sum + s.drivers.length, 0);
+  if (totalDrivers > 10 || settings.length > 3) return 2;
+  return 1;
+}
+
+const BASE_PAGES = 7;
+
+const PageFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
   <View style={styles.footer}>
     <Text style={styles.footerLeft}>ABRIDGE</Text>
     <Text style={styles.footerCenter}>Organization Proforma</Text>
-    <Text style={styles.footerRight}>Page {pageNum} of {TOTAL_PAGES}</Text>
+    <Text style={styles.footerRight}>Page {pageNum} of {totalPages}</Text>
   </View>
 );
 
@@ -189,6 +467,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
   const irrDisplay = hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A";
+  const mathPages = getMathPageCount(settings);
+  const TOTAL_PAGES = BASE_PAGES + mathPages;
+  const enrichedBySettings = settings.map(s => ({ setting: s, drivers: buildDriverCalcSteps(s) }));
+  const settingInputSummaries = settings.map(s => ({ setting: s, inputs: getSettingInputSummary(s) }));
 
   const totalDocValue = yearlyData.reduce((s, y) => s + y.docValue, 0);
   const totalTimeValue = yearlyData.reduce((s, y) => s + y.timeValue, 0);
@@ -319,7 +601,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={1} />
+          <PageFooter pageNum={1} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
@@ -390,11 +672,119 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </View>
           </View>
 
-          <PageFooter pageNum={2} />
+          <PageFooter pageNum={2} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 3: HOW VALUE MATERIALIZES */}
+      {/* PAGE 3 (and optionally 4): SHOWING OUR MATH */}
+      {(() => {
+        const mathPageStartNum = 3;
+        const settingsPerPage = mathPages === 1 ? enrichedBySettings.length : Math.ceil(enrichedBySettings.length / 2);
+        const chunks: typeof enrichedBySettings[] = [];
+        for (let i = 0; i < enrichedBySettings.length; i += settingsPerPage) {
+          chunks.push(enrichedBySettings.slice(i, i + settingsPerPage));
+        }
+        return chunks.map((chunk, pageIdx) => (
+          <Page key={`math-${pageIdx}`} size="LETTER" style={styles.page} wrap={false}>
+            <View style={styles.pageWrapper}>
+              {pageIdx === 0 && (
+                <>
+                  <Text style={styles.sectionLabel}>SHOWING OUR MATH</Text>
+                  <Text style={styles.sectionHeadline}>Every Number Has a Formula</Text>
+                  <Text style={styles.body}>
+                    Transparency builds trust. Below is the calculation behind every driver in this model {"\u2014"} the inputs you provided, the formula applied, and the result. Nothing is hidden.
+                  </Text>
+                </>
+              )}
+              {pageIdx > 0 && (
+                <>
+                  <Text style={styles.sectionLabel}>SHOWING OUR MATH (CONTINUED)</Text>
+                  <View style={{ marginBottom: 8 }} />
+                </>
+              )}
+
+              {chunk.map(({ setting, drivers }) => {
+                const settingColor = setting.color || colors.primary;
+                const timeDrivers = drivers.filter(dd => dd.category === "time");
+                const docDrivers = drivers.filter(dd => dd.category === "documentation");
+                const timeTotal = timeDrivers.reduce((sum, dd) => sum + dd.value, 0);
+                const docTotal = docDrivers.reduce((sum, dd) => sum + dd.value, 0);
+
+                const renderDriverGroup = (groupDrivers: EnrichedDriver[]) =>
+                  groupDrivers.map((driver, i) => (
+                    <View key={driver.id}>
+                      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                        <View style={{ width: 3, backgroundColor: settingColor, marginRight: 10, borderRadius: 1, minHeight: 36 }} />
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
+                            <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>{driver.name}</Text>
+                            <Text style={{ fontSize: 9.5, fontWeight: "bold", color: settingColor }}>{fmt(driver.value)}</Text>
+                          </View>
+                          {driver.calcSteps.map((step, si) => (
+                            <Text key={si} style={{
+                              fontSize: 8.5,
+                              color: si === driver.calcSteps.length - 1 ? settingColor : colors.secondary,
+                              lineHeight: 1.5,
+                              fontWeight: si === driver.calcSteps.length - 1 ? "bold" : "normal",
+                            }}>
+                              {step}
+                            </Text>
+                          ))}
+                          {driver.calibrationNote && (
+                            <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>
+                              {driver.calibrationNote}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                      {i < groupDrivers.length - 1 && (
+                        <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+                      )}
+                    </View>
+                  ));
+
+                return (
+                  <View key={setting.id} style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: settingColor, marginBottom: 10, padding: 12 }]}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                      <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{setting.label}</Text>
+                      <Text style={{ fontSize: 11, fontWeight: "bold", color: settingColor }}>{fmt(setting.annualValue)}/yr</Text>
+                    </View>
+
+                    {timeDrivers.length > 0 && (
+                      <View style={{ marginBottom: 6 }}>
+                        <Text style={{ fontSize: 8, color: colors.timeRed, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>TIME RECAPTURED</Text>
+                        {renderDriverGroup(timeDrivers)}
+                        <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 5 }} />
+                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Time Subtotal</Text>
+                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>{fmt(timeTotal)}</Text>
+                        </View>
+                      </View>
+                    )}
+
+                    {docDrivers.length > 0 && (
+                      <View>
+                        {timeDrivers.length > 0 && <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />}
+                        <Text style={{ fontSize: 8, color: colors.docBlue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>DOCUMENTATION QUALITY</Text>
+                        {renderDriverGroup(docDrivers)}
+                        <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 5 }} />
+                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Documentation Subtotal</Text>
+                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>{fmt(docTotal)}</Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+
+              <PageFooter pageNum={mathPageStartNum + pageIdx} totalPages={TOTAL_PAGES} />
+            </View>
+          </Page>
+        ));
+      })()}
+
+      {/* PAGE after math: HOW VALUE MATERIALIZES */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>HOW VALUE MATERIALIZES</Text>
