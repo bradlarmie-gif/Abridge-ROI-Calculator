@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
+import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
@@ -149,6 +149,26 @@ export default function ProformaView({
       return total;
     });
   }, [displayData, settings]);
+
+  const legendTotals = useMemo(() => {
+    const allMonths = buildMonthlyCashFlows(settings, config);
+    const doc = allMonths.reduce((s, r) => s + r.docValue, 0);
+    const time = allMonths.reduce((s, r) => s + r.timeValue, 0);
+    const retention = allMonths.reduce((s, r) => s + r.retentionValue, 0);
+    const inv = allMonths.reduce((s, r) => s + r.investment, 0);
+    const total = doc + time + retention;
+    return { doc, time, retention, inv, total };
+  }, [settings, config]);
+
+  const lastChartPoint = useMemo(() => {
+    if (chartData.length === 0) return null;
+    const last = chartData[chartData.length - 1];
+    return {
+      label: last.label as string,
+      totalValue: (last.docValue as number) + (last.timeValue as number) + (last.retentionValue as number),
+      investment: last.investment as number,
+    };
+  }, [chartData]);
 
   const paybackLabel = useMemo(() => {
     for (const row of displayData) {
@@ -321,18 +341,18 @@ export default function ProformaView({
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
-              <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 20, left: 10, bottom: 10 }}>
+              <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 60, left: 10, bottom: 10 }}>
                 <defs>
                   <linearGradient id="grad-doc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.3} />
+                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.45} />
                     <stop offset="100%" stopColor="#2563EB" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="grad-time" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.3} />
+                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.45} />
                     <stop offset="100%" stopColor="#EA2C00" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="grad-retention" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#059669" stopOpacity={0.3} />
+                    <stop offset="0%" stopColor="#059669" stopOpacity={0.45} />
                     <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="grad-investment" x1="0" y1="0" x2="0" y2="1">
@@ -429,7 +449,7 @@ export default function ProformaView({
                   stackId="value"
                   fill="url(#grad-doc)"
                   stroke="#2563EB"
-                  strokeWidth={isMobile ? 1.5 : 2}
+                  strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Doc Quality"
                 />
                 <Area
@@ -438,7 +458,7 @@ export default function ProformaView({
                   stackId="value"
                   fill="url(#grad-time)"
                   stroke="#EA2C00"
-                  strokeWidth={isMobile ? 1.5 : 2}
+                  strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Time Savings"
                 />
                 <Area
@@ -447,28 +467,71 @@ export default function ProformaView({
                   stackId="value"
                   fill="url(#grad-retention)"
                   stroke="#059669"
-                  strokeWidth={isMobile ? 1.5 : 2}
+                  strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Retention"
                 />
+
+                {!isMobile && lastChartPoint && lastChartPoint.totalValue > 0 && (
+                  <ReferenceDot
+                    x={lastChartPoint.label}
+                    y={lastChartPoint.totalValue}
+                    r={0}
+                    label={{
+                      value: fmt(lastChartPoint.totalValue),
+                      position: "right",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      fill: "#059669",
+                      dx: 4,
+                    }}
+                  />
+                )}
+                {!isMobile && lastChartPoint && lastChartPoint.investment > 0 && (
+                  <ReferenceDot
+                    x={lastChartPoint.label}
+                    y={lastChartPoint.investment}
+                    r={0}
+                    label={{
+                      value: fmt(lastChartPoint.investment),
+                      position: "right",
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fill: "#666",
+                      dx: 4,
+                    }}
+                  />
+                )}
               </ComposedChart>
             </ResponsiveContainer>
 
             <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-1.5 sm:gap-5 mt-3 text-[10px] sm:text-xs">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 rounded-full inline-block bg-[#2563EB]" />
+                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#2563EB] opacity-70" />
                 <span className="text-neutral-600">Doc Quality</span>
+                {legendTotals.doc > 0 && (
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
+                )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 rounded-full inline-block bg-[#EA2C00]" />
+                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#EA2C00] opacity-70" />
                 <span className="text-neutral-600">Time Savings</span>
+                {legendTotals.time > 0 && (
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
+                )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 rounded-full inline-block bg-[#059669]" />
+                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#059669] opacity-70" />
                 <span className="text-neutral-600">Retention</span>
+                {legendTotals.retention > 0 && (
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.retention)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.retention / legendTotals.total) * 100)}%)` : ""}</span>
+                )}
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-0.5 rounded-full inline-block border-t-2 border-dashed border-neutral-800" />
                 <span className="text-neutral-600">Investment</span>
+                {legendTotals.inv > 0 && (
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.inv)}</span>
+                )}
               </span>
             </div>
 
