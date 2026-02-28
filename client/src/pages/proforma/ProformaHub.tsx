@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, BedDouble, ChevronLeft, Layers } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, BedDouble, ChevronLeft, Layers, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
 
@@ -45,6 +46,7 @@ export default function ProformaHub({
   onBack,
 }: ProformaHubProps) {
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const addedSettings = settings.map(s => s.careSetting);
   const availableSettings = ALL_SETTINGS.filter(s => !addedSettings.includes(s));
 
@@ -98,6 +100,9 @@ export default function ProformaHub({
             {settings.map((setting, idx) => {
               const Icon = SETTING_ICONS[setting.careSetting] || Building2;
               const color = SETTING_COLORS[setting.careSetting];
+              const isEditing = editingId === setting.id;
+              const unitLabel = SETTING_UNIT_LABELS[setting.careSetting];
+              const yp = setting.yearlyProviders;
               return (
                 <motion.div
                   key={setting.id}
@@ -120,17 +125,17 @@ export default function ProformaHub({
                           <div>
                             <h3 className="font-bold text-neutral-900">{setting.label}</h3>
                             <p className="text-sm text-neutral-500">
-                              {formatNumber(setting.providerCount)} → {formatNumber(setting.fullScaleProviders)} {SETTING_UNIT_LABELS[setting.careSetting]} · {setting.utilizationPercent}% utilization
+                              {formatNumber(setting.providerCount)} → {formatNumber(setting.fullScaleProviders)} {unitLabel} · {setting.utilizationPercent}% utilization
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={() => onEditSetting(setting.id)}
-                            className="p-2 rounded-lg hover:bg-neutral-200/60 text-neutral-500 hover:text-neutral-700 transition-colors"
+                            onClick={() => setEditingId(isEditing ? null : setting.id)}
+                            className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-neutral-200/60 text-neutral-500 hover:text-neutral-700'}`}
                             data-testid={`button-edit-${setting.careSetting}`}
                           >
-                            <Edit className="w-4 h-4" />
+                            {isEditing ? <ChevronUp className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                           </button>
                           {confirmRemove === setting.id ? (
                             <div className="flex items-center gap-1 ml-1">
@@ -194,6 +199,132 @@ export default function ProformaHub({
                           <span className="text-xs text-neutral-400 px-2 py-1">+{setting.drivers.length - 4} more</span>
                         )}
                       </div>
+
+                      <AnimatePresence>
+                        {isEditing && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-4 pt-4 border-t border-neutral-200/80 space-y-4">
+                              <div>
+                                <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div>
+                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 1</label>
+                                    <FormattedNumberInput
+                                      value={yp?.year1 ?? setting.providerCount}
+                                      onChange={(v) => {
+                                        const val = Math.max(v, 1);
+                                        onUpdateSetting(setting.id, {
+                                          yearlyProviders: {
+                                            year1: val,
+                                            year2: yp?.year2 ?? setting.fullScaleProviders,
+                                            year3: yp?.year3 ?? setting.fullScaleProviders,
+                                          },
+                                          providerCount: val,
+                                        });
+                                      }}
+                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                      data-testid={`input-y1-${setting.careSetting}`}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 2</label>
+                                    <FormattedNumberInput
+                                      value={yp?.year2 ?? setting.fullScaleProviders}
+                                      onChange={(v) => {
+                                        const val = Math.max(v, 1);
+                                        onUpdateSetting(setting.id, {
+                                          yearlyProviders: {
+                                            year1: yp?.year1 ?? setting.providerCount,
+                                            year2: val,
+                                            year3: yp?.year3 ?? setting.fullScaleProviders,
+                                          },
+                                        });
+                                      }}
+                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                      data-testid={`input-y2-${setting.careSetting}`}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 3</label>
+                                    <FormattedNumberInput
+                                      value={yp?.year3 ?? setting.fullScaleProviders}
+                                      onChange={(v) => {
+                                        const val = Math.max(v, 1);
+                                        onUpdateSetting(setting.id, {
+                                          yearlyProviders: {
+                                            year1: yp?.year1 ?? setting.providerCount,
+                                            year2: yp?.year2 ?? setting.fullScaleProviders,
+                                            year3: val,
+                                          },
+                                          fullScaleProviders: val,
+                                        });
+                                      }}
+                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                      data-testid={`input-y3-${setting.careSetting}`}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-[10px] text-neutral-500 mb-1">Utilization %</label>
+                                  <FormattedNumberInput
+                                    value={setting.utilizationPercent}
+                                    onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100) })}
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                    data-testid={`input-util-${setting.careSetting}`}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] text-neutral-500 mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
+                                  <FormattedNumberInput
+                                    value={setting.costPerUnit}
+                                    onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
+                                    prefix="$"
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                    data-testid={`input-cost-${setting.careSetting}`}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] text-neutral-500 mb-1">Implementation Fee</label>
+                                  <FormattedNumberInput
+                                    value={setting.implementationFee}
+                                    onChange={(v) => onUpdateSetting(setting.id, { implementationFee: Math.max(v, 0) })}
+                                    prefix="$"
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                    data-testid={`input-impl-${setting.careSetting}`}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-1">
+                                <button
+                                  onClick={() => onEditSetting(setting.id)}
+                                  className="inline-flex items-center gap-1.5 text-xs text-[#EA2C00] hover:text-[#D42800] font-medium transition-colors"
+                                  data-testid={`button-full-edit-${setting.careSetting}`}
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  Full Edit (change drivers)
+                                </button>
+                                <button
+                                  onClick={() => setEditingId(null)}
+                                  className="text-xs text-neutral-500 hover:text-neutral-700 font-medium transition-colors"
+                                  data-testid={`button-done-edit-${setting.careSetting}`}
+                                >
+                                  Done
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </motion.div>

@@ -842,7 +842,7 @@ export default function ExploreModel({
           transition={{ delay: 0.05 }}
         >
           <p className="text-xs font-medium text-[#999999] uppercase tracking-[2px] mb-3 text-center">Quick Adjustments</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
             {/* Practice Panel */}
             <div className="bg-[#F9F6F2] rounded-xl overflow-hidden">
               <button
