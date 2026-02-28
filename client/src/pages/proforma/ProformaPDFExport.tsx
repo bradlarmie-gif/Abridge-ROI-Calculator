@@ -221,11 +221,15 @@ function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver
     }
     const hccDriver = snapshot.drivers.find(dd => dd.id === "hcc");
     if (hccDriver && hccDriver.value > 0) {
+      const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+      const recapturePct = hccScenarios[d.hccScenario] || 10;
+      const maPatients = s.numberOfProviders * d.panelSize * (d.maPercent / 100);
+      const gapPatients = maPatients * (d.gapRate / 100);
       result.push({
         ...hccDriver, calcSteps: [
-          `MA patients \u00D7 gap rate \u00D7 recapture rate \u00D7 RAF value`,
-          `\u00D7 ${d.hccRealization}% realization`,
-          `= ${fmtK(hccDriver.value)}/year`,
+          `${s.numberOfProviders} providers \u00D7 ${d.panelSize} panel \u00D7 ${d.maPercent}% MA = ${Math.round(maPatients).toLocaleString()} MA patients`,
+          `${Math.round(maPatients).toLocaleString()} \u00D7 ${d.gapRate}% gap \u00D7 ${recapturePct}% recaptured \u00D7 ${d.avgHccs} avg HCCs`,
+          `\u00D7 ${d.rafImpact} RAF \u00D7 $${d.annualPayment.toLocaleString()} \u00D7 ${d.hccRealization}% realization = ${fmtK(hccDriver.value)}/year`,
         ],
       });
     }
@@ -235,7 +239,7 @@ function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver
         ...denDriver, calcSteps: [
           `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
           `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
-          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim = ${fmtK(denDriver.value)}/year`,
+          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim \u00D7 ${d.denialsRealization}% realization = ${fmtK(denDriver.value)}/year`,
         ],
       });
     }
@@ -253,20 +257,22 @@ function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver
   } else if (cs === "ed") {
     const lwbsDriver = snapshot.drivers.find(dd => dd.id === "edLwbs");
     const admDriver = snapshot.drivers.find(dd => dd.id === "edAdmission");
+    const edRecoveredPatients = s.annualEncounters * (t.edLwbsRate / 100) * (t.edLwbsReduction / 100);
     if (lwbsDriver && lwbsDriver.value > 0) {
       result.push({
         ...lwbsDriver, calcSteps: [
-          `${s.annualEncounters.toLocaleString()} enc \u00D7 ${t.edLwbsRate}% LWBS \u00D7 ${t.edLwbsReduction}% reduction`,
-          `Recovered patients \u00D7 $${t.edRevenuePerVisit}/visit \u00D7 ${t.edLwbsRealization}% realization`,
+          `${s.annualEncounters.toLocaleString()} enc \u00D7 ${t.edLwbsRate}% LWBS \u00D7 ${t.edLwbsReduction}% reduction = ${Math.round(edRecoveredPatients).toLocaleString()} recovered`,
+          `${Math.round(edRecoveredPatients).toLocaleString()} \u00D7 $${t.edRevenuePerVisit}/visit \u00D7 ${t.edLwbsRealization}% realization`,
           `= ${fmtK(lwbsDriver.value)}/year`,
         ],
       });
     }
     if (admDriver && admDriver.value > 0) {
+      const admittedPatients = Math.round(edRecoveredPatients * (t.edAdmissionRate / 100));
       result.push({
         ...admDriver, calcSteps: [
-          `Recovered patients \u00D7 ${t.edAdmissionRate}% admission rate`,
-          `\u00D7 $${t.edAdmissionRevenue.toLocaleString()} admission revenue \u00D7 ${t.edAdmissionRealization}% realization`,
+          `${Math.round(edRecoveredPatients).toLocaleString()} recovered \u00D7 ${t.edAdmissionRate}% admission rate = ${admittedPatients.toLocaleString()} admitted`,
+          `${admittedPatients.toLocaleString()} \u00D7 $${t.edAdmissionRevenue.toLocaleString()} \u00D7 ${t.edAdmissionRealization}% realization`,
           `= ${fmtK(admDriver.value)}/year`,
         ],
       });
@@ -292,7 +298,7 @@ function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver
         ...denDriver, calcSteps: [
           `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
           `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
-          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim = ${fmtK(denDriver.value)}/year`,
+          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim \u00D7 ${d.denialsRealization}% realization = ${fmtK(denDriver.value)}/year`,
         ],
       });
     }
@@ -834,11 +840,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={3} />
+          <PageFooter pageNum={3 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 4: THE FINANCIAL PROJECTION */}
+      {/* THE FINANCIAL PROJECTION */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>THE FINANCIAL PROJECTION</Text>
@@ -974,11 +980,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </View>
           </View>
 
-          <PageFooter pageNum={4} />
+          <PageFooter pageNum={4 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 5: THE INVESTMENT CASE */}
+      {/* THE INVESTMENT CASE */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
@@ -1063,11 +1069,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={5} />
+          <PageFooter pageNum={5 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 6: ASSUMPTIONS & METHODOLOGY */}
+      {/* ASSUMPTIONS & METHODOLOGY */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>ASSUMPTIONS & METHODOLOGY</Text>
@@ -1081,17 +1087,21 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
                 YOUR INPUTS
               </Text>
-              {settings.map(s => (
+              {settingInputSummaries.map(({ setting: s, inputs }) => (
                 <View key={s.id} style={{ marginBottom: 6 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{s.label}</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 2 }}>{s.label}</Text>
                   <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
                     Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     {config.contractTermMonths >= 36 ? `Y3: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
-                    {s.utilizationPercent}% utilization{"\n"}
                     {fmt(s.costPerUnit)}/{unitLabel(s.careSetting, false)}/mo{"\n"}
                     {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
                   </Text>
+                  {inputs.length > 0 && (
+                    <Text style={{ fontSize: 7.5, color: colors.tertiary, lineHeight: 1.5, marginTop: 2 }}>
+                      {inputs.join("\n")}
+                    </Text>
+                  )}
                 </View>
               ))}
             </View>
@@ -1138,11 +1148,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={6} />
+          <PageFooter pageNum={6 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 7: HONEST LIMITS & NEXT STEPS */}
+      {/* HONEST LIMITS & NEXT STEPS */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>WHAT THIS MODEL DOES {"\u2014"} AND DOESN{"\u2019"}T {"\u2014"} TELL YOU</Text>
@@ -1216,7 +1226,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={7} />
+          <PageFooter pageNum={7 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
     </Document>
