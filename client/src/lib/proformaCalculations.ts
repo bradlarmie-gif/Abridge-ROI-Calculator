@@ -57,14 +57,31 @@ function getOnsetMultiplier(
 function getProviderExpansion(
   month: number,
   goLiveMonth: number,
-  contractMonths: number,
+  _contractMonths: number,
   pilotProviders: number,
-  fullScaleProviders: number
+  fullScaleProviders: number,
+  yearlyProviders?: { year1: number; year2: number; year3: number }
 ): number {
   const monthsSinceGoLive = month - goLiveMonth;
   if (monthsSinceGoLive < 0) return 0;
 
-  const expansionMonths = Math.max(contractMonths - goLiveMonth, 12);
+  if (yearlyProviders) {
+    const y1 = yearlyProviders.year1;
+    const y2 = yearlyProviders.year2;
+    const y3 = _contractMonths >= 36 ? yearlyProviders.year3 : y2;
+
+    if (monthsSinceGoLive < 12) {
+      const progress = monthsSinceGoLive / 12;
+      return Math.round(y1 + (y2 - y1) * progress);
+    } else if (monthsSinceGoLive < 24) {
+      const progress = (monthsSinceGoLive - 12) / 12;
+      return Math.round(y2 + (y3 - y2) * progress);
+    } else {
+      return y3;
+    }
+  }
+
+  const expansionMonths = Math.max(_contractMonths - goLiveMonth, 12);
   const progress = Math.min(monthsSinceGoLive / expansionMonths, 1);
   return Math.round(pilotProviders + (fullScaleProviders - pilotProviders) * progress);
 }
@@ -115,7 +132,8 @@ export function buildMonthlyCashFlows(
 
       const currentProviders = getProviderExpansion(
         m, setting.goLiveMonth, months,
-        setting.providerCount, fullScale
+        setting.providerCount, fullScale,
+        setting.yearlyProviders
       );
       const currentUtil = getUtilizationRamp(
         m, setting.goLiveMonth, months,
@@ -502,17 +520,29 @@ export function buildIRRCashFlows(
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
 
-  if (totalImplFees <= 0) {
-    return [0];
-  }
-
   const monthlyNetReturns = cashFlows.map(r => {
     const gross = r.docValue + r.timeValue + r.retentionValue;
     const net = gross - r.investment;
     return isFinite(net) ? net : 0;
   });
 
-  return [-totalImplFees, ...monthlyNetReturns];
+  if (totalImplFees > 0) {
+    return [-totalImplFees, ...monthlyNetReturns];
+  }
+
+  const firstSubIdx = cashFlows.findIndex(r => r.investment > 0);
+  if (firstSubIdx >= 0) {
+    const firstMonthSub = cashFlows[firstSubIdx].investment;
+    const firstMonthGross = cashFlows[firstSubIdx].docValue + cashFlows[firstSubIdx].timeValue + cashFlows[firstSubIdx].retentionValue;
+    const adjustedReturns = [
+      ...monthlyNetReturns.slice(0, firstSubIdx),
+      firstMonthGross,
+      ...monthlyNetReturns.slice(firstSubIdx + 1),
+    ];
+    return [-firstMonthSub, ...adjustedReturns];
+  }
+
+  return [0];
 }
 
 export function calculateProformaSummary(
@@ -571,12 +601,14 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   return years
     .filter(y => y.rows.length > 0)
     .map((y, idx) => {
-      const bySettings: Record<string, { value: number; retention: number; investment: number }> = {};
+      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number }> = {};
       settings.forEach(s => {
+        const lastRow = y.rows[y.rows.length - 1];
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
           retention: 0,
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
+          providers: lastRow?.bySettings[s.id]?.providers || 0,
         };
       });
 

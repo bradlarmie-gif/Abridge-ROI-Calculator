@@ -98,7 +98,7 @@ export default function ProformaView({
   const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
 
   const hasInvestment = useMemo(() => {
-    return settings.some(s => s.implementationFee > 0);
+    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
   }, [settings]);
 
   const sensitivityIRR = useMemo(() => {
@@ -282,7 +282,9 @@ export default function ProformaView({
                 </div>
                 <p className="text-base sm:text-lg font-bold" style={{ color: s.color }}>{fmt(s.annualValue)}</p>
                 <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">
-                  {fmtNum(s.providerCount)} → {fmtNum(s.fullScaleProviders || s.providerCount)} {SETTING_UNIT_LABELS[s.careSetting]}
+                  {s.yearlyProviders
+                    ? `Y1: ${fmtNum(s.yearlyProviders.year1)} → Y2: ${fmtNum(s.yearlyProviders.year2)} → Y3: ${fmtNum(s.yearlyProviders.year3)} ${SETTING_UNIT_LABELS[s.careSetting]}`
+                    : `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`}
                 </p>
               </div>
             );
@@ -301,7 +303,12 @@ export default function ProformaView({
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-neutral-500">
               <Users className="w-3.5 h-3.5" />
               <span>
-                {fmtNum(settings.reduce((s, v) => s + v.providerCount, 0))} → {fmtNum(settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0))} total {settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting]}
+                {(() => {
+                  const y1 = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
+                  const y3 = settings.reduce((s, v) => s + (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount), 0);
+                  const label = settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting];
+                  return `${fmtNum(y1)} → ${fmtNum(y3)} total ${label}`;
+                })()}
               </span>
             </div>
           </div>
@@ -337,11 +344,11 @@ export default function ProformaView({
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  interval={0}
+                  interval={config.viewMode === "quarterly" ? (isMobile ? 2 : 1) : 0}
                   axisLine={{ stroke: "#D5D0CB" }}
-                  angle={isMobile && config.viewMode === "quarterly" ? -35 : 0}
-                  textAnchor={isMobile && config.viewMode === "quarterly" ? "end" : "middle"}
-                  height={isMobile && config.viewMode === "quarterly" ? 50 : 30}
+                  angle={0}
+                  textAnchor="middle"
+                  height={30}
                 />
                 <YAxis
                   tickFormatter={(v: number) => fmt(v)}
@@ -505,8 +512,11 @@ export default function ProformaView({
               <thead>
                 <tr className="border-b border-neutral-300">
                   <th className="text-left py-2 font-medium text-neutral-500">Setting</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Pilot</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Full Scale</th>
+                  <th className="text-right py-2 font-medium text-neutral-500">Y1</th>
+                  <th className="text-right py-2 font-medium text-neutral-500">Y2</th>
+                  {config.contractTermMonths >= 36 && (
+                    <th className="text-right py-2 font-medium text-neutral-500">Y3</th>
+                  )}
                   <th className="text-right py-2 font-medium text-neutral-500">$/Unit/Mo</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Go-Live</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Impl. Fee</th>
@@ -516,7 +526,8 @@ export default function ProformaView({
               </thead>
               <tbody>
                 {settings.map(s => {
-                  const monthlyCost = s.costPerUnit * s.providerCount;
+                  const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
+                  const monthlyCost = s.costPerUnit * yp.year1;
                   return (
                     <tr key={s.id} className="border-b border-neutral-200">
                       <td className="py-3">
@@ -525,8 +536,32 @@ export default function ProformaView({
                           <span className="font-medium text-neutral-900">{s.label}</span>
                         </div>
                       </td>
-                      <td className="text-right py-3 text-neutral-700">{fmtNum(s.providerCount)}</td>
-                      <td className="text-right py-3 text-neutral-700">{fmtNum(s.fullScaleProviders || s.providerCount)}</td>
+                      <td className="text-right py-3">
+                        <FormattedNumberInput
+                          value={yp.year1}
+                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
+                          className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          data-testid={`input-y1-${s.careSetting}`}
+                        />
+                      </td>
+                      <td className="text-right py-3">
+                        <FormattedNumberInput
+                          value={yp.year2}
+                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                          className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          data-testid={`input-y2-${s.careSetting}`}
+                        />
+                      </td>
+                      {config.contractTermMonths >= 36 && (
+                        <td className="text-right py-3">
+                          <FormattedNumberInput
+                            value={yp.year3}
+                            onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
+                            className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                            data-testid={`input-y3-${s.careSetting}`}
+                          />
+                        </td>
+                      )}
                       <td className="text-right py-3">
                         <FormattedNumberInput
                           value={s.costPerUnit}
@@ -569,12 +604,42 @@ export default function ProformaView({
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {settings.map(s => {
-              const monthlyCost = s.costPerUnit * s.providerCount;
+              const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
+              const monthlyCost = s.costPerUnit * yp.year1;
               return (
                 <div key={s.id} className="bg-white rounded-lg p-3 border-l-3" style={{ borderLeftWidth: 3, borderLeftColor: s.color }}>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-bold text-neutral-900">{s.label}</span>
-                    <span className="text-xs text-neutral-500">{fmtNum(s.providerCount)} → {fmtNum(s.fullScaleProviders || s.providerCount)} {SETTING_UNIT_LABELS[s.careSetting]}</span>
+                    <span className="text-xs text-neutral-500">Y1: {fmtNum(yp.year1)} → Y3: {fmtNum(yp.year3)}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y1 Units</label>
+                      <FormattedNumberInput
+                        value={yp.year1}
+                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
+                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
+                        data-testid={`input-y1-${s.careSetting}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y2 Units</label>
+                      <FormattedNumberInput
+                        value={yp.year2}
+                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
+                        data-testid={`input-y2-${s.careSetting}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y3 Units</label>
+                      <FormattedNumberInput
+                        value={yp.year3}
+                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
+                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
+                        data-testid={`input-y3-${s.careSetting}`}
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -726,6 +791,23 @@ export default function ProformaView({
                     </tr>
                   </>
                 )}
+                {!isMobile && (
+                  <tr className="border-b border-neutral-100">
+                    <td className="py-2 pl-4 text-neutral-500 text-xs">Active Providers</td>
+                    {yearlyData.map(y => {
+                      const totalProviders = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
+                      return (
+                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalProviders)}</td>
+                      );
+                    })}
+                    <td className="text-right py-2 px-4 text-xs text-neutral-500">
+                      {(() => {
+                        const last = yearlyData[yearlyData.length - 1];
+                        return last ? fmtNum(settings.reduce((sum, s) => sum + (last.bySettings[s.id]?.providers || 0), 0)) : "—";
+                      })()}
+                    </td>
+                  </tr>
+                )}
                 <tr className="border-b border-neutral-200">
                   <td className="py-2 sm:py-2.5 font-medium text-red-600">Investment</td>
                   {yearlyData.map(y => (
@@ -772,7 +854,7 @@ export default function ProformaView({
                 <span>{fmtPct(sensitivityIRR.optimistic)}</span>
               </div>
             ) : (
-              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">{hasInvestment ? "" : "Set implementation fees"}</p>
+              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">{hasInvestment ? "" : "No cost entered"}</p>
             )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">

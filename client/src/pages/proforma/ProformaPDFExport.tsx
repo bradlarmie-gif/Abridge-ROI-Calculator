@@ -186,7 +186,7 @@ interface ProformaPDFProps {
 
 function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR }: ProformaPDFProps) {
   const termLabel = contractTermLabel(config.contractTermMonths);
-  const hasInvestment = settings.some(s => s.implementationFee > 0);
+  const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
   const irrDisplay = hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A";
 
@@ -340,7 +340,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 12, fontWeight: "bold", marginBottom: 3 }}>{s.label}</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {s.providerCount} {"\u2192"} {s.fullScaleProviders || s.providerCount} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization {"\u00B7"} Go-live Month {s.goLiveMonth}
+                      {s.yearlyProviders
+                        ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}`
+                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization {"\u00B7"} Go-live Month {s.goLiveMonth}
                     </Text>
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
@@ -452,7 +454,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabel}>THE FINANCIAL PROJECTION</Text>
           <Text style={styles.sectionHeadline}>{termLabel} Outlook</Text>
           <Text style={styles.body}>
-            Value is phased by driver onset timing with provider expansion and adoption ramp applied. Investment scales with provider count as the deployment expands from pilot to full scale.
+            Value is phased by driver onset timing with per-year provider allocation and adoption ramp applied. Investment scales with provider count as the deployment expands across Y1, Y2, and Y3.
           </Text>
 
           <View style={[styles.cardBg, { marginBottom: 10, padding: 16 }]}>
@@ -507,6 +509,19 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.retentionValue)}</Text>
               ))}
               <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalRetentionValue)}</Text>
+            </View>
+
+            <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
+              <Text style={{ flex: 2, fontSize: 8, color: colors.tertiary }}>Active Providers</Text>
+              {yearlyData.map(y => {
+                const total = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
+                return (
+                  <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>
+                );
+              })}
+              <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>
+                {(() => { const last = yearlyData[yearlyData.length - 1]; return last ? fmtNum(settings.reduce((sum, s) => sum + (last.bySettings[s.id]?.providers || 0), 0)) : "\u2014"; })()}
+              </Text>
             </View>
 
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
@@ -617,8 +632,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <View style={[styles.cardBg, { marginBottom: 8, padding: 14 }]}>
             <View style={{ flexDirection: "row", marginBottom: 6 }}>
               <Text style={{ flex: 2, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase" }}>Setting</Text>
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Pilot</Text>
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Full Scale</Text>
+              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y1</Text>
+              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y2</Text>
+              {config.contractTermMonths >= 36 && (
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y3</Text>
+              )}
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Annual Value</Text>
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Monthly Cost</Text>
             </View>
@@ -626,17 +644,23 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             {settings.map(s => (
               <View key={s.id} style={{ flexDirection: "row", marginBottom: 3 }}>
                 <Text style={{ flex: 2, fontSize: 9 }}>{s.label}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{s.providerCount} {unitLabel(s.careSetting)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{s.fullScaleProviders || s.providerCount} {unitLabel(s.careSetting)}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year1 || s.providerCount)} {unitLabel(s.careSetting)}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year2 || s.providerCount)} {unitLabel(s.careSetting)}</Text>
+                {config.contractTermMonths >= 36 && (
+                  <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting)}</Text>
+                )}
                 <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.annualValue)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.costPerUnit * s.providerCount)}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
               </View>
             ))}
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
             <View style={{ flexDirection: "row" }}>
               <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Total</Text>
               <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{totalProviders}</Text>
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{totalFullScale}</Text>
+              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{settings.reduce((s, v) => s + (v.yearlyProviders?.year2 || v.providerCount), 0)}</Text>
+              {config.contractTermMonths >= 36 && (
+                <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{settings.reduce((s, v) => s + (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount), 0)}</Text>
+              )}
               <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.totalSystemValue)}</Text>
               <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{fmt(totalMonthlyCost)}</Text>
             </View>
@@ -644,7 +668,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Providers expand linearly from pilot to full scale over the contract term. This models a realistic organizational rollout {"\u2014"} not a theoretical day-one deployment. Investment cost scales proportionally with provider count, maintaining consistent per-unit economics.
+              Providers expand according to per-year allocation (Y1 {"\u2192"} Y2 {"\u2192"} Y3). Within each year, providers ramp linearly between targets. This models a realistic organizational rollout {"\u2014"} not a theoretical day-one deployment. Investment cost scales proportionally with provider count.
             </Text>
           </View>
 
@@ -670,8 +694,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 <View key={s.id} style={{ marginBottom: 6 }}>
                   <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{s.label}</Text>
                   <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-                    {s.providerCount} {unitLabel(s.careSetting)} (pilot){"\n"}
-                    {s.fullScaleProviders || s.providerCount} {unitLabel(s.careSetting)} (full scale){"\n"}
+                    Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
+                    Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
+                    {config.contractTermMonths >= 36 ? `Y3: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
                     {s.utilizationPercent}% utilization{"\n"}
                     {fmt(s.costPerUnit)}/{unitLabel(s.careSetting, false)}/mo{"\n"}
                     {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
@@ -687,7 +712,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
                 Adoption ramp: S-curve over 12 months{"\n"}
-                Provider expansion: Linear, pilot to full scale{"\n"}
+                Provider expansion: Per-year allocation (Y1/Y2/Y3){"\n"}
                 Utilization ramp: S-curve to full utilization
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, marginTop: 4 }}>
@@ -706,7 +731,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabelGray}>{irrLabel} METHODOLOGY</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              Standard finance model. Period 0 is the upfront capital investment (implementation fees only: {fmt(totalImplFees)}). Periods 1{"\u2013"}{config.contractTermMonths} are net monthly cash flows (value generated minus ongoing subscription cost). Calculated using Newton-Raphson iteration with 13 initial guesses and bisection fallback. Every result is cross-validated: NPV at the found rate must be within 0.1% of total cash flow magnitude.
+              Standard finance model. {totalImplFees > 0
+                ? `Period 0 is the upfront capital investment (implementation fees: ${fmt(totalImplFees)}).`
+                : "Period 0 is the first month\u2019s subscription cost (used as the investment baseline when no implementation fees are present)."} Periods 1{"\u2013"}{config.contractTermMonths} are net monthly cash flows (value generated minus ongoing subscription cost). Calculated using Newton-Raphson iteration with 13 initial guesses and bisection fallback. Every result is cross-validated: NPV at the found rate must be within 0.1% of total cash flow magnitude.
               {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes. MIRR uses a finance rate for negative flows and a reinvestment rate for positive flows, always producing a unique, defensible rate." : ""}
             </Text>
           </View>
@@ -754,7 +781,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 {"\u2022"} Retention {"\u2014"} hardest to isolate from other factors{"\n"}
                 {"\u2022"} Revenue realization {"\u2014"} depends on payer mix and coding practices{"\n"}
                 {"\u2022"} Operational change {"\u2014"} time savings translation varies by organization{"\n"}
-                {"\u2022"} Provider expansion {"\u2014"} linear model may not match your rollout plan
+                {"\u2022"} Provider expansion {"\u2014"} per-year targets assume smooth ramp within each year
               </Text>
             </View>
           </View>

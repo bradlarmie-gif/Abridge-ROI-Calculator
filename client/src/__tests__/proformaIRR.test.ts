@@ -82,13 +82,15 @@ describe("buildIRRCashFlows", () => {
     expect(irrCF[0]).toBe(-50000);
   });
 
-  it("returns [0] when implementation fees are zero", () => {
+  it("uses first month subscription as Period 0 when implementation fees are zero", () => {
     const settings = [makeSetting({ implementationFee: 0 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const irrCF = buildIRRCashFlows(settings, config, cashFlows);
 
-    expect(irrCF).toEqual([0]);
+    expect(irrCF[0]).toBeLessThan(0);
+    expect(irrCF[0]).toBe(-cashFlows[0].investment);
+    expect(irrCF.length).toBe(config.contractTermMonths + 1);
   });
 
   it("has contractTermMonths monthly flows after period 0", () => {
@@ -154,7 +156,18 @@ describe("calculateIRR", () => {
     expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.01);
   });
 
-  it("returns invalid for zero implementation fees", () => {
+  it("returns valid positive IRR when impl fees are zero but subscription exists", () => {
+    const settings = [makeSetting({ implementationFee: 0 })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const irrCF = buildIRRCashFlows(settings, config, cashFlows);
+    const result = calculateIRR(irrCF);
+
+    expect(result.isValid).toBe(true);
+    expect(result.annualizedRate).toBeGreaterThan(0);
+  });
+
+  it("returns invalid for truly zero cash flows", () => {
     const irrCF = [0];
     const result = calculateIRR(irrCF);
     expect(result.isValid).toBe(false);
@@ -343,13 +356,14 @@ describe("calculateProformaSummary", () => {
     expect(summary.threeYearNet).toBeGreaterThan(0);
   });
 
-  it("marks IRR invalid when impl fees are zero", () => {
+  it("marks IRR valid when impl fees are zero but subscription exists", () => {
     const settings = [makeSetting({ implementationFee: 0 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const summary = calculateProformaSummary(settings, config, cashFlows);
 
-    expect(summary.irrValid).toBe(false);
+    expect(summary.irrValid).toBe(true);
+    expect(summary.irr).toBeGreaterThan(0);
   });
 });
 
@@ -443,6 +457,11 @@ describe("cross-validation on all scenarios", () => {
     ["zero subscription", [makeSetting({ costPerUnit: 0, implementationFee: 10000, annualValue: 300000, drivers: [
       { id: "d1", name: "D1", value: 300000, category: "documentation", onset: "immediate" },
     ] })], makeConfig()],
+    ["zero impl fee (subscription only)", [makeSetting({ implementationFee: 0 })], makeConfig()],
+    ["yearly providers with expansion", [makeSetting({
+      yearlyProviders: { year1: 10, year2: 50, year3: 100 },
+      fullScaleProviders: 100,
+    })], makeConfig()],
   ];
 
   for (const [name, settings, config] of scenarios) {
@@ -459,4 +478,47 @@ describe("cross-validation on all scenarios", () => {
       expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.01);
     });
   }
+});
+
+describe("yearly provider allocation", () => {
+  it("yearly providers scale investment correctly", () => {
+    const settings = [makeSetting({
+      yearlyProviders: { year1: 10, year2: 50, year3: 100 },
+      fullScaleProviders: 100,
+      costPerUnit: 200,
+    })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+
+    expect(cashFlows[0].investment).toBeLessThan(cashFlows[35].investment);
+
+    const month1Inv = cashFlows[0].investment;
+    const month36Inv = cashFlows[35].investment;
+    expect(month36Inv / month1Inv).toBeGreaterThan(3);
+  });
+
+  it("2-year contract ramps through Y1 and Y2 provider targets", () => {
+    const settings = [makeSetting({
+      yearlyProviders: { year1: 10, year2: 50, year3: 100 },
+      fullScaleProviders: 100,
+      costPerUnit: 200,
+    })];
+    const config = makeConfig({ contractTermMonths: 24 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+
+    expect(cashFlows.length).toBe(24);
+    expect(cashFlows[0].investment).toBeLessThan(cashFlows[23].investment);
+  });
+
+  it("backward compatible — no yearlyProviders uses providerCount and fullScaleProviders", () => {
+    const settings = [makeSetting({
+      providerCount: 10,
+      fullScaleProviders: 100,
+    })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+
+    expect(cashFlows.length).toBe(36);
+    expect(cashFlows[0].investment).toBeGreaterThan(0);
+  });
 });

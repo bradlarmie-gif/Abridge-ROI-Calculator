@@ -10,6 +10,12 @@ export interface ProformaDriver {
   onset: DriverOnset;
 }
 
+export interface YearlyProviders {
+  year1: number;
+  year2: number;
+  year3: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -30,6 +36,7 @@ export interface ProformaSettingSnapshot {
   goLiveMonth: number;
   color: string;
   fullExploreState: ExploreState;
+  yearlyProviders?: YearlyProviders;
 }
 
 export interface RetentionPhasing {

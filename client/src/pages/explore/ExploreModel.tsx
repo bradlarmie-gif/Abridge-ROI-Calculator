@@ -287,13 +287,19 @@ export default function ExploreModel({
     }
 
     const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
+    const fullScale = isNursing ? pilotProviders : state.fullScaleProviders;
     const snapshot: ProformaSettingSnapshot = {
       id: `${cs}-${Date.now()}`,
       careSetting: cs,
       label: SETTING_LABELS[cs] || cs,
       providerCount: pilotProviders,
-      fullScaleProviders: isNursing ? pilotProviders : state.fullScaleProviders,
+      fullScaleProviders: fullScale,
       fullScaleUtilization: isNursing ? state.utilizationPercent : Math.min(expandedUtilization, 95),
+      yearlyProviders: {
+        year1: pilotProviders,
+        year2: Math.round(pilotProviders + (fullScale - pilotProviders) * 0.4),
+        year3: fullScale,
+      },
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
       annualValue: totalValue,
