@@ -792,7 +792,9 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         />
       );
     
-    case 'model':
+    case 'model': {
+      const stepPhaseMap: ExplorePhase[] = ['careSetting', 'practice', 'timeSavings', 'valueDrivers', isNursing ? 'careQuality' : 'docQuality', 'investment', 'model'];
+      const stepLabels = ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', isNursing ? 'Care Quality' : 'Doc Quality', 'Investment', 'Your Model'];
       return (
         <ExploreModel
           state={state}
@@ -805,8 +807,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onBack={() => navigate('investment')}
           onHome={goHome}
           onAddToProforma={onAddToProforma}
+          onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
+          stepLabels={stepLabels}
         />
       );
+    }
     
     default:
       return null;

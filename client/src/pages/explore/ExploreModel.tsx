@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -23,6 +23,8 @@ interface ExploreModelProps {
   onHome: () => void;
   onBack: () => void;
   onAddToProforma?: (snapshot: ProformaSettingSnapshot) => void;
+  onStepClick?: (step: number) => void;
+  stepLabels?: string[];
 }
 
 export default function ExploreModel({
@@ -36,10 +38,13 @@ export default function ExploreModel({
   onHome,
   onBack,
   onAddToProforma,
+  onStepClick,
+  stepLabels,
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const { toast } = useToast();
 
   const totalValue = timeValue + docValue;
@@ -737,6 +742,8 @@ export default function ExploreModel({
         stepName="Your Model"
         onBack={onBack}
         onHome={onHome}
+        onStepClick={onStepClick}
+        stepLabels={stepLabels}
       />
       <UnifiedHeaderSpacer />
 
@@ -826,6 +833,231 @@ export default function ExploreModel({
       </motion.div>
 
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-10 md:py-12">
+
+        {/* QUICK ASSUMPTIONS EDITOR */}
+        <motion.div
+          className="mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <p className="text-xs font-medium text-[#999999] uppercase tracking-[2px] mb-3 text-center">Quick Adjustments</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Practice Panel */}
+            <div className="bg-[#F9F6F2] rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedPanel(expandedPanel === 'practice' ? null : 'practice')}
+                className="w-full flex items-center justify-between p-4 hover:bg-[#F0ECE6] transition-colors"
+                data-testid="button-expand-practice"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4 text-[#EA2C00]" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-neutral-900">Practice</p>
+                    <p className="text-[11px] text-neutral-500">
+                      {isNursing
+                        ? `${formatNumber(state.nursingStaffedBeds)} beds · ${formatNumber(state.numberOfProviders)} FTEs`
+                        : `${formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.encountersPerProvider)} enc/yr`}
+                    </p>
+                  </div>
+                </div>
+                {expandedPanel === 'practice' ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+              </button>
+              <AnimatePresence>
+                {expandedPanel === 'practice' && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 space-y-3">
+                      <div className="h-px bg-neutral-200" />
+                      {isNursing ? (
+                        <>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Staffed Beds</label>
+                            <FormattedNumberInput
+                              value={state.nursingStaffedBeds}
+                              onChange={(v) => updateState({ nursingStaffedBeds: Math.max(v, 1) })}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid="input-quick-beds"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Nurse FTEs</label>
+                            <FormattedNumberInput
+                              value={state.numberOfProviders}
+                              onChange={(v) => updateState({ numberOfProviders: Math.max(v, 1) })}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid="input-quick-ftes"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Providers</label>
+                            <FormattedNumberInput
+                              value={state.numberOfProviders}
+                              onChange={(v) => {
+                                const providers = Math.max(v, 1);
+                                updateState({ numberOfProviders: providers, annualEncounters: providers * state.encountersPerProvider });
+                              }}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid="input-quick-providers"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Encounters / Provider / Year</label>
+                            <FormattedNumberInput
+                              value={state.encountersPerProvider}
+                              onChange={(v) => {
+                                const enc = Math.max(v, 1);
+                                updateState({ encountersPerProvider: enc, annualEncounters: state.numberOfProviders * enc });
+                              }}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid="input-quick-encounters"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Utilization %</label>
+                            <FormattedNumberInput
+                              value={state.utilizationPercent}
+                              onChange={(v) => updateState({ utilizationPercent: Math.min(Math.max(v, 1), 100) })}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid="input-quick-utilization"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Time Savings Panel */}
+            <div className="bg-[#F9F6F2] rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedPanel(expandedPanel === 'time' ? null : 'time')}
+                className="w-full flex items-center justify-between p-4 hover:bg-[#F0ECE6] transition-colors"
+                data-testid="button-expand-time"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#EA2C00]" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-neutral-900">Time Savings</p>
+                    <p className="text-[11px] text-neutral-500">{state.minutesSavedPerEncounter} min/encounter saved</p>
+                  </div>
+                </div>
+                {expandedPanel === 'time' ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+              </button>
+              <AnimatePresence>
+                {expandedPanel === 'time' && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 space-y-3">
+                      <div className="h-px bg-neutral-200" />
+                      <div>
+                        <label className="block text-[10px] text-neutral-500 mb-1">Minutes Saved / Encounter</label>
+                        <FormattedNumberInput
+                          value={state.minutesSavedPerEncounter}
+                          onChange={(v) => updateState({ minutesSavedPerEncounter: Math.max(v, 0) })}
+                          className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          data-testid="input-quick-minutes"
+                        />
+                      </div>
+                      <p className="text-[10px] text-neutral-400 italic">
+                        {formatNumber(totalHoursSaved)} total hours saved/year
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Investment Panel */}
+            <div className="bg-[#F9F6F2] rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedPanel(expandedPanel === 'investment' ? null : 'investment')}
+                className="w-full flex items-center justify-between p-4 hover:bg-[#F0ECE6] transition-colors"
+                data-testid="button-expand-investment"
+              >
+                <div className="flex items-center gap-2.5">
+                  <DollarSign className="w-4 h-4 text-[#EA2C00]" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-neutral-900">Investment</p>
+                    <p className="text-[11px] text-neutral-500">{formatCurrency(annualInvestment)}/yr</p>
+                  </div>
+                </div>
+                {expandedPanel === 'investment' ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+              </button>
+              <AnimatePresence>
+                {expandedPanel === 'investment' && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 space-y-3">
+                      <div className="h-px bg-neutral-200" />
+                      {state.pricingModel === 'perProvider' ? (
+                        <div>
+                          <label className="block text-[10px] text-neutral-500 mb-1">
+                            {isNursing ? '$ / Bed / Month' : '$ / Provider / Month'}
+                          </label>
+                          <FormattedNumberInput
+                            value={state.costPerProvider}
+                            onChange={(v) => updateState({ costPerProvider: Math.max(v, 0) })}
+                            prefix="$"
+                            className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                            data-testid="input-quick-cost"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="block text-[10px] text-neutral-500 mb-1">Annual License Fee</label>
+                          <FormattedNumberInput
+                            value={state.annualLicenseFee}
+                            onChange={(v) => updateState({ annualLicenseFee: Math.max(v, 0) })}
+                            prefix="$"
+                            className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                            data-testid="input-quick-license"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-[10px] text-neutral-500 mb-1">Implementation Fee</label>
+                        <FormattedNumberInput
+                          value={state.implementationFee}
+                          onChange={(v) => updateState({ implementationFee: Math.max(v, 0) })}
+                          prefix="$"
+                          className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          data-testid="input-quick-impl-fee"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {onStepClick && (
+            <p className="text-[10px] text-neutral-400 text-center mt-3 italic">
+              For driver selections and detailed inputs, click any step dot above to jump back.
+            </p>
+          )}
+        </motion.div>
         
         {/* WHERE THE VALUE COMES FROM */}
         <motion.div

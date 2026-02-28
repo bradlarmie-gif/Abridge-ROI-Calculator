@@ -5,24 +5,42 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 interface ProgressDotsProps {
   currentStep: number;
   totalSteps: number;
+  onStepClick?: (step: number) => void;
+  stepLabels?: string[];
 }
 
-function ProgressDots({ currentStep, totalSteps }: ProgressDotsProps) {
+function ProgressDots({ currentStep, totalSteps, onStepClick, stepLabels }: ProgressDotsProps) {
   return (
     <div className="flex gap-1.5 sm:gap-2 items-center">
-      {Array.from({ length: totalSteps }, (_, i) => (
-        <span
-          key={i}
-          className={`h-1.5 sm:h-2 rounded-full transition-all ${
-            i === currentStep - 1 
-              ? 'w-4 sm:w-6 bg-[#EA2C00]' 
-              : i < currentStep 
-                ? 'w-1.5 sm:w-2 bg-slate-800' 
-                : 'w-1.5 sm:w-2 bg-slate-200'
-          }`}
-          data-testid={`progress-dot-${i + 1}`}
-        />
-      ))}
+      {Array.from({ length: totalSteps }, (_, i) => {
+        const stepNum = i + 1;
+        const isClickable = onStepClick && stepNum < currentStep;
+        const label = stepLabels?.[i];
+        return isClickable ? (
+          <button
+            key={i}
+            onClick={() => onStepClick(stepNum)}
+            title={label || `Step ${stepNum}`}
+            className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer hover:opacity-60 ${
+              'w-1.5 sm:w-2 bg-slate-800'
+            }`}
+            data-testid={`progress-dot-${stepNum}`}
+          />
+        ) : (
+          <span
+            key={i}
+            title={label}
+            className={`h-1.5 sm:h-2 rounded-full transition-all ${
+              i === currentStep - 1
+                ? 'w-4 sm:w-6 bg-[#EA2C00]'
+                : i < currentStep
+                  ? 'w-1.5 sm:w-2 bg-slate-800'
+                  : 'w-1.5 sm:w-2 bg-slate-200'
+            }`}
+            data-testid={`progress-dot-${stepNum}`}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -37,6 +55,8 @@ interface UnifiedHeaderProps {
   onBack?: () => void;
   showBack?: boolean;
   onHome?: () => void;
+  onStepClick?: (step: number) => void;
+  stepLabels?: string[];
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -54,6 +74,8 @@ export function UnifiedHeader({
   onBack,
   showBack = true,
   onHome,
+  onStepClick,
+  stepLabels,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   
@@ -126,7 +148,7 @@ export function UnifiedHeader({
 
         {/* Right: Progress Dots */}
         <div className="flex items-center flex-shrink-0">
-          <ProgressDots currentStep={currentStep} totalSteps={totalSteps} />
+          <ProgressDots currentStep={currentStep} totalSteps={totalSteps} onStepClick={onStepClick} stepLabels={stepLabels} />
         </div>
       </div>
     </header>
