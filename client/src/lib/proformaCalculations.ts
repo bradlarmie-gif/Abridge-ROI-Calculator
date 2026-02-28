@@ -189,7 +189,24 @@ export function buildMonthlyCashFlows(
   return rows;
 }
 
-export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow[] {
+export function getContractStartDate(): Date {
+  return new Date();
+}
+
+function getCalendarQuarterLabel(monthIndex: number, startDate: Date): string {
+  const d = new Date(startDate.getFullYear(), startDate.getMonth() + monthIndex, 1);
+  const calendarQuarter = Math.floor(d.getMonth() / 3) + 1;
+  const yearShort = String(d.getFullYear()).slice(-2);
+  return `Q${calendarQuarter} '${yearShort}`;
+}
+
+function getCalendarYearLabel(monthIndex: number, startDate: Date): string {
+  const d = new Date(startDate.getFullYear(), startDate.getMonth() + monthIndex, 1);
+  return String(d.getFullYear());
+}
+
+export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): ProformaCashFlowRow[] {
+  const start = startDate || getContractStartDate();
   const quarters: ProformaCashFlowRow[] = [];
   for (let q = 0; q < Math.ceil(rows.length / 3); q++) {
     const chunk = rows.slice(q * 3, q * 3 + 3);
@@ -209,9 +226,10 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
       };
     });
 
+    const firstMonthIndex = q * 3;
     quarters.push({
       period: q + 1,
-      label: `Q${q + 1}`,
+      label: getCalendarQuarterLabel(firstMonthIndex, start),
       investment: chunk.reduce((s, r) => s + r.investment, 0),
       docValue: chunk.reduce((s, r) => s + r.docValue, 0),
       timeValue: chunk.reduce((s, r) => s + r.timeValue, 0),
@@ -225,33 +243,168 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
   return quarters;
 }
 
-export function calculateIRR(monthlyCashFlows: number[], maxIterations = 200, tolerance = 1e-7): number {
-  let rate = 0.01;
+export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): ProformaCashFlowRow[] {
+  const start = startDate || getContractStartDate();
+  const years: ProformaCashFlowRow[] = [];
+  for (let y = 0; y < Math.ceil(rows.length / 12); y++) {
+    const chunk = rows.slice(y * 12, y * 12 + 12);
+    if (chunk.length === 0) continue;
+
+    const allSettingIds = new Set<string>();
+    chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
+
+    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    allSettingIds.forEach(id => {
+      const lastChunk = chunk[chunk.length - 1];
+      bySettings[id] = {
+        value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
+        investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
+        providers: lastChunk?.bySettings[id]?.providers || 0,
+        docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
+        timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
+        retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
+      };
+    });
+
+    const firstMonthIndex = y * 12;
+    years.push({
+      period: y + 1,
+      label: getCalendarYearLabel(firstMonthIndex, start),
+      investment: chunk.reduce((s, r) => s + r.investment, 0),
+      docValue: chunk.reduce((s, r) => s + r.docValue, 0),
+      timeValue: chunk.reduce((s, r) => s + r.timeValue, 0),
+      retentionValue: chunk.reduce((s, r) => s + r.retentionValue, 0),
+      totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
+      netValue: chunk.reduce((s, r) => s + r.netValue, 0),
+      cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
+      bySettings,
+    });
+  }
+  return years;
+}
+
+function npvAtRate(cashFlows: number[], rate: number): number {
+  let npv = 0;
+  for (let t = 0; t < cashFlows.length; t++) {
+    npv += cashFlows[t] / Math.pow(1 + rate, t);
+  }
+  return npv;
+}
+
+function npvDerivativeAtRate(cashFlows: number[], rate: number): number {
+  let dnpv = 0;
+  for (let t = 0; t < cashFlows.length; t++) {
+    dnpv -= (t * cashFlows[t]) / Math.pow(1 + rate, t + 1);
+  }
+  return dnpv;
+}
+
+function newtonRaphsonIRR(cashFlows: number[], initialGuess: number, maxIterations = 200, tolerance = 1e-7): number | null {
+  let rate = initialGuess;
 
   for (let i = 0; i < maxIterations; i++) {
-    let npv = 0;
-    let dnpv = 0;
-    for (let t = 0; t < monthlyCashFlows.length; t++) {
-      const discount = Math.pow(1 + rate, t);
-      npv += monthlyCashFlows[t] / discount;
-      dnpv -= (t * monthlyCashFlows[t]) / Math.pow(1 + rate, t + 1);
-    }
+    const npv = npvAtRate(cashFlows, rate);
+    const dnpv = npvDerivativeAtRate(cashFlows, rate);
 
-    if (Math.abs(dnpv) < 1e-12) break;
+    if (!isFinite(npv) || !isFinite(dnpv)) return null;
+    if (Math.abs(dnpv) < 1e-12) return null;
 
     const newRate = rate - npv / dnpv;
+    if (!isFinite(newRate)) return null;
+
     if (Math.abs(newRate - rate) < tolerance) {
-      rate = newRate;
-      break;
+      return newRate;
     }
     rate = newRate;
 
-    if (rate < -0.5) rate = -0.5;
+    if (rate < -0.99) rate = -0.99;
     if (rate > 10) rate = 10;
   }
 
-  const annualizedRate = Math.pow(1 + rate, 12) - 1;
-  return annualizedRate;
+  const finalNpv = npvAtRate(cashFlows, rate);
+  const totalAbsFlow = cashFlows.reduce((s, v) => s + Math.abs(v), 0);
+  const finalTolerance = Math.max(1, totalAbsFlow * 0.0001);
+  if (Math.abs(finalNpv) < finalTolerance) return rate;
+  return null;
+}
+
+function bisectionIRR(cashFlows: number[], lo: number, hi: number, maxIterations = 100, rateTolerance = 1e-7): number | null {
+  let npvLo = npvAtRate(cashFlows, lo);
+  let npvHi = npvAtRate(cashFlows, hi);
+
+  if (!isFinite(npvLo) || !isFinite(npvHi)) return null;
+  if (npvLo * npvHi > 0) return null;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const mid = (lo + hi) / 2;
+    const npvMid = npvAtRate(cashFlows, mid);
+
+    if (!isFinite(npvMid)) return null;
+    if ((hi - lo) / 2 < rateTolerance) {
+      return mid;
+    }
+
+    if (npvMid * npvLo < 0) {
+      hi = mid;
+      npvHi = npvMid;
+    } else {
+      lo = mid;
+      npvLo = npvMid;
+    }
+  }
+
+  return (lo + hi) / 2;
+}
+
+export function calculateIRR(monthlyCashFlows: number[]): number {
+  if (!monthlyCashFlows || monthlyCashFlows.length < 2) return 0;
+
+  const allZero = monthlyCashFlows.every(v => Math.abs(v) < 0.01);
+  if (allZero) return 0;
+
+  const hasNeg = monthlyCashFlows.some(v => v < -0.01);
+  const hasPos = monthlyCashFlows.some(v => v > 0.01);
+  if (!hasNeg || !hasPos) return 0;
+
+  const totalInvestment = Math.abs(monthlyCashFlows[0]);
+  const totalReturns = monthlyCashFlows.slice(1).reduce((s, v) => s + Math.max(0, v), 0);
+  const roughMonthlyReturn = totalReturns / (monthlyCashFlows.length - 1);
+  const roughGuess = totalInvestment > 0 ? roughMonthlyReturn / totalInvestment : 0.01;
+
+  const initialGuesses = [
+    Math.min(Math.max(roughGuess, 0.001), 0.5),
+    0.01,
+    0.005,
+    0.05,
+    0.1,
+    0.001,
+    -0.01,
+  ];
+
+  for (const guess of initialGuesses) {
+    const result = newtonRaphsonIRR(monthlyCashFlows, guess);
+    if (result !== null && isFinite(result) && result > -0.99 && result < 10) {
+      const verifyNpv = npvAtRate(monthlyCashFlows, result);
+      const totalAbsFlow = monthlyCashFlows.reduce((s, v) => s + Math.abs(v), 0);
+      const tolerance = Math.max(1, totalAbsFlow * 0.0001);
+      if (Math.abs(verifyNpv) < tolerance) {
+        const annualized = Math.pow(1 + result, 12) - 1;
+        if (isFinite(annualized) && annualized > -1) {
+          return annualized;
+        }
+      }
+    }
+  }
+
+  const bisResult = bisectionIRR(monthlyCashFlows, -0.5, 5.0);
+  if (bisResult !== null && isFinite(bisResult)) {
+    const annualized = Math.pow(1 + bisResult, 12) - 1;
+    if (isFinite(annualized) && annualized > -1) {
+      return annualized;
+    }
+  }
+
+  return 0;
 }
 
 export function buildIRRCashFlows(
@@ -260,12 +413,20 @@ export function buildIRRCashFlows(
   cashFlows: ProformaCashFlowRow[]
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
-  const initialOutflow = -(totalImplFees + totalSubscription);
 
-  const monthlyReturns = cashFlows.map(r => r.totalValue);
+  const firstQuarterSubscription = cashFlows.slice(0, 3).reduce((s, r) => s + r.investment, 0);
+  const initialOutflow = -(totalImplFees + firstQuarterSubscription);
 
-  return [initialOutflow, ...monthlyReturns];
+  if (!isFinite(initialOutflow) || initialOutflow >= 0) {
+    return [0];
+  }
+
+  const monthlyNetReturns = cashFlows.slice(3).map(r => {
+    const v = r.totalValue - r.investment;
+    return isFinite(v) ? v : 0;
+  });
+
+  return [initialOutflow, ...monthlyNetReturns];
 }
 
 export function calculateProformaSummary(
@@ -309,37 +470,42 @@ export function calculateProformaSummary(
   };
 }
 
-export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[]) {
+export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[], startDate?: Date) {
+  const start = startDate || getContractStartDate();
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
 
   const years = [
-    { label: "Year 1", rows: cashFlows.filter(r => r.period <= 12) },
-    { label: "Year 2", rows: cashFlows.filter(r => r.period > 12 && r.period <= 24) },
-    { label: "Year 3", rows: cashFlows.filter(r => r.period > 24 && r.period <= 36) },
+    { rows: cashFlows.filter(r => r.period <= 12) },
+    { rows: cashFlows.filter(r => r.period > 12 && r.period <= 24) },
+    { rows: cashFlows.filter(r => r.period > 24 && r.period <= 36) },
   ];
 
-  return years.map((y, idx) => {
-    const bySettings: Record<string, { value: number; retention: number; investment: number }> = {};
-    settings.forEach(s => {
-      bySettings[s.id] = {
-        value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
-        retention: 0,
-        investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
+  return years
+    .filter(y => y.rows.length > 0)
+    .map((y, idx) => {
+      const bySettings: Record<string, { value: number; retention: number; investment: number }> = {};
+      settings.forEach(s => {
+        bySettings[s.id] = {
+          value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
+          retention: 0,
+          investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
+        };
+      });
+
+      const subscriptionInvestment = y.rows.reduce((s, r) => s + r.investment, 0);
+      const implInvestment = idx === 0 ? totalImplFees : 0;
+
+      const yearLabel = getCalendarYearLabel(idx * 12, start);
+
+      return {
+        label: yearLabel,
+        totalValue: y.rows.reduce((s, r) => s + r.totalValue, 0),
+        docValue: y.rows.reduce((s, r) => s + r.docValue, 0),
+        timeValue: y.rows.reduce((s, r) => s + r.timeValue, 0),
+        retentionValue: y.rows.reduce((s, r) => s + r.retentionValue, 0),
+        investment: subscriptionInvestment + implInvestment,
+        netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,
+        bySettings,
       };
     });
-
-    const subscriptionInvestment = y.rows.reduce((s, r) => s + r.investment, 0);
-    const implInvestment = idx === 0 ? totalImplFees : 0;
-
-    return {
-      label: y.label,
-      totalValue: y.rows.reduce((s, r) => s + r.totalValue, 0),
-      docValue: y.rows.reduce((s, r) => s + r.docValue, 0),
-      timeValue: y.rows.reduce((s, r) => s + r.timeValue, 0),
-      retentionValue: y.rows.reduce((s, r) => s + r.retentionValue, 0),
-      investment: subscriptionInvestment + implInvestment,
-      netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,
-      bySettings,
-    };
-  });
 }

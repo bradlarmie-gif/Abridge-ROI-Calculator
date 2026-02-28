@@ -40,7 +40,7 @@ export interface RetentionPhasing {
 
 export interface ProformaConfig {
   contractTermMonths: 24 | 36;
-  viewMode: "monthly" | "quarterly";
+  viewMode: "quarterly" | "yearly";
   retentionPhasing: RetentionPhasing;
 }
 
@@ -93,7 +93,7 @@ export const SETTING_UNIT_LABELS: Record<string, string> = {
 
 export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   contractTermMonths: 36,
-  viewMode: "monthly",
+  viewMode: "quarterly",
   retentionPhasing: {
     year1Pct: 0,
     year2Pct: 50,

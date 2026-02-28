@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +57,10 @@ function fmtPct(n: number) {
   return `${val}%`;
 }
 
+function contractTermLabel(months: number): string {
+  return `${months / 12}-Year`;
+}
+
 export default function ProformaView({
   settings,
   onUpdateSetting,
@@ -66,11 +70,12 @@ export default function ProformaView({
   const isMobile = useIsMobile();
   const [config, setConfig] = useState<ProformaConfig>(() => ({
     ...DEFAULT_PROFORMA_CONFIG,
-    viewMode: typeof window !== "undefined" && window.innerWidth < 768 ? "quarterly" : "monthly",
   }));
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
+
+  const startDate = useMemo(() => getContractStartDate(), []);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -85,9 +90,18 @@ export default function ProformaView({
   };
 
   const cashFlows = useMemo(() => buildMonthlyCashFlows(settings, config), [settings, config]);
-  const displayData = useMemo(() => config.viewMode === "quarterly" ? groupByQuarter(cashFlows) : cashFlows, [cashFlows, config.viewMode]);
+  const displayData = useMemo(() => {
+    if (config.viewMode === "yearly") return groupByYear(cashFlows, startDate);
+    return groupByQuarter(cashFlows, startDate);
+  }, [cashFlows, config.viewMode, startDate]);
   const summary = useMemo(() => calculateProformaSummary(settings, config, cashFlows), [settings, config, cashFlows]);
-  const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings), [cashFlows, settings]);
+  const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
+
+  const hasInvestment = useMemo(() => {
+    const totalCost = settings.reduce((s, v) => s + v.costPerUnit * v.providerCount, 0);
+    const totalImpl = settings.reduce((s, v) => s + v.implementationFee, 0);
+    return totalCost > 0 || totalImpl > 0;
+  }, [settings]);
 
   const sensitivityIRR = useMemo(() => {
     const scaleDrivers = (s: ProformaSettingSnapshot, factor: number) => ({
@@ -124,7 +138,7 @@ export default function ProformaView({
     });
   }, [displayData, settings]);
 
-  const totalProvidersByMonth = useMemo(() => {
+  const totalProvidersByPeriod = useMemo(() => {
     return displayData.map(row => {
       let total = 0;
       settings.forEach(s => {
@@ -142,21 +156,28 @@ export default function ProformaView({
   }, [displayData]);
 
   const goLiveLabels = useMemo(() => {
+    const quarterData = groupByQuarter(cashFlows, startDate);
     return settings
       .filter(s => s.goLiveMonth > 1)
-      .map(s => ({
-        label: config.viewMode === "monthly" ? `M${s.goLiveMonth}` : `Q${Math.ceil(s.goLiveMonth / 3)}`,
-        name: s.label,
-        color: s.color,
-      }));
-  }, [settings, config.viewMode]);
+      .map(s => {
+        const qIdx = Math.ceil(s.goLiveMonth / 3) - 1;
+        const qRow = quarterData[qIdx];
+        return {
+          label: qRow?.label || `Q${qIdx + 1}`,
+          name: s.label,
+          color: s.color,
+        };
+      });
+  }, [settings, cashFlows, startDate]);
 
   const hasDelayedDrivers = settings.some(s => s.drivers.some(d => d.onset === "delayed"));
   const timeSavingsOnsetLabel = useMemo(() => {
     const firstGoLive = Math.min(...settings.map(s => s.goLiveMonth));
     const onsetMonth = firstGoLive + 3;
-    return config.viewMode === "monthly" ? `M${onsetMonth}` : `Q${Math.ceil(onsetMonth / 3)}`;
-  }, [settings, config.viewMode]);
+    const quarterData = groupByQuarter(cashFlows, startDate);
+    const qIdx = Math.ceil(onsetMonth / 3) - 1;
+    return quarterData[qIdx]?.label || `Q${qIdx + 1}`;
+  }, [settings, cashFlows, startDate]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -172,18 +193,18 @@ export default function ProformaView({
             </button>
             <div className="flex items-center gap-1 bg-white/10 rounded-full px-2 py-1">
               <button
-                onClick={() => setConfig(c => ({ ...c, viewMode: "monthly" }))}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "monthly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-                data-testid="toggle-monthly"
-              >
-                Monthly
-              </button>
-              <button
                 onClick={() => setConfig(c => ({ ...c, viewMode: "quarterly" }))}
                 className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "quarterly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
                 data-testid="toggle-quarterly"
               >
-                Quarterly
+                Quarters
+              </button>
+              <button
+                onClick={() => setConfig(c => ({ ...c, viewMode: "yearly" }))}
+                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "yearly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
+                data-testid="toggle-yearly"
+              >
+                Years
               </button>
             </div>
           </div>
@@ -201,7 +222,7 @@ export default function ProformaView({
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">IRR</p>
-                <p className="text-xl font-bold text-emerald-400" data-testid="text-irr">{fmtPct(summary.irr)}</p>
+                <p className="text-xl font-bold text-emerald-400" data-testid="text-irr">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
@@ -226,7 +247,7 @@ export default function ProformaView({
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">IRR</p>
-              <p className="text-2xl font-bold text-emerald-400">{fmtPct(summary.irr)}</p>
+              <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
@@ -283,15 +304,15 @@ export default function ProformaView({
             </div>
           </div>
           <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">
-            {config.viewMode === "quarterly"
-              ? "Quarterly value by driver type"
+            {config.viewMode === "yearly"
+              ? "Annual value by driver type"
               : isMobile
-                ? "Monthly value by driver type"
-                : "Monthly value by driver type — doc quality starts immediately, time savings after 3 months, retention phases in over years"}
+                ? "Quarterly value by driver type"
+                : "Quarterly value by driver type — doc quality starts immediately, time savings after 3 months, retention phases in over years"}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
-            <ResponsiveContainer width="100%" height={isMobile ? 280 : 400}>
-              <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 5 } : { top: 30, right: 20, left: 10, bottom: 10 }}>
+            <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
+              <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 20, left: 10, bottom: 10 }}>
                 <defs>
                   <linearGradient id="grad-doc" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#2563EB" stopOpacity={0.3} />
@@ -313,20 +334,23 @@ export default function ProformaView({
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: isMobile ? 9 : 11, fill: "#888" }}
-                  interval={config.viewMode === "monthly" ? (isMobile ? 5 : 2) : (isMobile ? 1 : 0)}
+                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                  interval={0}
                   axisLine={{ stroke: "#D5D0CB" }}
+                  angle={isMobile && config.viewMode === "quarterly" ? -35 : 0}
+                  textAnchor={isMobile && config.viewMode === "quarterly" ? "end" : "middle"}
+                  height={isMobile && config.viewMode === "quarterly" ? 50 : 30}
                 />
                 <YAxis
                   tickFormatter={(v: number) => fmt(v)}
-                  tick={{ fontSize: isMobile ? 9 : 11, fill: "#888" }}
-                  width={isMobile ? 50 : 70}
+                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                  width={isMobile ? 55 : 80}
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip settings={settings} totalProvidersByMonth={totalProvidersByMonth} />} />
+                <Tooltip content={<CustomTooltip settings={settings} totalProvidersByPeriod={totalProvidersByPeriod} />} />
 
-                {!isMobile && goLiveLabels.map(gl => (
+                {config.viewMode === "quarterly" && !isMobile && goLiveLabels.map(gl => (
                   <ReferenceLine
                     key={`golive-${gl.label}`}
                     x={gl.label}
@@ -343,7 +367,7 @@ export default function ProformaView({
                   />
                 ))}
 
-                {!isMobile && hasDelayedDrivers && (
+                {config.viewMode === "quarterly" && !isMobile && hasDelayedDrivers && (
                   <ReferenceLine
                     x={timeSavingsOnsetLabel}
                     stroke="#EA2C00"
@@ -467,7 +491,7 @@ export default function ProformaView({
                   className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${config.contractTermMonths === t ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
                   data-testid={`toggle-term-${t}`}
                 >
-                  {t}mo
+                  {t / 12} Year
                 </button>
               ))}
             </div>
@@ -623,14 +647,14 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* 3-YEAR P&L */}
+        {/* FINANCIAL SUMMARY */}
         <motion.div
           className="mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">3-Year Financial Summary</h2>
+          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">{contractTermLabel(config.contractTermMonths)} Financial Summary</h2>
           <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">Phased projection with onset timing and conservative retention modeling</p>
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0" data-testid="table-pnl">
             <table className="w-full text-xs sm:text-sm min-w-[340px]">
@@ -669,7 +693,6 @@ export default function ProformaView({
                   ))}
                   <td className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-bold text-[#EA2C00]">{fmt(summary.threeYearValue)}</td>
                 </tr>
-                {/* Sub-rows hidden on mobile for cleanliness */}
                 {!isMobile && (
                   <>
                     <tr className="border-b border-neutral-100">
@@ -739,12 +762,16 @@ export default function ProformaView({
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-irr">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">IRR</p>
-            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{fmtPct(summary.irr)}</p>
-            <div className="mt-1.5 sm:mt-2 flex justify-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-neutral-500">
-              <span>{fmtPct(sensitivityIRR.conservative)}</span>
-              <span className="text-neutral-300">|</span>
-              <span>{fmtPct(sensitivityIRR.optimistic)}</span>
-            </div>
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
+            {hasInvestment ? (
+              <div className="mt-1.5 sm:mt-2 flex justify-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-neutral-500">
+                <span>{fmtPct(sensitivityIRR.conservative)}</span>
+                <span className="text-neutral-300">|</span>
+                <span>{fmtPct(sensitivityIRR.optimistic)}</span>
+              </div>
+            ) : (
+              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">Set pricing above</p>
+            )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
@@ -754,7 +781,7 @@ export default function ProformaView({
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{config.contractTermMonths}-Mo Net</p>
+            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
             <p className={`text-2xl sm:text-3xl font-bold ${summary.threeYearNet >= 0 ? "text-emerald-700" : "text-red-600"}`}>
               {fmt(summary.threeYearNet)}
             </p>
@@ -782,7 +809,7 @@ export default function ProformaView({
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong className="text-[#2563EB]">Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong className="text-emerald-600">Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated using Newton-Raphson iteration. Period-0 outflow is the total investment commitment (implementation fees + full contract subscription). Monthly returns are the gross value generated. This models the annualized return on total cost of ownership.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated using Newton-Raphson iteration with multiple initial guesses and bisection fallback. Period-0 outflow is the initial investment commitment (implementation fees + first-quarter subscription). Subsequent periods are net monthly cash flows (value generated minus ongoing subscription). The monthly rate is annualized: (1 + monthly rate)^12 - 1. Result is validated against NPV to ensure convergence.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost (implementation fees + subscription). A straightforward metric: {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3.</p>
@@ -820,7 +847,7 @@ export default function ProformaView({
   );
 }
 
-function CustomTooltip({ active, payload, label, settings, totalProvidersByMonth }: any) {
+function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod }: any) {
   if (!active || !payload) return null;
 
   const docItem = payload.find((p: any) => p.dataKey === "docValue");
@@ -830,7 +857,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByMonth
 
   const total = (docItem?.value || 0) + (timeItem?.value || 0) + (retentionItem?.value || 0);
   const periodIdx = payload[0]?.payload?.period ? payload[0].payload.period - 1 : 0;
-  const providerCount = totalProvidersByMonth?.[periodIdx] || 0;
+  const providerCount = totalProvidersByPeriod?.[periodIdx] || 0;
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-neutral-200 p-3 sm:p-4 text-xs sm:text-sm min-w-[200px] sm:min-w-[240px]">

@@ -164,6 +164,10 @@ function fmtPct(n: number) {
   return `${val}%`;
 }
 
+function contractTermLabel(months: number): string {
+  return `${months / 12}-Year`;
+}
+
 interface ProformaPDFProps {
   settings: ProformaSettingSnapshot[];
   config: ProformaConfig;
@@ -173,6 +177,8 @@ interface ProformaPDFProps {
 
 function ProformaPDFDocument({ settings, config, summary, yearlyData }: ProformaPDFProps) {
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const termLabel = contractTermLabel(config.contractTermMonths);
+  const hasInvestment = settings.some(s => s.costPerUnit * s.providerCount > 0 || s.implementationFee > 0);
 
   return (
     <Document>
@@ -180,7 +186,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
       <Page size="LETTER" style={styles.page}>
         <View style={styles.heroBox}>
           <Text style={styles.heroTitle}>Organization Proforma</Text>
-          <Text style={styles.heroSubtitle}>Multi-Setting Financial Model — {settings.length} Care Settings</Text>
+          <Text style={styles.heroSubtitle}>Multi-Setting Financial Model — {settings.length} Care Settings · {termLabel} Contract</Text>
           <View style={styles.metricsRow}>
             <View style={styles.metricBox}>
               <Text style={styles.metricLabel}>Annual Value</Text>
@@ -192,7 +198,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
             </View>
             <View style={styles.metricBox}>
               <Text style={styles.metricLabel}>IRR</Text>
-              <Text style={[styles.metricValue, { color: colors.positive }]}>{fmtPct(summary.irr)}</Text>
+              <Text style={[styles.metricValue, { color: colors.positive }]}>{hasInvestment ? fmtPct(summary.irr) : "N/A"}</Text>
             </View>
             <View style={styles.metricBox}>
               <Text style={styles.metricLabel}>Payback</Text>
@@ -289,9 +295,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
         </View>
       </Page>
 
-      {/* PAGE 3: Financial Projections with Doc/Time/Retention Breakdown */}
+      {/* PAGE 3: Financial Projections */}
       <Page size="LETTER" style={styles.page}>
-        <Text style={styles.sectionTitle}>{config.contractTermMonths}-Month Financial Projection</Text>
+        <Text style={styles.sectionTitle}>{termLabel} Financial Projection</Text>
         <Text style={styles.sectionSubtitle}>Value phased by driver onset timing with conservative retention modeling</Text>
 
         <View style={styles.tableHeader}>
@@ -299,7 +305,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           {yearlyData.map(y => (
             <Text key={y.label} style={[styles.cellBold]}>{y.label}</Text>
           ))}
-          <Text style={styles.cellBold}>{config.contractTermMonths}-Mo Total</Text>
+          <Text style={styles.cellBold}>{termLabel} Total</Text>
         </View>
 
         {settings.map(s => (
@@ -374,7 +380,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           <Text style={[styles.sectionTitle, { fontSize: 11 }]}>Assumptions</Text>
           <View style={{ gap: 4 }}>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • Contract term: {config.contractTermMonths} months
+              • Contract term: {termLabel} ({config.contractTermMonths} months)
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
               • Driver onset: Doc quality = immediate (1mo learning curve), Time savings = 3mo operational lag, Retention = phased per Y1/Y2/Y3
@@ -386,7 +392,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               • Adoption ramp: S-curve over 12 months; providers expand from pilot to full scale over contract term
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • IRR: {fmtPct(summary.irr)} annualized (total investment as period-0 outflow, monthly value as returns) · Simple ROI: {Math.round(summary.simpleROI * 100)}%
+              • IRR: {hasInvestment ? fmtPct(summary.irr) : "N/A"} annualized (Newton-Raphson with validation) · Simple ROI: {Math.round(summary.simpleROI * 100)}%
             </Text>
           </View>
         </View>
@@ -412,14 +418,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Internal Rate of Return (IRR)</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              IRR is calculated using Newton-Raphson iteration. The period-0 outflow is the total investment commitment (implementation fees + full contract subscription cost). Monthly returns are the gross value generated. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. This models the annualized return on total cost of ownership.
+              IRR is calculated using Newton-Raphson iteration with multiple initial guesses and bisection fallback for convergence. The period-0 outflow is the total investment commitment (implementation fees + full contract subscription cost). Monthly returns are the gross value generated. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. Results are validated against NPV to ensure mathematical accuracy.
             </Text>
           </View>
 
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Simple ROI</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              Simple ROI is total contract net value divided by total contract cost (implementation fees + subscription). A {Math.round(summary.simpleROI * 100)}% Simple ROI means the organization receives ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested over the contract term.
+              Simple ROI is total contract net value divided by total contract cost (implementation fees + subscription). A {Math.round(summary.simpleROI * 100)}% Simple ROI means the organization receives ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested over the {termLabel.toLowerCase()} contract term.
             </Text>
           </View>
 
