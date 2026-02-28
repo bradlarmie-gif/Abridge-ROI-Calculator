@@ -424,9 +424,10 @@ interface ExploreFlowProps {
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
+  disabledCareSettings?: ExploreCareSetting[];
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, onAddToProforma }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(initialPhase || 'careSetting');
   const [state, setState] = useState<ExploreState>(() => ({
     ...DEFAULT_EXPLORE_STATE,
@@ -704,13 +705,15 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     case 'careSetting':
       return (
         <ExploreCareSettings
-          selectedSetting={state.careSetting}
+          selectedSetting={disabledCareSettings.includes(state.careSetting as ExploreCareSetting) ? null : state.careSetting}
           onSelectSetting={(setting: ExploreCareSetting) => {
+            if (disabledCareSettings.includes(setting)) return;
             updateState({ careSetting: setting });
           }}
           onNext={() => navigate('practice')}
           onBack={goHome}
           onHome={goHome}
+          disabledSettings={disabledCareSettings}
         />
       );
     

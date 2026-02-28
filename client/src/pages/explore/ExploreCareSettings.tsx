@@ -51,9 +51,10 @@ interface ExploreCareSettingsProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  disabledSettings?: ExploreCareSetting[];
 }
 
-export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome }: ExploreCareSettingsProps) {
+export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleContinue = () => {
@@ -129,33 +130,38 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
+              const isDisabled = disabledSettings.includes(setting.id);
               
               return (
                 <motion.div
                   key={setting.id}
-                  onClick={() => onSelectSetting(setting.id)}
+                  onClick={() => !isDisabled && onSelectSetting(setting.id)}
                   role="button"
-                  tabIndex={0}
+                  tabIndex={isDisabled ? -1 : 0}
+                  aria-disabled={isDisabled}
                   onKeyDown={(e) => {
+                    if (isDisabled) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       onSelectSetting(setting.id);
                     }
                   }}
                   className={`
-                    group relative flex flex-col text-left rounded-xl p-5 md:p-7 min-h-[220px] cursor-pointer transition-all duration-200 outline-none
-                    ${isSelected 
-                      ? 'bg-white border-2 border-[#EA2C00] shadow-[0_4px_16px_rgba(234,44,0,0.1)]' 
-                      : 'bg-[#F5F0EB] border-2 border-transparent hover:border-[#EA2C00] hover:shadow-[0_4px_16px_rgba(234,44,0,0.08)] hover:-translate-y-0.5'
+                    group relative flex flex-col text-left rounded-xl p-5 md:p-7 min-h-[220px] transition-all duration-200 outline-none
+                    ${isDisabled
+                      ? 'bg-[#F0EDEA] border-2 border-transparent opacity-50 cursor-not-allowed'
+                      : isSelected 
+                        ? 'bg-white border-2 border-[#EA2C00] shadow-[0_4px_16px_rgba(234,44,0,0.1)] cursor-pointer' 
+                        : 'bg-[#F5F0EB] border-2 border-transparent hover:border-[#EA2C00] hover:shadow-[0_4px_16px_rgba(234,44,0,0.08)] hover:-translate-y-0.5 cursor-pointer'
                     }
                   `}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + index * 0.05, duration: 0.3 }}
                   data-testid={`card-setting-${setting.id}`}
-                  aria-label={`Select ${setting.label}`}
+                  aria-label={isDisabled ? `${setting.label} — already in proforma` : `Select ${setting.label}`}
                 >
-                  {isSelected && (
+                  {isSelected && !isDisabled && (
                     <motion.div 
                       className="absolute top-4 right-4 w-2 h-2 bg-[#EA2C00] rounded-full"
                       initial={{ scale: 0 }}
@@ -166,37 +172,44 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   )}
 
                   <div
-                    className="w-[52px] h-[52px] rounded-full flex items-center justify-center mb-4 flex-shrink-0"
+                    className={`w-[52px] h-[52px] rounded-full flex items-center justify-center mb-4 flex-shrink-0 ${isDisabled ? 'opacity-60' : ''}`}
                     style={{
                       backgroundColor: '#FFFFFF',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                     }}
                   >
-                    <Icon className="w-6 h-6 text-[#EA2C00]" />
+                    <Icon className={`w-6 h-6 ${isDisabled ? 'text-[#999999]' : 'text-[#EA2C00]'}`} />
                   </div>
                   
                   <h3
-                    className="text-xl font-bold text-[#1A1A1A] mb-1"
+                    className={`text-xl font-bold mb-1 ${isDisabled ? 'text-[#999999]' : 'text-[#1A1A1A]'}`}
                     data-testid={`text-setting-label-${setting.id}`}
                   >
                     {setting.label}
                   </h3>
                   
                   <p
-                    className="text-[13px] font-medium leading-tight text-[#666666] mb-3"
+                    className={`text-[13px] font-medium leading-tight mb-3 ${isDisabled ? 'text-[#AAAAAA]' : 'text-[#666666]'}`}
                     data-testid={`text-setting-subtitle-${setting.id}`}
                   >
                     {setting.shortDesc}
                   </p>
 
                   <p
-                    className="text-xs leading-relaxed text-[#999999] flex-1"
+                    className={`text-xs leading-relaxed flex-1 ${isDisabled ? 'text-[#BBBBBB]' : 'text-[#999999]'}`}
                     data-testid={`text-setting-desc-${setting.id}`}
                   >
                     {setting.description}
                   </p>
 
-                  {!isSelected && (
+                  {isDisabled && (
+                    <span className="text-xs font-medium text-[#999999] mt-3 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Already in proforma
+                    </span>
+                  )}
+
+                  {!isDisabled && !isSelected && (
                     <span
                       className="text-xs font-medium text-[#EA2C00] mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       data-testid={`text-select-hint-${setting.id}`}
@@ -206,7 +219,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     </span>
                   )}
 
-                  {isSelected && (
+                  {!isDisabled && isSelected && (
                     <span className="text-xs font-medium text-[#EA2C00] mt-3 flex items-center gap-1">
                       <Check className="w-3 h-3" />
                       Selected

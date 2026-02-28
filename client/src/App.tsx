@@ -523,6 +523,7 @@ export default function App() {
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
                 onAddToProforma={handleAddToProforma}
+                disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
               />
             )}
 
