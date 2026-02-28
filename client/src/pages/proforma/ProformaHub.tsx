@@ -120,7 +120,7 @@ export default function ProformaHub({
                           <div>
                             <h3 className="font-bold text-neutral-900">{setting.label}</h3>
                             <p className="text-sm text-neutral-500">
-                              {formatNumber(setting.providerCount)} {SETTING_UNIT_LABELS[setting.careSetting]} · {setting.utilizationPercent}% utilization
+                              {formatNumber(setting.providerCount)} → {formatNumber(setting.fullScaleProviders)} {SETTING_UNIT_LABELS[setting.careSetting]} · {setting.utilizationPercent}% utilization
                             </p>
                           </div>
                         </div>

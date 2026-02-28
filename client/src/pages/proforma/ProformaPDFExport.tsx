@@ -156,7 +156,9 @@ function fmt(n: number) {
 }
 
 function fmtPct(n: number) {
-  return `${Math.round(n * 100)}%`;
+  const val = Math.round(n * 100);
+  if (val > 999) return ">999%";
+  return `${val}%`;
 }
 
 interface ProformaPDFProps {
@@ -214,7 +216,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
         {settings.map(s => (
           <View key={s.id} style={styles.tableRow}>
             <Text style={styles.cellLeft}>{s.label}</Text>
-            <Text style={styles.cell}>{s.providerCount.toLocaleString()} {SETTING_UNIT_LABELS[s.careSetting]}</Text>
+            <Text style={styles.cell}>{s.providerCount.toLocaleString()} → {s.fullScaleProviders.toLocaleString()} {SETTING_UNIT_LABELS[s.careSetting]}</Text>
             <Text style={styles.cell}>{fmt(s.annualValue)}</Text>
             <Text style={styles.cell}>{s.totalHoursSaved.toLocaleString()}</Text>
             <Text style={styles.cell}>Month {s.goLiveMonth}</Text>
@@ -238,7 +240,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{s.label}</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, marginBottom: 6 }}>
-                {s.providerCount.toLocaleString()} {SETTING_UNIT_LABELS[s.careSetting]} · {s.utilizationPercent}% utilization · {fmt(s.costPerUnit)}/{SETTING_UNIT_LABELS[s.careSetting] === "beds" ? "bed" : "provider"}/mo
+                {s.providerCount.toLocaleString()} → {s.fullScaleProviders.toLocaleString()} {SETTING_UNIT_LABELS[s.careSetting]} · {s.utilizationPercent}% utilization · {fmt(s.costPerUnit)}/{SETTING_UNIT_LABELS[s.careSetting] === "beds" ? "bed" : "provider"}/mo
               </Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {s.drivers.map(d => (
@@ -293,11 +295,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
         </View>
 
         <View style={styles.tableRow}>
-          <Text style={[styles.cellLeft, { fontStyle: "italic", color: colors.secondary }]}>Retention (phased)</Text>
+          <Text style={[styles.cellLeft, { color: colors.tertiary, paddingLeft: 8 }]}>Retention (phased)</Text>
           {yearlyData.map(y => (
-            <Text key={y.label} style={[styles.cell, { fontStyle: "italic", color: colors.secondary }]}>{fmt(y.retentionValue)}</Text>
+            <Text key={y.label} style={[styles.cell, { color: colors.tertiary }]}>{fmt(y.retentionValue)}</Text>
           ))}
-          <Text style={[styles.cell, { fontStyle: "italic", color: colors.secondary }]}>
+          <Text style={[styles.cell, { color: colors.tertiary }]}>
             {fmt(yearlyData.reduce((s, y) => s + y.retentionValue, 0))}
           </Text>
         </View>
@@ -332,10 +334,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               • Retention phasing: {config.retentionPhasing.year1Pct}% Year 1, {config.retentionPhasing.year2Pct}% Year 2, {config.retentionPhasing.year3Pct}% Year 3
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • Adoption ramp: S-curve over 12 months from each setting's go-live date
+              • Adoption ramp: S-curve over 12 months; providers expand from pilot to full scale over contract term
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • IRR: {fmtPct(summary.irr)} annualized (Newton-Raphson on monthly net cash flows)
+              • IRR: {fmtPct(summary.irr)} annualized (Newton-Raphson on net cash flows with period-0 implementation outflow)
             </Text>
           </View>
         </View>
@@ -361,7 +363,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Internal Rate of Return (IRR)</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              IRR is calculated using Newton-Raphson iteration on monthly net cash flows (value minus investment). The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. This represents the annualized return on the investment, accounting for the time value of money.
+              IRR is calculated using Newton-Raphson iteration on monthly net cash flows with a period-0 negative outflow representing implementation fees. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. This represents the annualized return on the investment, accounting for the time value of money.
+            </Text>
+          </View>
+
+          <View>
+            <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Provider Expansion</Text>
+            <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
+              Providers scale linearly from pilot count to full-scale count over the contract term for each care setting. This models a realistic organizational rollout trajectory where value grows as more providers adopt the solution. Investment costs scale proportionally with provider count.
             </Text>
           </View>
 

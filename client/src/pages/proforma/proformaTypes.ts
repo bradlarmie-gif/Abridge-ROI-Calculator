@@ -12,6 +12,8 @@ export interface ProformaSettingSnapshot {
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
   label: string;
   providerCount: number;
+  fullScaleProviders: number;
+  fullScaleUtilization: number;
   encounters: number;
   utilizationPercent: number;
   annualValue: number;
@@ -48,7 +50,7 @@ export interface ProformaCashFlowRow {
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number }>;
+  bySettings: Record<string, { value: number; investment: number; providers: number }>;
 }
 
 export interface ProformaSummary {

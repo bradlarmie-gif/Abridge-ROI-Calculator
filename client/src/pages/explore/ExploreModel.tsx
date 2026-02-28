@@ -286,11 +286,14 @@ export default function ExploreModel({
       drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: retentionValue, category: "time" });
     }
 
+    const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
     const snapshot: ProformaSettingSnapshot = {
       id: `${cs}-${Date.now()}`,
       careSetting: cs,
       label: SETTING_LABELS[cs] || cs,
-      providerCount: isNursing ? state.nursingStaffedBeds : state.numberOfProviders,
+      providerCount: pilotProviders,
+      fullScaleProviders: isNursing ? pilotProviders : state.fullScaleProviders,
+      fullScaleUtilization: isNursing ? state.utilizationPercent : Math.min(expandedUtilization, 95),
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
       annualValue: totalValue,

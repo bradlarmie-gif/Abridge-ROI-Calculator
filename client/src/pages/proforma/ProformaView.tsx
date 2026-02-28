@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
@@ -40,7 +40,9 @@ function fmtNum(n: number) {
 }
 
 function fmtPct(n: number) {
-  return `${Math.round(n * 100)}%`;
+  const val = Math.round(n * 100);
+  if (val > 999) return ">999%";
+  return `${val}%`;
 }
 
 export default function ProformaView({
@@ -76,8 +78,9 @@ export default function ProformaView({
     const optimistic = settings.map(s => ({ ...s, annualValue: s.annualValue * 1.2, retentionValue: s.retentionValue * 1.2 }));
     const consCF = buildMonthlyCashFlows(conservative, config);
     const optCF = buildMonthlyCashFlows(optimistic, config);
-    const consIRR = calculateIRR(consCF.map(r => r.netValue));
-    const optIRR = calculateIRR(optCF.map(r => r.netValue));
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    const consIRR = calculateIRR([-totalImplFees, ...consCF.map(r => r.netValue)]);
+    const optIRR = calculateIRR([-totalImplFees, ...optCF.map(r => r.netValue)]);
     return { conservative: isFinite(consIRR) ? consIRR : 0, optimistic: isFinite(optIRR) ? optIRR : 0 };
   }, [settings, config]);
 
@@ -97,22 +100,38 @@ export default function ProformaView({
     });
   }, [displayData, settings]);
 
-  const paybackPeriodIndex = useMemo(() => {
-    for (let i = 0; i < displayData.length; i++) {
-      if (displayData[i].cumulativeNet >= 0) return i;
+  const totalProvidersByMonth = useMemo(() => {
+    return displayData.map(row => {
+      let total = 0;
+      settings.forEach(s => {
+        total += row.bySettings[s.id]?.providers || 0;
+      });
+      return total;
+    });
+  }, [displayData, settings]);
+
+  const paybackLabel = useMemo(() => {
+    for (const row of displayData) {
+      if (row.cumulativeNet >= 0) return row.label;
     }
     return null;
   }, [displayData]);
 
-  const retentionMonth12 = config.viewMode === "monthly" ? 12 : 4;
-  const retentionMonth24 = config.viewMode === "monthly" ? 24 : 8;
+  const goLiveLabels = useMemo(() => {
+    return settings
+      .filter(s => s.goLiveMonth > 1)
+      .map(s => ({
+        label: config.viewMode === "monthly" ? `M${s.goLiveMonth}` : `Q${Math.ceil(s.goLiveMonth / 3)}`,
+        name: s.label,
+        color: s.color,
+      }));
+  }, [settings, config.viewMode]);
 
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader onHome={onHome} />
       <UnifiedHeaderSpacer />
 
-      {/* HERO */}
       <div className="bg-[#1A1A1A] text-white py-12 px-4">
         <div className="max-w-[1000px] mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -164,14 +183,13 @@ export default function ProformaView({
 
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8">
 
-        {/* SETTING OVERVIEW STRIP */}
         <div className="flex gap-3 overflow-x-auto pb-4 mb-8 -mx-2 px-2">
           {settings.map(s => {
             const Icon = SETTING_ICONS[s.careSetting] || Building2;
             return (
               <div
                 key={s.id}
-                className="flex-shrink-0 bg-[#F9F6F2] rounded-xl p-4 min-w-[180px] border-l-4"
+                className="flex-shrink-0 bg-[#F9F6F2] rounded-xl p-4 min-w-[200px] border-l-4"
                 style={{ borderLeftColor: s.color }}
                 data-testid={`strip-card-${s.careSetting}`}
               >
@@ -180,70 +198,142 @@ export default function ProformaView({
                   <span className="text-sm font-bold text-neutral-900">{s.label}</span>
                 </div>
                 <p className="text-lg font-bold" style={{ color: s.color }}>{fmt(s.annualValue)}</p>
-                <p className="text-xs text-neutral-500 mt-1">{fmtNum(s.providerCount)} {SETTING_UNIT_LABELS[s.careSetting]} · M{s.goLiveMonth}</p>
+                <p className="text-xs text-neutral-500 mt-1">
+                  {fmtNum(s.providerCount)} → {fmtNum(s.fullScaleProviders || s.providerCount)} {SETTING_UNIT_LABELS[s.careSetting]} · M{s.goLiveMonth}
+                </p>
               </div>
             );
           })}
         </div>
 
-        {/* RAMP-UP TIMELINE CHART */}
         <motion.div
           className="mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="text-lg font-bold text-neutral-900 mb-1">Ramp-Up Timeline</h2>
-          <p className="text-sm text-neutral-500 mb-4">Stacked value by care setting with investment overlay</p>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-lg font-bold text-neutral-900">Value Growth Trajectory</h2>
+            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+              <Users className="w-3.5 h-3.5" />
+              <span>
+                {fmtNum(settings.reduce((s, v) => s + v.providerCount, 0))} → {fmtNum(settings.reduce((s, v) => s + v.fullScaleProviders, 0))} total {settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting]}
+              </span>
+            </div>
+          </div>
+          <p className="text-sm text-neutral-500 mb-4">Monthly value as providers expand from pilot to full scale across settings</p>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6" data-testid="chart-ramp-up">
-            <ResponsiveContainer width="100%" height={380}>
-              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" />
+            <ResponsiveContainer width="100%" height={400}>
+              <ComposedChart data={chartData} margin={{ top: 30, right: 20, left: 10, bottom: 10 }}>
+                <defs>
+                  {settings.map(s => (
+                    <linearGradient key={`grad-${s.id}`} id={`grad-${s.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={s.color} stopOpacity={0.35} />
+                      <stop offset="100%" stopColor={s.color} stopOpacity={0.05} />
+                    </linearGradient>
+                  ))}
+                  <linearGradient id="grad-investment" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1A1A1A" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="#1A1A1A" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 11, fill: "#888" }}
                   interval={config.viewMode === "monthly" ? 2 : 0}
+                  axisLine={{ stroke: "#D5D0CB" }}
                 />
                 <YAxis
                   tickFormatter={(v: number) => fmt(v)}
                   tick={{ fontSize: 11, fill: "#888" }}
                   width={70}
+                  axisLine={false}
+                  tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip settings={settings} />} />
-                {config.retentionPhasing.year2Pct > 0 && (
-                  <ReferenceLine x={config.viewMode === "monthly" ? `M${retentionMonth12}` : `Q${retentionMonth12}`} stroke="#888" strokeDasharray="4 4" label={{ value: `Retention: ${config.retentionPhasing.year2Pct}%`, position: "top", fontSize: 10, fill: "#888" }} />
+                <Tooltip content={<CustomTooltip settings={settings} totalProvidersByMonth={totalProvidersByMonth} />} />
+
+                {goLiveLabels.map(gl => (
+                  <ReferenceLine
+                    key={`golive-${gl.label}`}
+                    x={gl.label}
+                    stroke={gl.color}
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    label={{
+                      value: `${gl.name} Go-Live`,
+                      position: "insideTopRight",
+                      fontSize: 9,
+                      fill: gl.color,
+                      dy: -5,
+                    }}
+                  />
+                ))}
+
+                {paybackLabel && (
+                  <ReferenceLine
+                    x={paybackLabel}
+                    stroke="#059669"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.7}
+                    label={{
+                      value: "Payback",
+                      position: "insideTopRight",
+                      fontSize: 9,
+                      fill: "#059669",
+                      fontWeight: 600,
+                      dy: -5,
+                    }}
+                  />
                 )}
-                {config.retentionPhasing.year3Pct > config.retentionPhasing.year2Pct && (
-                  <ReferenceLine x={config.viewMode === "monthly" ? `M${retentionMonth24}` : `Q${retentionMonth24}`} stroke="#888" strokeDasharray="4 4" label={{ value: `Retention: ${config.retentionPhasing.year3Pct}%`, position: "top", fontSize: 10, fill: "#888" }} />
-                )}
-                {settings.map((s, idx) => (
+
+                <Area
+                  type="monotone"
+                  dataKey="investment"
+                  stackId="inv"
+                  fill="url(#grad-investment)"
+                  stroke="#1A1A1A"
+                  strokeWidth={2}
+                  strokeDasharray="6 4"
+                  name="Investment"
+                />
+
+                {settings.map(s => (
                   <Area
                     key={s.id}
                     type="monotone"
                     dataKey={s.id}
                     stackId="value"
-                    fill={s.color}
-                    fillOpacity={0.3 - idx * 0.05}
+                    fill={`url(#grad-${s.id})`}
                     stroke={s.color}
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     name={s.label}
                   />
                 ))}
-                <Line
-                  type="monotone"
-                  dataKey="investment"
-                  stroke="#1A1A1A"
-                  strokeWidth={2}
-                  strokeDasharray="6 4"
-                  dot={false}
-                  name="Investment"
-                />
               </ComposedChart>
             </ResponsiveContainer>
+
+            <div className="flex items-center justify-center gap-5 mt-3 text-xs">
+              {settings.map(s => (
+                <span key={s.id} className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 rounded-full inline-block" style={{ backgroundColor: s.color }} />
+                  <span className="text-neutral-600">{s.label}</span>
+                </span>
+              ))}
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 rounded-full inline-block border-t border-dashed border-neutral-800" style={{ borderTopWidth: 2 }} />
+                <span className="text-neutral-600">Investment</span>
+              </span>
+            </div>
+
+            {config.retentionPhasing.year2Pct > 0 && (
+              <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-neutral-400">
+                <span>Retention phases in: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3</span>
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* PRICING & CONFIGURATION PANEL */}
         <motion.div
           className="bg-[#F9F6F2] rounded-xl p-6 mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -256,7 +346,6 @@ export default function ProformaView({
             <h2 className="text-lg font-bold text-neutral-900">Pricing & Configuration</h2>
           </div>
 
-          {/* Contract Term Toggle */}
           <div className="flex items-center gap-4 mb-6">
             <span className="text-sm font-medium text-neutral-600">Contract Term:</span>
             <div className="flex items-center gap-1 bg-white rounded-full p-0.5 border border-neutral-200">
@@ -273,13 +362,13 @@ export default function ProformaView({
             </div>
           </div>
 
-          {/* Per-Setting Pricing */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-neutral-300">
                   <th className="text-left py-2 font-medium text-neutral-500">Setting</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Units</th>
+                  <th className="text-right py-2 font-medium text-neutral-500">Pilot</th>
+                  <th className="text-right py-2 font-medium text-neutral-500">Full Scale</th>
                   <th className="text-right py-2 font-medium text-neutral-500">$/Unit/Mo</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Go-Live</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Impl. Fee</th>
@@ -299,6 +388,7 @@ export default function ProformaView({
                         </div>
                       </td>
                       <td className="text-right py-3 text-neutral-700">{fmtNum(s.providerCount)}</td>
+                      <td className="text-right py-3 text-neutral-700">{fmtNum(s.fullScaleProviders)}</td>
                       <td className="text-right py-3">
                         <FormattedNumberInput
                           value={s.costPerUnit}
@@ -338,7 +428,6 @@ export default function ProformaView({
             </table>
           </div>
 
-          {/* Retention Phasing */}
           <div className="mt-6 pt-6 border-t border-neutral-200">
             <p className="text-sm font-bold text-neutral-700 mb-1">Retention Benefit Phasing</p>
             <p className="text-xs text-neutral-500 mb-4">When do retention benefits materialize? Conservative default delays them.</p>
@@ -368,7 +457,6 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* 3-YEAR P&L TABLE */}
         <motion.div
           className="mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -415,11 +503,11 @@ export default function ProformaView({
                   <td className="text-right py-2.5 px-4 font-bold text-[#EA2C00]">{fmt(summary.threeYearValue)}</td>
                 </tr>
                 <tr className="border-b border-neutral-100 text-neutral-500">
-                  <td className="py-2.5 pl-4 italic">Retention (phased)</td>
+                  <td className="py-2.5 pl-4 text-neutral-400">Retention (phased)</td>
                   {yearlyData.map(y => (
-                    <td key={y.label} className="text-right py-2.5 px-4 italic">{fmt(y.retentionValue)}</td>
+                    <td key={y.label} className="text-right py-2.5 px-4 text-neutral-400">{fmt(y.retentionValue)}</td>
                   ))}
-                  <td className="text-right py-2.5 px-4 italic">
+                  <td className="text-right py-2.5 px-4 text-neutral-400">
                     {fmt(yearlyData.reduce((s, y) => s + y.retentionValue, 0))}
                   </td>
                 </tr>
@@ -446,7 +534,6 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* IRR & FINANCIAL METRICS */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -478,7 +565,6 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* METHODOLOGY */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -498,7 +584,8 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-6 bg-white border border-neutral-200 rounded-xl text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated using Newton-Raphson method on monthly net cash flows (value minus investment). Monthly IRR is annualized via compound formula: (1 + monthly rate)^12 - 1.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated using Newton-Raphson method on monthly net cash flows with an initial period-0 outflow (implementation fees). Monthly IRR is annualized via compound formula: (1 + monthly rate)^12 - 1.</p>
+              <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory where value grows as more providers adopt Abridge.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3. This reflects that retention impact takes time to materialize.</p>
               <p><strong className="text-neutral-900">Adoption Ramp:</strong> Each care setting follows an S-curve adoption model over 12 months from its go-live date. Value scales with adoption progress using a power function (progress^0.8).</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Conservative scenario applies a 20% reduction to all value drivers. Optimistic applies a 20% increase. This brackets the range of likely outcomes.</p>
@@ -506,7 +593,6 @@ export default function ProformaView({
           )}
         </motion.div>
 
-        {/* ACTION BAR */}
         <div className="flex items-center justify-between py-6 border-t border-neutral-200">
           <Button
             variant="outline"
@@ -535,15 +621,25 @@ export default function ProformaView({
   );
 }
 
-function CustomTooltip({ active, payload, label, settings }: any) {
+function CustomTooltip({ active, payload, label, settings, totalProvidersByMonth }: any) {
   if (!active || !payload) return null;
-  const settingItems = payload.filter((p: any) => p.dataKey !== "investment" && p.dataKey !== "cumulativeNet");
+  const settingItems = payload.filter((p: any) => p.dataKey !== "investment" && p.dataKey !== "cumulativeNet" && p.dataKey !== "total");
   const investmentItem = payload.find((p: any) => p.dataKey === "investment");
   const total = settingItems.reduce((s: number, p: any) => s + (p.value || 0), 0);
 
+  const periodIdx = payload[0]?.payload?.period ? payload[0].payload.period - 1 : 0;
+  const providerCount = totalProvidersByMonth?.[periodIdx] || 0;
+
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-neutral-200 p-4 text-sm min-w-[200px]">
-      <p className="font-bold text-neutral-900 mb-2">{label}</p>
+    <div className="bg-white rounded-xl shadow-lg border border-neutral-200 p-4 text-sm min-w-[220px]">
+      <div className="flex items-center justify-between mb-2">
+        <p className="font-bold text-neutral-900">{label}</p>
+        {providerCount > 0 && (
+          <span className="text-xs text-neutral-400 flex items-center gap-1">
+            <Users className="w-3 h-3" /> {fmtNum(providerCount)}
+          </span>
+        )}
+      </div>
       {settingItems.map((item: any) => (
         <div key={item.dataKey} className="flex justify-between gap-4 mb-1">
           <span className="flex items-center gap-1.5">

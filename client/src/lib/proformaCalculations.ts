@@ -26,6 +26,37 @@ function getAdoptionRamp(month: number, goLiveMonth: number, rampMonths: number)
   return Math.pow(progress, 0.8);
 }
 
+function getProviderExpansion(
+  month: number,
+  goLiveMonth: number,
+  contractMonths: number,
+  pilotProviders: number,
+  fullScaleProviders: number
+): number {
+  const monthsSinceGoLive = month - goLiveMonth;
+  if (monthsSinceGoLive < 0) return 0;
+
+  const expansionMonths = Math.max(contractMonths - goLiveMonth, 12);
+  const progress = Math.min(monthsSinceGoLive / expansionMonths, 1);
+  return Math.round(pilotProviders + (fullScaleProviders - pilotProviders) * progress);
+}
+
+function getUtilizationRamp(
+  month: number,
+  goLiveMonth: number,
+  contractMonths: number,
+  pilotUtil: number,
+  fullScaleUtil: number
+): number {
+  const monthsSinceGoLive = month - goLiveMonth;
+  if (monthsSinceGoLive < 0) return pilotUtil;
+
+  const rampMonths = Math.max(contractMonths - goLiveMonth, 12);
+  const progress = Math.min(monthsSinceGoLive / rampMonths, 1);
+  const utilizationProgress = Math.pow(progress, 0.8);
+  return pilotUtil + (fullScaleUtil - pilotUtil) * utilizationProgress;
+}
+
 export function buildMonthlyCashFlows(
   settings: ProformaSettingSnapshot[],
   config: ProformaConfig
@@ -35,35 +66,54 @@ export function buildMonthlyCashFlows(
   let cumulativeNet = 0;
   const rampMonths = 12;
 
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+  cumulativeNet = -totalImplFees;
+
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
     let totalBaseValue = 0;
     let totalRetentionValue = 0;
-    const bySettings: Record<string, { value: number; investment: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0 };
         continue;
       }
 
       const ramp = getAdoptionRamp(m, setting.goLiveMonth, rampMonths);
+
+      const fullScale = setting.fullScaleProviders || setting.providerCount;
+      const fullScaleUtil = setting.fullScaleUtilization || setting.utilizationPercent;
+
+      const currentProviders = getProviderExpansion(
+        m, setting.goLiveMonth, months,
+        setting.providerCount, fullScale
+      );
+      const currentUtil = getUtilizationRamp(
+        m, setting.goLiveMonth, months,
+        setting.utilizationPercent, fullScaleUtil
+      );
+
+      const providerScale = currentProviders / setting.providerCount;
+      const utilScale = currentUtil / setting.utilizationPercent;
+      const expansionMultiplier = providerScale * utilScale;
+
       const retentionMultiplier = getRetentionPhasingMultiplier(m, setting.goLiveMonth, config.retentionPhasing);
 
-      const monthlyBase = ((setting.annualValue - setting.retentionValue) / 12) * ramp;
-      const monthlyRetention = (setting.retentionValue / 12) * ramp * retentionMultiplier;
-      const monthlyInvestment = (setting.costPerUnit * setting.providerCount);
-
-      const implFee = monthsSinceGoLive === 0 ? setting.implementationFee : 0;
+      const monthlyBase = ((setting.annualValue - setting.retentionValue) / 12) * ramp * expansionMultiplier;
+      const monthlyRetention = (setting.retentionValue / 12) * ramp * retentionMultiplier * expansionMultiplier;
+      const monthlyInvestment = setting.costPerUnit * currentProviders;
 
       totalBaseValue += monthlyBase;
       totalRetentionValue += monthlyRetention;
-      totalInvestment += monthlyInvestment + implFee;
+      totalInvestment += monthlyInvestment;
 
       bySettings[setting.id] = {
         value: monthlyBase + monthlyRetention,
-        investment: monthlyInvestment + implFee,
+        investment: monthlyInvestment,
+        providers: currentProviders,
       };
     }
 
@@ -94,11 +144,13 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number }> = {};
     allSettingIds.forEach(id => {
+      const lastChunk = chunk[chunk.length - 1];
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
+        providers: lastChunk?.bySettings[id]?.providers || 0,
       };
     });
 
@@ -163,11 +215,12 @@ export function calculateProformaSummary(
     }
   }
 
-  const monthlyCashFlowValues = cashFlows.map(r => r.netValue);
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+  const monthlyCashFlowValues = [-totalImplFees, ...cashFlows.map(r => r.netValue)];
   const irr = calculateIRR(monthlyCashFlowValues);
 
   const threeYearValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
-  const threeYearInvestment = cashFlows.reduce((s, r) => s + r.investment, 0);
+  const threeYearInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
   const threeYearNet = threeYearValue - threeYearInvestment;
 
   return {
@@ -184,13 +237,15 @@ export function calculateProformaSummary(
 }
 
 export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[]) {
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+
   const years = [
     { label: "Year 1", rows: cashFlows.filter(r => r.period <= 12) },
     { label: "Year 2", rows: cashFlows.filter(r => r.period > 12 && r.period <= 24) },
     { label: "Year 3", rows: cashFlows.filter(r => r.period > 24 && r.period <= 36) },
   ];
 
-  return years.map(y => {
+  return years.map((y, idx) => {
     const bySettings: Record<string, { value: number; retention: number; investment: number }> = {};
     settings.forEach(s => {
       bySettings[s.id] = {
@@ -200,13 +255,16 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
       };
     });
 
+    const subscriptionInvestment = y.rows.reduce((s, r) => s + r.investment, 0);
+    const implInvestment = idx === 0 ? totalImplFees : 0;
+
     return {
       label: y.label,
       totalValue: y.rows.reduce((s, r) => s + r.totalValue, 0),
       baseValue: y.rows.reduce((s, r) => s + r.baseValue, 0),
       retentionValue: y.rows.reduce((s, r) => s + r.retentionValue, 0),
-      investment: y.rows.reduce((s, r) => s + r.investment, 0),
-      netValue: y.rows.reduce((s, r) => s + r.netValue, 0),
+      investment: subscriptionInvestment + implInvestment,
+      netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,
       bySettings,
     };
   });
