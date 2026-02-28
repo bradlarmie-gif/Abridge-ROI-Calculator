@@ -1522,21 +1522,11 @@ export default function ExploreModel({
                 </p>
               )}
             </div>
-            <div className="flex gap-3 flex-wrap">
-              <Button
-                variant="outline"
-                onClick={onEdit}
-                className="gap-2 border-black text-black"
-                data-testid="button-edit"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Model
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               {onAddToProforma && (
                 <Button
-                  variant="outline"
                   onClick={handleAddToProforma}
-                  className="gap-2 border-[#EA2C00] text-[#EA2C00] hover:bg-[#EA2C00]/5"
+                  className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white sm:bg-transparent sm:text-[#EA2C00] sm:border sm:border-[#EA2C00] sm:hover:bg-[#EA2C00]/5 order-1 h-11 sm:h-9 text-sm font-semibold"
                   data-testid="button-add-proforma"
                 >
                   <Layers className="w-4 h-4" />
@@ -1545,11 +1535,20 @@ export default function ExploreModel({
               )}
               <Button
                 onClick={() => setShowExportModal(true)}
-                className="bg-[#EA2C00] text-white gap-2"
+                className={`gap-2 order-2 h-11 sm:h-9 text-sm font-semibold ${onAddToProforma ? "bg-[#1A1A1A] hover:bg-black text-white" : "bg-[#EA2C00] hover:bg-[#D42800] text-white"}`}
                 data-testid="button-export"
               >
                 <Download className="w-4 h-4" />
                 Download PDF
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onEdit}
+                className="gap-2 border-neutral-300 text-neutral-600 order-3 h-11 sm:h-9 text-sm"
+                data-testid="button-edit"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Model
               </Button>
             </div>
           </div>
