@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { useToast } from "@/hooks/use-toast";
@@ -51,9 +51,9 @@ function fmtNum(n: number) {
   return n.toLocaleString();
 }
 
-function fmtPct(n: number) {
+function fmtPct(n: number, cap = 200) {
   const val = Math.round(n * 100);
-  if (val > 999) return ">999%";
+  if (val > cap) return `${cap}%+`;
   return `${val}%`;
 }
 
@@ -113,8 +113,8 @@ export default function ProformaView({
     const optimistic = settings.map(s => scaleSettings(s, 1.2, 0.9));
     const consCF = buildMonthlyCashFlows(conservative, config);
     const optCF = buildMonthlyCashFlows(optimistic, config);
-    const consResult = calculateIRR(buildIRRCashFlows(conservative, config, consCF));
-    const optResult = calculateIRR(buildIRRCashFlows(optimistic, config, optCF));
+    const consResult = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
+    const optResult = calculateAnnualIRR(buildAnnualIRRCashFlows(optimistic, config, optCF));
     return {
       conservative: consResult.isValid ? consResult.annualizedRate : 0,
       optimistic: optResult.isValid ? optResult.annualizedRate : 0,
@@ -219,16 +219,16 @@ export default function ProformaView({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
-                <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
-                <p className="text-xl font-bold text-emerald-400" data-testid="text-irr">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
+                <p className="text-xl font-bold text-emerald-400" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
                 <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
+                <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
@@ -244,16 +244,16 @@ export default function ProformaView({
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.totalSystemValue)}</p>
             </div>
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
-              <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
-              <p className="text-2xl font-bold text-emerald-400">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
+              <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
               <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
+              <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
@@ -791,23 +791,18 @@ export default function ProformaView({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
+            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-600" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+            <p className="text-[9px] sm:text-[10px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
+          </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-irr">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
-            {hasInvestment && summary.irrValid ? (
-              <div className="mt-1.5 sm:mt-2 flex justify-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-neutral-500">
-                <span>{fmtPct(sensitivityIRR.conservative)}</span>
-                <span className="text-neutral-300">|</span>
-                <span>{fmtPct(sensitivityIRR.optimistic)}</span>
-              </div>
-            ) : (
-              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">{hasInvestment ? "" : "No cost entered"}</p>
+            {hasInvestment && summary.irrValid && (
+              <p className="text-[9px] sm:text-[10px] text-neutral-400 mt-1.5">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {fmtPct(summary.irr)}</p>
             )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">
@@ -846,8 +841,9 @@ export default function ProformaView({
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong className="text-[#2563EB]">Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong className="text-emerald-600">Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Standard finance model — Period 0 is the upfront capital investment (implementation fees only). Periods 1–N are net monthly cash flows (value generated minus ongoing subscription cost). Calculated using Newton-Raphson iteration with 13 initial guesses and 4 bisection bound pairs as fallback. Every result is cross-validated: NPV at the found rate must be within 0.1% of total cash flow magnitude. If cash flows have multiple sign changes (non-conventional), Modified IRR (MIRR) is used instead, which always produces a unique, defensible rate. Monthly rate is annualized: (1 + r)^12 − 1.</p>
-              <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost (implementation fees + subscription). A straightforward metric: {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested.</p>
+              <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested. This is the most intuitive metric for evaluating subscription technology commitments.</p>
+              <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the upfront investment (implementation fees, or first-year subscription if no impl fees), and subsequent periods are annual net returns. This approach evaluates the investment decision as a year-over-year return, which better reflects how organizations evaluate subscription technology commitments than monthly compounding. Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3.</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis. Conservative scenario applies a 20% reduction to value drivers and a 10% increase to subscription costs. Optimistic applies a 20% increase to value drivers and a 10% reduction to costs. This brackets the range of likely outcomes from both revenue and cost perspectives.</p>

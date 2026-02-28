@@ -18,8 +18,8 @@ import {
   buildMonthlyCashFlows,
   calculateProformaSummary,
   getYearlySummary,
-  buildIRRCashFlows,
-  calculateIRR,
+  buildAnnualIRRCashFlows,
+  calculateAnnualIRR,
 } from "@/lib/proformaCalculations";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -147,9 +147,9 @@ function fmt(n: number) {
   return `$${Math.round(n).toLocaleString()}`;
 }
 
-function fmtPct(n: number) {
+function fmtPct(n: number, cap = 200) {
   const val = Math.round(n * 100);
-  if (val > 999) return ">999%";
+  if (val > cap) return `${cap}%+`;
   return `${val}%`;
 }
 
@@ -245,16 +245,16 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
             <View style={{ flexDirection: "row", gap: 6 }}>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{Math.round(summary.simpleROI * 100)}%</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Simple ROI</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.positive }}>{irrDisplay}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>{irrLabel}</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.positive }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Value-to-Cost</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{summary.paybackMonth ? `${summary.paybackMonth} mo` : "\u2014"}</Text>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Payback</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{Math.round(summary.simpleROI * 100)}%</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Simple ROI</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(summary.totalHours)}</Text>
@@ -603,24 +603,25 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>VALUE-TO-COST</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.positive, marginBottom: 4 }}>
+                {hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                {hasInvestment
+                  ? `Total contract value divided by total contract cost. A ${summary.valueToCost.toFixed(1)}x ratio means the organization receives $${summary.valueToCost.toFixed(2)} in value for every $1 invested over the ${termLabel.toLowerCase()} term.`
+                  : "No cost entered. Value-to-Cost requires an investment to calculate."}
+              </Text>
+            </View>
+
+            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primaryText }}>
               <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>SIMPLE ROI</Text>
               <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
                 {Math.round(summary.simpleROI * 100)}%
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                Total net value divided by total cost. A {Math.round(summary.simpleROI * 100)}% ROI means the organization receives ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested over the {termLabel.toLowerCase()} term.
-              </Text>
-            </View>
-
-            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.positive }}>
-              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{irrLabel}</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.positive, marginBottom: 4 }}>
-                {irrDisplay}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                {hasInvestment && summary.irrValid
-                  ? `Annualized return that accounts for the time value of money. Period 0 is implementation fees only (${fmt(totalImplFees)}). Subsequent periods are net monthly cash flows.`
-                  : `IRR is not applicable because implementation fees are $0. Without an upfront capital outlay, the rate of return on investment is undefined. Use Simple ROI and payback to evaluate.`}
+                Total net value divided by total cost. {Math.round(summary.simpleROI * 100)}% means ${(1 + summary.simpleROI).toFixed(2)} back for every $1 invested.
+                {hasInvestment && summary.irrValid ? ` Annual ${irrLabel}: ${irrDisplay}.` : ""}
               </Text>
             </View>
           </View>
@@ -728,13 +729,13 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionLabelGray}>{irrLabel} METHODOLOGY</Text>
+          <Text style={styles.sectionLabelGray}>RETURN METHODOLOGY</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              Standard finance model. {totalImplFees > 0
-                ? `Period 0 is the upfront capital investment (implementation fees: ${fmt(totalImplFees)}).`
-                : "Period 0 is the first month\u2019s subscription cost (used as the investment baseline when no implementation fees are present)."} Periods 1{"\u2013"}{config.contractTermMonths} are net monthly cash flows (value generated minus ongoing subscription cost). Calculated using Newton-Raphson iteration with 13 initial guesses and bisection fallback. Every result is cross-validated: NPV at the found rate must be within 0.1% of total cash flow magnitude.
-              {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes. MIRR uses a finance rate for negative flows and a reinvestment rate for positive flows, always producing a unique, defensible rate." : ""}
+              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} {totalImplFees > 0
+                ? `Period 0 is the upfront investment (implementation fees: ${fmt(totalImplFees)}).`
+                : "Period 0 is the first year\u2019s subscription cost (used as the investment baseline when no implementation fees are present)."} Subsequent periods are annual net returns. This evaluates the investment as a year-over-year return rather than monthly compounding, which better reflects how organizations evaluate subscription technology commitments.
+              {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes." : ""}
             </Text>
           </View>
 
@@ -851,8 +852,8 @@ export async function generateProformaPDF(
   const optimistic = settings.map(s => scaleSettings(s, 1.2, 0.9));
   const consCF = buildMonthlyCashFlows(conservative, config);
   const optCF = buildMonthlyCashFlows(optimistic, config);
-  const consResult = calculateIRR(buildIRRCashFlows(conservative, config, consCF));
-  const optResult = calculateIRR(buildIRRCashFlows(optimistic, config, optCF));
+  const consResult = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
+  const optResult = calculateAnnualIRR(buildAnnualIRRCashFlows(optimistic, config, optCF));
   const sensitivityIRR = {
     conservative: consResult.isValid ? consResult.annualizedRate : 0,
     optimistic: optResult.isValid ? optResult.annualizedRate : 0,

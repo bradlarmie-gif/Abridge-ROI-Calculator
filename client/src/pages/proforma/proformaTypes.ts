@@ -69,6 +69,7 @@ export interface ProformaSummary {
   totalInvestment: number;
   combinedROI: number;
   simpleROI: number;
+  valueToCost: number;
   totalHours: number;
   irr: number;
   irrMethod: "irr" | "mirr";

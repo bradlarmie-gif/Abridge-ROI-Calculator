@@ -545,6 +545,117 @@ export function buildIRRCashFlows(
   return [0];
 }
 
+export function buildAnnualIRRCashFlows(
+  settings: ProformaSettingSnapshot[],
+  config: ProformaConfig,
+  cashFlows: ProformaCashFlowRow[]
+): number[] {
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+  const contractYears = config.contractTermMonths >= 36 ? 3 : 2;
+
+  const yearBuckets: { grossValue: number; subscription: number }[] = [];
+  for (let y = 0; y < contractYears; y++) {
+    const startMonth = y * 12 + 1;
+    const endMonth = (y + 1) * 12;
+    const yearRows = cashFlows.filter(r => r.period >= startMonth && r.period <= endMonth);
+    yearBuckets.push({
+      grossValue: yearRows.reduce((s, r) => s + r.docValue + r.timeValue + r.retentionValue, 0),
+      subscription: yearRows.reduce((s, r) => s + r.investment, 0),
+    });
+  }
+
+  if (totalImplFees > 0) {
+    return [
+      -totalImplFees,
+      ...yearBuckets.map(yb => yb.grossValue - yb.subscription),
+    ];
+  }
+
+  const firstYearSub = yearBuckets[0]?.subscription || 0;
+  if (firstYearSub > 0) {
+    return [
+      -firstYearSub,
+      yearBuckets[0].grossValue,
+      ...yearBuckets.slice(1).map(yb => yb.grossValue - yb.subscription),
+    ];
+  }
+
+  return [0];
+}
+
+export function calculateAnnualIRR(annualCashFlows: number[]): IRRResult {
+  const INVALID: IRRResult = { annualizedRate: 0, method: "irr", isValid: false };
+
+  if (!annualCashFlows || annualCashFlows.length < 2) return INVALID;
+
+  const allZero = annualCashFlows.every(v => Math.abs(v) < 0.01);
+  if (allZero) return INVALID;
+
+  const hasNeg = annualCashFlows.some(v => v < -0.01);
+  const hasPos = annualCashFlows.some(v => v > 0.01);
+  if (!hasNeg || !hasPos) return INVALID;
+
+  const signChanges = countSignChanges(annualCashFlows);
+
+  if (signChanges > 1) {
+    const n = annualCashFlows.length - 1;
+    if (n < 1) return INVALID;
+    let pvNeg = 0;
+    let fvPos = 0;
+    const financeRate = 0.05;
+    const reinvestRate = 0.05;
+    for (let t = 0; t < annualCashFlows.length; t++) {
+      if (annualCashFlows[t] < 0) {
+        pvNeg += annualCashFlows[t] / Math.pow(1 + financeRate, t);
+      } else if (annualCashFlows[t] > 0) {
+        fvPos += annualCashFlows[t] * Math.pow(1 + reinvestRate, n - t);
+      }
+    }
+    if (pvNeg >= 0 || fvPos <= 0) return INVALID;
+    const annualMirr = Math.pow(fvPos / Math.abs(pvNeg), 1 / n) - 1;
+    if (!isFinite(annualMirr) || annualMirr <= -1) return INVALID;
+    return { annualizedRate: annualMirr, method: "mirr", isValid: true };
+  }
+
+  const totalInvestment = Math.abs(annualCashFlows[0]);
+  const totalReturns = annualCashFlows.slice(1).reduce((s, v) => s + Math.max(0, v), 0);
+  const avgReturn = totalReturns / (annualCashFlows.length - 1);
+  const roughGuess = totalInvestment > 0 ? avgReturn / totalInvestment : 0.1;
+
+  const initialGuesses = [
+    Math.min(Math.max(roughGuess, 0.01), 50.0),
+    0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 0.05, 0.01,
+    -0.05, -0.1, -0.2, -0.5,
+  ];
+
+  for (const guess of initialGuesses) {
+    const result = newtonRaphsonIRR(annualCashFlows, guess);
+    if (result !== null && validateIRRResult(result, annualCashFlows)) {
+      if (isFinite(result) && result > -1) {
+        return { annualizedRate: result, method: "irr", isValid: true };
+      }
+    }
+  }
+
+  const bisectionBounds: [number, number][] = [
+    [-0.9, 100.0],
+    [-0.5, 50.0],
+    [-0.3, 20.0],
+    [-0.1, 5.0],
+  ];
+
+  for (const [lo, hi] of bisectionBounds) {
+    const bisResult = bisectionIRR(annualCashFlows, lo, hi);
+    if (bisResult !== null && validateIRRResult(bisResult, annualCashFlows)) {
+      if (isFinite(bisResult) && bisResult > -1) {
+        return { annualizedRate: bisResult, method: "irr", isValid: true };
+      }
+    }
+  }
+
+  return INVALID;
+}
+
 export function calculateProformaSummary(
   settings: ProformaSettingSnapshot[],
   config: ProformaConfig,
@@ -562,8 +673,8 @@ export function calculateProformaSummary(
     }
   }
 
-  const irrCashFlows = buildIRRCashFlows(settings, config, cashFlows);
-  const irrResult = calculateIRR(irrCashFlows);
+  const annualIrrCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+  const irrResult = calculateAnnualIRR(annualIrrCF);
 
   const threeYearValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
@@ -571,12 +682,14 @@ export function calculateProformaSummary(
   const threeYearNet = threeYearValue - threeYearInvestment;
 
   const simpleROI = threeYearInvestment > 0 ? threeYearNet / threeYearInvestment : 0;
+  const valueToCost = threeYearInvestment > 0 ? threeYearValue / threeYearInvestment : 0;
 
   return {
     totalSystemValue,
     totalInvestment,
     combinedROI,
     simpleROI,
+    valueToCost,
     totalHours,
     irr: irrResult.annualizedRate,
     irrMethod: irrResult.method,

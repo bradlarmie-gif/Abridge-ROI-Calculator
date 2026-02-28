@@ -3,6 +3,8 @@ import {
   buildMonthlyCashFlows,
   buildIRRCashFlows,
   calculateIRR,
+  buildAnnualIRRCashFlows,
+  calculateAnnualIRR,
   calculateProformaSummary,
   npvAtRate,
   countSignChanges,
@@ -340,8 +342,185 @@ describe("multi-setting aggregation", () => {
   });
 });
 
+describe("buildAnnualIRRCashFlows", () => {
+  it("period 0 equals negative implementation fees when impl fees > 0", () => {
+    const settings = [makeSetting({ implementationFee: 50000 })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    expect(annualCF[0]).toBe(-50000);
+  });
+
+  it("uses Year 1 subscription as Period 0 when impl fees are zero", () => {
+    const settings = [makeSetting({ implementationFee: 0, costPerUnit: 200, providerCount: 10 })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    expect(annualCF[0]).toBeLessThan(0);
+    const year1Sub = cashFlows.slice(0, 12).reduce((s, r) => s + r.investment, 0);
+    expect(annualCF[0]).toBe(-year1Sub);
+  });
+
+  it("3-year contract produces 4 periods (Period 0 + 3 years)", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 36 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    expect(annualCF.length).toBe(4);
+  });
+
+  it("2-year contract produces 3 periods (Period 0 + 2 years)", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 24 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    expect(annualCF.length).toBe(3);
+  });
+
+  it("annual buckets aggregate monthly values correctly", () => {
+    const settings = [makeSetting({ implementationFee: 25000 })];
+    const config = makeConfig({ contractTermMonths: 36 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    const year1Monthly = cashFlows.slice(0, 12);
+    const expectedYear1Net = year1Monthly.reduce((s, r) =>
+      s + r.docValue + r.timeValue + r.retentionValue - r.investment, 0);
+    expect(annualCF[1]).toBeCloseTo(expectedYear1Net, 0);
+  });
+
+  it("subscription-only: Year 1 period is gross value (subscription already in Period 0)", () => {
+    const settings = [makeSetting({ implementationFee: 0, costPerUnit: 200, providerCount: 10 })];
+    const config = makeConfig({ contractTermMonths: 36 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+
+    const year1GrossValue = cashFlows.slice(0, 12).reduce((s, r) =>
+      s + r.docValue + r.timeValue + r.retentionValue, 0);
+    expect(annualCF[1]).toBeCloseTo(year1GrossValue, 0);
+  });
+});
+
+describe("calculateAnnualIRR", () => {
+  it("returns valid positive rate for standard profitable case", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    const result = calculateAnnualIRR(annualCF);
+
+    expect(result.isValid).toBe(true);
+    expect(result.method).toBe("irr");
+    expect(result.annualizedRate).toBeGreaterThan(0);
+  });
+
+  it("produces rates in a credible range (not >20x for standard case)", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    const result = calculateAnnualIRR(annualCF);
+
+    expect(result.isValid).toBe(true);
+    expect(result.annualizedRate).toBeLessThan(20);
+  });
+
+  it("NPV at found rate is approximately zero (cross-validation)", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    const result = calculateAnnualIRR(annualCF);
+
+    expect(result.isValid).toBe(true);
+    const npv = npvAtRate(annualCF, result.annualizedRate);
+    const totalAbsFlow = annualCF.reduce((s, v) => s + Math.abs(v), 0);
+    expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.01);
+  });
+
+  it("returns invalid for zero cash flows", () => {
+    expect(calculateAnnualIRR([0]).isValid).toBe(false);
+    expect(calculateAnnualIRR([0, 0, 0]).isValid).toBe(false);
+  });
+
+  it("returns invalid when all flows are negative", () => {
+    expect(calculateAnnualIRR([-100, -50, -20]).isValid).toBe(false);
+  });
+
+  it("handles thin margin case", () => {
+    const settings = [makeSetting({
+      annualValue: 30000, timeValue: 10000, docValue: 20000,
+      drivers: [
+        { id: "d1", name: "D1", value: 20000, category: "documentation" as const, onset: "immediate" as const },
+        { id: "d2", name: "D2", value: 10000, category: "time" as const, onset: "delayed" as const },
+      ],
+    })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    const result = calculateAnnualIRR(annualCF);
+
+    if (result.isValid) {
+      expect(result.annualizedRate).toBeLessThan(5);
+    }
+  });
+
+  it("handles zero subscription (impl only) — high but bounded rate", () => {
+    const settings = [makeSetting({
+      costPerUnit: 0, implementationFee: 10000,
+      annualValue: 500000,
+      drivers: [
+        { id: "d1", name: "D1", value: 300000, category: "documentation" as const, onset: "immediate" as const },
+        { id: "d2", name: "D2", value: 200000, category: "time" as const, onset: "delayed" as const },
+      ],
+    })];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    const result = calculateAnnualIRR(annualCF);
+
+    expect(result.isValid).toBe(true);
+    expect(result.annualizedRate).toBeGreaterThan(1);
+  });
+
+  it("conservative < base < optimistic ordering holds", () => {
+    const baseSettings = [makeSetting()];
+    const config = makeConfig();
+
+    const scaleSettings = (s: ProformaSettingSnapshot, vf: number, cf: number) => ({
+      ...s,
+      annualValue: s.annualValue * vf,
+      retentionValue: s.retentionValue * vf,
+      drivers: s.drivers.map(d => ({ ...d, value: d.value * vf })),
+      costPerUnit: s.costPerUnit * cf,
+    });
+
+    const conservative = baseSettings.map(s => scaleSettings(s, 0.8, 1.1));
+    const optimistic = baseSettings.map(s => scaleSettings(s, 1.2, 0.9));
+
+    const baseCF = buildMonthlyCashFlows(baseSettings, config);
+    const consCF = buildMonthlyCashFlows(conservative, config);
+    const optCF = buildMonthlyCashFlows(optimistic, config);
+
+    const baseIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(baseSettings, config, baseCF));
+    const consIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
+    const optIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(optimistic, config, optCF));
+
+    expect(baseIRR.isValid).toBe(true);
+    expect(consIRR.isValid).toBe(true);
+    expect(optIRR.isValid).toBe(true);
+
+    expect(consIRR.annualizedRate).toBeLessThan(baseIRR.annualizedRate);
+    expect(optIRR.annualizedRate).toBeGreaterThan(baseIRR.annualizedRate);
+  });
+});
+
 describe("calculateProformaSummary", () => {
-  it("populates all fields including irrMethod and irrValid", () => {
+  it("populates all fields including irrMethod, irrValid, and valueToCost", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
@@ -351,9 +530,31 @@ describe("calculateProformaSummary", () => {
     expect(summary.irrMethod).toBe("irr");
     expect(summary.irrValid).toBe(true);
     expect(summary.simpleROI).toBeGreaterThan(0);
+    expect(summary.valueToCost).toBeGreaterThan(1);
     expect(summary.threeYearValue).toBeGreaterThan(0);
     expect(summary.threeYearInvestment).toBeGreaterThan(0);
     expect(summary.threeYearNet).toBeGreaterThan(0);
+  });
+
+  it("uses annual IRR (not monthly compounding) — rate should be reasonable", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const summary = calculateProformaSummary(settings, config, cashFlows);
+
+    expect(summary.irrValid).toBe(true);
+    expect(summary.irr).toBeLessThan(20);
+    expect(summary.irr).toBeGreaterThan(0);
+  });
+
+  it("valueToCost equals threeYearValue / threeYearInvestment", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const summary = calculateProformaSummary(settings, config, cashFlows);
+
+    const expected = summary.threeYearValue / summary.threeYearInvestment;
+    expect(summary.valueToCost).toBeCloseTo(expected, 5);
   });
 
   it("marks IRR valid when impl fees are zero but subscription exists", () => {
@@ -409,7 +610,7 @@ describe("calculateMIRR", () => {
   });
 });
 
-describe("sensitivity ordering", () => {
+describe("sensitivity ordering (monthly)", () => {
   it("conservative IRR < base IRR < optimistic IRR", () => {
     const baseSettings = [makeSetting()];
     const config = makeConfig();
