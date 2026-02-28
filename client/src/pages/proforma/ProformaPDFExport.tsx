@@ -386,7 +386,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               • Adoption ramp: S-curve over 12 months; providers expand from pilot to full scale over contract term
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • IRR: {fmtPct(summary.irr)} annualized · Simple ROI: {Math.round(summary.simpleROI * 100)}% (net value / total cost)
+              • IRR: {fmtPct(summary.irr)} annualized (total investment as period-0 outflow, monthly value as returns) · Simple ROI: {Math.round(summary.simpleROI * 100)}%
             </Text>
           </View>
         </View>
@@ -412,7 +412,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Internal Rate of Return (IRR)</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              IRR is calculated using Newton-Raphson iteration on monthly net cash flows. The period-0 outflow includes implementation fees plus the first quarter of subscription commitment, representing the real financial commitment at contract signing. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1.
+              IRR is calculated using Newton-Raphson iteration. The period-0 outflow is the total investment commitment (implementation fees + full contract subscription cost). Monthly returns are the gross value generated. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. This models the annualized return on total cost of ownership.
             </Text>
           </View>
 

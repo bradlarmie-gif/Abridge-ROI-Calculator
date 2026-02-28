@@ -260,16 +260,12 @@ export function buildIRRCashFlows(
   cashFlows: ProformaCashFlowRow[]
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const firstQuarterSub = cashFlows.slice(0, 3).reduce((s, r) => s + r.investment, 0);
-  const initialOutflow = -(totalImplFees + firstQuarterSub);
+  const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
+  const initialOutflow = -(totalImplFees + totalSubscription);
 
-  const monthlyNetFlows = cashFlows.map(r => r.totalValue - r.investment);
+  const monthlyReturns = cashFlows.map(r => r.totalValue);
 
-  monthlyNetFlows[0] += cashFlows[0]?.investment || 0;
-  monthlyNetFlows[1] = (monthlyNetFlows[1] || 0) + (cashFlows[1]?.investment || 0);
-  monthlyNetFlows[2] = (monthlyNetFlows[2] || 0) + (cashFlows[2]?.investment || 0);
-
-  return [initialOutflow, ...monthlyNetFlows];
+  return [initialOutflow, ...monthlyReturns];
 }
 
 export function calculateProformaSummary(
