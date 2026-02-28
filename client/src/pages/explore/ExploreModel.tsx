@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2 } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
+import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
+import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreModelProps {
   state: ExploreState;
@@ -20,6 +22,7 @@ interface ExploreModelProps {
   onEdit: () => void;
   onHome: () => void;
   onBack: () => void;
+  onAddToProforma?: (snapshot: ProformaSettingSnapshot) => void;
 }
 
 export default function ExploreModel({
@@ -32,6 +35,7 @@ export default function ExploreModel({
   onEdit,
   onHome,
   onBack,
+  onAddToProforma,
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -255,6 +259,59 @@ export default function ExploreModel({
   const providerExpansionRatio = expandedProviders / state.numberOfProviders;
   const expandedInvestment = annualInvestment * providerExpansionRatio;
   const expandedRoi = expandedInvestment > 0 ? (totalValue * expansionMultiplier) / expandedInvestment : 0;
+
+  const handleAddToProforma = () => {
+    if (!onAddToProforma || !state.careSetting) return;
+    const cs = state.careSetting;
+    const drivers: ProformaSettingSnapshot["drivers"] = [];
+
+    if (patientAccessValue > 0) drivers.push({ id: "patientAccess", name: "Patient Access", value: patientAccessValue, category: "time" });
+    if (edLwbsValue > 0) drivers.push({ id: "edLwbs", name: "LWBS Recovery", value: edLwbsValue, category: "time" });
+    if (edAdmissionCaptureValue > 0) drivers.push({ id: "edAdmission", name: "Admission Capture", value: edAdmissionCaptureValue, category: "time" });
+    if (costReductionValue > 0) drivers.push({ id: "costReduction", name: "Cost Reduction", value: costReductionValue, category: "time" });
+    if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time" });
+    if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "wRVU Uplift", value: wrvuValue, category: "documentation" });
+    if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation" });
+    if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation" });
+    if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation" });
+    if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation" });
+    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Prevention", value: nursingHapiValue, category: "documentation" });
+    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Falls Prevention", value: nursingFallsValue, category: "documentation" });
+
+    const retentionValue = isNursing
+      ? nursingRetentionValue + nursingAgencyValue
+      : clinicianRetentionValue;
+
+    if (retentionValue > 0) {
+      drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: retentionValue, category: "time" });
+    }
+
+    const snapshot: ProformaSettingSnapshot = {
+      id: `${cs}-${Date.now()}`,
+      careSetting: cs,
+      label: SETTING_LABELS[cs] || cs,
+      providerCount: isNursing ? state.nursingStaffedBeds : state.numberOfProviders,
+      encounters: state.annualEncounters,
+      utilizationPercent: state.utilizationPercent,
+      annualValue: totalValue,
+      timeValue,
+      docValue,
+      retentionValue,
+      totalHoursSaved,
+      drivers,
+      costPerUnit: state.costPerProvider,
+      implementationFee: state.includeImplementation ? state.implementationFee : 0,
+      goLiveMonth: 1,
+      color: SETTING_COLORS[cs] || "#EA2C00",
+      fullExploreState: { ...state },
+    };
+
+    onAddToProforma(snapshot);
+    toast({
+      title: `${snapshot.label} added to proforma`,
+      description: `${formatCurrency(totalValue)} annual value captured`,
+    });
+  };
 
   // Scaling pace options
   const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
@@ -1462,7 +1519,7 @@ export default function ExploreModel({
                 </p>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <Button
                 variant="outline"
                 onClick={onEdit}
@@ -1472,6 +1529,17 @@ export default function ExploreModel({
                 <Edit className="w-4 h-4" />
                 Edit Model
               </Button>
+              {onAddToProforma && (
+                <Button
+                  variant="outline"
+                  onClick={handleAddToProforma}
+                  className="gap-2 border-[#EA2C00] text-[#EA2C00] hover:bg-[#EA2C00]/5"
+                  data-testid="button-add-proforma"
+                >
+                  <Layers className="w-4 h-4" />
+                  Add to Proforma
+                </Button>
+              )}
               <Button
                 onClick={() => setShowExportModal(true)}
                 className="bg-[#EA2C00] text-white gap-2"

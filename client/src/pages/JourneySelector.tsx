@@ -1,4 +1,4 @@
-import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight } from "lucide-react";
+import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,11 @@ interface JourneySelectorProps {
   onSelectExpand: () => void;
   onSelectSwitch: () => void;
   onSelectLearn: () => void;
+  proformaCount?: number;
+  onOpenProforma?: () => void;
 }
 
-export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
+export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, proformaCount, onOpenProforma }: JourneySelectorProps) {
   const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -66,6 +68,27 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           >
             What brings you here today?
           </motion.p>
+
+          {proformaCount && proformaCount > 0 && onOpenProforma && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex justify-center mb-8"
+            >
+              <button
+                onClick={onOpenProforma}
+                className="inline-flex items-center gap-2.5 bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-full px-5 py-2.5 transition-colors group"
+                data-testid="button-open-proforma"
+              >
+                <Layers className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-sm font-medium text-neutral-700">
+                  {proformaCount} {proformaCount === 1 ? 'setting' : 'settings'} in proforma
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#EA2C00] transition-colors" />
+              </button>
+            </motion.div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
 

@@ -423,9 +423,10 @@ interface ExploreFlowProps {
   onContinueToInvestment?: (state: ExploreState) => void;
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
+  onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, onAddToProforma }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(initialPhase || 'careSetting');
   const [state, setState] = useState<ExploreState>(() => ({
     ...DEFAULT_EXPLORE_STATE,
@@ -800,6 +801,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onEdit={() => navigate('practice')}
           onBack={() => navigate('investment')}
           onHome={goHome}
+          onAddToProforma={onAddToProforma}
         />
       );
     

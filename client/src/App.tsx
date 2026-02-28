@@ -37,11 +37,14 @@ import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
+import ProformaHub from "@/pages/proforma/ProformaHub";
+import ProformaView from "@/pages/proforma/ProformaView";
+import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -170,6 +173,29 @@ export default function App() {
   const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
   const [exploreState, setExploreState] = useState<ExploreState | null>(null);
+  const [proformaSettings, setProformaSettings] = useState<ProformaSettingSnapshot[]>([]);
+  const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
+
+  const handleAddToProforma = useCallback((snapshot: ProformaSettingSnapshot) => {
+    setProformaSettings(prev => {
+      const existing = prev.findIndex(s => s.careSetting === snapshot.careSetting);
+      if (existing >= 0) {
+        const updated = [...prev];
+        updated[existing] = snapshot;
+        return updated;
+      }
+      return [...prev, snapshot];
+    });
+    navigateTo("proforma-hub");
+  }, [navigateTo]);
+
+  const handleRemoveFromProforma = useCallback((id: string) => {
+    setProformaSettings(prev => prev.filter(s => s.id !== id));
+  }, []);
+
+  const handleUpdateProformaSetting = useCallback((id: string, updates: Partial<ProformaSettingSnapshot>) => {
+    setProformaSettings(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  }, []);
 
   const handleSessionClear = useCallback(() => {
     setSelectionState({ selectedSettings: [], selectedLevers: [] });
@@ -178,6 +204,8 @@ export default function App() {
     setValueResults(null);
     setModelResults(null);
     setExploreState(null);
+    setProformaSettings([]);
+    setProformaAddCareSetting(undefined);
     setCurrentView("splash");
   }, []);
 
@@ -468,21 +496,23 @@ export default function App() {
             {currentView === "journey" && (
               <JourneySelector
                 onSelectExplore={() => {
-                  // Reset explore state to start fresh
                   setSelectionState({ selectedSettings: [], selectedLevers: [] });
                   setSeedInputs({});
                   setBaselineInfo(null);
                   setValueResults(null);
                   setModelResults(null);
-                  setExploreInitialSettings({}); // Clear any deep link settings
+                  setExploreInitialSettings({});
+                  setProformaAddCareSetting(undefined);
                   navigateTo("explore");
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
                 onSelectLearn={() => {
-                  setLearnInitialScreen(undefined); // Clear deep link, start at home
+                  setLearnInitialScreen(undefined);
                   navigateTo("learn");
                 }}
+                proformaCount={proformaSettings.length}
+                onOpenProforma={() => navigateTo("proforma-hub")}
               />
             )}
 
@@ -490,8 +520,9 @@ export default function App() {
               <ExploreFlow
                 onBackToJourney={handleBackToJourney}
                 onContinueToInvestment={handleExploreComplete}
-                initialCareSetting={exploreInitialSettings.careSetting}
+                initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
+                onAddToProforma={handleAddToProforma}
               />
             )}
 
@@ -572,6 +603,38 @@ export default function App() {
 
             {currentView === "measure" && (
               <MeasureFlow onBackToJourney={() => navigateTo("journey")} />
+            )}
+
+            {currentView === "proforma-hub" && (
+              <ProformaHub
+                settings={proformaSettings}
+                onAddSetting={(careSetting) => {
+                  setProformaAddCareSetting(careSetting as ExploreCareSetting);
+                  setExploreInitialSettings({});
+                  navigateTo("explore");
+                }}
+                onEditSetting={(id) => {
+                  const setting = proformaSettings.find(s => s.id === id);
+                  if (setting) {
+                    setProformaAddCareSetting(setting.careSetting as ExploreCareSetting);
+                    setExploreInitialSettings({});
+                    navigateTo("explore");
+                  }
+                }}
+                onRemoveSetting={handleRemoveFromProforma}
+                onUpdateSetting={handleUpdateProformaSetting}
+                onViewProforma={() => navigateTo("proforma-view")}
+                onBack={() => navigateTo("journey")}
+              />
+            )}
+
+            {currentView === "proforma-view" && proformaSettings.length > 0 && (
+              <ProformaView
+                settings={proformaSettings}
+                onUpdateSetting={handleUpdateProformaSetting}
+                onBack={() => navigateTo("proforma-hub")}
+                onHome={() => navigateTo("journey")}
+              />
             )}
             </PageTransition>
           </TooltipProvider>
