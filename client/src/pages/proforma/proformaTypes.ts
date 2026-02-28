@@ -1,10 +1,13 @@
 import { type ExploreState } from "../explore/ExploreFlow";
 
+export type DriverOnset = "immediate" | "delayed" | "phased";
+
 export interface ProformaDriver {
   id: string;
   name: string;
   value: number;
   category: "time" | "documentation";
+  onset: DriverOnset;
 }
 
 export interface ProformaSettingSnapshot {
@@ -45,18 +48,20 @@ export interface ProformaCashFlowRow {
   period: number;
   label: string;
   investment: number;
-  baseValue: number;
+  docValue: number;
+  timeValue: number;
   retentionValue: number;
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number; providers: number }>;
+  bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }>;
 }
 
 export interface ProformaSummary {
   totalSystemValue: number;
   totalInvestment: number;
   combinedROI: number;
+  simpleROI: number;
   totalHours: number;
   irr: number;
   paybackMonth: number | null;
@@ -94,4 +99,16 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
     year2Pct: 50,
     year3Pct: 100,
   },
+};
+
+export const ONSET_LABELS: Record<DriverOnset, string> = {
+  immediate: "Immediate",
+  delayed: "Delayed (M3+)",
+  phased: "Phased (Y1/Y2/Y3)",
+};
+
+export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
+  immediate: 0,
+  delayed: 3,
+  phased: 0,
 };

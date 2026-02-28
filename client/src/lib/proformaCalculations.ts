@@ -3,7 +3,9 @@ import type {
   ProformaConfig,
   ProformaCashFlowRow,
   ProformaSummary,
+  DriverOnset,
 } from "@/pages/proforma/proformaTypes";
+import { ONSET_DELAY_MONTHS } from "@/pages/proforma/proformaTypes";
 
 function getRetentionPhasingMultiplier(
   month: number,
@@ -18,12 +20,38 @@ function getRetentionPhasingMultiplier(
   return phasing.year3Pct / 100;
 }
 
-function getAdoptionRamp(month: number, goLiveMonth: number, rampMonths: number): number {
-  const monthsSinceGoLive = month - goLiveMonth;
-  if (monthsSinceGoLive < 0) return 0;
-  if (monthsSinceGoLive >= rampMonths) return 1;
-  const progress = monthsSinceGoLive / rampMonths;
+function getAdoptionRamp(monthsSinceOnset: number, rampMonths: number): number {
+  if (monthsSinceOnset < 0) return 0;
+  if (monthsSinceOnset >= rampMonths) return 1;
+  const progress = monthsSinceOnset / rampMonths;
   return Math.pow(progress, 0.8);
+}
+
+function getOnsetMultiplier(
+  monthsSinceGoLive: number,
+  onset: DriverOnset,
+  phasing: ProformaConfig["retentionPhasing"]
+): number {
+  if (monthsSinceGoLive < 0) return 0;
+
+  const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
+
+  if (onset === "phased") {
+    if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
+    if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
+    return phasing.year3Pct / 100;
+  }
+
+  if (onset === "delayed") {
+    if (monthsSinceGoLive < delayMonths) return 0;
+    const monthsSinceOnset = monthsSinceGoLive - delayMonths;
+    const rampUpMonths = 3;
+    if (monthsSinceOnset >= rampUpMonths) return 1;
+    return monthsSinceOnset / rampUpMonths;
+  }
+
+  if (monthsSinceGoLive === 0) return 0.5;
+  return 1;
 }
 
 function getProviderExpansion(
@@ -64,25 +92,23 @@ export function buildMonthlyCashFlows(
   const months = config.contractTermMonths;
   const rows: ProformaCashFlowRow[] = [];
   let cumulativeNet = 0;
-  const rampMonths = 12;
 
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
   cumulativeNet = -totalImplFees;
 
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
-    let totalBaseValue = 0;
+    let totalDocValue = 0;
+    let totalTimeValue = 0;
     let totalRetentionValue = 0;
-    const bySettings: Record<string, { value: number; investment: number; providers: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0, providers: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
         continue;
       }
-
-      const ramp = getAdoptionRamp(m, setting.goLiveMonth, rampMonths);
 
       const fullScale = setting.fullScaleProviders || setting.providerCount;
       const fullScaleUtil = setting.fullScaleUtilization || setting.utilizationPercent;
@@ -100,24 +126,49 @@ export function buildMonthlyCashFlows(
       const utilScale = currentUtil / setting.utilizationPercent;
       const expansionMultiplier = providerScale * utilScale;
 
-      const retentionMultiplier = getRetentionPhasingMultiplier(m, setting.goLiveMonth, config.retentionPhasing);
+      const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, 12);
 
-      const monthlyBase = ((setting.annualValue - setting.retentionValue) / 12) * ramp * expansionMultiplier;
-      const monthlyRetention = (setting.retentionValue / 12) * ramp * retentionMultiplier * expansionMultiplier;
+      let settingDocValue = 0;
+      let settingTimeValue = 0;
+      let settingRetentionValue = 0;
+
+      for (const driver of setting.drivers) {
+        const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
+        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, config.retentionPhasing);
+        const monthlyDriverValue = (driver.value / 12) * adoptionRamp * expansionMultiplier * onsetMult;
+
+        if (onset === "phased") {
+          settingRetentionValue += monthlyDriverValue;
+        } else if (driver.category === "documentation") {
+          settingDocValue += monthlyDriverValue;
+        } else {
+          settingTimeValue += monthlyDriverValue;
+        }
+      }
+
+      const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0);
+      if (nonDriverValue > 0) {
+        settingDocValue += (nonDriverValue / 12) * adoptionRamp * expansionMultiplier;
+      }
+
       const monthlyInvestment = setting.costPerUnit * currentProviders;
 
-      totalBaseValue += monthlyBase;
-      totalRetentionValue += monthlyRetention;
+      totalDocValue += settingDocValue;
+      totalTimeValue += settingTimeValue;
+      totalRetentionValue += settingRetentionValue;
       totalInvestment += monthlyInvestment;
 
       bySettings[setting.id] = {
-        value: monthlyBase + monthlyRetention,
+        value: settingDocValue + settingTimeValue + settingRetentionValue,
         investment: monthlyInvestment,
         providers: currentProviders,
+        docValue: settingDocValue,
+        timeValue: settingTimeValue,
+        retentionValue: settingRetentionValue,
       };
     }
 
-    const totalValue = totalBaseValue + totalRetentionValue;
+    const totalValue = totalDocValue + totalTimeValue + totalRetentionValue;
     const netValue = totalValue - totalInvestment;
     cumulativeNet += netValue;
 
@@ -125,7 +176,8 @@ export function buildMonthlyCashFlows(
       period: m,
       label: `M${m}`,
       investment: Math.round(totalInvestment),
-      baseValue: Math.round(totalBaseValue),
+      docValue: Math.round(totalDocValue),
+      timeValue: Math.round(totalTimeValue),
       retentionValue: Math.round(totalRetentionValue),
       totalValue: Math.round(totalValue),
       netValue: Math.round(netValue),
@@ -144,13 +196,16 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
     allSettingIds.forEach(id => {
       const lastChunk = chunk[chunk.length - 1];
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
         providers: lastChunk?.bySettings[id]?.providers || 0,
+        docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
+        timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
+        retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
       };
     });
 
@@ -158,7 +213,8 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
       period: q + 1,
       label: `Q${q + 1}`,
       investment: chunk.reduce((s, r) => s + r.investment, 0),
-      baseValue: chunk.reduce((s, r) => s + r.baseValue, 0),
+      docValue: chunk.reduce((s, r) => s + r.docValue, 0),
+      timeValue: chunk.reduce((s, r) => s + r.timeValue, 0),
       retentionValue: chunk.reduce((s, r) => s + r.retentionValue, 0),
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
@@ -169,7 +225,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[]): ProformaCashFlowRow
   return quarters;
 }
 
-export function calculateIRR(monthlyCashFlows: number[], maxIterations = 100, tolerance = 1e-7): number {
+export function calculateIRR(monthlyCashFlows: number[], maxIterations = 200, tolerance = 1e-7): number {
   let rate = 0.01;
 
   for (let i = 0; i < maxIterations; i++) {
@@ -198,6 +254,24 @@ export function calculateIRR(monthlyCashFlows: number[], maxIterations = 100, to
   return annualizedRate;
 }
 
+export function buildIRRCashFlows(
+  settings: ProformaSettingSnapshot[],
+  config: ProformaConfig,
+  cashFlows: ProformaCashFlowRow[]
+): number[] {
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+  const firstQuarterSub = cashFlows.slice(0, 3).reduce((s, r) => s + r.investment, 0);
+  const initialOutflow = -(totalImplFees + firstQuarterSub);
+
+  const monthlyNetFlows = cashFlows.map(r => r.totalValue - r.investment);
+
+  monthlyNetFlows[0] += cashFlows[0]?.investment || 0;
+  monthlyNetFlows[1] = (monthlyNetFlows[1] || 0) + (cashFlows[1]?.investment || 0);
+  monthlyNetFlows[2] = (monthlyNetFlows[2] || 0) + (cashFlows[2]?.investment || 0);
+
+  return [initialOutflow, ...monthlyNetFlows];
+}
+
 export function calculateProformaSummary(
   settings: ProformaSettingSnapshot[],
   config: ProformaConfig,
@@ -215,18 +289,21 @@ export function calculateProformaSummary(
     }
   }
 
-  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const monthlyCashFlowValues = [-totalImplFees, ...cashFlows.map(r => r.netValue)];
-  const irr = calculateIRR(monthlyCashFlowValues);
+  const irrCashFlows = buildIRRCashFlows(settings, config, cashFlows);
+  const irr = calculateIRR(irrCashFlows);
 
   const threeYearValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
+  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
   const threeYearInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
   const threeYearNet = threeYearValue - threeYearInvestment;
+
+  const simpleROI = threeYearInvestment > 0 ? threeYearNet / threeYearInvestment : 0;
 
   return {
     totalSystemValue,
     totalInvestment,
     combinedROI,
+    simpleROI,
     totalHours,
     irr: isFinite(irr) ? irr : 0,
     paybackMonth,
@@ -261,7 +338,8 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
     return {
       label: y.label,
       totalValue: y.rows.reduce((s, r) => s + r.totalValue, 0),
-      baseValue: y.rows.reduce((s, r) => s + r.baseValue, 0),
+      docValue: y.rows.reduce((s, r) => s + r.docValue, 0),
+      timeValue: y.rows.reduce((s, r) => s + r.timeValue, 0),
       retentionValue: y.rows.reduce((s, r) => s + r.retentionValue, 0),
       investment: subscriptionInvestment + implInvestment,
       netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,

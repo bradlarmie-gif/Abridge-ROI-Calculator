@@ -12,7 +12,7 @@ import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import type { ProformaSummary } from "./proformaTypes";
-import { SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
+import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_LABELS } from "./proformaTypes";
 import { buildMonthlyCashFlows, calculateProformaSummary, getYearlySummary } from "@/lib/proformaCalculations";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -35,6 +35,9 @@ const colors = {
   border: "#E0E0E0",
   positive: "#059669",
   negative: "#DC2626",
+  docBlue: "#2563EB",
+  timeRed: "#EA2C00",
+  retentionGreen: "#059669",
 };
 
 const styles = StyleSheet.create({
@@ -75,7 +78,7 @@ const styles = StyleSheet.create({
   },
   metricsRow: {
     flexDirection: "row",
-    gap: 20,
+    gap: 16,
   },
   metricBox: {
     flex: 1,
@@ -184,8 +187,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               <Text style={[styles.metricValue, { color: colors.primary }]}>{fmt(summary.totalSystemValue)}</Text>
             </View>
             <View style={styles.metricBox}>
-              <Text style={styles.metricLabel}>Combined ROI</Text>
-              <Text style={styles.metricValue}>{summary.combinedROI.toFixed(1)}x</Text>
+              <Text style={styles.metricLabel}>Simple ROI</Text>
+              <Text style={styles.metricValue}>{Math.round(summary.simpleROI * 100)}%</Text>
             </View>
             <View style={styles.metricBox}>
               <Text style={styles.metricLabel}>IRR</Text>
@@ -230,10 +233,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
         </View>
       </Page>
 
-      {/* PAGE 2: Setting Detail */}
+      {/* PAGE 2: Setting Detail with Onset Timing */}
       <Page size="LETTER" style={styles.page}>
-        <Text style={styles.sectionTitle}>Setting Detail</Text>
-        <Text style={styles.sectionSubtitle}>Key value drivers per care setting</Text>
+        <Text style={styles.sectionTitle}>Setting Detail & Driver Onset Timing</Text>
+        <Text style={styles.sectionSubtitle}>Value drivers by care setting with onset classification</Text>
 
         {settings.map(s => (
           <View key={s.id} style={[styles.settingCard, { borderLeftWidth: 3, borderLeftColor: s.color }]}>
@@ -243,11 +246,16 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
                 {s.providerCount.toLocaleString()} → {s.fullScaleProviders.toLocaleString()} {SETTING_UNIT_LABELS[s.careSetting]} · {s.utilizationPercent}% utilization · {fmt(s.costPerUnit)}/{SETTING_UNIT_LABELS[s.careSetting] === "beds" ? "bed" : "provider"}/mo
               </Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-                {s.drivers.map(d => (
-                  <View key={d.id} style={{ backgroundColor: "#FFFFFF", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ fontSize: 7 }}>{d.name}: {fmt(d.value)}</Text>
-                  </View>
-                ))}
+                {s.drivers.map(d => {
+                  const onsetColor = d.onset === "immediate" ? colors.docBlue :
+                    d.onset === "delayed" ? colors.timeRed : colors.retentionGreen;
+                  return (
+                    <View key={d.id} style={{ backgroundColor: "#FFFFFF", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3, borderLeftWidth: 2, borderLeftColor: onsetColor }}>
+                      <Text style={{ fontSize: 7 }}>{d.name}: {fmt(d.value)}</Text>
+                      <Text style={{ fontSize: 5, color: colors.tertiary }}>{ONSET_LABELS[d.onset]}</Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
             <View style={{ alignItems: "flex-end" }}>
@@ -257,16 +265,34 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
           </View>
         ))}
 
+        <View style={{ marginTop: 12, backgroundColor: colors.cards, borderRadius: 6, padding: 12 }}>
+          <Text style={{ fontSize: 9, fontWeight: 700, marginBottom: 4 }}>Onset Timing Legend</Text>
+          <View style={{ flexDirection: "row", gap: 20 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.docBlue }} />
+              <Text style={{ fontSize: 7, color: colors.secondary }}>Immediate — Doc quality from day one</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.timeRed }} />
+              <Text style={{ fontSize: 7, color: colors.secondary }}>Delayed (3mo) — Time savings need operational change</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.retentionGreen }} />
+              <Text style={{ fontSize: 7, color: colors.secondary }}>Phased — Retention over Y1/Y2/Y3</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.footer}>
           <Text>Abridge ROI Studio — Organization Proforma</Text>
           <Text>Prepared {today} · Page 2 of 4</Text>
         </View>
       </Page>
 
-      {/* PAGE 3: Financial Projections */}
+      {/* PAGE 3: Financial Projections with Doc/Time/Retention Breakdown */}
       <Page size="LETTER" style={styles.page}>
         <Text style={styles.sectionTitle}>{config.contractTermMonths}-Month Financial Projection</Text>
-        <Text style={styles.sectionSubtitle}>Year-by-year value with conservative retention phasing</Text>
+        <Text style={styles.sectionSubtitle}>Value phased by driver onset timing with conservative retention modeling</Text>
 
         <View style={styles.tableHeader}>
           <Text style={[styles.cellLeft, { fontWeight: 700 }]}></Text>
@@ -295,11 +321,31 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
         </View>
 
         <View style={styles.tableRow}>
-          <Text style={[styles.cellLeft, { color: colors.tertiary, paddingLeft: 8 }]}>Retention (phased)</Text>
+          <Text style={[styles.cellLeft, { color: colors.docBlue, paddingLeft: 8, fontSize: 8 }]}>Doc Quality (immediate)</Text>
           {yearlyData.map(y => (
-            <Text key={y.label} style={[styles.cell, { color: colors.tertiary }]}>{fmt(y.retentionValue)}</Text>
+            <Text key={y.label} style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>{fmt(y.docValue)}</Text>
           ))}
-          <Text style={[styles.cell, { color: colors.tertiary }]}>
+          <Text style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>
+            {fmt(yearlyData.reduce((s, y) => s + y.docValue, 0))}
+          </Text>
+        </View>
+
+        <View style={styles.tableRow}>
+          <Text style={[styles.cellLeft, { color: colors.timeRed, paddingLeft: 8, fontSize: 8 }]}>Time Savings (3mo delay)</Text>
+          {yearlyData.map(y => (
+            <Text key={y.label} style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>{fmt(y.timeValue)}</Text>
+          ))}
+          <Text style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>
+            {fmt(yearlyData.reduce((s, y) => s + y.timeValue, 0))}
+          </Text>
+        </View>
+
+        <View style={styles.tableRow}>
+          <Text style={[styles.cellLeft, { color: colors.retentionGreen, paddingLeft: 8, fontSize: 8 }]}>Retention (phased)</Text>
+          {yearlyData.map(y => (
+            <Text key={y.label} style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>{fmt(y.retentionValue)}</Text>
+          ))}
+          <Text style={[styles.cell, { color: colors.tertiary, fontSize: 8 }]}>
             {fmt(yearlyData.reduce((s, y) => s + y.retentionValue, 0))}
           </Text>
         </View>
@@ -331,13 +377,16 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               • Contract term: {config.contractTermMonths} months
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
+              • Driver onset: Doc quality = immediate (1mo learning curve), Time savings = 3mo operational lag, Retention = phased per Y1/Y2/Y3
+            </Text>
+            <Text style={{ fontSize: 8, color: colors.secondary }}>
               • Retention phasing: {config.retentionPhasing.year1Pct}% Year 1, {config.retentionPhasing.year2Pct}% Year 2, {config.retentionPhasing.year3Pct}% Year 3
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
               • Adoption ramp: S-curve over 12 months; providers expand from pilot to full scale over contract term
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • IRR: {fmtPct(summary.irr)} annualized (Newton-Raphson on net cash flows with period-0 implementation outflow)
+              • IRR: {fmtPct(summary.irr)} annualized · Simple ROI: {Math.round(summary.simpleROI * 100)}% (net value / total cost)
             </Text>
           </View>
         </View>
@@ -354,30 +403,30 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
 
         <View style={{ gap: 10, marginBottom: 20 }}>
           <View>
-            <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Conservative Modeling Approach</Text>
+            <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Driver Onset Timing</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              This proforma uses conservative assumptions throughout. Retention benefits are phased to reflect the time required for workforce impact to materialize. Adoption follows an S-curve ramp rather than assuming instant full utilization. All value projections are based on user-provided inputs and published industry benchmarks.
+              Different value drivers materialize at different speeds. Documentation quality improvements (wRVU uplift, HCC recapture, denial prevention, DRG accuracy) kick in immediately — the AI produces better notes from day one with a brief learning curve. Time savings drivers (patient access, throughput, cost reduction, OT reduction) take approximately 3 months as organizations operationalize freed-up capacity. Retention and wellbeing benefits are phased conservatively over years, reflecting that workforce impact requires sustained adoption.
             </Text>
           </View>
 
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Internal Rate of Return (IRR)</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              IRR is calculated using Newton-Raphson iteration on monthly net cash flows with a period-0 negative outflow representing implementation fees. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1. This represents the annualized return on the investment, accounting for the time value of money.
+              IRR is calculated using Newton-Raphson iteration on monthly net cash flows. The period-0 outflow includes implementation fees plus the first quarter of subscription commitment, representing the real financial commitment at contract signing. The monthly rate is annualized via compound formula: (1 + monthly rate)^12 - 1.
+            </Text>
+          </View>
+
+          <View>
+            <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Simple ROI</Text>
+            <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
+              Simple ROI is total contract net value divided by total contract cost (implementation fees + subscription). A {Math.round(summary.simpleROI * 100)}% Simple ROI means the organization receives ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested over the contract term.
             </Text>
           </View>
 
           <View>
             <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Provider Expansion</Text>
             <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              Providers scale linearly from pilot count to full-scale count over the contract term for each care setting. This models a realistic organizational rollout trajectory where value grows as more providers adopt the solution. Investment costs scale proportionally with provider count.
-            </Text>
-          </View>
-
-          <View>
-            <Text style={{ fontSize: 10, fontWeight: 700, marginBottom: 3 }}>Retention Phasing</Text>
-            <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-              Clinician and nurse retention benefits are phased conservatively: {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3. This reflects that retention impact requires sustained adoption and cultural change before materializing as reduced turnover.
+              Providers scale linearly from pilot count to full-scale count over the contract term. Investment costs scale proportionally with provider count, modeling realistic organizational rollout.
             </Text>
           </View>
 
@@ -394,7 +443,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
 
         <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12, marginTop: "auto" }}>
           <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.5 }}>
-            Projections are modeled estimates based on user-provided inputs and published benchmarks. Retention benefits are conservatively phased. Actual results may vary based on implementation approach, provider adoption, and organizational factors. This does not constitute a guarantee of financial outcomes.
+            Projections are modeled estimates based on user-provided inputs and published benchmarks. Driver onset timing reflects typical healthcare implementation timelines. Retention benefits are conservatively phased. This does not constitute a guarantee of financial outcomes.
           </Text>
         </View>
 
