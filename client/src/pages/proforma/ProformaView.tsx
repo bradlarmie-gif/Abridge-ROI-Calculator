@@ -359,19 +359,20 @@ export default function ProformaView({
                 />
                 <Tooltip content={<CustomTooltip settings={settings} totalProvidersByPeriod={totalProvidersByPeriod} />} />
 
-                {config.viewMode === "quarterly" && !isMobile && goLiveLabels.map(gl => (
+                {config.viewMode === "quarterly" && !isMobile && goLiveLabels.map((gl, idx) => (
                   <ReferenceLine
                     key={`golive-${gl.label}`}
                     x={gl.label}
                     stroke={gl.color}
-                    strokeDasharray="4 4"
-                    strokeOpacity={0.6}
+                    strokeDasharray="6 3"
+                    strokeOpacity={0.5}
+                    strokeWidth={1.5}
                     label={{
                       value: `${gl.name} Go-Live`,
-                      position: "insideTopRight",
+                      position: "insideTopLeft",
                       fontSize: 9,
                       fill: gl.color,
-                      dy: -5,
+                      dy: 8 + idx * 14,
                     }}
                   />
                 ))}
@@ -380,14 +381,15 @@ export default function ProformaView({
                   <ReferenceLine
                     x={timeSavingsOnsetLabel}
                     stroke="#EA2C00"
-                    strokeDasharray="3 3"
-                    strokeOpacity={0.4}
+                    strokeDasharray="4 3"
+                    strokeOpacity={0.5}
+                    strokeWidth={1.5}
                     label={{
                       value: "Time Savings Onset",
-                      position: "insideTopRight",
+                      position: "insideTopLeft",
                       fontSize: 9,
                       fill: "#EA2C00",
-                      dy: -5,
+                      dy: 8 + goLiveLabels.length * 14,
                     }}
                   />
                 )}
@@ -396,15 +398,16 @@ export default function ProformaView({
                   <ReferenceLine
                     x={paybackLabel}
                     stroke="#059669"
-                    strokeDasharray="4 4"
-                    strokeOpacity={0.7}
+                    strokeDasharray="6 3"
+                    strokeOpacity={0.6}
+                    strokeWidth={1.5}
                     label={isMobile ? undefined : {
                       value: "Payback",
-                      position: "insideTopRight",
-                      fontSize: 9,
+                      position: "insideBottomLeft",
+                      fontSize: 10,
                       fill: "#059669",
                       fontWeight: 600,
-                      dy: -5,
+                      dy: -12,
                     }}
                   />
                 )}
@@ -508,26 +511,43 @@ export default function ProformaView({
 
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead>
+                <tr>
+                  <th className="py-1" />
+                  <th colSpan={config.contractTermMonths >= 36 ? 3 : 2} className="text-center py-1 pb-0">
+                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Providers by Year</span>
+                  </th>
+                  <th colSpan={3} className="text-center py-1 pb-0">
+                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Pricing</span>
+                  </th>
+                  <th colSpan={config.contractTermMonths >= 36 ? 3 : 2} className="text-center py-1 pb-0">
+                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Annual Investment</span>
+                  </th>
+                </tr>
                 <tr className="border-b border-neutral-300">
                   <th className="text-left py-2 font-medium text-neutral-500">Setting</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Y1</th>
+                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">Y1</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Y2</th>
                   {config.contractTermMonths >= 36 && (
                     <th className="text-right py-2 font-medium text-neutral-500">Y3</th>
                   )}
-                  <th className="text-right py-2 font-medium text-neutral-500">$/Unit/Mo</th>
+                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">$/Unit/Mo</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Go-Live</th>
                   <th className="text-right py-2 font-medium text-neutral-500">Impl. Fee</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Monthly Cost</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Annual Cost</th>
+                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">Y1 Cost</th>
+                  <th className="text-right py-2 font-medium text-neutral-500">Y2 Cost</th>
+                  {config.contractTermMonths >= 36 && (
+                    <th className="text-right py-2 font-medium text-neutral-500">Y3 Cost</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {settings.map(s => {
                   const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
-                  const monthlyCost = s.costPerUnit * yp.year1;
+                  const y1Cost = s.costPerUnit * yp.year1 * 12;
+                  const y2Cost = s.costPerUnit * yp.year2 * 12;
+                  const y3Cost = s.costPerUnit * yp.year3 * 12;
                   return (
                     <tr key={s.id} className="border-b border-neutral-200">
                       <td className="py-3">
@@ -536,11 +556,11 @@ export default function ProformaView({
                           <span className="font-medium text-neutral-900">{s.label}</span>
                         </div>
                       </td>
-                      <td className="text-right py-3">
+                      <td className="text-right py-3 pl-4">
                         <FormattedNumberInput
                           value={yp.year1}
                           onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
-                          className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid={`input-y1-${s.careSetting}`}
                         />
                       </td>
@@ -548,7 +568,7 @@ export default function ProformaView({
                         <FormattedNumberInput
                           value={yp.year2}
                           onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
-                          className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid={`input-y2-${s.careSetting}`}
                         />
                       </td>
@@ -557,17 +577,17 @@ export default function ProformaView({
                           <FormattedNumberInput
                             value={yp.year3}
                             onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
-                            className="w-16 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                            className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                             data-testid={`input-y3-${s.careSetting}`}
                           />
                         </td>
                       )}
-                      <td className="text-right py-3">
+                      <td className="text-right py-3 pl-4">
                         <FormattedNumberInput
                           value={s.costPerUnit}
                           onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
                           prefix="$"
-                          className="w-20 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          className="w-[88px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid={`input-cost-${s.careSetting}`}
                         />
                       </td>
@@ -575,7 +595,7 @@ export default function ProformaView({
                         <select
                           value={s.goLiveMonth}
                           onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
-                          className="h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm text-right"
+                          className="w-[72px] h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm text-right"
                           data-testid={`select-golive-view-${s.careSetting}`}
                         >
                           {Array.from({ length: config.contractTermMonths }, (_, i) => (
@@ -588,33 +608,39 @@ export default function ProformaView({
                           value={s.implementationFee}
                           onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
                           prefix="$"
-                          className="w-24 text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                          className="w-[88px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid={`input-impl-${s.careSetting}`}
                         />
                       </td>
-                      <td className="text-right py-3 font-medium text-neutral-900">{fmtFull(monthlyCost)}</td>
-                      <td className="text-right py-3 font-medium text-neutral-900">{fmtFull(monthlyCost * 12)}</td>
+                      <td className="text-right py-3 pl-4 font-medium text-neutral-700 text-xs">{fmtFull(y1Cost)}</td>
+                      <td className="text-right py-3 font-medium text-neutral-700 text-xs">{fmtFull(y2Cost)}</td>
+                      {config.contractTermMonths >= 36 && (
+                        <td className="text-right py-3 font-medium text-neutral-700 text-xs">{fmtFull(y3Cost)}</td>
+                      )}
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+            <p className="text-[10px] text-neutral-400 mt-2 italic">Set how many providers come online each year. Annual investment scales with your expansion plan.</p>
           </div>
 
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {settings.map(s => {
               const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
-              const monthlyCost = s.costPerUnit * yp.year1;
+              const y1Cost = s.costPerUnit * yp.year1 * 12;
+              const y2Cost = s.costPerUnit * yp.year2 * 12;
+              const y3Cost = s.costPerUnit * yp.year3 * 12;
               return (
                 <div key={s.id} className="bg-white rounded-lg p-3 border-l-3" style={{ borderLeftWidth: 3, borderLeftColor: s.color }}>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-bold text-neutral-900">{s.label}</span>
-                    <span className="text-xs text-neutral-500">Y1: {fmtNum(yp.year1)} → Y3: {fmtNum(yp.year3)}</span>
+                    <span className="text-[10px] text-neutral-400 uppercase tracking-wide">Providers by year</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y1 Units</label>
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y1</label>
                       <FormattedNumberInput
                         value={yp.year1}
                         onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
@@ -623,7 +649,7 @@ export default function ProformaView({
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y2 Units</label>
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y2</label>
                       <FormattedNumberInput
                         value={yp.year2}
                         onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
@@ -632,16 +658,18 @@ export default function ProformaView({
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y3 Units</label>
-                      <FormattedNumberInput
-                        value={yp.year3}
-                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
-                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                        data-testid={`input-y3-${s.careSetting}`}
-                      />
+                      <label className="block text-[10px] text-neutral-500 mb-0.5">{config.contractTermMonths >= 36 ? "Y3" : ""}</label>
+                      {config.contractTermMonths >= 36 ? (
+                        <FormattedNumberInput
+                          value={yp.year3}
+                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
+                          className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
+                          data-testid={`input-y3-${s.careSetting}`}
+                        />
+                      ) : <div />}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mb-2">
                     <div>
                       <label className="block text-[10px] text-neutral-500 mb-0.5">$/Unit/Mo</label>
                       <FormattedNumberInput
@@ -675,9 +703,12 @@ export default function ProformaView({
                         data-testid={`input-impl-${s.careSetting}`}
                       />
                     </div>
-                    <div className="flex items-end">
-                      <p className="text-xs text-neutral-500 pb-1.5">{fmtFull(monthlyCost)}/mo</p>
-                    </div>
+                    <div />
+                  </div>
+                  <div className="flex items-center gap-3 pt-2 border-t border-neutral-100 text-[10px] text-neutral-500">
+                    <span>Y1: {fmtFull(y1Cost)}</span>
+                    <span>Y2: {fmtFull(y2Cost)}</span>
+                    {config.contractTermMonths >= 36 && <span>Y3: {fmtFull(y3Cost)}</span>}
                   </div>
                 </div>
               );
