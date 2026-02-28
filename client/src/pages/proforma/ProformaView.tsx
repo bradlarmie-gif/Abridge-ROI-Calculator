@@ -559,7 +559,7 @@ export default function ProformaView({
                       <td className="text-right py-3 pl-4">
                         <FormattedNumberInput
                           value={yp.year1}
-                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
+                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
                           className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid={`input-y1-${s.careSetting}`}
                         />
@@ -576,7 +576,7 @@ export default function ProformaView({
                         <td className="text-right py-3">
                           <FormattedNumberInput
                             value={yp.year3}
-                            onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
+                            onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
                             className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                             data-testid={`input-y3-${s.careSetting}`}
                           />
@@ -643,7 +643,7 @@ export default function ProformaView({
                       <label className="block text-[10px] text-neutral-500 mb-0.5">Y1</label>
                       <FormattedNumberInput
                         value={yp.year1}
-                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) }, providerCount: Math.max(v, 1) })}
+                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
                         className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
                         data-testid={`input-y1-${s.careSetting}`}
                       />
@@ -662,7 +662,7 @@ export default function ProformaView({
                       {config.contractTermMonths >= 36 ? (
                         <FormattedNumberInput
                           value={yp.year3}
-                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) }, fullScaleProviders: Math.max(v, 1) })}
+                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
                           className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
                           data-testid={`input-y3-${s.careSetting}`}
                         />
