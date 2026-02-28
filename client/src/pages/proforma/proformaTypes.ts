@@ -64,6 +64,8 @@ export interface ProformaSummary {
   simpleROI: number;
   totalHours: number;
   irr: number;
+  irrMethod: "irr" | "mirr";
+  irrValid: boolean;
   paybackMonth: number | null;
   threeYearNet: number;
   threeYearValue: number;

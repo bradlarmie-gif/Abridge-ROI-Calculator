@@ -178,7 +178,7 @@ interface ProformaPDFProps {
 function ProformaPDFDocument({ settings, config, summary, yearlyData }: ProformaPDFProps) {
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const termLabel = contractTermLabel(config.contractTermMonths);
-  const hasInvestment = settings.some(s => s.costPerUnit * s.providerCount > 0 || s.implementationFee > 0);
+  const hasInvestment = settings.some(s => s.implementationFee > 0);
 
   return (
     <Document>
@@ -197,8 +197,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               <Text style={styles.metricValue}>{Math.round(summary.simpleROI * 100)}%</Text>
             </View>
             <View style={styles.metricBox}>
-              <Text style={styles.metricLabel}>IRR</Text>
-              <Text style={[styles.metricValue, { color: colors.positive }]}>{hasInvestment ? fmtPct(summary.irr) : "N/A"}</Text>
+              <Text style={styles.metricLabel}>{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</Text>
+              <Text style={[styles.metricValue, { color: colors.positive }]}>{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</Text>
             </View>
             <View style={styles.metricBox}>
               <Text style={styles.metricLabel}>Payback</Text>
@@ -392,7 +392,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData }: Proforma
               • Adoption ramp: S-curve over 12 months; providers expand from pilot to full scale over contract term
             </Text>
             <Text style={{ fontSize: 8, color: colors.secondary }}>
-              • IRR: {hasInvestment ? fmtPct(summary.irr) : "N/A"} annualized (Newton-Raphson with validation) · Simple ROI: {Math.round(summary.simpleROI * 100)}%
+              • {summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"} annualized (Newton-Raphson + bisection + MIRR fallback, NPV cross-validated) · Simple ROI: {Math.round(summary.simpleROI * 100)}%
             </Text>
           </View>
         </View>

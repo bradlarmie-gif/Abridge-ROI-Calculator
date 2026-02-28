@@ -98,25 +98,27 @@ export default function ProformaView({
   const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
 
   const hasInvestment = useMemo(() => {
-    const totalCost = settings.reduce((s, v) => s + v.costPerUnit * v.providerCount, 0);
-    const totalImpl = settings.reduce((s, v) => s + v.implementationFee, 0);
-    return totalCost > 0 || totalImpl > 0;
+    return settings.some(s => s.implementationFee > 0);
   }, [settings]);
 
   const sensitivityIRR = useMemo(() => {
-    const scaleDrivers = (s: ProformaSettingSnapshot, factor: number) => ({
+    const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number, costFactor: number) => ({
       ...s,
-      annualValue: s.annualValue * factor,
-      retentionValue: s.retentionValue * factor,
-      drivers: s.drivers.map(d => ({ ...d, value: d.value * factor })),
+      annualValue: s.annualValue * valueFactor,
+      retentionValue: s.retentionValue * valueFactor,
+      drivers: s.drivers.map(d => ({ ...d, value: d.value * valueFactor })),
+      costPerUnit: s.costPerUnit * costFactor,
     });
-    const conservative = settings.map(s => scaleDrivers(s, 0.8));
-    const optimistic = settings.map(s => scaleDrivers(s, 1.2));
+    const conservative = settings.map(s => scaleSettings(s, 0.8, 1.1));
+    const optimistic = settings.map(s => scaleSettings(s, 1.2, 0.9));
     const consCF = buildMonthlyCashFlows(conservative, config);
     const optCF = buildMonthlyCashFlows(optimistic, config);
-    const consIRR = calculateIRR(buildIRRCashFlows(conservative, config, consCF));
-    const optIRR = calculateIRR(buildIRRCashFlows(optimistic, config, optCF));
-    return { conservative: isFinite(consIRR) ? consIRR : 0, optimistic: isFinite(optIRR) ? optIRR : 0 };
+    const consResult = calculateIRR(buildIRRCashFlows(conservative, config, consCF));
+    const optResult = calculateIRR(buildIRRCashFlows(optimistic, config, optCF));
+    return {
+      conservative: consResult.isValid ? consResult.annualizedRate : 0,
+      optimistic: optResult.isValid ? optResult.annualizedRate : 0,
+    };
   }, [settings, config]);
 
   const chartData = useMemo(() => {
@@ -221,8 +223,8 @@ export default function ProformaView({
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
               </div>
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">IRR</p>
-                <p className="text-xl font-bold text-emerald-400" data-testid="text-irr">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
+                <p className="text-xl font-bold text-emerald-400" data-testid="text-irr">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
@@ -246,8 +248,8 @@ export default function ProformaView({
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
             </div>
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">IRR</p>
-              <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
+              <p className="text-2xl font-bold text-emerald-400">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
@@ -761,16 +763,16 @@ export default function ProformaView({
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-irr">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">IRR</p>
-            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{hasInvestment ? fmtPct(summary.irr) : "N/A"}</p>
-            {hasInvestment ? (
+            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A"}</p>
+            {hasInvestment && summary.irrValid ? (
               <div className="mt-1.5 sm:mt-2 flex justify-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-neutral-500">
                 <span>{fmtPct(sensitivityIRR.conservative)}</span>
                 <span className="text-neutral-300">|</span>
                 <span>{fmtPct(sensitivityIRR.optimistic)}</span>
               </div>
             ) : (
-              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">Set pricing above</p>
+              <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-neutral-400">{hasInvestment ? "" : "Set implementation fees"}</p>
             )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">
@@ -809,11 +811,11 @@ export default function ProformaView({
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong className="text-[#2563EB]">Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong className="text-emerald-600">Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated using Newton-Raphson iteration with multiple initial guesses and bisection fallback. Period-0 outflow is the initial investment commitment (implementation fees + first-quarter subscription). Subsequent periods are net monthly cash flows (value generated minus ongoing subscription). The monthly rate is annualized: (1 + monthly rate)^12 - 1. Result is validated against NPV to ensure convergence.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Standard finance model — Period 0 is the upfront capital investment (implementation fees only). Periods 1–N are net monthly cash flows (value generated minus ongoing subscription cost). Calculated using Newton-Raphson iteration with 13 initial guesses and 4 bisection bound pairs as fallback. Every result is cross-validated: NPV at the found rate must be within 0.1% of total cash flow magnitude. If cash flows have multiple sign changes (non-conventional), Modified IRR (MIRR) is used instead, which always produces a unique, defensible rate. Monthly rate is annualized: (1 + r)^12 − 1.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost (implementation fees + subscription). A straightforward metric: {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3.</p>
-              <p><strong className="text-neutral-900">Sensitivity:</strong> Conservative scenario applies a 20% reduction to all value drivers. Optimistic applies a 20% increase. This brackets the range of likely outcomes.</p>
+              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis. Conservative scenario applies a 20% reduction to value drivers and a 10% increase to subscription costs. Optimistic applies a 20% increase to value drivers and a 10% reduction to costs. This brackets the range of likely outcomes from both revenue and cost perspectives.</p>
             </div>
           )}
         </motion.div>

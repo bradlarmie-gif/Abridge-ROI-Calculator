@@ -283,10 +283,12 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
   return years;
 }
 
-function npvAtRate(cashFlows: number[], rate: number): number {
+export function npvAtRate(cashFlows: number[], rate: number): number {
   let npv = 0;
   for (let t = 0; t < cashFlows.length; t++) {
-    npv += cashFlows[t] / Math.pow(1 + rate, t);
+    const denom = Math.pow(1 + rate, t);
+    if (!isFinite(denom) || denom === 0) return NaN;
+    npv += cashFlows[t] / denom;
   }
   return npv;
 }
@@ -294,12 +296,25 @@ function npvAtRate(cashFlows: number[], rate: number): number {
 function npvDerivativeAtRate(cashFlows: number[], rate: number): number {
   let dnpv = 0;
   for (let t = 0; t < cashFlows.length; t++) {
-    dnpv -= (t * cashFlows[t]) / Math.pow(1 + rate, t + 1);
+    const denom = Math.pow(1 + rate, t + 1);
+    if (!isFinite(denom) || denom === 0) return NaN;
+    dnpv -= (t * cashFlows[t]) / denom;
   }
   return dnpv;
 }
 
-function newtonRaphsonIRR(cashFlows: number[], initialGuess: number, maxIterations = 200, tolerance = 1e-7): number | null {
+export function countSignChanges(cashFlows: number[]): number {
+  let changes = 0;
+  let lastSign = 0;
+  for (const v of cashFlows) {
+    const sign = v > 0.01 ? 1 : (v < -0.01 ? -1 : 0);
+    if (sign !== 0 && lastSign !== 0 && sign !== lastSign) changes++;
+    if (sign !== 0) lastSign = sign;
+  }
+  return changes;
+}
+
+function newtonRaphsonIRR(cashFlows: number[], initialGuess: number, maxIterations = 300, tolerance = 1e-10): number | null {
   let rate = initialGuess;
 
   for (let i = 0; i < maxIterations; i++) {
@@ -307,9 +322,13 @@ function newtonRaphsonIRR(cashFlows: number[], initialGuess: number, maxIteratio
     const dnpv = npvDerivativeAtRate(cashFlows, rate);
 
     if (!isFinite(npv) || !isFinite(dnpv)) return null;
-    if (Math.abs(dnpv) < 1e-12) return null;
+    if (Math.abs(dnpv) < 1e-14) return null;
 
-    const newRate = rate - npv / dnpv;
+    const step = npv / dnpv;
+    if (!isFinite(step)) return null;
+
+    const dampening = Math.abs(step) > 1 ? 0.5 : 1.0;
+    const newRate = rate - step * dampening;
     if (!isFinite(newRate)) return null;
 
     if (Math.abs(newRate - rate) < tolerance) {
@@ -317,18 +336,19 @@ function newtonRaphsonIRR(cashFlows: number[], initialGuess: number, maxIteratio
     }
     rate = newRate;
 
-    if (rate < -0.99) rate = -0.99;
+    if (rate < -0.999) rate = -0.999;
     if (rate > 10) rate = 10;
   }
 
   const finalNpv = npvAtRate(cashFlows, rate);
-  const totalAbsFlow = cashFlows.reduce((s, v) => s + Math.abs(v), 0);
-  const finalTolerance = Math.max(1, totalAbsFlow * 0.0001);
-  if (Math.abs(finalNpv) < finalTolerance) return rate;
+  if (isFinite(finalNpv)) {
+    const totalAbsFlow = cashFlows.reduce((s, v) => s + Math.abs(v), 0);
+    if (totalAbsFlow > 0 && Math.abs(finalNpv) / totalAbsFlow < 0.0001) return rate;
+  }
   return null;
 }
 
-function bisectionIRR(cashFlows: number[], lo: number, hi: number, maxIterations = 100, rateTolerance = 1e-7): number | null {
+function bisectionIRR(cashFlows: number[], lo: number, hi: number, maxIterations = 200): number | null {
   let npvLo = npvAtRate(cashFlows, lo);
   let npvHi = npvAtRate(cashFlows, hi);
 
@@ -340,7 +360,7 @@ function bisectionIRR(cashFlows: number[], lo: number, hi: number, maxIterations
     const npvMid = npvAtRate(cashFlows, mid);
 
     if (!isFinite(npvMid)) return null;
-    if ((hi - lo) / 2 < rateTolerance) {
+    if ((hi - lo) < 1e-10) {
       return mid;
     }
 
@@ -356,55 +376,123 @@ function bisectionIRR(cashFlows: number[], lo: number, hi: number, maxIterations
   return (lo + hi) / 2;
 }
 
-export function calculateIRR(monthlyCashFlows: number[]): number {
-  if (!monthlyCashFlows || monthlyCashFlows.length < 2) return 0;
+export function calculateMIRR(cashFlows: number[], financeRate = 0.005, reinvestRate = 0.005): number {
+  const n = cashFlows.length - 1;
+  if (n < 1) return 0;
+
+  let pvNeg = 0;
+  let fvPos = 0;
+
+  for (let t = 0; t < cashFlows.length; t++) {
+    if (cashFlows[t] < 0) {
+      pvNeg += cashFlows[t] / Math.pow(1 + financeRate, t);
+    } else if (cashFlows[t] > 0) {
+      fvPos += cashFlows[t] * Math.pow(1 + reinvestRate, n - t);
+    }
+  }
+
+  if (pvNeg >= 0 || fvPos <= 0) return 0;
+
+  const monthlyMirr = Math.pow(fvPos / Math.abs(pvNeg), 1 / n) - 1;
+  if (!isFinite(monthlyMirr)) return 0;
+
+  const annualized = Math.pow(1 + monthlyMirr, 12) - 1;
+  return isFinite(annualized) && annualized > -1 ? annualized : 0;
+}
+
+function validateIRRResult(monthlyRate: number, cashFlows: number[]): boolean {
+  if (!isFinite(monthlyRate)) return false;
+  if (monthlyRate <= -1) return false;
+
+  const verifyNpv = npvAtRate(cashFlows, monthlyRate);
+  if (!isFinite(verifyNpv)) return false;
+
+  const totalAbsFlow = cashFlows.reduce((s, v) => s + Math.abs(v), 0);
+  if (totalAbsFlow === 0) return false;
+
+  const relativeError = Math.abs(verifyNpv) / totalAbsFlow;
+  return relativeError < 0.001;
+}
+
+export interface IRRResult {
+  annualizedRate: number;
+  method: "irr" | "mirr";
+  isValid: boolean;
+}
+
+export function calculateIRR(monthlyCashFlows: number[]): IRRResult {
+  const INVALID: IRRResult = { annualizedRate: 0, method: "irr", isValid: false };
+
+  if (!monthlyCashFlows || monthlyCashFlows.length < 2) return INVALID;
 
   const allZero = monthlyCashFlows.every(v => Math.abs(v) < 0.01);
-  if (allZero) return 0;
+  if (allZero) return INVALID;
 
   const hasNeg = monthlyCashFlows.some(v => v < -0.01);
   const hasPos = monthlyCashFlows.some(v => v > 0.01);
-  if (!hasNeg || !hasPos) return 0;
+  if (!hasNeg || !hasPos) return INVALID;
+
+  const signChanges = countSignChanges(monthlyCashFlows);
+
+  if (signChanges > 1) {
+    const mirr = calculateMIRR(monthlyCashFlows);
+    return { annualizedRate: mirr, method: "mirr", isValid: mirr !== 0 };
+  }
 
   const totalInvestment = Math.abs(monthlyCashFlows[0]);
   const totalReturns = monthlyCashFlows.slice(1).reduce((s, v) => s + Math.max(0, v), 0);
-  const roughMonthlyReturn = totalReturns / (monthlyCashFlows.length - 1);
-  const roughGuess = totalInvestment > 0 ? roughMonthlyReturn / totalInvestment : 0.01;
+  const avgMonthlyReturn = totalReturns / (monthlyCashFlows.length - 1);
+  const roughGuess = totalInvestment > 0 ? avgMonthlyReturn / totalInvestment : 0.01;
 
   const initialGuesses = [
-    Math.min(Math.max(roughGuess, 0.001), 0.5),
+    Math.min(Math.max(roughGuess, 0.001), 2.0),
     0.01,
     0.005,
     0.05,
     0.1,
+    0.5,
+    1.0,
     0.001,
     -0.01,
+    -0.05,
+    -0.1,
+    -0.2,
+    -0.5,
   ];
 
   for (const guess of initialGuesses) {
     const result = newtonRaphsonIRR(monthlyCashFlows, guess);
-    if (result !== null && isFinite(result) && result > -0.99 && result < 10) {
-      const verifyNpv = npvAtRate(monthlyCashFlows, result);
-      const totalAbsFlow = monthlyCashFlows.reduce((s, v) => s + Math.abs(v), 0);
-      const tolerance = Math.max(1, totalAbsFlow * 0.0001);
-      if (Math.abs(verifyNpv) < tolerance) {
-        const annualized = Math.pow(1 + result, 12) - 1;
-        if (isFinite(annualized) && annualized > -1) {
-          return annualized;
-        }
+    if (result !== null && validateIRRResult(result, monthlyCashFlows)) {
+      const annualized = Math.pow(1 + result, 12) - 1;
+      if (isFinite(annualized) && annualized > -1) {
+        return { annualizedRate: annualized, method: "irr", isValid: true };
       }
     }
   }
 
-  const bisResult = bisectionIRR(monthlyCashFlows, -0.5, 5.0);
-  if (bisResult !== null && isFinite(bisResult)) {
-    const annualized = Math.pow(1 + bisResult, 12) - 1;
-    if (isFinite(annualized) && annualized > -1) {
-      return annualized;
+  const bisectionBounds: [number, number][] = [
+    [-0.9, 5.0],
+    [-0.99, 10.0],
+    [-0.5, 2.0],
+    [-0.3, 0.5],
+  ];
+
+  for (const [lo, hi] of bisectionBounds) {
+    const bisResult = bisectionIRR(monthlyCashFlows, lo, hi);
+    if (bisResult !== null && validateIRRResult(bisResult, monthlyCashFlows)) {
+      const annualized = Math.pow(1 + bisResult, 12) - 1;
+      if (isFinite(annualized) && annualized > -1) {
+        return { annualizedRate: annualized, method: "irr", isValid: true };
+      }
     }
   }
 
-  return 0;
+  const mirr = calculateMIRR(monthlyCashFlows);
+  if (mirr !== 0) {
+    return { annualizedRate: mirr, method: "mirr", isValid: true };
+  }
+
+  return INVALID;
 }
 
 export function buildIRRCashFlows(
@@ -414,19 +502,17 @@ export function buildIRRCashFlows(
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
 
-  const firstQuarterSubscription = cashFlows.slice(0, 3).reduce((s, r) => s + r.investment, 0);
-  const initialOutflow = -(totalImplFees + firstQuarterSubscription);
-
-  if (!isFinite(initialOutflow) || initialOutflow >= 0) {
+  if (totalImplFees <= 0) {
     return [0];
   }
 
-  const monthlyNetReturns = cashFlows.slice(3).map(r => {
-    const v = r.totalValue - r.investment;
-    return isFinite(v) ? v : 0;
+  const monthlyNetReturns = cashFlows.map(r => {
+    const gross = r.docValue + r.timeValue + r.retentionValue;
+    const net = gross - r.investment;
+    return isFinite(net) ? net : 0;
   });
 
-  return [initialOutflow, ...monthlyNetReturns];
+  return [-totalImplFees, ...monthlyNetReturns];
 }
 
 export function calculateProformaSummary(
@@ -447,7 +533,7 @@ export function calculateProformaSummary(
   }
 
   const irrCashFlows = buildIRRCashFlows(settings, config, cashFlows);
-  const irr = calculateIRR(irrCashFlows);
+  const irrResult = calculateIRR(irrCashFlows);
 
   const threeYearValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
@@ -462,7 +548,9 @@ export function calculateProformaSummary(
     combinedROI,
     simpleROI,
     totalHours,
-    irr: isFinite(irr) ? irr : 0,
+    irr: irrResult.annualizedRate,
+    irrMethod: irrResult.method,
+    irrValid: irrResult.isValid,
     paybackMonth,
     threeYearNet,
     threeYearValue,
