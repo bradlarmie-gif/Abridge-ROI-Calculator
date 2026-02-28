@@ -509,206 +509,128 @@ export default function ProformaView({
             </div>
           </div>
 
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
-              <thead>
-                <tr>
-                  <th className="py-1" />
-                  <th colSpan={config.contractTermMonths >= 36 ? 3 : 2} className="text-center py-1 pb-0">
-                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Providers by Year</span>
-                  </th>
-                  <th colSpan={3} className="text-center py-1 pb-0">
-                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Pricing</span>
-                  </th>
-                  <th colSpan={config.contractTermMonths >= 36 ? 3 : 2} className="text-center py-1 pb-0">
-                    <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Annual Investment</span>
-                  </th>
-                </tr>
-                <tr className="border-b border-neutral-300">
-                  <th className="text-left py-2 font-medium text-neutral-500">Setting</th>
-                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">Y1</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Y2</th>
-                  {config.contractTermMonths >= 36 && (
-                    <th className="text-right py-2 font-medium text-neutral-500">Y3</th>
-                  )}
-                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">$/Unit/Mo</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Go-Live</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Impl. Fee</th>
-                  <th className="text-right py-2 font-medium text-neutral-500 pl-4">Y1 Cost</th>
-                  <th className="text-right py-2 font-medium text-neutral-500">Y2 Cost</th>
-                  {config.contractTermMonths >= 36 && (
-                    <th className="text-right py-2 font-medium text-neutral-500">Y3 Cost</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {settings.map(s => {
-                  const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
-                  const y1Cost = s.costPerUnit * yp.year1 * 12;
-                  const y2Cost = s.costPerUnit * yp.year2 * 12;
-                  const y3Cost = s.costPerUnit * yp.year3 * 12;
-                  return (
-                    <tr key={s.id} className="border-b border-neutral-200">
-                      <td className="py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
-                          <span className="font-medium text-neutral-900">{s.label}</span>
-                        </div>
-                      </td>
-                      <td className="text-right py-3 pl-4">
-                        <FormattedNumberInput
-                          value={yp.year1}
-                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
-                          className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                          data-testid={`input-y1-${s.careSetting}`}
-                        />
-                      </td>
-                      <td className="text-right py-3">
-                        <FormattedNumberInput
-                          value={yp.year2}
-                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
-                          className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                          data-testid={`input-y2-${s.careSetting}`}
-                        />
-                      </td>
-                      {config.contractTermMonths >= 36 && (
-                        <td className="text-right py-3">
-                          <FormattedNumberInput
-                            value={yp.year3}
-                            onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
-                            className="w-[72px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                            data-testid={`input-y3-${s.careSetting}`}
-                          />
-                        </td>
-                      )}
-                      <td className="text-right py-3 pl-4">
-                        <FormattedNumberInput
-                          value={s.costPerUnit}
-                          onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
-                          prefix="$"
-                          className="w-[88px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                          data-testid={`input-cost-${s.careSetting}`}
-                        />
-                      </td>
-                      <td className="text-right py-3">
-                        <select
-                          value={s.goLiveMonth}
-                          onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
-                          className="w-[72px] h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm text-right"
-                          data-testid={`select-golive-view-${s.careSetting}`}
-                        >
-                          {Array.from({ length: config.contractTermMonths }, (_, i) => (
-                            <option key={i + 1} value={i + 1}>M{i + 1}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="text-right py-3">
-                        <FormattedNumberInput
-                          value={s.implementationFee}
-                          onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
-                          prefix="$"
-                          className="w-[88px] text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                          data-testid={`input-impl-${s.careSetting}`}
-                        />
-                      </td>
-                      <td className="text-right py-3 pl-4 font-medium text-neutral-700 text-xs">{fmtFull(y1Cost)}</td>
-                      <td className="text-right py-3 font-medium text-neutral-700 text-xs">{fmtFull(y2Cost)}</td>
-                      {config.contractTermMonths >= 36 && (
-                        <td className="text-right py-3 font-medium text-neutral-700 text-xs">{fmtFull(y3Cost)}</td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <p className="text-[10px] text-neutral-400 mt-2 italic">Set how many providers come online each year. Annual investment scales with your expansion plan.</p>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="md:hidden space-y-3">
+          <div className="space-y-4">
             {settings.map(s => {
+              const Icon = SETTING_ICONS[s.careSetting] || Building2;
               const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
               const y1Cost = s.costPerUnit * yp.year1 * 12;
               const y2Cost = s.costPerUnit * yp.year2 * 12;
               const y3Cost = s.costPerUnit * yp.year3 * 12;
+              const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
+              const is3yr = config.contractTermMonths >= 36;
               return (
-                <div key={s.id} className="bg-white rounded-lg p-3 border-l-3" style={{ borderLeftWidth: 3, borderLeftColor: s.color }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-neutral-900">{s.label}</span>
-                    <span className="text-[10px] text-neutral-400 uppercase tracking-wide">Providers by year</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y1</label>
-                      <FormattedNumberInput
-                        value={yp.year1}
-                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
-                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                        data-testid={`input-y1-${s.careSetting}`}
-                      />
+                <div
+                  key={s.id}
+                  className="bg-white rounded-xl overflow-hidden border border-neutral-200"
+                  data-testid={`pricing-card-${s.careSetting}`}
+                >
+                  <div className="flex">
+                    <div className="w-1.5 flex-shrink-0" style={{ backgroundColor: s.color }} />
+                    <div className="flex-1 p-4 sm:p-5">
+                      <div className="flex items-center gap-2.5 mb-4">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                          <Icon className="w-4 h-4" style={{ color: s.color }} />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-neutral-900">{s.label}</h3>
+                          <p className="text-[11px] text-neutral-500">{fmtNum(yp.year1)} → {fmtNum(is3yr ? yp.year3 : yp.year2)} {unitLabel}</p>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
+                        <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
+                            <FormattedNumberInput
+                              value={yp.year1}
+                              onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid={`input-y1-${s.careSetting}`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
+                            <FormattedNumberInput
+                              value={yp.year2}
+                              onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid={`input-y2-${s.careSetting}`}
+                            />
+                          </div>
+                          {is3yr && (
+                            <div>
+                              <label className="block text-[10px] text-neutral-500 mb-1">Y3 {unitLabel}</label>
+                              <FormattedNumberInput
+                                value={yp.year3}
+                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-y3-${s.careSetting}`}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">$/Unit/Mo</label>
+                            <FormattedNumberInput
+                              value={s.costPerUnit}
+                              onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
+                              prefix="$"
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid={`input-cost-${s.careSetting}`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Go-Live</label>
+                            <select
+                              value={s.goLiveMonth}
+                              onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
+                              className="w-full h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm"
+                              data-testid={`select-golive-view-${s.careSetting}`}
+                            >
+                              {Array.from({ length: config.contractTermMonths }, (_, i) => (
+                                <option key={i + 1} value={i + 1}>Month {i + 1}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-neutral-500 mb-1">Impl. Fee</label>
+                            <FormattedNumberInput
+                              value={s.implementationFee}
+                              onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
+                              prefix="$"
+                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                              data-testid={`input-impl-${s.careSetting}`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#F9F6F2] rounded-lg px-3 py-2.5">
+                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
+                        <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                          <div>
+                            <p className="text-[10px] text-neutral-500">Year 1</p>
+                            <p className="text-sm font-semibold text-neutral-800">{fmtFull(y1Cost)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-neutral-500">Year 2</p>
+                            <p className="text-sm font-semibold text-neutral-800">{fmtFull(y2Cost)}</p>
+                          </div>
+                          {is3yr && (
+                            <div>
+                              <p className="text-[10px] text-neutral-500">Year 3</p>
+                              <p className="text-sm font-semibold text-neutral-800">{fmtFull(y3Cost)}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Y2</label>
-                      <FormattedNumberInput
-                        value={yp.year2}
-                        onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
-                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                        data-testid={`input-y2-${s.careSetting}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">{config.contractTermMonths >= 36 ? "Y3" : ""}</label>
-                      {config.contractTermMonths >= 36 ? (
-                        <FormattedNumberInput
-                          value={yp.year3}
-                          onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
-                          className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                          data-testid={`input-y3-${s.careSetting}`}
-                        />
-                      ) : <div />}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">$/Unit/Mo</label>
-                      <FormattedNumberInput
-                        value={s.costPerUnit}
-                        onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
-                        prefix="$"
-                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                        data-testid={`input-cost-${s.careSetting}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Go-Live</label>
-                      <select
-                        value={s.goLiveMonth}
-                        onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
-                        className="w-full h-8 rounded-lg border border-neutral-200 bg-[#F9F6F2] px-2 text-sm"
-                        data-testid={`select-golive-view-${s.careSetting}`}
-                      >
-                        {Array.from({ length: config.contractTermMonths }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>M{i + 1}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-neutral-500 mb-0.5">Impl. Fee</label>
-                      <FormattedNumberInput
-                        value={s.implementationFee}
-                        onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
-                        prefix="$"
-                        className="w-full text-right text-sm h-8 bg-[#F9F6F2] border border-neutral-200 rounded-lg px-2"
-                        data-testid={`input-impl-${s.careSetting}`}
-                      />
-                    </div>
-                    <div />
-                  </div>
-                  <div className="flex items-center gap-3 pt-2 border-t border-neutral-100 text-[10px] text-neutral-500">
-                    <span>Y1: {fmtFull(y1Cost)}</span>
-                    <span>Y2: {fmtFull(y2Cost)}</span>
-                    {config.contractTermMonths >= 36 && <span>Y3: {fmtFull(y3Cost)}</span>}
                   </div>
                 </div>
               );
