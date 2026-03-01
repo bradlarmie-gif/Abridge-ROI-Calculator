@@ -55,16 +55,17 @@ function useInpatientResults(state: MeasureState) {
     const hourlyRate = metrics.vm_hourlyRate ?? state.calibration.otHourlyRate ?? 175;
 
     const totalDischarges = deployment.totalEncounters;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
-    const drgValueLow = cmiDelta * totalDischarges * cmiPointValue * 0.70;
-    const drgValueHigh = cmiDelta * totalDischarges * cmiPointValue * 0.85;
+    const drgValueLow = cmiDelta * totalDischarges * cmiPointValue * 0.70 * annualFactor;
+    const drgValueHigh = cmiDelta * totalDischarges * cmiPointValue * 0.85 * annualFactor;
 
     const fewerDenials = (denialsDelta / 100) * totalDischarges;
-    const denialValue = fewerDenials * denialCostPerCase;
+    const denialValue = fewerDenials * denialCostPerCase * annualFactor;
 
     const fewerQueries = (cdiDelta / 100) * totalDischarges;
     const fteCapacityReclaimed = casesPerCdiFte > 0 ? fewerQueries / casesPerCdiFte : 0;
-    const cdiValue = fteCapacityReclaimed * cdiFteCost;
+    const cdiValue = fteCapacityReclaimed * cdiFteCost * annualFactor;
 
     const docValueLow = drgValueLow + denialValue + cdiValue;
     const docValueHigh = drgValueHigh + denialValue + cdiValue;
@@ -73,7 +74,7 @@ function useInpatientResults(state: MeasureState) {
     const totalHoursSaved = (timeSavedPerNote * totalDischarges) / 60;
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
-    const savingsValue = savingsHours * hourlyRate;
+    const savingsValue = savingsHours * hourlyRate * annualFactor;
 
     const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
     const hoursPerProviderPerWeek = deployment.providers > 0
@@ -118,13 +119,14 @@ function useGenericResults(state: MeasureState) {
 
     const timeSavedPerNote = timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith;
     const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const capacityHours = totalHoursSaved * (capacityPercent / 100);
     const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
-    const capacityValue = additionalVisits * calibration.revenuePerVisit;
+    const capacityValue = additionalVisits * calibration.revenuePerVisit * annualFactor;
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
-    const savingsValue = savingsHours * calibration.otHourlyRate;
+    const savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
 
     const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
     const hoursPerProviderPerWeek = deployment.providers > 0 
@@ -136,8 +138,8 @@ function useGenericResults(state: MeasureState) {
     const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
     const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
     const additionalWRVUs = wrvuLift * documentedEncounters;
-    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.70;
-    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.85;
+    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.70 * annualFactor;
+    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.85 * annualFactor;
 
     const totalValueLow = timeValueSubtotal + docValueLow;
     const totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -457,13 +459,14 @@ function useEDResults(state: MeasureState) {
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
     const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const throughputHours = totalHoursSaved * (throughputPercent / 100);
     const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
-    const throughputValue = additionalPatients * calibration.revenuePerVisit;
+    const throughputValue = additionalPatients * calibration.revenuePerVisit * annualFactor;
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
-    const savingsValue = savingsHours * calibration.otHourlyRate;
+    const savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
 
     const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
     const hoursPerProviderPerWeek = deployment.providers > 0
@@ -480,13 +483,13 @@ function useEDResults(state: MeasureState) {
     const lwbsAfter = timeEfficiency.sameDayClosureWith;
     const lwbsReduction = Math.max(0, lwbsBefore - lwbsAfter);
     const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
-    const lwbsValue = patientsRetained * calibration.revenuePerVisit;
+    const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
 
     const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
     const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
     const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-    const docValueLow = emLevelValue * 0.70;
-    const docValueHigh = emLevelValue * 0.85;
+    const docValueLow = emLevelValue * 0.70 * annualFactor;
+    const docValueHigh = emLevelValue * 0.85 * annualFactor;
 
     const totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
     const totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -521,9 +524,10 @@ function useNursingResults(state: MeasureState) {
 
     const timeSavedPerShift = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
     const totalHoursSaved = (timeSavedPerShift * deployment.totalEncounters) / 60;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
-    const savingsValue = savingsHours * calibration.otHourlyRate;
+    const savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
 
     const capacityHours = totalHoursSaved * (capacityPercent / 100);
 

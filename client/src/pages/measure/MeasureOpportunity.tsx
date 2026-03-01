@@ -136,6 +136,7 @@ export default function MeasureOpportunity({
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
     const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     let totalValueLow: number;
     let totalValueHigh: number;
@@ -152,11 +153,11 @@ export default function MeasureOpportunity({
       const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
       const inpSavingsPercent = state.allocation.hardSavingsPercent ?? 60;
 
-      const drgLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70;
-      const drgHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85;
-      const denialValue = (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase;
-      const cdiValue = casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0;
-      const savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate;
+      const drgLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70 * annualFactor;
+      const drgHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85 * annualFactor;
+      const denialValue = (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase * annualFactor;
+      const cdiValue = casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost * annualFactor : 0;
+      const savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate * annualFactor;
 
       totalValueLow = drgLow + denialValue + cdiValue + savingsValue;
       totalValueHigh = drgHigh + denialValue + cdiValue + savingsValue;
@@ -166,26 +167,26 @@ export default function MeasureOpportunity({
 
       const throughputHours = totalHoursSaved * (throughputPercent / 100);
       const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
-      const throughputValue = additionalPatients * calibration.revenuePerVisit;
-      const savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate;
+      const throughputValue = additionalPatients * calibration.revenuePerVisit * annualFactor;
+      const savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
       const timeSubtotal = throughputValue + savingsValue;
 
       const lwbsBefore = timeEfficiency.sameDayClosureWithout;
       const lwbsAfter = timeEfficiency.sameDayClosureWith;
       const lwbsReduction = Math.max(0, lwbsBefore - lwbsAfter);
       const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
-      const lwbsValue = patientsRetained * calibration.revenuePerVisit;
+      const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
 
       const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
       const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
 
-      totalValueLow = timeSubtotal + lwbsValue + emLevelValue * 0.70;
-      totalValueHigh = timeSubtotal + lwbsValue + emLevelValue * 0.85;
+      totalValueLow = timeSubtotal + lwbsValue + emLevelValue * 0.70 * annualFactor;
+      totalValueHigh = timeSubtotal + lwbsValue + emLevelValue * 0.85 * annualFactor;
     } else if (careSetting === "nursing") {
       const nursingMetrics = state.settingData?.nursing || {};
       const nursingSavingsPercent = state.allocation.hardSavingsPercent ?? 50;
-      const savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate;
+      const savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
 
       const overtimeSaved = Math.max(0, timeEfficiency.workOutsideWithout - timeEfficiency.workOutsideWith);
       const weeklyOtSavings = overtimeSaved * deployment.providers * calibration.otHourlyRate * 1.5;
@@ -200,17 +201,17 @@ export default function MeasureOpportunity({
     } else {
       const capacityHours = totalHoursSaved * (capacityPercent / 100);
       const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
-      const capacityValue = additionalVisits * calibration.revenuePerVisit;
+      const capacityValue = additionalVisits * calibration.revenuePerVisit * annualFactor;
 
       const savingsHours = totalHoursSaved * (savingsPercent / 100);
-      const savingsValue = savingsHours * calibration.otHourlyRate;
+      const savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
 
       const timeValueSubtotal = capacityValue + savingsValue;
 
       const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      const docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70;
-      const docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85;
+      const docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70 * annualFactor;
+      const docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85 * annualFactor;
 
       totalValueLow = timeValueSubtotal + docValueLow;
       totalValueHigh = timeValueSubtotal + docValueHigh;

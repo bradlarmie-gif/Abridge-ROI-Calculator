@@ -31,7 +31,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Performance**: Gzip compression via `compression` middleware on Express server.
 
 ### Feature Specifications
--   **Measure Path**: A 5-page partner report flow allowing partners to configure, visualize, and expand Abridge's value based on deployment data, including PDF export.
+-   **Measure Path**: A 5-page partner report flow allowing partners to configure, visualize, and expand Abridge's value based on deployment data, including PDF export. All dollar values are annualized using `12 / monthsOnAbridge` factor so partial-year deployments display annual run-rate. Core calculator uses `totalEncounters` (not `abridgeEncounters`) and `monthsOnAbridge × 4.33` for weekly normalization.
 -   **Assess Path — Ambient AI Assessment**: A 5-screen narrative flow to assess ambient AI documentation maturity across Capacity, Revenue, Workforce, and Risk domains, featuring dynamic scoring, gap analysis, 3-year projections, and PDF export.
 -   **Assess Path — Nursing Edition**: A 6-screen strategic alignment tool for nursing leadership, focusing on priorities like Nurse Retention and Staffing Costs, with real-time sidebar impact calculations and PDF export.
 -   **Learn Methodology Section**: Restructured section providing modular methodology pages for each care setting with a consistent 5-section structure and interactive elements.
