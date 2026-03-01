@@ -295,11 +295,18 @@ export default function ProformaView({
   }, [chartData]);
 
   const paybackLabel = useMemo(() => {
-    for (const row of displayData) {
-      if (row.cumulativeNet >= 0) return row.label;
+    if (!summary.paybackMonth) return null;
+    if (config.viewMode === "yearly") {
+      const yearIdx = Math.ceil(summary.paybackMonth / 12) - 1;
+      const d = new Date(startDate.getFullYear(), startDate.getMonth() + yearIdx * 12, 1);
+      return String(d.getFullYear());
     }
-    return null;
-  }, [displayData]);
+    const monthIdx = summary.paybackMonth - 1;
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + monthIdx, 1);
+    const q = Math.floor(d.getMonth() / 3) + 1;
+    const yr = String(d.getFullYear()).slice(-2);
+    return `Q${q} '${yr}`;
+  }, [summary.paybackMonth, startDate, config.viewMode]);
 
   const goLiveLabels = useMemo(() => {
     const quarterData = groupByQuarter(cashFlows, startDate);
@@ -593,7 +600,7 @@ export default function ProformaView({
               ? "Annual value by driver type"
               : isMobile
                 ? "Quarterly value by driver type"
-                : "Quarterly value by driver type — doc quality starts immediately, time savings after 3 months, retention phases in over years"}
+                : "Quarterly value by driver type — documentation revenue starts immediately, capacity & efficiency gains begin after 3 months, retention value phases in over years"}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
@@ -697,7 +704,7 @@ export default function ProformaView({
                   fill="url(#grad-time)"
                   stroke={CHART_COLORS.time}
                   strokeWidth={isMobile ? 1.5 : 2.5}
-                  name="Time Savings"
+                  name="Capacity & Efficiency"
                 />
                 <Area
                   type="monotone"
@@ -752,7 +759,7 @@ export default function ProformaView({
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.time }} />
-                <span className="text-neutral-600">Time Savings</span>
+                <span className="text-neutral-600">Capacity & Efficiency</span>
                 {legendTotals.time > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
                 )}
@@ -1067,7 +1074,7 @@ export default function ProformaView({
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Time Savings (3mo delay)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Capacity & Efficiency (3mo delay)</td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.timeValue)}</td>
                       ))}
@@ -1305,7 +1312,7 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested. This is the most intuitive metric for evaluating subscription technology commitments.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
@@ -1560,7 +1567,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.time }} />
-            <span className="text-neutral-600">Time Savings</span>
+            <span className="text-neutral-600">Capacity & Efficiency</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(timeItem.value)}</span>
         </div>

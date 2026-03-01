@@ -28,7 +28,8 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Learn Methodology Section**: Restructured section providing modular methodology pages for each care setting with a consistent 5-section structure and interactive elements.
 -   **Multi-Setting Proforma Builder**: Allows users to layer multiple care settings (Outpatient, ED, Inpatient, Nursing) into a combined financial model. Features include:
     -   ProformaHub for managing settings and inline editing assumptions.
-    -   ProformaView with stacked area ramp charts, 3-year P&L, card-based pricing (per-unit/month, annual flat license, and per-encounter toggle per care setting), editable retention phasing, and Quarters/Years toggle.
+    -   ProformaView with stacked area ramp charts (layers: Doc Quality, Capacity & Efficiency, Retention), 3-year P&L, card-based pricing (per-unit/month, annual flat license, and per-encounter toggle per care setting), editable retention phasing, and Quarters/Years toggle.
+    -   Payback line computed directly from `summary.paybackMonth` + contract start date for accurate calendar quarter positioning (not from grouped display data).
     -   Annual IRR calculation using total-cost-basis approach: Period 0 = -(implementation fees + total subscription), Periods 1-N = gross annual value. Newton-Raphson with MIRR fallback, capped at 200% for display.
     -   Value-to-Cost as the primary hero metric.
     -   PDF "Showing Our Math" export that reconstructs per-driver formula strings.

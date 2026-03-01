@@ -558,7 +558,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View style={{ width: 10, height: 6, backgroundColor: colors.timeRed, borderRadius: 1, opacity: 0.75 }} />
-          <Text style={{ fontSize: 7, color: "#666666" }}>Time Savings</Text>
+          <Text style={{ fontSize: 7, color: "#666666" }}>Capacity & Efficiency</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View style={{ width: 10, height: 6, backgroundColor: colors.retentionGreen, borderRadius: 1, opacity: 0.75 }} />
@@ -603,7 +603,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
         )}
         {timePct > 0 && (
           <View style={{ flex: timePct, alignItems: timePct > 12 ? "center" : "flex-start" }}>
-            <Text style={{ fontSize: 6.5, color: colors.timeRed }}>{timePct}% Time Savings</Text>
+            <Text style={{ fontSize: 6.5, color: colors.timeRed }}>{timePct}% Capacity & Efficiency</Text>
           </View>
         )}
         {retPct > 0 && (
@@ -623,7 +623,7 @@ function PDFOnsetTimeline() {
 
   const points = [
     { pct: 0.03, label: "Month 1", sublabel: "Doc Quality", color: colors.docBlue },
-    { pct: 0.12, label: "Month 4", sublabel: "Time Savings", color: colors.timeRed },
+    { pct: 0.12, label: "Month 4", sublabel: "Capacity & Efficiency", color: colors.timeRed },
     { pct: 0.4, label: "Year 2", sublabel: "Retention 50%", color: colors.retentionGreen },
     { pct: 0.97, label: "Year 3", sublabel: "Full Retention", color: colors.retentionGreen },
   ];
@@ -650,7 +650,7 @@ function PDFOnsetTimeline() {
         </View>
         <View style={{ alignItems: "center", marginLeft: -20 }}>
           <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Month 4</Text>
-          <Text style={{ fontSize: 5.5, color: colors.timeRed }}>Time Savings</Text>
+          <Text style={{ fontSize: 5.5, color: colors.timeRed }}>Capacity & Efficiency</Text>
         </View>
         <View style={{ alignItems: "center" }}>
           <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 2</Text>
@@ -735,8 +735,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
     if (settings.length === 1) {
       return `This model focuses on ${settingNames}. A single-setting deployment provides a focused proof of value. Once baselines are established and outcomes measured, this model can be extended to additional care settings to compound organizational impact.`;
     }
-    const dominant = docPct > timePct ? "documentation quality" : "time recapture";
-    return `Across ${settings.length} care settings (${settingNames}), your value model is ${dominant}-dominant (${docPct}% documentation, ${timePct}% time savings, ${retPct}% retention). Multi-setting deployments compound value: clinicians share best practices across departments, and the organizational change management overhead is amortized. The staggered go-live schedule reduces implementation risk while accelerating time to value.`;
+    const dominant = docPct > timePct ? "documentation quality" : "capacity & efficiency";
+    return `Across ${settings.length} care settings (${settingNames}), your value model is ${dominant}-dominant (${docPct}% documentation, ${timePct}% capacity & efficiency, ${retPct}% retention). Multi-setting deployments compound value: clinicians share best practices across departments, and the organizational change management overhead is amortized. The staggered go-live schedule reduces implementation risk while accelerating time to value.`;
   })();
 
   return (
@@ -930,7 +930,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabel}>THE VALUE TRAJECTORY</Text>
           <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
           <Text style={styles.body}>
-            This chart shows how value accumulates quarter by quarter across your deployment. Documentation quality value (blue) appears first, time savings (red) join after a 3-month operational lag, and retention value (green) phases in over years. The thin bars represent your subscription investment for comparison.
+            This chart shows how value accumulates quarter by quarter across your deployment. Documentation quality value (dark) appears first, capacity & efficiency gains (red) join after a 3-month operational lag, and retention value (amber) phases in over years. The thin bars represent your subscription investment for comparison.
           </Text>
 
           <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
@@ -962,7 +962,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               READING THIS CHART
             </Text>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              The stacked bars show how each value category contributes to total quarterly value. Notice how blue (doc quality) dominates early quarters, then red (time savings) joins and grows, and green (retention) gradually phases in. This onset sequencing is why Month 12 looks very different from Month 1 {"\u2014"} and why patience with the deployment timeline pays off.
+              The stacked bars show how each value category contributes to total quarterly value. Notice how dark (doc quality) dominates early quarters, then red (capacity & efficiency) joins and grows, and amber (retention) gradually phases in. This onset sequencing is why Month 12 looks very different from Month 1 {"\u2014"} and why patience with the deployment timeline pays off.
             </Text>
           </View>
 
@@ -1103,9 +1103,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           </View>
 
           <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.timeRed, marginBottom: 8 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginBottom: 3 }}>Layer 2: Time Savings (3-Month Delay)</Text>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginBottom: 3 }}>Layer 2: Capacity & Efficiency (3-Month Delay)</Text>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
-              Patient access, throughput, LWBS reduction, cost reduction, overtime. Time is saved immediately, but economic value requires operational change {"\u2014"} scheduling, templates, staffing. We model a 3-month lag with gradual ramp.
+              Patient access, throughput, LWBS reduction, cost reduction, overtime. Freed-up capacity is realized immediately, but translating it into economic value requires operational change {"\u2014"} scheduling, templates, staffing. We model a 3-month lag with gradual ramp.
             </Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.timeRed }}>
               {termLabel} contribution: {fmt(totalTimeValue)} ({timePct}% of total)
@@ -1184,7 +1184,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalDocValue)}</Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.timeRed }}>Time Savings (3mo delay)</Text>
+              <Text style={{ flex: 2, fontSize: 8, color: colors.timeRed }}>Capacity & Efficiency (3mo delay)</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.timeValue)}</Text>
               ))}
@@ -1440,7 +1440,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabelGray}>DATA SOURCES</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              {"\u2022"} Time savings benchmarks: Based on validated data from Abridge implementations across 200+ health systems.{"\n"}
+              {"\u2022"} Capacity & efficiency benchmarks: Based on validated data from Abridge implementations across 200+ health systems.{"\n"}
               {"\u2022"} Industry benchmarks: Revenue, cost, and utilization parameters from MGMA, CMS, and proprietary health system datasets.{"\n"}
               {"\u2022"} Conservative by design: Where uncertainty exists, calculations use conservative assumptions to avoid overstating projected benefits.
             </Text>
@@ -1465,7 +1465,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 WHERE THE MODEL IS STRONGEST
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} Time savings {"\u2014"} well-validated across 200+ deployments{"\n"}
+                {"\u2022"} Capacity & efficiency {"\u2014"} well-validated across 200+ deployments{"\n"}
                 {"\u2022"} Documentation quality {"\u2014"} directly measurable from note output{"\n"}
                 {"\u2022"} Adoption ramp {"\u2014"} based on observed S-curve patterns{"\n"}
                 {"\u2022"} Cost structure {"\u2014"} per-unit pricing is known and fixed
@@ -1479,7 +1479,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
                 {"\u2022"} Retention {"\u2014"} hardest to isolate from other factors{"\n"}
                 {"\u2022"} Revenue realization {"\u2014"} depends on payer mix and coding practices{"\n"}
-                {"\u2022"} Operational change {"\u2014"} time savings translation varies by organization{"\n"}
+                {"\u2022"} Operational change {"\u2014"} capacity gains translation varies by organization{"\n"}
                 {"\u2022"} Provider expansion {"\u2014"} per-year targets assume smooth ramp within each year
               </Text>
             </View>
@@ -1551,11 +1551,12 @@ export async function generateProformaPDF(
   }));
 
   let paybackQuarter: string | null = null;
-  for (const q of quarterlyData) {
-    if (q.cumulativeNet >= 0) {
-      paybackQuarter = q.label;
-      break;
-    }
+  if (summary.paybackMonth) {
+    const monthIdx = summary.paybackMonth - 1;
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + monthIdx, 1);
+    const q = Math.floor(d.getMonth() / 3) + 1;
+    const yr = String(d.getFullYear()).slice(-2);
+    paybackQuarter = `Q${q} '${yr}`;
   }
 
   const scaleSettings = (s: ProformaSettingSnapshot, vf: number) => ({
