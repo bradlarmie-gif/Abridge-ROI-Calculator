@@ -1729,7 +1729,7 @@ export default function ExploreModel({
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
             </div>
             <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center">
-              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Net</p>
+              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Value</p>
               <p className="text-lg sm:text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearTotal)}</p>
             </div>
           </div>
