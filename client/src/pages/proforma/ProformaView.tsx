@@ -992,7 +992,8 @@ export default function ProformaView({
           {/* Retention phasing */}
           <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-neutral-200">
             <p className="text-sm font-bold text-neutral-700 mb-1">Retention Benefit Phasing</p>
-            <p className="text-xs text-neutral-500 mb-3 sm:mb-4">When do retention benefits materialize?</p>
+            <p className="text-xs text-neutral-500 mb-1">When do retention benefits materialize?</p>
+            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the 3-month clinical onset delay already built into capacity & efficiency cash flows.</p>
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
                 <div key={key}>
