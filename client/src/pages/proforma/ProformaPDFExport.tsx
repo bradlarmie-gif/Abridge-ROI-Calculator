@@ -6,6 +6,11 @@ import {
   StyleSheet,
   pdf,
   Font,
+  Svg,
+  Rect,
+  Line as SvgLine,
+  G,
+  Circle,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
@@ -16,10 +21,12 @@ import type { ProformaSummary } from "./proformaTypes";
 import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_LABELS } from "./proformaTypes";
 import {
   buildMonthlyCashFlows,
+  groupByQuarter,
   calculateProformaSummary,
   getYearlySummary,
   buildAnnualIRRCashFlows,
   calculateAnnualIRR,
+  getContractStartDate,
 } from "@/lib/proformaCalculations";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -450,7 +457,234 @@ function getMathPageCount(settings: ProformaSettingSnapshot[]): number {
   return 1;
 }
 
-const BASE_PAGES = 7;
+function fmtAxis(n: number): string {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
+}
+
+interface ChartBar {
+  label: string;
+  docValue: number;
+  timeValue: number;
+  retentionValue: number;
+  investment: number;
+  total: number;
+}
+
+function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuarter: string | null }) {
+  const svgW = 416;
+  const svgH = 180;
+  const barCount = data.length || 1;
+  const groupW = svgW / barCount;
+  const barW = Math.min(groupW * 0.6, 26);
+  const barGap = (groupW - barW) / 2;
+
+  const maxVal = Math.max(...data.map(d => d.total), ...data.map(d => d.investment), 1);
+  const niceMax = (() => {
+    const mag = Math.pow(10, Math.floor(Math.log10(maxVal)));
+    const norm = maxVal / mag;
+    if (norm <= 1) return mag;
+    if (norm <= 2) return 2 * mag;
+    if (norm <= 5) return 5 * mag;
+    return 10 * mag;
+  })();
+
+  const ticks = [0, niceMax * 0.25, niceMax * 0.5, niceMax * 0.75, niceMax];
+  const scaleY = (v: number) => svgH - (v / niceMax) * svgH;
+
+  return (
+    <View style={{ marginBottom: 10 }}>
+      <View style={{ flexDirection: "row" }}>
+        <View style={{ width: 48, justifyContent: "space-between", paddingRight: 4, height: svgH }}>
+          {[...ticks].reverse().map((tick, i) => (
+            <Text key={`yt-${i}`} style={{ fontSize: 6.5, color: "#999999", textAlign: "right" }}>{fmtAxis(tick)}</Text>
+          ))}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
+            {ticks.map((tick, i) => (
+              <SvgLine key={`gl-${i}`} x1={0} y1={scaleY(tick)} x2={svgW} y2={scaleY(tick)} stroke="#E5E0DB" strokeWidth={0.5} strokeDasharray={i === 0 ? undefined : "3 2"} />
+            ))}
+
+            {data.map((bar, i) => {
+              const x = i * groupW + barGap;
+              const docH = (bar.docValue / niceMax) * svgH;
+              const timeH = (bar.timeValue / niceMax) * svgH;
+              const retH = (bar.retentionValue / niceMax) * svgH;
+              const docY = scaleY(bar.docValue);
+              const timeY = scaleY(bar.docValue + bar.timeValue);
+              const retY = scaleY(bar.docValue + bar.timeValue + bar.retentionValue);
+              const invH = (bar.investment / niceMax) * svgH;
+              const invY = scaleY(bar.investment);
+              const invBarW = Math.max(barW * 0.18, 3);
+
+              return (
+                <G key={`bar-${i}`}>
+                  {docH > 0.5 && <Rect x={x} y={docY} width={barW} height={docH} fill="#2563EB" fillOpacity={0.8} rx={1} />}
+                  {timeH > 0.5 && <Rect x={x} y={timeY} width={barW} height={timeH} fill="#EA2C00" fillOpacity={0.75} />}
+                  {retH > 0.5 && <Rect x={x} y={retY} width={barW} height={retH} fill="#059669" fillOpacity={0.75} rx={1} />}
+                  {invH > 0.5 && <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#1A1A1A" fillOpacity={0.12} rx={1} />}
+                  {invH > 0.5 && <SvgLine x1={x + barW + 2} y1={invY} x2={x + barW + 2 + invBarW} y2={invY} stroke="#1A1A1A" strokeWidth={0.8} strokeDasharray="2 1" />}
+                </G>
+              );
+            })}
+
+            {paybackQuarter && (() => {
+              const idx = data.findIndex(d => d.label === paybackQuarter);
+              if (idx < 0) return null;
+              const x = idx * groupW + barGap + barW / 2;
+              return <SvgLine x1={x} y1={0} x2={x} y2={svgH} stroke="#059669" strokeWidth={0.8} strokeDasharray="4 2" />;
+            })()}
+
+            <SvgLine x1={0} y1={svgH} x2={svgW} y2={svgH} stroke="#D5D0CB" strokeWidth={1} />
+          </Svg>
+        </View>
+      </View>
+
+      <View style={{ flexDirection: "row", paddingLeft: 48 }}>
+        {data.map((bar, i) => (
+          <View key={`xl-${i}`} style={{ width: svgW / barCount, alignItems: "center", paddingTop: 3 }}>
+            <Text style={{ fontSize: 6, color: "#666666" }}>{bar.label}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 10, paddingLeft: 48 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <View style={{ width: 10, height: 6, backgroundColor: "#2563EB", borderRadius: 1, opacity: 0.8 }} />
+          <Text style={{ fontSize: 7, color: "#666666" }}>Doc Quality</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <View style={{ width: 10, height: 6, backgroundColor: "#EA2C00", borderRadius: 1, opacity: 0.75 }} />
+          <Text style={{ fontSize: 7, color: "#666666" }}>Time Savings</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <View style={{ width: 10, height: 6, backgroundColor: "#059669", borderRadius: 1, opacity: 0.75 }} />
+          <Text style={{ fontSize: 7, color: "#666666" }}>Retention</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          <View style={{ width: 10, height: 6, backgroundColor: "#1A1A1A", borderRadius: 1, opacity: 0.15 }} />
+          <Text style={{ fontSize: 7, color: "#666666" }}>Investment</Text>
+        </View>
+        {paybackQuarter && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <View style={{ width: 10, height: 0, borderTopWidth: 1, borderTopColor: "#059669", borderStyle: "dashed" }} />
+            <Text style={{ fontSize: 7, color: "#059669" }}>Payback</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct: number; retPct: number }) {
+  const barW = 486;
+  const h = 8;
+
+  const docW = Math.max((docPct / 100) * barW, docPct > 0 ? 2 : 0);
+  const retW = Math.max((retPct / 100) * barW, retPct > 0 ? 2 : 0);
+  const timeW = barW - docW - retW;
+
+  return (
+    <View style={{ marginTop: 8, marginBottom: 6 }}>
+      <Svg width={barW} height={h} viewBox={`0 0 ${barW} ${h}`}>
+        {docW > 0 && <Rect x={0} y={0} width={docW} height={h} fill="#2563EB" fillOpacity={0.8} rx={docPct >= 98 ? 3 : 0} />}
+        {docW > 0 && <Rect x={0} y={0} width={Math.min(docW, 6)} height={h} fill="#2563EB" fillOpacity={0.8} rx={3} />}
+        {timeW > 0 && <Rect x={docW} y={0} width={timeW} height={h} fill="#EA2C00" fillOpacity={0.75} />}
+        {retW > 0 && <Rect x={docW + timeW} y={0} width={retW} height={h} fill="#059669" fillOpacity={0.75} rx={retPct > 0 ? 3 : 0} />}
+      </Svg>
+      <View style={{ flexDirection: "row", marginTop: 3 }}>
+        {docPct > 0 && (
+          <View style={{ flex: docPct, alignItems: docPct > 12 ? "center" : "flex-start" }}>
+            <Text style={{ fontSize: 6.5, color: "#2563EB" }}>{docPct}% Doc Quality</Text>
+          </View>
+        )}
+        {timePct > 0 && (
+          <View style={{ flex: timePct, alignItems: timePct > 12 ? "center" : "flex-start" }}>
+            <Text style={{ fontSize: 6.5, color: "#EA2C00" }}>{timePct}% Time Savings</Text>
+          </View>
+        )}
+        {retPct > 0 && (
+          <View style={{ flex: retPct, alignItems: retPct > 12 ? "center" : "flex-end" }}>
+            <Text style={{ fontSize: 6.5, color: "#059669" }}>{retPct}% Retention</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function PDFOnsetTimeline() {
+  const w = 458;
+  const svgH = 22;
+  const lineY = 11;
+
+  const points = [
+    { pct: 0.03, label: "Month 1", sublabel: "Doc Quality", color: "#2563EB" },
+    { pct: 0.12, label: "Month 4", sublabel: "Time Savings", color: "#EA2C00" },
+    { pct: 0.4, label: "Year 2", sublabel: "Retention 50%", color: "#059669" },
+    { pct: 0.97, label: "Year 3", sublabel: "Full Retention", color: "#059669" },
+  ];
+
+  return (
+    <View>
+      <Svg width={w} height={svgH} viewBox={`0 0 ${w} ${svgH}`}>
+        <SvgLine x1={8} y1={lineY} x2={w - 8} y2={lineY} stroke="#E5E0DB" strokeWidth={2} />
+        <SvgLine x1={(w - 16) * points[2].pct + 8} y1={lineY - 1} x2={(w - 16) * points[3].pct + 8} y2={lineY - 1} stroke="#059669" strokeWidth={4} strokeOpacity={0.18} />
+        {points.map((pt, i) => {
+          const cx = (w - 16) * pt.pct + 8;
+          return (
+            <G key={`op-${i}`}>
+              <Circle cx={cx} cy={lineY} r={5} fill={pt.color} />
+              <Circle cx={cx} cy={lineY} r={2.5} fill="#FFFFFF" />
+            </G>
+          );
+        })}
+      </Svg>
+      <View style={{ flexDirection: "row", marginTop: 3, justifyContent: "space-between" }}>
+        <View style={{ alignItems: "flex-start" }}>
+          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Month 1</Text>
+          <Text style={{ fontSize: 5.5, color: "#2563EB" }}>Doc Quality</Text>
+        </View>
+        <View style={{ alignItems: "center", marginLeft: -20 }}>
+          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Month 4</Text>
+          <Text style={{ fontSize: 5.5, color: "#EA2C00" }}>Time Savings</Text>
+        </View>
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 2</Text>
+          <Text style={{ fontSize: 5.5, color: "#059669" }}>Retention 50%</Text>
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 3</Text>
+          <Text style={{ fontSize: 5.5, color: "#059669" }}>Full Retention</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function PDFSensitivityBars({ conservative, base, optimistic }: { conservative: number; base: number; optimistic: number }) {
+  const w = 120;
+  const maxVal = Math.max(conservative, base, optimistic, 0.01);
+  const barH = 5;
+  const gap = 4;
+  const totalH = barH * 3 + gap * 2;
+  const scale = (v: number) => Math.max((v / maxVal) * w * 0.9, 3);
+
+  return (
+    <View style={{ marginTop: 6 }}>
+      <Svg width={w} height={totalH} viewBox={`0 0 ${w} ${totalH}`}>
+        <Rect x={0} y={0} width={scale(conservative)} height={barH} fill="#999999" fillOpacity={0.45} rx={2} />
+        <Rect x={0} y={barH + gap} width={scale(base)} height={barH} fill="#EA2C00" fillOpacity={0.65} rx={2} />
+        <Rect x={0} y={(barH + gap) * 2} width={scale(optimistic)} height={barH} fill="#059669" fillOpacity={0.55} rx={2} />
+      </Svg>
+    </View>
+  );
+}
+
+const BASE_PAGES = 8;
 
 const PageFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
   <View style={styles.footer}>
@@ -468,7 +702,7 @@ interface ProformaPDFProps {
   sensitivityIRR: { conservative: number; optimistic: number; consValid: boolean; optValid: boolean };
 }
 
-function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR }: ProformaPDFProps) {
+function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR, chartData, paybackQuarter }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null }) {
   const termLabel = contractTermLabel(config.contractTermMonths);
   const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
@@ -598,6 +832,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </View>
           )}
 
+          {totalAllValue > 0 && (
+            <PDFProportionBar docPct={docPct} timePct={timePct} retPct={retPct} />
+          )}
+
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
               STRATEGIC OBSERVATION
@@ -682,9 +920,55 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
         </View>
       </Page>
 
-      {/* PAGE 3 (and optionally 4): SHOWING OUR MATH */}
+      {/* PAGE 3: THE VALUE TRAJECTORY */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>THE VALUE TRAJECTORY</Text>
+          <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
+          <Text style={styles.body}>
+            This chart shows how value accumulates quarter by quarter across your deployment. Documentation quality value (blue) appears first, time savings (red) join after a 3-month operational lag, and retention value (green) phases in over years. The thin bars represent your subscription investment for comparison.
+          </Text>
+
+          <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
+            <PDFValueChart data={chartData} paybackQuarter={paybackQuarter} />
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>FINAL QUARTER RUN-RATE</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{chartData.length > 0 ? fmt(chartData[chartData.length - 1].total) : "\u2014"}</Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>per quarter at full scale</Text>
+            </View>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{termLabel.toUpperCase()} TOTAL VALUE</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmt(summary.threeYearValue)}</Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>cumulative across all quarters</Text>
+            </View>
+            {summary.paybackMonth && (
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>PAYBACK POINT</Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.positive }}>Month {summary.paybackMonth}</Text>
+                <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>cumulative value exceeds cost</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.calloutBox}>
+            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
+              READING THIS CHART
+            </Text>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+              The stacked bars show how each value category contributes to total quarterly value. Notice how blue (doc quality) dominates early quarters, then red (time savings) joins and grows, and green (retention) gradually phases in. This onset sequencing is why Month 12 looks very different from Month 1 {"\u2014"} and why patience with the deployment timeline pays off.
+            </Text>
+          </View>
+
+          <PageFooter pageNum={3} totalPages={TOTAL_PAGES} />
+        </View>
+      </Page>
+
+      {/* PAGE 4 (and optionally 5): SHOWING OUR MATH */}
       {(() => {
-        const mathPageStartNum = 3;
+        const mathPageStartNum = 4;
         const settingsPerPage = mathPages === 1 ? enrichedBySettings.length : Math.ceil(enrichedBySettings.length / 2);
         const chunks: typeof enrichedBySettings[] = [];
         for (let i = 0; i < enrichedBySettings.length; i += settingsPerPage) {
@@ -799,32 +1083,35 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             One of the most important aspects of this model is honesty about timing. Different value drivers materialize at different speeds, and this proforma accounts for that reality rather than assuming everything starts immediately.
           </Text>
 
-          <View style={styles.divider} />
+          <View style={[styles.cardBg, { padding: 14, marginBottom: 10 }]}>
+            <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>ONSET TIMELINE</Text>
+            <PDFOnsetTimeline />
+          </View>
 
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.docBlue, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.docBlue, marginBottom: 4 }}>Layer 1: Documentation Quality (Immediate)</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-              wRVU improvement, HCC recapture, denial prevention, DRG accuracy, CDI efficiency. These drivers activate from day one because the AI produces better, more complete notes immediately. There is a brief learning curve (approximately one month) as clinicians adapt their workflow, but the documentation improvement is inherent to the technology.
+          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.docBlue, marginBottom: 8 }]}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginBottom: 3 }}>Layer 1: Documentation Quality (Immediate)</Text>
+            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
+              wRVU, HCC recapture, denial prevention, DRG accuracy, CDI efficiency. These activate from day one {"\u2014"} better, more complete notes are inherent to the technology with a brief one-month learning curve.
             </Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.docBlue }}>
               {termLabel} contribution: {fmt(totalDocValue)} ({docPct}% of total)
             </Text>
           </View>
 
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.timeRed, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.timeRed, marginBottom: 4 }}>Layer 2: Time Savings (3-Month Delay)</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-              Patient access, throughput, LWBS reduction, cost reduction, overtime elimination. Time is saved immediately, but translating that time into economic value requires operational change {"\u2014"} scheduling adjustments, template redesign, or staffing model updates. We model a 3-month lag with a gradual ramp-up to account for this reality.
+          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.timeRed, marginBottom: 8 }]}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginBottom: 3 }}>Layer 2: Time Savings (3-Month Delay)</Text>
+            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
+              Patient access, throughput, LWBS reduction, cost reduction, overtime. Time is saved immediately, but economic value requires operational change {"\u2014"} scheduling, templates, staffing. We model a 3-month lag with gradual ramp.
             </Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.timeRed }}>
               {termLabel} contribution: {fmt(totalTimeValue)} ({timePct}% of total)
             </Text>
           </View>
 
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.retentionGreen, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.retentionGreen, marginBottom: 4 }}>Layer 3: Retention & Wellbeing (Phased Over Years)</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-              Clinician retention, nurse retention, and wellbeing improvements. These are the longest-term drivers. Reducing burnout takes sustained adoption. We phase these conservatively: {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3. This means the model deliberately understates early-period retention value.
+          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.retentionGreen, marginBottom: 8 }]}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionGreen, marginBottom: 3 }}>Layer 3: Retention & Wellbeing (Phased Over Years)</Text>
+            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
+              Clinician and nurse retention, wellbeing improvements. Phased conservatively: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3 {"\u2014"} deliberately understating early-period retention value.
             </Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.retentionGreen }}>
               {termLabel} contribution: {fmt(totalRetentionValue)} ({retPct}% of total)
@@ -840,7 +1127,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={3 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={4 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
@@ -978,9 +1265,18 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 </Text>
               </View>
             </View>
+            {sensitivityIRR.consValid && sensitivityIRR.optValid && (
+              <View style={{ marginTop: 8, alignItems: "center" }}>
+                <PDFSensitivityBars
+                  conservative={sensitivityIRR.conservative}
+                  base={summary.irrValid ? summary.irr : 0}
+                  optimistic={sensitivityIRR.optimistic}
+                />
+              </View>
+            )}
           </View>
 
-          <PageFooter pageNum={4 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={5 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
@@ -1069,7 +1365,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={5 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={6 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
@@ -1148,7 +1444,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={6 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={7 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
 
@@ -1226,7 +1522,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <PageFooter pageNum={7 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={8 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
     </Document>
@@ -1240,6 +1536,25 @@ export async function generateProformaPDF(
   const cashFlows = buildMonthlyCashFlows(settings, config);
   const summary = calculateProformaSummary(settings, config, cashFlows);
   const yearlyData = getYearlySummary(cashFlows, settings);
+  const startDate = getContractStartDate();
+
+  const quarterlyData = groupByQuarter(cashFlows, startDate);
+  const chartData: ChartBar[] = quarterlyData.map(q => ({
+    label: q.label,
+    docValue: q.docValue,
+    timeValue: q.timeValue,
+    retentionValue: q.retentionValue,
+    investment: q.investment,
+    total: q.docValue + q.timeValue + q.retentionValue,
+  }));
+
+  let paybackQuarter: string | null = null;
+  for (const q of quarterlyData) {
+    if (q.cumulativeNet >= 0) {
+      paybackQuarter = q.label;
+      break;
+    }
+  }
 
   const scaleSettings = (s: ProformaSettingSnapshot, vf: number, cf: number) => ({
     ...s,
@@ -1268,6 +1583,8 @@ export async function generateProformaPDF(
       summary={summary}
       yearlyData={yearlyData}
       sensitivityIRR={sensitivityIRR}
+      chartData={chartData}
+      paybackQuarter={paybackQuarter}
     />
   ).toBlob();
 
