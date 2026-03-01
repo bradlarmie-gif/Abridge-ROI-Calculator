@@ -118,10 +118,10 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             <div className="flex-1" />
             
             <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 5-step analysis
               </span>
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 ~5 min
               </span>
             </div>
@@ -201,10 +201,10 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             <div className="flex-1" />
             
             <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 2-step analysis
               </span>
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 ~3 min
               </span>
             </div>
@@ -284,10 +284,10 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             <div className="flex-1" />
             
             <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 6-step assessment
               </span>
-              <span className="text-[10px] text-[#999999] font-medium">
+              <span className="text-[12px] text-[#999999] font-medium">
                 ~5 min
               </span>
             </div>

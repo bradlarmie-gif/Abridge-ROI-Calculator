@@ -192,7 +192,7 @@ export function EnterpriseExpansionChart({
           {/* Scope fields */}
           <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="rounded-md border border-neutral-200 bg-white px-3 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <div className="text-xs uppercase tracking-wide text-neutral-500">
                 Current providers
               </div>
               <div className="mt-1 font-mono text-sm font-semibold text-neutral-900">
@@ -203,7 +203,7 @@ export function EnterpriseExpansionChart({
             </div>
 
             <div className="rounded-md border border-neutral-200 bg-white px-3 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <div className="text-xs uppercase tracking-wide text-neutral-500">
                 Current encounters
               </div>
               <div className="mt-1 font-mono text-sm font-semibold text-neutral-900">
@@ -212,7 +212,7 @@ export function EnterpriseExpansionChart({
             </div>
 
             <div className="rounded-md border border-neutral-200 bg-white px-3 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <div className="text-xs uppercase tracking-wide text-neutral-500">
                 Enterprise providers
               </div>
               <div className="mt-1 font-mono text-sm font-semibold text-neutral-900">
@@ -223,7 +223,7 @@ export function EnterpriseExpansionChart({
             </div>
 
             <div className="rounded-md border border-neutral-200 bg-white px-3 py-2">
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <div className="text-xs uppercase tracking-wide text-neutral-500">
                 Enterprise encounters
               </div>
               <div className="mt-1 font-mono text-sm font-semibold text-neutral-900">

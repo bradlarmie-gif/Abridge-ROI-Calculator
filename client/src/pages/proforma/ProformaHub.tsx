@@ -43,7 +43,7 @@ function RolloutTimeline({ settings, contractMonths }: { settings: ProformaSetti
   const totalMonths = contractMonths;
   return (
     <div className="mb-6" data-testid="rollout-timeline">
-      <p className="text-[10px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-3">Deployment Timeline</p>
+      <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-3">Deployment Timeline</p>
       <div className="relative bg-[#F5F0EB] rounded-lg overflow-hidden" style={{ height: `${settings.length * 36 + 24}px` }}>
         <div className="absolute inset-0 flex">
           {Array.from({ length: Math.ceil(totalMonths / 12) }, (_, i) => (
@@ -67,7 +67,7 @@ function RolloutTimeline({ settings, contractMonths }: { settings: ProformaSetti
                 className="absolute rounded-md flex items-center px-2 gap-1.5"
                 style={{ left: `${startPct}%`, width: `${Math.min(widthPct, fullPct)}%`, height: "100%", backgroundColor: s.color }}
               >
-                <span className="text-[10px] font-bold text-white truncate">{s.label}</span>
+                <span className="text-[12px] font-bold text-white truncate">{s.label}</span>
                 <span className="text-[9px] text-white/70 whitespace-nowrap">M{s.goLiveMonth}</span>
               </div>
             </div>
@@ -174,22 +174,22 @@ export default function ProformaHub({
               <div className="flex flex-col items-center">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mb-1" />
                 <p className="text-sm font-bold text-emerald-600" data-testid="hub-vtc">{summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
-                <p className="text-[10px] text-[#A39888]">Value-to-Cost</p>
+                <p className="text-[12px] text-[#A39888]">Value-to-Cost</p>
               </div>
               <div className="flex flex-col items-center">
                 <Clock className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
-                <p className="text-[10px] text-[#A39888]">Payback</p>
+                <p className="text-[12px] text-[#A39888]">Payback</p>
               </div>
               <div className="flex flex-col items-center">
                 <BarChart3 className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-roi">{Math.round(summary.simpleROI * 100)}%</p>
-                <p className="text-[10px] text-[#A39888]">Simple ROI</p>
+                <p className="text-[12px] text-[#A39888]">Simple ROI</p>
               </div>
               <div className="flex flex-col items-center">
                 <DollarSign className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-hours">{fmtNum(totalHours)}</p>
-                <p className="text-[10px] text-[#A39888]">Hours/Year</p>
+                <p className="text-[12px] text-[#A39888]">Hours/Year</p>
               </div>
             </div>
           </motion.div>
@@ -297,12 +297,12 @@ export default function ProformaHub({
 
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {setting.drivers.slice(0, 4).map(d => (
-                          <span key={d.id} className="text-[10px] bg-[#F5F0EB] px-2 py-0.5 rounded-full text-[#6B5E4F] border border-[#E8E2DA]">
+                          <span key={d.id} className="text-[12px] bg-[#F5F0EB] px-2 py-0.5 rounded-full text-[#6B5E4F] border border-[#E8E2DA]">
                             {d.name}: {fmt(d.value)}
                           </span>
                         ))}
                         {setting.drivers.length > 4 && (
-                          <span className="text-[10px] text-[#A39888] px-1.5 py-0.5">+{setting.drivers.length - 4} more</span>
+                          <span className="text-[12px] text-[#A39888] px-1.5 py-0.5">+{setting.drivers.length - 4} more</span>
                         )}
                       </div>
 
@@ -317,10 +317,10 @@ export default function ProformaHub({
                           >
                             <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
                               <div>
-                                <p className="text-[10px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
+                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
                                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                   <div>
-                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 1</label>
+                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
                                     <FormattedNumberInput
                                       value={yp?.year1 ?? setting.providerCount}
                                       onChange={(v) => {
@@ -339,7 +339,7 @@ export default function ProformaHub({
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 2</label>
+                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
                                     <FormattedNumberInput
                                       value={yp?.year2 ?? setting.fullScaleProviders}
                                       onChange={(v) => {
@@ -357,7 +357,7 @@ export default function ProformaHub({
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 3</label>
+                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
                                     <FormattedNumberInput
                                       value={yp?.year3 ?? setting.fullScaleProviders}
                                       onChange={(v) => {
@@ -380,7 +380,7 @@ export default function ProformaHub({
 
                               <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                  <label className="block text-[10px] text-[#8C7E6E] mb-1">Utilization %</label>
+                                  <label className="block text-[12px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput
                                     value={setting.utilizationPercent}
                                     onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100) })}
@@ -391,7 +391,7 @@ export default function ProformaHub({
                                 <div>
                                   {setting.pricingModel === "annualFlat" ? (
                                     <>
-                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">Annual License Fee</label>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Annual License Fee</label>
                                       <FormattedNumberInput
                                         value={setting.annualLicenseFee || 0}
                                         onChange={(v) => onUpdateSetting(setting.id, { annualLicenseFee: Math.max(v, 0) })}
@@ -402,7 +402,7 @@ export default function ProformaHub({
                                     </>
                                   ) : setting.pricingModel === "perEncounter" ? (
                                     <>
-                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">$ / Encounter</label>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">$ / Encounter</label>
                                       <FormattedNumberInput
                                         value={setting.costPerEncounter || 0}
                                         onChange={(v) => onUpdateSetting(setting.id, { costPerEncounter: Math.max(v, 0) })}
@@ -413,7 +413,7 @@ export default function ProformaHub({
                                     </>
                                   ) : (
                                     <>
-                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
                                       <FormattedNumberInput
                                         value={setting.costPerUnit}
                                         onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
@@ -425,7 +425,7 @@ export default function ProformaHub({
                                   )}
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] text-[#8C7E6E] mb-1">Implementation Fee</label>
+                                  <label className="block text-[12px] text-[#8C7E6E] mb-1">Implementation Fee</label>
                                   <FormattedNumberInput
                                     value={setting.implementationFee}
                                     onChange={(v) => onUpdateSetting(setting.id, { implementationFee: Math.max(v, 0) })}
@@ -529,7 +529,7 @@ export default function ProformaHub({
             className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white px-8 h-12 text-base font-semibold disabled:opacity-40"
             data-testid="button-view-proforma"
           >
-            Build Financial Case {scenarios.length > 0 && <span className="bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full">{scenarios.length} scenario{scenarios.length !== 1 ? "s" : ""}</span>} <ArrowRight className="w-4 h-4" />
+            Build Financial Case {scenarios.length > 0 && <span className="bg-white/20 text-[12px] px-1.5 py-0.5 rounded-full">{scenarios.length} scenario{scenarios.length !== 1 ? "s" : ""}</span>} <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
       </div>

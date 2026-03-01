@@ -245,7 +245,7 @@ export default function ExpandDeploymentSetup({
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">%</span>
               </div>
-              <span className="text-[10px] text-[#6B7280]">% of encounters using Abridge</span>
+              <span className="text-[12px] text-[#6B7280]">% of encounters using Abridge</span>
             </div>
             
             <div className="space-y-2">
@@ -339,7 +339,7 @@ export default function ExpandDeploymentSetup({
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-[#111827]">{metric.name}</h3>
                         {metric.recommended && (
-                          <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Recommended</span>
+                          <span className="text-[12px] font-medium text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Recommended</span>
                         )}
                       </div>
                       <p className="text-sm text-[#6B7280]">{metric.description}</p>
@@ -401,7 +401,7 @@ export default function ExpandDeploymentSetup({
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-[#111827]">{metric.name}</h3>
                         {metric.recommended && (
-                          <span className="text-[10px] font-medium text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Recommended</span>
+                          <span className="text-[12px] font-medium text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Recommended</span>
                         )}
                       </div>
                       <p className="text-sm text-[#6B7280]">{metric.description}</p>

@@ -44,7 +44,7 @@ export default function NursingScreen5Focus({
         className="flex flex-col lg:flex-row gap-10"
       >
         <motion.div className="flex-1 max-w-[700px]" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             Recommended Focus
           </p>
           <h1
@@ -58,19 +58,19 @@ export default function NursingScreen5Focus({
           </p>
 
           <motion.div variants={staggerItem} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">Your Situation</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">Your Situation</p>
             <p className="text-sm text-[#333333] leading-relaxed">{focus.situation}</p>
           </motion.div>
 
           {focus.framingOptions.length > 0 && (
             <motion.div variants={staggerItem} className="mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Ways to Frame the Conversation</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Ways to Frame the Conversation</p>
               <div className="space-y-4">
                 {focus.framingOptions.map((option, i) => (
                   <div key={i} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
                     <p className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide mb-2">{option.title}</p>
                     <p className="text-sm text-[#333333] leading-relaxed mb-3">{option.body}</p>
-                    <p className="text-[11px] text-[#999999]">Best audience: {option.audience}</p>
+                    <p className="text-xs text-[#999999]">Best audience: {option.audience}</p>
                   </div>
                 ))}
               </div>
@@ -79,7 +79,7 @@ export default function NursingScreen5Focus({
 
           {focus.evaluation.length > 0 && (
             <motion.div variants={staggerItem} className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">What This Means for Evaluating Technology</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">What This Means for Evaluating Technology</p>
               <p className="text-sm text-[#333333] leading-relaxed mb-4">
                 Any investment in documentation technology for nursing should be evaluated against these priorities. The questions to ask:
               </p>
@@ -166,7 +166,7 @@ export default function NursingScreen5Focus({
                       </div>
                       <span className="text-xs text-white/80 truncate">{config.title}</span>
                     </div>
-                    <span className="text-[10px] text-white/50 flex-shrink-0">{s.sidebarLine}</span>
+                    <span className="text-[12px] text-white/50 flex-shrink-0">{s.sidebarLine}</span>
                   </div>
                 );
               })}
@@ -212,7 +212,7 @@ export default function NursingScreen5Focus({
             </div>
 
             <div className="h-px bg-white/10 my-4" />
-            <p className="text-[10px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
+            <p className="text-[12px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
             <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>

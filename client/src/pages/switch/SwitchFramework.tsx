@@ -68,7 +68,7 @@ export default function SwitchFramework({
                 <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
               </div>
               <p className="text-xs md:text-sm font-semibold text-slate-800">UTILIZATION</p>
-              <p className="text-[10px] md:text-xs text-slate-500 mt-1">% of encounters<br/>using the tool</p>
+              <p className="text-[12px] md:text-xs text-slate-500 mt-1">% of encounters<br/>using the tool</p>
             </div>
 
             <div className="text-xl md:text-2xl text-slate-300 font-light hidden sm:block">
@@ -80,7 +80,7 @@ export default function SwitchFramework({
                 <Clock className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
               </div>
               <p className="text-xs md:text-sm font-semibold text-slate-800">EFFICIENCY</p>
-              <p className="text-[10px] md:text-xs text-slate-500 mt-1">Minutes saved<br/>per encounter</p>
+              <p className="text-[12px] md:text-xs text-slate-500 mt-1">Minutes saved<br/>per encounter</p>
             </div>
 
             <div className="text-xl md:text-2xl text-slate-300 font-light hidden sm:block">
@@ -92,7 +92,7 @@ export default function SwitchFramework({
                 <FileCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-500" />
               </div>
               <p className="text-xs md:text-sm font-semibold text-slate-800">QUALITY</p>
-              <p className="text-[10px] md:text-xs text-slate-500 mt-1">Documentation<br/>quality lift</p>
+              <p className="text-[12px] md:text-xs text-slate-500 mt-1">Documentation<br/>quality lift</p>
             </div>
           </div>
 

@@ -173,7 +173,7 @@ export default function ExpandResults({
       <div className="bg-white border border-neutral-200 rounded-lg shadow-lg p-3 min-w-[200px]">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-neutral-500">{data.label}</span>
-          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+          <span className={`text-[12px] px-2 py-0.5 rounded-full font-medium ${
             data.isToday ? 'bg-[#EA2C00] text-white' : data.isActual ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
           }`}>
             {data.isToday ? 'You are here' : data.isActual ? 'Actual' : 'Projected'}
@@ -765,7 +765,7 @@ export default function ExpandResults({
           className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8 shadow-sm scroll-mt-20"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide animate-pulse">
+            <span className="px-2 py-0.5 text-[12px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide animate-pulse">
               Expansion Opportunity
             </span>
           </div>

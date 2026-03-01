@@ -55,7 +55,7 @@ export default function StepEntryGate({ onNext }: StepEntryGateProps) {
     >
       <div className="w-full max-w-[520px] text-center">
         <p
-          className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-7"
+          className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-7"
           data-testid="text-gate-eyebrow"
         >
           Before We Begin

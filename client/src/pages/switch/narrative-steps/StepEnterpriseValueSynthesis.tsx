@@ -208,7 +208,7 @@ export default function StepEnterpriseValueSynthesis({
   return (
     <div className={`space-y-8 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-center">
-        <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
+        <p className="text-xs text-[#999999] uppercase tracking-widest mb-2">
           Enterprise Value Synthesis
         </p>
         <h1
@@ -236,7 +236,7 @@ export default function StepEnterpriseValueSynthesis({
       {hasData && (
         <>
           <section data-testid="pillar-cards">
-            <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+            <p className="text-[12px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
               Pillar Breakdown
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -275,7 +275,7 @@ export default function StepEnterpriseValueSynthesis({
 
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] text-[#999999] uppercase tracking-wider">
+                        <span className="text-[12px] text-[#999999] uppercase tracking-wider">
                           Score
                         </span>
                         <span
@@ -300,7 +300,7 @@ export default function StepEnterpriseValueSynthesis({
                     <div className="flex items-start gap-1.5 mt-auto">
                       <AlertTriangle className="w-3 h-3 text-[#CC2200] mt-0.5 flex-shrink-0" />
                       <span
-                        className="text-[11px] text-[#666666] leading-snug"
+                        className="text-xs text-[#666666] leading-snug"
                         data-testid={`blocker-pillar-${id}`}
                       >
                         {blocker}
@@ -313,7 +313,7 @@ export default function StepEnterpriseValueSynthesis({
           </section>
 
           <section data-testid="leakage-section">
-            <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+            <p className="text-[12px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
               Where Value Leaks — Top 3
             </p>
             <div className="space-y-2">
@@ -330,7 +330,7 @@ export default function StepEnterpriseValueSynthesis({
                         idx === 0 ? "bg-[#EA2C00]" : "bg-[#CCCCCC]"
                       }`}
                     >
-                      <span className="text-[10px] font-bold text-white">{idx + 1}</span>
+                      <span className="text-[12px] font-bold text-white">{idx + 1}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -363,10 +363,10 @@ export default function StepEnterpriseValueSynthesis({
           >
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-[11px] text-[#999999] uppercase tracking-wider font-medium mb-0.5">
+                <p className="text-xs text-[#999999] uppercase tracking-wider font-medium mb-0.5">
                   Enterprise Capture Score
                 </p>
-                <p className="text-[10px] text-[#999999]">
+                <p className="text-[12px] text-[#999999]">
                   Weighted average across all pillars
                 </p>
               </div>
@@ -408,14 +408,14 @@ export default function StepEnterpriseValueSynthesis({
           </section>
 
           <section data-testid="what-this-means">
-            <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+            <p className="text-[12px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
               What This Means
             </p>
             <div className="space-y-2.5">
               {insights.map((insight, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-full bg-[#F5F0EB] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-[#EA2C00]">{i + 1}</span>
+                    <span className="text-[12px] font-bold text-[#EA2C00]">{i + 1}</span>
                   </div>
                   <p
                     className="text-sm text-[#666666] leading-relaxed"

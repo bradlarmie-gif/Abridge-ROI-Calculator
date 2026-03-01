@@ -198,7 +198,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     <span>Observed avg</span>
                   </button>
                 </div>
-                <p className="text-[10px] text-[#999] text-center mt-2">Based on published industry data and aggregated deployment experience.</p>
+                <p className="text-[12px] text-[#999] text-center mt-2">Based on published industry data and aggregated deployment experience.</p>
 
                 <AnimatePresence>
                   {utilInsight && (
@@ -309,7 +309,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
-            <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
+            <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
               Your Baseline
             </p>
 

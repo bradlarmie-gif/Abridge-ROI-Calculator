@@ -164,7 +164,7 @@ export default function BaselineSetup({
       <div className="py-6 sm:py-8 md:py-12">
         {/* Centered Page Header */}
         <div className="text-center max-w-[700px] mx-auto px-4 md:px-6 mb-8 sm:mb-12 md:mb-16">
-          <div className="inline-block text-[11px] md:text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-2.5 md:px-3 py-1 md:py-1.5 rounded-md mb-4 md:mb-6">
+          <div className="inline-block text-xs md:text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-2.5 md:px-3 py-1 md:py-1.5 rounded-md mb-4 md:mb-6">
             Step 3 of 6
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-3 md:mb-4">
@@ -336,7 +336,7 @@ export default function BaselineSetup({
                         <p className="text-[#D1D5DB] text-[12px] mb-2">
                           Any patient interaction requiring a structured note in your EMR:
                         </p>
-                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="text-emerald-400">
                             <p>✓ Shift assessments</p>
                             <p>✓ Admission/discharge notes</p>
@@ -350,7 +350,7 @@ export default function BaselineSetup({
                             <p>✗ Care plan reviews</p>
                           </div>
                         </div>
-                        <p className="text-[#9CA3AF] text-[11px] mt-2 italic">
+                        <p className="text-[#9CA3AF] text-xs mt-2 italic">
                           Think: "How many times does a nurse open a documentation template per patient per day?"
                         </p>
                       </TooltipContent>

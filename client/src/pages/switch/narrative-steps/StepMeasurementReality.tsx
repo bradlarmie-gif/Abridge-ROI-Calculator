@@ -62,7 +62,7 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
       <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-4 h-4 text-[#1A1A1A]" />
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-changes-label">
+          <p className="text-xs font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-changes-label">
             What this changes
           </p>
         </div>
@@ -80,12 +80,12 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
                 style={{ width: `${haircut * 100}%` }}
               />
             </div>
-            <p className="text-[11px] text-[#999] mt-2 leading-snug" data-testid="text-rail-formula">
+            <p className="text-xs text-[#999] mt-2 leading-snug" data-testid="text-rail-formula">
               Displayed value = Modeled Value x Confidence Baseline
             </p>
           </div>
           <div className="border-t border-[#E8E0D8] pt-3">
-            <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-1.5">
+            <p className="text-xs font-medium text-[#999] uppercase tracking-wider mb-1.5">
               Impact example
             </p>
             <p className="text-sm text-[#1A1A1A]" data-testid="text-rail-example">
@@ -109,7 +109,7 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
       <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
         <div className="flex items-center gap-2 mb-3">
           <Shield className="w-4 h-4 text-[#1A1A1A]" />
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-why-label">
+          <p className="text-xs font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-why-label">
             Why this matters
           </p>
         </div>
@@ -121,7 +121,7 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
       <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
         <div className="flex items-center gap-2 mb-3">
           <ShieldCheck className="w-4 h-4 text-[#1A1A1A]" />
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-trust-label">
+          <p className="text-xs font-medium text-[#999] uppercase tracking-wider" data-testid="text-rail-trust-label">
             Trust principles
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function StepMeasurementReality({
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <span className="text-lg font-semibold text-[#1A1A1A]">{tile.title}</span>
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-medium uppercase tracking-wider ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium uppercase tracking-wider ${
                           isSelected
                             ? isMeasured
                               ? "bg-[#EA2C00]/15 text-[#EA2C00]"

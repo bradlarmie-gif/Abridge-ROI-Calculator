@@ -3246,7 +3246,7 @@ export default function RoiCalculator({
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <span className="text-[16px] font-bold text-[#059669]">{formatCurrency(driverValues[id])}</span>
-                                    <span className="px-2 py-1 bg-[#E5E7EB] text-[11px] font-medium text-[#6B7280] uppercase rounded">
+                                    <span className="px-2 py-1 bg-[#E5E7EB] text-xs font-medium text-[#6B7280] uppercase rounded">
                                       Locked
                                     </span>
                                   </div>
@@ -3914,7 +3914,7 @@ export default function RoiCalculator({
                                               title={`${leverLabels[driver.id]}: ${formatCurrency(driver.value)} (${pct.toFixed(1)}%)`}
                                             >
                                               {pct > 12 && (
-                                                <span className="text-[11px] font-bold text-white truncate px-1">
+                                                <span className="text-xs font-bold text-white truncate px-1">
                                                   {leverShortNames[driver.id]}
                                                 </span>
                                               )}
@@ -4126,7 +4126,7 @@ export default function RoiCalculator({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-bold text-[#111827]">Current Model (Baseline)</span>
-                          <span className="px-2 py-0.5 bg-[#F3F4F6] text-[11px] text-[#6B7280] uppercase rounded">Required</span>
+                          <span className="px-2 py-0.5 bg-[#F3F4F6] text-xs text-[#6B7280] uppercase rounded">Required</span>
                         </div>
                         <p className="text-[13px] text-[#6B7280] mt-1">
                           {inputs.numberOfProviders} providers | {formatCurrency(netAnnualGain)} net gain | {roiMultiple.toFixed(1)}x ROI
@@ -4973,7 +4973,7 @@ export default function RoiCalculator({
                           
                           {/* Calculated Summary */}
                           <div className="p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-                            <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-[0.1em] mb-5">Calculated Summary</div>
+                            <div className="text-xs font-bold text-[#6B7280] uppercase tracking-[0.1em] mb-5">Calculated Summary</div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                               <div>
                                 <div className="text-[13px] text-[#6B7280] mb-2">Annual {selectedCompetitor.name} Cost</div>
@@ -6972,7 +6972,7 @@ export default function RoiCalculator({
                                 <tr className="border-b border-[#F3F4F6] bg-[#EA2C00]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     Clinician Retention
-                                    <span className="ml-2 text-[11px] text-[#EA2C00] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-xs text-[#EA2C00] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#EA2C00]">{formatCurrency(totalComparison.workforce.abridgeTotal)}</td>
@@ -6983,7 +6983,7 @@ export default function RoiCalculator({
                                 <tr className="border-b border-[#F3F4F6] bg-[#EA2C00]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     Denial Reduction
-                                    <span className="ml-2 text-[11px] text-[#EA2C00] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-xs text-[#EA2C00] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#EA2C00]">{formatCurrency(totalComparison.denials.abridgeTotal)}</td>
@@ -6994,7 +6994,7 @@ export default function RoiCalculator({
                                 <tr className="border-b border-[#F3F4F6] bg-[#EA2C00]/5">
                                   <td className="px-6 py-4 text-[#111827]">
                                     HCC Capture
-                                    <span className="ml-2 text-[11px] text-[#EA2C00] font-medium">Abridge Only</span>
+                                    <span className="ml-2 text-xs text-[#EA2C00] font-medium">Abridge Only</span>
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono text-[#9CA3AF]">$0</td>
                                   <td className="px-6 py-4 text-right font-mono text-[#EA2C00]">{formatCurrency(totalComparison.hcc.abridgeTotal)}</td>

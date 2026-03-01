@@ -154,7 +154,7 @@ export default function SwitchFullAnalysis({
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-realization-score">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+                <div className="text-[12px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
                   What You're Getting
                 </div>
                 <div className="text-2xl md:text-3xl font-bold text-[#111827]">{calculations.realizationScore}%</div>
@@ -181,7 +181,7 @@ export default function SwitchFullAnalysis({
 
           {/* 3-Year Gap */}
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-3year-gap">
-            <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+            <div className="text-[12px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
               3-Year Cost of Status Quo
             </div>
             <div className="flex items-center justify-between gap-4">
@@ -192,15 +192,15 @@ export default function SwitchFullAnalysis({
               <div className="flex flex-col justify-center gap-0.5">
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-slate-300" />
-                  <span className="text-[10px] text-[#6B7280]">Year 1</span>
+                  <span className="text-[12px] text-[#6B7280]">Year 1</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-slate-500" />
-                  <span className="text-[10px] text-[#6B7280]">Year 2</span>
+                  <span className="text-[12px] text-[#6B7280]">Year 2</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-slate-700" />
-                  <span className="text-[10px] text-[#6B7280]">Year 3</span>
+                  <span className="text-[12px] text-[#6B7280]">Year 3</span>
                 </div>
               </div>
             </div>
@@ -410,7 +410,7 @@ export default function SwitchFullAnalysis({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-4 md:p-6 text-center relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500 text-white text-[10px] md:text-xs font-semibold rounded-full">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500 text-white text-[12px] md:text-xs font-semibold rounded-full">
                 FULL POTENTIAL
               </div>
               <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start now</div>
@@ -422,14 +422,14 @@ export default function SwitchFullAnalysis({
               <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start in 6 months</div>
               <div className="text-2xl md:text-3xl font-bold text-amber-600">-{formatCurrency(calculations.wait6MonthsLoss)}</div>
               <div className="text-xs md:text-sm text-amber-700 font-medium mt-1">opportunity cost</div>
-              <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait6MonthsValue)} remaining</div>
+              <div className="text-[12px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait6MonthsValue)} remaining</div>
             </div>
 
             <div className="border border-red-200 bg-red-50/50 rounded-xl p-4 md:p-6 text-center">
               <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start in 12 months</div>
               <div className="text-2xl md:text-3xl font-bold text-red-500">-{formatCurrency(calculations.wait12MonthsLoss)}</div>
               <div className="text-xs md:text-sm text-red-600 font-medium mt-1">opportunity cost</div>
-              <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait12MonthsValue)} remaining</div>
+              <div className="text-[12px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait12MonthsValue)} remaining</div>
             </div>
           </div>
 
@@ -564,7 +564,7 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapEncounters.toLocaleString()} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min/enc = {potentialHours.toLocaleString()} hrs → ${gapValue.toLocaleString()}
       </div>
 
@@ -656,7 +656,7 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%
       </div>
 
@@ -746,7 +746,7 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{wrvuLift}% → +{benchmark}% = +{gapPercent.toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%
       </div>
 
@@ -873,7 +873,7 @@ function EditableUtilizationCard({ utilization, encounters, gapEncounters, gapVa
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapEncounters.toLocaleString()} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min/enc = {potentialHours.toLocaleString()} hrs → {formatCurrency(gapValue)}
       </div>
 
@@ -994,7 +994,7 @@ function EditableEfficiencyCard({ efficiency, encountersAtBenchmark, gapHours, g
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc = {gapHours.toLocaleString()} hrs → {formatCurrency(gapValue)}
       </div>
 
@@ -1113,7 +1113,7 @@ function EditableQualityCard({ wrvuLift, encountersAtBenchmark, gapValue, onWrvu
         </div>
       </div>
       
-      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
+      <div className="text-[12px] md:text-xs text-[#6B7280] font-mono bg-white/80 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapPercent.toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = {formatCurrency(gapValue)}
       </div>
 

@@ -64,7 +64,7 @@ function DriverRow({
       <div className="flex items-baseline justify-between gap-2">
         <div className="min-w-0">
           <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
-          <p className="text-[11px] text-[#999] leading-tight mt-0.5">{description}</p>
+          <p className="text-xs text-[#999] leading-tight mt-0.5">{description}</p>
         </div>
         <span className="text-xs font-semibold text-[#555] tabular-nums shrink-0">{clamped}%</span>
       </div>
@@ -167,7 +167,7 @@ export default function StepPillarWorkforce({
           <div className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]" data-testid="hero-workforce">
             {isZero ? (
               <div>
-                <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-2">Conservative Value</p>
+                <p className="text-[12px] font-medium text-[#999] uppercase tracking-wider mb-2">Conservative Value</p>
                 <p className="text-4xl font-bold text-[#CCC] leading-none" data-testid="value-wf-conservative">
                   &mdash;
                 </p>
@@ -178,32 +178,32 @@ export default function StepPillarWorkforce({
             ) : (
               <>
                 <div>
-                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1.5">Conservative Value</p>
+                  <p className="text-[12px] font-medium text-[#999] uppercase tracking-wider mb-1.5">Conservative Value</p>
                   <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] tabular-nums leading-none" data-testid="value-wf-conservative">
                     {formatCurrency(Math.round(conservativeValue))}
                   </p>
-                  <p className="text-[11px] text-[#999] mt-2" data-testid="text-haircut-note">
+                  <p className="text-xs text-[#999] mt-2" data-testid="text-haircut-note">
                     Displayed after {haircutPctVal}% confidence adjustment.
                   </p>
                 </div>
 
                 <div className="mt-5">
-                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Modeled Value</p>
+                  <p className="text-[12px] font-medium text-[#999] uppercase tracking-wider mb-1">Modeled Value</p>
                   <p className="text-xl font-semibold text-[#888] tabular-nums leading-none" data-testid="value-wf-modeled">
                     {formatCurrency(Math.round(rawValue))}
                   </p>
-                  <p className="text-[11px] text-[#999] mt-1">Pre-adjustment model output</p>
+                  <p className="text-xs text-[#999] mt-1">Pre-adjustment model output</p>
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-[#E8E0D8] space-y-2">
                   <div className="flex items-baseline justify-between">
-                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Annual labor volatility exposure</p>
+                    <p className="text-[12px] text-[#999] uppercase tracking-wider">Annual labor volatility exposure</p>
                     <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-volatility">
                       {formatCurrency(Math.round(totalVolatility))}
                     </p>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Avoidable portion modeled</p>
+                    <p className="text-[12px] text-[#999] uppercase tracking-wider">Avoidable portion modeled</p>
                     <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-avoidable">
                       {formatCurrency(Math.round(avoidablePortion))}
                     </p>
@@ -212,8 +212,8 @@ export default function StepPillarWorkforce({
 
                 <div className="mt-4 pt-3 border-t border-[#E8E0D8]">
                   <div className="flex items-baseline justify-between">
-                    <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider">Confidence baseline: {confidencePct}%</p>
-                    <p className="text-[11px] text-[#999]" data-testid="text-confidence-value">Displayed value reflects conservative haircut.</p>
+                    <p className="text-[12px] font-medium text-[#999] uppercase tracking-wider">Confidence baseline: {confidencePct}%</p>
+                    <p className="text-xs text-[#999]" data-testid="text-confidence-value">Displayed value reflects conservative haircut.</p>
                   </div>
                 </div>
               </>
@@ -245,10 +245,10 @@ export default function StepPillarWorkforce({
 
         <div className="lg:sticky lg:top-24 self-start" data-testid="panel-assumptions">
           <div className="rounded-2xl border border-[#E8E0D8] bg-[#F9F7F4] p-4 space-y-4">
-            <p className="text-[10px] font-medium text-[#AAA] uppercase tracking-wider">Assumptions</p>
+            <p className="text-[12px] font-medium text-[#AAA] uppercase tracking-wider">Assumptions</p>
 
             <div>
-              <label className="block text-[11px] font-medium text-[#555] mb-1.5">After-hours charting</label>
+              <label className="block text-xs font-medium text-[#555] mb-1.5">After-hours charting</label>
               <div className="flex flex-wrap gap-1.5">
                 {AFTER_HOURS_PRESETS.map((p) => {
                   const isActive = !showCustomAfterHours && inputs.afterHoursCharting === p.value;
@@ -258,7 +258,7 @@ export default function StepPillarWorkforce({
                       type="button"
                       onClick={() => handleAfterHoursPreset(p.value)}
                       data-testid={`pills-afterhours-${p.value}`}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                         isActive
                           ? "bg-[#EA2C00] text-white"
                           : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -275,7 +275,7 @@ export default function StepPillarWorkforce({
                     if (inputs.afterHoursCharting === 0) updateInput("afterHoursCharting", 2);
                   }}
                   data-testid="pills-afterhours-custom"
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                     showCustomAfterHours
                       ? "bg-[#EA2C00] text-white"
                       : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -306,11 +306,11 @@ export default function StepPillarWorkforce({
                   </div>
                 </div>
               )}
-              <p className="text-[10px] text-[#999] mt-1">hrs/wk/provider remaining after-hours</p>
+              <p className="text-[12px] text-[#999] mt-1">hrs/wk/provider remaining after-hours</p>
             </div>
 
             <div className="border-t border-[#E8E0D8]/60 pt-3">
-              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Turnover risk</label>
+              <label className="block text-xs font-medium text-[#555] mb-1.5">Turnover risk</label>
               <div className="flex flex-wrap gap-1.5">
                 {TURNOVER_OPTIONS.map((opt) => {
                   const isActive = inputs.turnoverRisk === opt.value;
@@ -320,7 +320,7 @@ export default function StepPillarWorkforce({
                       type="button"
                       onClick={() => updateInput("turnoverRisk", opt.value)}
                       data-testid={`pills-turnover-${opt.value}`}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                         isActive
                           ? "bg-[#EA2C00] text-white"
                           : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -334,7 +334,7 @@ export default function StepPillarWorkforce({
             </div>
 
             <div className="border-t border-[#E8E0D8]/60 pt-3">
-              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Overtime / agency</label>
+              <label className="block text-xs font-medium text-[#555] mb-1.5">Overtime / agency</label>
               <div className="flex flex-wrap gap-1.5">
                 {OVERTIME_OPTIONS.map((opt) => {
                   const isActive = inputs.overtimeSensitivity === opt.value;
@@ -344,7 +344,7 @@ export default function StepPillarWorkforce({
                       type="button"
                       onClick={() => updateInput("overtimeSensitivity", opt.value)}
                       data-testid={`pills-overtime-${opt.value}`}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                         isActive
                           ? "bg-[#EA2C00] text-white"
                           : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -359,7 +359,7 @@ export default function StepPillarWorkforce({
 
             {isAmbientPath && (
               <div className="border-t border-[#E8E0D8]/60 pt-3">
-                <label className="block text-[11px] font-medium text-[#555] mb-1.5">Scribe reliance</label>
+                <label className="block text-xs font-medium text-[#555] mb-1.5">Scribe reliance</label>
                 <div className="flex flex-wrap gap-1.5">
                   {SCRIBE_OPTIONS.map((opt) => {
                     const isActive = inputs.scribeReliance === opt.value;
@@ -369,7 +369,7 @@ export default function StepPillarWorkforce({
                         type="button"
                         onClick={() => updateInput("scribeReliance", opt.value)}
                         data-testid={`pills-scribe-${opt.value}`}
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                           isActive
                             ? "bg-[#EA2C00] text-white"
                             : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -385,11 +385,11 @@ export default function StepPillarWorkforce({
 
             <div className="border-t border-[#E8E0D8]/60 pt-3">
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-medium text-[#555]">Confidence</label>
+                <label className="text-xs font-medium text-[#555]">Confidence</label>
                 <button
                   type="button"
                   onClick={() => setShowConfidenceEdit(!showConfidenceEdit)}
-                  className="flex items-center gap-0.5 text-[10px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
+                  className="flex items-center gap-0.5 text-[12px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
                   data-testid="button-toggle-confidence"
                 >
                   {showConfidenceEdit ? "Done" : "Adjust"}
@@ -400,12 +400,12 @@ export default function StepPillarWorkforce({
               {!showConfidenceEdit ? (
                 <div className="flex items-center gap-2">
                   <span
-                    className="text-[11px] font-semibold text-[#1A1A1A] capitalize"
+                    className="text-xs font-semibold text-[#1A1A1A] capitalize"
                     data-testid="value-workforce-confidence"
                   >
                     {workforceConfidence}
                   </span>
-                  <span className="text-[10px] text-[#999]">inherited from calibration</span>
+                  <span className="text-[12px] text-[#999]">inherited from calibration</span>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
@@ -419,7 +419,7 @@ export default function StepPillarWorkforce({
                           dispatch(assessmentActions.updatePillarMeta("workforce", "confidence", opt.value))
                         }
                         data-testid={`pills-confidence-${opt.value}`}
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                           isActive
                             ? "bg-[#EA2C00] text-white"
                             : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -437,7 +437,7 @@ export default function StepPillarWorkforce({
               <button
                 type="button"
                 onClick={() => setShowSnapshot(true)}
-                className="flex items-center gap-1.5 text-[10px] text-[#999] hover:text-[#EA2C00] transition-colors w-full justify-center"
+                className="flex items-center gap-1.5 text-[12px] text-[#999] hover:text-[#EA2C00] transition-colors w-full justify-center"
                 data-testid="button-advanced-inputs"
               >
                 <SlidersHorizontal className="w-3 h-3" />

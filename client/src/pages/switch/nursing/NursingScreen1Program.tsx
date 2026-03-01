@@ -26,7 +26,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
         className="flex flex-col lg:flex-row gap-10"
       >
         <motion.div className="flex-1 max-w-[640px]" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             Your Nursing Program
           </p>
           <h1
@@ -41,7 +41,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
 
           <div className="space-y-6">
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Deployment Size</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Deployment Size</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-black mb-1">Staffed Beds</label>
@@ -51,7 +51,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
                     placeholder="e.g. 200"
                     data-testid="input-staffed-beds"
                   />
-                  <p className="text-[11px] text-[#999999] mt-1">Licensed beds with active nursing staff</p>
+                  <p className="text-xs text-[#999999] mt-1">Licensed beds with active nursing staff</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-black mb-1">Nurse FTEs</label>
@@ -61,13 +61,13 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
                     placeholder="e.g. 300"
                     data-testid="input-nurse-ftes"
                   />
-                  <p className="text-[11px] text-[#999999] mt-1">Full-time equivalent nurses in scope</p>
+                  <p className="text-xs text-[#999999] mt-1">Full-time equivalent nurses in scope</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Bed Occupancy</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-4">Bed Occupancy</p>
               <div className="flex items-center gap-4">
                 <input
                   type="range"
@@ -109,7 +109,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
             <p className="text-[9px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
               Your Baseline
             </p>
-            <p className="text-[10px] text-white/40 mb-4">Deployment summary</p>
+            <p className="text-[12px] text-white/40 mb-4">Deployment summary</p>
             <div className="h-px bg-white/10 mb-4" />
 
             <div className="space-y-3 text-xs">
@@ -139,7 +139,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
               <>
                 <div className="h-px bg-white/10 my-4" />
                 <p className="text-[9px] font-semibold uppercase tracking-[2px] text-white/40 mb-2">The Math</p>
-                <div className="text-[11px] text-white/50 font-mono space-y-0.5">
+                <div className="text-xs text-white/50 font-mono space-y-0.5">
                   <p>{baseline.nurseFTEs.toLocaleString()} nurse FTEs</p>
                   <p>x 260 shifts/year</p>
                   <p>= {shiftsPerYear.toLocaleString()} shifts</p>

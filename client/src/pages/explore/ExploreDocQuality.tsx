@@ -216,7 +216,7 @@ export default function ExploreDocQuality({
           transition={{ delay: 0.1 }}
           data-testid="card-how-to-use-doc-quality"
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
             HOW TO USE THIS
           </p>
           <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -244,7 +244,7 @@ export default function ExploreDocQuality({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
             How to Use This Section
           </p>
           <p className="text-sm text-black leading-relaxed">
@@ -265,7 +265,7 @@ export default function ExploreDocQuality({
           transition={{ delay: 0.15 }}
         >
           <div>
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               Care Quality Potential
             </p>
             <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -322,14 +322,14 @@ export default function ExploreDocQuality({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
                     <p className="text-sm text-black mb-6">
                       HAPIs happen when assessments are missed or interventions are delayed. Real-time 
                       documentation ensures skin assessments, turning schedules, and risk factors are 
                       captured as they're observed—enabling earlier intervention.
                     </p>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Patient Days/Year</label>
@@ -362,7 +362,7 @@ export default function ExploreDocQuality({
                       </div>
                     </div>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 2: Documentation-Preventable</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 2: Documentation-Preventable</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Prevention Rate</label>
@@ -393,7 +393,7 @@ export default function ExploreDocQuality({
                       </div>
                     </div>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 3: Potential Value</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 3: Potential Value</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between gap-2">
@@ -479,14 +479,14 @@ export default function ExploreDocQuality({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
                     <p className="text-sm text-black mb-6">
                       Falls often happen when risk factors aren't visible or communicated in real-time. 
                       When nurses document assessments as they observe them, high-risk patients get 
                       the attention they need faster.
                     </p>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Falls Rate (per 1,000 patient days)</label>
@@ -530,7 +530,7 @@ export default function ExploreDocQuality({
                       <p className="text-xs text-[#888888]">5% is conservative—represents documentation-preventable falls</p>
                     </div>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between gap-2">
@@ -620,7 +620,7 @@ export default function ExploreDocQuality({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Connection</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Connection</p>
                     <p className="text-sm text-black mb-6">
                       When nurses spend less time on documentation, they spend more time with patients. 
                       Research consistently shows bedside time correlates with patient satisfaction.
@@ -634,7 +634,7 @@ export default function ExploreDocQuality({
                       <p className="text-sm text-[#666666] mt-1">per nurse per week</p>
                     </div>
 
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">We Don't Calculate This</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">We Don't Calculate This</p>
                     <p className="text-sm text-[#666666] mb-4">
                       HCAHPS scores are influenced by dozens of factors—wait times, pain management, 
                       communication, environment, and more. We can't credibly attribute HCAHPS improvement 
@@ -670,7 +670,7 @@ export default function ExploreDocQuality({
           data-testid="card-revenue-drivers-inpatient"
         >
           <div>
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               REVENUE DRIVERS
             </p>
             <div className="h-px bg-[#D1D5DB]" />
@@ -730,7 +730,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 1: YOUR DOCUMENTATION OPPORTUNITY */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       Step 1: Your Documentation Opportunity
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">How often does CDI identify documentation opportunities?</p>
@@ -770,7 +770,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 2: THE GAP ABRIDGE CLOSES */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       Step 2: The Gap Abridge Closes
                     </p>
                     <p className="text-[13px] text-[#666666] mb-2">
@@ -809,7 +809,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 3: REVENUE IMPACT */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       Step 3: Revenue Impact
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">When a missed CC/MCC is captured, DRG weight increases.</p>
@@ -857,7 +857,7 @@ export default function ExploreDocQuality({
 
                     {/* Benchmark Table */}
                     <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-4 mb-4">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2 flex items-center gap-2">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2 flex items-center gap-2">
                         <span>📊</span> Common Documentation Gaps
                       </p>
                       <p className="text-[13px] text-[#666666] mb-3">
@@ -893,7 +893,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 4: WHAT YOU CAN COUNT ON */}
                   <div className="mb-8">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       Step 4: What You Can Count On
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">Not all captured documentation changes the final code.</p>
@@ -1002,7 +1002,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 1: CURRENT QUERY VOLUME */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 1: Current Query Volume
                     </p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
@@ -1041,7 +1041,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 2: QUERIES AVOIDED */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 2: Queries Avoided
                     </p>
                     <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
@@ -1071,7 +1071,7 @@ export default function ExploreDocQuality({
 
                   {/* STEP 3: SAVINGS */}
                   <div className="mb-8">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 3: Savings
                     </p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
@@ -1132,7 +1132,7 @@ export default function ExploreDocQuality({
           data-testid="card-revenue-drivers"
         >
           <div>
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               REVENUE DRIVERS
             </p>
             <div className="h-px bg-[#D1D5DB]" />
@@ -1211,7 +1211,7 @@ export default function ExploreDocQuality({
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
                       <span className="text-xs text-[#888888]">Click values to edit</span>
                     </div>
 
@@ -1362,7 +1362,7 @@ export default function ExploreDocQuality({
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
                       <span className="text-xs text-[#888888]">Click values to edit</span>
                     </div>
 
@@ -1596,7 +1596,7 @@ export default function ExploreDocQuality({
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
                       <span className="text-xs text-[#888888]">Click values to edit</span>
                     </div>
 
@@ -1752,7 +1752,7 @@ export default function ExploreDocQuality({
             <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
               {/* Header */}
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                   Documentation Value
                 </p>
                 <p className="text-sm text-[#888888] mt-1">Your model so far</p>
@@ -1772,7 +1772,7 @@ export default function ExploreDocQuality({
                 {isNursing ? (
                   <>
                     <div>
-                      <p className="text-[10px] font-medium text-[#666666] uppercase tracking-wide mb-2">Care Quality Potential</p>
+                      <p className="text-[12px] font-medium text-[#666666] uppercase tracking-wide mb-2">Care Quality Potential</p>
                       
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
@@ -1871,7 +1871,7 @@ export default function ExploreDocQuality({
               {isNursing ? (
                 <>
                   <div className="text-center mb-4">
-                    <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
                       Time Savings Value
                     </p>
                     <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
@@ -1884,20 +1884,20 @@ export default function ExploreDocQuality({
                     <>
                       <div className="h-px bg-[#333333] my-4" />
                       <div className="text-center mb-4 p-3 border border-dashed border-[#EA2C00]/30 rounded-lg bg-[#EA2C00]/5">
-                        <p className="text-[10px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-1">
+                        <p className="text-[12px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-1">
                           + Potential Value
                         </p>
                         <p className="text-xl font-bold text-[#EA2C00]/80">
                           {formatCurrency(Math.round(nursingCareQualityPotential))}
                         </p>
-                        <p className="text-[10px] text-[#666666] mt-1">Harder to attribute to documentation</p>
+                        <p className="text-[12px] text-[#666666] mt-1">Harder to attribute to documentation</p>
                       </div>
                     </>
                   )}
                 </>
               ) : (
                 <div className="text-center mb-4">
-                  <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                  <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
                     Projected Annual Value
                   </p>
                   <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">

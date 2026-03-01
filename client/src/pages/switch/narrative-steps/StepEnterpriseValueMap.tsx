@@ -158,7 +158,7 @@ export default function StepEnterpriseValueMap({
   return (
     <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-center">
-        <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
+        <p className="text-xs text-[#999999] uppercase tracking-widest mb-2">
           Enterprise Value Map
         </p>
         <h1
@@ -223,7 +223,7 @@ export default function StepEnterpriseValueMap({
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] text-[#999999] uppercase tracking-wider">
+                      <span className="text-[12px] text-[#999999] uppercase tracking-wider">
                         Score
                       </span>
                       <span
@@ -247,7 +247,7 @@ export default function StepEnterpriseValueMap({
 
                   <div className="space-y-1.5 mt-auto">
                     <div className="flex items-start gap-1.5">
-                      <span className="text-[10px] text-[#CC2200] font-medium mt-px flex-shrink-0">
+                      <span className="text-[12px] text-[#CC2200] font-medium mt-px flex-shrink-0">
                         BLOCKER
                       </span>
                       <span
@@ -258,7 +258,7 @@ export default function StepEnterpriseValueMap({
                       </span>
                     </div>
                     <div className="flex items-start gap-1.5">
-                      <span className="text-[10px] text-[#0D9488] font-medium mt-px flex-shrink-0">
+                      <span className="text-[12px] text-[#0D9488] font-medium mt-px flex-shrink-0">
                         ACTION
                       </span>
                       <span
@@ -277,10 +277,10 @@ export default function StepEnterpriseValueMap({
           <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-0.5">
+                <p className="text-xs text-[#999999] uppercase tracking-wider mb-0.5">
                   Enterprise Value Capture Score
                 </p>
-                <p className="text-[10px] text-[#999999]">
+                <p className="text-[12px] text-[#999999]">
                   Weighted average across all pillars
                 </p>
               </div>
@@ -321,7 +321,7 @@ export default function StepEnterpriseValueMap({
               {insights.map((insight, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-[#F5F0EB] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-[#EA2C00]">{i + 1}</span>
+                    <span className="text-[12px] font-bold text-[#EA2C00]">{i + 1}</span>
                   </div>
                   <p
                     className="text-sm text-[#666666] leading-relaxed"

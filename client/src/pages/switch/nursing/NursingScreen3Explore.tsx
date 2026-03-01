@@ -118,11 +118,11 @@ function RadioGroup({
 }
 
 function SectionLabel({ text }: { text: string }) {
-  return <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">{text}</p>;
+  return <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#888888] mb-3">{text}</p>;
 }
 
 function BenchmarkPill({ text }: { text: string }) {
-  return <p className="text-[11px] text-[#999999] mt-1.5">{text}</p>;
+  return <p className="text-xs text-[#999999] mt-1.5">{text}</p>;
 }
 
 export default function NursingScreen3Explore({
@@ -149,7 +149,7 @@ export default function NursingScreen3Explore({
         className="flex flex-col lg:flex-row gap-10"
       >
         <motion.div className="flex-1 max-w-[700px]" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             Your Priorities
           </p>
           <h1
@@ -432,16 +432,16 @@ export default function NursingScreen3Explore({
             <div className="space-y-4">
               {selectedPriorities.includes('retention') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Nurse Retention</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Nurse Retention</p>
                   {retentionImpact.totalCost > 0 ? (
                     <div>
                       <p className="text-sm font-bold text-white" data-testid="text-retention-cost">{fmtDollar(retentionImpact.totalCost)} in annual turnover cost at your organization</p>
-                      <p className="text-[11px] text-white/50 mt-1">{retentionImpact.departures} nurses replaced per year at {fmtDollar(inputs.retention.replacementCost)} each</p>
+                      <p className="text-xs text-white/50 mt-1">{retentionImpact.departures} nurses replaced per year at {fmtDollar(inputs.retention.replacementCost)} each</p>
                       {inputs.retention.interventions.length > 0 && (
-                        <p className="text-[11px] text-white/40 mt-0.5">{inputs.retention.interventions.length} intervention(s) active</p>
+                        <p className="text-xs text-white/40 mt-0.5">{inputs.retention.interventions.length} intervention(s) active</p>
                       )}
-                      <p className="text-[10px] text-white/30 font-mono mt-2">departures = {baseline.nurseFTEs} x {inputs.retention.turnoverRate}%</p>
-                      <p className="text-[10px] text-white/30 font-mono">totalCost = {retentionImpact.departures} x {fmtDollar(inputs.retention.replacementCost)}</p>
+                      <p className="text-[12px] text-white/30 font-mono mt-2">departures = {baseline.nurseFTEs} x {inputs.retention.turnoverRate}%</p>
+                      <p className="text-[12px] text-white/30 font-mono">totalCost = {retentionImpact.departures} x {fmtDollar(inputs.retention.replacementCost)}</p>
                     </div>
                   ) : (
                     <p className="text-xs text-white/40 italic">Enter turnover rate and cost to see impact</p>
@@ -451,7 +451,7 @@ export default function NursingScreen3Explore({
 
               {selectedPriorities.includes('staffingCosts') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Staffing Costs</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Staffing Costs</p>
                   {(otNarrative || staffingImpact.annualAgency > 0) ? (
                     <div>
                       {otNarrative && (
@@ -469,7 +469,7 @@ export default function NursingScreen3Explore({
 
               {selectedPriorities.includes('wellbeing') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Nurse Wellbeing</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Nurse Wellbeing</p>
                   {inputs.wellbeing.pressures.length > 0 ? (
                     <div>
                       <p className="text-xs text-white/70">{inputs.wellbeing.pressures.length} area(s) where wellbeing pressure is visible</p>
@@ -477,7 +477,7 @@ export default function NursingScreen3Explore({
                         <p className="text-xs text-white/50 mt-1">Survey findings: {inputs.wellbeing.surveyFindings.length} finding(s)</p>
                       )}
                       {inputs.wellbeing.surveyStatus === '' && (
-                        <p className="text-[11px] text-white/30 mt-1">A structured survey would establish a baseline for understanding the scope.</p>
+                        <p className="text-xs text-white/30 mt-1">A structured survey would establish a baseline for understanding the scope.</p>
                       )}
                     </div>
                   ) : (
@@ -488,12 +488,12 @@ export default function NursingScreen3Explore({
 
               {selectedPriorities.includes('bedsidePresence') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Bedside Presence</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Bedside Presence</p>
                   {bedsideImpact.annualDocHours > 0 ? (
                     <div>
                       <p className="text-sm font-bold text-white" data-testid="text-annual-doc-hours">{bedsideImpact.annualDocHours.toLocaleString()} hours annually on documentation</p>
-                      <p className="text-[10px] text-white/30 font-mono mt-2">annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 260</p>
-                      <p className="text-[11px] text-white/40 mt-1">Time redirected to the bedside is time redirected to patients.</p>
+                      <p className="text-[12px] text-white/30 font-mono mt-2">annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 260</p>
+                      <p className="text-xs text-white/40 mt-1">Time redirected to the bedside is time redirected to patients.</p>
                     </div>
                   ) : (
                     <p className="text-xs text-white/40 italic">Enter documentation hours per shift</p>
@@ -503,7 +503,7 @@ export default function NursingScreen3Explore({
 
               {selectedPriorities.includes('docQuality') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Documentation Quality</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Documentation Quality</p>
                   {inputs.docQuality.concerns.length > 0 ? (
                     <div>
                       <p className="text-xs text-white/70">{inputs.docQuality.concerns.length} quality concern(s) identified</p>
@@ -519,14 +519,14 @@ export default function NursingScreen3Explore({
 
               {selectedPriorities.includes('futureReadiness') && (
                 <div>
-                  <p className="text-[10px] text-white/40 uppercase tracking-[1.5px] mb-1">Future Readiness</p>
+                  <p className="text-[12px] text-white/40 uppercase tracking-[1.5px] mb-1">Future Readiness</p>
                   {inputs.futureReadiness.initiatives.length > 0 ? (
                     <div>
                       <p className="text-xs text-white/70">{inputs.futureReadiness.initiatives.length} strategic initiative(s)</p>
                       {inputs.futureReadiness.techMaturity && (
                         <p className="text-xs text-white/50 mt-0.5">Technology maturity: {inputs.futureReadiness.techMaturity}</p>
                       )}
-                      <p className="text-[11px] text-white/30 mt-1">Structured, complete documentation is the foundation for every initiative you identified.</p>
+                      <p className="text-xs text-white/30 mt-1">Structured, complete documentation is the foundation for every initiative you identified.</p>
                     </div>
                   ) : (
                     <p className="text-xs text-white/40 italic">Select strategic initiatives</p>
@@ -536,7 +536,7 @@ export default function NursingScreen3Explore({
             </div>
 
             <div className="h-px bg-white/10 my-4" />
-            <p className="text-[10px] text-white/30 italic">Estimates based on your inputs. Individual results vary.</p>
+            <p className="text-[12px] text-white/30 italic">Estimates based on your inputs. Individual results vary.</p>
             <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>

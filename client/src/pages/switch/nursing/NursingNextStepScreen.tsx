@@ -46,7 +46,7 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
         animate="animate"
       >
         <motion.div className="text-center mb-10" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             What Comes Next
           </p>
           <h1

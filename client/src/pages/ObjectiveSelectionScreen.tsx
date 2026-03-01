@@ -1061,7 +1061,7 @@ function ModelSummaryPanel({
         ) : (
           <div className="space-y-5">
             <div>
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wide mb-1.5 font-medium">
+              <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1.5 font-medium">
                 Care Setting
               </p>
               <p className="text-sm font-semibold text-neutral-900">
@@ -1070,7 +1070,7 @@ function ModelSummaryPanel({
             </div>
 
             <div className="border-t border-neutral-100 pt-5">
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wide mb-3 font-medium">
+              <p className="text-xs text-neutral-500 uppercase tracking-wide mb-3 font-medium">
                 Selected Priorities
               </p>
               {selectedLevers.length === 0 ? (
@@ -2577,7 +2577,7 @@ export default function ObjectiveSelectionScreen({
                     <span className={`text-2xl font-bold ${selectedLeverIds.size >= 1 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
                       {selectedLeverIds.size}
                     </span>
-                    <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wide">selected</span>
+                    <span className="text-xs text-[#9CA3AF] uppercase tracking-wide">selected</span>
                   </div>
                   <p className="text-sm text-[#6B7280]">Select 1-{SETTING_CONFIG[selectedSetting]?.length || 6}<br/>priorities</p>
                 </div>
@@ -2773,7 +2773,7 @@ export default function ObjectiveSelectionScreen({
                       </div>
                       <div className="text-center sm:text-left min-w-0">
                         <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.providers}</div>
-                        <div className="text-[10px] sm:text-xs text-neutral-500">providers</div>
+                        <div className="text-[12px] sm:text-xs text-neutral-500">providers</div>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
@@ -2782,7 +2782,7 @@ export default function ObjectiveSelectionScreen({
                       </div>
                       <div className="text-center sm:text-left min-w-0">
                         <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{formatNumber(REFERENCE_SCENARIO.annualVisits)}</div>
-                        <div className="text-[10px] sm:text-xs text-neutral-500">annual visits</div>
+                        <div className="text-[12px] sm:text-xs text-neutral-500">annual visits</div>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3 bg-white rounded-lg px-2 sm:px-4 py-3 border border-slate-100">
@@ -2791,7 +2791,7 @@ export default function ObjectiveSelectionScreen({
                       </div>
                       <div className="text-center sm:text-left min-w-0">
                         <div className="text-base sm:text-xl font-bold text-neutral-900 font-mono">{REFERENCE_SCENARIO.adoptionPercent}%</div>
-                        <div className="text-[10px] sm:text-xs text-neutral-500">adoption</div>
+                        <div className="text-[12px] sm:text-xs text-neutral-500">adoption</div>
                       </div>
                     </div>
                   </div>
@@ -3295,7 +3295,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Early (45%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Pilot units
                                   </span>
                                 </div>
@@ -3311,7 +3311,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Typical (60%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Steady adoption
                                   </span>
                                 </div>
@@ -3327,7 +3327,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Aggressive (75%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Mature deployment
                                   </span>
                                 </div>
@@ -3347,7 +3347,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Early (50%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Pilot / phased rollout
                                   </span>
                                 </div>
@@ -3363,7 +3363,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Typical (65%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Steady adoption with enablement
                                   </span>
                                 </div>
@@ -3379,7 +3379,7 @@ export default function ObjectiveSelectionScreen({
                               >
                                 <div className="flex flex-col items-center">
                                   <span>Aggressive (80%)</span>
-                                  <span className="text-[10px] mt-0.5 opacity-70">
+                                  <span className="text-[12px] mt-0.5 opacity-70">
                                     Mature deployment
                                   </span>
                                 </div>

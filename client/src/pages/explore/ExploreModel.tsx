@@ -854,7 +854,7 @@ export default function ExploreModel({
                   <Users className="w-4 h-4 text-[#EA2C00]" />
                   <div className="text-left">
                     <p className="text-sm font-semibold text-neutral-900">Practice</p>
-                    <p className="text-[11px] text-neutral-500">
+                    <p className="text-xs text-neutral-500">
                       {isNursing
                         ? `${formatNumber(state.nursingStaffedBeds)} beds · ${formatNumber(state.numberOfProviders)} FTEs`
                         : `${formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.encountersPerProvider)} enc/yr`}
@@ -877,7 +877,7 @@ export default function ExploreModel({
                       {isNursing ? (
                         <>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Staffed Beds</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Staffed Beds</label>
                             <FormattedNumberInput
                               value={state.nursingStaffedBeds}
                               onChange={(v) => updateState({ nursingStaffedBeds: Math.max(v, 1) })}
@@ -886,7 +886,7 @@ export default function ExploreModel({
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Nurse FTEs</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Nurse FTEs</label>
                             <FormattedNumberInput
                               value={state.numberOfProviders}
                               onChange={(v) => updateState({ numberOfProviders: Math.max(v, 1) })}
@@ -898,7 +898,7 @@ export default function ExploreModel({
                       ) : (
                         <>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Providers</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Providers</label>
                             <FormattedNumberInput
                               value={state.numberOfProviders}
                               onChange={(v) => {
@@ -910,7 +910,7 @@ export default function ExploreModel({
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Encounters / Provider / Year</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Encounters / Provider / Year</label>
                             <FormattedNumberInput
                               value={state.encountersPerProvider}
                               onChange={(v) => {
@@ -922,7 +922,7 @@ export default function ExploreModel({
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Utilization %</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Utilization %</label>
                             <FormattedNumberInput
                               value={state.utilizationPercent}
                               onChange={(v) => updateState({ utilizationPercent: Math.min(Math.max(v, 1), 100) })}
@@ -949,7 +949,7 @@ export default function ExploreModel({
                   <Clock className="w-4 h-4 text-[#EA2C00]" />
                   <div className="text-left">
                     <p className="text-sm font-semibold text-neutral-900">Time Savings</p>
-                    <p className="text-[11px] text-neutral-500">{state.minutesSavedPerEncounter} min/encounter saved</p>
+                    <p className="text-xs text-neutral-500">{state.minutesSavedPerEncounter} min/encounter saved</p>
                   </div>
                 </div>
                 {expandedPanel === 'time' ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
@@ -966,7 +966,7 @@ export default function ExploreModel({
                     <div className="px-4 pb-4 space-y-3">
                       <div className="h-px bg-neutral-200" />
                       <div>
-                        <label className="block text-[10px] text-neutral-500 mb-1">Minutes Saved / Encounter</label>
+                        <label className="block text-[12px] text-neutral-500 mb-1">Minutes Saved / Encounter</label>
                         <FormattedNumberInput
                           value={state.minutesSavedPerEncounter}
                           onChange={(v) => updateState({ minutesSavedPerEncounter: Math.max(v, 0) })}
@@ -974,7 +974,7 @@ export default function ExploreModel({
                           data-testid="input-quick-minutes"
                         />
                       </div>
-                      <p className="text-[10px] text-neutral-400 italic">
+                      <p className="text-[12px] text-neutral-400 italic">
                         {formatNumber(totalHoursSaved)} total hours saved/year
                       </p>
                     </div>
@@ -994,7 +994,7 @@ export default function ExploreModel({
                   <DollarSign className="w-4 h-4 text-[#EA2C00]" />
                   <div className="text-left">
                     <p className="text-sm font-semibold text-neutral-900">Investment</p>
-                    <p className="text-[11px] text-neutral-500">{formatCurrency(annualInvestment)}/yr</p>
+                    <p className="text-xs text-neutral-500">{formatCurrency(annualInvestment)}/yr</p>
                   </div>
                 </div>
                 {expandedPanel === 'investment' ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
@@ -1012,7 +1012,7 @@ export default function ExploreModel({
                       <div className="h-px bg-neutral-200" />
                       {state.pricingModel === 'perProvider' ? (
                         <div>
-                          <label className="block text-[10px] text-neutral-500 mb-1">
+                          <label className="block text-[12px] text-neutral-500 mb-1">
                             {isNursing ? '$ / Bed / Month' : '$ / Provider / Month'}
                           </label>
                           <FormattedNumberInput
@@ -1025,7 +1025,7 @@ export default function ExploreModel({
                         </div>
                       ) : (
                         <div>
-                          <label className="block text-[10px] text-neutral-500 mb-1">Annual License Fee</label>
+                          <label className="block text-[12px] text-neutral-500 mb-1">Annual License Fee</label>
                           <FormattedNumberInput
                             value={state.annualLicenseFee}
                             onChange={(v) => updateState({ annualLicenseFee: Math.max(v, 0) })}
@@ -1036,7 +1036,7 @@ export default function ExploreModel({
                         </div>
                       )}
                       <div>
-                        <label className="block text-[10px] text-neutral-500 mb-1">Implementation Fee</label>
+                        <label className="block text-[12px] text-neutral-500 mb-1">Implementation Fee</label>
                         <FormattedNumberInput
                           value={state.implementationFee}
                           onChange={(v) => updateState({ implementationFee: Math.max(v, 0) })}
@@ -1053,7 +1053,7 @@ export default function ExploreModel({
           </div>
 
           {onStepClick && (
-            <p className="text-[10px] text-neutral-400 text-center mt-3 italic">
+            <p className="text-[12px] text-neutral-400 text-center mt-3 italic">
               For driver selections and detailed inputs, click any step dot above to jump back.
             </p>
           )}
@@ -1556,7 +1556,7 @@ export default function ExploreModel({
                     variant={selectedPace === pace ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setSelectedPace(pace)}
-                    className={`rounded-full ${
+                    className={`rounded-full min-h-[40px] min-w-[52px] ${
                       selectedPace === pace 
                         ? "bg-[#EA2C00] text-white" 
                         : "bg-[#F5F0EB] text-[#888888]"
@@ -1844,7 +1844,7 @@ export default function ExploreModel({
           </AnimatePresence>
         </motion.div>
 
-        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-8 mb-4 text-center max-w-2xl mx-auto">
+        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-8 mb-4 text-center max-w-2xl mx-auto">
           Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
         </p>
 

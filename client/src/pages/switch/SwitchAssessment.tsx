@@ -560,19 +560,19 @@ export default function SwitchAssessment({
               <div className="relative h-8 rounded-lg overflow-hidden bg-gradient-to-r from-red-100 via-yellow-100 via-green-100 to-emerald-200">
                 <div className="absolute inset-0 flex">
                   <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 40%' }}>
-                    <span className="text-[10px] font-medium text-slate-600">Under 40%</span>
+                    <span className="text-[12px] font-medium text-slate-600">Under 40%</span>
                     <span className="text-[9px] text-slate-500">Early Stage</span>
                   </div>
                   <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
-                    <span className="text-[10px] font-medium text-slate-600">40-60%</span>
+                    <span className="text-[12px] font-medium text-slate-600">40-60%</span>
                     <span className="text-[9px] text-slate-500">Developing</span>
                   </div>
                   <div className="flex-1 border-r border-white/50 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
-                    <span className="text-[10px] font-medium text-slate-600">60-80%</span>
+                    <span className="text-[12px] font-medium text-slate-600">60-80%</span>
                     <span className="text-[9px] text-slate-500">Optimized</span>
                   </div>
                   <div className="flex-1 flex flex-col justify-center px-2" style={{ flex: '0 0 20%' }}>
-                    <span className="text-[10px] font-medium text-slate-600">80%+</span>
+                    <span className="text-[12px] font-medium text-slate-600">80%+</span>
                     <span className="text-[9px] text-slate-500">Transformed</span>
                   </div>
                 </div>
@@ -581,7 +581,7 @@ export default function SwitchAssessment({
                     className="absolute top-0 bottom-0 w-1 bg-[#111827] rounded-full shadow-md transition-all duration-500"
                     style={{ left: `${Math.min(99, calculations.realizationScore)}%` }}
                   >
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#111827] text-white text-[12px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
                       You: {calculations.realizationScore}%
                     </div>
                   </div>

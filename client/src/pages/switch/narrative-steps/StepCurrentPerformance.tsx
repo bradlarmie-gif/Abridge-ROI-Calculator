@@ -243,7 +243,7 @@ export default function StepCurrentPerformance({
 
   return (
     <div className="max-w-[560px] mx-auto py-20 md:py-20" style={{ fontFamily: "Manrope, sans-serif" }}>
-      <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step3-eyebrow">
+      <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step3-eyebrow">
         Current Performance
       </p>
 

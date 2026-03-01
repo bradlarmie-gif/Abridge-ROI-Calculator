@@ -111,7 +111,7 @@ function CompactMetric({
       <div className="flex items-center gap-2 mb-2">
         <Icon className="w-3.5 h-3.5 text-[#EA2C00] shrink-0" />
         <span className="text-xs font-medium text-[#1A1A1A]">{metric.label}</span>
-        <span className="text-[10px] text-[#999] ml-auto">{metric.description}</span>
+        <span className="text-[12px] text-[#999] ml-auto">{metric.description}</span>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-1.5">
@@ -123,7 +123,7 @@ function CompactMetric({
               type="button"
               onClick={() => { setShowSlider(false); onChange(p.value); }}
               data-testid={`${metric.testId}-preset-${p.value}`}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+              className={`px-2 py-0.5 rounded text-xs font-medium transition-all ${
                 isActive
                   ? "bg-[#EA2C00] text-white"
                   : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30"
@@ -137,7 +137,7 @@ function CompactMetric({
           type="button"
           onClick={() => setShowSlider(true)}
           data-testid={`${metric.testId}-custom`}
-          className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+          className={`px-2 py-0.5 rounded text-xs font-medium transition-all ${
             showSlider
               ? "bg-[#EA2C00] text-white"
               : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30"
@@ -190,7 +190,7 @@ export default function OperationalPerformanceSnapshot({
             <h2 className="text-lg font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight" data-testid="text-snapshot-title">
               Operational Performance Snapshot
             </h2>
-            <p className="text-[11px] text-[#999] mt-0.5">
+            <p className="text-xs text-[#999] mt-0.5">
               These inputs refine pillar modeling. They do not determine enterprise value directly.
             </p>
           </div>
@@ -217,7 +217,7 @@ export default function OperationalPerformanceSnapshot({
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#E5E7EB] flex items-center justify-between">
-            <p className="text-[10px] text-[#BBB]">
+            <p className="text-[12px] text-[#BBB]">
               Values feed into capacity, yield, and workforce calculations.
             </p>
             <button

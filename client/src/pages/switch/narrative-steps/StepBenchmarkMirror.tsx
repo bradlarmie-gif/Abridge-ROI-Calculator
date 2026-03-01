@@ -99,7 +99,7 @@ export default function StepBenchmarkMirror({
                 className="border border-[#E8E8E8] rounded-xl p-7"
                 style={{ backgroundColor: tier.bg }}
               >
-                <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-2">
+                <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-2">
                   {tier.label}
                 </p>
                 <h3 className="text-[20px] font-bold text-[#1A1A1A] mb-3">

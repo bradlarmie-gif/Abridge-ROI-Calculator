@@ -66,7 +66,7 @@ function BenchmarkCard({
           <span className="text-3xl md:text-4xl font-bold text-[#1A1A1A] leading-none">
             {prefix}{currentValue}{unit}
           </span>
-          <p className="text-[10px] text-[#999999] uppercase tracking-wider mt-1">Current</p>
+          <p className="text-[12px] text-[#999999] uppercase tracking-wider mt-1">Current</p>
         </div>
       </div>
 
@@ -227,7 +227,7 @@ export default function StepWhatGoodLooksLike({
               <Target className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-0.5">
+              <p className="text-xs font-medium text-[#999999] uppercase tracking-wider mb-0.5">
                 Your Position
               </p>
               <p className="text-xs text-[#999999]">
@@ -239,12 +239,12 @@ export default function StepWhatGoodLooksLike({
           <div className="flex items-center gap-3">
             <div className="text-center px-4 py-2 bg-[#E8F5E9] rounded-lg border border-[#C8E6C9]">
               <span className="text-xl font-bold text-[#2E7D32]">{inRangeCount}</span>
-              <p className="text-[10px] text-[#2E7D32] uppercase tracking-wider">In Range</p>
+              <p className="text-[12px] text-[#2E7D32] uppercase tracking-wider">In Range</p>
             </div>
             {belowRangeCount > 0 && (
               <div className="text-center px-4 py-2 bg-white rounded-lg border border-[#E5E7EB]">
                 <span className="text-xl font-bold text-[#C54B2A]">{belowRangeCount}</span>
-                <p className="text-[10px] text-[#C54B2A] uppercase tracking-wider">Opportunities</p>
+                <p className="text-[12px] text-[#C54B2A] uppercase tracking-wider">Opportunities</p>
               </div>
             )}
           </div>

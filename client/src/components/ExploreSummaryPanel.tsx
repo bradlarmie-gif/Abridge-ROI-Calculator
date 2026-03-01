@@ -55,7 +55,7 @@ export function ExploreSummaryPanel({
     <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
       {/* Header */}
       <div className="mb-4">
-        <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+        <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
           {title}
         </p>
         {subtitle && (
@@ -83,7 +83,7 @@ export function ExploreSummaryPanel({
           <div className="h-px bg-[#333333] my-4" />
           <div className="text-center my-4">
             {heroLabel && (
-              <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+              <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
                 {heroLabel}
               </p>
             )}
@@ -197,7 +197,7 @@ interface SummaryHighlightBoxProps {
 export function SummaryHighlightBox({ label, value }: SummaryHighlightBoxProps) {
   return (
     <div className="bg-[#2A2A2A] rounded-lg p-4 text-center border border-[#EA2C00]/30">
-      <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+      <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
         {label}
       </p>
       <p className="text-2xl font-bold text-[#EA2C00]">{value}</p>

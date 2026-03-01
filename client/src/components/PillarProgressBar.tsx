@@ -86,7 +86,7 @@ function Phase2Progress({
                 {pillar.letter}
               </div>
               <span
-                className={`text-[10px] font-medium transition-colors duration-300 ${
+                className={`text-[12px] font-medium transition-colors duration-300 ${
                   isActive
                     ? "text-[#EA2C00]"
                     : isCompleted

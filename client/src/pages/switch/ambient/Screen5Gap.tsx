@@ -448,7 +448,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
               Value at a Glance
             </p>
 
@@ -475,19 +475,19 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                     <p className="text-white font-bold text-lg leading-none" data-testid="value-monthly">
                       ${displayedMonthly.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
                   </div>
                   <div>
                     <p className="text-white font-bold text-lg leading-none" data-testid="value-weekly">
                       ${displayedWeekly.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
+                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
                   </div>
                   <div>
                     <p className="text-white font-bold text-lg leading-none" data-testid="value-daily">
                       ${displayedDaily.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
                 </div>
               </>
@@ -495,7 +495,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               With Strategic Action
             </p>
             <p className="font-bold text-2xl text-white leading-none mb-1" data-testid="panel-strategic-value">
@@ -510,7 +510,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               Cost of Waiting
             </p>
             <div className="space-y-3">
@@ -536,7 +536,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               Domain Values
             </p>
             <div className="space-y-2">

@@ -221,11 +221,11 @@ export default function InvestmentPage({
         </motion.div>
 
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             
             {/* Left Column - Configuration */}
             <motion.div 
-              className="lg:col-span-3 space-y-6"
+              className="md:col-span-3 space-y-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
@@ -410,7 +410,7 @@ export default function InvestmentPage({
 
             {/* Right Column - Live ROI Receipt */}
             <motion.div
-              className="lg:col-span-2"
+              className="md:col-span-2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}

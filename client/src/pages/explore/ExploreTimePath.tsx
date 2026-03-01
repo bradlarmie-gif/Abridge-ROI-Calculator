@@ -283,7 +283,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                               {scenario.label}
                             </h3>
                             {scenario.recommended && (
-                              <span className="px-1.5 md:px-2 py-0.5 text-[8px] md:text-[10px] font-semibold uppercase tracking-wide bg-[#EA2C00]/10 text-[#EA2C00] rounded">
+                              <span className="px-1.5 md:px-2 py-0.5 text-[8px] md:text-[12px] font-semibold uppercase tracking-wide bg-[#EA2C00]/10 text-[#EA2C00] rounded">
                                 Recommended
                               </span>
                             )}
@@ -301,7 +301,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                           <div className="text-2xl md:text-3xl font-bold text-[#EA2C00]">
                             {scenario.minutes}
                           </div>
-                          <p className="text-[10px] md:text-xs text-slate-400 font-medium">
+                          <p className="text-[12px] md:text-xs text-slate-400 font-medium">
                             {isNursing ? 'min/shift' : 'min saved'}
                           </p>
                         </div>

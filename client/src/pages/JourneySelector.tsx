@@ -63,13 +63,13 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-center mb-8 md:mb-10 text-[11px] uppercase text-[#999999] font-medium"
+            className="text-center mb-8 md:mb-10 text-xs uppercase text-[#999999] font-medium"
             style={{ letterSpacing: '3px' }}
           >
             What brings you here today?
           </motion.p>
 
-          {proformaCount && proformaCount > 0 && onOpenProforma && (
+          {proformaCount != null && proformaCount > 0 && onOpenProforma && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -238,7 +238,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <p className="text-[10px] text-[#999999]">
+          <p className="text-[12px] text-[#999999]">
             Estimates are for planning purposes. Results should be validated with your organization's data.
           </p>
         </motion.footer>

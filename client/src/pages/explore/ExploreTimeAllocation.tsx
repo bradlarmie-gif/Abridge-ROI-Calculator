@@ -1656,7 +1656,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
                     <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
-                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                      <span className={`text-[12px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
                         ({t.description})
                       </span>
                     </span>
@@ -1769,7 +1769,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
                     <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
-                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                      <span className={`text-[12px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
                         ({t.description})
                       </span>
                     </span>
@@ -1925,7 +1925,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
                     <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
-                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                      <span className={`text-[12px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
                         ({t.description})
                       </span>
                     </span>
@@ -2297,7 +2297,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === NURSING_WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
                     <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
-                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                      <span className={`text-[12px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
                         ({t.description})
                       </span>
                     </span>
@@ -2600,7 +2600,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                             <div className="flex items-center gap-2">
                               <h3 className="font-bold text-black">{option.label}</h3>
                               {isWellbeing && (
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${wellbeingCalculation.threshold.bgColor} ${wellbeingCalculation.threshold.color}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-[12px] font-bold ${wellbeingCalculation.threshold.bgColor} ${wellbeingCalculation.threshold.color}`}>
                                   {wellbeingCalculation.threshold.label}
                                 </span>
                               )}

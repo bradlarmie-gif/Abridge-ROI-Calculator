@@ -334,7 +334,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
               Documentation Intelligence Score
             </p>
 
@@ -386,7 +386,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               Domain Scores
             </p>
             <div className="space-y-2.5">

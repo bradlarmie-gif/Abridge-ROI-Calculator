@@ -147,7 +147,7 @@ export default function StepTheMath({
   return (
     <div className={`space-y-8 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
+        <p className="text-xs text-[#999999] uppercase tracking-widest mb-2">
           3-Year Enterprise Projection
         </p>
         <h1
@@ -162,7 +162,7 @@ export default function StepTheMath({
       </div>
 
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6" data-testid="section-current-cost">
-        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+        <p className="text-[12px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
           What are you paying today?
         </p>
         <p className="text-sm text-[#666] mb-4">
@@ -287,30 +287,30 @@ export default function StepTheMath({
 
         <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[#E8E0D8]">
           <div className="text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">Year 1</p>
+            <p className="text-[12px] text-[#999999] uppercase tracking-wider mb-1">Year 1</p>
             <p className="text-lg font-bold text-[#1A1A1A] tabular-nums" data-testid="value-y1">
               {formatCurrency(projection.year1)}
             </p>
-            <p className="text-[10px] text-[#999999]">Adoption ramp 25-85%</p>
+            <p className="text-[12px] text-[#999999]">Adoption ramp 25-85%</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">Year 2</p>
+            <p className="text-[12px] text-[#999999] uppercase tracking-wider mb-1">Year 2</p>
             <p className="text-lg font-bold text-[#1A1A1A] tabular-nums" data-testid="value-y2">
               {formatCurrency(projection.year2)}
             </p>
-            <p className="text-[10px] text-[#999999]">Full run-rate</p>
+            <p className="text-[12px] text-[#999999]">Full run-rate</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">Year 3</p>
+            <p className="text-[12px] text-[#999999] uppercase tracking-wider mb-1">Year 3</p>
             <p className="text-lg font-bold text-[#EA2C00] tabular-nums" data-testid="value-y3">
               {formatCurrency(projection.year3)}
             </p>
-            <p className="text-[10px] text-[#999999]">108% maturity uplift</p>
+            <p className="text-[12px] text-[#999999]">108% maturity uplift</p>
           </div>
         </div>
 
         <div className="mt-3 pt-3 border-t border-[#E8E0D8] text-center">
-          <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">3-Year Cumulative</p>
+          <p className="text-[12px] text-[#999999] uppercase tracking-wider mb-1">3-Year Cumulative</p>
           <p className="text-2xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-cumulative">
             {formatCurrency(projection.cumulative)}
           </p>
@@ -326,7 +326,7 @@ export default function StepTheMath({
       </div>
 
       <section data-testid="cost-of-waiting-section">
-        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+        <p className="text-[12px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
           The Cost of Waiting
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -334,7 +334,7 @@ export default function StepTheMath({
             className="bg-[#F5F0EB] rounded-xl border border-[#E8E0D8] p-5 text-center"
             data-testid="card-act-now"
           >
-            <p className="text-[10px] text-[#EA2C00] uppercase tracking-widest font-bold mb-3">
+            <p className="text-[12px] text-[#EA2C00] uppercase tracking-widest font-bold mb-3">
               Act Now
             </p>
             <p className="text-3xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-act-now">
@@ -347,7 +347,7 @@ export default function StepTheMath({
             className="bg-white rounded-xl border border-[#E5E7EB] p-5 text-center"
             data-testid="card-wait-6"
           >
-            <p className="text-[10px] text-[#999999] uppercase tracking-widest font-medium mb-3">
+            <p className="text-[12px] text-[#999999] uppercase tracking-widest font-medium mb-3">
               Wait 6 Months
             </p>
             <p className="text-3xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-wait-6">
@@ -362,7 +362,7 @@ export default function StepTheMath({
             className="bg-white rounded-xl border border-[#E5E7EB] p-5 text-center"
             data-testid="card-wait-12"
           >
-            <p className="text-[10px] text-[#999999] uppercase tracking-widest font-medium mb-3">
+            <p className="text-[12px] text-[#999999] uppercase tracking-widest font-medium mb-3">
               Wait 12 Months
             </p>
             <p className="text-3xl font-bold text-[#1A1A1A] tabular-nums" data-testid="value-wait-12">
@@ -393,7 +393,7 @@ export default function StepTheMath({
           <div className="px-4 md:px-5 pb-4 md:pb-5 pt-0 space-y-5 border-t border-[#E5E7EB]" data-testid="methodology-content">
             <div className="pt-4 space-y-4">
               <div>
-                <p className="text-[10px] text-[#999999] uppercase tracking-wider font-medium mb-2">
+                <p className="text-[12px] text-[#999999] uppercase tracking-wider font-medium mb-2">
                   S-Curve Adoption Model
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-2 text-sm font-mono">
@@ -413,7 +413,7 @@ export default function StepTheMath({
               </div>
 
               <div>
-                <p className="text-[10px] text-[#999999] uppercase tracking-wider font-medium mb-2">
+                <p className="text-[12px] text-[#999999] uppercase tracking-wider font-medium mb-2">
                   Projection with Immediate Action
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-2 text-sm font-mono">
@@ -435,7 +435,7 @@ export default function StepTheMath({
               </div>
 
               <div>
-                <p className="text-[10px] text-[#999999] uppercase tracking-wider font-medium mb-2">
+                <p className="text-[12px] text-[#999999] uppercase tracking-wider font-medium mb-2">
                   Delay Shifts the Adoption Curve Forward
                 </p>
                 <div className="bg-[#F5F0EB] rounded-lg border border-[#E8E0D8] p-4 space-y-3 text-sm font-mono">

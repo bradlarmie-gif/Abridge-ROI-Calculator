@@ -6342,7 +6342,7 @@ export default function ModelBuilder({
                         : "eligible encounters/year"
                     }
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                  <p className="text-[12px] text-slate-400 mt-1 font-mono">
                     {isNursingSetting 
                       ? `${staffedBeds} beds · ${nursingOccupancyRate}% occ · ${eventsPerPatientDay} events/day`
                       : `${providers} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} · ${encounters.toLocaleString()} ${isInpatientSetting ? "adm" : "enc"} · ${utilizationRate}%`
@@ -6614,7 +6614,7 @@ export default function ModelBuilder({
                         : "eligible encounters/year"
                     }
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                  <p className="text-[12px] text-slate-400 mt-1 font-mono">
                     {isNursingSetting 
                       ? `${staffedBeds} beds · ${nursingOccupancyRate}% occ · ${eventsPerPatientDay} events/day`
                       : `${providers} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} · ${encounters.toLocaleString()} ${isInpatientSetting ? "adm" : "enc"} · ${utilizationRate}%`

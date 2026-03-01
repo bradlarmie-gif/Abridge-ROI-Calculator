@@ -250,7 +250,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           transition={{ delay: 0.1 }}
           data-testid="section-story-callout"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
             The Story
           </p>
           <p className="text-xl font-bold text-[#1A1A1A] leading-relaxed mb-3">
@@ -268,7 +268,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           transition={{ delay: 0.15 }}
           data-testid="section-results"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
             Your Results
           </p>
 
@@ -346,7 +346,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             transition={{ delay: 0.18 }}
             data-testid="section-custom-metrics"
           >
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
               Additional Metrics
             </p>
             {(state.customMetrics || [])
@@ -382,7 +382,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           transition={{ delay: 0.2 }}
           data-testid="section-expansion"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-4">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-4">
             What's Next
           </p>
 
@@ -391,7 +391,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Deepen</p>
               <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} {state.expansionTargets?.targetAdoption ?? 85}% adoption</p>
               <p className="text-lg font-bold text-[#EA2C00]">+{formatCurrency(results.expansion.deepenAdditionalValue)} / year</p>
-              <p className="text-[10px] text-[#999999] mt-1">No additional cost</p>
+              <p className="text-[12px] text-[#999999] mt-1">No additional cost</p>
             </div>
             <div className="bg-white rounded-lg p-4">
               <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Expand</p>
@@ -514,7 +514,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
         </motion.div>
 
         <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
-          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+          <p className="text-xs text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
             Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
           </p>
         </div>

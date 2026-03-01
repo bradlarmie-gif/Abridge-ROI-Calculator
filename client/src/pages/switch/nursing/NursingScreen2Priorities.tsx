@@ -37,7 +37,7 @@ export default function NursingScreen2Priorities({
         className="flex flex-col lg:flex-row gap-10"
       >
         <motion.div className="flex-1 max-w-[700px]" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             Strategic Priorities
           </p>
           <h1
@@ -118,7 +118,7 @@ export default function NursingScreen2Priorities({
                 {selectedPriorities.length} {selectedPriorities.length === 1 ? 'priority' : 'priorities'} selected
               </span>
             </div>
-            <span className="text-[10px] text-white/40 uppercase tracking-wider">of 6</span>
+            <span className="text-[12px] text-white/40 uppercase tracking-wider">of 6</span>
           </motion.div>
         )}
 

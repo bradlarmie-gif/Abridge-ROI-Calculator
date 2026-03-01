@@ -128,7 +128,7 @@ export default function ExplorePractice({
               transition={{ delay: 0.1 }}
             >
               <div className="mb-8">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Deployment Size
                 </p>
                 <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -149,7 +149,7 @@ export default function ExplorePractice({
               </div>
 
               <div className="mb-8">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Encounter Volume
                 </p>
                 <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -212,7 +212,7 @@ export default function ExplorePractice({
               </div>
 
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Expected Utilization
                 </p>
                 <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -275,7 +275,7 @@ export default function ExplorePractice({
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                   Your Baseline
                 </p>
                 <p className="text-sm text-[#888888] mt-1">Practice summary</p>
@@ -311,7 +311,7 @@ export default function ExplorePractice({
               <div className="h-px bg-[#333333] my-4" />
 
               <div className="text-center my-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Eligible Encounters
                 </p>
                 <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">

@@ -1389,7 +1389,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   >
                     <span>{setting.label}</span>
                     {!setting.available && (
-                      <span className="text-[11px] text-neutral-400 mt-0.5">Coming Soon</span>
+                      <span className="text-xs text-neutral-400 mt-0.5">Coming Soon</span>
                     )}
                   </button>
                 ))}

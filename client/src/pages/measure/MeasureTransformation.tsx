@@ -60,7 +60,7 @@ function ComparisonCard({
 
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">Before</span>
+          <span className="text-xs font-semibold text-[#888888] w-14 uppercase tracking-[1px]">Before</span>
           <div className="flex-1 h-8 bg-[#F5F5F5] rounded overflow-hidden relative">
             <motion.div 
               className="h-full bg-[#D1D5DB] rounded flex items-center px-3"
@@ -75,7 +75,7 @@ function ComparisonCard({
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
+          <span className="text-xs font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
           <div className="flex-1 h-8 bg-[#FFF5F2] rounded overflow-hidden relative">
             <motion.div 
               className="h-full bg-[#EA2C00] rounded flex items-center px-3"
@@ -171,23 +171,23 @@ export default function MeasureTransformation({
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Providers</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Providers</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : isNursing ? "Shifts" : "Encounters"}</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : isNursing ? "Shifts" : "Encounters"}</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{hoursPerProvider} hrs</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Saved Per Provider</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Saved Per Provider</p>
             </div>
           </div>
         </motion.div>
@@ -466,14 +466,14 @@ export default function MeasureTransformation({
                       <p className="text-sm font-medium text-[#1A1A1A] mb-3">{cm.label}</p>
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-[#999999] uppercase tracking-[1px] w-16 flex-shrink-0">Before</span>
+                          <span className="text-[12px] text-[#999999] uppercase tracking-[1px] w-16 flex-shrink-0">Before</span>
                           <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
                             <div className="bg-[#CCCCCC] h-full rounded-full" style={{ width: `${beforeWidth}%` }} />
                           </div>
                           <span className="text-sm text-[#999999] w-16 text-right">{cm.before}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-[#EA2C00] uppercase tracking-[1px] w-16 flex-shrink-0">After</span>
+                          <span className="text-[12px] text-[#EA2C00] uppercase tracking-[1px] w-16 flex-shrink-0">After</span>
                           <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
                             <div className="bg-[#EA2C00] h-full rounded-full" style={{ width: `${afterWidth}%` }} />
                           </div>

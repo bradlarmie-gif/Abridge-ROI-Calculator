@@ -377,7 +377,7 @@ export default function ExploreValueDrivers({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
             How to Use This Section
           </p>
           <p className="text-sm text-black leading-relaxed">
@@ -399,7 +399,7 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.15 }}
         >
           <div>
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               VALUE DRIVERS
             </p>
             <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -458,7 +458,7 @@ export default function ExploreValueDrivers({
                     Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
@@ -500,7 +500,7 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
@@ -719,13 +719,13 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
                     When nurses spend less time documenting, they're more likely to finish their shift on time. 
                     Not all time saved converts to OT reduction—some goes to care, some to efficiency—but a portion does.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME-TO-OT CONVERSION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME-TO-OT CONVERSION</p>
                   <p className="text-sm text-[#888888] mb-3">What percentage of time saved could realistically reduce overtime?</p>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {[
@@ -752,7 +752,7 @@ export default function ExploreValueDrivers({
                     Most organizations see 15-30% of documentation time savings convert to OT reduction. The rest goes to care time or operational efficiency.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                   <div className="space-y-2.5 mb-6">
                     <label className="text-sm text-[#888888]">Average OT hourly rate</label>
                     <div className="relative">
@@ -766,7 +766,7 @@ export default function ExploreValueDrivers({
                     <p className="text-xs text-[#888888]">1.5x base rate is typical. Adjust based on your blended OT rate.</p>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
@@ -1003,7 +1003,7 @@ export default function ExploreValueDrivers({
                         Some recovered LWBS patients require admission. Better documentation supports DRG capture for these admissions.
                       </p>
 
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
 
                       <div className="bg-[#F5F0EB] rounded-lg p-4">
                         <div className="space-y-2 text-sm">
@@ -1133,13 +1133,13 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
                     Documentation burden is a leading contributor to nurse burnout and turnover. 
                     Of nurses who leave, roughly 40% cite burnout-related reasons. Reducing charting time directly addresses this driver.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Annual turnover rate</label>
@@ -1167,7 +1167,7 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">ABRIDGE IMPACT ON RETENTION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">ABRIDGE IMPACT ON RETENTION</p>
                   <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {[
@@ -1194,7 +1194,7 @@ export default function ExploreValueDrivers({
                     Applied to the 40% of departures that are burnout-related.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
@@ -1291,7 +1291,7 @@ export default function ExploreValueDrivers({
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                     The Retention Case
                   </p>
 
@@ -1328,7 +1328,7 @@ export default function ExploreValueDrivers({
                       >
                         <div className="h-px bg-[#E5E5E5] mb-6" />
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                           Your Organization
                         </p>
 
@@ -1379,7 +1379,7 @@ export default function ExploreValueDrivers({
 
                         <div className="h-px bg-[#E5E5E5] my-4" />
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                           Abridge Impact
                         </p>
 
@@ -1410,7 +1410,7 @@ export default function ExploreValueDrivers({
 
                         {/* Calculation Card */}
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
-                          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                             Calculation
                           </p>
 
@@ -1524,13 +1524,13 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                   <p className="text-sm text-black mb-6">
                     After accounting for OT reduction, the remaining time is returned to direct patient care. 
                     More time at the bedside improves patient outcomes and satisfaction.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">HOW MUCH TIME GOES TO DIRECT CARE?</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">HOW MUCH TIME GOES TO DIRECT CARE?</p>
                   <p className="text-sm text-[#666666] mb-4">
                     Of the time saved (after OT reduction), how much do you expect nurses to dedicate to patient care activities? The remainder is absorbed into operational efficiency.
                   </p>
@@ -1566,7 +1566,7 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME ALLOCATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME ALLOCATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     {(() => {
                       const timeAfterOT = Math.max(0, totalHoursSaved - nursingOtHoursEliminated);
@@ -1600,7 +1600,7 @@ export default function ExploreValueDrivers({
                     })()}
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mt-6 mb-3">WHERE DOES CARE TIME GO?</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-6 mb-3">WHERE DOES CARE TIME GO?</p>
                   <ul className="space-y-2 text-sm text-[#333333] list-disc pl-5 mb-6">
                     <li>Reduced falls through more frequent rounding</li>
                     <li>Fewer pressure injuries with timely assessments</li>
@@ -1629,7 +1629,7 @@ export default function ExploreValueDrivers({
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px flex-1 bg-[#D1D5DB]" />
-            <span className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
+            <span className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
             <div className="h-px flex-1 bg-[#D1D5DB]" />
           </div>
 
@@ -1764,7 +1764,7 @@ export default function ExploreValueDrivers({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE LOGIC</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE LOGIC</p>
                     <p className="text-sm text-black mb-6">
                       When nurses leave, hospitals fill gaps with agency or travel nurses at 2-3x the cost. 
                       Better retention directly reduces this premium labor spend.
@@ -1779,7 +1779,7 @@ export default function ExploreValueDrivers({
                       </div>
                     ) : (
                       <>
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2.5">
                             <label className="text-sm text-[#888888]">Weeks of agency coverage per vacancy</label>
@@ -1806,7 +1806,7 @@ export default function ExploreValueDrivers({
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-2">
@@ -1891,7 +1891,7 @@ export default function ExploreValueDrivers({
                     return (
                       <div className="mb-5">
                         <div className="mb-3">
-                          <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                          <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                             Time Allocation
                           </p>
                         </div>
@@ -1956,7 +1956,7 @@ export default function ExploreValueDrivers({
               
               {/* Header */}
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                   Time Value
                 </p>
                 <p className="text-sm text-[#888888] mt-1">Value summary</p>

@@ -86,7 +86,7 @@ export default function StepTheGap({
           {[1, 2, 3, 4].map((stage) => (
             <div key={stage} className="flex-1">
               <div className={`h-2 rounded-full ${stage <= calculations.maturityStage ? 'bg-[#EA2C00]' : 'bg-[#333333]'}`} />
-              <p className={`text-[10px] mt-2 ${stage <= calculations.maturityStage ? 'text-white' : 'text-[#666666]'}`}>
+              <p className={`text-[12px] mt-2 ${stage <= calculations.maturityStage ? 'text-white' : 'text-[#666666]'}`}>
                 {stage === 1 ? 'Deployed' : stage === 2 ? 'Adopted' : stage === 3 ? 'Optimized' : 'Transformed'}
               </p>
             </div>

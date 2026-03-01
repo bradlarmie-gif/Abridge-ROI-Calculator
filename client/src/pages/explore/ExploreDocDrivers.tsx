@@ -1231,13 +1231,13 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                     <span className="text-slate-400 w-4">├─</span>
                     <span className="text-slate-500">Appealable ({100 - assumptions.unappealableRate}%):</span>
                     <span className="text-slate-600">{Math.round(appealableDenials).toLocaleString()}</span>
-                    <span className="text-slate-400 text-[10px]">← Recovered through appeals</span>
+                    <span className="text-slate-400 text-[12px]">← Recovered through appeals</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-slate-400 w-4">└─</span>
                     <span className="text-[#EA2C00] font-semibold">Unappealable ({assumptions.unappealableRate}%):</span>
                     <span className="text-[#EA2C00] font-semibold">{Math.round(unappealableDenials).toLocaleString()}</span>
-                    <span className="text-[#EA2C00] text-[10px]">← Abridge prevents these</span>
+                    <span className="text-[#EA2C00] text-[12px]">← Abridge prevents these</span>
                   </div>
                 </div>
               </div>

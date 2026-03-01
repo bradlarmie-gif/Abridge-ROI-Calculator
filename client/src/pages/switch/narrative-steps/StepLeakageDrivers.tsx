@@ -232,7 +232,7 @@ export default function StepLeakageDrivers({
   return (
     <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
+        <p className="text-xs text-[#999999] uppercase tracking-widest mb-2">
           Value Capture Diagnostics
         </p>
         <h1
@@ -275,7 +275,7 @@ export default function StepLeakageDrivers({
                 >
                   <Icon className={`w-5 h-5 ${isTopBlocker ? "text-[#EA2C00]" : "text-[#666666]"}`} />
                   <div
-                    className={`absolute -top-2 -left-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                    className={`absolute -top-2 -left-2 w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-white ${
                       isTopBlocker ? "bg-[#EA2C00]" : "bg-[#999999]"
                     }`}
                     data-testid={`rank-badge-${blocker.id}`}
@@ -313,14 +313,14 @@ export default function StepLeakageDrivers({
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: pillarColor }}
                     />
-                    <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: pillarColor }}>
+                    <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: pillarColor }}>
                       Linked to {PILLAR_LABELS[blocker.linkedPillar]}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[10px] font-bold text-[#999999] uppercase tracking-wider mb-2">
+                      <p className="text-[12px] font-bold text-[#999999] uppercase tracking-wider mb-2">
                         What We See
                       </p>
                       <p
@@ -331,7 +331,7 @@ export default function StepLeakageDrivers({
                       </p>
                     </div>
                     <div className="bg-[#FFF5F2] rounded-lg p-4">
-                      <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
+                      <p className="text-[12px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
                         Why It Matters Economically
                       </p>
                       <p
@@ -344,14 +344,14 @@ export default function StepLeakageDrivers({
                   </div>
 
                   <div className="bg-white rounded-lg border border-[#E5E7EB] p-4">
-                    <p className="text-[10px] font-bold text-[#059669] uppercase tracking-wider mb-3">
+                    <p className="text-[12px] font-bold text-[#059669] uppercase tracking-wider mb-3">
                       What Works
                     </p>
                     <ul className="space-y-2.5" data-testid={`what-works-${blocker.id}`}>
                       {blocker.whatWorks.map((item, i) => (
                         <li key={i} className="flex items-start gap-2.5 text-sm text-[#333333] leading-relaxed">
                           <div className="w-5 h-5 rounded-full bg-[#ECFDF5] flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-[10px] font-bold text-[#059669]">{i + 1}</span>
+                            <span className="text-[12px] font-bold text-[#059669]">{i + 1}</span>
                           </div>
                           {item}
                         </li>
@@ -360,7 +360,7 @@ export default function StepLeakageDrivers({
                   </div>
 
                   <div className="bg-[#1A1A1A] rounded-lg p-4">
-                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
+                    <p className="text-[12px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
                       30-Day Move
                     </p>
                     <p

@@ -134,7 +134,7 @@ export default function StepTheInvitation({
     <div className="max-w-[640px] mx-auto py-20 md:py-24 px-4" style={{ fontFamily: "Manrope, sans-serif" }}>
 
       <section className="mb-16" data-testid="section-verdict">
-        <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
+        <p className="text-xs font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
           Enterprise Documentation Capture Score
         </p>
 
@@ -179,7 +179,7 @@ export default function StepTheInvitation({
       <div className="w-full h-px bg-[#E8E0D8] mb-16" />
 
       <section className="mb-16" data-testid="section-opportunity">
-        <p className="text-[11px] font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
+        <p className="text-xs font-medium text-[#9B9B9B] uppercase tracking-[2px] mb-6">
           Primary Opportunity
         </p>
 
@@ -336,7 +336,7 @@ export default function StepTheInvitation({
         )}
       </section>
 
-      <p className="text-[11px] text-[#AAAAAA] leading-relaxed max-w-2xl mx-auto mt-12 mb-6" data-testid="text-methodology-disclaimer">
+      <p className="text-xs text-[#AAAAAA] leading-relaxed max-w-2xl mx-auto mt-12 mb-6" data-testid="text-methodology-disclaimer">
         Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. All values shown after stated confidence adjustments. This assessment does not constitute a guarantee of financial outcomes.
       </p>
 

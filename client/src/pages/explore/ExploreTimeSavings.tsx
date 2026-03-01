@@ -156,7 +156,7 @@ export default function ExploreTimeSavings({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 WHAT THE DATA SHOWS
               </p>
               <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -182,7 +182,7 @@ export default function ExploreTimeSavings({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 CHOOSE YOUR SCENARIO
               </p>
               <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -222,7 +222,7 @@ export default function ExploreTimeSavings({
                               {scenarioMinutes[scenario.key]} min{isNursing ? '/shift' : ''}
                             </span>
                             {scenario.recommended && (
-                              <span className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-wide">
+                              <span className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-wide">
                                 RECOMMENDED
                               </span>
                             )}
@@ -283,7 +283,7 @@ export default function ExploreTimeSavings({
             <div className="bg-[#1A1A1A] rounded-xl p-5 sm:p-6 lg:sticky lg:top-24">
               {/* Header */}
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px]">
                   PROJECTED TIME SAVINGS
                 </p>
                 <p className="text-sm text-white/50 mt-1">Based on your scenario</p>
@@ -300,7 +300,7 @@ export default function ExploreTimeSavings({
               <div className="h-px bg-white/10 my-4" />
 
               {/* THE MATH */}
-              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+              <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
                 THE MATH
               </p>
               <p className="text-xs text-white/40 mb-4">
@@ -331,7 +331,7 @@ export default function ExploreTimeSavings({
               <div className="h-px bg-white/10 my-4" />
 
               {/* Per Nurse / Per Provider */}
-              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+              <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
                 {isNursing ? 'PER NURSE' : 'PER PROVIDER'}
               </p>
               <div className="space-y-1 text-sm">

@@ -124,7 +124,7 @@ export default function ExploreCareQuality({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 HOW TO USE THIS SECTION
               </p>
               <p className="text-sm text-black mb-2">
@@ -142,7 +142,7 @@ export default function ExploreCareQuality({
               transition={{ delay: 0.1 }}
             >
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   CARE QUALITY POTENTIAL
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -161,7 +161,7 @@ export default function ExploreCareQuality({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-black">HAPI Prevention</p>
-                        <span className="text-[10px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
+                        <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
                           POTENTIAL
                         </span>
                       </div>
@@ -202,12 +202,12 @@ export default function ExploreCareQuality({
                       className="overflow-hidden"
                     >
                       <div className="bg-white rounded-b-lg p-5 pt-0">
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed—enabling earlier intervention.
                         </p>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT HAPI VOLUME</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT HAPI VOLUME</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
@@ -234,7 +234,7 @@ export default function ExploreCareQuality({
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Prevention Rate %</label>
@@ -264,7 +264,7 @@ export default function ExploreCareQuality({
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-2">
@@ -319,7 +319,7 @@ export default function ExploreCareQuality({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-black">Falls Prevention</p>
-                        <span className="text-[10px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
+                        <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
                           POTENTIAL
                         </span>
                       </div>
@@ -360,12 +360,12 @@ export default function ExploreCareQuality({
                       className="overflow-hidden"
                     >
                       <div className="bg-white rounded-b-lg p-5 pt-0">
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           Falls happen when risk factors aren't properly assessed or communicated. Real-time documentation ensures fall risk assessments, mobility status, and interventions are captured as they're observed—enabling better prevention protocols.
                         </p>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT FALLS VOLUME</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT FALLS VOLUME</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
@@ -392,7 +392,7 @@ export default function ExploreCareQuality({
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Prevention Rate %</label>
@@ -422,7 +422,7 @@ export default function ExploreCareQuality({
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-2">
@@ -477,7 +477,7 @@ export default function ExploreCareQuality({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-black">Patient Experience (HCAHPS)</p>
-                        <span className="text-[10px] font-medium text-[#888888] bg-[#F0F0F0] px-2 py-0.5 rounded uppercase">
+                        <span className="text-[12px] font-medium text-[#888888] bg-[#F0F0F0] px-2 py-0.5 rounded uppercase">
                           QUALITATIVE
                         </span>
                       </div>
@@ -518,7 +518,7 @@ export default function ExploreCareQuality({
                       className="overflow-hidden"
                     >
                       <div className="bg-white rounded-b-lg p-5 pt-0">
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                         <p className="text-sm text-black mb-6">
                           When nurses spend less time on documentation, they spend more time with patients. Research consistently shows bedside time correlates with patient satisfaction.
                         </p>
@@ -532,7 +532,7 @@ export default function ExploreCareQuality({
                           </p>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">WE DON'T CALCULATE THIS</p>
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">WE DON'T CALCULATE THIS</p>
                         <p className="text-sm text-black mb-4">
                           HCAHPS scores are influenced by dozens of factors—wait times, pain management, communication, environment, and more. We can't credibly attribute HCAHPS improvement to documentation alone.
                         </p>
@@ -578,7 +578,7 @@ export default function ExploreCareQuality({
           >
             <div className="bg-[#1A1A1A] rounded-lg p-6 lg:sticky lg:top-[100px]">
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                   YOUR MODEL SO FAR
                 </p>
               </div>
@@ -586,7 +586,7 @@ export default function ExploreCareQuality({
               <div className="h-px bg-[#333333] my-4" />
 
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                   CARE QUALITY POTENTIAL
                 </p>
                 <div className="space-y-3">
@@ -630,7 +630,7 @@ export default function ExploreCareQuality({
               <div className="h-px bg-[#333333] my-4" />
 
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   TIME SAVINGS VALUE
                 </p>
                 <p className="text-2xl font-bold text-[#EA2C00]">
@@ -640,7 +640,7 @@ export default function ExploreCareQuality({
               </div>
 
               <div className="bg-[#2A2A2A] rounded-lg p-4 mb-4">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   + POTENTIAL VALUE
                 </p>
                 <p className="text-xl font-bold text-white">

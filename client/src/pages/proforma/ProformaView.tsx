@@ -392,7 +392,7 @@ export default function ProformaView({
 
           {scenarios.length > 0 && (
             <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="scenario-tabs">
-              <span className="text-[10px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
+              <span className="text-[12px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
               {scenarios.map((sc, idx) => (
                 <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
                   {editingScenarioId === sc.id ? (
@@ -447,15 +447,15 @@ export default function ProformaView({
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.runRateValue)}</p>
               {totalProviders > 0 && (
-                <p className="text-[10px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider: {fmt(perProviderValue)}</p>
+                <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider: {fmt(perProviderValue)}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
                 <p className="text-xl font-bold text-emerald-400" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
                 {hasInvestment && (
-                  <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
+                  <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
                     Typical: 3–7x
                     {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                     {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
@@ -464,10 +464,10 @@ export default function ProformaView({
                 )}
               </div>
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
                 <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
                 {summary.paybackMonth && (
-                  <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
+                  <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
                     Typical: 4–12 mo
                     {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                     {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
@@ -476,9 +476,9 @@ export default function ProformaView({
                 )}
               </div>
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
-                <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
+                <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
                   Typical: 200–600%
                   {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                   {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
@@ -486,10 +486,10 @@ export default function ProformaView({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
                 <p className="text-xl font-bold" data-testid="text-hours">{fmtNum(summary.totalHours)}</p>
                 {summary.totalHours > 0 && (
-                  <p className="text-[10px] text-white/50 mt-0.5" data-testid="text-fte-mobile">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+                  <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-fte-mobile">≈ {fteEquivalent.toFixed(1)} FTEs</p>
                 )}
               </div>
             </div>
@@ -501,14 +501,14 @@ export default function ProformaView({
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
               {totalProviders > 0 && (
-                <p className="text-[10px] text-white/50 mt-1" data-testid="text-per-provider">per provider: {fmt(perProviderValue)}</p>
+                <p className="text-[12px] text-white/50 mt-1" data-testid="text-per-provider">per provider: {fmt(perProviderValue)}</p>
               )}
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
               <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
               {hasInvestment && (
-                <p className="text-[10px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
+                <p className="text-[12px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
                   Typical: 3–7x
                   {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                   {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
@@ -520,7 +520,7 @@ export default function ProformaView({
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
               <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
               {summary.paybackMonth && (
-                <p className="text-[10px] text-white/40 mt-1" data-testid="text-payback-benchmark">
+                <p className="text-[12px] text-white/40 mt-1" data-testid="text-payback-benchmark">
                   Typical: 4–12 mo
                   {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                   {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
@@ -531,7 +531,7 @@ export default function ProformaView({
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
-              <p className="text-[10px] text-white/40 mt-1" data-testid="text-roi-benchmark">
+              <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
                 Typical: 200–600%
                 {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
                 {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
@@ -542,7 +542,7 @@ export default function ProformaView({
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
               <p className="text-2xl font-bold">{fmtNum(summary.totalHours)}</p>
               {summary.totalHours > 0 && (
-                <p className="text-[10px] text-white/50 mt-1" data-testid="text-fte">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+                <p className="text-[12px] text-white/50 mt-1" data-testid="text-fte">≈ {fteEquivalent.toFixed(1)} FTEs</p>
               )}
             </div>
           </div>
@@ -567,7 +567,7 @@ export default function ProformaView({
                   <span className="text-xs sm:text-sm font-bold text-neutral-900">{s.label}</span>
                 </div>
                 <p className="text-base sm:text-lg font-bold" style={{ color: s.color }}>{fmt(s.annualValue)}</p>
-                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">
+                <p className="text-[12px] sm:text-xs text-neutral-500 mt-1">
                   {s.yearlyProviders
                     ? `Y1: ${fmtNum(s.yearlyProviders.year1)} → Y2: ${fmtNum(s.yearlyProviders.year2)} → Y3: ${fmtNum(s.yearlyProviders.year3)} ${SETTING_UNIT_LABELS[s.careSetting]}`
                     : `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`}
@@ -752,7 +752,7 @@ export default function ProformaView({
               </ComposedChart>
             </ResponsiveContainer>
 
-            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-[11px] sm:text-xs">
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-xs sm:text-xs">
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
                 <span className="text-neutral-600">Doc Quality</span>
@@ -784,7 +784,7 @@ export default function ProformaView({
             </div>
 
             {config.retentionPhasing.year2Pct > 0 && (
-              <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-neutral-400">
+              <div className="flex items-center justify-center gap-4 mt-2 text-[12px] text-neutral-400">
                 <span>Retention: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3</span>
               </div>
             )}
@@ -849,15 +849,15 @@ export default function ProformaView({
                         </div>
                         <div>
                           <h3 className="text-sm font-bold text-neutral-900">{s.label}</h3>
-                          <p className="text-[11px] text-neutral-500">{fmtNum(yp.year1)} → {fmtNum(is3yr ? yp.year3 : yp.year2)} {unitLabel}</p>
+                          <p className="text-xs text-neutral-500">{fmtNum(yp.year1)} → {fmtNum(is3yr ? yp.year3 : yp.year2)} {unitLabel}</p>
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
+                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
                         <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
                             <FormattedNumberInput
                               value={yp.year1}
                               onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
@@ -866,7 +866,7 @@ export default function ProformaView({
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
                             <FormattedNumberInput
                               value={yp.year2}
                               onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
@@ -876,7 +876,7 @@ export default function ProformaView({
                           </div>
                           {is3yr && (
                             <div>
-                              <label className="block text-[10px] text-neutral-500 mb-1">Y3 {unitLabel}</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y3 {unitLabel}</label>
                               <FormattedNumberInput
                                 value={yp.year3}
                                 onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
@@ -889,13 +889,13 @@ export default function ProformaView({
                       </div>
 
                       <div className="mb-4">
-                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
+                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
                         <div className="flex gap-1.5 mb-3">
                           {(["perUnit", "annualFlat", "perEncounter"] as const).map(pm => (
                             <button
                               key={pm}
                               onClick={() => onUpdateSetting(s.id, { pricingModel: pm })}
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${(pm === "perUnit" && !s.pricingModel) || s.pricingModel === pm ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
+                              className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors ${(pm === "perUnit" && !s.pricingModel) || s.pricingModel === pm ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
                               data-testid={`toggle-${pm}-${s.careSetting}`}
                             >
                               {pm === "perUnit" ? "Per Unit/Mo" : pm === "annualFlat" ? "Annual License" : "Per Encounter"}
@@ -905,7 +905,7 @@ export default function ProformaView({
                         <div className="grid grid-cols-3 gap-3">
                           {s.pricingModel === "annualFlat" ? (
                             <div>
-                              <label className="block text-[10px] text-neutral-500 mb-1">Annual Fee</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Annual Fee</label>
                               <FormattedNumberInput
                                 value={s.annualLicenseFee || 0}
                                 onChange={(v) => onUpdateSetting(s.id, { annualLicenseFee: Math.max(v, 0) })}
@@ -916,7 +916,7 @@ export default function ProformaView({
                             </div>
                           ) : s.pricingModel === "perEncounter" ? (
                             <div>
-                              <label className="block text-[10px] text-neutral-500 mb-1">$/Encounter</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">$/Encounter</label>
                               <FormattedNumberInput
                                 value={s.costPerEncounter || 0}
                                 onChange={(v) => onUpdateSetting(s.id, { costPerEncounter: Math.max(v, 0) })}
@@ -927,7 +927,7 @@ export default function ProformaView({
                             </div>
                           ) : (
                             <div>
-                              <label className="block text-[10px] text-neutral-500 mb-1">$/Unit/Mo</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">$/Unit/Mo</label>
                               <FormattedNumberInput
                                 value={s.costPerUnit}
                                 onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
@@ -938,7 +938,7 @@ export default function ProformaView({
                             </div>
                           )}
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Go-Live</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Go-Live</label>
                             <select
                               value={s.goLiveMonth}
                               onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
@@ -951,7 +951,7 @@ export default function ProformaView({
                             </select>
                           </div>
                           <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">Impl. Fee</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">Impl. Fee</label>
                             <FormattedNumberInput
                               value={s.implementationFee}
                               onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
@@ -964,19 +964,19 @@ export default function ProformaView({
                       </div>
 
                       <div className="bg-[#F9F6F2] rounded-lg px-3 py-2.5">
-                        <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
+                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
                         <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
                           <div>
-                            <p className="text-[10px] text-neutral-500">Year 1</p>
+                            <p className="text-[12px] text-neutral-500">Year 1</p>
                             <p className="text-sm font-semibold text-neutral-800">{fmtFull(y1Cost)}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-neutral-500">Year 2</p>
+                            <p className="text-[12px] text-neutral-500">Year 2</p>
                             <p className="text-sm font-semibold text-neutral-800">{fmtFull(y2Cost)}</p>
                           </div>
                           {is3yr && (
                             <div>
-                              <p className="text-[10px] text-neutral-500">Year 3</p>
+                              <p className="text-[12px] text-neutral-500">Year 3</p>
                               <p className="text-sm font-semibold text-neutral-800">{fmtFull(y3Cost)}</p>
                             </div>
                           )}
@@ -996,7 +996,7 @@ export default function ProformaView({
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
                 <div key={key}>
-                  <label className="block text-[10px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}</label>
+                  <label className="block text-[12px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}</label>
                   <div className="flex items-center gap-1 sm:gap-2">
                     <input
                       type="range"
@@ -1145,27 +1145,27 @@ export default function ProformaView({
         >
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
             <p className="text-2xl sm:text-3xl font-bold text-emerald-600" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
-            <p className="text-[9px] sm:text-[10px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
             {hasInvestment && summary.irrValid && (
-              <p className="text-[9px] sm:text-[10px] text-neutral-400 mt-1.5">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {fmtPct(summary.irr)}</p>
+              <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-1.5">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {fmtPct(summary.irr)}</p>
             )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{summary.paybackMonth ?? "—"}</p>
-            <p className="text-[9px] sm:text-[10px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
             <p className={`text-2xl sm:text-3xl font-bold ${summary.threeYearNet >= 0 ? "text-emerald-700" : "text-red-600"}`}>
               {fmt(summary.threeYearNet)}
             </p>
@@ -1201,28 +1201,28 @@ export default function ProformaView({
                     data-testid={`sensitivity-${scenario.key}`}
                   >
                     <div className="h-0.5 rounded-full mb-3 sm:mb-4" style={{ backgroundColor: scenario.accent }} />
-                    <p className="text-[10px] sm:text-xs font-bold text-neutral-900 mb-0.5">{scenario.label}</p>
-                    <p className="text-[9px] sm:text-[10px] text-neutral-400 mb-3 sm:mb-4">{scenario.sublabel}</p>
+                    <p className="text-[12px] sm:text-xs font-bold text-neutral-900 mb-0.5">{scenario.label}</p>
+                    <p className="text-[9px] sm:text-[12px] text-neutral-400 mb-3 sm:mb-4">{scenario.sublabel}</p>
 
                     <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Annual Value</p>
+                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Annual Value</p>
                         <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-value-${scenario.key}`}>{fmt(data.annualValue)}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Value-to-Cost</p>
+                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Value-to-Cost</p>
                         <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
                           {hasInvestment ? `${data.valueToCost.toFixed(1)}x` : "N/A"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Payback</p>
+                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Payback</p>
                         <p className="text-sm sm:text-lg font-bold text-neutral-900" data-testid={`sensitivity-payback-${scenario.key}`}>
                           {data.paybackMonth ? `${data.paybackMonth} mo` : "—"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
+                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
                         <p className={`text-sm sm:text-lg font-bold ${data.threeYearNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
                           {fmt(data.threeYearNet)}
                         </p>
@@ -1247,7 +1247,7 @@ export default function ProformaView({
 
               return (
                 <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-neutral-100">
-                  <p className="text-[10px] sm:text-xs font-medium text-neutral-500 mb-3">Annual Value Range</p>
+                  <p className="text-[12px] sm:text-xs font-medium text-neutral-500 mb-3">Annual Value Range</p>
                   <div className="relative h-6 mb-1">
                     <div className="absolute top-1/2 left-0 right-0 h-px bg-neutral-200 -translate-y-1/2" />
                     <div
@@ -1265,19 +1265,19 @@ export default function ProformaView({
                   </div>
                   <div className="relative h-4">
                     <span
-                      className="absolute text-[9px] sm:text-[10px] text-neutral-400 font-medium -translate-x-1/2"
+                      className="absolute text-[9px] sm:text-[12px] text-neutral-400 font-medium -translate-x-1/2"
                       style={{ left: `${consPos}%` }}
                     >
                       {fmt(consVal)}
                     </span>
                     <span
-                      className="absolute text-[9px] sm:text-[10px] text-[#EA2C00] font-bold -translate-x-1/2"
+                      className="absolute text-[9px] sm:text-[12px] text-[#EA2C00] font-bold -translate-x-1/2"
                       style={{ left: `${basePos}%` }}
                     >
                       {fmt(baseVal)}
                     </span>
                     <span
-                      className="absolute text-[9px] sm:text-[10px] text-neutral-700 font-medium -translate-x-1/2"
+                      className="absolute text-[9px] sm:text-[12px] text-neutral-700 font-medium -translate-x-1/2"
                       style={{ left: `${optPos}%` }}
                     >
                       {fmt(optVal)}
@@ -1288,7 +1288,7 @@ export default function ProformaView({
             })()}
 
             <div className="px-4 sm:px-6 pb-4 sm:pb-5">
-              <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed">
+              <p className="text-[12px] sm:text-xs text-neutral-400 leading-relaxed">
                 Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.threeYearInvestment)}.
               </p>
             </div>
@@ -1396,9 +1396,9 @@ export default function ProformaView({
                     ].map((row, ri) => (
                       <tr key={row.label} className={`border-b ${ri === 4 ? "border-neutral-300 bg-neutral-50" : ri === 0 ? "border-neutral-200 bg-amber-50/50" : "border-neutral-100"}`}>
                         <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
-                        <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-[11px]" : "text-neutral-700"}`}>{row.current}</td>
+                        <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-xs" : "text-neutral-700"}`}>{row.current}</td>
                         {row.values.map((v, i) => (
-                          <td key={i} className={`${(row as any).isText ? "text-left text-[11px]" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
+                          <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
                         ))}
                       </tr>
                     ))}
@@ -1450,7 +1450,7 @@ export default function ProformaView({
                   ))}
                 </ComposedChart>
               </ResponsiveContainer>
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-3 text-[10px] sm:text-xs">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-3 text-[12px] sm:text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="w-4 h-0.5 bg-[#1A1A1A] inline-block rounded-full" />
                   <span className="text-neutral-600">Current</span>
@@ -1466,7 +1466,7 @@ export default function ProformaView({
           </motion.div>
         )}
 
-        <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed mt-3 sm:mt-4 mb-6 sm:mb-8 text-center max-w-2xl mx-auto">
+        <p className="text-[12px] sm:text-xs text-neutral-400 leading-relaxed mt-3 sm:mt-4 mb-6 sm:mb-8 text-center max-w-2xl mx-auto">
           Projections are modeled estimates based on user-provided inputs and published benchmarks. Retention benefits are conservatively phased. Driver onset timing reflects typical healthcare implementation timelines. This does not constitute a guarantee of financial outcomes.
         </p>
       </div>
@@ -1523,7 +1523,7 @@ export default function ProformaView({
                   Save
                 </Button>
               </div>
-              <p className="text-[10px] text-neutral-400 mt-3 text-center">
+              <p className="text-[12px] text-neutral-400 mt-3 text-center">
                 {scenarios.length}/3 scenarios used
               </p>
             </motion.div>
@@ -1551,7 +1551,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
       <div className="flex items-center justify-between mb-2 sm:mb-3">
         <p className="font-bold text-neutral-900">{label}</p>
         {providerCount > 0 && (
-          <span className="text-[10px] sm:text-xs text-neutral-400 flex items-center gap-1">
+          <span className="text-[12px] sm:text-xs text-neutral-400 flex items-center gap-1">
             <Users className="w-3 h-3" /> {fmtNum(providerCount)}
           </span>
         )}

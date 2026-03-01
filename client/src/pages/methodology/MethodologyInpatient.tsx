@@ -232,7 +232,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
             >
               {/* DRG Value */}
               <div className="mb-8">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                   Documentation Quality → DRG Value
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -338,7 +338,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
 
               {/* Time Efficiency */}
               <div className="mb-8">
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                   Time Saved → Efficiency Value
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -378,7 +378,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
 
               {/* Clinician Wellbeing */}
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                   Time Saved → Clinician Sustainability
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -751,13 +751,13 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
           </a>
         </motion.div>
 
-        <p className="text-[11px] text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">
           Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
         </p>
 
         {/* Related Care Settings */}
         <div className="mt-12 mb-8">
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
             Related Methodologies
           </p>
           <p className="text-sm text-[#666666] mb-6">

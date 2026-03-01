@@ -104,7 +104,7 @@ export default function ExploreInvestment({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
             Pricing Model
           </p>
           <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -208,7 +208,7 @@ export default function ExploreInvestment({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
             Implementation Fee (Optional)
           </p>
           <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -268,7 +268,7 @@ export default function ExploreInvestment({
             <div className="bg-[#1A1A1A] rounded-xl p-4 sm:p-6 lg:sticky lg:top-24">
               {/* Header */}
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
                   Your Model
                 </p>
                 <p className="text-sm text-[#888888] mt-1">Complete value summary</p>
@@ -314,7 +314,7 @@ export default function ExploreInvestment({
 
               {/* Net Value Hero */}
               <div className="bg-[#2A2A2A] rounded-lg p-3 sm:p-4 text-center mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Net Annual Value
                 </p>
                 <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EA2C00]">
@@ -338,7 +338,7 @@ export default function ExploreInvestment({
               {isNursing ? (
                 <>
                   <div className="mb-3">
-                    <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">Value Per Bed</p>
+                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">Value Per Bed</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                     <div className="bg-[#2A2A2A] rounded-lg p-2 sm:p-3 text-center">

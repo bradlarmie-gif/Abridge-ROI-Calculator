@@ -50,7 +50,7 @@ export default function NursingScreen4Picture({
         className="flex flex-col lg:flex-row gap-10"
       >
         <motion.div className="flex-1 max-w-[700px]" variants={staggerItem}>
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">
             Your Strategic Picture
           </p>
           <h1
@@ -84,7 +84,7 @@ export default function NursingScreen4Picture({
           {unselected.length > 0 && (
             <motion.div variants={staggerItem} className="mt-8">
               <div className="bg-[#F9F9F9] border border-[#E5E7EB] rounded-xl p-6 md:p-8">
-                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#999999] mb-3">
+                <p className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#999999] mb-3">
                   Not Selected as Current Priorities
                 </p>
                 <p className="text-sm text-[#999999] mb-2">
@@ -145,7 +145,7 @@ export default function NursingScreen4Picture({
                       </div>
                       <span className="text-xs text-white/80 truncate">{config.title}</span>
                     </div>
-                    <span className="text-[10px] text-white/50 flex-shrink-0">{s.sidebarLine}</span>
+                    <span className="text-[12px] text-white/50 flex-shrink-0">{s.sidebarLine}</span>
                   </div>
                 );
               })}
@@ -191,7 +191,7 @@ export default function NursingScreen4Picture({
             </div>
 
             <div className="h-px bg-white/10 my-4" />
-            <p className="text-[10px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
+            <p className="text-[12px] text-white/30 italic">Based on your inputs. Individual results vary.</p>
             <p className="text-[9px] text-white/20 mt-2">{RESEARCH_NOTE}</p>
           </div>
         </motion.aside>

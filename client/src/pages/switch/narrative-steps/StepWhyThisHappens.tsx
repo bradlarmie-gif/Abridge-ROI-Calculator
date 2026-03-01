@@ -222,7 +222,7 @@ export default function StepWhyThisHappens({
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-[#1A1A1A] text-sm">{area.label}</h3>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${config.color}`}>{config.label}</span>
+                        <span className={`text-[12px] font-bold uppercase tracking-wider ${config.color}`}>{config.label}</span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-[#999999]">
                         <span>You: <span className="font-semibold text-[#1A1A1A]">{area.yourValue}</span></span>
@@ -280,7 +280,7 @@ export default function StepWhyThisHappens({
                     <Icon className="w-5 h-5 text-[#EA2C00]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-0.5">PATTERN {pattern.number}</p>
+                    <p className="text-[12px] font-bold text-[#EA2C00] uppercase tracking-wider mb-0.5">PATTERN {pattern.number}</p>
                     <h3 className="font-bold text-[#1A1A1A] text-[15px]">{pattern.title}</h3>
                     <p className="text-xs text-[#999999]">{pattern.subtitle}</p>
                   </div>
@@ -293,11 +293,11 @@ export default function StepWhyThisHappens({
                   <div className="px-5 pb-5 pt-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="bg-[#F5F0EB] rounded-lg p-4">
-                        <p className="text-[10px] font-bold text-[#999999] uppercase tracking-wider mb-2">THE CHALLENGE</p>
+                        <p className="text-[12px] font-bold text-[#999999] uppercase tracking-wider mb-2">THE CHALLENGE</p>
                         <p className="text-sm text-[#333333] leading-relaxed">{pattern.challenge}</p>
                       </div>
                       <div className="bg-[#FFF5F2] rounded-lg p-4">
-                        <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">WHAT WE'VE SEEN WORK</p>
+                        <p className="text-[12px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">WHAT WE'VE SEEN WORK</p>
                         <ul className="space-y-2">
                           {pattern.whatWorks.map((item, i) => (
                             <li key={i} className="flex items-center gap-2 text-sm text-[#333333]">

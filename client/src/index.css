@@ -694,6 +694,11 @@ html, body {
   text-size-adjust: 100%;
 }
 
+/* Safe area inset for iPhone notch / home indicator */
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Prevent iOS zoom on input focus (inputs < 16px trigger zoom) */
 @media (max-width: 819px) {
   input, select, textarea {

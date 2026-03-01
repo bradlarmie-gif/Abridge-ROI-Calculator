@@ -201,7 +201,7 @@ function PotentialValueToggle({ enabled, onToggle }: { enabled: boolean; onToggl
         onCheckedChange={onToggle}
         data-testid="toggle-potential-value"
       />
-      <span className="text-[10px] text-[#999999]">{enabled ? "Included" : "Excluded"}</span>
+      <span className="text-[12px] text-[#999999]">{enabled ? "Included" : "Excluded"}</span>
     </div>
   );
 }
@@ -247,7 +247,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.1 }}
           data-testid="section-hero-value"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
             Estimated Annual Value
           </p>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
@@ -257,15 +257,15 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-doc-coding-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatSmartRange(r.docValueLow, r.docValueHigh)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Doc & Coding</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Doc & Coding</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(r.totalHoursSaved))}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
             </div>
           </div>
 
@@ -281,7 +281,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.15 }}
           data-testid="section-doc-coding"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
             Documentation & Coding Value
           </p>
           <p className="text-sm text-[#666666] mb-5">
@@ -297,7 +297,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
                   <p className="text-xs text-[#666666] mt-1">
                     CMI: {r.cmiBefore.toFixed(2)} {'\u2192'} {r.cmiAfter.toFixed(2)} (+{r.cmiDelta.toFixed(2)})
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">
+                  <p className="text-[12px] text-[#999999] mt-0.5">
                     {formatNumber(state.deployment.totalEncounters)} discharges {'\u00D7'} ${formatNumber(r.cmiPointValue)} per CMI point {'\u00D7'} attribution{'\u00B9'}
                   </p>
                 </div>
@@ -313,7 +313,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
                   <p className="text-xs text-[#666666] mt-1">
                     {r.denialsBefore.toFixed(1)} {'\u2192'} {r.denialsAfter.toFixed(1)} per 100 claims ({r.denialsDelta.toFixed(1)} fewer)
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">
+                  <p className="text-[12px] text-[#999999] mt-0.5">
                     {formatNumber(Math.round(r.fewerDenials))} fewer denials {'\u00D7'} ${formatNumber(r.denialCostPerCase)} per denial{'\u00B2'}
                   </p>
                 </div>
@@ -329,7 +329,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
                   <p className="text-xs text-[#666666] mt-1">
                     {r.cdiBefore} {'\u2192'} {r.cdiAfter} queries per 100 ({r.cdiReductionPct}% reduction)
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">
+                  <p className="text-[12px] text-[#999999] mt-0.5">
                     Equivalent to {r.fteCapacityReclaimed.toFixed(1)} FTE capacity reclaimed{'\u00B3'}
                   </p>
                 </div>
@@ -339,9 +339,9 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
-            <p className="text-[10px] text-[#999999]"><sup>1</sup> Attribution range: 70-85% accounts for factors beyond documentation</p>
-            <p className="text-[10px] text-[#999999]"><sup>2</sup> Based on denial cost of ${formatNumber(r.denialCostPerCase)} per case</p>
-            <p className="text-[10px] text-[#999999]"><sup>3</sup> Based on CDI FTE cost of ${formatNumber(85000)}/year at {formatNumber(2500)} cases/FTE</p>
+            <p className="text-[12px] text-[#999999]"><sup>1</sup> Attribution range: 70-85% accounts for factors beyond documentation</p>
+            <p className="text-[12px] text-[#999999]"><sup>2</sup> Based on denial cost of ${formatNumber(r.denialCostPerCase)} per case</p>
+            <p className="text-[12px] text-[#999999]"><sup>3</sup> Based on CDI FTE cost of ${formatNumber(85000)}/year at {formatNumber(2500)} cases/FTE</p>
           </div>
         </motion.div>
 
@@ -352,7 +352,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.2 }}
           data-testid="section-time-waterfall"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
             Time Value
           </p>
           <p className="text-sm text-[#666666] mb-5">
@@ -408,7 +408,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.25 }}
           data-testid="section-total"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
             Estimated Annual Value
           </p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
@@ -597,20 +597,20 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         </motion.div>
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-throughput-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.lwbsValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">LWBS Recovery</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">LWBS Recovery</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(r.totalHoursSaved))}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
             </div>
           </div>
           <p className="text-sm text-[#666666]">
@@ -619,7 +619,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         </motion.div>
 
         <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} data-testid="section-time-waterfall">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Potential Value from Time Savings</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Potential Value from Time Savings</p>
           <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed. Here's where they may go.</p>
           <div className="space-y-0">
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
@@ -664,7 +664,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
 
         {r.lwbsValue > 0 && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-testid="section-lwbs">
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">LWBS Recovery Value</p>
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">LWBS Recovery Value</p>
             <p className="text-sm text-[#666666] mb-5">Patients retained by reducing left-without-being-seen rate</p>
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3">
@@ -681,7 +681,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
 
         {(r.docValueLow > 0 || r.docValueHigh > 0) && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} data-testid="section-em-level">
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">E/M Level Accuracy</p>
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">E/M Level Accuracy</p>
             <p className="text-sm text-[#666666] mb-5">More accurate coding captures true acuity</p>
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3">
@@ -697,7 +697,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         )}
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} data-testid="section-total">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
@@ -743,20 +743,20 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-overtime-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.annualOvertimeSavings)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Overtime Savings</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Overtime Savings</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-retention-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.retentionValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Retention Value</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Retention Value</p>
             </div>
           </div>
           <p className="text-sm text-[#666666]">
@@ -765,7 +765,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} data-testid="section-time-waterfall">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Time Value</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Time Value</p>
           <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed from charting.</p>
           <div className="space-y-0">
             <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
@@ -806,7 +806,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
 
         {r.annualOvertimeSavings > 0 && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-testid="section-overtime">
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Overtime Reduction</p>
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Overtime Reduction</p>
             <p className="text-sm text-[#666666] mb-5">Less overtime from faster charting</p>
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3">
@@ -823,7 +823,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
 
         {r.retentionValue > 0 && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} data-testid="section-retention">
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Retention Value</p>
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Retention Value</p>
             <p className="text-sm text-[#666666] mb-5">Reduced turnover may lower recruitment and training costs</p>
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3">
@@ -840,7 +840,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
 
         {(r.fallsReduction > 0 || r.hapiReduction > 0) && (
           <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} data-testid="section-quality">
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Quality Outcomes</p>
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Quality Outcomes</p>
             <p className="text-sm text-[#666666] mb-5">More time at the bedside improves safety</p>
             {r.fallsReduction > 0 && (
               <div className="flex items-start justify-between py-3 border-b border-[#F0F0F0]">
@@ -870,7 +870,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         )}
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} data-testid="section-total">
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
@@ -890,7 +890,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
-          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+          <p className="text-xs text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
             Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
           </p>
         </div>
@@ -940,7 +940,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.1 }}
           data-testid="section-hero-value"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
             Estimated Annual Value
           </p>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
@@ -950,15 +950,15 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-doc-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Doc Quality</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Doc Quality</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.totalHoursSaved))}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
             </div>
           </div>
 
@@ -974,7 +974,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.15 }}
           data-testid="section-time-waterfall"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
             Potential Value from Time Savings
           </p>
           <p className="text-sm text-[#666666] mb-5">
@@ -993,7 +993,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
                   <p className="text-xs text-[#666666] mt-1">
                     {formatNumber(Math.round(results.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr<sup>1</sup>
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">[{results.savingsPercent}% of time saved]</p>
+                  <p className="text-[12px] text-[#999999] mt-0.5">[{results.savingsPercent}% of time saved]</p>
                 </div>
               </div>
               <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(results.savingsValue)}</p>
@@ -1007,7 +1007,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
                   <p className="text-xs text-[#666666] mt-1">
                     {formatNumber(Math.round(results.capacityHours))} hours {'\u2192'} {formatNumber(Math.round(results.additionalVisits))} additional visits possible<sup>2</sup>
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">[{results.capacityPercent}% of time saved]</p>
+                  <p className="text-[12px] text-[#999999] mt-0.5">[{results.capacityPercent}% of time saved]</p>
                 </div>
               </div>
               <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.capacityValue)}</p>
@@ -1021,7 +1021,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
                   <p className="text-xs text-[#666666] mt-1">
                     {formatNumber(Math.round(results.wellbeingHours))} hours returned to providers
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-0.5">[{results.wellbeingPercent}% of time saved]</p>
+                  <p className="text-[12px] text-[#999999] mt-0.5">[{results.wellbeingPercent}% of time saved]</p>
                   <div className="bg-[#F5F0EB] rounded-md p-3 mt-3">
                     <p className="text-xs text-[#666666] leading-relaxed">
                       Retention signal: At industry average turnover, retaining 1 provider = $300-500K in avoided replacement costs.
@@ -1039,8 +1039,8 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
-            <p className="text-[10px] text-[#999999]"><sup>1</sup> Based on your value model: ${state.calibration.otHourlyRate}/hr provider cost</p>
-            <p className="text-[10px] text-[#999999]"><sup>2</sup> {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</p>
+            <p className="text-[12px] text-[#999999]"><sup>1</sup> Based on your value model: ${state.calibration.otHourlyRate}/hr provider cost</p>
+            <p className="text-[12px] text-[#999999]"><sup>2</sup> {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</p>
           </div>
         </motion.div>
 
@@ -1051,7 +1051,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.2 }}
           data-testid="section-doc-quality"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
             Documentation Quality
           </p>
           <p className="text-sm text-[#666666] mb-5">
@@ -1061,15 +1061,15 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div>
               <p className="text-lg font-bold text-[#1A1A1A]">+{results.wrvuLift.toFixed(2)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">wRVU lift</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">wRVU lift</p>
             </div>
             <div>
               <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.documentedEncounters))}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">encounters analyzed</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">encounters analyzed</p>
             </div>
             <div>
               <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.additionalWRVUs))}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">additional wRVUs</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">additional wRVUs</p>
             </div>
           </div>
 
@@ -1085,7 +1085,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#F0F0F0]">
-            <p className="text-[10px] text-[#999999]"><sup>3</sup> Attribution range accounts for factors beyond documentation that influence wRVU.</p>
+            <p className="text-[12px] text-[#999999]"><sup>3</sup> Attribution range accounts for factors beyond documentation that influence wRVU.</p>
           </div>
         </motion.div>
 
@@ -1096,7 +1096,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.25 }}
           data-testid="section-total"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
             Estimated Annual Value
           </p>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
@@ -1129,7 +1129,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
-          <p className="text-[11px] text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
+          <p className="text-xs text-[#999999] leading-relaxed text-center max-w-2xl mx-auto">
             Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This does not constitute a guarantee of financial outcomes.
           </p>
         </div>

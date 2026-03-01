@@ -243,7 +243,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
         </motion.div>
 
         <motion.p
-          className="text-[11px] text-[#999999] text-center mb-8"
+          className="text-xs text-[#999999] text-center mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}

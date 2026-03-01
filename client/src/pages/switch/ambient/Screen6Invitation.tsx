@@ -300,13 +300,13 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
         transition={{ duration: 0.6 }}
       >
         <div className="max-w-[800px] mx-auto text-center">
-          <p className="text-[10px] font-medium text-white/40 uppercase tracking-[2px] mb-6" data-testid="text-hero-label">
+          <p className="text-[12px] font-medium text-white/40 uppercase tracking-[2px] mb-6" data-testid="text-hero-label">
             Ambient Assessment
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 mb-8">
             <div>
-              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
+              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
               <p className="text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
                 {totalScore}
               </p>
@@ -316,7 +316,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
             <div className="hidden sm:block w-px h-20 bg-white/10" />
 
             <div>
-              <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
+              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
               {hasMeasuredDomains ? (
                 <>
                   <p className="text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
@@ -349,10 +349,10 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
               </div>
             </div>
             <div className="flex justify-between mt-2">
-              <span className="text-[10px] text-white/40">Early deployment</span>
-              <span className="text-[10px] text-white/40">Measured</span>
-              <span className="text-[10px] text-white/40">Strategically managed</span>
-              <span className="text-[10px] text-white/40">Best in class</span>
+              <span className="text-[12px] text-white/40">Early deployment</span>
+              <span className="text-[12px] text-white/40">Measured</span>
+              <span className="text-[12px] text-white/40">Strategically managed</span>
+              <span className="text-[12px] text-white/40">Best in class</span>
             </div>
           </div>
 
@@ -596,7 +596,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-summary">
 
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[2px] mb-4">
+            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[2px] mb-4">
               Assessment Summary
             </p>
 
@@ -610,7 +610,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
 
             <div className="h-px bg-white/10 my-4" />
 
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
               Measured Value
             </p>
 
@@ -626,13 +626,13 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
                     <p className="text-white font-bold text-lg leading-none" data-testid="panel-monthly">
                       ${displayedMonthly.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
                   </div>
                   <div>
                     <p className="text-white font-bold text-lg leading-none" data-testid="panel-daily">
                       ${displayedDaily.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
                 </div>
               </>
@@ -647,7 +647,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
               Domain Scores
             </p>
             <div className="space-y-2">
@@ -663,7 +663,7 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
               Your Inputs
             </p>
             <div className="space-y-1.5">

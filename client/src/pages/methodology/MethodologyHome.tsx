@@ -121,7 +121,7 @@ export function MethodologyHome({ onBack, onSelectSetting }: MethodologyHomeProp
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
             Select a setting to explore our methodology
           </p>
           <div className="h-px bg-[#E5E5E5] mb-6" />
@@ -157,7 +157,7 @@ export function MethodologyHome({ onBack, onSelectSetting }: MethodologyHomeProp
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
             Our Principles
           </p>
           <div className="h-px bg-[#E5E5E5] mb-6" />

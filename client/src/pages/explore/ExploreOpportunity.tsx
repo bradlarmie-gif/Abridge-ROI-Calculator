@@ -188,7 +188,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
             >
               {/* Section 1: Deployment Size */}
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   DEPLOYMENT SIZE
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -226,7 +226,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* Section 2: Encounter Volume (Non-Nursing) */}
               {!isNursing && (
                 <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     {encounterLabel.toUpperCase()} VOLUME
                   </p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -288,7 +288,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* Section 2 (Nursing): Occupancy */}
               {isNursing && (
                 <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     BED OCCUPANCY
                   </p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -318,7 +318,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* Section 3 (Nursing): Patient Days Calculated Field */}
               {isNursing && state.nursingStaffedBeds > 0 && (
                 <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     PATIENT DAYS PER YEAR
                   </p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -353,7 +353,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
               {/* Section 3: Expected Utilization / Adoption */}
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   {isNursing ? "EXPECTED ADOPTION" : "EXPECTED UTILIZATION"}
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
@@ -524,7 +524,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 <div className="px-6 py-5 border-t border-white/10">
                   {isNursing ? (
                     <>
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+                      <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
                         ABRIDGE-ENABLED SHIFTS
                       </p>
                       <div className="text-center mb-3">
@@ -534,7 +534,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         <p className="text-sm text-white/50 mt-1">shifts / year</p>
                       </div>
                       <div className="h-px bg-white/10 my-3" />
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+                      <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
                         THE MATH
                       </p>
                       <div className="text-xs text-white/40 space-y-1">

@@ -118,7 +118,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           onClick={onEnter}
           size="lg"
           variant="secondary"
-          className="border border-white/30"
+          className="border border-white/30 min-h-[44px]"
           data-testid="button-enter-app"
         >
           Get Started
@@ -145,6 +145,10 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         @keyframes splashLogoPulse {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.88; transform: scale(1.02); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .splash-tile { animation: none !important; opacity: 0.4 !important; }
+          .splash-logo { animation: none !important; opacity: 1 !important; }
         }
       `}</style>
     </div>

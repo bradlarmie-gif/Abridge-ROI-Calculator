@@ -308,7 +308,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
               <span className="text-xl font-bold text-[#EA2C00]">${totalValue.toLocaleString()}</span>
             </div>
           </div>
-          <p className="text-[10px] text-slate-400 mt-3 leading-relaxed">
+          <p className="text-[12px] text-slate-400 mt-3 leading-relaxed">
             Benchmark sources: wRVU conversion factor (CMS MPFS national average), HCC risk adjustment (CMS published MA benchmarks), denial values (HFMA industry benchmarks). Realization rates are conservative and based on observed Abridge deployments.
           </p>
         </motion.div>

@@ -372,7 +372,7 @@ export default function StepWhereYouAre({
       </div>
 
       <section className="bg-[#F5F0EB] rounded-xl p-6 border border-[#E8E0D8]">
-        <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">
+        <p className="text-xs font-medium text-[#999999] uppercase tracking-wider mb-2">
           Your Current Performance
         </p>
         <p className="text-sm text-[#666666] mb-6">

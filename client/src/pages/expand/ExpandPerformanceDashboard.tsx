@@ -325,12 +325,12 @@ export default function ExpandPerformanceDashboard({
         <div className="flex items-center justify-between mb-2">
           <span className="font-semibold text-[#111827]">{data.label}</span>
           {data.isToday && (
-            <span className="px-2 py-0.5 bg-[#EA2C00] text-white text-[10px] font-semibold rounded">
+            <span className="px-2 py-0.5 bg-[#EA2C00] text-white text-[12px] font-semibold rounded">
               You are here
             </span>
           )}
           {data.isFullScale && (
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[12px] font-semibold rounded">
               Projected
             </span>
           )}
@@ -346,7 +346,7 @@ export default function ExpandPerformanceDashboard({
           {data.isActual && data.isToday ? (
             // Show breakdown for Today
             <>
-              <div className="text-[10px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
+              <div className="text-[12px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
                 HARD VALUE BREAKDOWN
               </div>
               {hardValueBreakdown.map((item, i) => (
@@ -374,7 +374,7 @@ export default function ExpandPerformanceDashboard({
           ) : (
             // Show projection explanation for future points
             <>
-              <div className="text-[10px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
+              <div className="text-[12px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
                 PROJECTED VALUE
               </div>
               <div className="text-xs text-[#6B7280] mb-2">
@@ -395,7 +395,7 @@ export default function ExpandPerformanceDashboard({
                 <span className="font-semibold text-[#111827]">Projected Total</span>
                 <span className="font-bold text-blue-600">{formatCurrency(data.value)}</span>
               </div>
-              <div className="mt-2 text-[10px] text-amber-600 flex items-center gap-1">
+              <div className="mt-2 text-[12px] text-amber-600 flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Projection based on current results
               </div>
             </>
@@ -450,7 +450,7 @@ export default function ExpandPerformanceDashboard({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
           {/* Before Phase */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-            <span className="text-[10px] font-semibold text-slate-500 tracking-wider uppercase block mb-2">
+            <span className="text-[12px] font-semibold text-slate-500 tracking-wider uppercase block mb-2">
               BEFORE ABRIDGE
             </span>
             <span className="text-2xl font-bold text-slate-400 block">Baseline</span>
@@ -459,10 +459,10 @@ export default function ExpandPerformanceDashboard({
 
           {/* Today Phase - Highlighted with Value Realized */}
           <div className="bg-white border-2 border-[#EA2C00] rounded-xl p-5 relative shadow-sm">
-            <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-[#EA2C00] text-white text-[10px] font-semibold rounded">
+            <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-[#EA2C00] text-white text-[12px] font-semibold rounded">
               YOU ARE HERE
             </div>
-            <span className="text-[10px] font-semibold text-slate-500 tracking-wider uppercase block mb-2 mt-1">
+            <span className="text-[12px] font-semibold text-slate-500 tracking-wider uppercase block mb-2 mt-1">
               TODAY
             </span>
             <span className="text-2xl font-bold text-emerald-600 block" data-testid="text-today-value">
@@ -473,7 +473,7 @@ export default function ExpandPerformanceDashboard({
 
           {/* Full Scale Phase */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <span className="text-[10px] font-semibold text-blue-700 tracking-wider uppercase block mb-2">
+            <span className="text-[12px] font-semibold text-blue-700 tracking-wider uppercase block mb-2">
               FULL SCALE
             </span>
             <span className="text-2xl font-bold text-blue-600 block" data-testid="text-full-scale">

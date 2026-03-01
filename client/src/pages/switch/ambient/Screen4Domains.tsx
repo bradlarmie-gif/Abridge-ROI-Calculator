@@ -100,9 +100,9 @@ function FormulaDisplay({ formula }: { formula: string }) {
   if (!formula) return null;
   return (
     <div className="mt-3 pt-3 border-t border-white/10">
-      <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Formula</p>
+      <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Formula</p>
       {formula.split('\n').map((line, i) => (
-        <p key={i} className="text-[11px] text-white/50 italic leading-relaxed font-mono">{line}</p>
+        <p key={i} className="text-xs text-white/50 italic leading-relaxed font-mono">{line}</p>
       ))}
     </div>
   );
@@ -235,10 +235,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         )}
 
         <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
             <span className="font-bold">1.5–3.0+ min</span> Industry range
           </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
             <span className="font-bold">3.0 min</span> Observed across deployments
           </span>
         </div>
@@ -1153,7 +1153,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => isComplete && setActiveDomain(d)}
-                  className={`text-[10px] sm:text-xs font-medium uppercase tracking-[1px] sm:tracking-[1.5px] mb-2 px-1 py-1 ${
+                  className={`text-[12px] sm:text-xs font-medium uppercase tracking-[1px] sm:tracking-[1.5px] mb-2 px-1 py-1 ${
                     isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888]'
                   }`}
                   data-testid={`domain-label-${d}`}
@@ -1198,13 +1198,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         data-testid="mobile-impact-strip"
       >
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
+          <span className="text-[12px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-sm font-bold text-white">
             {feedback ? (feedback.hasValue ? formatDollar(feedback.value || 0) : '$0') : '—'}
           </span>
         </div>
-        <span className="text-[10px] text-white/40 uppercase tracking-wider">
+        <span className="text-[12px] text-white/40 uppercase tracking-wider">
           {activeIdx + 1} of {DOMAIN_ORDER.length}
         </span>
       </motion.div>
@@ -1288,7 +1288,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           key={`sidebar-${activeDomain}`}
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="card-domain-feedback">
-            <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
+            <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
               Estimated Impact
             </p>
 
@@ -1312,7 +1312,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <FormulaDisplay formula={feedback.formula} />
 
-                <p className="text-[10px] text-white/30 italic mt-3">
+                <p className="text-[12px] text-white/30 italic mt-3">
                   Estimates based on your inputs. Individual results vary.
                 </p>
               </>
@@ -1328,7 +1328,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               Domain Progress
             </p>
             <div className="space-y-2">

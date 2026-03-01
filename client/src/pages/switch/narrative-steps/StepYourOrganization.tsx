@@ -54,7 +54,7 @@ export default function StepYourOrganization({
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12" style={{ fontFamily: "Manrope, sans-serif" }}>
       <div className="flex-1 max-w-[400px] py-20 md:py-20">
-        <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step2-eyebrow">
+        <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step2-eyebrow">
           Your Organization
         </p>
 
@@ -184,7 +184,7 @@ export default function StepYourOrganization({
         <div className="hidden lg:block w-[300px] shrink-0 py-20">
           <div className="sticky top-24 space-y-4">
             <div className="bg-[#F7F6F4] border border-[#E8E8E8] rounded-xl p-6">
-              <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
+              <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
                 What We'll Model
               </p>
               <div className="space-y-3">
@@ -198,7 +198,7 @@ export default function StepYourOrganization({
 
               <div className="w-full h-px bg-[#E8E8E8] my-5" />
 
-              <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3">
+              <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3">
                 Baseline Recognized
               </p>
               <div className="space-y-2 text-[15px]">

@@ -211,7 +211,7 @@ export default function StepEnterprisePressureMap({
       </div>
 
       <div>
-        <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-5" data-testid="text-recommended-label">
+        <p className="text-xs font-medium text-[#999] uppercase tracking-wider mb-5" data-testid="text-recommended-label">
           Indicated strategic priority
         </p>
         <div
@@ -271,7 +271,7 @@ export default function StepEnterprisePressureMap({
 
       {confirmed === false && (
         <div data-testid="section-override-tiles">
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4">
+          <p className="text-xs font-medium text-[#999] uppercase tracking-wider mb-4">
             Designate primary pressure point
           </p>
           <div className="space-y-3">
@@ -312,7 +312,7 @@ export default function StepEnterprisePressureMap({
           className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]"
           data-testid="card-primary-engine"
         >
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-3">
+          <p className="text-xs font-medium text-[#999] uppercase tracking-wider mb-3">
             Primary value engine identified
           </p>
           <div className="flex items-center gap-3">
@@ -365,7 +365,7 @@ export default function StepEnterprisePressureMap({
                   </div>
                   <div className="flex flex-wrap gap-4">
                     <div>
-                      <label className="block text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Pressure</label>
+                      <label className="block text-[12px] font-medium text-[#999] uppercase tracking-wider mb-1">Pressure</label>
                       <SegmentedPills
                         options={PRESSURE_OPTIONS}
                         selected={meta.pressure}
@@ -374,7 +374,7 @@ export default function StepEnterprisePressureMap({
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Confidence</label>
+                      <label className="block text-[12px] font-medium text-[#999] uppercase tracking-wider mb-1">Confidence</label>
                       <SegmentedPills
                         options={CONFIDENCE_OPTIONS}
                         selected={meta.confidence}

@@ -36,7 +36,7 @@ export default function StepEfficiencyReality({
 
   return (
     <div className="max-w-[580px] mx-auto py-20 md:py-20" style={{ fontFamily: "Manrope, sans-serif" }}>
-      <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step5-eyebrow">
+      <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-3" data-testid="text-step5-eyebrow">
         Efficiency
       </p>
 
@@ -51,7 +51,7 @@ export default function StepEfficiencyReality({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div className="bg-[#F7F6F4] border border-[#E8E8E8] rounded-xl p-7" data-testid="card-your-efficiency">
-          <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
+          <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
             Your Current
           </p>
           <p className="text-[48px] font-bold text-[#1A1A1A] leading-none tabular-nums mb-1">
@@ -66,7 +66,7 @@ export default function StepEfficiencyReality({
         </div>
 
         <div className="bg-white border-2 border-[#EA2C00] rounded-xl p-7 shadow-[0_1px_4px_rgba(0,0,0,0.06)]" data-testid="card-abridge-efficiency">
-          <p className="text-[11px] font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
+          <p className="text-xs font-semibold text-[#9B9B9B] uppercase tracking-[2px] mb-4">
             Abridge Average
           </p>
           <p className="text-[48px] font-bold text-[#1A1A1A] leading-none tabular-nums mb-1">

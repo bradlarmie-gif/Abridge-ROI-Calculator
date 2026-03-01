@@ -227,19 +227,19 @@ function StatusChip({ status }: { status: SectionStatus }) {
   switch (status) {
     case "locked":
       return (
-        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#BBBBBB] uppercase tracking-[1px]">
+        <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#BBBBBB] uppercase tracking-[1px]">
           <Lock className="w-3 h-3" />
         </span>
       );
     case "active":
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
           Next
         </span>
       );
     case "in-progress":
       return (
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-[#EA2C00] uppercase tracking-[1px]">
+        <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#EA2C00] uppercase tracking-[1px]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
           In Progress
         </span>
@@ -296,7 +296,7 @@ function CollapsibleSection({
       >
         <div className="flex items-center gap-2.5">
           <span
-            className={`text-[11px] font-semibold uppercase tracking-[1.5px]
+            className={`text-xs font-semibold uppercase tracking-[1.5px]
               ${isLocked ? "text-[#CCCCCC]" : isComplete ? "text-[#666666]" : "text-[#1A1A1A]"}
             `}
           >
@@ -306,7 +306,7 @@ function CollapsibleSection({
         <div className="flex items-center gap-2.5">
           <StatusChip status={status} />
           {subtitle && !isExpanded && !isLocked && (
-            <span className="text-[10px] text-[#AAAAAA]">{subtitle}</span>
+            <span className="text-[12px] text-[#AAAAAA]">{subtitle}</span>
           )}
           {!isLocked && (
             isExpanded ? (
@@ -423,7 +423,7 @@ function EditView({
       <div className={`rounded-lg p-5 mb-3 transition-all duration-300 ${profileComplete ? "bg-[#F9F7F4] border border-[#E8E2DA]" : "bg-[#F5F0EB] border-2 border-[#EA2C00]/30 shadow-sm"}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+            <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
               Partner Profile
             </span>
           </div>
@@ -433,7 +433,7 @@ function EditView({
               Done
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
               Start Here
             </span>
           )}
@@ -506,7 +506,7 @@ function EditView({
         {config.deploymentFields && config.deploymentFields.length > 0 && (
           <>
             <div className="h-px bg-[#E5E5E5]/60 my-4" />
-            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
+            <span className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
               {config.label} Deployment
             </span>
             <div className="grid grid-cols-2 gap-4">
@@ -547,14 +547,14 @@ function EditView({
             onToggle={() => onToggleSection(section.key)}
           >
             {section.description && (
-              <p className="text-[10px] text-[#999999] mb-3">{section.description}</p>
+              <p className="text-[12px] text-[#999999] mb-3">{section.description}</p>
             )}
             <div className="grid grid-cols-3 gap-4 mb-3">
               <div />
-              <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">
+              <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
                 Before
               </div>
-              <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">
+              <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
                 With Abridge
               </div>
             </div>
@@ -690,12 +690,12 @@ function EditView({
         >
           <div className="flex items-center gap-2.5">
             <Settings2 className="w-4 h-4 text-[#999999]" />
-            <span className="text-[11px] font-semibold text-[#666666] uppercase tracking-[1.5px]">
+            <span className="text-xs font-semibold text-[#666666] uppercase tracking-[1.5px]">
               Model Assumptions
             </span>
           </div>
           <div className="flex items-center gap-2.5">
-            <span className="text-[10px] text-[#AAAAAA] font-medium">
+            <span className="text-[12px] text-[#AAAAAA] font-medium">
               Defaults applied
             </span>
             <Pencil className="w-3.5 h-3.5 text-[#BBBBBB]" />
@@ -746,7 +746,7 @@ function EditView({
                   <div className="h-px bg-[#E5E5E5]/60" />
 
                   <div>
-                    <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-1 block">
+                    <span className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px] mb-1 block">
                       Attribution Range
                     </span>
                     <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center px-3 text-sm text-[#666666]">
@@ -757,7 +757,7 @@ function EditView({
                   <div className="h-px bg-[#E5E5E5]/60" />
 
                   <div>
-                    <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
+                    <span className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
                       Time Allocation
                     </span>
                     <div className="grid grid-cols-2 gap-4">
@@ -817,7 +817,7 @@ function EditView({
             guidance
           )}
         </Button>
-        <p className="text-[10px] text-[#999999] mt-3">
+        <p className="text-[12px] text-[#999999] mt-3">
           You can edit this data anytime from the summary page.
         </p>
       </div>
@@ -849,7 +849,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
         transition={{ delay: 0.1 }}
       >
         <p
-          className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
+          className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
           data-testid="text-section-deployment"
         >
           Deployment Summary
@@ -857,7 +857,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div data-testid="stat-providers">
             <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.providers}</p>
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">
+            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">
               providers on Abridge
             </p>
           </div>
@@ -865,7 +865,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
             <p className="text-2xl font-bold text-[#1A1A1A]">
               {formatNumber(state.deployment.totalEncounters)}
             </p>
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">
+            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">
               encounters analyzed
             </p>
           </div>
@@ -873,20 +873,20 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
             <p className="text-2xl font-bold text-[#1A1A1A]">
               {state.deployment.utilizationRate}%
             </p>
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">adoption</p>
+            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">adoption</p>
           </div>
           <div data-testid="stat-months">
             <p className="text-2xl font-bold text-[#1A1A1A]">
               {state.deployment.monthsOnAbridge} mo
             </p>
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">live</p>
+            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">live</p>
           </div>
         </div>
 
         {state.deployment.totalProviders > state.deployment.providers && (
           <div className="mt-4 flex items-start gap-2" data-testid="section-expansion-seed">
             <Users className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
-            <p className="text-[10px] text-[#999999]">
+            <p className="text-[12px] text-[#999999]">
               {state.deployment.providers} of {state.deployment.totalProviders} total providers are
               on Abridge today.
             </p>
@@ -901,7 +901,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
         transition={{ delay: 0.15 }}
       >
         <p
-          className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
+          className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
           data-testid="text-section-measured"
         >
           What We Measured
@@ -909,10 +909,10 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
 
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div />
-          <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] text-right">
+          <p className="text-xs font-semibold text-[#999999] uppercase tracking-[1px] text-right">
             Before
           </p>
-          <p className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">
+          <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">
             With Abridge
           </p>
         </div>
@@ -932,7 +932,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
 
           return (
             <div key={section.key} className="mb-4">
-              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+              <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
                 {section.label}
               </p>
               <div className="space-y-0">

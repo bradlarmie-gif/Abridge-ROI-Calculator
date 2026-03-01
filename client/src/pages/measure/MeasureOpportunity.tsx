@@ -272,7 +272,7 @@ export default function MeasureOpportunity({
         >
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
               Layer 1: Deepen
             </p>
           </div>
@@ -293,13 +293,13 @@ export default function MeasureOpportunity({
           <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
+                <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
                 <p className="text-sm text-[#666666]">{state.deployment.utilizationRate}% adoption</p>
                 <p className="text-sm text-[#666666]">{formatNumber(expansion.currentAdoptedEncounters)} {encounterLabel}</p>
                 <p className="text-sm text-[#666666]">{formatNumber(Math.round(calc.totalHoursSaved))} hours saved</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
+                <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
                   At {targetAdoption}% Adoption
                 </p>
                 <AnimatePresence mode="wait">
@@ -353,7 +353,7 @@ export default function MeasureOpportunity({
         >
           <div className="flex items-center gap-2 mb-1">
             <Users className="w-4 h-4 text-[#EA2C00]" />
-            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
               Layer 2: Expand
             </p>
           </div>
@@ -377,12 +377,12 @@ export default function MeasureOpportunity({
           <div className="bg-[#F5F0EB] rounded-lg p-5 mb-5">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
+                <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
                 <p className="text-sm text-[#666666]">{state.deployment.providers} {providerLabel}</p>
                 <p className="text-sm text-[#666666]">{formatSmartRange(calc.totalValueLow, calc.totalValueHigh)}/year</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
+                <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
                   At {expansion.expandProviders} {isNursing ? "Nurses" : "Providers"}
                 </p>
                 <AnimatePresence mode="wait">
@@ -418,11 +418,11 @@ export default function MeasureOpportunity({
                   {formatCurrency(expansion.perProviderValue)}
                 </motion.p>
               </AnimatePresence>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">value per {providerLabelSingular}/year</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">value per {providerLabelSingular}/year</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-lg p-4">
               <p className="text-xl font-bold text-white">{Math.round(expansion.hoursPerProvider)} hrs</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">saved per {providerLabelSingular}/{state.deployment.monthsOnAbridge} mo</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">saved per {providerLabelSingular}/{state.deployment.monthsOnAbridge} mo</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-lg p-4">
               <AnimatePresence mode="wait">
@@ -436,7 +436,7 @@ export default function MeasureOpportunity({
                   {expansion.remainingProviders}
                 </motion.p>
               </AnimatePresence>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">not yet on Abridge of {targetProviders} total</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">not yet on Abridge of {targetProviders} total</p>
             </div>
           </div>
         </motion.div>
@@ -448,13 +448,13 @@ export default function MeasureOpportunity({
           transition={{ delay: 0.2 }}
           data-testid="section-combined"
         >
-          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-6">
+          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-6">
             Your Combined Opportunity
           </p>
 
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-[#2A2A2A] rounded-lg p-5">
-              <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1px] mb-3">Today</p>
+              <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-3">Today</p>
               <p className="text-sm text-[#AAAAAA] mb-1">{state.deployment.providers} {providerLabel}</p>
               <p className="text-sm text-[#AAAAAA] mb-3">{state.deployment.utilizationRate}% adoption</p>
               <p className="text-2xl font-bold text-white" data-testid="text-today-value">
@@ -462,7 +462,7 @@ export default function MeasureOpportunity({
               </p>
             </div>
             <div className="bg-[#2A2A2A] rounded-lg p-5 border border-[#EA2C00]/30">
-              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-3">With Deeper + Wider Adoption</p>
+              <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-3">With Deeper + Wider Adoption</p>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${targetAdoption}-${targetProviders}`}
@@ -496,7 +496,7 @@ export default function MeasureOpportunity({
         >
           <div className="flex items-start gap-2">
             <Info className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
-            <p className="text-[10px] text-[#999999] leading-relaxed">
+            <p className="text-[12px] text-[#999999] leading-relaxed">
               Projections assume current time savings ({calc.timeSavedPerNote} min/{isNursing ? "shift" : isInpatient ? "discharge" : "encounter"}), adoption rates, and {isInpatient ? "documentation" : isED ? "throughput" : isNursing ? "efficiency" : "wRVU"} improvements continue. Deeper adoption assumes {targetAdoption}% utilization. Expansion assumes same per-{providerLabelSingular} economics. Click the highlighted values above to customize your targets.
             </p>
           </div>
