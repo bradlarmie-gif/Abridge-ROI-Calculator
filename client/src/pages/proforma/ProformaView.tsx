@@ -28,7 +28,7 @@ const SETTING_ICONS: Record<string, typeof Building2> = {
   nursing: Stethoscope,
 };
 
-function useIsMobile(breakpoint = 768) {
+function useIsMobile(breakpoint = 820) {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < breakpoint : false
   );
@@ -381,16 +381,17 @@ export default function ProformaView({
                   setShowSaveDialog(true);
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:text-white transition-colors"
+                title="Save as Scenario"
                 data-testid="button-save-scenario"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Save Scenario</span>
+                <span className="hidden sm:inline">Save as Scenario</span>
               </button>
             </div>
           </div>
 
           {scenarios.length > 0 && (
-            <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1" data-testid="scenario-tabs">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="scenario-tabs">
               <span className="text-[10px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
               {scenarios.map((sc, idx) => (
                 <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
@@ -416,7 +417,8 @@ export default function ProformaView({
                       <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
                       <button
                         onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
-                        className="p-0.5 text-white/40 hover:text-white transition-colors"
+                        className="p-1.5 text-white/40 hover:text-white transition-colors"
+                        title="Rename scenario"
                         data-testid={`button-rename-scenario-${idx}`}
                       >
                         <Pencil className="w-3 h-3" />
@@ -426,7 +428,8 @@ export default function ProformaView({
                           onDeleteScenario?.(sc.id);
                           if (scenarios.length <= 1) setCompareMode(false);
                         }}
-                        className="p-0.5 text-white/40 hover:text-red-400 transition-colors"
+                        className="p-1.5 text-white/40 hover:text-red-400 transition-colors"
+                        title="Delete scenario"
                         data-testid={`button-delete-scenario-${idx}`}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -439,7 +442,7 @@ export default function ProformaView({
           )}
 
           {/* Mobile: Annual Value on top, then 2x2 grid */}
-          <div className="md:hidden">
+          <div className="min-[820px]:hidden">
             <div className="mb-4">
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.runRateValue)}</p>
@@ -493,7 +496,7 @@ export default function ProformaView({
           </div>
 
           {/* Desktop: 5 cols */}
-          <div className="hidden md:grid grid-cols-5 gap-6">
+          <div className="hidden min-[820px]:grid grid-cols-5 gap-6">
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
@@ -1025,7 +1028,7 @@ export default function ProformaView({
         >
           <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">{contractTermLabel(config.contractTermMonths)} Financial Summary</h2>
           <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">Phased projection with onset timing and conservative retention modeling</p>
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0" data-testid="table-pnl">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="table-pnl">
             <table className="w-full text-xs sm:text-sm min-w-[340px]">
               <thead>
                 <tr className="border-b-2 border-neutral-300">
@@ -1135,7 +1138,7 @@ export default function ProformaView({
 
         {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
+          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -1358,7 +1361,7 @@ export default function ProformaView({
             <p className="text-xs sm:text-sm text-neutral-500 mb-4">Current configuration vs. saved scenarios side-by-side</p>
 
             <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-4">
-              <div className="overflow-x-auto -mx-2 px-2" data-testid="comparison-table">
+              <div className="overflow-x-auto -mx-2 px-2 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="comparison-table">
                 <table className="w-full text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b-2 border-neutral-300">
@@ -1485,13 +1488,13 @@ export default function ProformaView({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-neutral-900">Save Scenario</h3>
+                <h3 className="text-lg font-bold text-neutral-900">Save as Scenario</h3>
                 <button onClick={() => setShowSaveDialog(false)} className="p-1 text-neutral-400 hover:text-neutral-600" data-testid="button-close-save-dialog">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <p className="text-sm text-neutral-500 mb-4">
-                Save the current settings and configuration as a named scenario for comparison.
+                Save your current deal configuration as a named scenario so you can compare different approaches side by side.
               </p>
               <input
                 type="text"

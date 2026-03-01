@@ -40,6 +40,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
     -   "Annual Value at Scale" hero metric using run-rate value (last 12 months of cash flows) instead of raw unscaled base value, for CFO defensibility.
     -   Elevated ProformaHub as a deal design workspace with Gantt component and deal snapshot panel.
     -   Scenario Comparison for saving and comparing up to 3 named scenarios with side-by-side metrics, overlay charts, pricing row showing deal structure, and pricing tags on scenario tabs.
+    -   Mobile/tablet responsive: isMobile breakpoint at 820px (captures iPad portrait), touch-optimized scenario tabs, smooth iOS scrolling on financial tables, stacking card layouts on narrow screens.
 
 ### PDF Value Consistency
 -   **Single Source of Truth**: All financial values in PDF exports are derived from the `sum(drivers array)` to prevent divergence.

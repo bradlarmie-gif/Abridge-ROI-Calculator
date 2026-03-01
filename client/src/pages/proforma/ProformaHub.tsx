@@ -269,7 +269,7 @@ export default function ProformaHub({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 mb-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Annual Value</p>
                           <p className="text-lg font-bold" style={{ color }}>{fmt(setting.annualValue)}</p>
@@ -318,7 +318,7 @@ export default function ProformaHub({
                             <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
                               <div>
                                 <p className="text-[10px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                   <div>
                                     <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 1</label>
                                     <FormattedNumberInput
