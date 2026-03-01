@@ -51,7 +51,7 @@ const colors = {
   negative: "#DC2626",
   docBlue: "#1A1A1A",
   timeRed: "#EA2C00",
-  retentionGreen: "#B45309",
+  retentionAmber: "#B45309",
   warningBg: "#FEF3C7",
   warningBorder: "#F59E0B",
   warningText: "#92400E",
@@ -524,7 +524,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
                 <G key={`bar-${i}`}>
                   {docH > 0.5 && <Rect x={x} y={docY} width={barW} height={docH} fill={colors.docBlue} fillOpacity={0.8} rx={1} />}
                   {timeH > 0.5 && <Rect x={x} y={timeY} width={barW} height={timeH} fill={colors.timeRed} fillOpacity={0.75} />}
-                  {retH > 0.5 && <Rect x={x} y={retY} width={barW} height={retH} fill={colors.retentionGreen} fillOpacity={0.75} rx={1} />}
+                  {retH > 0.5 && <Rect x={x} y={retY} width={barW} height={retH} fill={colors.retentionAmber} fillOpacity={0.75} rx={1} />}
                   {invH > 0.5 && <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#78716C" fillOpacity={0.12} rx={1} />}
                   {invH > 0.5 && <SvgLine x1={x + barW + 2} y1={invY} x2={x + barW + 2 + invBarW} y2={invY} stroke="#78716C" strokeWidth={0.8} />}
                 </G>
@@ -535,7 +535,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
               const idx = data.findIndex(d => d.label === paybackQuarter);
               if (idx < 0) return null;
               const x = idx * groupW + barGap + barW / 2;
-              return <SvgLine x1={x} y1={0} x2={x} y2={svgH} stroke={colors.retentionGreen} strokeWidth={0.8} strokeDasharray="4 2" />;
+              return <SvgLine x1={x} y1={0} x2={x} y2={svgH} stroke={colors.retentionAmber} strokeWidth={0.8} strokeDasharray="4 2" />;
             })()}
 
             <SvgLine x1={0} y1={svgH} x2={svgW} y2={svgH} stroke="#D5D0CB" strokeWidth={1} />
@@ -561,7 +561,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
           <Text style={{ fontSize: 7, color: "#666666" }}>Capacity & Efficiency</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <View style={{ width: 10, height: 6, backgroundColor: colors.retentionGreen, borderRadius: 1, opacity: 0.75 }} />
+          <View style={{ width: 10, height: 6, backgroundColor: colors.retentionAmber, borderRadius: 1, opacity: 0.75 }} />
           <Text style={{ fontSize: 7, color: "#666666" }}>Retention</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -570,8 +570,8 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
         </View>
         {paybackQuarter && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <View style={{ width: 10, height: 0, borderTopWidth: 1, borderTopColor: colors.retentionGreen, borderStyle: "dashed" }} />
-            <Text style={{ fontSize: 7, color: colors.retentionGreen }}>Payback</Text>
+            <View style={{ width: 10, height: 0, borderTopWidth: 1, borderTopColor: colors.retentionAmber, borderStyle: "dashed" }} />
+            <Text style={{ fontSize: 7, color: colors.retentionAmber }}>Payback</Text>
           </View>
         )}
       </View>
@@ -593,7 +593,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
         {docW > 0 && <Rect x={0} y={0} width={docW} height={h} fill={colors.docBlue} fillOpacity={0.8} rx={docPct >= 98 ? 3 : 0} />}
         {docW > 0 && <Rect x={0} y={0} width={Math.min(docW, 6)} height={h} fill={colors.docBlue} fillOpacity={0.8} rx={3} />}
         {timeW > 0 && <Rect x={docW} y={0} width={timeW} height={h} fill={colors.timeRed} fillOpacity={0.75} />}
-        {retW > 0 && <Rect x={docW + timeW} y={0} width={retW} height={h} fill={colors.retentionGreen} fillOpacity={0.75} rx={retPct > 0 ? 3 : 0} />}
+        {retW > 0 && <Rect x={docW + timeW} y={0} width={retW} height={h} fill={colors.retentionAmber} fillOpacity={0.75} rx={retPct > 0 ? 3 : 0} />}
       </Svg>
       <View style={{ flexDirection: "row", marginTop: 3 }}>
         {docPct > 0 && (
@@ -608,7 +608,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
         )}
         {retPct > 0 && (
           <View style={{ flex: retPct, alignItems: retPct > 12 ? "center" : "flex-end" }}>
-            <Text style={{ fontSize: 6.5, color: colors.retentionGreen }}>{retPct}% Retention</Text>
+            <Text style={{ fontSize: 6.5, color: colors.retentionAmber }}>{retPct}% Retention</Text>
           </View>
         )}
       </View>
@@ -624,15 +624,15 @@ function PDFOnsetTimeline() {
   const points = [
     { pct: 0.03, label: "Month 1", sublabel: "Doc Quality", color: colors.docBlue },
     { pct: 0.12, label: "Month 4", sublabel: "Capacity & Efficiency", color: colors.timeRed },
-    { pct: 0.4, label: "Year 2", sublabel: "Retention 50%", color: colors.retentionGreen },
-    { pct: 0.97, label: "Year 3", sublabel: "Full Retention", color: colors.retentionGreen },
+    { pct: 0.4, label: "Year 2", sublabel: "Retention 50%", color: colors.retentionAmber },
+    { pct: 0.97, label: "Year 3", sublabel: "Full Retention", color: colors.retentionAmber },
   ];
 
   return (
     <View>
       <Svg width={w} height={svgH} viewBox={`0 0 ${w} ${svgH}`}>
         <SvgLine x1={8} y1={lineY} x2={w - 8} y2={lineY} stroke="#E5E0DB" strokeWidth={2} />
-        <SvgLine x1={(w - 16) * points[2].pct + 8} y1={lineY - 1} x2={(w - 16) * points[3].pct + 8} y2={lineY - 1} stroke={colors.retentionGreen} strokeWidth={4} strokeOpacity={0.18} />
+        <SvgLine x1={(w - 16) * points[2].pct + 8} y1={lineY - 1} x2={(w - 16) * points[3].pct + 8} y2={lineY - 1} stroke={colors.retentionAmber} strokeWidth={4} strokeOpacity={0.18} />
         {points.map((pt, i) => {
           const cx = (w - 16) * pt.pct + 8;
           return (
@@ -654,11 +654,11 @@ function PDFOnsetTimeline() {
         </View>
         <View style={{ alignItems: "center" }}>
           <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 2</Text>
-          <Text style={{ fontSize: 5.5, color: colors.retentionGreen }}>Retention 50%</Text>
+          <Text style={{ fontSize: 5.5, color: colors.retentionAmber }}>Retention 50%</Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
           <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 3</Text>
-          <Text style={{ fontSize: 5.5, color: colors.retentionGreen }}>Full Retention</Text>
+          <Text style={{ fontSize: 5.5, color: colors.retentionAmber }}>Full Retention</Text>
         </View>
       </View>
     </View>
@@ -678,7 +678,7 @@ function PDFSensitivityBars({ conservative, base, optimistic }: { conservative: 
       <Svg width={w} height={totalH} viewBox={`0 0 ${w} ${totalH}`}>
         <Rect x={0} y={0} width={scale(conservative)} height={barH} fill="#999999" fillOpacity={0.45} rx={2} />
         <Rect x={0} y={barH + gap} width={scale(base)} height={barH} fill="#EA2C00" fillOpacity={0.65} rx={2} />
-        <Rect x={0} y={(barH + gap) * 2} width={scale(optimistic)} height={barH} fill={colors.retentionGreen} fillOpacity={0.55} rx={2} />
+        <Rect x={0} y={(barH + gap) * 2} width={scale(optimistic)} height={barH} fill={colors.positive} fillOpacity={0.55} rx={2} />
       </Svg>
     </View>
   );
@@ -825,14 +825,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           {totalRetentionValue > 0 && (
             <View style={[styles.cardBg, { marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}>
               <View>
-                <Text style={{ fontSize: 9, color: colors.retentionGreen, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
+                <Text style={{ fontSize: 9, color: colors.retentionAmber, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
                   RETENTION & WELLBEING
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
                   {retPct}% of total value. Phased conservatively over {termLabel.toLowerCase()}.
                 </Text>
               </View>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.retentionGreen }}>{fmt(totalRetentionValue)}</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.retentionAmber }}>{fmt(totalRetentionValue)}</Text>
             </View>
           )}
 
@@ -884,7 +884,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
                   {s.drivers.map(d => {
                     const onsetColor = d.onset === "immediate" ? colors.docBlue :
-                      d.onset === "delayed" ? colors.timeRed : colors.retentionGreen;
+                      d.onset === "delayed" ? colors.timeRed : colors.retentionAmber;
                     return (
                       <View key={d.id} style={{ backgroundColor: colors.background, borderRadius: 3, paddingHorizontal: 7, paddingVertical: 3, borderLeftWidth: 2, borderLeftColor: onsetColor }}>
                         <Text style={{ fontSize: 7 }}>{d.name}: {fmt(d.value)}</Text>
@@ -914,7 +914,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 <Text style={{ fontSize: 7.5, color: colors.secondary }}>Delayed (3mo) {"\u2014"} Operational change needed</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.retentionGreen }} />
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.retentionAmber }} />
                 <Text style={{ fontSize: 7.5, color: colors.secondary }}>Phased {"\u2014"} Retention over Y1/Y2/Y3</Text>
               </View>
             </View>
@@ -1112,12 +1112,12 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </Text>
           </View>
 
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.retentionGreen, marginBottom: 8 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionGreen, marginBottom: 3 }}>Layer 3: Retention & Wellbeing (Phased Over Years)</Text>
+          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.retentionAmber, marginBottom: 8 }]}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber, marginBottom: 3 }}>Layer 3: Retention & Wellbeing (Phased Over Years)</Text>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
               Clinician and nurse retention, wellbeing improvements. Phased conservatively: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3 {"\u2014"} deliberately understating early-period retention value.
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.retentionGreen }}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.retentionAmber }}>
               {termLabel} contribution: {fmt(totalRetentionValue)} ({retPct}% of total)
             </Text>
           </View>
@@ -1191,7 +1191,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalTimeValue)}</Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 3, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.retentionGreen }}>Retention (phased)</Text>
+              <Text style={{ flex: 2, fontSize: 8, color: colors.retentionAmber }}>Retention (phased)</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.retentionValue)}</Text>
               ))}
