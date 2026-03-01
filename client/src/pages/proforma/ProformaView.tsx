@@ -169,15 +169,14 @@ export default function ProformaView({
   }, [summary.totalSystemValue, totalProviders]);
 
   const sensitivityAnalysis = useMemo(() => {
-    const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number, costFactor: number) => ({
+    const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number) => ({
       ...s,
       annualValue: s.annualValue * valueFactor,
       retentionValue: s.retentionValue * valueFactor,
       drivers: s.drivers.map(d => ({ ...d, value: d.value * valueFactor })),
-      costPerUnit: s.costPerUnit * costFactor,
     });
-    const conservativeSettings = settings.map(s => scaleSettings(s, 0.8, 1.1));
-    const optimisticSettings = settings.map(s => scaleSettings(s, 1.2, 0.9));
+    const conservativeSettings = settings.map(s => scaleSettings(s, 0.7));
+    const optimisticSettings = settings.map(s => scaleSettings(s, 1.3));
     const consCF = buildMonthlyCashFlows(conservativeSettings, config);
     const optCF = buildMonthlyCashFlows(optimisticSettings, config);
     const consSummary = calculateProformaSummary(conservativeSettings, config, consCF);
@@ -1118,42 +1117,47 @@ export default function ProformaView({
             <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
             <h2 className="text-base sm:text-lg font-bold text-neutral-900">Sensitivity Analysis</h2>
           </div>
-          <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">Range of outcomes across conservative, base, and optimistic scenarios</p>
+          <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">What if value drivers realize at different rates?</p>
 
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6">
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
+          <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+            <div className="grid grid-cols-3">
               {([
-                { key: "conservative" as const, label: "Conservative", sublabel: "-20% value, +10% cost", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" },
-                { key: "base" as const, label: "Base Case", sublabel: "Current assumptions", color: "text-[#EA2C00]", bg: "bg-white", border: "border-neutral-300" },
-                { key: "optimistic" as const, label: "Optimistic", sublabel: "+20% value, -10% cost", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-              ] as const).map(scenario => {
+                { key: "conservative" as const, label: "Conservative", sublabel: "70% Realization", accent: "#78716C", isBase: false },
+                { key: "base" as const, label: "Base Case", sublabel: "Your Assumptions", accent: "#EA2C00", isBase: true },
+                { key: "optimistic" as const, label: "Optimistic", sublabel: "130% Realization", accent: "#1A1A1A", isBase: false },
+              ] as const).map((scenario, idx) => {
                 const data = sensitivityAnalysis[scenario.key];
                 return (
-                  <div key={scenario.key} className={`${scenario.bg} rounded-xl p-3 sm:p-4 border ${scenario.border}`} data-testid={`sensitivity-${scenario.key}`}>
-                    <p className={`text-xs sm:text-sm font-bold ${scenario.color} mb-0.5`}>{scenario.label}</p>
-                    <p className="text-[9px] sm:text-[10px] text-neutral-400 mb-3">{scenario.sublabel}</p>
+                  <div
+                    key={scenario.key}
+                    className={`p-3 sm:p-5 ${idx < 2 ? "border-r border-neutral-100" : ""} ${scenario.isBase ? "bg-[#FAFAF9]" : ""}`}
+                    data-testid={`sensitivity-${scenario.key}`}
+                  >
+                    <div className="h-0.5 rounded-full mb-3 sm:mb-4" style={{ backgroundColor: scenario.accent }} />
+                    <p className="text-[10px] sm:text-xs font-bold text-neutral-900 mb-0.5">{scenario.label}</p>
+                    <p className="text-[9px] sm:text-[10px] text-neutral-400 mb-3 sm:mb-4">{scenario.sublabel}</p>
 
-                    <div className="space-y-2.5">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Annual Value</p>
-                        <p className={`text-sm sm:text-base font-bold ${scenario.color}`} data-testid={`sensitivity-value-${scenario.key}`}>{fmt(data.annualValue)}</p>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Annual Value</p>
+                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-value-${scenario.key}`}>{fmt(data.annualValue)}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Value-to-Cost</p>
-                        <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-vtc-${scenario.key}`}>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Value-to-Cost</p>
+                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
                           {hasInvestment ? `${data.valueToCost.toFixed(1)}x` : "N/A"}
                         </p>
                       </div>
-                      {hasInvestment && data.irrValid && (
-                        <div>
-                          <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">{data.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
-                          <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-irr-${scenario.key}`}>{fmtPct(data.irr)}</p>
-                        </div>
-                      )}
                       <div>
-                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Payback</p>
-                        <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-payback-${scenario.key}`}>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Payback</p>
+                        <p className="text-sm sm:text-lg font-bold text-neutral-900" data-testid={`sensitivity-payback-${scenario.key}`}>
                           {data.paybackMonth ? `${data.paybackMonth} mo` : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
+                        <p className={`text-sm sm:text-lg font-bold ${data.threeYearNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
+                          {fmt(data.threeYearNet)}
                         </p>
                       </div>
                     </div>
@@ -1162,66 +1166,65 @@ export default function ProformaView({
               })}
             </div>
 
-            {hasInvestment && (
-              <div className="mb-4">
-                <p className="text-[10px] sm:text-xs font-medium text-neutral-500 mb-2">Value-to-Cost Range</p>
-                <div className="relative h-8 sm:h-10 bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                  {(() => {
-                    const consVTC = sensitivityAnalysis.conservative.valueToCost;
-                    const baseVTC = sensitivityAnalysis.base.valueToCost;
-                    const optVTC = sensitivityAnalysis.optimistic.valueToCost;
-                    const maxVTC = Math.max(optVTC, baseVTC, consVTC, 1);
-                    const consWidth = (consVTC / maxVTC) * 100;
-                    const baseWidth = (baseVTC / maxVTC) * 100;
-                    const optWidth = (optVTC / maxVTC) * 100;
+            {(() => {
+              const consVal = sensitivityAnalysis.conservative.annualValue;
+              const baseVal = sensitivityAnalysis.base.annualValue;
+              const optVal = sensitivityAnalysis.optimistic.annualValue;
+              const minVal = Math.min(consVal, baseVal, optVal);
+              const maxVal = Math.max(consVal, baseVal, optVal);
+              const range = maxVal - minVal || 1;
+              const pos = (v: number) => ((v - minVal) / range) * 100;
+              const consPos = pos(consVal);
+              const basePos = pos(baseVal);
+              const optPos = pos(optVal);
 
-                    return (
-                      <>
-                        <div
-                          className="absolute top-0 left-0 h-full bg-emerald-100 rounded-r-lg transition-all duration-500"
-                          style={{ width: `${optWidth}%` }}
-                        />
-                        <div
-                          className="absolute top-0 left-0 h-full bg-neutral-200 rounded-r-lg transition-all duration-500"
-                          style={{ width: `${baseWidth}%` }}
-                        />
-                        <div
-                          className="absolute top-0 left-0 h-full bg-amber-200 rounded-r-lg transition-all duration-500"
-                          style={{ width: `${consWidth}%` }}
-                        />
-                        <div
-                          className="absolute top-0 h-full w-0.5 bg-amber-600 z-10"
-                          style={{ left: `${consWidth}%` }}
-                        >
-                          <span className="absolute -top-0.5 left-1 text-[9px] font-medium text-amber-600 whitespace-nowrap">{consVTC.toFixed(1)}x</span>
-                        </div>
-                        <div
-                          className="absolute top-0 h-full w-0.5 bg-[#EA2C00] z-10"
-                          style={{ left: `${baseWidth}%` }}
-                        >
-                          <span className="absolute -top-0.5 left-1 text-[9px] font-bold text-[#EA2C00] whitespace-nowrap">{baseVTC.toFixed(1)}x</span>
-                        </div>
-                        <div
-                          className="absolute top-0 h-full w-0.5 bg-emerald-600 z-10"
-                          style={{ left: `${Math.min(optWidth, 99)}%` }}
-                        >
-                          <span className="absolute -top-0.5 right-1 text-[9px] font-medium text-emerald-600 whitespace-nowrap">{optVTC.toFixed(1)}x</span>
-                        </div>
-                      </>
-                    );
-                  })()}
+              return (
+                <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-neutral-100">
+                  <p className="text-[10px] sm:text-xs font-medium text-neutral-500 mb-3">Annual Value Range</p>
+                  <div className="relative h-6 mb-1">
+                    <div className="absolute top-1/2 left-0 right-0 h-px bg-neutral-200 -translate-y-1/2" />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-neutral-400 ring-2 ring-white"
+                      style={{ left: `${consPos}%`, marginLeft: "-4px" }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EA2C00] ring-2 ring-white"
+                      style={{ left: `${basePos}%`, marginLeft: "-6px" }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-neutral-800 ring-2 ring-white"
+                      style={{ left: `${optPos}%`, marginLeft: "-4px" }}
+                    />
+                  </div>
+                  <div className="relative h-4">
+                    <span
+                      className="absolute text-[9px] sm:text-[10px] text-neutral-400 font-medium -translate-x-1/2"
+                      style={{ left: `${consPos}%` }}
+                    >
+                      {fmt(consVal)}
+                    </span>
+                    <span
+                      className="absolute text-[9px] sm:text-[10px] text-[#EA2C00] font-bold -translate-x-1/2"
+                      style={{ left: `${basePos}%` }}
+                    >
+                      {fmt(baseVal)}
+                    </span>
+                    <span
+                      className="absolute text-[9px] sm:text-[10px] text-neutral-700 font-medium -translate-x-1/2"
+                      style={{ left: `${optPos}%` }}
+                    >
+                      {fmt(optVal)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-2 mt-1.5 text-[9px] sm:text-[10px] text-neutral-400">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-200" /> Conservative</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-neutral-300" /> Base Case</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-200" /> Optimistic</span>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
-            <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed">
-              Conservative: -20% value drivers, +10% subscription costs. Optimistic: +20% value drivers, -10% subscription costs. This brackets the range of likely outcomes from both revenue and cost perspectives.
-            </p>
+            <div className="px-4 sm:px-6 pb-4 sm:pb-5">
+              <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed">
+                Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.threeYearInvestment)}.
+              </p>
+            </div>
           </div>
         </motion.div>
 
@@ -1251,7 +1254,7 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the upfront investment (implementation fees, or first-year subscription if no impl fees), and subsequent periods are annual net returns. This approach evaluates the investment decision as a year-over-year return, which better reflects how organizations evaluate subscription technology commitments than monthly compounding. Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3.</p>
-              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis. Conservative scenario applies a 20% reduction to value drivers and a 10% increase to subscription costs. Optimistic applies a 20% increase to value drivers and a 10% reduction to costs. This brackets the range of likely outcomes from both revenue and cost perspectives.</p>
+              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis varying only value realization rate. Conservative models 70% realization (not all drivers materialize fully). Optimistic models 130% realization (better-than-expected outcomes). Subscription cost is held constant across all scenarios — it's contractual. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
         </motion.div>

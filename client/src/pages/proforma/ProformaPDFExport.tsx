@@ -1245,21 +1245,21 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabelGray}>SENSITIVITY ANALYSIS</Text>
           <View style={[styles.cardBg, { padding: 12 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
-              Two-sided analysis: Conservative applies a 20% reduction to value drivers and 10% increase to subscription costs. Optimistic applies a 20% increase to value and 10% reduction to costs.
+              Scenarios vary only value realization rate (70%{"\u2013"}130%). Subscription cost is held constant {"\u2014"} it{"\u2019"}s contractual.
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>CONSERVATIVE</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>70% REALIZATION</Text>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>
                   {sensitivityIRR.consValid ? fmtPct(sensitivityIRR.conservative) : "N/A"}
                 </Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
-                <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 2 }}>BASE CASE</Text>
+                <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 2 }}>YOUR ASSUMPTIONS</Text>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{irrDisplay}</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>OPTIMISTIC</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>130% REALIZATION</Text>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.positive }}>
                   {sensitivityIRR.optValid ? fmtPct(sensitivityIRR.optimistic) : "N/A"}
                 </Text>
@@ -1556,15 +1556,14 @@ export async function generateProformaPDF(
     }
   }
 
-  const scaleSettings = (s: ProformaSettingSnapshot, vf: number, cf: number) => ({
+  const scaleSettings = (s: ProformaSettingSnapshot, vf: number) => ({
     ...s,
     annualValue: s.annualValue * vf,
     retentionValue: s.retentionValue * vf,
     drivers: s.drivers.map(d => ({ ...d, value: d.value * vf })),
-    costPerUnit: s.costPerUnit * cf,
   });
-  const conservative = settings.map(s => scaleSettings(s, 0.8, 1.1));
-  const optimistic = settings.map(s => scaleSettings(s, 1.2, 0.9));
+  const conservative = settings.map(s => scaleSettings(s, 0.7));
+  const optimistic = settings.map(s => scaleSettings(s, 1.3));
   const consCF = buildMonthlyCashFlows(conservative, config);
   const optCF = buildMonthlyCashFlows(optimistic, config);
   const consResult = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
