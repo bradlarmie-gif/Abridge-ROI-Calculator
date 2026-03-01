@@ -1428,9 +1428,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabelGray}>RETURN METHODOLOGY</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} {totalImplFees > 0
-                ? `Period 0 is the upfront investment (implementation fees: ${fmt(totalImplFees)}).`
-                : "Period 0 is the first year\u2019s subscription cost (used as the investment baseline when no implementation fees are present)."} Subsequent periods are annual net returns. This evaluates the investment as a year-over-year return rather than monthly compounding, which better reflects how organizations evaluate subscription technology commitments.
+              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} Period 0 is the total cost basis (implementation fees plus full contract subscription: {fmt(summary.threeYearInvestment)}). Subsequent periods are annual gross value realized. This total-cost-basis approach answers: {"\u201C"}What is my annualized return on total spend?{"\u201D"}
               {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes." : ""}
             </Text>
           </View>

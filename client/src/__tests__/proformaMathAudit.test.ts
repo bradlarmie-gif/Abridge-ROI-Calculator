@@ -414,13 +414,14 @@ describe("IRR Cross-Validation", () => {
     expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.001);
   });
 
-  it("annual cash flow period 0 = negative impl fees", () => {
+  it("annual cash flow period 0 = negative total cost (impl + subscription)", () => {
     const settings = [makeSetting({ implementationFee: 50000 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
-    expect(annualCF[0]).toBe(-50000);
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
+    expect(annualCF[0]).toBe(-(50000 + totalSub));
   });
 
   it("annual cash flows have 4 entries (period 0 + 3 years)", () => {
@@ -432,15 +433,14 @@ describe("IRR Cross-Validation", () => {
     expect(annualCF.length).toBe(4);
   });
 
-  it("year 1 net return = year 1 value - year 1 subscription (when impl > 0)", () => {
+  it("year 1 return = year 1 gross value (subscription already in Period 0)", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
-    const y1Value = cashFlows.slice(0, 12).reduce((s, r) => s + r.docValue + r.timeValue + r.retentionValue, 0);
-    const y1Sub = cashFlows.slice(0, 12).reduce((s, r) => s + r.investment, 0);
-    expect(annualCF[1]).toBeCloseTo(y1Value - y1Sub, 0);
+    const y1Gross = cashFlows.slice(0, 12).reduce((s, r) => s + r.docValue + r.timeValue + r.retentionValue, 0);
+    expect(annualCF[1]).toBeCloseTo(y1Gross, 0);
   });
 });
 

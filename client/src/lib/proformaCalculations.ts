@@ -527,30 +527,17 @@ export function buildIRRCashFlows(
   cashFlows: ProformaCashFlowRow[]
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+  const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
+  const totalCost = totalImplFees + totalSubscription;
 
-  const monthlyNetReturns = cashFlows.map(r => {
+  if (totalCost <= 0) return [0];
+
+  const monthlyGrossReturns = cashFlows.map(r => {
     const gross = r.docValue + r.timeValue + r.retentionValue;
-    const net = gross - r.investment;
-    return isFinite(net) ? net : 0;
+    return isFinite(gross) ? gross : 0;
   });
 
-  if (totalImplFees > 0) {
-    return [-totalImplFees, ...monthlyNetReturns];
-  }
-
-  const firstSubIdx = cashFlows.findIndex(r => r.investment > 0);
-  if (firstSubIdx >= 0) {
-    const firstMonthSub = cashFlows[firstSubIdx].investment;
-    const firstMonthGross = cashFlows[firstSubIdx].docValue + cashFlows[firstSubIdx].timeValue + cashFlows[firstSubIdx].retentionValue;
-    const adjustedReturns = [
-      ...monthlyNetReturns.slice(0, firstSubIdx),
-      firstMonthGross,
-      ...monthlyNetReturns.slice(firstSubIdx + 1),
-    ];
-    return [-firstMonthSub, ...adjustedReturns];
-  }
-
-  return [0];
+  return [-totalCost, ...monthlyGrossReturns];
 }
 
 export function buildAnnualIRRCashFlows(
@@ -572,23 +559,15 @@ export function buildAnnualIRRCashFlows(
     });
   }
 
-  if (totalImplFees > 0) {
-    return [
-      -totalImplFees,
-      ...yearBuckets.map(yb => yb.grossValue - yb.subscription),
-    ];
-  }
+  const totalSubscription = yearBuckets.reduce((s, yb) => s + yb.subscription, 0);
+  const totalCost = totalImplFees + totalSubscription;
 
-  const firstYearSub = yearBuckets[0]?.subscription || 0;
-  if (firstYearSub > 0) {
-    return [
-      -firstYearSub,
-      yearBuckets[0].grossValue,
-      ...yearBuckets.slice(1).map(yb => yb.grossValue - yb.subscription),
-    ];
-  }
+  if (totalCost <= 0) return [0];
 
-  return [0];
+  return [
+    -totalCost,
+    ...yearBuckets.map(yb => yb.grossValue),
+  ];
 }
 
 export function calculateAnnualIRR(annualCashFlows: number[]): IRRResult {

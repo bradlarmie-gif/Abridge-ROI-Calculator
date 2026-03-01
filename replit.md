@@ -29,7 +29,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Multi-Setting Proforma Builder**: Allows users to layer multiple care settings (Outpatient, ED, Inpatient, Nursing) into a combined financial model. Features include:
     -   ProformaHub for managing settings and inline editing assumptions.
     -   ProformaView with stacked area ramp charts, 3-year P&L, card-based pricing, editable retention phasing, and Quarters/Years toggle.
-    -   Annual IRR calculation with Newton-Raphson and MIRR fallback, capped at 200% for display.
+    -   Annual IRR calculation using total-cost-basis approach: Period 0 = -(implementation fees + total subscription), Periods 1-N = gross annual value. Newton-Raphson with MIRR fallback, capped at 200% for display.
     -   Value-to-Cost as the primary hero metric.
     -   PDF "Showing Our Math" export that reconstructs per-driver formula strings.
     -   Per-year provider allocation for flexible ramp modeling.

@@ -75,23 +75,25 @@ function makeConfig(overrides: Partial<ProformaConfig> = {}): ProformaConfig {
 }
 
 describe("buildIRRCashFlows", () => {
-  it("period 0 equals negative implementation fees", () => {
+  it("period 0 equals negative total cost (impl + subscription)", () => {
     const settings = [makeSetting({ implementationFee: 50000 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const irrCF = buildIRRCashFlows(settings, config, cashFlows);
 
-    expect(irrCF[0]).toBe(-50000);
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
+    expect(irrCF[0]).toBe(-(50000 + totalSub));
   });
 
-  it("uses first month subscription as Period 0 when implementation fees are zero", () => {
+  it("period 0 equals negative total subscription when implementation fees are zero", () => {
     const settings = [makeSetting({ implementationFee: 0 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const irrCF = buildIRRCashFlows(settings, config, cashFlows);
 
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
     expect(irrCF[0]).toBeLessThan(0);
-    expect(irrCF[0]).toBe(-cashFlows[0].investment);
+    expect(irrCF[0]).toBe(-totalSub);
     expect(irrCF.length).toBe(config.contractTermMonths + 1);
   });
 
@@ -108,7 +110,7 @@ describe("buildIRRCashFlows", () => {
     expect(irr24.length).toBe(25);
   });
 
-  it("monthly flows are net (value minus subscription)", () => {
+  it("monthly flows are gross value (subscription already in Period 0)", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
@@ -116,8 +118,8 @@ describe("buildIRRCashFlows", () => {
 
     for (let i = 1; i < irrCF.length; i++) {
       const row = cashFlows[i - 1];
-      const expectedNet = (row.docValue + row.timeValue + row.retentionValue) - row.investment;
-      expect(irrCF[i]).toBeCloseTo(expectedNet, 0);
+      const expectedGross = row.docValue + row.timeValue + row.retentionValue;
+      expect(irrCF[i]).toBeCloseTo(expectedGross, 0);
     }
   });
 
@@ -210,7 +212,7 @@ describe("calculateIRR", () => {
     expect(result.annualizedRate).toBeLessThan(0);
   });
 
-  it("returns invalid when all cash flows are negative (no positive periods)", () => {
+  it("returns valid negative IRR when total value < total cost", () => {
     const settings = [makeSetting({
       annualValue: 15000, timeValue: 5000, docValue: 10000,
       costPerUnit: 300,
@@ -225,7 +227,8 @@ describe("calculateIRR", () => {
     const irrCF = buildIRRCashFlows(settings, config, cashFlows);
     const result = calculateIRR(irrCF);
 
-    expect(result.isValid).toBe(false);
+    expect(result.isValid).toBe(true);
+    expect(result.annualizedRate).toBeLessThan(0);
   });
 
   it("handles zero subscription (impl only) — very high positive IRR", () => {
@@ -331,7 +334,8 @@ describe("multi-setting aggregation", () => {
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const irrCF = buildIRRCashFlows(settings, config, cashFlows);
 
-    expect(irrCF[0]).toBe(-(25000 + 15000));
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
+    expect(irrCF[0]).toBe(-(25000 + 15000 + totalSub));
     expect(irrCF.length).toBe(37);
 
     const result = calculateIRR(irrCF);
@@ -343,24 +347,25 @@ describe("multi-setting aggregation", () => {
 });
 
 describe("buildAnnualIRRCashFlows", () => {
-  it("period 0 equals negative implementation fees when impl fees > 0", () => {
+  it("period 0 equals negative total cost (impl + all subscription)", () => {
     const settings = [makeSetting({ implementationFee: 50000 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
-    expect(annualCF[0]).toBe(-50000);
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
+    expect(annualCF[0]).toBe(-(50000 + totalSub));
   });
 
-  it("uses Year 1 subscription as Period 0 when impl fees are zero", () => {
+  it("period 0 equals negative total subscription when impl fees are zero", () => {
     const settings = [makeSetting({ implementationFee: 0, costPerUnit: 200, providerCount: 10 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
+    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
     expect(annualCF[0]).toBeLessThan(0);
-    const year1Sub = cashFlows.slice(0, 12).reduce((s, r) => s + r.investment, 0);
-    expect(annualCF[0]).toBe(-year1Sub);
+    expect(annualCF[0]).toBe(-totalSub);
   });
 
   it("3-year contract produces 4 periods (Period 0 + 3 years)", () => {
@@ -381,16 +386,16 @@ describe("buildAnnualIRRCashFlows", () => {
     expect(annualCF.length).toBe(3);
   });
 
-  it("annual buckets aggregate monthly values correctly", () => {
+  it("annual buckets are gross value (subscription already in Period 0)", () => {
     const settings = [makeSetting({ implementationFee: 25000 })];
     const config = makeConfig({ contractTermMonths: 36 });
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
     const year1Monthly = cashFlows.slice(0, 12);
-    const expectedYear1Net = year1Monthly.reduce((s, r) =>
-      s + r.docValue + r.timeValue + r.retentionValue - r.investment, 0);
-    expect(annualCF[1]).toBeCloseTo(expectedYear1Net, 0);
+    const expectedYear1Gross = year1Monthly.reduce((s, r) =>
+      s + r.docValue + r.timeValue + r.retentionValue, 0);
+    expect(annualCF[1]).toBeCloseTo(expectedYear1Gross, 0);
   });
 
   it("subscription-only: Year 1 period is gross value (subscription already in Period 0)", () => {
