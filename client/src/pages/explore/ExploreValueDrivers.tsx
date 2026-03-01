@@ -914,18 +914,18 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{formatNumber(hoursTowardCapacity)}</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Potential additional visits:</span>
+                        <span className="text-[#666666] min-w-0">Projected additional visits:</span>
                         <span className="font-semibold text-black">{formatNumber(potentialVisits)}</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Potential revenue:</span>
+                        <span className="text-[#666666] min-w-0">Projected revenue:</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(potentialRevenue)}</span>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
                       <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-                      <span>This accounts for provider behavior, scheduling constraints, and patient demand. Most organizations see 5-15% of reclaimed time convert to actual visits.</span>
+                      <span>You've set this at {timeDriverInputs.capacityPercent}%. Most organizations see 5–15% of reclaimed time convert to actual visits — adjust the slider above if needed.</span>
                     </div>
                   </div>
                 </div>

@@ -440,15 +440,15 @@ export default function InvestmentPage({
                     </div>
                     
                     {laborTotal > 0 && (
-                      <div className="flex items-center justify-between py-1.5 text-sm">
-                        <span className="text-white/40 pl-2">Time & Labor</span>
-                        <span className="text-white/60">${laborTotal.toLocaleString()}</span>
+                      <div className="flex items-center justify-between py-1 text-xs">
+                        <span className="text-white/35 pl-3">Capacity & Efficiency</span>
+                        <span className="text-white/50">${laborTotal.toLocaleString()}</span>
                       </div>
                     )}
                     {revenueTotal > 0 && (
-                      <div className="flex items-center justify-between py-1.5 text-sm">
-                        <span className="text-white/40 pl-2">Documentation Quality</span>
-                        <span className="text-white/60">${revenueTotal.toLocaleString()}</span>
+                      <div className="flex items-center justify-between py-1 text-xs">
+                        <span className="text-white/35 pl-3">Documentation Quality</span>
+                        <span className="text-white/50">${revenueTotal.toLocaleString()}</span>
                       </div>
                     )}
                     
