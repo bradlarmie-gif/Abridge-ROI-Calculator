@@ -79,10 +79,11 @@ function RolloutTimeline({ settings, contractMonths }: { settings: ProformaSetti
 }
 
 function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) {
-  const total = setting.docValue + setting.timeValue + setting.retentionValue;
+  const total = setting.annualValue;
   if (total <= 0) return null;
+  const capacityValue = Math.max(0, total - setting.docValue - setting.retentionValue);
   const docPct = (setting.docValue / total) * 100;
-  const timePct = (setting.timeValue / total) * 100;
+  const timePct = (capacityValue / total) * 100;
   const retPct = (setting.retentionValue / total) * 100;
   return (
     <div className="mt-3" data-testid={`value-bar-${setting.careSetting}`}>
