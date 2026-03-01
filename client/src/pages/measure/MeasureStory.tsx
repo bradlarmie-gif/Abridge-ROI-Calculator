@@ -49,6 +49,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
     const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     let capacityValue = 0;
     let savingsValue = 0;
@@ -68,7 +69,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const inpSavingsPercent = state.allocation.hardSavingsPercent ?? 60;
       const inpWellbeingPercent = state.allocation.qualityOfLifePercent ?? 40;
 
-      savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate;
+      savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate * annualFactor;
       const wellbeingHours = totalHoursSaved * (inpWellbeingPercent / 100);
       hoursPerProviderPerWeek = deployment.providers > 0
         ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
@@ -82,12 +83,12 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const cdiFteCost = metrics.vm_cdiFteCost ?? 85000;
       const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
 
-      docValueLow = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70
+      docValueLow = (cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70
         + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0);
-      docValueHigh = cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85
+        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
+      docValueHigh = (cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85
         + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0);
+        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
 
       totalValueLow = docValueLow + timeValueSubtotal;
       totalValueHigh = docValueHigh + timeValueSubtotal;
@@ -98,8 +99,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
       const throughputHours = totalHoursSaved * (throughputPercent / 100);
       const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
-      capacityValue = additionalPatients * calibration.revenuePerVisit;
-      savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate;
+      capacityValue = additionalPatients * calibration.revenuePerVisit * annualFactor;
+      savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
       const wellbeingHours = totalHoursSaved * (edWellbeingPercent / 100);
       hoursPerProviderPerWeek = deployment.providers > 0
         ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
@@ -107,13 +108,13 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
       const lwbsReduction = Math.max(0, timeEfficiency.sameDayClosureWithout - timeEfficiency.sameDayClosureWith);
       const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
-      const lwbsValue = patientsRetained * calibration.revenuePerVisit;
+      const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
 
       const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
       const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-      docValueLow = emLevelValue * 0.70;
-      docValueHigh = emLevelValue * 0.85;
+      docValueLow = emLevelValue * 0.70 * annualFactor;
+      docValueHigh = emLevelValue * 0.85 * annualFactor;
 
       totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
       totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -122,7 +123,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const nursingSavingsPercent = state.allocation.hardSavingsPercent ?? 50;
       const nursingWellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
 
-      savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate;
+      savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
       const wellbeingHours = totalHoursSaved * (nursingWellbeingPercent / 100);
       hoursPerProviderPerWeek = deployment.providers > 0
         ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
@@ -139,10 +140,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     } else {
       const capacityHours = totalHoursSaved * (capacityPercent / 100);
       const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
-      capacityValue = additionalVisits * calibration.revenuePerVisit;
+      capacityValue = additionalVisits * calibration.revenuePerVisit * annualFactor;
 
       const savingsHours = totalHoursSaved * (savingsPercent / 100);
-      savingsValue = savingsHours * calibration.otHourlyRate;
+      savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
 
       const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
       hoursPerProviderPerWeek = deployment.providers > 0
@@ -152,8 +153,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
       wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
       const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70;
-      docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85;
+      docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70 * annualFactor;
+      docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85 * annualFactor;
 
       totalValueLow = timeValueSubtotal + docValueLow;
       totalValueHigh = timeValueSubtotal + docValueHigh;
