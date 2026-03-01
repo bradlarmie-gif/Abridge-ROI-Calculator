@@ -64,7 +64,14 @@ function contractTermLabel(months: number): string {
   return `${months / 12}-Year`;
 }
 
-const SCENARIO_COLORS = ["#EA2C00", "#2563EB", "#059669"];
+const CHART_COLORS = {
+  doc: "#1A1A1A",
+  time: "#EA2C00",
+  retention: "#B45309",
+  investment: "#78716C",
+};
+
+const SCENARIO_COLORS = ["#EA2C00", "#78716C", "#1A1A1A"];
 const SCENARIO_DASHES = ["", "8 4", "4 4"];
 
 export default function ProformaView({
@@ -572,20 +579,20 @@ export default function ProformaView({
               <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 60, left: 10, bottom: 10 }}>
                 <defs>
                   <linearGradient id="grad-doc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#2563EB" stopOpacity={0.05} />
+                    <stop offset="0%" stopColor={CHART_COLORS.doc} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={CHART_COLORS.doc} stopOpacity={0.03} />
                   </linearGradient>
                   <linearGradient id="grad-time" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#EA2C00" stopOpacity={0.05} />
+                    <stop offset="0%" stopColor={CHART_COLORS.time} stopOpacity={0.45} />
+                    <stop offset="100%" stopColor={CHART_COLORS.time} stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="grad-retention" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#059669" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                    <stop offset="0%" stopColor={CHART_COLORS.retention} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={CHART_COLORS.retention} stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="grad-investment" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#1A1A1A" stopOpacity={0.12} />
-                    <stop offset="100%" stopColor="#1A1A1A" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor={CHART_COLORS.investment} stopOpacity={0.12} />
+                    <stop offset="100%" stopColor={CHART_COLORS.investment} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
@@ -607,55 +614,38 @@ export default function ProformaView({
                 />
                 <Tooltip content={<CustomTooltip settings={settings} totalProvidersByPeriod={totalProvidersByPeriod} />} />
 
-                {config.viewMode === "quarterly" && !isMobile && goLiveLabels.map((gl, idx) => (
+                {config.viewMode === "quarterly" && !isMobile && goLiveLabels.length > 1 && goLiveLabels.map((gl, idx) => (
                   <ReferenceLine
                     key={`golive-${gl.label}`}
                     x={gl.label}
                     stroke={gl.color}
                     strokeDasharray="6 3"
-                    strokeOpacity={0.5}
+                    strokeOpacity={0.45}
                     strokeWidth={1.5}
                     label={{
                       value: `${gl.name} Go-Live`,
                       position: "insideTopLeft",
                       fontSize: 9,
                       fill: gl.color,
-                      dy: 8 + idx * 14,
+                      dy: 8 + idx * 18,
                     }}
                   />
                 ))}
 
-                {config.viewMode === "quarterly" && !isMobile && hasDelayedDrivers && (
-                  <ReferenceLine
-                    x={timeSavingsOnsetLabel}
-                    stroke="#EA2C00"
-                    strokeDasharray="4 3"
-                    strokeOpacity={0.5}
-                    strokeWidth={1.5}
-                    label={{
-                      value: "Time Savings Onset",
-                      position: "insideTopLeft",
-                      fontSize: 9,
-                      fill: "#EA2C00",
-                      dy: 8 + goLiveLabels.length * 14,
-                    }}
-                  />
-                )}
-
                 {paybackLabel && (
                   <ReferenceLine
                     x={paybackLabel}
-                    stroke="#059669"
+                    stroke={CHART_COLORS.retention}
                     strokeDasharray="6 3"
                     strokeOpacity={0.6}
                     strokeWidth={1.5}
                     label={isMobile ? undefined : {
                       value: "Payback",
-                      position: "insideBottomLeft",
+                      position: "insideTopRight",
                       fontSize: 10,
-                      fill: "#059669",
+                      fill: CHART_COLORS.retention,
                       fontWeight: 600,
-                      dy: -12,
+                      dy: 8,
                     }}
                   />
                 )}
@@ -665,9 +655,8 @@ export default function ProformaView({
                   dataKey="investment"
                   stackId="inv"
                   fill="url(#grad-investment)"
-                  stroke="#1A1A1A"
-                  strokeWidth={isMobile ? 1.5 : 2}
-                  strokeDasharray="6 4"
+                  stroke={CHART_COLORS.investment}
+                  strokeWidth={isMobile ? 1 : 1.5}
                   name="Investment"
                 />
 
@@ -676,7 +665,7 @@ export default function ProformaView({
                   dataKey="docValue"
                   stackId="value"
                   fill="url(#grad-doc)"
-                  stroke="#2563EB"
+                  stroke={CHART_COLORS.doc}
                   strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Doc Quality"
                 />
@@ -685,7 +674,7 @@ export default function ProformaView({
                   dataKey="timeValue"
                   stackId="value"
                   fill="url(#grad-time)"
-                  stroke="#EA2C00"
+                  stroke={CHART_COLORS.time}
                   strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Time Savings"
                 />
@@ -694,7 +683,7 @@ export default function ProformaView({
                   dataKey="retentionValue"
                   stackId="value"
                   fill="url(#grad-retention)"
-                  stroke="#059669"
+                  stroke={CHART_COLORS.retention}
                   strokeWidth={isMobile ? 1.5 : 2.5}
                   name="Retention"
                 />
@@ -709,7 +698,7 @@ export default function ProformaView({
                       position: "right",
                       fontSize: 11,
                       fontWeight: 700,
-                      fill: "#059669",
+                      fill: CHART_COLORS.time,
                       dx: 4,
                     }}
                   />
@@ -732,30 +721,30 @@ export default function ProformaView({
               </ComposedChart>
             </ResponsiveContainer>
 
-            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-1.5 sm:gap-5 mt-3 text-[10px] sm:text-xs">
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-[11px] sm:text-xs">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#2563EB] opacity-70" />
+                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
                 <span className="text-neutral-600">Doc Quality</span>
                 {legendTotals.doc > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
                 )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#EA2C00] opacity-70" />
+                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.time }} />
                 <span className="text-neutral-600">Time Savings</span>
                 {legendTotals.time > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
                 )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-2.5 rounded-sm inline-block bg-[#059669] opacity-70" />
+                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.retention }} />
                 <span className="text-neutral-600">Retention</span>
                 {legendTotals.retention > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.retention)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.retention / legendTotals.total) * 100)}%)` : ""}</span>
                 )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 rounded-full inline-block border-t-2 border-dashed border-neutral-800" />
+                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px solid ${CHART_COLORS.investment}` }} />
                 <span className="text-neutral-600">Investment</span>
                 {legendTotals.inv > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.inv)}</span>
@@ -1007,7 +996,7 @@ export default function ProformaView({
                 {!isMobile && (
                   <>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-[#2563EB] text-xs">Doc Quality (immediate)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>Doc Quality (immediate)</td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.docValue)}</td>
                       ))}
@@ -1016,7 +1005,7 @@ export default function ProformaView({
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-[#EA2C00] text-xs">Time Savings (3mo delay)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Time Savings (3mo delay)</td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.timeValue)}</td>
                       ))}
@@ -1025,7 +1014,7 @@ export default function ProformaView({
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-emerald-600 text-xs">Retention (phased)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.retention }}>Retention (phased)</td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.retentionValue)}</td>
                       ))}
@@ -1254,7 +1243,7 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong className="text-[#2563EB]">Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong className="text-emerald-600">Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Time savings</strong> (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested. This is the most intuitive metric for evaluating subscription technology commitments.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
@@ -1498,7 +1487,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
       {(docItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#2563EB]" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
             <span className="text-neutral-600">Doc Quality</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(docItem.value)}</span>
@@ -1507,7 +1496,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
       {(timeItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#EA2C00]" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.time }} />
             <span className="text-neutral-600">Time Savings</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(timeItem.value)}</span>
@@ -1516,7 +1505,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
       {(retentionItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#059669]" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.retention }} />
             <span className="text-neutral-600">Retention</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(retentionItem.value)}</span>
