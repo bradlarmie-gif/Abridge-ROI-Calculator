@@ -173,7 +173,7 @@ export default function ExploreModel({
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
-    ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
+    ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
     : '0';
 
   const nursingOtValue = useMemo(() => {
@@ -244,7 +244,7 @@ export default function ExploreModel({
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
 
   const nursingCareTimePerWeek = isNursing && state.timeDriverInputs.nursingCareTimeEnabled 
-    ? ((totalHoursSaved / state.numberOfProviders / 52) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
+    ? ((totalHoursSaved / state.numberOfProviders / 48) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
     : '0';
 
   // 3-year projection (10% growth per year)
