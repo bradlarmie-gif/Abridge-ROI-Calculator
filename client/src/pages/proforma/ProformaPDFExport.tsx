@@ -704,7 +704,7 @@ interface ProformaPDFProps {
 
 function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR, chartData, paybackQuarter }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null }) {
   const termLabel = contractTermLabel(config.contractTermMonths);
-  const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
+  const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
   const irrDisplay = hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A";
   const mathPages = getMathPageCount(settings);
@@ -725,6 +725,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
   const totalMonthlyCost = settings.reduce((s, v) => {
     if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0) / 12;
+    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * (v.encounters / 12);
     return s + v.costPerUnit * v.providerCount;
   }, 0);
 
@@ -894,7 +895,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 12 }}>
-                  <Text style={{ fontSize: 8, color: colors.secondary }}>Investment: {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary }}>Investment: {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/encounter` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}</Text>
                   <Text style={{ fontSize: 8, color: colors.secondary }}>Impl: {s.implementationFee > 0 ? fmt(s.implementationFee) : "\u2014"}</Text>
                 </View>
               </View>
@@ -1346,7 +1347,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting)}</Text>
                 )}
                 <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.annualValue)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.pricingModel === "perEncounter" ? (s.costPerEncounter || 0) * (s.encounters / 12) : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
               </View>
             ))}
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
@@ -1393,7 +1394,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                     Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     {config.contractTermMonths >= 36 ? `Y3: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
-                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat license` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}{"\n"}
+                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat license` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/encounter` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}{"\n"}
                     {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
                   </Text>
                   {inputs.length > 0 && (

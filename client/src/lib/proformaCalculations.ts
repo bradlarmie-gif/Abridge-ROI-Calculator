@@ -177,9 +177,15 @@ export function buildMonthlyCashFlows(
         settingDocValue += (nonDriverValue / 12) * adoptionRamp * expansionMultiplier;
       }
 
-      const monthlyInvestment = setting.pricingModel === "annualFlat"
-        ? (setting.annualLicenseFee || 0) / 12
-        : setting.costPerUnit * currentProviders;
+      let monthlyInvestment: number;
+      if (setting.pricingModel === "annualFlat") {
+        monthlyInvestment = (setting.annualLicenseFee || 0) / 12;
+      } else if (setting.pricingModel === "perEncounter") {
+        const monthlyEncounters = (setting.encounters / 12) * (currentProviders / (setting.providerCount || 1));
+        monthlyInvestment = (setting.costPerEncounter || 0) * monthlyEncounters;
+      } else {
+        monthlyInvestment = setting.costPerUnit * currentProviders;
+      }
 
       totalDocValue += settingDocValue;
       totalTimeValue += settingTimeValue;
@@ -653,6 +659,7 @@ export function calculateProformaSummary(
   const totalSystemValue = settings.reduce((s, v) => s + v.annualValue, 0);
   const totalInvestment = settings.reduce((s, v) => {
     if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0);
+    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * v.encounters;
     return s + v.costPerUnit * v.providerCount * 12;
   }, 0);
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);

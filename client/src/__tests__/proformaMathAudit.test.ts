@@ -729,4 +729,105 @@ describe("Annual Flat License Pricing", () => {
 
     expect(cashFlows[0].investment).toBe(200 * 10);
   });
+
+  it("encounter-based pricing produces correct monthly investment", () => {
+    const setting = makeSetting({
+      pricingModel: "perEncounter",
+      costPerEncounter: 12,
+      encounters: 30000,
+      providerCount: 10,
+      costPerUnit: 0,
+    });
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([setting], config);
+
+    const expectedMonthly = 12 * (30000 / 12);
+    expect(cashFlows[0].investment).toBe(expectedMonthly);
+  });
+
+  it("encounter-based pricing scales with provider expansion", () => {
+    const setting = makeSetting({
+      pricingModel: "perEncounter",
+      costPerEncounter: 10,
+      encounters: 30000,
+      providerCount: 10,
+      fullScaleProviders: 20,
+      yearlyProviders: { year1: 10, year2: 20, year3: 20 },
+      costPerUnit: 0,
+    });
+    const config = makeConfig({ contractTermMonths: 36 });
+    const cashFlows = buildMonthlyCashFlows([setting], config);
+
+    const month1Inv = cashFlows[0].investment;
+    const month13 = cashFlows[12];
+    expect(month13.investment).toBeGreaterThan(month1Inv);
+  });
+
+  it("encounter-based summary totalInvestment uses costPerEncounter × encounters", () => {
+    const setting = makeSetting({
+      pricingModel: "perEncounter",
+      costPerEncounter: 15,
+      encounters: 20000,
+      providerCount: 10,
+      costPerUnit: 0,
+    });
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([setting], config);
+    const summary = calculateProformaSummary([setting], config, cashFlows);
+
+    expect(summary.totalInvestment).toBe(15 * 20000);
+  });
+
+  it("IRR is valid for encounter-based pricing", () => {
+    const setting = makeSetting({
+      pricingModel: "perEncounter",
+      costPerEncounter: 10,
+      encounters: 30000,
+      providerCount: 10,
+      annualValue: 500000,
+      implementationFee: 25000,
+      costPerUnit: 0,
+    });
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([setting], config);
+    const annualCF = buildAnnualIRRCashFlows([setting], config, cashFlows);
+    const irr = calculateAnnualIRR(annualCF);
+
+    expect(irr.isValid).toBe(true);
+    expect(irr.annualizedRate).toBeGreaterThan(0);
+  });
+
+  it("three-model mixed scenario produces correct combined investment", () => {
+    const perUnitS = makeSetting({
+      id: "pu",
+      costPerUnit: 200,
+      providerCount: 10,
+    });
+    const flatS = makeSetting({
+      id: "flat",
+      pricingModel: "annualFlat",
+      annualLicenseFee: 240000,
+      costPerUnit: 0,
+      providerCount: 10,
+    });
+    const encS = makeSetting({
+      id: "enc",
+      pricingModel: "perEncounter",
+      costPerEncounter: 10,
+      encounters: 30000,
+      providerCount: 10,
+      costPerUnit: 0,
+    });
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([perUnitS, flatS, encS], config);
+
+    const m1 = cashFlows[0];
+    const expectedPerUnit = 200 * 10;
+    const expectedFlat = Math.round(240000 / 12);
+    const expectedEnc = 10 * (30000 / 12);
+    expect(m1.investment).toBe(expectedPerUnit + expectedFlat + expectedEnc);
+
+    const summary = calculateProformaSummary([perUnitS, flatS, encS], config, cashFlows);
+    expect(summary.totalInvestment).toBe(200 * 10 * 12 + 240000 + 10 * 30000);
+  });
 });

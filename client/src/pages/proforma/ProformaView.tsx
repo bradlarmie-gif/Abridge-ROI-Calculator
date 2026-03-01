@@ -54,6 +54,27 @@ function fmtNum(n: number) {
   return n.toLocaleString();
 }
 
+function getPricingTag(settings: ProformaSettingSnapshot[]): string {
+  const models = new Set(settings.map(s => s.pricingModel || "perUnit"));
+  if (models.size > 1) return "Mixed";
+  const model = models.values().next().value;
+  if (model === "annualFlat") return "Annual License";
+  if (model === "perEncounter") return "Per Encounter";
+  return "Per Provider";
+}
+
+function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
+  if (settings.length === 0) return "—";
+  const parts = settings.map(s => {
+    const pm = s.pricingModel || "perUnit";
+    if (pm === "annualFlat") return `Enterprise @ ${fmt(s.annualLicenseFee || 0)}/yr`;
+    if (pm === "perEncounter") return `Per Encounter @ ${fmt(s.costPerEncounter || 0)}`;
+    return `Per Provider @ ${fmt(s.costPerUnit)}/mo`;
+  });
+  const unique = [...new Set(parts)];
+  return unique.join("; ");
+}
+
 function fmtPct(n: number, cap = 200) {
   const val = Math.round(n * 100);
   if (val > cap) return `${cap}%+`;
@@ -160,7 +181,7 @@ export default function ProformaView({
   const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
 
   const hasInvestment = useMemo(() => {
-    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0);
+    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
   }, [settings]);
 
   const totalProviders = useMemo(() => {
@@ -385,7 +406,7 @@ export default function ProformaView({
                   ) : (
                     <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
                       <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % 3] }} />
-                      <span className="text-xs text-white/80 mx-1 max-w-[100px] truncate">{sc.name}</span>
+                      <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
                       <button
                         onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
                         className="p-0.5 text-white/40 hover:text-white transition-colors"
@@ -794,10 +815,13 @@ export default function ProformaView({
               const Icon = SETTING_ICONS[s.careSetting] || Building2;
               const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
               const isFlat = s.pricingModel === "annualFlat";
+              const isEnc = s.pricingModel === "perEncounter";
               const flatFee = s.annualLicenseFee || 0;
-              const y1Cost = isFlat ? flatFee : s.costPerUnit * yp.year1 * 12;
-              const y2Cost = isFlat ? flatFee : s.costPerUnit * yp.year2 * 12;
-              const y3Cost = isFlat ? flatFee : s.costPerUnit * yp.year3 * 12;
+              const encAnnual = (s.costPerEncounter || 0) * s.encounters;
+              const baseProv = s.providerCount || 1;
+              const y1Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year1 / baseProv) : s.costPerUnit * yp.year1 * 12;
+              const y2Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year2 / baseProv) : s.costPerUnit * yp.year2 * 12;
+              const y3Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year3 / baseProv) : s.costPerUnit * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
               const is3yr = config.contractTermMonths >= 36;
               return (
@@ -857,20 +881,16 @@ export default function ProformaView({
                       <div className="mb-4">
                         <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
                         <div className="flex gap-1.5 mb-3">
-                          <button
-                            onClick={() => onUpdateSetting(s.id, { pricingModel: "perUnit" })}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${(!s.pricingModel || s.pricingModel === "perUnit") ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
-                            data-testid={`toggle-perunit-${s.careSetting}`}
-                          >
-                            Per Unit/Mo
-                          </button>
-                          <button
-                            onClick={() => onUpdateSetting(s.id, { pricingModel: "annualFlat" })}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${s.pricingModel === "annualFlat" ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
-                            data-testid={`toggle-annualflat-${s.careSetting}`}
-                          >
-                            Annual License
-                          </button>
+                          {(["perUnit", "annualFlat", "perEncounter"] as const).map(pm => (
+                            <button
+                              key={pm}
+                              onClick={() => onUpdateSetting(s.id, { pricingModel: pm })}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${(pm === "perUnit" && !s.pricingModel) || s.pricingModel === pm ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
+                              data-testid={`toggle-${pm}-${s.careSetting}`}
+                            >
+                              {pm === "perUnit" ? "Per Unit/Mo" : pm === "annualFlat" ? "Annual License" : "Per Encounter"}
+                            </button>
+                          ))}
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           {s.pricingModel === "annualFlat" ? (
@@ -882,6 +902,17 @@ export default function ProformaView({
                                 prefix="$"
                                 className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                                 data-testid={`input-annual-fee-${s.careSetting}`}
+                              />
+                            </div>
+                          ) : s.pricingModel === "perEncounter" ? (
+                            <div>
+                              <label className="block text-[10px] text-neutral-500 mb-1">$/Encounter</label>
+                              <FormattedNumberInput
+                                value={s.costPerEncounter || 0}
+                                onChange={(v) => onUpdateSetting(s.id, { costPerEncounter: Math.max(v, 0) })}
+                                prefix="$"
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-cost-encounter-${s.careSetting}`}
                               />
                             </div>
                           ) : (
@@ -1343,6 +1374,7 @@ export default function ProformaView({
                   </thead>
                   <tbody>
                     {[
+                      { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
                       { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
                       { label: "3-Year Value", current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
                       { label: "Total Investment", current: fmt(summary.threeYearInvestment), values: scenarioSummaries.map(s => fmt(s.summary.threeYearInvestment)) },
@@ -1352,11 +1384,11 @@ export default function ProformaView({
                       { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
                       { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
                     ].map((row, ri) => (
-                      <tr key={row.label} className={`border-b ${ri === 3 ? "border-neutral-300 bg-neutral-50" : "border-neutral-100"}`}>
+                      <tr key={row.label} className={`border-b ${ri === 4 ? "border-neutral-300 bg-neutral-50" : ri === 0 ? "border-neutral-200 bg-amber-50/50" : "border-neutral-100"}`}>
                         <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
-                        <td className={`text-right py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 3 ? "font-bold text-neutral-900" : "text-neutral-700"}`}>{row.current}</td>
+                        <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-[11px]" : "text-neutral-700"}`}>{row.current}</td>
                         {row.values.map((v, i) => (
-                          <td key={i} className={`text-right py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 3 ? "font-bold" : ""}`} style={{ color: ri === 3 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
+                          <td key={i} className={`${(row as any).isText ? "text-left text-[11px]" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
                         ))}
                       </tr>
                     ))}

@@ -400,6 +400,17 @@ export default function ProformaHub({
                                         data-testid={`input-annual-fee-hub-${setting.careSetting}`}
                                       />
                                     </>
+                                  ) : setting.pricingModel === "perEncounter" ? (
+                                    <>
+                                      <label className="block text-[10px] text-neutral-500 mb-1">$ / Encounter</label>
+                                      <FormattedNumberInput
+                                        value={setting.costPerEncounter || 0}
+                                        onChange={(v) => onUpdateSetting(setting.id, { costPerEncounter: Math.max(v, 0) })}
+                                        prefix="$"
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-cost-encounter-hub-${setting.careSetting}`}
+                                      />
+                                    </>
                                   ) : (
                                     <>
                                       <label className="block text-[10px] text-neutral-500 mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>

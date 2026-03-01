@@ -32,8 +32,9 @@ export interface ProformaSettingSnapshot {
   totalHoursSaved: number;
   drivers: ProformaDriver[];
   costPerUnit: number;
-  pricingModel?: "perUnit" | "annualFlat";
+  pricingModel?: "perUnit" | "annualFlat" | "perEncounter";
   annualLicenseFee?: number;
+  costPerEncounter?: number;
   implementationFee: number;
   goLiveMonth: number;
   color: string;

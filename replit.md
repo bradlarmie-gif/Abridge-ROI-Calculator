@@ -28,7 +28,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Learn Methodology Section**: Restructured section providing modular methodology pages for each care setting with a consistent 5-section structure and interactive elements.
 -   **Multi-Setting Proforma Builder**: Allows users to layer multiple care settings (Outpatient, ED, Inpatient, Nursing) into a combined financial model. Features include:
     -   ProformaHub for managing settings and inline editing assumptions.
-    -   ProformaView with stacked area ramp charts, 3-year P&L, card-based pricing (per-unit/month and annual flat license toggle per care setting), editable retention phasing, and Quarters/Years toggle.
+    -   ProformaView with stacked area ramp charts, 3-year P&L, card-based pricing (per-unit/month, annual flat license, and per-encounter toggle per care setting), editable retention phasing, and Quarters/Years toggle.
     -   Annual IRR calculation using total-cost-basis approach: Period 0 = -(implementation fees + total subscription), Periods 1-N = gross annual value. Newton-Raphson with MIRR fallback, capped at 200% for display.
     -   Value-to-Cost as the primary hero metric.
     -   PDF "Showing Our Math" export that reconstructs per-driver formula strings.
@@ -38,7 +38,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
     -   Promoted Sensitivity Analysis for value-realization-only scenarios (70%/100%/130%).
     -   "Annual Value at Scale" hero metric using run-rate value (last 12 months of cash flows) instead of raw unscaled base value, for CFO defensibility.
     -   Elevated ProformaHub as a deal design workspace with Gantt component and deal snapshot panel.
-    -   Scenario Comparison for saving and comparing up to 3 named scenarios with side-by-side metrics and overlay charts.
+    -   Scenario Comparison for saving and comparing up to 3 named scenarios with side-by-side metrics, overlay charts, pricing row showing deal structure, and pricing tags on scenario tabs.
 
 ### PDF Value Consistency
 -   **Single Source of Truth**: All financial values in PDF exports are derived from the `sum(drivers array)` to prevent divergence.
