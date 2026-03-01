@@ -181,7 +181,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
             {/* Single Data Entry Card - Measure Style */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 space-y-10"
+              className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 space-y-8 sm:space-y-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -193,7 +193,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
                 
-                <div className={`grid ${isNursing ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+                <div className={`grid ${isNursing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-4`}>
                   {isNursing && (
                     <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">Staffed Beds</label>
@@ -324,22 +324,22 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   <div className="h-px bg-[#D1D5DB] mb-6" />
                   
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between gap-2 mb-4">
                       <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-patient-days">
                         {Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365).toLocaleString()}
                       </span>
-                      <span className="text-sm text-[#888888]">patient days/year</span>
+                      <span className="text-sm text-[#888888] flex-shrink-0">patient days/year</span>
                     </div>
                     <div className="text-xs text-[#888888] space-y-1">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span>Staffed Beds</span>
                         <span className="font-medium text-black">{state.nursingStaffedBeds}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span>× Days per Year</span>
                         <span className="font-medium text-black">365</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span>× Occupancy Rate</span>
                         <span className="font-medium text-black">{state.nursingOccupancyRate}%</span>
                       </div>
@@ -465,57 +465,57 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 <div className="px-6 py-5 space-y-3">
                   {isNursing ? (
                     <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">Staffed Beds</span>
-                        <span className="text-base font-semibold text-white">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Staffed Beds</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.nursingStaffedBeds > 0 ? formatNumber(state.nursingStaffedBeds) : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">Nurse FTEs</span>
-                        <span className="text-base font-semibold text-white">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Nurse FTEs</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">Occupancy Rate</span>
-                        <span className="text-base font-semibold text-white">{state.nursingOccupancyRate}%</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Occupancy Rate</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">{state.nursingOccupancyRate}%</span>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                        <span className="text-sm text-white/50">Patient Days/Year</span>
-                        <span className="text-base font-semibold text-white">
+                      <div className="flex justify-between items-center gap-2 pt-3 border-t border-white/10">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Patient Days/Year</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.nursingStaffedBeds > 0 ? formatNumber(Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365)) : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">Adoption</span>
-                        <span className="text-base font-semibold text-white">{state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : '—'}</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Adoption</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">{state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : '—'}</span>
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">{providerLabel}</span>
-                        <span className="text-base font-semibold text-white">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">{providerLabel}</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white/50">{encounterLabel}/Provider</span>
-                        <span className="text-base font-semibold text-white">{formatNumber(encountersPerProvider)}</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">{encounterLabel}/Provider</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">{formatNumber(encountersPerProvider)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                        <span className="text-sm text-white/50">Annual {encounterLabel}</span>
-                        <span className="text-base font-semibold text-white">
+                      <div className="flex justify-between items-center gap-2 pt-3 border-t border-white/10">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Annual {encounterLabel}</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
                         </span>
                       </div>
                     </>
                   )}
                   {!isNursing && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/50">Utilization</span>
-                      <span className="text-base font-semibold text-white">{state.utilizationPercent}%</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-sm text-white/50 min-w-0 truncate">Utilization</span>
+                      <span className="text-base font-semibold text-white flex-shrink-0">{state.utilizationPercent}%</span>
                     </div>
                   )}
                 </div>
@@ -546,11 +546,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </>
                   ) : (
                     <>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-medium text-white/70">
+                      <div className="flex justify-between items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-white/70 min-w-0 truncate">
                           {`Eligible ${encounterLabel}`}
                         </span>
-                        <span className="text-2xl font-bold text-[#EA2C00]">
+                        <span className="text-2xl font-bold text-[#EA2C00] flex-shrink-0">
                           {state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—'}
                         </span>
                       </div>

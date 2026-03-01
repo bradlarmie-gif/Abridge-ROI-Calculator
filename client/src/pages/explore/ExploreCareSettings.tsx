@@ -126,7 +126,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 min-[400px]:gap-4 lg:gap-5">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
@@ -147,7 +147,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     }
                   }}
                   className={`
-                    group relative flex flex-col text-left rounded-xl p-5 md:p-7 min-h-[220px] transition-all duration-200 outline-none
+                    group relative flex flex-col text-left rounded-xl p-4 min-[400px]:p-5 md:p-7 min-h-[140px] min-[400px]:min-h-[200px] md:min-h-[220px] transition-all duration-200 outline-none touch-manipulation
                     ${isDisabled
                       ? 'bg-[#F0EDEA] border-2 border-transparent opacity-50 cursor-not-allowed'
                       : isSelected 
@@ -163,7 +163,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 >
                   {isSelected && !isDisabled && (
                     <motion.div 
-                      className="absolute top-4 right-4 w-2 h-2 bg-[#EA2C00] rounded-full"
+                      className="absolute top-3 right-3 min-[400px]:top-4 min-[400px]:right-4 w-2 h-2 bg-[#EA2C00] rounded-full"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -172,46 +172,46 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   )}
 
                   <div
-                    className={`w-[52px] h-[52px] rounded-full flex items-center justify-center mb-4 flex-shrink-0 ${isDisabled ? 'opacity-60' : ''}`}
+                    className={`w-10 h-10 min-[400px]:w-[52px] min-[400px]:h-[52px] rounded-full flex items-center justify-center mb-3 min-[400px]:mb-4 flex-shrink-0 ${isDisabled ? 'opacity-60' : ''}`}
                     style={{
                       backgroundColor: '#FFFFFF',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                     }}
                   >
-                    <Icon className={`w-6 h-6 ${isDisabled ? 'text-[#999999]' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-5 h-5 min-[400px]:w-6 min-[400px]:h-6 ${isDisabled ? 'text-[#999999]' : 'text-[#EA2C00]'}`} />
                   </div>
                   
                   <h3
-                    className={`text-xl font-bold mb-1 ${isDisabled ? 'text-[#999999]' : 'text-[#1A1A1A]'}`}
+                    className={`text-lg min-[400px]:text-xl font-bold mb-1 ${isDisabled ? 'text-[#999999]' : 'text-[#1A1A1A]'}`}
                     data-testid={`text-setting-label-${setting.id}`}
                   >
                     {setting.label}
                   </h3>
                   
                   <p
-                    className={`text-[13px] font-medium leading-tight mb-3 ${isDisabled ? 'text-[#AAAAAA]' : 'text-[#666666]'}`}
+                    className={`text-[13px] font-medium leading-tight mb-2 min-[400px]:mb-3 ${isDisabled ? 'text-[#AAAAAA]' : 'text-[#666666]'}`}
                     data-testid={`text-setting-subtitle-${setting.id}`}
                   >
                     {setting.shortDesc}
                   </p>
 
                   <p
-                    className={`text-xs leading-relaxed flex-1 ${isDisabled ? 'text-[#BBBBBB]' : 'text-[#999999]'}`}
+                    className={`text-xs leading-relaxed flex-1 break-words ${isDisabled ? 'text-[#BBBBBB]' : 'text-[#999999]'}`}
                     data-testid={`text-setting-desc-${setting.id}`}
                   >
                     {setting.description}
                   </p>
 
                   {isDisabled && (
-                    <span className="text-xs font-medium text-[#999999] mt-3 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
+                    <span className="text-xs font-medium text-[#999999] mt-2 min-[400px]:mt-3 flex items-center gap-1">
+                      <Check className="w-3 h-3 flex-shrink-0" />
                       Already in proforma
                     </span>
                   )}
 
                   {!isDisabled && !isSelected && (
                     <span
-                      className="text-xs font-medium text-[#EA2C00] mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="text-xs font-medium text-[#EA2C00] mt-2 min-[400px]:mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       data-testid={`text-select-hint-${setting.id}`}
                     >
                       Select
@@ -220,8 +220,8 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   )}
 
                   {!isDisabled && isSelected && (
-                    <span className="text-xs font-medium text-[#EA2C00] mt-3 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
+                    <span className="text-xs font-medium text-[#EA2C00] mt-2 min-[400px]:mt-3 flex items-center gap-1">
+                      <Check className="w-3 h-3 flex-shrink-0" />
                       Selected
                     </span>
                   )}
@@ -242,7 +242,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
         </motion.p>
 
         <motion.div 
-          className="max-w-[480px] mx-auto"
+          className="max-w-[480px] mx-auto px-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}

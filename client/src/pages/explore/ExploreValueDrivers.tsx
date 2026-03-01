@@ -352,7 +352,7 @@ export default function ExploreValueDrivers({
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
-          <div className="flex-1 max-w-[700px]">
+          <div className="flex-1 min-w-0 max-w-[700px]">
 
         {/* Header */}
         <motion.div 
@@ -460,7 +460,7 @@ export default function ExploreValueDrivers({
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Current LWBS rate</label>
                       <div className="relative">
@@ -504,34 +504,34 @@ export default function ExploreValueDrivers({
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">Annual LWBS patients</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100)))}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100)))}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× LWBS reduction</span>
-                        <span className="font-semibold text-black">{timeDriverInputs.edLwbsReduction}%</span>
+                        <span className="font-semibold text-black flex-shrink-0">{timeDriverInputs.edLwbsReduction}%</span>
                       </div>
                       
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Patients recovered</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients))}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(edRecoveredPatients))}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× Revenue per visit</span>
-                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.edRevenuePerVisit)}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatCurrency(timeDriverInputs.edRevenuePerVisit)}</span>
                       </div>
                       
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Gross value</span>
-                        <span className="font-semibold text-black">{formatCurrency(Math.round(edRecoveredPatients * timeDriverInputs.edRevenuePerVisit))}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatCurrency(Math.round(edRecoveredPatients * timeDriverInputs.edRevenuePerVisit))}</span>
                       </div>
                       
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div>
                           <span className="text-[#666666]">× Realization rate</span>
                           <p className="text-xs text-[#888888]">(Not all recovered patients complete visits)</p>
@@ -540,7 +540,7 @@ export default function ExploreValueDrivers({
                           <FormattedNumberInput
                             value={timeDriverInputs.edLwbsRealization}
                             onChange={(v: number) => updateTimeDriverInputs({ edLwbsRealization: v })}
-                            className="h-7 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                            className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
                           />
                           <span className="text-sm text-[#888888]">%</span>
                         </div>
@@ -548,9 +548,9 @@ export default function ExploreValueDrivers({
                       
                       <div className="h-px bg-[#333333] my-2" />
                       
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="font-semibold text-black">Net LWBS Value</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(edLwbsValue)}</span>
+                        <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(edLwbsValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -769,27 +769,27 @@ export default function ExploreValueDrivers({
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Time saved (from previous step)</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">Time saved (from previous step)</span>
                         <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs/yr</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Time-to-OT conversion</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">× Time-to-OT conversion</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= OT hours eliminated</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">= OT hours eliminated</span>
                         <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT hourly rate</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">× OT hourly rate</span>
                         <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate)}</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666] font-medium">Annual OT Savings</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
+                        <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingOtValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -881,7 +881,7 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Average visit duration</label>
                       <div className="relative">
@@ -909,16 +909,16 @@ export default function ExploreValueDrivers({
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityPercent}% conversion to visits:</p>
                     <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Hours available for visits:</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">Hours available for visits:</span>
                         <span className="font-semibold text-black">{formatNumber(hoursTowardCapacity)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Potential additional visits:</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">Potential additional visits:</span>
                         <span className="font-semibold text-black">{formatNumber(potentialVisits)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Potential revenue:</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">Potential revenue:</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(potentialRevenue)}</span>
                       </div>
                     </div>
@@ -1007,19 +1007,19 @@ export default function ExploreValueDrivers({
 
                       <div className="bg-[#F5F0EB] rounded-lg p-4">
                         <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">Recovered ED patients</span>
                             <span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients))}</span>
                           </div>
                           <div className="text-xs text-[#888888]">(from LWBS Recovery)</div>
                           
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <span className="text-[#666666]">× Admission rate</span>
                             <div className="flex items-center gap-2">
                               <FormattedNumberInput
                                 value={timeDriverInputs.edAdmissionRate}
                                 onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRate: v })}
-                                className="h-7 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                                className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
                               />
                               <span className="text-sm text-[#888888]">%</span>
                             </div>
@@ -1027,31 +1027,31 @@ export default function ExploreValueDrivers({
                           
                           <div className="h-px bg-[#E5E5E5] my-2" />
                           
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">= Potential admissions</span>
                             <span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100)))}</span>
                           </div>
                           
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <span className="text-[#666666]">× Avg admission revenue</span>
                             <div className="flex items-center gap-1">
                               <span className="text-sm text-[#888888]">$</span>
                               <FormattedNumberInput
                                 value={timeDriverInputs.edAdmissionRevenue}
                                 onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRevenue: v })}
-                                className="h-7 w-20 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                                className="h-7 w-20 text-center text-base bg-white border border-[#E5E5E5] rounded"
                               />
                             </div>
                           </div>
                           
                           <div className="h-px bg-[#E5E5E5] my-2" />
                           
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">= Gross value</span>
                             <span className="font-semibold text-black">{formatCurrency(Math.round(edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100) * timeDriverInputs.edAdmissionRevenue))}</span>
                           </div>
                           
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <div>
                               <span className="text-[#666666]">× Realization rate</span>
                               <p className="text-xs text-[#888888]">(Bed availability, payer mix)</p>
@@ -1060,7 +1060,7 @@ export default function ExploreValueDrivers({
                               <FormattedNumberInput
                                 value={timeDriverInputs.edAdmissionRealization}
                                 onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRealization: v })}
-                                className="h-7 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                                className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
                               />
                               <span className="text-sm text-[#888888]">%</span>
                             </div>
@@ -1068,7 +1068,7 @@ export default function ExploreValueDrivers({
                           
                           <div className="h-px bg-[#333333] my-2" />
                           
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="font-semibold text-black">Annual Admission Capture Value</span>
                             <span className="font-bold text-[#EA2C00]">{formatCurrency(edAdmissionCaptureValue)}</span>
                           </div>
@@ -1140,7 +1140,7 @@ export default function ExploreValueDrivers({
                   </p>
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Annual turnover rate</label>
                       <div className="relative">
@@ -1197,27 +1197,27 @@ export default function ExploreValueDrivers({
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">{state.numberOfProviders} nurses × {timeDriverInputs.nursingTurnoverRate}% turnover</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">{state.numberOfProviders} nurses × {timeDriverInputs.nursingTurnoverRate}% turnover</span>
                         <span className="font-semibold text-black">{nursingRetentionCalcs.leavingPerYear.toFixed(1)} leaving/year</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× 40% burnout-related</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">× 40% burnout-related</span>
                         <span className="font-semibold text-black">{nursingRetentionCalcs.burnoutDepartures.toFixed(1)} burnout departures</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× {nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario]}% Abridge impact</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">× {nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario]}% Abridge impact</span>
                         <span className="font-semibold text-black">{nursingRetentionCalcs.retained.toFixed(2)} nurses retained</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Replacement cost</span>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">× Replacement cost</span>
                         <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingReplacementCost)}</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666] font-medium">Annual Retention Savings</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingRetentionValue)}</span>
+                        <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingRetentionValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -1415,45 +1415,45 @@ export default function ExploreValueDrivers({
                           </p>
 
                           <div className="space-y-2 text-sm font-mono">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">Providers</span>
                               <span className="text-black">{formatNumber(state.numberOfProviders)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Annual turnover rate</span>
                               <span className="text-black">{timeDriverInputs.annualTurnoverRate}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= Providers leaving per year</span>
                               <span className="text-black">{retentionCalcs.providersLeavingPerYear.toFixed(1)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Burnout-related turnover</span>
                               <span className="text-black">{timeDriverInputs.burnoutRelatedTurnover}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= Burnout-related departures</span>
                               <span className="text-black">{retentionCalcs.burnoutRelatedDepartures.toFixed(2)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Abridge retention impact</span>
                               <span className="text-black">{retentionScenarios[timeDriverInputs.retentionImpactScenario]}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= Providers retained</span>
                               <span className="text-black">{retentionCalcs.providersRetained.toFixed(2)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Replacement cost</span>
                               <span className="text-black">{formatCurrency(timeDriverInputs.replacementCost)}</span>
                             </div>
                             <div className="h-px bg-[#888888] my-2" />
-                            <div className="flex justify-between font-semibold">
+                            <div className="flex justify-between gap-2 font-semibold">
                               <span className="text-black">= Retention value</span>
-                              <span className="text-[#EA2C00]">{formatCurrency(retentionCalcs.retentionValue)}</span>
+                              <span className="text-[#EA2C00] flex-shrink-0">{formatCurrency(retentionCalcs.retentionValue)}</span>
                             </div>
                           </div>
 
@@ -1536,10 +1536,9 @@ export default function ExploreValueDrivers({
                   </p>
                   
                   <div className="space-y-4 mb-6">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-3">
                       <span className="text-sm text-black font-medium">Time to care:</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-[#888888]">0% = all absorbed</span>
                         <input
                           type="range"
                           min="0"
@@ -1547,19 +1546,22 @@ export default function ExploreValueDrivers({
                           step="5"
                           value={timeDriverInputs.nursingCareTimePercent}
                           onChange={(e) => updateTimeDriverInputs({ nursingCareTimePercent: parseInt(e.target.value) })}
-                          className="w-32 h-2 bg-[#D1D5DB] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                          className="flex-1 min-w-0 h-2 bg-[#D1D5DB] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
                           data-testid="slider-care-time"
                         />
-                        <span className="text-xs text-[#888888]">100% = all to care</span>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <FormattedNumberInput
                             value={timeDriverInputs.nursingCareTimePercent}
                             onChange={(v: number) => updateTimeDriverInputs({ nursingCareTimePercent: Math.min(100, Math.max(0, v)) })}
-                            className="h-9 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                            className="h-9 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
                             data-testid="input-care-time"
                           />
                           <span className="text-sm text-[#888888]">%</span>
                         </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-[#888888]">
+                        <span>0% = all absorbed</span>
+                        <span>100% = all to care</span>
                       </div>
                     </div>
                   </div>
@@ -1572,23 +1574,23 @@ export default function ExploreValueDrivers({
                       const absorbedHours = timeAfterOT - careHours;
                       return (
                         <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">Time saved after OT</span>
                             <span className="font-semibold text-black">{formatNumber(timeAfterOT)} hrs</span>
                           </div>
                           <div className="flex justify-between text-xs">
                             <span className="text-[#888888]">({formatNumber(totalHoursSaved)} total - {formatNumber(nursingOtHoursEliminated)} to OT)</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">× Time to care</span>
                             <span className="font-semibold text-black">{timeDriverInputs.nursingCareTimePercent}%</span>
                           </div>
                           <div className="h-px bg-[#E5E5E5] my-2" />
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">= Time returned to bedside</span>
                             <span className="font-semibold text-[#EA2C00]">{formatNumber(careHours)} hrs/yr</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">Absorbed into efficiency</span>
                             <span className="font-semibold text-[#888888]">{formatNumber(absorbedHours)} hrs/yr</span>
                           </div>
@@ -1778,7 +1780,7 @@ export default function ExploreValueDrivers({
                     ) : (
                       <>
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
-                        <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2.5">
                             <label className="text-sm text-[#888888]">Weeks of agency coverage per vacancy</label>
                             <FormattedNumberInput
@@ -1807,20 +1809,20 @@ export default function ExploreValueDrivers({
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">Nurses retained (from Retention)</span>
                               <span className="font-semibold text-black">{nursingRetentionCalcs.retained.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Weeks of agency coverage avoided</span>
                               <span className="font-semibold text-black">{timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Weekly agency premium</span>
                               <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingAgencyWeeklyPremium)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666] font-medium">Annual Agency Savings</span>
                               <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingAgencyCalcs.agencySavings)}</span>
                             </div>
@@ -1866,7 +1868,7 @@ export default function ExploreValueDrivers({
 
           {/* Right Panel - Desktop Only */}
           <motion.div
-            className="w-full lg:w-[320px] flex-shrink-0"
+            className="hidden lg:block w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
@@ -1902,7 +1904,7 @@ export default function ExploreValueDrivers({
                           </div>
                           
                           {/* OT Reduction */}
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <div className="flex items-center gap-2">
                               <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                               <span className="text-xs text-[#888888]">OT Reduction</span>
@@ -1916,7 +1918,7 @@ export default function ExploreValueDrivers({
                           </div>
                           
                           {/* Direct Care */}
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2">
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                               <span className="text-xs text-[#888888]">Direct Care</span>
@@ -1977,7 +1979,7 @@ export default function ExploreValueDrivers({
                 {isED ? (
                   <>
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">LWBS Recovery</span>
@@ -1992,7 +1994,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Admission Capture</span>
@@ -2007,7 +2009,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Cost Reduction</span>
@@ -2022,7 +2024,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
@@ -2045,7 +2047,7 @@ export default function ExploreValueDrivers({
                 ) : isInpatient ? (
                   <>
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Rounding Efficiency</span>
@@ -2060,7 +2062,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Cost Reduction</span>
@@ -2075,7 +2077,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
@@ -2098,7 +2100,7 @@ export default function ExploreValueDrivers({
                 ) : isNursing ? (
                   <>
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">OT Reduction</span>
@@ -2113,7 +2115,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingRetentionEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Retention Savings</span>
@@ -2128,7 +2130,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Agency Reduction</span>
@@ -2143,7 +2145,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#444444]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Care Time</span>
@@ -2158,7 +2160,7 @@ export default function ExploreValueDrivers({
                 ) : (
                   <>
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Patient Access</span>
@@ -2173,7 +2175,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Cost Reduction</span>
@@ -2188,7 +2190,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>

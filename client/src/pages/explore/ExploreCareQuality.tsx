@@ -208,7 +208,7 @@ export default function ExploreCareQuality({
                         </p>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT HAPI VOLUME</p>
-                        <div className="grid grid-cols-3 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
                             <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
@@ -221,7 +221,7 @@ export default function ExploreCareQuality({
                               value={docQualityInputs.nursingHapiRate}
                               onChange={(v: number) => updateDocQualityInputs({ nursingHapiRate: v })}
                               step={0.1}
-                              className="h-12 bg-[#F5F0EB]"
+                              className="h-12 bg-[#F5F0EB] text-base"
                               data-testid="input-hapi-rate"
                             />
                             <p className="text-xs text-[#888888]">National: 2-5%</p>
@@ -235,14 +235,14 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
-                        <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Prevention Rate %</label>
                             <div className="relative">
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingHapiPreventionRate}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingHapiPreventionRate: v })}
-                                className="h-12 bg-[#F5F0EB] pr-8"
+                                className="h-12 bg-[#F5F0EB] pr-8 text-base"
                                 data-testid="input-hapi-prevention-rate"
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -256,7 +256,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingHapiCost}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingHapiCost: v })}
-                                className="h-12 bg-[#F5F0EB] pl-7"
+                                className="h-12 bg-[#F5F0EB] pl-7 text-base"
                                 data-testid="input-hapi-cost"
                               />
                             </div>
@@ -267,30 +267,30 @@ export default function ExploreCareQuality({
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">HAPIs/year</span>
-                              <span className="font-semibold text-black">{hapisPerYear.toFixed(1)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{hapisPerYear.toFixed(1)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Prevention rate</span>
-                              <span className="font-semibold text-black">{docQualityInputs.nursingHapiPreventionRate}%</span>
+                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHapiPreventionRate}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Care time effectiveness</span>
-                              <span className="font-semibold text-black">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
+                              <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= HAPIs prevented</span>
-                              <span className="font-semibold text-black">{hapisPrevented.toFixed(2)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{hapisPrevented.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Cost per HAPI</span>
-                              <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingHapiCost)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingHapiCost)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="font-medium text-black">Potential HAPI Value</span>
-                              <span className="font-bold text-[#EA2C00]">{formatCurrency(hapiValue)}</span>
+                              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(hapiValue)}</span>
                             </div>
                           </div>
 
@@ -366,7 +366,7 @@ export default function ExploreCareQuality({
                         </p>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: CURRENT FALLS VOLUME</p>
-                        <div className="grid grid-cols-3 gap-4 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
                             <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
@@ -379,7 +379,7 @@ export default function ExploreCareQuality({
                               value={docQualityInputs.nursingFallsRate}
                               onChange={(v: number) => updateDocQualityInputs({ nursingFallsRate: v })}
                               step={0.1}
-                              className="h-12 bg-[#F5F0EB]"
+                              className="h-12 bg-[#F5F0EB] text-base"
                               data-testid="input-falls-rate"
                             />
                             <p className="text-xs text-[#888888]">National: 3-5 per 1,000 patient days</p>
@@ -393,14 +393,14 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
-                        <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Prevention Rate %</label>
                             <div className="relative">
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingFallsPreventionRate}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingFallsPreventionRate: v })}
-                                className="h-12 bg-[#F5F0EB] pr-8"
+                                className="h-12 bg-[#F5F0EB] pr-8 text-base"
                                 data-testid="input-falls-prevention-rate"
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -414,7 +414,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingFallsCost}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingFallsCost: v })}
-                                className="h-12 bg-[#F5F0EB] pl-7"
+                                className="h-12 bg-[#F5F0EB] pl-7 text-base"
                                 data-testid="input-falls-cost"
                               />
                             </div>
@@ -425,30 +425,30 @@ export default function ExploreCareQuality({
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">Falls/year</span>
-                              <span className="font-semibold text-black">{fallsPerYear.toFixed(1)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{fallsPerYear.toFixed(1)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Prevention rate</span>
-                              <span className="font-semibold text-black">{docQualityInputs.nursingFallsPreventionRate}%</span>
+                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Care time effectiveness</span>
-                              <span className="font-semibold text-black">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
+                              <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= Falls prevented</span>
-                              <span className="font-semibold text-black">{fallsPrevented.toFixed(2)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{fallsPrevented.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Cost per fall</span>
-                              <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingFallsCost)}</span>
+                              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingFallsCost)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-2">
                               <span className="font-medium text-black">Potential Falls Value</span>
-                              <span className="font-bold text-[#EA2C00]">{formatCurrency(fallsValue)}</span>
+                              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(fallsValue)}</span>
                             </div>
                           </div>
 

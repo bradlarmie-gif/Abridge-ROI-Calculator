@@ -778,7 +778,7 @@ export default function ExploreModel({
               Qualitative Assessment
             </p>
           ) : (
-            <p className="text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
+            <p className="text-4xl sm:text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
               {formatCurrency(netAnnualValue)}
             </p>
           )}
@@ -795,31 +795,31 @@ export default function ExploreModel({
           {/* Stat Cards */}
           {isNursing ? (
             <div className="flex justify-center gap-4 flex-wrap">
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
-                <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-roi">
+                <p className="text-xl sm:text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
                 <p className="text-xs text-[#888888]">ROI</p>
               </div>
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-bed">
-                <p className="text-2xl font-bold text-white">{formatCurrency(netPerBedYear)}</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-per-bed">
+                <p className="text-xl sm:text-2xl font-bold text-white">{formatCurrency(netPerBedYear)}</p>
                 <p className="text-xs text-[#888888]">per bed/yr</p>
               </div>
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
-                <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-hours-saved">
+                <p className="text-xl sm:text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
                 <p className="text-xs text-[#888888]">hours saved</p>
               </div>
             </div>
           ) : (
             <div className="flex justify-center gap-4 flex-wrap">
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
-                <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-roi">
+                <p className="text-xl sm:text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
                 <p className="text-xs text-[#888888]">ROI</p>
               </div>
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-provider">
-                <p className="text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-per-provider">
+                <p className="text-xl sm:text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
                 <p className="text-xs text-[#888888]">per provider</p>
               </div>
-              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
-                <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+              <div className="bg-[#2A2A2A] rounded-lg px-4 sm:px-6 py-3 sm:py-4 min-w-[90px] sm:min-w-[120px]" data-testid="stat-hours-saved">
+                <p className="text-xl sm:text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
                 <p className="text-xs text-[#888888]">hours saved</p>
               </div>
             </div>
@@ -1079,9 +1079,9 @@ export default function ExploreModel({
             </p>
           )}
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
             {/* Time/Efficiency Card */}
-            <div className="bg-[#F5F0EB] rounded-xl p-6">
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.timeCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
@@ -1207,7 +1207,7 @@ export default function ExploreModel({
             </div>
 
             {/* Documentation Quality Card */}
-            <div className="bg-[#F5F0EB] rounded-xl p-6">
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.docCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
@@ -1304,12 +1304,12 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-[#F5F0EB] rounded-xl p-8">
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                   <Link className="w-5 h-5 text-[#EA2C00]" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-bold text-base text-black uppercase tracking-wide">Downstream Value</h3>
                   <p className="text-sm text-[#888888] italic">The ED admission note is just the beginning</p>
                 </div>
@@ -1375,12 +1375,12 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-[#F5F0EB] rounded-xl p-8">
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                   <Link className="w-5 h-5 text-[#EA2C00]" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
                   <p className="text-sm text-[#888888] italic">ED + Inpatient compounds your results</p>
                 </div>
@@ -1435,7 +1435,7 @@ export default function ExploreModel({
                 <p className="text-sm text-[#888888]">Nursing documentation supports the inpatient revenue cycle</p>
               </div>
             </div>
-            <div className="bg-[#F5F0EB] rounded-xl p-8">
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
               <p className="text-sm text-[#666666] mb-5">
                 When nurses document thoroughly and in real-time, it directly supports inpatient coding and reimbursement.
               </p>
@@ -1476,30 +1476,30 @@ export default function ExploreModel({
             A successful pilot proves value. Strategic expansion multiplies it.
           </p>
 
-          <div className="bg-[#F5F0EB] rounded-xl p-6">
+          <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
             {/* Today vs Full Scale Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="text-center">
-                <p className="text-sm font-medium text-[#888888] mb-1">TODAY</p>
-                <p className="text-2xl font-bold text-black">{isNursing ? formatNumber(state.nursingStaffedBeds) : formatNumber(state.numberOfProviders)}</p>
-                <p className="text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
-                <p className="text-sm text-[#888888]">{state.utilizationPercent}% {isNursing ? 'adoption' : 'util'}</p>
+            <div className="flex items-center justify-between gap-2 mb-6">
+              <div className="text-center min-w-0 flex-shrink-0">
+                <p className="text-xs sm:text-sm font-medium text-[#888888] mb-1">TODAY</p>
+                <p className="text-xl sm:text-2xl font-bold text-black">{isNursing ? formatNumber(state.nursingStaffedBeds) : formatNumber(state.numberOfProviders)}</p>
+                <p className="text-xs sm:text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
+                <p className="text-xs sm:text-sm text-[#888888]">{state.utilizationPercent}% {isNursing ? 'adoption' : 'util'}</p>
               </div>
               
-              <div className="flex-1 px-6 flex items-center justify-center">
-                <span className="text-sm text-[#888888]">expansion →</span>
+              <div className="flex-1 px-2 sm:px-6 flex items-center justify-center">
+                <span className="text-xs sm:text-sm text-[#888888]">expansion →</span>
               </div>
 
-              <div className="text-center">
-                <p className="text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
+              <div className="text-center min-w-0 flex-shrink-0">
+                <p className="text-xs sm:text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
                 <FormattedNumberInput
                   value={state.fullScaleProviders}
                   onChange={(v: number) => updateState({ fullScaleProviders: v })}
                   onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
-                  className="h-10 w-24 text-center text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
+                  className="h-9 sm:h-10 w-20 sm:w-24 text-center text-xl sm:text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
                   data-testid="input-full-scale-providers"
                 />
-                <p className="text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
+                <p className="text-xs sm:text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
                 <div className="flex items-center justify-center gap-1">
                   <FormattedNumberInput
                     value={expandedUtilization}
@@ -1508,24 +1508,24 @@ export default function ExploreModel({
                     className="h-6 w-12 text-center text-sm bg-white border border-[#E5E5E5] rounded"
                     data-testid="input-full-scale-utilization"
                   />
-                  <span className="text-sm text-[#888888]">% {isNursing ? 'adoption' : 'util'}</span>
+                  <span className="text-xs sm:text-sm text-[#888888]">% {isNursing ? 'adoption' : 'util'}</span>
                 </div>
               </div>
             </div>
 
             {/* Comparison Cards */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-white rounded-lg p-5">
-                <p className="text-sm font-medium text-[#888888] mb-2">TODAY'S VALUE</p>
-                <p className="text-3xl font-bold text-black mb-1">{formatCurrency(netAnnualValue)}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-white rounded-lg p-4 sm:p-5">
+                <p className="text-xs sm:text-sm font-medium text-[#888888] mb-1 sm:mb-2">TODAY'S VALUE</p>
+                <p className="text-2xl sm:text-3xl font-bold text-black mb-1">{formatCurrency(netAnnualValue)}</p>
                 <p className="text-sm text-[#888888]">/ year</p>
-                <p className="text-base text-[#888888] mt-2">{roi.toFixed(1)}× ROI</p>
+                <p className="text-sm sm:text-base text-[#888888] mt-2">{roi.toFixed(1)}× ROI</p>
               </div>
-              <div className="bg-[#EA2C00] rounded-lg p-5">
-                <p className="text-sm font-medium text-white/80 mb-2">FULL SCALE VALUE</p>
-                <p className="text-3xl font-bold text-white mb-1">{formatCurrency(expandedValue)}</p>
+              <div className="bg-[#EA2C00] rounded-lg p-4 sm:p-5">
+                <p className="text-xs sm:text-sm font-medium text-white/80 mb-1 sm:mb-2">FULL SCALE VALUE</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white mb-1">{formatCurrency(expandedValue)}</p>
                 <p className="text-sm text-white/80">/ year</p>
-                <p className="text-base text-white/80 mt-2">{expandedRoi.toFixed(1)}× ROI</p>
+                <p className="text-sm sm:text-base text-white/80 mt-2">{expandedRoi.toFixed(1)}× ROI</p>
               </div>
             </div>
           </div>
@@ -1545,9 +1545,9 @@ export default function ExploreModel({
             Projected value vs. linear scaling as you expand from pilot to full scale.
           </p>
 
-          <div className="bg-white rounded-xl border border-[#E5E5E5] p-6">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] p-3 sm:p-6">
             {/* Pace Selector */}
-            <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
               <span className="text-sm text-[#888888]">Expansion pace:</span>
               <div className="flex gap-1">
                 {(['measured', 'steady', 'aggressive'] as const).map((pace) => (
@@ -1582,9 +1582,9 @@ export default function ExploreModel({
             </div>
 
             {/* Chart - BIGGER */}
-            <div className="h-[400px] bg-white rounded-lg">
+            <div className="h-[280px] sm:h-[400px] bg-white rounded-lg touch-manipulation">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 10, bottom: 40 }}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
                   <defs>
                     <linearGradient id="projectedGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.15} />
@@ -1625,9 +1625,9 @@ export default function ExploreModel({
                   <YAxis 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#888888", fontSize: 12 }}
+                    tick={{ fill: "#888888", fontSize: 11 }}
                     tickFormatter={(v) => formatCurrency(v)}
-                    width={65}
+                    width={55}
                   />
                   
                   <Tooltip 
@@ -1715,22 +1715,22 @@ export default function ExploreModel({
             3-Year Projection
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
-              <p className="text-sm text-[#888888] mb-2">Year 1</p>
-              <p className="text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 1</p>
+              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
-              <p className="text-sm text-[#888888] mb-2">Year 2</p>
-              <p className="text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 2</p>
+              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
-              <p className="text-sm text-[#888888] mb-2">Year 3</p>
-              <p className="text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 3</p>
+              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
             </div>
-            <div className="bg-[#F5F0EB] rounded-lg p-5 text-center">
-              <p className="text-sm text-[#888888] mb-2">3-Year Net</p>
-              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearTotal)}</p>
+            <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center">
+              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Net</p>
+              <p className="text-lg sm:text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearTotal)}</p>
             </div>
           </div>
 
@@ -1742,7 +1742,7 @@ export default function ExploreModel({
 
         {/* EXPORT SECTION */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-xl p-6 mb-8"
+          className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}

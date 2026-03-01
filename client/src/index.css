@@ -686,10 +686,19 @@
    GLOBAL RESPONSIVE STYLES
    ======================================== */
 
-/* Prevent horizontal scroll */
+/* Prevent horizontal scroll + iOS text scaling fix */
 html, body {
   overflow-x: hidden;
   width: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent iOS zoom on input focus (inputs < 16px trigger zoom) */
+@media (max-width: 819px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Mobile touch target utility class - apply via component */

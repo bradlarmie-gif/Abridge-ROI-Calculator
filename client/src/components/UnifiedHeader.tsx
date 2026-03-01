@@ -85,7 +85,6 @@ export function UnifiedHeader({
     if (onHome) {
       onHome();
     } else {
-      // Force navigation to home
       window.location.href = "/";
     }
   };
@@ -101,7 +100,7 @@ export function UnifiedHeader({
   const pathLabel = PATH_LABELS[pathType];
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-14 sm:h-16">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-14 sm:h-16 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-3 sm:px-6 md:px-12 h-full flex items-center justify-between gap-2">
         {/* Left: Logo + Back */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
@@ -133,22 +132,29 @@ export function UnifiedHeader({
           )}
         </div>
 
-        {/* Center: Path + Step */}
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 justify-center">
+        {/* Center: Path + Step — adaptive by breakpoint */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 justify-center overflow-hidden">
           <span className="text-xs sm:text-sm text-slate-500 font-medium flex-shrink-0">{pathLabel}</span>
-          <span className="text-slate-300 flex-shrink-0">·</span>
+          <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>
           {stepName ? (
-            <span className="text-xs sm:text-sm text-slate-900 font-semibold truncate">{stepName}</span>
+            <span className="text-xs sm:text-sm text-slate-900 font-semibold truncate hidden min-[480px]:inline">{stepName}</span>
           ) : (
-            <span className="text-xs sm:text-sm text-slate-600 flex-shrink-0">
+            <span className="text-xs sm:text-sm text-slate-600 flex-shrink-0 hidden min-[480px]:inline">
               Step {currentStep} of {totalSteps}
             </span>
           )}
         </div>
 
-        {/* Right: Progress Dots */}
-        <div className="flex items-center flex-shrink-0">
-          <ProgressDots currentStep={currentStep} totalSteps={totalSteps} onStepClick={onStepClick} stepLabels={stepLabels} />
+        {/* Right: Progress indicator — tiered by screen width */}
+        <div className="flex items-center flex-shrink-0 gap-2">
+          {/* Narrow phones (<480px): compact step counter only */}
+          <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
+            {currentStep} / {totalSteps}
+          </span>
+          {/* Wider phones & up (≥480px): progress dots */}
+          <div className="hidden min-[480px]:flex">
+            <ProgressDots currentStep={currentStep} totalSteps={totalSteps} onStepClick={onStepClick} stepLabels={stepLabels} />
+          </div>
         </div>
       </div>
     </header>

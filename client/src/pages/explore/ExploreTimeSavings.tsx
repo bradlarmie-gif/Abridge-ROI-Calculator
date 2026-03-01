@@ -124,10 +124,10 @@ export default function ExploreTimeSavings({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-10">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-10">
           {/* Main Content - Left Column */}
-          <div className="flex-1 max-w-[700px]">
+          <div className="flex-1 max-w-full lg:max-w-[700px]">
             {/* Header */}
             <motion.div 
               className="text-center mb-8"
@@ -151,7 +151,7 @@ export default function ExploreTimeSavings({
 
             {/* What the Data Shows */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
+              className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -177,7 +177,7 @@ export default function ExploreTimeSavings({
 
             {/* Choose Your Scenario */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
+              className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
@@ -195,7 +195,7 @@ export default function ExploreTimeSavings({
                     <button
                       key={scenario.key}
                       onClick={() => handleScenarioSelect(scenario.key)}
-                      className={`w-full py-4 px-5 rounded-lg text-left transition-all ${
+                      className={`w-full py-3 sm:py-4 px-3 sm:px-5 rounded-lg text-left transition-all ${
                         isSelected
                           ? "bg-white/80"
                           : "bg-transparent hover:bg-white/50"
@@ -238,18 +238,20 @@ export default function ExploreTimeSavings({
               </div>
 
               {/* Custom Value */}
-              <div className="flex items-center gap-4 pt-5 border-t border-[#D1D5DB]">
+              <div className="flex items-center flex-wrap gap-3 sm:gap-4 pt-5 border-t border-[#D1D5DB]">
                 <span className="text-sm text-[#888888]">Or enter a custom value:</span>
-                <div className="relative w-24">
-                  <FormattedNumberInput
-                    value={state.minutesSavedPerEncounter}
-                    onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
-                    placeholder="e.g., 5"
-                    className="h-12 text-center bg-white border-[#E5E5E5]"
-                    data-testid="input-custom-minutes"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="relative w-24">
+                    <FormattedNumberInput
+                      value={state.minutesSavedPerEncounter}
+                      onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
+                      placeholder="e.g., 5"
+                      className="h-12 text-center bg-white border-[#E5E5E5]"
+                      data-testid="input-custom-minutes"
+                    />
+                  </div>
+                  <span className="text-sm text-[#888888]">{isNursing ? 'min/shift' : 'min/encounter'}</span>
                 </div>
-                <span className="text-sm text-[#888888]">{isNursing ? 'min/shift' : 'min/encounter'}</span>
               </div>
             </motion.div>
 
@@ -278,7 +280,7 @@ export default function ExploreTimeSavings({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+            <div className="bg-[#1A1A1A] rounded-xl p-5 sm:p-6 lg:sticky lg:top-24">
               {/* Header */}
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px]">
@@ -312,17 +314,17 @@ export default function ExploreTimeSavings({
 
               {/* Stats */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-white/50">Scenario</span>
-                  <span className="text-white font-medium">{state.timePathScenario ? scenarioLabels[state.timePathScenario] || 'Custom' : '—'}</span>
+                  <span className="text-white font-medium text-right">{state.timePathScenario ? scenarioLabels[state.timePathScenario] || 'Custom' : '—'}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-white/50">Time Saved</span>
-                  <span className="text-white">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
+                  <span className="text-white text-right">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">{isNursing ? 'Abridge-Enabled Shifts' : 'Eligible Encounters'}</span>
-                  <span className="text-white">{formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}</span>
+                <div className="flex justify-between gap-2">
+                  <span className="text-white/50 min-w-0">{isNursing ? 'Abridge-Enabled Shifts' : 'Eligible Encounters'}</span>
+                  <span className="text-white flex-shrink-0">{formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}</span>
                 </div>
               </div>
 
@@ -333,11 +335,11 @@ export default function ExploreTimeSavings({
                 {isNursing ? 'PER NURSE' : 'PER PROVIDER'}
               </p>
               <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-white/50">Hours/year</span>
                   <span className="text-white font-semibold">{formatNumber(hoursPerProvider)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-white/50">Hours/week</span>
                   <span className="text-[#EA2C00] font-semibold">{hoursPerWeek}</span>
                 </div>

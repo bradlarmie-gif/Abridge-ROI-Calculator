@@ -79,27 +79,27 @@ export default function ExploreInvestment({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Main Content - Left Column */}
-          <div className="flex-1 max-w-[700px]">
+          <div className="flex-1 lg:max-w-[700px] min-w-0">
             {/* Header */}
             <motion.div 
-              className="text-center mb-8"
+              className="text-center mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
                 Your Investment
               </h1>
-              <p className="text-base text-[#888888]">
+              <p className="text-sm sm:text-base text-[#888888]">
                 Enter your pricing to see the complete picture.
               </p>
             </motion.div>
 
         {/* Pricing Model */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+          className="bg-[#F5F0EB] rounded-lg p-4 sm:p-6 mb-5 sm:mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -113,24 +113,24 @@ export default function ExploreInvestment({
             {/* Per Provider/Bed */}
             <button
               onClick={() => updateState({ pricingModel: 'perProvider' })}
-              className={`w-full p-4 rounded-lg text-left transition-all ${
+              className={`w-full p-3 sm:p-4 rounded-lg text-left transition-all min-h-[56px] ${
                 state.pricingModel === 'perProvider'
                   ? "bg-white border-l-4 border-[#EA2C00]"
                   : "bg-white hover:bg-white/80"
               }`}
               data-testid="button-pricing-provider"
             >
-              <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+              <div className="flex items-start sm:items-center gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
                   state.pricingModel === 'perProvider' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
                   {state.pricingModel === 'perProvider' && (
                     <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                   )}
                 </div>
-                <div>
-                  <p className="font-medium text-black">{isNursing ? 'Per Bed / Month' : 'Per Provider / Month'}</p>
-                  <p className="text-sm text-[#888888]">{isNursing ? 'Pay per staffed bed. Scale up or down as needed.' : 'Pay per active provider. Scale up or down as needed.'}</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-black text-sm sm:text-base">{isNursing ? 'Per Bed / Month' : 'Per Provider / Month'}</p>
+                  <p className="text-xs sm:text-sm text-[#888888]">{isNursing ? 'Pay per staffed bed. Scale up or down as needed.' : 'Pay per active provider. Scale up or down as needed.'}</p>
                 </div>
               </div>
             </button>
@@ -138,24 +138,24 @@ export default function ExploreInvestment({
             {/* Annual License */}
             <button
               onClick={() => updateState({ pricingModel: 'annual' })}
-              className={`w-full p-4 rounded-lg text-left transition-all ${
+              className={`w-full p-3 sm:p-4 rounded-lg text-left transition-all min-h-[56px] ${
                 state.pricingModel === 'annual'
                   ? "bg-white border-l-4 border-[#EA2C00]"
                   : "bg-white hover:bg-white/80"
               }`}
               data-testid="button-pricing-annual"
             >
-              <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+              <div className="flex items-start sm:items-center gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
                   state.pricingModel === 'annual' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
                   {state.pricingModel === 'annual' && (
                     <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                   )}
                 </div>
-                <div>
-                  <p className="font-medium text-black">Annual License</p>
-                  <p className="text-sm text-[#888888]">Fixed annual fee for your deployment.</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-black text-sm sm:text-base">Annual License</p>
+                  <p className="text-xs sm:text-sm text-[#888888]">Fixed annual fee for your deployment.</p>
                 </div>
               </div>
             </button>
@@ -171,13 +171,13 @@ export default function ExploreInvestment({
                   <FormattedNumberInput
                     value={state.costPerProvider}
                     onChange={(v: number) => updateState({ costPerProvider: v })}
-                    className="h-11 bg-white pl-7 pr-16"
+                    className="h-11 bg-white pl-7 pr-16 text-base"
                     data-testid="input-cost-per-provider"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/month</span>
                 </div>
               </div>
-              <p className="text-sm text-[#888888]">
+              <p className="text-xs sm:text-sm text-[#888888] break-words">
                 {isNursing 
                   ? <>{formatNumber(state.nursingStaffedBeds)} beds × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
                   : <>{formatNumber(state.numberOfProviders)} providers × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
@@ -192,7 +192,7 @@ export default function ExploreInvestment({
                 <FormattedNumberInput
                   value={state.annualLicenseFee}
                   onChange={(v: number) => updateState({ annualLicenseFee: v })}
-                  className="h-11 bg-white pl-7 pr-14"
+                  className="h-11 bg-white pl-7 pr-14 text-base"
                   data-testid="input-annual-license"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/year</span>
@@ -203,7 +203,7 @@ export default function ExploreInvestment({
 
         {/* Implementation Fee */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+          className="bg-[#F5F0EB] rounded-lg p-4 sm:p-6 mb-5 sm:mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -231,7 +231,7 @@ export default function ExploreInvestment({
                 <FormattedNumberInput
                   value={state.implementationFee}
                   onChange={(v: number) => updateState({ implementationFee: v })}
-                  className="h-11 bg-white pl-7 pr-20"
+                  className="h-11 bg-white pl-7 pr-20 text-base"
                   data-testid="input-implementation"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">one-time</span>
@@ -258,14 +258,14 @@ export default function ExploreInvestment({
         </motion.div>
           </div>
 
-          {/* Right Panel - Desktop Only */}
+          {/* Right Panel */}
           <motion.div
             className="w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+            <div className="bg-[#1A1A1A] rounded-xl p-4 sm:p-6 lg:sticky lg:top-24">
               {/* Header */}
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
@@ -276,26 +276,26 @@ export default function ExploreInvestment({
 
               {/* Value Breakdown */}
               <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">{isNursing ? 'Annual Value' : 'Time Savings'}</span>
-                  <span className="text-sm font-semibold text-white">{formatCurrency(totalValue)}</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-sm text-[#888888] min-w-0">{isNursing ? 'Annual Value' : 'Time Savings'}</span>
+                  <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
                 </div>
                 {!isNursing && (
                   <>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#888888]">Doc Quality</span>
-                      <span className="text-sm font-semibold text-white">{formatCurrency(docValue)}</span>
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-sm text-[#888888] min-w-0">Doc Quality</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(docValue)}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-white">Total Value</span>
-                      <span className="text-sm font-semibold text-white">{formatCurrency(totalValue)}</span>
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-sm font-semibold text-white min-w-0">Total Value</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
                     </div>
                   </>
                 )}
                 {isNursing && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#888888]">Time Savings</span>
-                    <span className="text-sm font-semibold text-white">{formatCurrency(timeValue)}</span>
+                  <div className="flex justify-between items-center gap-3">
+                    <span className="text-sm text-[#888888] min-w-0">Time Savings</span>
+                    <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
                   </div>
                 )}
               </div>
@@ -304,20 +304,20 @@ export default function ExploreInvestment({
 
               {/* Investment */}
               <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">Your Investment</span>
-                  <span className="text-sm font-semibold text-white">-{formatCurrency(annualInvestment)}</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-sm text-[#888888] min-w-0">Your Investment</span>
+                  <span className="text-sm font-semibold text-white flex-shrink-0">-{formatCurrency(annualInvestment)}</span>
                 </div>
               </div>
 
               <div className="h-px bg-[#333333] my-4" />
 
               {/* Net Value Hero */}
-              <div className="bg-[#2A2A2A] rounded-lg p-4 text-center mb-4">
+              <div className="bg-[#2A2A2A] rounded-lg p-3 sm:p-4 text-center mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Net Annual Value
                 </p>
-                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#EA2C00]">
                   {netAnnualValue >= 0 ? '+' : ''}{formatCurrency(netAnnualValue)}
                 </p>
               </div>
@@ -326,9 +326,9 @@ export default function ExploreInvestment({
 
               {/* ROI Stats */}
               <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">Return on Investment</span>
-                  <span className="text-xl font-bold text-white">{roi.toFixed(1)}×</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-sm text-[#888888] min-w-0">Return on Investment</span>
+                  <span className="text-xl font-bold text-white flex-shrink-0">{roi.toFixed(1)}×</span>
                 </div>
               </div>
 
@@ -340,25 +340,25 @@ export default function ExploreInvestment({
                   <div className="mb-3">
                     <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">Value Per Bed</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-                      <p className="text-lg font-bold text-white">{formatCurrency(valuePerBed)}</p>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
+                    <div className="bg-[#2A2A2A] rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-base sm:text-lg font-bold text-white truncate">{formatCurrency(valuePerBed)}</p>
                       <p className="text-xs text-[#888888]">/bed/yr</p>
                     </div>
-                    <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-                      <p className="text-lg font-bold text-white">{formatCurrency(investmentPerBed)}</p>
+                    <div className="bg-[#2A2A2A] rounded-lg p-2 sm:p-3 text-center">
+                      <p className="text-base sm:text-lg font-bold text-white truncate">{formatCurrency(investmentPerBed)}</p>
                       <p className="text-xs text-[#888888]">/bed/yr</p>
                     </div>
                   </div>
-                  <p className="text-sm text-[#888888] text-center mb-4">
+                  <p className="text-xs sm:text-sm text-[#888888] text-center mb-4">
                     Net: <span className="text-white font-semibold">{formatCurrency(netPerBed)}</span> per bed per year
                   </p>
                   <div className="h-px bg-[#333333] my-4" />
                   {nursingCareQualityPotential > 0 && (
                     <>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-sm text-[#888888]">+ Potential Care Quality</span>
-                        <span className="text-sm font-semibold text-[#EA2C00]">{formatCurrency(nursingCareQualityPotential)}</span>
+                      <div className="flex justify-between items-center gap-2 mb-4 flex-wrap">
+                        <span className="text-sm text-[#888888] min-w-0">+ Potential Care Quality</span>
+                        <span className="text-sm font-semibold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingCareQualityPotential)}</span>
                       </div>
                       <p className="text-xs text-[#666666] mb-4">(shown separately)</p>
                       <div className="h-px bg-[#333333] my-4" />
@@ -366,13 +366,13 @@ export default function ExploreInvestment({
                   )}
                 </>
               ) : (
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+                    <p className="text-xl sm:text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
                     <p className="text-xs text-[#888888]">ROI</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
                     <p className="text-xs text-[#888888]">hours saved</p>
                   </div>
                 </div>

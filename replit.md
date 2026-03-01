@@ -20,6 +20,12 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Data Management**: TanStack React Query for future API integrations.
 -   **Security & Privacy**: Client-side processing, automatic session clearing, input security, content security policy, data sanitization, privacy-preserving analytics, and a clear data button.
 -   **Deep Linking**: Supports direct navigation to methodology pages and pre-selection of care settings for the Explore flow.
+-   **Mobile Responsiveness**: Tiered responsive design system:
+    -   Global `useIsMobile` hook at 820px breakpoint (captures iPad portrait).
+    -   UnifiedHeader: compact "X / Y" step counter on phones <480px, progress dots on 480px+, full breadcrumb on tablets/desktop.
+    -   Global CSS safety: `overflow-x: hidden` on html/body, `-webkit-text-size-adjust: 100%`, 16px minimum input font to prevent iOS zoom-on-focus.
+    -   Explore flow: all 7 steps polished for 320px–1920px+ (responsive grids, touch targets, label/value collision prevention via gap + flex-shrink-0 patterns, stacking sidebars on mobile).
+    -   Custom Tailwind breakpoints: `min-[400px]`, `min-[480px]`, `min-[820px]` alongside standard `sm`/`md`/`lg`.
 
 ### Feature Specifications
 -   **Measure Path**: A 5-page partner report flow allowing partners to configure, visualize, and expand Abridge's value based on deployment data, including PDF export.

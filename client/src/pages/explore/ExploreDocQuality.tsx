@@ -330,7 +330,7 @@ export default function ExploreDocQuality({
                     </p>
 
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Patient Days/Year</label>
                         <div className="h-12 bg-[#F5F0EB] rounded-lg flex items-center px-3">
@@ -346,7 +346,7 @@ export default function ExploreDocQuality({
                             type="number"
                             value={docQualityInputs.nursingHapiRate}
                             onChange={(e) => updateDocInputs({ nursingHapiRate: Number(e.target.value) })}
-                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black"
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black text-base"
                             data-testid="input-nursing-hapi-rate"
                           />
                         </div>
@@ -363,7 +363,7 @@ export default function ExploreDocQuality({
                     </div>
 
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 2: Documentation-Preventable</p>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Prevention Rate</label>
                         <div className="relative">
@@ -371,7 +371,7 @@ export default function ExploreDocQuality({
                             type="number"
                             value={docQualityInputs.nursingHapiPreventionRate}
                             onChange={(e) => updateDocInputs({ nursingHapiPreventionRate: Number(e.target.value) })}
-                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black"
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black text-base"
                             data-testid="input-nursing-hapi-prevention-rate"
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -385,7 +385,7 @@ export default function ExploreDocQuality({
                           <FormattedNumberInput
                             value={docQualityInputs.nursingHapiCost}
                             onChange={(val) => updateDocInputs({ nursingHapiCost: val })}
-                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black text-base"
                             data-testid="input-nursing-hapi-cost"
                           />
                         </div>
@@ -396,20 +396,20 @@ export default function ExploreDocQuality({
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 3: Potential Value</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">HAPIs/year × Prevention rate</span>
-                          <span className="font-semibold text-black">
+                          <span className="font-semibold text-black flex-shrink-0">
                             {((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingHapiRate * (docQualityInputs.nursingHapiPreventionRate / 100)).toFixed(1)} prevented
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">× Cost per HAPI</span>
-                          <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingHapiCost)}</span>
+                          <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingHapiCost)}</span>
                         </div>
                         <div className="h-px bg-[#E5E5E5] my-2" />
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666] font-medium">Potential HAPI Value</span>
-                          <span className="font-bold text-[#EA2C00]">
+                          <span className="font-bold text-[#EA2C00] flex-shrink-0">
                             {formatCurrency(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingHapiRate * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost))}
                           </span>
                         </div>
@@ -487,7 +487,7 @@ export default function ExploreDocQuality({
                     </p>
 
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Falls Rate (per 1,000 patient days)</label>
                         <input
@@ -495,7 +495,7 @@ export default function ExploreDocQuality({
                           step="0.1"
                           value={docQualityInputs.nursingFallsRate}
                           onChange={(e) => updateDocInputs({ nursingFallsRate: Number(e.target.value) })}
-                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black"
+                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black text-base"
                           data-testid="input-nursing-falls-rate"
                         />
                         <p className="text-xs text-[#888888]">National: 3-5 per 1,000</p>
@@ -507,7 +507,7 @@ export default function ExploreDocQuality({
                           <FormattedNumberInput
                             value={docQualityInputs.nursingFallsCost}
                             onChange={(val) => updateDocInputs({ nursingFallsCost: val })}
-                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black text-base"
                             data-testid="input-nursing-falls-cost"
                           />
                         </div>
@@ -517,12 +517,12 @@ export default function ExploreDocQuality({
 
                     <div className="space-y-2.5 mb-6">
                       <label className="text-sm text-[#888888]">Prevention Rate</label>
-                      <div className="relative w-48">
+                      <div className="relative w-full sm:w-48">
                         <input
                           type="number"
                           value={docQualityInputs.nursingFallsPreventionRate}
                           onChange={(e) => updateDocInputs({ nursingFallsPreventionRate: Number(e.target.value) })}
-                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black"
+                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black text-base"
                           data-testid="input-nursing-falls-prevention-rate"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -533,31 +533,31 @@ export default function ExploreDocQuality({
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Patient days × Falls rate / 1,000</span>
-                          <span className="font-semibold text-black">
+                          <span className="font-semibold text-black flex-shrink-0">
                             {Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate)} falls/year
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">× Prevention rate</span>
-                          <span className="font-semibold text-black">{docQualityInputs.nursingFallsPreventionRate}%</span>
+                          <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
                         </div>
                         <div className="h-px bg-[#E5E5E5] my-2" />
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">= Falls prevented</span>
-                          <span className="font-semibold text-black">
+                          <span className="font-semibold text-black flex-shrink-0">
                             {((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate * (docQualityInputs.nursingFallsPreventionRate / 100)).toFixed(1)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">× Cost per fall</span>
-                          <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingFallsCost)}</span>
+                          <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingFallsCost)}</span>
                         </div>
                         <div className="h-px bg-[#E5E5E5] my-2" />
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666] font-medium">Potential Falls Value</span>
-                          <span className="font-bold text-[#EA2C00]">
+                          <span className="font-bold text-[#EA2C00] flex-shrink-0">
                             {formatCurrency(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost))}
                           </span>
                         </div>
@@ -751,7 +751,7 @@ export default function ExploreDocQuality({
                               step="1"
                               value={docQualityInputs.ipDrgAtRiskRate}
                               onChange={(e) => updateDocInputs({ ipDrgAtRiskRate: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                               data-testid="input-drg-at-risk"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
@@ -777,12 +777,12 @@ export default function ExploreDocQuality({
                       Not all gaps are the same. Abridge specifically captures "discussed but not documented"—clinical reasoning that happened verbally but didn't make the note.
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">What portion of your documentation gaps are verbal-to-written gaps?</p>
-                    <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
                       {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                         <button
                           key={level}
                           onClick={() => updateDocInputs({ ipDrgScenario: level })}
-                          className={`p-4 rounded-lg border transition-all text-center ${
+                          className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
                             docQualityInputs.ipDrgScenario === level
                               ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                               : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
@@ -829,7 +829,7 @@ export default function ExploreDocQuality({
                             step="0.1"
                             value={docQualityInputs.ipDrgWeightIncrease}
                             onChange={(e) => updateDocInputs({ ipDrgWeightIncrease: parseFloat(e.target.value) || 0 })}
-                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold"
+                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
                             data-testid="input-drg-weight"
                           />
                         </div>
@@ -843,7 +843,7 @@ export default function ExploreDocQuality({
                               inputMode="numeric"
                               value={docQualityInputs.ipDrgBasePayment ? docQualityInputs.ipDrgBasePayment.toLocaleString("en-US") : ""}
                               onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ ipDrgBasePayment: v }); }}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
                               data-testid="input-drg-base"
                             />
                           </div>
@@ -864,23 +864,23 @@ export default function ExploreDocQuality({
                         These conditions are frequently discussed but under-documented. When captured, they change DRG assignment.
                       </p>
                       <div className="space-y-2 text-[13px]">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Acute respiratory failure</span>
                           <span className="text-black">+0.3 to +0.5</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Sepsis / Severe sepsis</span>
                           <span className="text-black">+0.4 to +0.6</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Malnutrition</span>
                           <span className="text-black">+0.2 to +0.4</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Acute encephalopathy</span>
                           <span className="text-black">+0.3 to +0.5</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           <span className="text-[#666666]">Acute kidney injury</span>
                           <span className="text-black">+0.1 to +0.3</span>
                         </div>
@@ -914,7 +914,7 @@ export default function ExploreDocQuality({
                               step="5"
                               value={docQualityInputs.ipDrgRealization}
                               onChange={(e) => updateDocInputs({ ipDrgRealization: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                               data-testid="input-drg-realization"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
@@ -1022,7 +1022,7 @@ export default function ExploreDocQuality({
                               step="5"
                               value={docQualityInputs.ipCdiQueryRate}
                               onChange={(e) => updateDocInputs({ ipCdiQueryRate: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                               data-testid="input-cdi-query-rate"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
@@ -1044,12 +1044,12 @@ export default function ExploreDocQuality({
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 2: Queries Avoided
                     </p>
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                       {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                         <button
                           key={level}
                           onClick={() => updateDocInputs({ ipCdiScenario: level })}
-                          className={`p-4 rounded-lg border transition-all text-center ${
+                          className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
                             docQualityInputs.ipCdiScenario === level
                               ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                               : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
@@ -1090,7 +1090,7 @@ export default function ExploreDocQuality({
                             <FormattedNumberInput
                               value={docQualityInputs.ipCdiCostPerQuery}
                               onChange={(val) => updateDocInputs({ ipCdiCostPerQuery: val })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
                               data-testid="input-cdi-cost"
                             />
                           </div>
@@ -1192,12 +1192,12 @@ export default function ExploreDocQuality({
                   </p>
 
                   <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                     {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ wrvuScenario: level })}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
                           docQualityInputs.wrvuScenario === level
                             ? "border-[#EA2C00] bg-white"
                             : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
@@ -1216,7 +1216,7 @@ export default function ExploreDocQuality({
                     </div>
 
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">Eligible encounters</span>
                         <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
                       </div>
@@ -1233,15 +1233,15 @@ export default function ExploreDocQuality({
                           <span className="text-[#888888]">wRVU</span>
                         </div>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">Documentation improvement</span>
                         <span className="font-semibold text-black">{wrvuLiftPercent}%</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= wRVU lift per visit</span>
                         <span className="font-semibold text-black">{wrvuLiftPerVisit.toFixed(3)} wRVU</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Total additional wRVUs</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(totalAdditionalWrvus))}</span>
                       </div>
@@ -1270,7 +1270,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="font-semibold text-black">Annual wRVU Value</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(wrvuRevenueNet))}</span>
                       </div>
@@ -1345,7 +1345,7 @@ export default function ExploreDocQuality({
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ hccScenario: level })}
-                        className={`p-3 rounded-lg border transition-all text-center ${
+                        className={`p-2 sm:p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.hccScenario === level
                             ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                             : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
@@ -1367,7 +1367,7 @@ export default function ExploreDocQuality({
                     </div>
 
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">Providers</span>
                         <span className="text-black">{formatNumber(state.numberOfProviders)}</span>
                       </div>
@@ -1386,7 +1386,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Total patients</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(totalPatients))}</span>
                       </div>
@@ -1405,7 +1405,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= MA patient panel</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(maPatients))}</span>
                       </div>
@@ -1424,7 +1424,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Patients with gaps</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients))}</span>
                       </div>
@@ -1441,17 +1441,17 @@ export default function ExploreDocQuality({
                         />
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Total recapture opportunity</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(totalRecaptureOpportunity))} HCCs</span>
                       </div>
 
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× Your recapture target</span>
                         <span className="text-black">{recapturePercent}%</span>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= HCCs you'll document</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))} HCCs</span>
                       </div>
@@ -1483,7 +1483,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Gross value</span>
                         <span className="font-semibold text-black">{formatCurrency(Math.round(hccGrossValue))}</span>
                       </div>
@@ -1579,7 +1579,7 @@ export default function ExploreDocQuality({
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ denialsScenario: level })}
-                        className={`p-3 rounded-lg border transition-all text-center ${
+                        className={`p-2 sm:p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.denialsScenario === level
                             ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                             : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
@@ -1601,7 +1601,7 @@ export default function ExploreDocQuality({
                     </div>
 
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">Eligible encounters</span>
                         <span className="text-black">{formatNumber(eligibleEncounters)}</span>
                       </div>
@@ -1619,26 +1619,26 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Total denials</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(totalDenials))} claims</span>
                       </div>
 
                       {/* Denial Breakdown */}
-                      <div className="bg-white/50 rounded p-3 my-2">
+                      <div className="bg-white/50 rounded p-3 my-2 overflow-hidden">
                         <p className="text-xs font-medium text-[#666666] mb-2">Denial breakdown:</p>
                         <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#888888]">├─</span>
+                          <div className="flex items-start gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
+                            <span className="text-[#888888] flex-shrink-0">├─</span>
                             <span className="text-[#666666]">Appealable ({100 - docQualityInputs.unappealableRate}%):</span>
-                            <span className="text-black">{formatNumber(Math.round(totalDenials - unappealableDenials))}</span>
-                            <span className="text-[#888888]">— Recovered through appeals</span>
+                            <span className="text-black flex-shrink-0">{formatNumber(Math.round(totalDenials - unappealableDenials))}</span>
+                            <span className="text-[#888888] hidden sm:inline">— Recovered through appeals</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#888888]">└─</span>
+                          <div className="flex items-start gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
+                            <span className="text-[#888888] flex-shrink-0">└─</span>
                             <span className="text-[#666666]">Unappealable ({docQualityInputs.unappealableRate}%):</span>
-                            <span className="font-semibold text-black">{formatNumber(Math.round(unappealableDenials))}</span>
-                            <span className="text-[#888888]">— Abridge targeted impact</span>
+                            <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(unappealableDenials))}</span>
+                            <span className="text-[#888888] hidden sm:inline">— Abridge targeted impact</span>
                           </div>
                         </div>
                       </div>
@@ -1657,17 +1657,17 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Unrecoverable denials</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(unappealableDenials))} claims</span>
                       </div>
 
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× Your prevention target</span>
                         <span className="text-black">{preventionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Denials prevented</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(preventedDenials))} claims</span>
                       </div>
@@ -1687,7 +1687,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="h-px bg-[#D1D5DB] my-1" />
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Gross value</span>
                         <span className="font-semibold text-black">{formatCurrency(Math.round(denialsRevenueGross))}</span>
                       </div>
@@ -1744,7 +1744,7 @@ export default function ExploreDocQuality({
 
           {/* Right Panel - Desktop Only */}
           <motion.div
-            className="w-full lg:w-[320px] flex-shrink-0"
+            className="hidden lg:block w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
