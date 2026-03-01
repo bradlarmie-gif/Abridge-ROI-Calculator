@@ -20,11 +20,19 @@ function getRetentionPhasingMultiplier(
   return phasing.year3Pct / 100;
 }
 
+function sigmoidRamp(progress: number): number {
+  const k = 10;
+  const raw = 1 / (1 + Math.exp(-k * (progress - 0.5)));
+  const low = 1 / (1 + Math.exp(k * 0.5));
+  const high = 1 / (1 + Math.exp(-k * 0.5));
+  return (raw - low) / (high - low);
+}
+
 function getAdoptionRamp(monthsSinceOnset: number, rampMonths: number): number {
   if (monthsSinceOnset < 0) return 0;
   if (monthsSinceOnset >= rampMonths) return 1;
   const progress = monthsSinceOnset / rampMonths;
-  return Math.pow(progress, 0.8);
+  return sigmoidRamp(progress);
 }
 
 function getOnsetMultiplier(
@@ -98,7 +106,7 @@ function getUtilizationRamp(
 
   const rampMonths = Math.max(contractMonths - goLiveMonth, 12);
   const progress = Math.min(monthsSinceGoLive / rampMonths, 1);
-  const utilizationProgress = Math.pow(progress, 0.8);
+  const utilizationProgress = sigmoidRamp(progress);
   return pilotUtil + (fullScaleUtil - pilotUtil) * utilizationProgress;
 }
 
@@ -719,7 +727,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
         const lastRow = y.rows[y.rows.length - 1];
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
-          retention: 0,
+          retention: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.retentionValue || 0), 0),
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
           providers: lastRow?.bySettings[s.id]?.providers || 0,
         };

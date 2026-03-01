@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X, GitCompare, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
-import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -16,6 +16,9 @@ interface ProformaViewProps {
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onBack: () => void;
   onHome: () => void;
+  scenarios?: ProformaScenario[];
+  onSaveScenario?: (scenario: ProformaScenario) => void;
+  onDeleteScenario?: (id: string) => void;
 }
 
 const SETTING_ICONS: Record<string, typeof Building2> = {
@@ -61,11 +64,17 @@ function contractTermLabel(months: number): string {
   return `${months / 12}-Year`;
 }
 
+const SCENARIO_COLORS = ["#EA2C00", "#2563EB", "#059669"];
+const SCENARIO_DASHES = ["", "8 4", "4 4"];
+
 export default function ProformaView({
   settings,
   onUpdateSetting,
   onBack,
   onHome,
+  scenarios = [],
+  onSaveScenario,
+  onDeleteScenario,
 }: ProformaViewProps) {
   const isMobile = useIsMobile();
   const [config, setConfig] = useState<ProformaConfig>(() => ({
@@ -73,7 +82,53 @@ export default function ProformaView({
   }));
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [scenarioName, setScenarioName] = useState("");
+  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(null);
+  const [editingScenarioName, setEditingScenarioName] = useState("");
+  const [compareMode, setCompareMode] = useState(false);
   const { toast } = useToast();
+
+  const handleSaveScenario = () => {
+    const name = scenarioName.trim() || `Scenario ${scenarios.length + 1}`;
+    const scenario: ProformaScenario = {
+      id: `scenario-${Date.now()}`,
+      name,
+      settings: JSON.parse(JSON.stringify(settings)),
+      config: JSON.parse(JSON.stringify(config)),
+      createdAt: Date.now(),
+    };
+    onSaveScenario?.(scenario);
+    setShowSaveDialog(false);
+    setScenarioName("");
+    toast({ title: `Scenario "${name}" saved` });
+  };
+
+  const handleRenameScenario = (id: string, newName: string) => {
+    const existing = scenarios.find(s => s.id === id);
+    if (existing && onSaveScenario) {
+      onSaveScenario({ ...existing, name: newName.trim() || existing.name });
+    }
+    setEditingScenarioId(null);
+    setEditingScenarioName("");
+  };
+
+  const scenarioSummaries = useMemo(() => {
+    return scenarios.map(sc => {
+      const cf = buildMonthlyCashFlows(sc.settings, sc.config);
+      const sum = calculateProformaSummary(sc.settings, sc.config, cf);
+      const displayRows = sc.config.viewMode === "yearly"
+        ? groupByYear(cf, getContractStartDate())
+        : groupByQuarter(cf, getContractStartDate());
+      const chartRows = displayRows.map(row => ({
+        label: row.label,
+        total: row.totalValue,
+        investment: row.investment,
+        cumulativeNet: row.cumulativeNet,
+      }));
+      return { ...sc, summary: sum, chartData: chartRows };
+    });
+  }, [scenarios]);
 
   const startDate = useMemo(() => getContractStartDate(), []);
 
@@ -101,7 +156,19 @@ export default function ProformaView({
     return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
   }, [settings]);
 
-  const sensitivityIRR = useMemo(() => {
+  const totalProviders = useMemo(() => {
+    return settings.reduce((s, v) => s + v.providerCount, 0);
+  }, [settings]);
+
+  const fteEquivalent = useMemo(() => {
+    return summary.totalHours / 2080;
+  }, [summary.totalHours]);
+
+  const perProviderValue = useMemo(() => {
+    return totalProviders > 0 ? summary.totalSystemValue / totalProviders : 0;
+  }, [summary.totalSystemValue, totalProviders]);
+
+  const sensitivityAnalysis = useMemo(() => {
     const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number, costFactor: number) => ({
       ...s,
       annualValue: s.annualValue * valueFactor,
@@ -109,17 +176,47 @@ export default function ProformaView({
       drivers: s.drivers.map(d => ({ ...d, value: d.value * valueFactor })),
       costPerUnit: s.costPerUnit * costFactor,
     });
-    const conservative = settings.map(s => scaleSettings(s, 0.8, 1.1));
-    const optimistic = settings.map(s => scaleSettings(s, 1.2, 0.9));
-    const consCF = buildMonthlyCashFlows(conservative, config);
-    const optCF = buildMonthlyCashFlows(optimistic, config);
-    const consResult = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
-    const optResult = calculateAnnualIRR(buildAnnualIRRCashFlows(optimistic, config, optCF));
+    const conservativeSettings = settings.map(s => scaleSettings(s, 0.8, 1.1));
+    const optimisticSettings = settings.map(s => scaleSettings(s, 1.2, 0.9));
+    const consCF = buildMonthlyCashFlows(conservativeSettings, config);
+    const optCF = buildMonthlyCashFlows(optimisticSettings, config);
+    const consSummary = calculateProformaSummary(conservativeSettings, config, consCF);
+    const optSummary = calculateProformaSummary(optimisticSettings, config, optCF);
+    const consIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(conservativeSettings, config, consCF));
+    const optIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(optimisticSettings, config, optCF));
     return {
-      conservative: consResult.isValid ? consResult.annualizedRate : 0,
-      optimistic: optResult.isValid ? optResult.annualizedRate : 0,
+      conservative: {
+        annualValue: consSummary.totalSystemValue,
+        valueToCost: consSummary.valueToCost,
+        irr: consIRR.isValid ? consIRR.annualizedRate : 0,
+        irrValid: consIRR.isValid,
+        irrMethod: consIRR.method,
+        paybackMonth: consSummary.paybackMonth,
+        threeYearNet: consSummary.threeYearNet,
+        simpleROI: consSummary.simpleROI,
+      },
+      base: {
+        annualValue: summary.totalSystemValue,
+        valueToCost: summary.valueToCost,
+        irr: summary.irr,
+        irrValid: summary.irrValid,
+        irrMethod: summary.irrMethod,
+        paybackMonth: summary.paybackMonth,
+        threeYearNet: summary.threeYearNet,
+        simpleROI: summary.simpleROI,
+      },
+      optimistic: {
+        annualValue: optSummary.totalSystemValue,
+        valueToCost: optSummary.valueToCost,
+        irr: optIRR.isValid ? optIRR.annualizedRate : 0,
+        irrValid: optIRR.isValid,
+        irrMethod: optIRR.method,
+        paybackMonth: optSummary.paybackMonth,
+        threeYearNet: optSummary.threeYearNet,
+        simpleROI: optSummary.simpleROI,
+      },
     };
-  }, [settings, config]);
+  }, [settings, config, summary]);
 
   const chartData = useMemo(() => {
     return displayData.map(row => {
@@ -209,50 +306,151 @@ export default function ProformaView({
       {/* HERO */}
       <div className="bg-[#1A1A1A] text-white py-8 sm:py-12 px-4">
         <div className="max-w-[1000px] mx-auto">
-          <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <button onClick={onBack} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm" data-testid="button-back-hub">
               <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Hub</span><span className="sm:hidden">Back</span>
             </button>
-            <div className="flex items-center gap-1 bg-white/10 rounded-full px-2 py-1">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-white/10 rounded-full px-2 py-1">
+                <button
+                  onClick={() => setConfig(c => ({ ...c, viewMode: "quarterly" }))}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "quarterly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
+                  data-testid="toggle-quarterly"
+                >
+                  Quarters
+                </button>
+                <button
+                  onClick={() => setConfig(c => ({ ...c, viewMode: "yearly" }))}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "yearly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
+                  data-testid="toggle-yearly"
+                >
+                  Years
+                </button>
+              </div>
+              {scenarios.length > 0 && (
+                <button
+                  onClick={() => setCompareMode(!compareMode)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${compareMode ? "bg-white text-black" : "bg-white/10 text-white/70 hover:text-white"}`}
+                  data-testid="toggle-compare"
+                >
+                  <GitCompare className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Compare</span>
+                </button>
+              )}
               <button
-                onClick={() => setConfig(c => ({ ...c, viewMode: "quarterly" }))}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "quarterly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-                data-testid="toggle-quarterly"
+                onClick={() => {
+                  if (scenarios.length >= 3) {
+                    toast({ title: "Maximum 3 scenarios", description: "Delete one to save a new scenario", variant: "destructive" });
+                    return;
+                  }
+                  setScenarioName(`Scenario ${scenarios.length + 1}`);
+                  setShowSaveDialog(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:text-white transition-colors"
+                data-testid="button-save-scenario"
               >
-                Quarters
-              </button>
-              <button
-                onClick={() => setConfig(c => ({ ...c, viewMode: "yearly" }))}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "yearly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-                data-testid="toggle-yearly"
-              >
-                Years
+                <Save className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Save Scenario</span>
               </button>
             </div>
           </div>
+
+          {scenarios.length > 0 && (
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1" data-testid="scenario-tabs">
+              <span className="text-[10px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
+              {scenarios.map((sc, idx) => (
+                <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
+                  {editingScenarioId === sc.id ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={editingScenarioName}
+                        onChange={(e) => setEditingScenarioName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameScenario(sc.id, editingScenarioName);
+                          if (e.key === "Escape") setEditingScenarioId(null);
+                        }}
+                        onBlur={() => handleRenameScenario(sc.id, editingScenarioName)}
+                        className="bg-white/20 text-white text-xs px-2 py-1 rounded w-28 outline-none"
+                        autoFocus
+                        data-testid={`input-rename-scenario-${idx}`}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % 3] }} />
+                      <span className="text-xs text-white/80 mx-1 max-w-[100px] truncate">{sc.name}</span>
+                      <button
+                        onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
+                        className="p-0.5 text-white/40 hover:text-white transition-colors"
+                        data-testid={`button-rename-scenario-${idx}`}
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDeleteScenario?.(sc.id);
+                          if (scenarios.length <= 1) setCompareMode(false);
+                        }}
+                        className="p-0.5 text-white/40 hover:text-red-400 transition-colors"
+                        data-testid={`button-delete-scenario-${idx}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Mobile: Annual Value on top, then 2x2 grid */}
           <div className="md:hidden">
             <div className="mb-4">
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value</p>
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.totalSystemValue)}</p>
+              {totalProviders > 0 && (
+                <p className="text-[10px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider: {fmt(perProviderValue)}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
                 <p className="text-xl font-bold text-emerald-400" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+                {hasInvestment && (
+                  <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
+                    Typical: 3–7x
+                    {summary.valueToCost > 7 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                    {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
                 <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
+                {summary.paybackMonth && (
+                  <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
+                    Typical: 4–12 mo
+                    {summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
+                    {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
+                <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
+                  Typical: 200–600%
+                  {Math.round(summary.simpleROI * 100) > 600 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                  {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
+                </p>
               </div>
               <div>
                 <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
                 <p className="text-xl font-bold" data-testid="text-hours">{fmtNum(summary.totalHours)}</p>
+                {summary.totalHours > 0 && (
+                  <p className="text-[10px] text-white/50 mt-0.5" data-testid="text-fte-mobile">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+                )}
               </div>
             </div>
           </div>
@@ -262,22 +460,47 @@ export default function ProformaView({
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.totalSystemValue)}</p>
+              {totalProviders > 0 && (
+                <p className="text-[10px] text-white/50 mt-1" data-testid="text-per-provider">per provider: {fmt(perProviderValue)}</p>
+              )}
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
               <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+              {hasInvestment && (
+                <p className="text-[10px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
+                  Typical: 3–7x
+                  {summary.valueToCost > 7 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                  {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
+                </p>
+              )}
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
               <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
+              {summary.paybackMonth && (
+                <p className="text-[10px] text-white/40 mt-1" data-testid="text-payback-benchmark">
+                  Typical: 4–12 mo
+                  {summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
+                  {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
+                </p>
+              )}
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
+              <p className="text-[10px] text-white/40 mt-1" data-testid="text-roi-benchmark">
+                Typical: 200–600%
+                {Math.round(summary.simpleROI * 100) > 600 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
+              </p>
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
               <p className="text-2xl font-bold">{fmtNum(summary.totalHours)}</p>
+              {summary.totalHours > 0 && (
+                <p className="text-[10px] text-white/50 mt-1" data-testid="text-fte">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+              )}
             </div>
           </div>
         </div>
@@ -883,6 +1106,125 @@ export default function ProformaView({
           </div>
         </motion.div>
 
+        {/* SENSITIVITY ANALYSIS */}
+        <motion.div
+          className="mb-8 sm:mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.27 }}
+          data-testid="panel-sensitivity"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
+            <h2 className="text-base sm:text-lg font-bold text-neutral-900">Sensitivity Analysis</h2>
+          </div>
+          <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">Range of outcomes across conservative, base, and optimistic scenarios</p>
+
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
+              {([
+                { key: "conservative" as const, label: "Conservative", sublabel: "-20% value, +10% cost", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" },
+                { key: "base" as const, label: "Base Case", sublabel: "Current assumptions", color: "text-[#EA2C00]", bg: "bg-white", border: "border-neutral-300" },
+                { key: "optimistic" as const, label: "Optimistic", sublabel: "+20% value, -10% cost", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
+              ] as const).map(scenario => {
+                const data = sensitivityAnalysis[scenario.key];
+                return (
+                  <div key={scenario.key} className={`${scenario.bg} rounded-xl p-3 sm:p-4 border ${scenario.border}`} data-testid={`sensitivity-${scenario.key}`}>
+                    <p className={`text-xs sm:text-sm font-bold ${scenario.color} mb-0.5`}>{scenario.label}</p>
+                    <p className="text-[9px] sm:text-[10px] text-neutral-400 mb-3">{scenario.sublabel}</p>
+
+                    <div className="space-y-2.5">
+                      <div>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Annual Value</p>
+                        <p className={`text-sm sm:text-base font-bold ${scenario.color}`} data-testid={`sensitivity-value-${scenario.key}`}>{fmt(data.annualValue)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Value-to-Cost</p>
+                        <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-vtc-${scenario.key}`}>
+                          {hasInvestment ? `${data.valueToCost.toFixed(1)}x` : "N/A"}
+                        </p>
+                      </div>
+                      {hasInvestment && data.irrValid && (
+                        <div>
+                          <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">{data.irrMethod === "mirr" ? "MIRR" : "IRR"}</p>
+                          <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-irr-${scenario.key}`}>{fmtPct(data.irr)}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-[9px] sm:text-[10px] text-neutral-500 uppercase tracking-wide">Payback</p>
+                        <p className="text-sm sm:text-base font-bold text-neutral-900" data-testid={`sensitivity-payback-${scenario.key}`}>
+                          {data.paybackMonth ? `${data.paybackMonth} mo` : "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {hasInvestment && (
+              <div className="mb-4">
+                <p className="text-[10px] sm:text-xs font-medium text-neutral-500 mb-2">Value-to-Cost Range</p>
+                <div className="relative h-8 sm:h-10 bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                  {(() => {
+                    const consVTC = sensitivityAnalysis.conservative.valueToCost;
+                    const baseVTC = sensitivityAnalysis.base.valueToCost;
+                    const optVTC = sensitivityAnalysis.optimistic.valueToCost;
+                    const maxVTC = Math.max(optVTC, baseVTC, consVTC, 1);
+                    const consWidth = (consVTC / maxVTC) * 100;
+                    const baseWidth = (baseVTC / maxVTC) * 100;
+                    const optWidth = (optVTC / maxVTC) * 100;
+
+                    return (
+                      <>
+                        <div
+                          className="absolute top-0 left-0 h-full bg-emerald-100 rounded-r-lg transition-all duration-500"
+                          style={{ width: `${optWidth}%` }}
+                        />
+                        <div
+                          className="absolute top-0 left-0 h-full bg-neutral-200 rounded-r-lg transition-all duration-500"
+                          style={{ width: `${baseWidth}%` }}
+                        />
+                        <div
+                          className="absolute top-0 left-0 h-full bg-amber-200 rounded-r-lg transition-all duration-500"
+                          style={{ width: `${consWidth}%` }}
+                        />
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-amber-600 z-10"
+                          style={{ left: `${consWidth}%` }}
+                        >
+                          <span className="absolute -top-0.5 left-1 text-[9px] font-medium text-amber-600 whitespace-nowrap">{consVTC.toFixed(1)}x</span>
+                        </div>
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#EA2C00] z-10"
+                          style={{ left: `${baseWidth}%` }}
+                        >
+                          <span className="absolute -top-0.5 left-1 text-[9px] font-bold text-[#EA2C00] whitespace-nowrap">{baseVTC.toFixed(1)}x</span>
+                        </div>
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-emerald-600 z-10"
+                          style={{ left: `${Math.min(optWidth, 99)}%` }}
+                        >
+                          <span className="absolute -top-0.5 right-1 text-[9px] font-medium text-emerald-600 whitespace-nowrap">{optVTC.toFixed(1)}x</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+                <div className="flex items-center justify-between gap-2 mt-1.5 text-[9px] sm:text-[10px] text-neutral-400">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-200" /> Conservative</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-neutral-300" /> Base Case</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-200" /> Optimistic</span>
+                </div>
+              </div>
+            )}
+
+            <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed">
+              Conservative: -20% value drivers, +10% subscription costs. Optimistic: +20% value drivers, -10% subscription costs. This brackets the range of likely outcomes from both revenue and cost perspectives.
+            </p>
+          </div>
+        </motion.div>
+
         {/* METHODOLOGY */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -935,10 +1277,188 @@ export default function ProformaView({
           </Button>
         </div>
 
+        {compareMode && scenarioSummaries.length > 0 && (
+          <motion.div
+            className="mb-8 sm:mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            data-testid="panel-scenario-comparison"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <GitCompare className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
+              <h2 className="text-base sm:text-lg font-bold text-neutral-900">Scenario Comparison</h2>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 mb-4">Current configuration vs. saved scenarios side-by-side</p>
+
+            <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-4">
+              <div className="overflow-x-auto -mx-2 px-2" data-testid="comparison-table">
+                <table className="w-full text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-neutral-300">
+                      <th className="text-left py-2 sm:py-3 font-medium text-neutral-500 pr-4 min-w-[120px]">Metric</th>
+                      <th className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-[#1A1A1A]" />
+                          Current
+                        </div>
+                      </th>
+                      {scenarioSummaries.map((sc, idx) => (
+                        <th key={sc.id} className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % 3] }} />
+                            <span className="truncate max-w-[80px]">{sc.name}</span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label: "Annual Value", current: fmt(summary.totalSystemValue), values: scenarioSummaries.map(s => fmt(s.summary.totalSystemValue)) },
+                      { label: "3-Year Value", current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
+                      { label: "Total Investment", current: fmt(summary.threeYearInvestment), values: scenarioSummaries.map(s => fmt(s.summary.threeYearInvestment)) },
+                      { label: "Net Value", current: fmt(summary.threeYearNet), values: scenarioSummaries.map(s => fmt(s.summary.threeYearNet)) },
+                      { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.threeYearInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
+                      { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
+                      { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
+                      { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
+                    ].map((row, ri) => (
+                      <tr key={row.label} className={`border-b ${ri === 3 ? "border-neutral-300 bg-neutral-50" : "border-neutral-100"}`}>
+                        <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
+                        <td className={`text-right py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 3 ? "font-bold text-neutral-900" : "text-neutral-700"}`}>{row.current}</td>
+                        {row.values.map((v, i) => (
+                          <td key={i} className={`text-right py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 3 ? "font-bold" : ""}`} style={{ color: ri === 3 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="comparison-chart">
+              <p className="text-xs sm:text-sm font-medium text-neutral-600 mb-3">Value Trajectory Overlay</p>
+              <ResponsiveContainer width="100%" height={isMobile ? 260 : 360}>
+                <ComposedChart margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 10 } : { top: 20, right: 40, left: 10, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                    allowDuplicatedCategory={false}
+                    axisLine={{ stroke: "#D5D0CB" }}
+                  />
+                  <YAxis
+                    tickFormatter={(v: number) => fmt(v)}
+                    tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                    width={isMobile ? 55 : 80}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip formatter={(v: number) => fmt(v)} />
+                  <Line
+                    data={chartData}
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#1A1A1A"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Current"
+                  />
+                  {scenarioSummaries.map((sc, idx) => (
+                    <Line
+                      key={sc.id}
+                      data={sc.chartData}
+                      type="monotone"
+                      dataKey="total"
+                      stroke={SCENARIO_COLORS[idx % 3]}
+                      strokeWidth={2}
+                      strokeDasharray={SCENARIO_DASHES[idx % 3]}
+                      dot={false}
+                      name={sc.name}
+                    />
+                  ))}
+                </ComposedChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-3 text-[10px] sm:text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-4 h-0.5 bg-[#1A1A1A] inline-block rounded-full" />
+                  <span className="text-neutral-600">Current</span>
+                </span>
+                {scenarioSummaries.map((sc, idx) => (
+                  <span key={sc.id} className="flex items-center gap-1.5">
+                    <span className="w-4 h-0.5 inline-block rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % 3], borderTop: SCENARIO_DASHES[idx % 3] ? "2px dashed" : undefined }} />
+                    <span className="text-neutral-600">{sc.name}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <p className="text-[10px] sm:text-[11px] text-neutral-400 leading-relaxed mt-3 sm:mt-4 mb-6 sm:mb-8 text-center max-w-2xl mx-auto">
           Projections are modeled estimates based on user-provided inputs and published benchmarks. Retention benefits are conservatively phased. Driver onset timing reflects typical healthcare implementation timelines. This does not constitute a guarantee of financial outcomes.
         </p>
       </div>
+
+      <AnimatePresence>
+        {showSaveDialog && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSaveDialog(false)}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-neutral-900">Save Scenario</h3>
+                <button onClick={() => setShowSaveDialog(false)} className="p-1 text-neutral-400 hover:text-neutral-600" data-testid="button-close-save-dialog">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-neutral-500 mb-4">
+                Save the current settings and configuration as a named scenario for comparison.
+              </p>
+              <input
+                type="text"
+                value={scenarioName}
+                onChange={(e) => setScenarioName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveScenario(); }}
+                placeholder="e.g., Conservative Rollout"
+                className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm mb-4 outline-none focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/30"
+                autoFocus
+                data-testid="input-scenario-name"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveDialog(false)}
+                  className="flex-1"
+                  data-testid="button-cancel-save"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveScenario}
+                  className="flex-1 bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                  data-testid="button-confirm-save"
+                >
+                  Save
+                </Button>
+              </div>
+              <p className="text-[10px] text-neutral-400 mt-3 text-center">
+                {scenarios.length}/3 scenarios used
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

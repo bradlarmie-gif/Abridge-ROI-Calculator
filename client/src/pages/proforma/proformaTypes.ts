@@ -111,6 +111,14 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   },
 };
 
+export interface ProformaScenario {
+  id: string;
+  name: string;
+  settings: ProformaSettingSnapshot[];
+  config: ProformaConfig;
+  createdAt: number;
+}
+
 export const ONSET_LABELS: Record<DriverOnset, string> = {
   immediate: "Immediate",
   delayed: "Delayed (M3+)",
