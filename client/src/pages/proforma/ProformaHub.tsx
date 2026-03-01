@@ -43,12 +43,12 @@ function RolloutTimeline({ settings, contractMonths }: { settings: ProformaSetti
   const totalMonths = contractMonths;
   return (
     <div className="mb-6" data-testid="rollout-timeline">
-      <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-3">Deployment Timeline</p>
-      <div className="relative bg-neutral-100 rounded-lg overflow-hidden" style={{ height: `${settings.length * 36 + 24}px` }}>
+      <p className="text-[10px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-3">Deployment Timeline</p>
+      <div className="relative bg-[#F5F0EB] rounded-lg overflow-hidden" style={{ height: `${settings.length * 36 + 24}px` }}>
         <div className="absolute inset-0 flex">
           {Array.from({ length: Math.ceil(totalMonths / 12) }, (_, i) => (
-            <div key={i} className="flex-1 border-r border-neutral-200/60 relative">
-              <span className="absolute top-1 left-1.5 text-[9px] text-neutral-400 font-medium">Y{i + 1}</span>
+            <div key={i} className="flex-1 border-r border-[#DDD6CC]/60 relative">
+              <span className="absolute top-1 left-1.5 text-[9px] text-[#A39888] font-medium">Y{i + 1}</span>
             </div>
           ))}
         </div>
@@ -87,14 +87,14 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
   return (
     <div className="mt-3" data-testid={`value-bar-${setting.careSetting}`}>
       <div className="flex rounded-full overflow-hidden h-2">
-        {docPct > 0 && <div className="bg-[#2563EB]" style={{ width: `${docPct}%` }} title={`Doc Quality: ${Math.round(docPct)}%`} />}
+        {docPct > 0 && <div className="bg-[#1A1A1A]" style={{ width: `${docPct}%` }} title={`Doc Quality: ${Math.round(docPct)}%`} />}
         {timePct > 0 && <div className="bg-[#EA2C00]" style={{ width: `${timePct}%` }} title={`Time Savings: ${Math.round(timePct)}%`} />}
-        {retPct > 0 && <div className="bg-[#059669]" style={{ width: `${retPct}%` }} title={`Retention: ${Math.round(retPct)}%`} />}
+        {retPct > 0 && <div className="bg-[#B45309]" style={{ width: `${retPct}%` }} title={`Retention: ${Math.round(retPct)}%`} />}
       </div>
       <div className="flex gap-3 mt-1">
-        {docPct > 0 && <span className="text-[9px] text-neutral-400"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2563EB] mr-1" />Doc {Math.round(docPct)}%</span>}
-        {timePct > 0 && <span className="text-[9px] text-neutral-400"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#EA2C00] mr-1" />Time {Math.round(timePct)}%</span>}
-        {retPct > 0 && <span className="text-[9px] text-neutral-400"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#059669] mr-1" />Ret {Math.round(retPct)}%</span>}
+        {docPct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1A1A1A] mr-1" />Doc {Math.round(docPct)}%</span>}
+        {timePct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#EA2C00] mr-1" />Time {Math.round(timePct)}%</span>}
+        {retPct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#B45309] mr-1" />Ret {Math.round(retPct)}%</span>}
       </div>
     </div>
   );
@@ -127,7 +127,7 @@ export default function ProformaHub({
   const totalProviders = settings.reduce((s, v) => s + v.providerCount, 0);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFAF7]">
       <UnifiedHeader onHome={onBack} />
       <UnifiedHeaderSpacer />
 
@@ -149,47 +149,47 @@ export default function ProformaHub({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-neutral-200 shadow-sm p-5 mb-6"
+            className="bg-[#F9F6F2] rounded-xl border border-[#E8E2DA] shadow-sm p-5 mb-6"
             data-testid="proforma-summary-bar"
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-4">
               <div>
-                <p className="text-xs text-neutral-500 mb-1">Annual Value at Scale</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">Annual Value at Scale</p>
                 <p className="text-xl font-bold text-[#EA2C00]" data-testid="hub-annual-value">{fmt(summary.runRateValue)}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">3-Year Total</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">3-Year Total</p>
                 <p className="text-xl font-bold text-neutral-900" data-testid="hub-3yr-value">{fmt(summary.threeYearValue)}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">Total Investment</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">Total Investment</p>
                 <p className="text-xl font-bold text-neutral-900" data-testid="hub-investment">{fmt(summary.threeYearInvestment)}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">Net 3-Year Value</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">Net 3-Year Value</p>
                 <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-emerald-600" : "text-red-600"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
               </div>
             </div>
-            <div className="border-t border-neutral-100 pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="flex flex-col items-center">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mb-1" />
                 <p className="text-sm font-bold text-emerald-600" data-testid="hub-vtc">{summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
-                <p className="text-[10px] text-neutral-400">Value-to-Cost</p>
+                <p className="text-[10px] text-[#A39888]">Value-to-Cost</p>
               </div>
               <div className="flex flex-col items-center">
-                <Clock className="w-3.5 h-3.5 text-neutral-500 mb-1" />
+                <Clock className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
-                <p className="text-[10px] text-neutral-400">Payback</p>
+                <p className="text-[10px] text-[#A39888]">Payback</p>
               </div>
               <div className="flex flex-col items-center">
-                <BarChart3 className="w-3.5 h-3.5 text-neutral-500 mb-1" />
+                <BarChart3 className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-roi">{Math.round(summary.simpleROI * 100)}%</p>
-                <p className="text-[10px] text-neutral-400">Simple ROI</p>
+                <p className="text-[10px] text-[#A39888]">Simple ROI</p>
               </div>
               <div className="flex flex-col items-center">
-                <DollarSign className="w-3.5 h-3.5 text-neutral-500 mb-1" />
+                <DollarSign className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-hours">{fmtNum(totalHours)}</p>
-                <p className="text-[10px] text-neutral-400">Hours/Year</p>
+                <p className="text-[10px] text-[#A39888]">Hours/Year</p>
               </div>
             </div>
           </motion.div>
@@ -215,7 +215,7 @@ export default function ProformaHub({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="bg-white rounded-xl overflow-hidden border border-neutral-200 shadow-sm"
+                  className="bg-white rounded-xl overflow-hidden border border-[#E8E2DA] shadow-sm"
                   data-testid={`proforma-setting-card-${setting.careSetting}`}
                 >
                   <div className="flex">
@@ -228,7 +228,7 @@ export default function ProformaHub({
                           </div>
                           <div>
                             <h3 className="font-bold text-neutral-900">{setting.label}</h3>
-                            <p className="text-sm text-neutral-500">
+                            <p className="text-sm text-[#8C7E6E]">
                               {fmtNum(setting.providerCount)} → {fmtNum(setting.fullScaleProviders)} {unitLabel} · {setting.utilizationPercent}% util
                             </p>
                           </div>
@@ -236,7 +236,7 @@ export default function ProformaHub({
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => setEditingId(isEditing ? null : setting.id)}
-                            className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-neutral-100 text-neutral-500 hover:text-neutral-700'}`}
+                            className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-[#F5F0EB] text-[#A39888] hover:text-[#6B5E4F]'}`}
                             data-testid={`button-edit-${setting.careSetting}`}
                           >
                             {isEditing ? <ChevronUp className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
@@ -252,7 +252,7 @@ export default function ProformaHub({
                               </button>
                               <button
                                 onClick={() => setConfirmRemove(null)}
-                                className="px-2 py-1 text-xs text-neutral-500 hover:text-neutral-700"
+                                className="px-2 py-1 text-xs text-[#8C7E6E] hover:text-[#6B5E4F]"
                               >
                                 Cancel
                               </button>
@@ -260,7 +260,7 @@ export default function ProformaHub({
                           ) : (
                             <button
                               onClick={() => setConfirmRemove(setting.id)}
-                              className="p-2 rounded-lg hover:bg-red-50 text-neutral-400 hover:text-red-500 transition-colors"
+                              className="p-2 rounded-lg hover:bg-red-50 text-[#A39888] hover:text-red-500 transition-colors"
                               data-testid={`button-remove-${setting.careSetting}`}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -271,19 +271,19 @@ export default function ProformaHub({
 
                       <div className="grid grid-cols-3 gap-4 mb-3">
                         <div>
-                          <p className="text-xs text-neutral-500 mb-1">Annual Value</p>
+                          <p className="text-xs text-[#8C7E6E] mb-1">Annual Value</p>
                           <p className="text-lg font-bold" style={{ color }}>{fmt(setting.annualValue)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-neutral-500 mb-1">Hours Returned</p>
+                          <p className="text-xs text-[#8C7E6E] mb-1">Hours Returned</p>
                           <p className="text-lg font-bold text-neutral-900">{fmtNum(setting.totalHoursSaved)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-neutral-500 mb-1">Go-Live Month</p>
+                          <p className="text-xs text-[#8C7E6E] mb-1">Go-Live Month</p>
                           <select
                             value={setting.goLiveMonth}
                             onChange={(e) => onUpdateSetting(setting.id, { goLiveMonth: parseInt(e.target.value) })}
-                            className="h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                            className="h-8 w-full rounded-lg border border-[#DDD6CC] bg-white px-2 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                             data-testid={`select-golive-${setting.careSetting}`}
                           >
                             {Array.from({ length: 36 }, (_, i) => (
@@ -297,12 +297,12 @@ export default function ProformaHub({
 
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {setting.drivers.slice(0, 4).map(d => (
-                          <span key={d.id} className="text-[10px] bg-neutral-50 px-2 py-0.5 rounded-full text-neutral-600 border border-neutral-100">
+                          <span key={d.id} className="text-[10px] bg-[#F5F0EB] px-2 py-0.5 rounded-full text-[#6B5E4F] border border-[#E8E2DA]">
                             {d.name}: {fmt(d.value)}
                           </span>
                         ))}
                         {setting.drivers.length > 4 && (
-                          <span className="text-[10px] text-neutral-400 px-1.5 py-0.5">+{setting.drivers.length - 4} more</span>
+                          <span className="text-[10px] text-[#A39888] px-1.5 py-0.5">+{setting.drivers.length - 4} more</span>
                         )}
                       </div>
 
@@ -315,12 +315,12 @@ export default function ProformaHub({
                             transition={{ duration: 0.2 }}
                             className="overflow-hidden"
                           >
-                            <div className="mt-4 pt-4 border-t border-neutral-100 space-y-4">
+                            <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
                               <div>
-                                <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
+                                <p className="text-[10px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
                                 <div className="grid grid-cols-3 gap-3">
                                   <div>
-                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 1</label>
+                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 1</label>
                                     <FormattedNumberInput
                                       value={yp?.year1 ?? setting.providerCount}
                                       onChange={(v) => {
@@ -339,7 +339,7 @@ export default function ProformaHub({
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 2</label>
+                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 2</label>
                                     <FormattedNumberInput
                                       value={yp?.year2 ?? setting.fullScaleProviders}
                                       onChange={(v) => {
@@ -357,7 +357,7 @@ export default function ProformaHub({
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-[10px] text-neutral-500 mb-1">Year 3</label>
+                                    <label className="block text-[10px] text-[#8C7E6E] mb-1">Year 3</label>
                                     <FormattedNumberInput
                                       value={yp?.year3 ?? setting.fullScaleProviders}
                                       onChange={(v) => {
@@ -380,7 +380,7 @@ export default function ProformaHub({
 
                               <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                  <label className="block text-[10px] text-neutral-500 mb-1">Utilization %</label>
+                                  <label className="block text-[10px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput
                                     value={setting.utilizationPercent}
                                     onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100) })}
@@ -391,7 +391,7 @@ export default function ProformaHub({
                                 <div>
                                   {setting.pricingModel === "annualFlat" ? (
                                     <>
-                                      <label className="block text-[10px] text-neutral-500 mb-1">Annual License Fee</label>
+                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">Annual License Fee</label>
                                       <FormattedNumberInput
                                         value={setting.annualLicenseFee || 0}
                                         onChange={(v) => onUpdateSetting(setting.id, { annualLicenseFee: Math.max(v, 0) })}
@@ -402,7 +402,7 @@ export default function ProformaHub({
                                     </>
                                   ) : setting.pricingModel === "perEncounter" ? (
                                     <>
-                                      <label className="block text-[10px] text-neutral-500 mb-1">$ / Encounter</label>
+                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">$ / Encounter</label>
                                       <FormattedNumberInput
                                         value={setting.costPerEncounter || 0}
                                         onChange={(v) => onUpdateSetting(setting.id, { costPerEncounter: Math.max(v, 0) })}
@@ -413,7 +413,7 @@ export default function ProformaHub({
                                     </>
                                   ) : (
                                     <>
-                                      <label className="block text-[10px] text-neutral-500 mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
+                                      <label className="block text-[10px] text-[#8C7E6E] mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
                                       <FormattedNumberInput
                                         value={setting.costPerUnit}
                                         onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
@@ -425,7 +425,7 @@ export default function ProformaHub({
                                   )}
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] text-neutral-500 mb-1">Implementation Fee</label>
+                                  <label className="block text-[10px] text-[#8C7E6E] mb-1">Implementation Fee</label>
                                   <FormattedNumberInput
                                     value={setting.implementationFee}
                                     onChange={(v) => onUpdateSetting(setting.id, { implementationFee: Math.max(v, 0) })}
@@ -447,7 +447,7 @@ export default function ProformaHub({
                                 </button>
                                 <button
                                   onClick={() => setEditingId(null)}
-                                  className="text-xs text-neutral-500 hover:text-neutral-700 font-medium transition-colors"
+                                  className="text-xs text-[#8C7E6E] hover:text-[#6B5E4F] font-medium transition-colors"
                                   data-testid={`button-done-edit-${setting.careSetting}`}
                                 >
                                   Done
@@ -472,10 +472,10 @@ export default function ProformaHub({
             className="text-center py-20"
           >
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#F5F0EB] flex items-center justify-center">
-              <Layers className="w-8 h-8 text-neutral-400" />
+              <Layers className="w-8 h-8 text-[#A39888]" />
             </div>
             <h3 className="text-xl font-bold text-neutral-900 mb-2">Start Building Your Proforma</h3>
-            <p className="text-neutral-500 mb-8 max-w-md mx-auto">
+            <p className="text-[#8C7E6E] mb-8 max-w-md mx-auto">
               Complete the Explore flow for a care setting, then add it here to build a multi-setting financial model.
             </p>
           </motion.div>
@@ -488,7 +488,7 @@ export default function ProformaHub({
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <p className="text-sm font-medium text-neutral-500 mb-3">Add a care setting</p>
+            <p className="text-sm font-medium text-[#8C7E6E] mb-3">Add a care setting</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {availableSettings.map(s => {
                 const Icon = SETTING_ICONS[s] || Building2;
@@ -496,16 +496,16 @@ export default function ProformaHub({
                   <button
                     key={s}
                     onClick={() => onAddSetting(s)}
-                    className="group flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-[#EA2C00] hover:bg-[#EA2C00]/5 transition-all"
+                    className="group flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-[#DDD6CC] hover:border-[#EA2C00] hover:bg-[#EA2C00]/5 transition-all"
                     data-testid={`button-add-${s}`}
                   >
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-50 group-hover:bg-[#EA2C00]/10 transition-colors">
-                      <Icon className="w-5 h-5 text-neutral-400 group-hover:text-[#EA2C00] transition-colors" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#F5F0EB] group-hover:bg-[#EA2C00]/10 transition-colors">
+                      <Icon className="w-5 h-5 text-[#A39888] group-hover:text-[#EA2C00] transition-colors" />
                     </div>
-                    <span className="text-sm font-medium text-neutral-600 group-hover:text-[#EA2C00] transition-colors">
+                    <span className="text-sm font-medium text-[#6B5E4F] group-hover:text-[#EA2C00] transition-colors">
                       {SETTING_LABELS[s]}
                     </span>
-                    <Plus className="w-4 h-4 text-neutral-400 group-hover:text-[#EA2C00] transition-colors" />
+                    <Plus className="w-4 h-4 text-[#A39888] group-hover:text-[#EA2C00] transition-colors" />
                   </button>
                 );
               })}
@@ -513,7 +513,7 @@ export default function ProformaHub({
           </motion.div>
         )}
 
-        <div className="flex items-center justify-between py-8 border-t border-neutral-200">
+        <div className="flex items-center justify-between py-8 border-t border-[#E8E2DA]">
           <Button
             variant="outline"
             onClick={onBack}
