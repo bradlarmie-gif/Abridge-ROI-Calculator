@@ -1354,7 +1354,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               {config.contractTermMonths >= 36 && (
                 <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{settings.reduce((s, v) => s + (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount), 0)}</Text>
               )}
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.totalSystemValue)}</Text>
+              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.runRateValue)}</Text>
               <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{fmt(totalMonthlyCost)}</Text>
             </View>
           </View>

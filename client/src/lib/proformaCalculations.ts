@@ -692,6 +692,10 @@ export function calculateProformaSummary(
   const simpleROI = threeYearInvestment > 0 ? threeYearNet / threeYearInvestment : 0;
   const valueToCost = threeYearInvestment > 0 ? threeYearValue / threeYearInvestment : 0;
 
+  const lastYearRows = cashFlows.slice(-12);
+  const runRateValue = lastYearRows.reduce((s, r) => s + r.totalValue, 0);
+  const runRateInvestment = lastYearRows.reduce((s, r) => s + r.investment, 0);
+
   return {
     totalSystemValue,
     totalInvestment,
@@ -706,6 +710,8 @@ export function calculateProformaSummary(
     threeYearNet,
     threeYearValue,
     threeYearInvestment,
+    runRateValue,
+    runRateInvestment,
   };
 }
 

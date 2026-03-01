@@ -78,6 +78,8 @@ export interface ProformaSummary {
   threeYearNet: number;
   threeYearValue: number;
   threeYearInvestment: number;
+  runRateValue: number;
+  runRateInvestment: number;
 }
 
 export const SETTING_COLORS: Record<string, string> = {

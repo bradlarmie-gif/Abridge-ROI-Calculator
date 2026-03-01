@@ -154,8 +154,8 @@ export default function ProformaHub({
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-4">
               <div>
-                <p className="text-xs text-neutral-500 mb-1">Annual Value</p>
-                <p className="text-xl font-bold text-[#EA2C00]" data-testid="hub-annual-value">{fmt(summary.totalSystemValue)}</p>
+                <p className="text-xs text-neutral-500 mb-1">Annual Value at Scale</p>
+                <p className="text-xl font-bold text-[#EA2C00]" data-testid="hub-annual-value">{fmt(summary.runRateValue)}</p>
               </div>
               <div>
                 <p className="text-xs text-neutral-500 mb-1">3-Year Total</p>

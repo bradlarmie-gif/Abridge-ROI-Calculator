@@ -165,8 +165,8 @@ export default function ProformaView({
   }, [summary.totalHours]);
 
   const perProviderValue = useMemo(() => {
-    return totalProviders > 0 ? summary.totalSystemValue / totalProviders : 0;
-  }, [summary.totalSystemValue, totalProviders]);
+    return totalProviders > 0 ? summary.runRateValue / totalProviders : 0;
+  }, [summary.runRateValue, totalProviders]);
 
   const sensitivityAnalysis = useMemo(() => {
     const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number) => ({
@@ -185,7 +185,7 @@ export default function ProformaView({
     const optIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(optimisticSettings, config, optCF));
     return {
       conservative: {
-        annualValue: consSummary.totalSystemValue,
+        annualValue: consSummary.runRateValue,
         valueToCost: consSummary.valueToCost,
         irr: consIRR.isValid ? consIRR.annualizedRate : 0,
         irrValid: consIRR.isValid,
@@ -195,7 +195,7 @@ export default function ProformaView({
         simpleROI: consSummary.simpleROI,
       },
       base: {
-        annualValue: summary.totalSystemValue,
+        annualValue: summary.runRateValue,
         valueToCost: summary.valueToCost,
         irr: summary.irr,
         irrValid: summary.irrValid,
@@ -205,7 +205,7 @@ export default function ProformaView({
         simpleROI: summary.simpleROI,
       },
       optimistic: {
-        annualValue: optSummary.totalSystemValue,
+        annualValue: optSummary.runRateValue,
         valueToCost: optSummary.valueToCost,
         irr: optIRR.isValid ? optIRR.annualizedRate : 0,
         irrValid: optIRR.isValid,
@@ -406,8 +406,8 @@ export default function ProformaView({
           {/* Mobile: Annual Value on top, then 2x2 grid */}
           <div className="md:hidden">
             <div className="mb-4">
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value</p>
-              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.totalSystemValue)}</p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
+              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.runRateValue)}</p>
               {totalProviders > 0 && (
                 <p className="text-[10px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider: {fmt(perProviderValue)}</p>
               )}
@@ -419,7 +419,8 @@ export default function ProformaView({
                 {hasInvestment && (
                   <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
                     Typical: 3–7x
-                    {summary.valueToCost > 7 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                    {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                    {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
                     {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                   </p>
                 )}
@@ -430,7 +431,8 @@ export default function ProformaView({
                 {summary.paybackMonth && (
                   <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
                     Typical: 4–12 mo
-                    {summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
+                    {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                    {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
                     {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
                   </p>
                 )}
@@ -440,7 +442,8 @@ export default function ProformaView({
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
                 <p className="text-[10px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
                   Typical: 200–600%
-                  {Math.round(summary.simpleROI * 100) > 600 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                  {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                  {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
                   {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                 </p>
               </div>
@@ -457,8 +460,8 @@ export default function ProformaView({
           {/* Desktop: 5 cols */}
           <div className="hidden md:grid grid-cols-5 gap-6">
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value</p>
-              <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.totalSystemValue)}</p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
+              <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
               {totalProviders > 0 && (
                 <p className="text-[10px] text-white/50 mt-1" data-testid="text-per-provider">per provider: {fmt(perProviderValue)}</p>
               )}
@@ -469,7 +472,8 @@ export default function ProformaView({
               {hasInvestment && (
                 <p className="text-[10px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
                   Typical: 3–7x
-                  {summary.valueToCost > 7 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                  {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                  {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
                   {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                 </p>
               )}
@@ -480,7 +484,8 @@ export default function ProformaView({
               {summary.paybackMonth && (
                 <p className="text-[10px] text-white/40 mt-1" data-testid="text-payback-benchmark">
                   Typical: 4–12 mo
-                  {summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
+                  {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                  {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
                   {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
                 </p>
               )}
@@ -490,7 +495,8 @@ export default function ProformaView({
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
               <p className="text-[10px] text-white/40 mt-1" data-testid="text-roi-benchmark">
                 Typical: 200–600%
-                {Math.round(summary.simpleROI * 100) > 600 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
+                {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
+                {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
                 {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
               </p>
             </div>
@@ -1317,7 +1323,7 @@ export default function ProformaView({
                   </thead>
                   <tbody>
                     {[
-                      { label: "Annual Value", current: fmt(summary.totalSystemValue), values: scenarioSummaries.map(s => fmt(s.summary.totalSystemValue)) },
+                      { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
                       { label: "3-Year Value", current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
                       { label: "Total Investment", current: fmt(summary.threeYearInvestment), values: scenarioSummaries.map(s => fmt(s.summary.threeYearInvestment)) },
                       { label: "Net Value", current: fmt(summary.threeYearNet), values: scenarioSummaries.map(s => fmt(s.summary.threeYearNet)) },
