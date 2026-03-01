@@ -723,7 +723,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const totalProviders = settings.reduce((s, v) => s + v.providerCount, 0);
   const totalFullScale = settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const totalMonthlyCost = settings.reduce((s, v) => s + v.costPerUnit * v.providerCount, 0);
+  const totalMonthlyCost = settings.reduce((s, v) => {
+    if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0) / 12;
+    return s + v.costPerUnit * v.providerCount;
+  }, 0);
 
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
@@ -891,7 +894,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 12 }}>
-                  <Text style={{ fontSize: 8, color: colors.secondary }}>Investment: {fmt(s.costPerUnit)}/{unitLabel(s.careSetting, false)}/mo</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary }}>Investment: {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}</Text>
                   <Text style={{ fontSize: 8, color: colors.secondary }}>Impl: {s.implementationFee > 0 ? fmt(s.implementationFee) : "\u2014"}</Text>
                 </View>
               </View>
@@ -1343,7 +1346,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting)}</Text>
                 )}
                 <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.annualValue)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
               </View>
             ))}
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
@@ -1390,7 +1393,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                     Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     {config.contractTermMonths >= 36 ? `Y3: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
-                    {fmt(s.costPerUnit)}/{unitLabel(s.careSetting, false)}/mo{"\n"}
+                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat license` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}{"\n"}
                     {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
                   </Text>
                   {inputs.length > 0 && (

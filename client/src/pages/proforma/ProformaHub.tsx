@@ -389,14 +389,29 @@ export default function ProformaHub({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] text-neutral-500 mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
-                                  <FormattedNumberInput
-                                    value={setting.costPerUnit}
-                                    onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
-                                    prefix="$"
-                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                    data-testid={`input-cost-${setting.careSetting}`}
-                                  />
+                                  {setting.pricingModel === "annualFlat" ? (
+                                    <>
+                                      <label className="block text-[10px] text-neutral-500 mb-1">Annual License Fee</label>
+                                      <FormattedNumberInput
+                                        value={setting.annualLicenseFee || 0}
+                                        onChange={(v) => onUpdateSetting(setting.id, { annualLicenseFee: Math.max(v, 0) })}
+                                        prefix="$"
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-annual-fee-hub-${setting.careSetting}`}
+                                      />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <label className="block text-[10px] text-neutral-500 mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
+                                      <FormattedNumberInput
+                                        value={setting.costPerUnit}
+                                        onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
+                                        prefix="$"
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-cost-${setting.careSetting}`}
+                                      />
+                                    </>
+                                  )}
                                 </div>
                                 <div>
                                   <label className="block text-[10px] text-neutral-500 mb-1">Implementation Fee</label>

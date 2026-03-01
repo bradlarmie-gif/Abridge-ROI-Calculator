@@ -631,3 +631,102 @@ describe("PDF Math Consistency", () => {
     expect(m36.totalValue).toBeCloseTo(expectedMonthlyDoc + expectedMonthlyTime, 0);
   });
 });
+
+describe("Annual Flat License Pricing", () => {
+  const annualFee = 500000;
+  const flatSetting = makeSetting({
+    pricingModel: "annualFlat",
+    annualLicenseFee: annualFee,
+    costPerUnit: 200,
+    providerCount: 10,
+    fullScaleProviders: 50,
+    yearlyProviders: { year1: 10, year2: 30, year3: 50 },
+  });
+
+  it("produces fixed monthly investment regardless of provider scaling", () => {
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([flatSetting], config);
+    const expectedMonthly = Math.round(annualFee / 12);
+
+    for (const row of cashFlows) {
+      expect(row.investment).toBe(expectedMonthly);
+    }
+  });
+
+  it("flat cost stays constant while perUnit scales with providers", () => {
+    const config = makeConfig();
+    const flatFlows = buildMonthlyCashFlows([flatSetting], config);
+
+    const flatM1 = flatFlows[0].investment;
+    const flatM36 = flatFlows[35].investment;
+    expect(flatM1).toBe(flatM36);
+
+    const perUnitSetting = makeSetting({
+      pricingModel: "perUnit",
+      costPerUnit: 200,
+      providerCount: 10,
+      fullScaleProviders: 50,
+      yearlyProviders: { year1: 10, year2: 30, year3: 50 },
+    });
+    const perUnitFlows = buildMonthlyCashFlows([perUnitSetting], config);
+
+    const puM1 = perUnitFlows[0].investment;
+    const puM36 = perUnitFlows[35].investment;
+    expect(puM36).toBeGreaterThan(puM1);
+  });
+
+  it("summary totalInvestment uses annualLicenseFee for flat settings", () => {
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([flatSetting], config);
+    const summary = calculateProformaSummary([flatSetting], config, cashFlows);
+
+    expect(summary.totalInvestment).toBe(annualFee);
+  });
+
+  it("IRR works correctly with annualFlat pricing", () => {
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([flatSetting], config);
+    const annualCF = buildAnnualIRRCashFlows([flatSetting], config, cashFlows);
+    const irrResult = calculateAnnualIRR(annualCF);
+
+    expect(irrResult.isValid).toBe(true);
+    expect(irrResult.annualizedRate).toBeGreaterThan(0);
+
+    const totalCost = flatSetting.implementationFee + cashFlows.reduce((s, r) => s + r.investment, 0);
+    expect(annualCF[0]).toBeCloseTo(-totalCost, 0);
+  });
+
+  it("mixed scenario: one perUnit + one annualFlat", () => {
+    const perUnitSetting = makeSetting({
+      id: "per-unit-setting",
+      costPerUnit: 200,
+      providerCount: 10,
+    });
+    const flatSettingB = makeSetting({
+      id: "flat-setting",
+      pricingModel: "annualFlat",
+      annualLicenseFee: 300000,
+      costPerUnit: 0,
+      providerCount: 20,
+    });
+
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([perUnitSetting, flatSettingB], config);
+
+    const m1 = cashFlows[0];
+    const expectedPerUnit = 200 * 10;
+    const expectedFlat = Math.round(300000 / 12);
+    expect(m1.investment).toBe(expectedPerUnit + expectedFlat);
+
+    const summary = calculateProformaSummary([perUnitSetting, flatSettingB], config, cashFlows);
+    expect(summary.totalInvestment).toBe(200 * 10 * 12 + 300000);
+  });
+
+  it("default pricingModel (undefined) behaves as perUnit", () => {
+    const defaultSetting = makeSetting({ costPerUnit: 200, providerCount: 10 });
+    const config = makeConfig();
+    const cashFlows = buildMonthlyCashFlows([defaultSetting], config);
+
+    expect(cashFlows[0].investment).toBe(200 * 10);
+  });
+});

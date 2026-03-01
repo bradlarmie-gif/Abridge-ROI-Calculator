@@ -160,7 +160,7 @@ export default function ProformaView({
   const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
 
   const hasInvestment = useMemo(() => {
-    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0);
+    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0);
   }, [settings]);
 
   const totalProviders = useMemo(() => {
@@ -793,9 +793,11 @@ export default function ProformaView({
             {settings.map(s => {
               const Icon = SETTING_ICONS[s.careSetting] || Building2;
               const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
-              const y1Cost = s.costPerUnit * yp.year1 * 12;
-              const y2Cost = s.costPerUnit * yp.year2 * 12;
-              const y3Cost = s.costPerUnit * yp.year3 * 12;
+              const isFlat = s.pricingModel === "annualFlat";
+              const flatFee = s.annualLicenseFee || 0;
+              const y1Cost = isFlat ? flatFee : s.costPerUnit * yp.year1 * 12;
+              const y2Cost = isFlat ? flatFee : s.costPerUnit * yp.year2 * 12;
+              const y3Cost = isFlat ? flatFee : s.costPerUnit * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
               const is3yr = config.contractTermMonths >= 36;
               return (
@@ -854,17 +856,46 @@ export default function ProformaView({
 
                       <div className="mb-4">
                         <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
+                        <div className="flex gap-1.5 mb-3">
+                          <button
+                            onClick={() => onUpdateSetting(s.id, { pricingModel: "perUnit" })}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${(!s.pricingModel || s.pricingModel === "perUnit") ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
+                            data-testid={`toggle-perunit-${s.careSetting}`}
+                          >
+                            Per Unit/Mo
+                          </button>
+                          <button
+                            onClick={() => onUpdateSetting(s.id, { pricingModel: "annualFlat" })}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${s.pricingModel === "annualFlat" ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
+                            data-testid={`toggle-annualflat-${s.careSetting}`}
+                          >
+                            Annual License
+                          </button>
+                        </div>
                         <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <label className="block text-[10px] text-neutral-500 mb-1">$/Unit/Mo</label>
-                            <FormattedNumberInput
-                              value={s.costPerUnit}
-                              onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
-                              prefix="$"
-                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                              data-testid={`input-cost-${s.careSetting}`}
-                            />
-                          </div>
+                          {s.pricingModel === "annualFlat" ? (
+                            <div>
+                              <label className="block text-[10px] text-neutral-500 mb-1">Annual Fee</label>
+                              <FormattedNumberInput
+                                value={s.annualLicenseFee || 0}
+                                onChange={(v) => onUpdateSetting(s.id, { annualLicenseFee: Math.max(v, 0) })}
+                                prefix="$"
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-annual-fee-${s.careSetting}`}
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <label className="block text-[10px] text-neutral-500 mb-1">$/Unit/Mo</label>
+                              <FormattedNumberInput
+                                value={s.costPerUnit}
+                                onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
+                                prefix="$"
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-cost-${s.careSetting}`}
+                              />
+                            </div>
+                          )}
                           <div>
                             <label className="block text-[10px] text-neutral-500 mb-1">Go-Live</label>
                             <select

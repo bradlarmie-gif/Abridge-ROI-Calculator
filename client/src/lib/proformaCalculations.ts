@@ -177,7 +177,9 @@ export function buildMonthlyCashFlows(
         settingDocValue += (nonDriverValue / 12) * adoptionRamp * expansionMultiplier;
       }
 
-      const monthlyInvestment = setting.costPerUnit * currentProviders;
+      const monthlyInvestment = setting.pricingModel === "annualFlat"
+        ? (setting.annualLicenseFee || 0) / 12
+        : setting.costPerUnit * currentProviders;
 
       totalDocValue += settingDocValue;
       totalTimeValue += settingTimeValue;
@@ -649,7 +651,10 @@ export function calculateProformaSummary(
   cashFlows: ProformaCashFlowRow[]
 ): ProformaSummary {
   const totalSystemValue = settings.reduce((s, v) => s + v.annualValue, 0);
-  const totalInvestment = settings.reduce((s, v) => s + v.costPerUnit * v.providerCount * 12, 0);
+  const totalInvestment = settings.reduce((s, v) => {
+    if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0);
+    return s + v.costPerUnit * v.providerCount * 12;
+  }, 0);
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
   const combinedROI = totalInvestment > 0 ? totalSystemValue / totalInvestment : 0;
 
