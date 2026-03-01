@@ -59,7 +59,7 @@ export default function ExploreTimeSavings({
   }, [hoursSaved, state.numberOfProviders]);
 
   const hoursPerWeek = useMemo(() => {
-    return state.numberOfProviders > 0 ? (hoursSaved / state.numberOfProviders / 52).toFixed(1) : '0';
+    return state.numberOfProviders > 0 ? (hoursSaved / state.numberOfProviders / 48).toFixed(1) : '0';
   }, [hoursSaved, state.numberOfProviders]);
 
   const handleScenarioSelect = (scenario: 'conservative' | 'typical' | 'aggressive') => {

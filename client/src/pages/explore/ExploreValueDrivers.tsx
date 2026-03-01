@@ -48,7 +48,7 @@ export default function ExploreValueDrivers({
 
   const hoursPerProviderPerWeek = useMemo(() => {
     return state.numberOfProviders > 0 
-      ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
+      ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
       : '0';
   }, [totalHoursSaved, state.numberOfProviders]);
 
@@ -621,7 +621,7 @@ export default function ExploreValueDrivers({
                     <p className="text-sm text-[#666666] mb-2">Your hospitalists would get back:</p>
                     <p className="text-3xl font-bold text-black mb-1">{formatNumber(Math.round(totalHoursSaved))} hours / year</p>
                     <p className="text-sm text-[#888888]">
-                      ~{state.numberOfProviders > 0 ? formatNumber(Math.round(totalHoursSaved / state.numberOfProviders)) : 0} hours per hospitalist · ~{state.numberOfProviders > 0 ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1) : '0'} hours per week
+                      ~{state.numberOfProviders > 0 ? formatNumber(Math.round(totalHoursSaved / state.numberOfProviders)) : 0} hours per hospitalist · ~{state.numberOfProviders > 0 ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1) : '0'} hours per week
                     </p>
                   </div>
 
@@ -1885,7 +1885,7 @@ export default function ExploreValueDrivers({
                     const otHours = Math.round(totalHoursSaved * otPct);
                     const absorbedHours = Math.round(totalHoursSaved * absorbedPct);
                     const carePerNurseWeek = state.numberOfProviders > 0 
-                      ? (careHours / state.numberOfProviders / 52).toFixed(1)
+                      ? (careHours / state.numberOfProviders / 48).toFixed(1)
                       : '0';
                     
                     return (

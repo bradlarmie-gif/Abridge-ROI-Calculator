@@ -883,7 +883,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     const hoursToWellbeing = safeTotalHours * (state.timeAllocation.clinicianWellbeing / 100);
     const hoursPerProviderAnnual = hoursToWellbeing / safeProviders;
-    const hoursPerProviderPerWeek = hoursPerProviderAnnual / 52;
+    const hoursPerProviderPerWeek = hoursPerProviderAnnual / 48;
     
     // Get threshold based on annual hours per provider (nursing has different thresholds)
     const threshold = getWellbeingThreshold(hoursPerProviderAnnual, isNursing);
@@ -1379,7 +1379,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-slate-400">Per physician per week</span>
-              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 52).toFixed(1)} hrs</span>
+              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 48).toFixed(1)} hrs</span>
             </div>
           </div>
           
@@ -1405,7 +1405,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     // Inpatient Clinical Operations rendering
     if (id === 'patientAccess' && isInpatient) {
-      const hoursPerWeek = calc.hours / 52 / Math.max(1, state.numberOfProviders);
+      const hoursPerWeek = calc.hours / 48 / Math.max(1, state.numberOfProviders);
       
       return (
         <div className="space-y-3">
@@ -1629,7 +1629,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
           <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-slate-600">Hours per physician per year</span>
-              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 48)} hrs</span>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
@@ -1742,7 +1742,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
           <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-slate-600">Hours per hospitalist per year</span>
-              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 48)} hrs</span>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
@@ -1848,7 +1848,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-slate-400">Per provider per week</span>
-              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 52).toFixed(1)} hrs</span>
+              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 48).toFixed(1)} hrs</span>
             </div>
           </div>
           
@@ -1897,7 +1897,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
           <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-slate-600">Hours per provider per year</span>
-              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 48)} hrs</span>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
