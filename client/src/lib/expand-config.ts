@@ -209,7 +209,7 @@ export const TERM_DEFINITIONS: Record<string, TermDefinition> = {
 
 export const VALUE_CONFIG_DEFAULTS = {
   wrvuValue: 33,
-  wrvuAttribution: 50,
+  wrvuAttribution: 75,
   hourlyRate: 150,
   timeConversionMethod: "none" as "none" | "patientAccess" | "overtime",
   patientAccessConversion: 15,

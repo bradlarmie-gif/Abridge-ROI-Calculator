@@ -13,7 +13,7 @@ export interface ValueConfigData {
   overtimeReduction: number | null;
   estimateRetention: boolean;
   departuresPrevented: number;
-  wrvuAttribution: number; // Configurable attribution rate (default 50%)
+  wrvuAttribution: number;
 }
 
 export interface ExpandROIDefaults {
@@ -29,7 +29,7 @@ export interface ExpandROIDefaults {
 }
 
 export const EXPAND_ROI_DEFAULTS: ExpandROIDefaults = {
-  wrvuAttribution: 0.50,
+  wrvuAttribution: 0.75,
   dollarPerWRVU: 33,
   timeConversionPercent: 15,
   revenuePerVisit: 200,
