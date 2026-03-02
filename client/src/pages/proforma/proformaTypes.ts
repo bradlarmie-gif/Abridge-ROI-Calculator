@@ -86,10 +86,10 @@ export interface ProformaSummary {
 }
 
 export const SETTING_COLORS: Record<string, string> = {
-  outpatient: "#EA2C00",
-  ed: "#C2410C",
-  inpatient: "#57534E",
-  nursing: "#92400E",
+  outpatient: "#E8350A",
+  ed: "#BF2A06",
+  inpatient: "#333333",
+  nursing: "#7A1F04",
 };
 
 export const SETTING_LABELS: Record<string, string> = {
