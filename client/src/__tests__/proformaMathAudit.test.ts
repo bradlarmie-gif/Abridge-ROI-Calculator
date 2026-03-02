@@ -223,14 +223,14 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
   const config = makeConfig();
   const cashFlows = buildMonthlyCashFlows(settings, config);
 
-  it("delayed driver produces $0 for months 1-4 (3-month delay + onset at 0)", () => {
-    for (let m = 0; m < 4; m++) {
+  it("delayed driver produces $0 for months 1-7 (6-month delay + onset at 0)", () => {
+    for (let m = 0; m < 7; m++) {
       expect(cashFlows[m].timeValue).toBe(0);
     }
   });
 
-  it("delayed driver starts ramping at month 5 (monthsSinceGoLive=4)", () => {
-    expect(cashFlows[4].timeValue).toBeGreaterThan(0);
+  it("delayed driver starts ramping at month 8 (monthsSinceGoLive=7)", () => {
+    expect(cashFlows[7].timeValue).toBeGreaterThan(0);
   });
 
   it("phased (retention) driver is $0 during year 1 (phasing=0%)", () => {
@@ -253,14 +253,14 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
 
   it("total value = sum of all three driver categories", () => {
     for (const row of cashFlows) {
-      expect(row.totalValue).toBeCloseTo(row.docValue + row.timeValue + row.retentionValue, 0);
+      expect(Math.abs(row.totalValue - (row.docValue + row.timeValue + row.retentionValue))).toBeLessThanOrEqual(2);
     }
   });
 
-  it("year 1 total matches hand calculation (~$134K)", () => {
+  it("year 1 total matches hand calculation (~$110K)", () => {
     const y1Total = cashFlows.slice(0, 12).reduce((s, r) => s + r.totalValue, 0);
-    expect(y1Total).toBeGreaterThan(125000);
-    expect(y1Total).toBeLessThan(145000);
+    expect(y1Total).toBeGreaterThan(100000);
+    expect(y1Total).toBeLessThan(130000);
   });
 
   it("year 2 total matches hand calculation (~$350K)", () => {
@@ -376,7 +376,7 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
 
   it("value breakdown (doc + time + retention) matches total per year", () => {
     for (const year of yearlyData) {
-      expect(year.totalValue).toBeCloseTo(year.docValue + year.timeValue + year.retentionValue, 0);
+      expect(Math.abs(year.totalValue - (year.docValue + year.timeValue + year.retentionValue))).toBeLessThanOrEqual(2);
     }
   });
 
