@@ -585,7 +585,7 @@ export default function ProformaView({
               ? "Annual value by driver type"
               : isMobile
                 ? "Quarterly value by driver type"
-                : "Quarterly value by driver type — documentation revenue starts immediately, capacity & efficiency gains begin after 3 months, retention value phases in over years"}
+                : "Quarterly value by driver type — Year 1 reflects partial retention and capacity effects. Years 2-3 reflect maturing adoption across all value drivers."}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
@@ -1298,7 +1298,7 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~6 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested. This is the most intuitive metric for evaluating subscription technology commitments.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
