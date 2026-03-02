@@ -131,6 +131,14 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   },
 };
 
+export const CONTRACT_TERM_OPTIONS = [
+  { label: "2-Year", months: 24 },
+  { label: "3-Year", months: 36 },
+  { label: "4-Year", months: 48 },
+  { label: "5-Year", months: 60 },
+  { label: "6-Year", months: 72 },
+] as const;
+
 export interface ProformaScenario {
   id: string;
   name: string;
