@@ -337,7 +337,11 @@ export default function ExploreTimeSavings({
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">Hours/week</span>
-                  <span className="text-[#EA2C00] font-semibold">{hoursPerWeek}</span>
+                  <span className="text-white font-semibold">{hoursPerWeek}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-white/50">Daily impact</span>
+                  <span className="text-white font-semibold">~{Math.round(hoursPerProvider * 60 / 220)}min/day per provider</span>
                 </div>
               </div>
 

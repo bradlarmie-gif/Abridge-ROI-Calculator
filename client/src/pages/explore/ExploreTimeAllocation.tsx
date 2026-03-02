@@ -1893,14 +1893,26 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </button>
           </div>
           
-          {/* Hours per provider metric - show both annual and weekly */}
-          <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-600">Hours per provider per year</span>
-              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 48)} hrs</span>
+          {/* Per-provider impact — three connected stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-lg p-3 bg-slate-50 border border-slate-100 text-center">
+              <p className="text-[12px] text-slate-500 mb-1">Hrs reclaimed / week</p>
+              <p className="text-lg font-bold text-slate-900" data-testid="text-wellbeing-hrs-week">
+                {(totalHoursSaved / Math.max(1, state.numberOfProviders) / 48).toFixed(1)}
+              </p>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
+            <div className="rounded-lg p-3 bg-slate-50 border border-slate-100 text-center">
+              <p className="text-[12px] text-slate-500 mb-1">Min freed / day</p>
+              <p className="text-lg font-bold text-slate-900" data-testid="text-wellbeing-min-day">
+                ~{Math.round((totalHoursSaved / Math.max(1, state.numberOfProviders)) / 220 * 60)} min
+              </p>
+            </div>
+            <div className="rounded-lg p-3 bg-slate-50 border border-slate-100 text-center">
+              <p className="text-[12px] text-slate-500 mb-1">After-hrs reduction</p>
+              <p className="text-lg font-bold text-slate-900" data-testid="text-wellbeing-after-hrs">
+                {(totalHoursSaved / Math.max(1, state.numberOfProviders) / 48).toFixed(1)}
+              </p>
+              <p className="text-[12px] text-slate-400">hrs/wk less charting after clinic</p>
             </div>
           </div>
           
