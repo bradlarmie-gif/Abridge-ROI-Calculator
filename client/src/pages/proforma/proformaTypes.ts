@@ -52,6 +52,7 @@ export interface ProformaConfig {
   contractTermMonths: 24 | 36;
   viewMode: "quarterly" | "yearly";
   retentionPhasing: RetentionPhasing;
+  nursingRetentionPhasing?: RetentionPhasing;
 }
 
 export interface ProformaCashFlowRow {
