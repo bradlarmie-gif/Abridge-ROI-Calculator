@@ -108,6 +108,13 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     marginBottom: 6,
   },
+  sectionPageIntro: {
+    fontSize: 9.5,
+    color: "#555555",
+    lineHeight: 1.6,
+    marginBottom: 20,
+    maxWidth: 440,
+  },
   pageWrapper: {
     flex: 1,
     display: "flex",
@@ -582,7 +589,7 @@ function Page2DomainIntro({ data }: { data: AmbientAssessmentPDFData }) {
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionPageTitle}>THE FOUR DOMAINS OF AMBIENT VALUE</Text>
         <Text style={styles.sectionPageSubtitle}>Why These Four Domains Matter</Text>
-        <Text style={styles.body}>
+        <Text style={styles.sectionPageIntro}>
           Most organizations measure ambient AI by a single metric: time saved per encounter. But time savings alone don{"\u2019"}t translate to enterprise value. The organizations capturing the most value from ambient documentation are the ones who have built operational systems around four interconnected domains.
         </Text>
 
