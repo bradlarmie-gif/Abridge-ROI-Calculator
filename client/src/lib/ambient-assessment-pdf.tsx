@@ -430,8 +430,8 @@ const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string 
   const lowestName = domainLabels[lowest].toLowerCase();
 
   if (score <= 30) return `Your organization is in the early stages of building ambient AI value. Time savings are being generated \u2014 the opportunity now is building the infrastructure to capture them.`;
-  if (score <= 50) return `Emerging in some areas. Your biggest opportunity is in ${lowestName} \u2014 organizations at Level 2 here typically leave $200K\u2013$800K in annual value unmeasured.`;
-  if (score <= 70) return `Actively managing in key areas. The gap between your current score and best-in-class represents real, quantifiable value. ${domainLabels[lowest]} is where the most upside lives.`;
+  if (score <= 50) return `Progress in some areas. Your biggest opportunity is in ${lowestName} \u2014 organizations that strengthen this area typically see $200K\u2013$800K in additional measurable value annually.`;
+  if (score <= 70) return `Solid foundation across most domains. The gap between your current score and best-in-class represents real, quantifiable value \u2014 closing this gap is typically where the next layer of value becomes visible.`;
   if (score <= 85) return `Strong foundation. You\u2019re capturing value most organizations miss. The remaining gap is in ${lowestName} \u2014 closing it typically unlocks $100K\u2013$400K in additional annual value.`;
   return "Best-in-class documentation infrastructure. You\u2019re in the top tier of Abridge deployments for strategic value capture.";
 };
