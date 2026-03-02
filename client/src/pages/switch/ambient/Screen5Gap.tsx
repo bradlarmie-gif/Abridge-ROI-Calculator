@@ -94,15 +94,14 @@ function getNextLevelContent(
         base.highEstimate = capacityHigh;
       }
     } else if (level === 2) {
-      const hardSavingsLow = Math.round(recoveredHours * providerRate * 0.20);
-      const hardSavingsHigh = Math.round(recoveredHours * providerRate * 0.35);
-      const additionalVisits = Math.round(recoveredHours * 2);
+      const hardSavings = Math.round(recoveredHours * providerRate * 0.25);
+      const additionalVisits = Math.round(recoveredHours / 0.5);
       const revenueOpportunity = additionalVisits * revenuePerVisit;
-      const low = hardSavingsLow;
-      const high = hardSavingsHigh + revenueOpportunity;
       if (recoveredHours > 0) {
-        base.narrative = `Your ${recoveredHours.toLocaleString()} recovered hours = ${formatDollar(hardSavingsLow)}–${formatDollar(hardSavingsHigh)} in hard savings (at $${providerRate.toLocaleString()}/hr with 20%–35% redeployment), plus capacity for ${additionalVisits.toLocaleString()} additional patient visits × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)} in potential revenue. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
-        base.formula = `Hard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(hardSavingsLow)}\nHard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(hardSavingsHigh)}\nRevenue: ${recoveredHours.toLocaleString()} hrs × 2 visits/hr × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)}\nTotal opportunity range: ${formatDollar(low)}–${formatDollar(high)}`;
+        base.narrative = `Your ${recoveredHours.toLocaleString()} recovered hours — at $${providerRate.toLocaleString()}/hr with 25% redeployment = ${formatDollar(hardSavings)} in hard savings, plus capacity for ${additionalVisits.toLocaleString()} additional patient visits at $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)} in potential revenue. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
+        base.formula = `Hard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(hardSavings)}\nAdditional visits: ${recoveredHours.toLocaleString()} hrs / 0.5 hrs per visit = ${additionalVisits.toLocaleString()} visits\nRevenue: ${additionalVisits.toLocaleString()} visits × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)}\nTotal opportunity: ${formatDollar(hardSavings + revenueOpportunity)}`;
+        base.lowEstimate = hardSavings;
+        base.highEstimate = hardSavings + revenueOpportunity;
       } else {
         const bmkHoursLow = Math.round((documentedEncounters * 3) / 60);
         const bmkHoursHigh = Math.round((documentedEncounters * 5) / 60);
@@ -112,10 +111,6 @@ function getNextLevelContent(
         base.formula = `Low: ${documentedEncounters.toLocaleString()} encounters × 3 min / 60 = ${bmkHoursLow.toLocaleString()} hrs\nHigh: ${documentedEncounters.toLocaleString()} encounters × 5 min / 60 = ${bmkHoursHigh.toLocaleString()} hrs\nValue low: ${bmkHoursLow.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValueLow)}\nValue high: ${bmkHoursHigh.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
-      }
-      if (recoveredHours > 0) {
-        base.lowEstimate = low;
-        base.highEstimate = high;
       }
     } else if (level === 3) {
       const low = 1 * providerRate * 2080;
