@@ -978,7 +978,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={{ marginBottom: 12 }}>
           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>2. BUILD THE INTERNAL CASE</Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            The projections in this document are built on conservative benchmarks from actual Abridge deployments. When you share this with your CFO or CMO, you{"\u2019"}re presenting an approach that is transparent, reproducible, and tied to your organization{"\u2019"}s own deployment data.
+            The projections in this document are built on conservative benchmarks from actual Abridge deployments. When you bring this into an internal conversation, you{"\u2019"}re presenting an approach that is transparent, reproducible, and tied to your organization{"\u2019"}s own deployment data.
           </Text>
         </View>
 
