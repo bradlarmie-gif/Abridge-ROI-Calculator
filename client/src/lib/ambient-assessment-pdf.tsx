@@ -975,9 +975,9 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
 
         <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>2. VALIDATE WITH OPERATIONAL DATA</Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>2. BUILD THE INTERNAL CASE</Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            Replace self-reported estimates with operational data where available: EHR timestamps for documentation time, HR records for turnover and replacement costs, revenue cycle data for coding yield. Timeline: 2{"\u2013"}4 weeks.
+            The financial projections in this document are grounded in conservative benchmarks from real Abridge deployments {"\u2014"} not theoretical models. When you bring this to your CFO or CMO, you{"\u2019"}re presenting a methodology that is reproducible, auditable, and tied to your actual deployment data.
           </Text>
         </View>
 
