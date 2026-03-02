@@ -44,7 +44,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
     -   PDF "Showing Our Math" export that reconstructs per-driver formula strings.
     -   Per-year provider allocation for flexible ramp modeling.
     -   Driver Onset Timing (immediate, delayed, phased) for realistic cash flow projections.
-    -   Proforma Hero Benchmarks for contextual annotations of key metrics with guardrails (VtC > 10x, payback < 2mo, ROI > 1000% trigger "Validate assumptions" annotations).
+    -   Proforma Hero Benchmarks showing "Typical" ranges for key metrics (VtC 3–7x, Payback 4–12 mo, ROI 200–600%) without judgmental annotations.
     -   Promoted Sensitivity Analysis for value-realization-only scenarios (70%/100%/130%).
     -   "Annual Value at Scale" hero metric using run-rate value (last 12 months of cash flows) instead of raw unscaled base value, for CFO defensibility.
     -   Elevated ProformaHub as a deal design workspace with Gantt component and deal snapshot panel.

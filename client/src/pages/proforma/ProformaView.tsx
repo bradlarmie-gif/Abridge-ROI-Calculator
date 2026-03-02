@@ -457,9 +457,6 @@ export default function ProformaView({
                 {hasInvestment && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
                     Typical: 3–7x
-                    {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                    {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
-                    {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                   </p>
                 )}
               </div>
@@ -469,9 +466,6 @@ export default function ProformaView({
                 {summary.paybackMonth && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
                     Typical: 4–12 mo
-                    {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                    {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
-                    {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
                   </p>
                 )}
               </div>
@@ -480,9 +474,6 @@ export default function ProformaView({
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
                 <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
                   Typical: 200–600%
-                  {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                  {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
-                  {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                 </p>
               </div>
               <div>
@@ -510,9 +501,6 @@ export default function ProformaView({
               {hasInvestment && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
                   Typical: 3–7x
-                  {summary.valueToCost > 10 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                  {summary.valueToCost > 7 && summary.valueToCost <= 10 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
-                  {summary.valueToCost < 3 && summary.valueToCost > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
                 </p>
               )}
             </div>
@@ -522,9 +510,6 @@ export default function ProformaView({
               {summary.paybackMonth && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-payback-benchmark">
                   Typical: 4–12 mo
-                  {summary.paybackMonth <= 2 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                  {summary.paybackMonth > 2 && summary.paybackMonth < 4 && <span className="ml-1 text-emerald-400/80 font-medium">Fast</span>}
-                  {summary.paybackMonth > 12 && <span className="ml-1 text-amber-400/80 font-medium">Extended</span>}
                 </p>
               )}
             </div>
@@ -533,9 +518,6 @@ export default function ProformaView({
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
               <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
                 Typical: 200–600%
-                {Math.round(summary.simpleROI * 100) > 1000 && <span className="ml-1 text-white/50 font-medium">Validate assumptions</span>}
-                {Math.round(summary.simpleROI * 100) > 600 && Math.round(summary.simpleROI * 100) <= 1000 && <span className="ml-1 text-emerald-400/80 font-medium">Strong</span>}
-                {Math.round(summary.simpleROI * 100) < 200 && Math.round(summary.simpleROI * 100) > 0 && <span className="ml-1 text-amber-400/80 font-medium">Below avg</span>}
               </p>
             </div>
             <div>
