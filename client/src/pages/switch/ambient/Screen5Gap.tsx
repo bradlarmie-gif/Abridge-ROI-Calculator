@@ -572,7 +572,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                 </span>
               </div>
               <p className="text-[11px] text-white/40 italic leading-relaxed">
-                This isn't future opportunity — it's value your deployment is already failing to capture.
+                This is value your deployment is positioned to capture with greater operational intentionality.
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-white/70">Wait 6 months</span>
