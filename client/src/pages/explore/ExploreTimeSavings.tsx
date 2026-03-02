@@ -81,33 +81,29 @@ export default function ExploreTimeSavings({
     {
       key: 'conservative',
       label: 'Conservative',
-      description: isNursing
-        ? 'Early adoption phase, nurses still learning workflows'
-        : isInpatient
-          ? 'Per admission (combined across all notes). For skeptical stakeholders.'
-          : 'For skeptical stakeholders. Under-promise to over-deliver.',
+      description: 'A conservative starting point. Under-promise to over-deliver.',
     },
     {
       key: 'typical',
       label: 'Typical',
       description: isNursing
-        ? 'Standard adoption with key flowsheets covered'
+        ? 'Based on observed outcomes across nursing implementations.'
         : isED 
-          ? 'Based on average outcomes across similar ED implementations.'
+          ? 'Based on observed outcomes across ED implementations.'
           : isInpatient
-            ? 'Based on average outcomes across similar hospitalist implementations.'
-            : 'Based on observed outcomes across Abridge deployments.',
+            ? 'Based on observed outcomes across inpatient implementations.'
+            : 'Based on observed outcomes across outpatient implementations.',
       recommended: true,
     },
     {
       key: 'aggressive',
       label: 'Optimistic',
       description: isNursing
-        ? 'High adoption with optimized workflows'
+        ? 'For high-adoption units with strong change management.'
         : isED 
           ? 'For high-adoption EDs with strong change management.'
           : isInpatient
-            ? 'For high-adoption programs with strong workflows.'
+            ? 'For high-adoption programs with strong change management.'
             : 'For high-adoption organizations with strong change management.',
     },
   ];
@@ -139,7 +135,7 @@ export default function ExploreTimeSavings({
               </h1>
               <p className="text-base text-[#888888]">
                 {isNursing
-                  ? "How much documentation time could your nurses get back each shift?"
+                  ? "How much time could your nurses get back?"
                   : isED 
                     ? "How much time could your ED providers get back?"
                     : isInpatient
@@ -162,12 +158,12 @@ export default function ExploreTimeSavings({
               <div className="h-px bg-[#D1D5DB] mb-6" />
               <p className="text-sm text-black leading-relaxed">
                 {isNursing
-                  ? "Nurses spend 2-3 hours per shift on documentation\u2014flowsheets, assessments, care plans, and handoffs. For the documentation types Abridge supports, we typically see 15-30 minutes saved per shift."
+                  ? "Across nursing implementations, nurses typically save 15\u201330 minutes per shift on documentation. The range depends on unit type, documentation scope, and workflow adoption."
                   : isED 
-                    ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 2-4 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
+                    ? "Across ED implementations, providers typically save 2\u20134 minutes per encounter on documentation. The range depends on acuity mix, EHR configuration, and workflow adoption."
                     : isInpatient
-                      ? "Hospitalists document across the patient stay—H&Ps, progress notes, discharge summaries. Abridge reduces documentation time across all of these. Across inpatient implementations, hospitalists typically save 15-40 minutes per admission on total documentation time."
-                      : "Across implementations, providers typically save 2–4 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
+                      ? "Across inpatient implementations, hospitalists typically save 15\u201340 minutes per admission on documentation. The range depends on note complexity, EHR configuration, and workflow adoption."
+                      : "Across outpatient implementations, providers typically save 2\u20134 minutes per encounter on documentation. The range depends on specialty, EHR configuration, and workflow adoption."
                 }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">
