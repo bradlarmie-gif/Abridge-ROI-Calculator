@@ -642,7 +642,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
     },
     workforce: {
       letter: "W",
-      name: "Workforce Resilience",
+      name: "Workforce Stability",
       desc: "Documentation burden is the #1 driver of clinician burnout and turnover. At $100K\u2013$1M per physician departure, even a 10% retention improvement changes the financial picture fundamentally.",
     },
     risk: {
