@@ -117,11 +117,17 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
     year1Pct: 20,
     year2Pct: 65,
     year3Pct: 100,
+    year4Pct: 100,
+    year5Pct: 100,
+    year6Pct: 100,
   },
   nursingRetentionPhasing: {
     year1Pct: 35,
     year2Pct: 75,
     year3Pct: 100,
+    year4Pct: 100,
+    year5Pct: 100,
+    year6Pct: 100,
   },
 };
 
