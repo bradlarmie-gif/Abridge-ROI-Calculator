@@ -61,7 +61,13 @@ export default function MeasureDataEntry({
     key: K,
     value: (typeof state.deployment)[K],
   ) => {
-    updateState({ deployment: { ...state.deployment, [key]: value } });
+    const updated = { ...state.deployment, [key]: value };
+    if (key === "providers" || key === "totalProviders") {
+      const p = key === "providers" ? (value as number) : updated.providers;
+      const t = key === "totalProviders" ? (value as number) : updated.totalProviders;
+      updated.utilizationRate = t > 0 ? Math.round((p / t) * 100) : 0;
+    }
+    updateState({ deployment: updated });
   };
 
   const switchTab = (setting: MeasureCareSetting) => {
@@ -80,8 +86,8 @@ export default function MeasureDataEntry({
     const hasOrg = state.deployment.organizationName.trim().length > 0;
     const hasProviders = state.deployment.providers > 0;
     const hasEncounters = state.deployment.totalEncounters > 0;
-    const hasUtilization = state.deployment.utilizationRate > 0;
-    return hasOrg && hasProviders && hasEncounters && hasUtilization;
+    const hasTotalProviders = state.deployment.totalProviders > 0;
+    return hasOrg && hasProviders && hasEncounters && hasTotalProviders;
   };
 
   const handleSavePreview = () => {
@@ -489,17 +495,10 @@ function EditView({
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-black">Utilization Rate</label>
-            <div className="relative">
-              <FormattedNumberInput
-                value={state.deployment.utilizationRate}
-                onChange={(v) => onUpdateDeployment("utilizationRate", v)}
-                className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
-                data-testid="input-utilization"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
-                %
-              </span>
+            <div className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-utilization">
+              {state.deployment.totalProviders > 0 ? Math.round((state.deployment.providers / state.deployment.totalProviders) * 100) : 0}%
             </div>
+            <p className="text-xs text-[#888888]">Providers on Abridge ÷ Total Providers</p>
           </div>
         </div>
 
