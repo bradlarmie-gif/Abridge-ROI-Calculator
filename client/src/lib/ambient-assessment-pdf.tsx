@@ -636,7 +636,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
     },
     revenue: {
       letter: "R",
-      desc: "Complete, structured clinical notes drive coding accuracy, HCC capture, and denial prevention. Every encounter either captures or leaks revenue through your documentation infrastructure.",
+      desc: "Complete, structured clinical notes drive coding accuracy, HCC capture, and denial prevention. Organizations at higher maturity levels see measurable wRVU lift and fewer missed risk-adjustment codes \u2014 not because providers document more, but because they document completely.",
     },
     workforce: {
       letter: "W",
