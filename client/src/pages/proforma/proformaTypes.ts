@@ -115,6 +115,11 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
     year2Pct: 65,
     year3Pct: 100,
   },
+  nursingRetentionPhasing: {
+    year1Pct: 35,
+    year2Pct: 75,
+    year3Pct: 100,
+  },
 };
 
 export interface ProformaScenario {
