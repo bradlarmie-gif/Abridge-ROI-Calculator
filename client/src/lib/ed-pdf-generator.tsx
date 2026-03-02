@@ -827,7 +827,7 @@ const narrativeContent = {
     principles: [
       { name: "ED-specific conservatism", description: "Realization rates account for patient arrival unpredictability, capacity constraints, and high-stress environments." },
       { name: "Transparent calculations", description: "Every number traces back to editable inputs. Challenge anything that doesn't match your ED reality." },
-      { name: "Defensible to skeptics", description: "Built to withstand CFO and CMO scrutiny. No hidden assumptions or optimistic leaps." },
+      { name: "Defensible to skeptics", description: "Built to withstand executive scrutiny. No hidden assumptions or optimistic leaps." },
     ],
   },
 };

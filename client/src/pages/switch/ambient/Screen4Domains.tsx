@@ -679,7 +679,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             Recognized annual revenue attributed to documentation quality
           </label>
           <p className="text-xs text-[#888888] mb-2">
-            Annual revenue impact that your organization formally attributes to documentation improvements. This should be a number your CFO or revenue cycle VP would stand behind.
+            Annual revenue impact that your organization formally attributes to documentation improvements. This should be a number your leadership team or revenue cycle VP would stand behind.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>

@@ -463,7 +463,7 @@ function Page1() {
       <View style={styles.callout}>
         <Text style={styles.calloutText}>
           <Text style={styles.calloutLabel}>OUR APPROACH: </Text>
-          We model both categories--but we're honest about what's directly measurable versus what we only enable. Labor economics value is defensible in CFO conversations. Care quality potential is real but requires clinical practice to realize.
+          We model both categories--but we're honest about what's directly measurable versus what we only enable. Labor economics value is defensible in internal stakeholder conversations. Care quality potential is real but requires clinical practice to realize.
         </Text>
       </View>
       

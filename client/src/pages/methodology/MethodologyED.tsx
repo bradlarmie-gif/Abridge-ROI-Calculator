@@ -600,7 +600,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   <p className="text-sm text-[#666666] leading-relaxed">
                     <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number 
                     you can defend in an ED leadership meeting than a larger number that falls apart when your 
-                    CMO asks "how did you attribute that?" Key assumptions are editable — because your ED's 
+                    leadership asks "how did you attribute that?" Key assumptions are editable — because your ED's 
                     data should drive the answer, not our defaults.
                   </p>
                 </div>

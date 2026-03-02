@@ -196,7 +196,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
     cat2Label: "CARE QUALITY ENABLEMENT",
     cat2Description: "Falls, pressure injuries, patient satisfaction. Influenced by bedside time. But the causal chain is indirect\u2014documentation supports care, it doesn\u2019t replace it.",
     cat2Footer: "Potential value (shown separately)",
-    frameworkCallout: "We model both\u2014but we\u2019re honest about what\u2019s directly measurable versus what we only enable. Labor economics value is defensible in CFO conversations. Care quality potential is real but requires clinical practice to realize.",
+    frameworkCallout: "We model both\u2014but we\u2019re honest about what\u2019s directly measurable versus what we only enable. Labor economics value is defensible in internal stakeholder conversations. Care quality potential is real but requires clinical practice to realize.",
     categories: [
       {
         label: "LABOR ECONOMICS",

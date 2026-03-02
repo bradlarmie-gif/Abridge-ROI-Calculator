@@ -174,7 +174,7 @@ export default function StepMeasurementReality({
               Every projection carries uncertainty. We price it explicitly — before showing you a single dollar.
             </p>
             <p className="text-sm font-semibold text-[#1A1A1A] mt-2" data-testid="text-cfo-line">
-              This is why our models hold up in CFO rooms.
+              This is why our models hold up in executive review.
             </p>
           </div>
 

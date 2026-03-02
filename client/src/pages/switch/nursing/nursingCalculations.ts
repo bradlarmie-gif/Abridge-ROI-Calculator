@@ -332,7 +332,7 @@ export function generateFocusNarrative(
     framingOptions.push({
       title: 'Financial: Overtime Reduction',
       body,
-      audience: 'CFO, VP of Operations, finance committee',
+      audience: 'VP of Operations, finance committee',
     });
     evaluation.push('Can we measure the impact on overtime within 60-90 days?');
   }
@@ -349,7 +349,7 @@ export function generateFocusNarrative(
     framingOptions.push({
       title: 'Strategic: Retention and Workforce Stability',
       body,
-      audience: 'CHRO, CMO, executive leadership',
+      audience: 'CHRO, executive leadership',
     });
     evaluation.push('Does it position us to address retention over the longer term?');
   }

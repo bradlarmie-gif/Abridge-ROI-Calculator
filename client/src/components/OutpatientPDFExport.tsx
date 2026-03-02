@@ -609,7 +609,7 @@ const getValueMixInsight = (laborPct: number, revenuePct: number): string => {
   } else if (laborPct > 60) {
     return `Value skews toward Labor & Efficiency (${laborPct}%). This is common for organizations prioritizing provider satisfaction and retention. Revenue & Quality drivers could add incremental value.`;
   } else if (revenuePct > 60) {
-    return `Value skews toward Revenue & Quality (${revenuePct}%). This represents direct financial ROI from documentation improvement—the most defensible value category for CFO conversations.`;
+    return `Value skews toward Revenue & Quality (${revenuePct}%). This represents direct financial ROI from documentation improvement—the most defensible value category for internal stakeholder conversations.`;
   } else {
     return `Value is balanced across Labor & Efficiency (${laborPct}%) and Revenue & Quality (${revenuePct}%). This diversification reduces risk that any single driver underperforms expectations.`;
   }
