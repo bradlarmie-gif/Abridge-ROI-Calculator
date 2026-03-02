@@ -17,7 +17,10 @@ function getRetentionPhasingMultiplier(
 
   if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
   if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
-  return phasing.year3Pct / 100;
+  if (monthsSinceGoLive < 36) return phasing.year3Pct / 100;
+  if (monthsSinceGoLive < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
+  if (monthsSinceGoLive < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
+  return (phasing.year6Pct ?? phasing.year3Pct) / 100;
 }
 
 function sigmoidRamp(progress: number): number {
@@ -47,7 +50,10 @@ function getOnsetMultiplier(
   if (onset === "phased") {
     if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
     if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
-    return phasing.year3Pct / 100;
+    if (monthsSinceGoLive < 36) return phasing.year3Pct / 100;
+    if (monthsSinceGoLive < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
+    if (monthsSinceGoLive < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
+    return (phasing.year6Pct ?? phasing.year3Pct) / 100;
   }
 
   if (onset === "delayed") {
