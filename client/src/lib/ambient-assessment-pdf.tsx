@@ -549,7 +549,7 @@ function Page2DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData 
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>THE FOUR DOMAINS</Text>
+        <Text style={styles.sectionLabel}>THE FOUR DOMAINS OF AMBIENT VALUE</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Where Enterprise Value Lives</Text>
         <Text style={styles.body}>
           Each domain reflects your organization{"\u2019"}s self-assessed maturity level. All four domains contribute to your Ambient Assessment Score.
