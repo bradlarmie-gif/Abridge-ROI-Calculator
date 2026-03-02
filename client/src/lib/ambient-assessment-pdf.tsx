@@ -632,10 +632,12 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
   const domainIntros: Record<string, { letter: string; desc: string }> = {
     capacity: {
       letter: "C",
-      desc: "Where does recovered time actually go? Most organizations save 2\u20133 minutes per encounter but haven\u2019t structurally converted that time into additional access, volume, or FTE redeployment.",
+      name: "Capacity Realization",
+      desc: "Time saved per encounter is only valuable if it becomes something \u2014 more patients, shorter days, or reduced overtime. Level 1 organizations recover hours on paper. Level 4 organizations deploy those hours into measurable throughput gain.",
     },
     revenue: {
       letter: "R",
+      name: "Revenue Integrity",
       desc: "Complete, structured clinical notes drive coding accuracy, HCC capture, and denial prevention. Organizations at higher maturity levels see measurable wRVU lift and fewer missed risk-adjustment codes \u2014 not because providers document more, but because they document completely.",
     },
     workforce: {
