@@ -86,12 +86,13 @@ function getNextLevelContent(
 
   if (domain === 'capacity') {
     if (level === 1) {
-      const bmkHrs = Math.round((documentedEncounters * 3) / 60);
-      const bmkValueLow = Math.round(bmkHrs * providerRate * 0.20);
-      const bmkValueHigh = Math.round(bmkHrs * providerRate * 0.35);
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: 3 min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      const bmkHrsLow = Math.round((documentedEncounters * 2) / 60);
+      const bmkHrsHigh = Math.round((documentedEncounters * 3) / 60);
+      const bmkValueLow = Math.round(bmkHrsLow * providerRate * 0.20 / 1000) * 1000;
+      const bmkValueHigh = Math.round(bmkHrsHigh * providerRate * 0.35 / 1000) * 1000;
+      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: 2–3 min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrsLow.toLocaleString()}–${bmkHrsHigh.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
       if (documentedEncounters > 0) {
-        base.formula = `3 min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\nLow: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
+        base.formula = `2–3 min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrsLow.toLocaleString()}–${bmkHrsHigh.toLocaleString()} hrs\nLow: ${bmkHrsLow.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrsHigh.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
       }
@@ -184,9 +185,10 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   const providerRate = inputs.providerRate || 150;
   const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
   const benchmarkUtilization = 76;
-  const benchmarkTimeSaved = 3.0;
+  const benchmarkTimeSavedLow = 2.0;
+  const benchmarkTimeSavedHigh = 3.0;
   const benchmarkDocumentedEncounters = Math.round(annualEncounters * (benchmarkUtilization / 100));
-  const benchmarkHoursRecovered = Math.round((benchmarkDocumentedEncounters * benchmarkTimeSaved) / 60);
+  const benchmarkHoursRecovered = Math.round((benchmarkDocumentedEncounters * benchmarkTimeSavedHigh) / 60);
   const userTimeSaved = inputs.timeSavedPerEncounter || 0;
   const userHoursRecovered = userTimeSaved > 0 ? Math.round((documentedEncounters * userTimeSaved) / 60) : 0;
 
@@ -235,11 +237,11 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         d, domainLevels[d], providers, documentedEncounters,
         revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d],
         userHoursRecovered,
-        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSaved
+        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSavedHigh
       );
     }
     return result;
-  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSaved]);
+  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
@@ -331,7 +333,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                     <tr className="border-b border-[#E5E7EB]/50">
                       <td className="py-3 font-semibold text-black">Time saved / encounter</td>
                       <td className="py-3 text-right font-bold text-black" data-testid="reality-time-you">{userTimeSaved > 0 ? `${userTimeSaved} min` : '—'}</td>
-                      <td className="py-3 text-right text-[#888888]">{benchmarkTimeSaved} min</td>
+                      <td className="py-3 text-right text-[#888888]">{benchmarkTimeSavedLow}–{benchmarkTimeSavedHigh} min</td>
                     </tr>
                     <tr className="border-b border-[#E5E7EB]/50">
                       <td className="py-3 font-semibold text-black">Documented encounters</td>
