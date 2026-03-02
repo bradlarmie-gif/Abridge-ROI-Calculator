@@ -318,13 +318,18 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                             const level = scoreToActivationLevel(domain, domainScores[domain]) as 1 | 2 | 3 | 4;
                             return (
                               <tr key={domain} className="border-b border-[#E5E7EB]/50" data-testid={`methodology-row-${domain}`}>
-                                <td className="py-2.5 font-semibold text-black">{DOMAIN_LABELS[domain]}</td>
-                                <td className="py-2.5 text-[#888888]">
+                                <td className="py-2.5 font-semibold text-black align-top">{DOMAIN_LABELS[domain]}</td>
+                                <td className="py-2.5 text-[#888888] align-top">
                                   <span className="text-black font-medium">L{level}</span>
                                   <span className="text-[#888888] ml-1.5 hidden sm:inline">— {ACTIVATION_LABELS[domain][level]}</span>
+                                  {level < 4 && (
+                                    <p className="text-[11px] text-[#888888] mt-0.5 leading-snug">
+                                      L4: {ACTIVATION_LABELS[domain][4]}
+                                    </p>
+                                  )}
                                 </td>
-                                <td className="py-2.5 text-right font-bold text-black">{domainScores[domain]}</td>
-                                <td className="py-2.5 text-right text-[#888888]">25</td>
+                                <td className="py-2.5 text-right font-bold text-black align-top">{domainScores[domain]}</td>
+                                <td className="py-2.5 text-right text-[#888888] align-top">25</td>
                               </tr>
                             );
                           })}
