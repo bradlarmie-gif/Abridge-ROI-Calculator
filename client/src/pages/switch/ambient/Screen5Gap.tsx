@@ -532,6 +532,9 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                   {formatDollar(wait12mo)}
                 </span>
               </div>
+              <p className="text-[11px] text-white/30 italic leading-relaxed mt-1" data-testid="text-ramp-note">
+                Reflects full run-rate value. First 3-6 months of new deployment include ramp period.
+              </p>
             </div>
 
             <div className="h-px bg-white/10 my-5" />

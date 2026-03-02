@@ -158,7 +158,10 @@ export function calculateAmbientScore(
 
 export function formatDollar(value: number): string {
   if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
+    const rounded = Math.round(value / 10000) * 10000;
+    const millions = rounded / 1000000;
+    const formatted = millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(2).replace(/0$/, '');
+    return `$${formatted}M`;
   }
   if (value >= 1000) {
     return `$${Math.round(value / 1000).toLocaleString()}K`;

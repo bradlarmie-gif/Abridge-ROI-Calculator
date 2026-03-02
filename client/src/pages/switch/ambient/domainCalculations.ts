@@ -290,9 +290,9 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `Your measured wRVU change of ${wrvuDelta} per encounter across ${documentedEncounters.toLocaleString()} documented encounters represents an estimated ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data.`,
+        context: `Your measured wRVU change of ${wrvuDelta} per encounter across ${documentedEncounters.toLocaleString()} documented encounters represents an estimated ${formatDollar(revenueImpact)} in annual revenue impact.\n\nBased on your organization's measured data. No attribution discount applied to user-measured values.`,
         formula: `[revenueImpact] = ${wrvuDelta} wRVU \u00d7 ${documentedEncounters.toLocaleString()} encounters \u00d7 $${conversionFactor} (CMS conversion factor) = ${formatDollar(revenueImpact)}`,
-        footnote: `Conversion factor: $${conversionFactor} (CMS). Adjustable in baseline advanced settings.`,
+        footnote: `Conversion factor: $${conversionFactor} (CMS). Adjustable in baseline advanced settings. Based on your measured data. No attribution discount applied to user-measured values.`,
       };
     }
 
