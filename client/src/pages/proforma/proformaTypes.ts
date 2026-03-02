@@ -132,6 +132,6 @@ export const ONSET_LABELS: Record<DriverOnset, string> = {
 
 export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
   immediate: 0,
-  delayed: 3,
+  delayed: 6,
   phased: 0,
 };
