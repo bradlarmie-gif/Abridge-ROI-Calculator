@@ -554,7 +554,7 @@ const RELEVANT_DRIVERS: Record<string, Record<number, number[]>> = {
 };
 
 function getDomainDisplayValue(domain: DomainData): string {
-  if (domain.headlineMetric && domain.headlineMetric !== '\u2014' && domain.headlineMetric !== '—') {
+  if (domain.headlineMetric && domain.headlineMetric !== '\u2014' && domain.headlineMetric !== '—' && domain.headlineMetric !== 'Not yet entered') {
     return domain.headlineMetric;
   }
   if (domain.hasValue !== false && domain.gapValue > 0) {
