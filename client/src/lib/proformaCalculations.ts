@@ -160,10 +160,10 @@ export function buildMonthlyCashFlows(
 
       for (const driver of setting.drivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
-        const effectivePhasing = setting.careSetting === "nursing" && config.nursingRetentionPhasing
+        const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
           : config.retentionPhasing;
-        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, effectivePhasing);
+        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse);
         const monthlyDriverValue = (driver.value / 12) * adoptionRamp * expansionMultiplier * onsetMult;
 
         if (onset === "phased") {
