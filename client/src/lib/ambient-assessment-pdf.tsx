@@ -675,9 +675,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
 
         <View style={styles.insightBox}>
           <Text style={styles.insightBoxText}>
-            Your lowest-scoring domain is{" "}
-            <Text style={styles.insightBoxHighlight}>{domainMeta[lowestDomain].name}</Text>
-            {" "}(Level {data.domains[lowestDomain].activationLevel}). This is where strategic action will yield the highest return relative to current maturity. The following pages break down each domain in detail.
+            The maturity score is a map, not a grade. Every gap between where your organization is today and where it could be represents a quantifiable opportunity. The goal of this assessment is to make those opportunities visible, specific, and worth acting on.
           </Text>
         </View>
 
