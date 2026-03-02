@@ -54,18 +54,18 @@ function RolloutTimeline({ settings, contractMonths }: { settings: ProformaSetti
         </div>
         {settings.map((s, idx) => {
           const startPct = ((s.goLiveMonth - 1) / totalMonths) * 100;
-          const endMonth = Math.min(totalMonths, s.goLiveMonth + 11);
-          const widthPct = ((endMonth - s.goLiveMonth + 1) / totalMonths) * 100;
+          const rampMonths = Math.min(12, totalMonths - s.goLiveMonth + 1);
+          const rampPct = (rampMonths / totalMonths) * 100;
           const fullPct = ((totalMonths - s.goLiveMonth + 1) / totalMonths) * 100;
           return (
             <div key={s.id} className="absolute left-0 right-0" style={{ top: `${idx * 36 + 20}px`, height: "28px" }}>
               <div
-                className="absolute rounded-md opacity-10"
-                style={{ left: `${startPct}%`, width: `${fullPct}%`, height: "100%", backgroundColor: s.color }}
+                className="absolute rounded-md"
+                style={{ left: `${startPct}%`, width: `${fullPct}%`, height: "100%", backgroundColor: s.color, opacity: 0.3 }}
               />
               <div
-                className="absolute rounded-md flex items-center px-2 gap-1.5"
-                style={{ left: `${startPct}%`, width: `${Math.min(widthPct, fullPct)}%`, height: "100%", backgroundColor: s.color }}
+                className="absolute rounded-l-md flex items-center px-2 gap-1.5"
+                style={{ left: `${startPct}%`, width: `${Math.min(rampPct, fullPct)}%`, height: "100%", backgroundColor: s.color }}
               >
                 <span className="text-[12px] font-bold text-white truncate">{s.label}</span>
                 <span className="text-[9px] text-white/70 whitespace-nowrap">M{s.goLiveMonth}</span>
