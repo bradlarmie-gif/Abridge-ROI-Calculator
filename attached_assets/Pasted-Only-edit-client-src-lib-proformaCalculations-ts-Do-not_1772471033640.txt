@@ -1,0 +1,29 @@
+Only edit client/src/lib/proformaCalculations.ts. Do not touch any other file. Run npx vitest run after, update any broken test expectations, confirm all tests pass, then publish.
+ONE CHANGE ONLY:
+In the getOnsetMultiplier function, find the "phased" branch. It currently looks like:
+  if (onset === "phased") {
+    if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
+    if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
+    if (monthsSinceGoLive < 36) return phasing.year3Pct / 100;
+    if (monthsSinceGoLive < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
+    if (monthsSinceGoLive < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
+    return (phasing.year6Pct ?? phasing.year3Pct) / 100;
+  }
+The function signature is: getOnsetMultiplier(monthsSinceGoLive, onset, phasing, careSetting?)
+Add an optional 4th parameter: careSetting?: string
+Then replace the "phased" branch with this logic:
+  if (onset === "phased") {
+    // Retention onset delay: nursing = 6 months, all other settings = 9 months
+    const retentionDelay = careSetting === "nursing" ? 6 : 9;
+    const adjustedMonths = monthsSinceGoLive - retentionDelay;
+    if (adjustedMonths < 0) return 0;
+    if (adjustedMonths < 12) return phasing.year1Pct / 100;
+    if (adjustedMonths < 24) return phasing.year2Pct / 100;
+    if (adjustedMonths < 36) return phasing.year3Pct / 100;
+    if (adjustedMonths < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
+    if (adjustedMonths < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
+    return (phasing.year6Pct ?? phasing.year3Pct) / 100;
+  }
+Then find every call to getOnsetMultiplier in buildMonthlyCashFlows where onset === "phased" is possible. Pass setting.careSetting as the 4th argument to that call so it reads:
+  getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting)
+That is the only call site that needs updating. Run tests, fix any expectation changes from the delayed onset, confirm all pass, publish.

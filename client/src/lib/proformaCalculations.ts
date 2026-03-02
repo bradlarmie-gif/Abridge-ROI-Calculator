@@ -41,18 +41,22 @@ function getAdoptionRamp(monthsSinceOnset: number, rampMonths: number): number {
 function getOnsetMultiplier(
   monthsSinceGoLive: number,
   onset: DriverOnset,
-  phasing: ProformaConfig["retentionPhasing"]
+  phasing: ProformaConfig["retentionPhasing"],
+  careSetting?: string
 ): number {
   if (monthsSinceGoLive < 0) return 0;
 
   const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
 
   if (onset === "phased") {
-    if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
-    if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
-    if (monthsSinceGoLive < 36) return phasing.year3Pct / 100;
-    if (monthsSinceGoLive < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
-    if (monthsSinceGoLive < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
+    const retentionDelay = careSetting === "nursing" ? 6 : 9;
+    const adjustedMonths = monthsSinceGoLive - retentionDelay;
+    if (adjustedMonths < 0) return 0;
+    if (adjustedMonths < 12) return phasing.year1Pct / 100;
+    if (adjustedMonths < 24) return phasing.year2Pct / 100;
+    if (adjustedMonths < 36) return phasing.year3Pct / 100;
+    if (adjustedMonths < 48) return (phasing.year4Pct ?? phasing.year3Pct) / 100;
+    if (adjustedMonths < 60) return (phasing.year5Pct ?? phasing.year3Pct) / 100;
     return (phasing.year6Pct ?? phasing.year3Pct) / 100;
   }
 
@@ -169,7 +173,7 @@ export function buildMonthlyCashFlows(
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
           : config.retentionPhasing;
-        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse);
+        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting);
         const monthlyDriverValue = (driver.value / 12) * adoptionRamp * expansionMultiplier * onsetMult;
 
         if (onset === "phased") {
