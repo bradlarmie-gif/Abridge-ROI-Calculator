@@ -62,6 +62,8 @@ export interface DomainData {
   primaryOpportunity: string;
 }
 
+const TOTAL_PAGES = 6;
+
 const colors = {
   background: "#FFFFFF",
   cards: "#F5F0EB",
@@ -72,6 +74,7 @@ const colors = {
   border: "#E0E0E0",
   dark: "#1A1A1A",
   white: "#FFFFFF",
+  positive: "#059669",
 };
 
 const styles = StyleSheet.create({
@@ -80,8 +83,8 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     fontFamily: "Manrope",
     fontSize: 10.5,
-    color: colors.primaryText,
-    backgroundColor: colors.background,
+    color: "#1A1A1A",
+    backgroundColor: "#FFFFFF",
   },
   pageWrapper: {
     flex: 1,
@@ -90,7 +93,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 9,
-    color: colors.primary,
+    color: "#EA2C00",
     textTransform: "uppercase",
     letterSpacing: 2,
     marginBottom: 8,
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
   },
   sectionLabelGray: {
     fontSize: 9,
-    color: colors.secondary,
+    color: "#666666",
     textTransform: "uppercase",
     letterSpacing: 2,
     marginBottom: 8,
@@ -106,29 +109,29 @@ const styles = StyleSheet.create({
   },
   body: {
     fontSize: 10.5,
-    color: colors.secondary,
+    color: "#666666",
     lineHeight: 1.5,
     marginBottom: 10,
   },
   divider: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: "#E0E0E0",
     marginVertical: 10,
   },
   thickDivider: {
     borderBottomWidth: 2,
-    borderBottomColor: colors.border,
+    borderBottomColor: "#E0E0E0",
     marginVertical: 12,
   },
   cardBg: {
-    backgroundColor: colors.cards,
+    backgroundColor: "#F5F0EB",
     padding: 14,
     borderRadius: 4,
   },
   calloutBox: {
-    backgroundColor: colors.cards,
+    backgroundColor: "#F5F0EB",
     borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
+    borderLeftColor: "#EA2C00",
     padding: 12,
   },
   footer: {
@@ -138,20 +141,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: "#E0E0E0",
   },
   footerLeft: {
     fontSize: 10,
-    color: colors.primary,
+    color: "#EA2C00",
     fontWeight: "bold",
   },
   footerCenter: {
     fontSize: 8.5,
-    color: colors.secondary,
+    color: "#666666",
   },
   footerRight: {
     fontSize: 8.5,
-    color: colors.tertiary,
+    color: "#999999",
   },
   twoColRow: {
     flexDirection: "row",
@@ -159,6 +162,166 @@ const styles = StyleSheet.create({
   },
   col: {
     flex: 1,
+  },
+  heroNumber: {
+    fontSize: 44,
+    fontWeight: "bold",
+    color: "#EA2C00",
+    lineHeight: 1,
+    marginBottom: 4,
+  },
+  heroLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#999999",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  metricRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  metricLabel: {
+    fontSize: 9,
+    color: "#666666",
+  },
+  metricValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+  },
+  domainHeader: {
+    fontSize: 9,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 6,
+    fontWeight: "bold",
+  },
+  domainCard: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 4,
+    padding: 14,
+    marginBottom: 8,
+  },
+  domainQuestion: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+    marginBottom: 3,
+  },
+  domainLevel: {
+    fontSize: 8.5,
+    color: "#999999",
+    marginBottom: 6,
+  },
+  domainDescription: {
+    fontSize: 9.5,
+    color: "#666666",
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+  domainValueBig: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  domainValueLabel: {
+    fontSize: 8,
+    color: "#999999",
+  },
+  opportunityBox: {
+    backgroundColor: "#F5F0EB",
+    padding: 10,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  opportunityLabel: {
+    fontSize: 7.5,
+    color: "#EA2C00",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  opportunityText: {
+    fontSize: 9,
+    color: "#666666",
+    lineHeight: 1.45,
+  },
+  barTrack: {
+    height: 4,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 2,
+  },
+  driverPillActive: {
+    backgroundColor: "#1A1A1A",
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 3,
+  },
+  driverPillInactive: {
+    backgroundColor: "#F5F0EB",
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 3,
+  },
+  driverTextActive: {
+    fontSize: 7.5,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  driverTextInactive: {
+    fontSize: 7.5,
+    color: "#999999",
+  },
+  scenarioTableHeader: {
+    flexDirection: "row",
+    backgroundColor: "#F5F0EB",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  scenarioTableRow: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  valueBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  valueBarLabel: {
+    width: 70,
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+  },
+  valueBarAmount: {
+    width: 60,
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+    textAlign: "right",
+    marginLeft: 8,
+  },
+  darkPanel: {
+    backgroundColor: "#1A1A1A",
+    borderRadius: 4,
+    padding: 16,
+  },
+  disclaimer: {
+    fontSize: 8.5,
+    color: "#999999",
+    lineHeight: 1.5,
   },
 });
 
@@ -195,12 +358,12 @@ const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string 
   return "Best-in-class documentation infrastructure. You\u2019re in the top tier of Abridge deployments for strategic value capture.";
 };
 
-function PageFooter({ pageNum, total, orgName }: { pageNum: number; total: number; orgName: string }) {
+function PageFooter({ pageNum, orgName }: { pageNum: number; orgName: string }) {
   return (
     <View style={styles.footer} fixed>
       <Text style={styles.footerLeft}>ABRIDGE</Text>
       <Text style={styles.footerCenter}>Ambient Assessment {"\u00B7"} {orgName || "Your Organization"}</Text>
-      <Text style={styles.footerRight}>Page {pageNum} of {total}</Text>
+      <Text style={styles.footerRight}>Page {pageNum} of {TOTAL_PAGES}</Text>
     </View>
   );
 }
@@ -213,7 +376,7 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>YOUR SCORE</Text>
+        <Text style={styles.sectionLabel}>EXECUTIVE SUMMARY</Text>
 
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={[styles.col, styles.cardBg, { alignItems: "center", paddingVertical: 20 }]}>
@@ -266,13 +429,13 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
             { label: "FTE equivalent", value: fteEquivalent || "\u2014" },
           ].map((row, i, arr) => (
             <View key={row.label} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, paddingHorizontal: 10, backgroundColor: i % 2 === 0 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>{row.label}</Text>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{row.value}</Text>
+              <Text style={styles.metricLabel}>{row.label}</Text>
+              <Text style={styles.metricValue}>{row.value}</Text>
             </View>
           ))}
         </View>
 
-        <PageFooter pageNum={1} total={4} orgName={data.organizationName} />
+        <PageFooter pageNum={1} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -322,73 +485,192 @@ function getDomainDisplayValue(domain: DomainData): string {
   return "\u2014";
 }
 
-function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
-  const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
+function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: AmbientAssessmentPDFData; isLast: boolean }) {
+  const domain = data.domains[domainKey as keyof typeof data.domains];
+  const meta = domainMeta[domainKey];
+  const accentColor = activationColors[domain.activationLevel];
   const SCORE_MAP: Record<number, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
+  const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
+  const barPercent = (domainScore / 25) * 100;
+  const displayValue = getDomainDisplayValue(domain);
+  const relevantIdx = RELEVANT_DRIVERS[domainKey]?.[domain.activationLevel] || [];
+  const oppText = opportunityText[domainKey]?.[domain.activationLevel] || domain.primaryOpportunity;
 
+  return (
+    <View>
+      <Text style={[styles.domainHeader, { color: accentColor }]}>{meta.name}</Text>
+      <View style={styles.domainCard}>
+        <View style={{ paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: accentColor }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.domainQuestion}>{meta.question}</Text>
+              <Text style={styles.domainLevel}>Level {domain.activationLevel}: {domain.activationLabel} {"\u00B7"} Score: {domainScore}/25</Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={[styles.domainValueBig, { color: displayValue === "\u2014" ? colors.tertiary : colors.primary }]}>{displayValue}</Text>
+              {displayValue !== "\u2014" && <Text style={styles.domainValueLabel}>measured output</Text>}
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <View style={{ flex: 1 }}>
+              <View style={styles.barTrack}>
+                <View style={{ height: 4, backgroundColor: accentColor, borderRadius: 2, width: `${barPercent}%` }} />
+              </View>
+            </View>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, width: 40, textAlign: "right" }}>{domainScore}/25</Text>
+          </View>
+
+          <Text style={styles.domainDescription}>{meta.description}</Text>
+
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
+            {meta.drivers.map((driver, di) => {
+              const isRelevant = relevantIdx.includes(di);
+              return (
+                <View key={driver} style={isRelevant ? styles.driverPillActive : styles.driverPillInactive}>
+                  <Text style={isRelevant ? styles.driverTextActive : styles.driverTextInactive}>{driver}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={styles.opportunityBox}>
+            <Text style={styles.opportunityLabel}>Opportunity Ahead</Text>
+            <Text style={styles.opportunityText}>{oppText}</Text>
+          </View>
+        </View>
+      </View>
+      {!isLast && <View style={styles.divider} />}
+    </View>
+  );
+}
+
+function Page2DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>THE FOUR DOMAINS</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Where Enterprise Value Lives</Text>
         <Text style={styles.body}>
-          Each domain reflects your organization{"\u2019"}s self-assessed maturity level. All four domains contribute equally to your Ambient Assessment Score.
+          Each domain reflects your organization{"\u2019"}s self-assessed maturity level. All four domains contribute to your Ambient Assessment Score.
         </Text>
-
         <View style={styles.divider} />
 
-        {domainOrder.map((key, ci) => {
-          const domain = data.domains[key];
-          const meta = domainMeta[key];
-          const accentColor = activationColors[domain.activationLevel];
-          const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
-          const barPercent = (domainScore / 25) * 100;
-          const displayValue = getDomainDisplayValue(domain);
-          const relevantIdx = RELEVANT_DRIVERS[key]?.[domain.activationLevel] || [];
+        <DomainCard domainKey="capacity" data={data} isLast={false} />
+        <DomainCard domainKey="revenue" data={data} isLast={true} />
 
+        <PageFooter pageNum={2} orgName={data.organizationName} />
+      </View>
+    </Page>
+  );
+}
+
+function Page3DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData }) {
+  return (
+    <Page size="LETTER" style={styles.page} wrap={false}>
+      <View style={styles.pageWrapper}>
+        <Text style={styles.sectionLabel}>THE FOUR DOMAINS (CONTINUED)</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Workforce Stability & Risk Readiness</Text>
+        <Text style={styles.body}>
+          These domains capture the workforce and infrastructure dimensions of your documentation strategy {"\u2014"} often the largest and most overlooked sources of value.
+        </Text>
+        <View style={styles.divider} />
+
+        <DomainCard domainKey="workforce" data={data} isLast={false} />
+        <DomainCard domainKey="risk" data={data} isLast={true} />
+
+        <PageFooter pageNum={3} orgName={data.organizationName} />
+      </View>
+    </Page>
+  );
+}
+
+function Page4ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
+  const hasData = data.totalAnnualGap > 0;
+  const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
+  const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
+  const sourceLabel = getValueSourceLabel(data);
+
+  const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
+  const domainValues = domainOrder.map(d => ({
+    key: d,
+    name: domainMeta[d].name,
+    value: data.domains[d].gapValue,
+    hasValue: data.domains[d].hasValue,
+    level: data.domains[d].activationLevel,
+  }));
+  const maxValue = Math.max(...domainValues.map(d => d.value), 1);
+  const domainColors: Record<string, string> = {
+    capacity: "#EA2C00",
+    revenue: "#C17B3E",
+    workforce: "#D4B896",
+    risk: "#1A1A1A",
+  };
+
+  return (
+    <Page size="LETTER" style={styles.page} wrap={false}>
+      <View style={styles.pageWrapper}>
+        <Text style={styles.sectionLabel}>YOUR VALUE OPPORTUNITY</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>What Strategic Action Could Unlock</Text>
+        <Text style={styles.body}>
+          This page consolidates your domain-level findings into a single view of total organizational opportunity. Values reflect measured inputs where available and conservative projections where not.
+        </Text>
+
+        <View style={styles.thickDivider} />
+
+        <View style={[styles.twoColRow, { marginBottom: 14 }]}>
+          <View style={[styles.col, styles.darkPanel]}>
+            <Text style={styles.heroLabel}>Annual Value Opportunity</Text>
+            <Text style={[styles.heroNumber, { color: colors.primary }]}>{hasData ? fmt(data.totalAnnualGap) : "\u2014"}</Text>
+            {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
+            <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
+              {hasData ? "Total across all four domains" : "Enter domain data to calculate"}
+            </Text>
+          </View>
+          <View style={styles.col}>
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={styles.heroLabel}>Per Provider</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(perProvider) : "\u2014"}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual opportunity per provider</Text>
+            </View>
+            <View style={styles.cardBg}>
+              <Text style={styles.heroLabel}>Per Encounter</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? `$${perEncounter}` : "\u2014"}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary }}>value opportunity per encounter</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.thickDivider} />
+
+        <Text style={styles.sectionLabel}>VALUE BY DOMAIN</Text>
+
+        {domainValues.map((d) => {
+          const barWidth = d.value > 0 ? Math.max(2, (d.value / maxValue) * 100) : 0;
           return (
-            <View key={key}>
-              <Text style={{ fontSize: 9, color: accentColor, textTransform: "uppercase", letterSpacing: 2, marginTop: ci > 0 ? 8 : 0, marginBottom: 6, fontWeight: "bold" }}>{meta.name}</Text>
-              <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 12, marginBottom: 6 }}>
-                <View style={{ paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: accentColor }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{meta.question}</Text>
-                      <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Level {domain.activationLevel}: {domain.activationLabel} {"\u00B7"} Score: {domainScore}/25</Text>
-                    </View>
-                    <View style={{ alignItems: "flex-end" }}>
-                      <Text style={{ fontSize: 14, fontWeight: "bold", color: displayValue === "\u2014" ? colors.tertiary : colors.primary }}>{displayValue}</Text>
-                      {displayValue !== "\u2014" && <Text style={{ fontSize: 8, color: colors.tertiary }}>measured output</Text>}
-                    </View>
-                  </View>
-
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <View style={{ flex: 1, height: 4, backgroundColor: colors.border, borderRadius: 2 }}>
-                      <View style={{ height: 4, backgroundColor: accentColor, borderRadius: 2, width: `${barPercent}%` }} />
-                    </View>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, width: 40, textAlign: "right" }}>{domainScore}/25</Text>
-                  </View>
-
-                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>{meta.description}</Text>
-
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
-                    {meta.drivers.map((driver, di) => {
-                      const isRelevant = relevantIdx.includes(di);
-                      return (
-                        <View key={driver} style={{ backgroundColor: isRelevant ? colors.dark : colors.cards, paddingVertical: 2, paddingHorizontal: 7, borderRadius: 3 }}>
-                          <Text style={{ fontSize: 7.5, fontWeight: isRelevant ? "bold" : "normal", color: isRelevant ? colors.white : colors.tertiary }}>{driver}</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
+            <View key={d.key} style={styles.valueBarContainer}>
+              <Text style={styles.valueBarLabel}>{d.name}</Text>
+              <View style={{ flex: 1, marginHorizontal: 8 }}>
+                <View style={styles.barTrack}>
+                  <View style={{ height: 4, backgroundColor: domainColors[d.key], borderRadius: 2, width: `${barWidth}%` }} />
                 </View>
               </View>
-              {ci < domainOrder.length - 1 && <View style={styles.divider} />}
+              <Text style={styles.valueBarAmount}>{d.value > 0 ? fmt(d.value) : "\u2014"}</Text>
             </View>
           );
         })}
 
-        <PageFooter pageNum={2} total={4} orgName={data.organizationName} />
+        <View style={{ marginTop: 6 }}>
+          <View style={[styles.calloutBox, { marginBottom: 10 }]}>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+              {hasData
+                ? `Your highest-value domain is ${domainValues.sort((a, b) => b.value - a.value)[0].name}. The distribution across domains indicates where operational focus will yield the greatest return.`
+                : "Enter domain-specific data across all four domains to see your value distribution."}
+            </Text>
+          </View>
+        </View>
+
+        <PageFooter pageNum={4} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -428,7 +710,7 @@ function getWhatThisMeansText(data: AmbientAssessmentPDFData): string {
   return text;
 }
 
-function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
+function Page5CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
   const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
   const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
   const hasData = data.totalAnnualGap > 0;
@@ -437,7 +719,7 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>COST OF INACTION</Text>
+        <Text style={styles.sectionLabel}>COST OF WAITING</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Every Month at Current Maturity Levels</Text>
         <Text style={styles.body}>
           Based on your assessment and next-level projections. These estimates reflect what strategic action across your four domains could unlock.
@@ -446,20 +728,20 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={styles.divider} />
 
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
-          <View style={[styles.col, { backgroundColor: colors.dark, borderRadius: 4, padding: 16 }]}>
+          <View style={[styles.col, styles.darkPanel]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Monthly Value Uncaptured</Text>
             <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.monthlyGap) : "\u2014"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate cost of inaction"}
+              {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate cost of waiting"}
             </Text>
           </View>
-          <View style={[styles.col, { backgroundColor: colors.dark, borderRadius: 4, padding: 16 }]}>
+          <View style={[styles.col, styles.darkPanel]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Daily Value Uncaptured</Text>
             <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.dailyGap) : "\u2014"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {hasData ? "Every business day your organization does not systematically capture this value." : "Enter domain data to calculate cost of inaction"}
+              {hasData ? "Every business day your organization does not systematically capture this value." : "Enter domain data to calculate cost of waiting"}
             </Text>
           </View>
         </View>
@@ -469,7 +751,7 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
         <Text style={styles.sectionLabel}>THREE-YEAR PROJECTION</Text>
 
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, marginBottom: 10 }}>
-          <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 7, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <View style={styles.scenarioTableHeader}>
             <Text style={{ flex: 2.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>SCENARIO</Text>
             <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primaryText, textAlign: "center" }}>3-YEAR VALUE</Text>
             <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary, textAlign: "center" }}>VALUE LEFT BEHIND</Text>
@@ -487,12 +769,6 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
           ))}
         </View>
 
-        <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-          <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-            Every month at current maturity levels represents an opportunity to capture additional value across your four domains.
-          </Text>
-        </View>
-
         <View style={styles.thickDivider} />
 
         <Text style={styles.sectionLabel}>WHAT THIS MEANS</Text>
@@ -500,13 +776,13 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
           {getWhatThisMeansText(data)}
         </Text>
 
-        <PageFooter pageNum={3} total={4} orgName={data.organizationName} />
+        <PageFooter pageNum={5} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
+function Page6Methodology({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
@@ -530,7 +806,7 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
             { assumption: "Providers on ambient", yours: String(data.providers), range: "Varies by org" },
             { assumption: "Annual encounters", yours: data.annualEncounters.toLocaleString(), range: "Varies by org" },
             { assumption: "Utilization rate", yours: `${data.utilization}%`, range: "76% (deployment avg)" },
-            { assumption: "Time saved per encounter", yours: data.timeSavings > 0 ? `${data.timeSavings} min` : "\u2014", range: "3.0 min (deployment avg)" },
+            { assumption: "Time saved per encounter", yours: data.timeSavings > 0 ? `${data.timeSavings} min` : "\u2014", range: "2\u20133 min (deployment avg)" },
             { assumption: "Revenue per visit", yours: `$${data.revenuePerVisit || 200}`, range: "$200 default" },
             { assumption: "Provider hourly rate", yours: `$${data.providerRate || 150}`, range: "$150 default" },
             { assumption: "Working days per year", yours: "230", range: "Clinical standard" },
@@ -571,11 +847,11 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
 
         <View style={styles.divider} />
 
-        <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
+        <Text style={styles.disclaimer}>
           All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
         </Text>
 
-        <PageFooter pageNum={4} total={4} orgName={data.organizationName} />
+        <PageFooter pageNum={6} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -592,9 +868,11 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
     />
     <Page1ScoreAndValue data={data} />
-    <Page2Domains data={data} />
-    <Page3CostOfInaction data={data} />
-    <Page4NextSteps data={data} />
+    <Page2DomainsCapacityRevenue data={data} />
+    <Page3DomainsWorkforceRisk data={data} />
+    <Page4ValueOpportunity data={data} />
+    <Page5CostOfWaiting data={data} />
+    <Page6Methodology data={data} />
   </Document>
 );
 
