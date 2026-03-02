@@ -629,7 +629,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
     data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
   );
 
-  const domainIntros: Record<string, { letter: string; desc: string }> = {
+  const domainIntros: Record<string, { letter: string; name?: string; desc: string }> = {
     capacity: {
       letter: "C",
       name: "Capacity Realization",
@@ -642,10 +642,12 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
     },
     workforce: {
       letter: "W",
+      name: "Workforce Resilience",
       desc: "Documentation burden is the #1 driver of clinician burnout and turnover. At $100K\u2013$1M per physician departure, even a 10% retention improvement changes the financial picture fundamentally.",
     },
     risk: {
       letter: "Rx",
+      name: "Risk & Readiness",
       desc: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. This domain measures infrastructure readiness.",
     },
   };
