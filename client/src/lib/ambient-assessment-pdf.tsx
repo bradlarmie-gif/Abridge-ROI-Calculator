@@ -775,7 +775,7 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
           <View style={styles.col}>
             <View style={[styles.cardBg, { marginBottom: 8 }]}>
               <Text style={styles.heroLabel}>Per Provider</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(perProvider) : "\u2014"}</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(perProvider) : "Pending inputs"}</Text>
               <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual opportunity per provider</Text>
             </View>
             <View style={styles.cardBg}>
