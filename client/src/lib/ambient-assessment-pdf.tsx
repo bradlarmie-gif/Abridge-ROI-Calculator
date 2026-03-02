@@ -504,7 +504,7 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
             { label: "Utilization rate", value: `${data.utilization}%` },
             { label: "Time saved / encounter", value: timeSavedEntered ? `${data.timeSavings} min` : "Benchmark used" },
             { label: "Hours reclaimed", value: timeSavedEntered ? `${hoursReclaimed.toLocaleString()} hrs` : "See domain analysis" },
-            { label: "FTE equivalent", value: fteEquivalent || "Benchmark used" },
+            { label: "FTE equivalent", value: fteEquivalent ? `${fteEquivalent} FTE` : "See domain analysis" },
           ].map((row, i, arr) => (
             <View key={row.label} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, paddingHorizontal: 10, backgroundColor: i % 2 === 0 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
               <Text style={styles.metricLabel}>{row.label}</Text>
