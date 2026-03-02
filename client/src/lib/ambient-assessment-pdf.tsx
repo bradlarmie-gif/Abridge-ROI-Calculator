@@ -973,7 +973,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={{ marginBottom: 12 }}>
           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>1. DEFINE YOUR TARGET STATE</Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            Your lowest-scoring domain is your highest-opportunity domain. A single maturity level upgrade in your weakest domain typically unlocks $100K{"\u2013"}$500K in annualized value. Start by aligning your clinical ops team on what the next level looks like operationally.
+            Your lowest-scoring domain represents your clearest near-term opportunity. Moving one maturity level in your weakest domain typically unlocks $100K{"\u2013"}$500K in measurable annual value. The right starting point is a conversation with your clinical operations team about what that next level looks like in practice.
           </Text>
         </View>
 
