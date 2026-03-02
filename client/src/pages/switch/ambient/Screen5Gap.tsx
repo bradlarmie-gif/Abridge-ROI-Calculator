@@ -75,6 +75,7 @@ function getNextLevelContent(
   currentValue: number,
   hasValue: boolean,
   recoveredHours: number = 0,
+  netTimeSaved: number = 3,
 ): NextLevelContent {
   const base: NextLevelContent = {
     domainLabel: DOMAIN_LABELS[domain].toUpperCase(),
@@ -103,12 +104,11 @@ function getNextLevelContent(
         base.lowEstimate = hardSavings;
         base.highEstimate = hardSavings + revenueOpportunity;
       } else {
-        const bmkHoursLow = Math.round((documentedEncounters * 3) / 60);
-        const bmkHoursHigh = Math.round((documentedEncounters * 5) / 60);
-        const bmkValueLow = Math.round(bmkHoursLow * providerRate * 0.25);
-        const bmkValueHigh = Math.round(bmkHoursHigh * providerRate * 0.25);
-        base.narrative = `Using benchmark estimates: 3–5 min saved × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHoursLow.toLocaleString()}–${bmkHoursHigh.toLocaleString()} hours. At $${providerRate.toLocaleString()}/hr with 25% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)}. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
-        base.formula = `Low: ${documentedEncounters.toLocaleString()} encounters × 3 min / 60 = ${bmkHoursLow.toLocaleString()} hrs\nHigh: ${documentedEncounters.toLocaleString()} encounters × 5 min / 60 = ${bmkHoursHigh.toLocaleString()} hrs\nValue low: ${bmkHoursLow.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValueLow)}\nValue high: ${bmkHoursHigh.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValueHigh)}`;
+        const bmkHours = Math.round((documentedEncounters * netTimeSaved) / 60);
+        const bmkValueLow = Math.round(bmkHours * providerRate * 0.20);
+        const bmkValueHigh = Math.round(bmkHours * providerRate * 0.35);
+        base.narrative = `Benchmark: ${netTimeSaved} min saved × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHours.toLocaleString()} hours recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
+        base.formula = `${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHours.toLocaleString()} hrs\nLow: ${bmkHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
       }
@@ -233,11 +233,12 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
       result[d] = getNextLevelContent(
         d, domainLevels[d], providers, documentedEncounters,
         revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d],
-        userHoursRecovered
+        userHoursRecovered,
+        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSaved
       );
     }
     return result;
-  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered]);
+  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSaved]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
