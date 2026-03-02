@@ -429,7 +429,7 @@ const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string 
   const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
   const lowestName = domainLabels[lowest].toLowerCase();
 
-  if (score <= 30) return `Early stage across all domains. Your deployment is producing time savings that aren\u2019t yet being captured operationally, financially, or strategically.`;
+  if (score <= 30) return `Your organization is in the early stages of building ambient AI value. Time savings are being generated \u2014 the opportunity now is building the infrastructure to capture them.`;
   if (score <= 50) return `Emerging in some areas. Your biggest opportunity is in ${lowestName} \u2014 organizations at Level 2 here typically leave $200K\u2013$800K in annual value unmeasured.`;
   if (score <= 70) return `Actively managing in key areas. The gap between your current score and best-in-class represents real, quantifiable value. ${domainLabels[lowest]} is where the most upside lives.`;
   if (score <= 85) return `Strong foundation. You\u2019re capturing value most organizations miss. The remaining gap is in ${lowestName} \u2014 closing it typically unlocks $100K\u2013$400K in additional annual value.`;
