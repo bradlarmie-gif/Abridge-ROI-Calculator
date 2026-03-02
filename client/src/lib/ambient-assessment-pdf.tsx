@@ -658,7 +658,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
         <Text style={styles.sectionPageTitle}>AMBIENT AI MATURITY FRAMEWORK</Text>
         <Text style={styles.sectionPageSubtitle}>What You{"\u2019"}re Being Assessed On {"\u2014"} And Why It Matters</Text>
         <Text style={styles.sectionPageIntro}>
-          Most ambient AI evaluations focus on adoption rate. That captures only part of the value story. Abridge measures four domains because each one represents a distinct financial lever {"\u2014"} and together, they determine whether ambient AI becomes a productivity tool or a strategic infrastructure.
+          Most ambient AI evaluations focus on adoption rate. That captures only part of the value story. Abridge measures four domains because each one represents a distinct value lever {"\u2014"} and together, they determine whether ambient AI becomes a productivity tool or a strategic infrastructure.
         </Text>
 
         {domainOrder.map((key) => (
