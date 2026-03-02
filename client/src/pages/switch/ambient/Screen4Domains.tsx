@@ -239,7 +239,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <span className="font-bold">1.5–3.0+ min</span> Industry range
           </span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
-            <span className="font-bold">2–3 min</span> Observed across deployments
+            <span className="font-bold">2–3 min</span> Abridge observed avg
           </span>
         </div>
         <BenchmarkContext text="Based on published industry data and aggregated deployment experience." />
