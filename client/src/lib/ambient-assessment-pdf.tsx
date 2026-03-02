@@ -800,7 +800,7 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
                   <View style={{ height: 4, backgroundColor: domainColors[d.key], borderRadius: 2, width: `${barWidth}%` }} />
                 </View>
               </View>
-              <Text style={styles.valueBarAmount}>{d.value > 0 ? fmt(d.value) : "\u2014"}</Text>
+              <Text style={styles.valueBarAmount}>{d.value > 0 ? fmt(d.value) : "—"}</Text>
             </View>
           );
         })}
