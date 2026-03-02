@@ -445,12 +445,12 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Time saved per encounter</td>
-                            <td className="py-3">2-4.5 minutes</td>
+                            <td className="py-3">2–4 minutes</td>
                             <td className="py-3">3 minutes</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Based on Abridge deployment data across outpatient implementations. Primary care typically 2-4.5 min, specialists 2-3 min.</p>
+                          <p className="text-xs">Based on Abridge deployment data across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>

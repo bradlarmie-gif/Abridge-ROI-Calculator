@@ -2242,7 +2242,7 @@ export default function ObjectiveSelectionScreen({
       baselineWrvuPerEncounter: ftWrvuBaseline,
       // Patient Access fine-tune values
       patientAccess: {
-        pctTimeToNewVisits: timeRealizationRate ?? 20,
+        pctTimeToNewVisits: timeRealizationRate ?? 10,
         avgVisitDurationMinutes: ftPatientAccessVisitDuration,
         avgNetRevenuePerVisit: ftPatientAccessRevenuePerVisit,
       },
@@ -3735,7 +3735,7 @@ export default function ObjectiveSelectionScreen({
                                         />
                                         <span className="text-sm text-neutral-500">min</span>
                                       </div>
-                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 2-4.5 min</p>
+                                      <p className="text-xs text-neutral-500 mt-1">Typical range: 2–4 min</p>
                                     </div>
                                     <div>
                                       <label className="text-xs text-neutral-600 mb-1 block">Avg nurse hourly rate</label>

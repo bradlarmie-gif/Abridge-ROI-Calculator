@@ -169,7 +169,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   you retain.
                 </p>
                 <p>
-                  Time savings per encounter are smaller here — 2-4 minutes vs. 2-4.5 in outpatient — 
+                  Time savings per encounter are smaller here — 2–4 minutes vs. 2–4 in outpatient — 
                   because ED documentation is already faster-paced with more templated workflows. But 
                   the ED is a volume engine. At 40,000-80,000 visits per year, those minutes compound 
                   into something real. Three minutes across 50,000 visits is 2,500 hours of physician time.

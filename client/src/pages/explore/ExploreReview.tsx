@@ -109,7 +109,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     switch (state.timePathScenario) {
       case 'conservative': return 'Conservative (2 min)';
       case 'typical': return 'Typical (3 min)';
-      case 'aggressive': return 'Aggressive (4.5 min)';
+      case 'aggressive': return 'Optimistic (4 min)';
     }
   };
 

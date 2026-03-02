@@ -212,7 +212,7 @@ export default function SwitchYourSituation({
             <div className="mt-4 p-3 bg-slate-50 rounded-lg flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#EA2C00]" />
               <span className="text-sm text-slate-600">
-                Reference: Abridge customers average <strong>2-4.5 min</strong>/encounter.
+                Reference: Abridge customers average <strong>2–4 min</strong>/encounter.
               </span>
             </div>
           </div>

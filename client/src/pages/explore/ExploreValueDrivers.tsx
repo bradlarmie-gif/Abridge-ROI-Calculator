@@ -925,7 +925,7 @@ export default function ExploreValueDrivers({
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
                       <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-                      <span>You've set this at {timeDriverInputs.capacityPercent}%. Most organizations see 5–15% of reclaimed time convert to actual visits — adjust the slider above if needed.</span>
+                      <span>Set at {timeDriverInputs.capacityPercent}% — the midpoint of what most organizations see (5–15%). Adjust based on your access capacity and demand.</span>
                     </div>
                   </div>
                 </div>

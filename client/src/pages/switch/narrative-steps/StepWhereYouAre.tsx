@@ -66,7 +66,7 @@ const METRIC_CONFIGS: PresetMetricConfig[] = [
     presets: [
       { label: "1 min", value: 1 },
       { label: "3 min", value: 3 },
-      { label: "4.5 min", value: 4.5 },
+      { label: "4 min", value: 4 },
     ],
     unit: " min",
     maxValue: 6,
@@ -74,7 +74,7 @@ const METRIC_CONFIGS: PresetMetricConfig[] = [
     step: 0.5,
     inputKey: "timeSavedPerEncounter",
     testId: "slider-efficiency",
-    benchmarkLabel: "What we typically see: 2-4.5 min",
+    benchmarkLabel: "What we typically see: 2–4 min",
     benchmark: ABRIDGE_BENCHMARKS.timeSavedAvg,
   },
   {

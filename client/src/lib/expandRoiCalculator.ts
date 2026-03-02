@@ -163,13 +163,13 @@ export function calculateTieredROI(
   const timeCalc = calculateTimeEfficiency(inputs, defaults);
   if (
     inputs.valueConfig.timeConversionMethod === "patientAccess" &&
-    inputs.valueConfig.conversionPercent > 25
+    inputs.valueConfig.conversionPercent > 15
   ) {
     warnings.push({
       type: "timeConversion",
       severity: "warning",
       title: `High time conversion assumption (${inputs.valueConfig.conversionPercent}%)`,
-      message: "Converting more than 25% of saved time to patient visits requires significant scheduling capacity and demand. Consider a more conservative estimate.",
+      message: "Converting more than 15% of saved time to patient visits requires significant scheduling capacity and demand. Consider a more conservative estimate.",
     });
   }
   

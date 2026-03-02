@@ -43,7 +43,7 @@ const METRICS: MetricDef[] = [
     presets: [{ label: "1 min", value: 1 }, { label: "2.5", value: 2.5 }, { label: "4", value: 4 }],
     unit: " min",
     min: 0, max: 6, step: 0.5,
-    benchmark: "2–4.5 min",
+    benchmark: "2–4 min",
     testId: "snap-time-saved",
   },
   {

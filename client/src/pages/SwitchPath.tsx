@@ -1981,7 +1981,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                   <div className="space-y-3 mb-4">
                     <div className="flex justify-between items-center py-2 border-b border-neutral-100">
                       <span className="text-neutral-700">Outpatient</span>
-                      <span className="font-semibold text-neutral-900">2-4.5 min</span>
+                      <span className="font-semibold text-neutral-900">2–4 min</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-neutral-100">
                       <span className="text-neutral-700">Specialty</span>

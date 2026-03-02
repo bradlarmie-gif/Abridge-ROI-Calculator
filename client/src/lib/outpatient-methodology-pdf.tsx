@@ -213,7 +213,7 @@ function Page3() {
         </View>
         <View style={styles.tableRow}>
           <Text style={[styles.tableCell, { flex: 2.5 }]}>Time saved per encounter</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-4.5 min</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>2–4 min</Text>
           <Text style={[styles.tableCell, { flex: 1 }]}>3 min</Text>
           <Text style={[styles.tableCell, { flex: 2 }]}>Abridge customer data</Text>
         </View>
