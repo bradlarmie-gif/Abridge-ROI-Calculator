@@ -168,7 +168,7 @@ export default function ProformaHub({
               </div>
               <div>
                 <p className="text-xs text-[#8C7E6E] mb-1">Net 3-Year Value</p>
-                <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
+                <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-[#9CA3AF]"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
               </div>
             </div>
             <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">

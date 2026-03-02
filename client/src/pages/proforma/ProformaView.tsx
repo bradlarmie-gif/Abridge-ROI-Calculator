@@ -453,7 +453,7 @@ export default function ProformaView({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
-                <p className="text-xl font-bold text-emerald-400" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+                <p className="text-xl font-bold text-[#E8350A]" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
                 {hasInvestment && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
                     Typical: 3–7x
@@ -497,7 +497,7 @@ export default function ProformaView({
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
-              <p className="text-2xl font-bold text-emerald-400">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+              <p className="text-2xl font-bold text-[#E8350A]">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
               {hasInvestment && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
                   Typical: 3–7x
@@ -1106,11 +1106,11 @@ export default function ProformaView({
                 <tr className="bg-neutral-50">
                   <td className="py-2.5 sm:py-3 font-bold text-neutral-900">Net Value</td>
                   {yearlyData.map(y => (
-                    <td key={y.label} className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${y.netValue >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                    <td key={y.label} className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${y.netValue >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
                       {y.netValue >= 0 ? fmt(y.netValue) : `(${fmt(Math.abs(y.netValue))})`}
                     </td>
                   ))}
-                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.threeYearNet >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
                     {summary.threeYearNet >= 0 ? fmt(summary.threeYearNet) : `(${fmt(Math.abs(summary.threeYearNet))})`}
                   </td>
                 </tr>
@@ -1127,9 +1127,9 @@ export default function ProformaView({
           transition={{ delay: 0.25 }}
         >
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
-            <p className="text-2xl sm:text-3xl font-bold text-emerald-600" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-[#E8350A]" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
             <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
@@ -1147,9 +1147,9 @@ export default function ProformaView({
             <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
-            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mx-auto mb-1.5 sm:mb-2" />
+            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
-            <p className={`text-2xl sm:text-3xl font-bold ${summary.threeYearNet >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+            <p className={`text-2xl sm:text-3xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
               {fmt(summary.threeYearNet)}
             </p>
           </div>
