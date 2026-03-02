@@ -928,7 +928,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>TRANSPARENCY</Text>
+        <Text style={styles.sectionLabel}>YOUR NEXT MOVE</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>How We Calculate This</Text>
         <Text style={styles.body}>
           Every number in this assessment traces directly to your inputs and the assumptions listed below. We use published industry data and conservative benchmark ranges. No additional discounting is applied {"\u2014"} the estimates are designed to be defensible as presented.
@@ -966,25 +966,26 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={styles.thickDivider} />
 
         <Text style={styles.sectionLabel}>NEXT STEPS</Text>
-        <View style={[styles.twoColRow, { marginBottom: 10 }]}>
-          <View style={[styles.col, styles.cardBg, { padding: 12 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 6 }}>Validate Your Inputs</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>
-              Replace self-reported estimates with operational data where available: EHR timestamps for documentation time, HR records for turnover and replacement costs, revenue cycle data for coding yield.
-            </Text>
-            <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Timeline: 2{"\u2013"}4 weeks</Text>
-            </View>
-          </View>
-          <View style={[styles.col, { backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 12, paddingVertical: 10 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 6 }}>Request a Working Session</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 6 }}>
-              A 30-minute strategic session to walk through your domain scores, explore your highest-opportunity areas, and discuss what the next level looks like for your organization. This is not a product demonstration.
-            </Text>
-            <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Strategic planning, not a demo</Text>
-            </View>
-          </View>
+
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>1. DEFINE YOUR TARGET STATE</Text>
+          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+            Your lowest-scoring domain is your highest-opportunity domain. A single maturity level upgrade in your weakest domain typically unlocks $100K{"\u2013"}$500K in annualized value. Start by aligning your clinical ops team on what the next level looks like operationally.
+          </Text>
+        </View>
+
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>2. VALIDATE WITH OPERATIONAL DATA</Text>
+          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+            Replace self-reported estimates with operational data where available: EHR timestamps for documentation time, HR records for turnover and replacement costs, revenue cycle data for coding yield. Timeline: 2{"\u2013"}4 weeks.
+          </Text>
+        </View>
+
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>3. REQUEST A WORKING SESSION</Text>
+          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+            A 30-minute strategic session to walk through your domain scores, explore your highest-opportunity areas, and discuss what the next level looks like for your organization. This is not a product demonstration {"\u2014"} it{"\u2019"}s strategic planning.
+          </Text>
         </View>
 
         <View style={styles.divider} />
