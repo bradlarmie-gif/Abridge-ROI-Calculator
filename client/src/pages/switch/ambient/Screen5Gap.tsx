@@ -86,13 +86,13 @@ function getNextLevelContent(
 
   if (domain === 'capacity') {
     if (level === 1) {
-      const capacityLow = 2 * providers * 12 * revenuePerVisit;
-      const capacityHigh = 4 * providers * 12 * revenuePerVisit;
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${providers > 0 ? `\n\nOPPORTUNITY AHEAD: With ${providers.toLocaleString()} providers and even modest access redesign (2–4 additional patients/provider/month), your organization's capacity opportunity is ${formatDollar(capacityLow)}–${formatDollar(capacityHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
-      if (providers > 0) {
-        base.formula = `2 × ${providers.toLocaleString()} providers × 12 months × $${revenuePerVisit.toLocaleString()}/visit = ${formatDollar(capacityLow)}\n4 × ${providers.toLocaleString()} providers × 12 months × $${revenuePerVisit.toLocaleString()}/visit = ${formatDollar(capacityHigh)}\nRange based on 2-4 additional patients/provider/month at current revenue per visit.`;
-        base.lowEstimate = capacityLow;
-        base.highEstimate = capacityHigh;
+      const bmkHrs = Math.round((documentedEncounters * 3) / 60);
+      const bmkValue = Math.round(bmkHrs * providerRate * 0.25);
+      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: 3 min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 25% redeployment = ${formatDollar(bmkValue)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      if (documentedEncounters > 0) {
+        base.formula = `3 min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\n${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValue)}`;
+        base.lowEstimate = bmkValue;
+        base.highEstimate = bmkValue;
       }
     } else if (level === 2) {
       const hardSavings = Math.round(recoveredHours * providerRate * 0.25);
