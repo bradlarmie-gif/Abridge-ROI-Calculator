@@ -566,7 +566,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Every month</span>
+                <span className="text-sm text-white/70">Each month represents</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-monthly">
                   {formatDollar(monthlyGap)}
                 </span>
