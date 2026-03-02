@@ -982,9 +982,9 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
 
         <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>3. REQUEST A WORKING SESSION</Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>3. PARTNER WITH INTENTION</Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            A 30-minute strategic session to walk through your domain scores, explore your highest-opportunity areas, and discuss what the next level looks like for your organization. This is not a product demonstration {"\u2014"} it{"\u2019"}s strategic planning.
+            Abridge{"\u2019"}s highest-performing customers share one trait: they treat ambient AI as clinical infrastructure, not a feature. That shift in mindset {"\u2014"} supported by the right operational model {"\u2014"} is what separates a good deployment from an industry-leading one.
           </Text>
         </View>
 
