@@ -87,12 +87,13 @@ function getNextLevelContent(
   if (domain === 'capacity') {
     if (level === 1) {
       const bmkHrs = Math.round((documentedEncounters * 3) / 60);
-      const bmkValue = Math.round(bmkHrs * providerRate * 0.25);
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: 3 min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 25% redeployment = ${formatDollar(bmkValue)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      const bmkValueLow = Math.round(bmkHrs * providerRate * 0.20);
+      const bmkValueHigh = Math.round(bmkHrs * providerRate * 0.35);
+      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: 3 min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
       if (documentedEncounters > 0) {
-        base.formula = `3 min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\n${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(bmkValue)}`;
-        base.lowEstimate = bmkValue;
-        base.highEstimate = bmkValue;
+        base.formula = `3 min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\nLow: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
+        base.lowEstimate = bmkValueLow;
+        base.highEstimate = bmkValueHigh;
       }
     } else if (level === 2) {
       const hardSavings = Math.round(recoveredHours * providerRate * 0.25);
