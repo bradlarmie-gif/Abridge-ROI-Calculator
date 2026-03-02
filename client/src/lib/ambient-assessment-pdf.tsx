@@ -586,7 +586,7 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
             </View>
             <View style={{ alignItems: "flex-end" }}>
               <Text style={[styles.domainValueBig, { color: displayValue === "\u2014" ? colors.tertiary : colors.primary }]}>{displayValue}</Text>
-              {displayValue !== "\u2014" && <Text style={styles.domainValueLabel}>measured output</Text>}
+              {displayValue !== "\u2014" && <Text style={styles.domainValueLabel}>your measured value</Text>}
             </View>
           </View>
 
