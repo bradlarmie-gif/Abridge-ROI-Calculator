@@ -90,12 +90,12 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
       <div className="flex rounded-full overflow-hidden h-2">
         {docPct > 0 && <div className="bg-[#1A1A1A]" style={{ width: `${docPct}%` }} title={`Doc Quality: ${Math.round(docPct)}%`} />}
         {timePct > 0 && <div className="bg-[#EA2C00]" style={{ width: `${timePct}%` }} title={`Capacity & Efficiency: ${Math.round(timePct)}%`} />}
-        {retPct > 0 && <div className="bg-[#B45309]" style={{ width: `${retPct}%` }} title={`Retention: ${Math.round(retPct)}%`} />}
+        {retPct > 0 && <div className="bg-[#7A1F04]" style={{ width: `${retPct}%` }} title={`Retention: ${Math.round(retPct)}%`} />}
       </div>
       <div className="flex gap-3 mt-1">
         {docPct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1A1A1A] mr-1" />Doc {Math.round(docPct)}%</span>}
         {timePct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#EA2C00] mr-1" />Capacity {Math.round(timePct)}%</span>}
-        {retPct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#B45309] mr-1" />Ret {Math.round(retPct)}%</span>}
+        {retPct > 0 && <span className="text-[9px] text-[#A39888]"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#7A1F04] mr-1" />Ret {Math.round(retPct)}%</span>}
       </div>
     </div>
   );
