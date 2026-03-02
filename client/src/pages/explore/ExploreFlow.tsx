@@ -185,6 +185,12 @@ export interface DocQualityInputs {
   nursingFallsPreventionRate: number; // % prevented with better documentation
   nursingFallsCost: number; // Cost per fall
   
+  // Nursing: HAC Penalty Avoidance (potential value)
+  nursingHacEnabled: boolean;
+  nursingHacBottomQuartile: boolean;
+  nursingHacMedicareRevenue: number;
+  nursingHacAbridgeAttribution: number;
+
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
   
@@ -196,6 +202,7 @@ export interface DocQualityInputs {
   ipCdiExpanded: boolean;
   nursingHapiExpanded: boolean;
   nursingFallsExpanded: boolean;
+  nursingHacExpanded: boolean;
   nursingHcahpsExpanded: boolean;
 }
 
@@ -388,6 +395,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingFallsRate: 3.5, // 3.5 per 1,000 patient days
     nursingFallsPreventionRate: 5, // 5% prevention rate (conservative)
     nursingFallsCost: 6500, // $6,500 per fall
+    // Nursing: HAC Penalty Avoidance defaults
+    nursingHacEnabled: false,
+    nursingHacBottomQuartile: false,
+    nursingHacMedicareRevenue: 50000000,
+    nursingHacAbridgeAttribution: 75,
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
     // Expanded states (auto-expand when first toggled on)
@@ -398,6 +410,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCdiExpanded: true,
     nursingHapiExpanded: true,
     nursingFallsExpanded: true,
+    nursingHacExpanded: true,
     nursingHcahpsExpanded: true,
   },
   pricingModel: 'perProvider',

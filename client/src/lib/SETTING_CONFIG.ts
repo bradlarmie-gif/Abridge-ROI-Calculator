@@ -167,6 +167,17 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       warningText: "Shown as potential value—not included in main ROI total",
       isPotentialValue: true,
     },
+    {
+      id: "nursingHAC",
+      label: "HAC Penalty Avoidance",
+      category: "qualitySafety",
+      description: "Reduce CMS Hospital-Acquired Condition penalties through complete, timely nursing documentation.",
+      driverSummary: "Bottom-quartile hospitals lose 1% of Medicare inpatient revenue",
+      keyMetric: "$250K-$750K for a mid-size hospital (potential)",
+      hasWarning: true,
+      warningText: "Shown as potential value—not included in main ROI total",
+      isPotentialValue: true,
+    },
     // ✨ ADDITIONAL BENEFITS (Not quantified)
     {
       id: "nursingSurvey",

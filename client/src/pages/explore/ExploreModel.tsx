@@ -223,6 +223,10 @@ export default function ExploreModel({
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
       total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost * nursingCareTimeEffectiveness;
     }
+    if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
+      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
+      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * nursingCareTimeEffectiveness;
+    }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
 
@@ -242,6 +246,12 @@ export default function ExploreModel({
     const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
     return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost * nursingCareTimeEffectiveness);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
+
+  const nursingHacValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingHacEnabled || !state.docQualityInputs.nursingHacBottomQuartile) return 0;
+    const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01;
+    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * nursingCareTimeEffectiveness);
+  }, [isNursing, state.docQualityInputs, nursingCareTimeEffectiveness]);
 
   const nursingCareTimePerWeek = isNursing && state.timeDriverInputs.nursingCareTimeEnabled 
     ? ((totalHoursSaved / state.numberOfProviders / 48) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
@@ -282,6 +292,7 @@ export default function ExploreModel({
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Prevention", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Falls Prevention", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
+    if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
 
     const retentionValue = isNursing
       ? nursingRetentionValue + nursingAgencyValue
@@ -600,6 +611,7 @@ export default function ExploreModel({
           const parts: string[] = [];
           if (nursingHapiValue > 0) parts.push(`HAPI prevention: ${fmtK(nursingHapiValue)}`);
           if (nursingFallsValue > 0) parts.push(`Falls prevention: ${fmtK(nursingFallsValue)}`);
+          if (nursingHacValue > 0) parts.push(`HAC penalty avoidance: ${fmtK(nursingHacValue)}`);
           parts.push(`= ${fmtK(nursingCareQualityPotential)}/year`);
           drivers.push({
             id: 'nursingCareQuality', name: 'Care Quality (Potential)', value: nursingCareQualityPotential, category: 'documentation',
@@ -1241,6 +1253,13 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
                     </div>
                     {state.docQualityInputs.nursingFallsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• HAC Penalty</span>
+                      <span className="font-semibold text-black">{state.docQualityInputs.nursingHacEnabled && nursingHacValue > 0 ? formatCurrency(nursingHacValue) : '—'}</span>
+                    </div>
+                    {state.docQualityInputs.nursingHacEnabled && nursingHacValue > 0 && (
                       <p className="text-xs text-[#888888] pl-4">(potential)</p>
                     )}
                     <div className="flex justify-between">

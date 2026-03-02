@@ -40,6 +40,7 @@ export default function ExploreCareQuality({
 
   const [hapiExpanded, setHapiExpanded] = useState(true);
   const [fallsExpanded, setFallsExpanded] = useState(true);
+  const [hacExpanded, setHacExpanded] = useState(true);
   const [hcahpsExpanded, setHcahpsExpanded] = useState(true);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -78,10 +79,20 @@ export default function ExploreCareQuality({
     return fallsPrevented * docQualityInputs.nursingFallsCost;
   }, [fallsPrevented, docQualityInputs.nursingFallsCost]);
 
+  const hacPenalty = useMemo(() => {
+    if (!docQualityInputs.nursingHacBottomQuartile) return 0;
+    return docQualityInputs.nursingHacMedicareRevenue * 0.01;
+  }, [docQualityInputs.nursingHacBottomQuartile, docQualityInputs.nursingHacMedicareRevenue]);
+
+  const hacValue = useMemo(() => {
+    return hacPenalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * careTimeEffectiveness;
+  }, [hacPenalty, docQualityInputs.nursingHacAbridgeAttribution, careTimeEffectiveness]);
+
   const totalPotentialValue = useMemo(() => {
     return (docQualityInputs.nursingHapiEnabled ? hapiValue : 0) +
-           (docQualityInputs.nursingFallsEnabled ? fallsValue : 0);
-  }, [docQualityInputs.nursingHapiEnabled, hapiValue, docQualityInputs.nursingFallsEnabled, fallsValue]);
+           (docQualityInputs.nursingFallsEnabled ? fallsValue : 0) +
+           (docQualityInputs.nursingHacEnabled ? hacValue : 0);
+  }, [docQualityInputs.nursingHapiEnabled, hapiValue, docQualityInputs.nursingFallsEnabled, fallsValue, docQualityInputs.nursingHacEnabled, hacValue]);
 
   const carePerNurseWeek = useMemo(() => {
     const careTimePercent = timeDriverInputs.nursingCareTimePercent / 100;
@@ -464,7 +475,172 @@ export default function ExploreCareQuality({
                 </AnimatePresence>
               </div>
 
-              {/* Driver 3: Patient Experience (HCAHPS) */}
+              {/* Driver 3: HAC Penalty Avoidance */}
+              <div className="space-y-0">
+                <div
+                  className={`w-full p-4 text-left transition-all ${
+                    docQualityInputs.nursingHacEnabled
+                      ? (hacExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                      : "bg-white/70 hover:bg-white rounded-lg"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-black">HAC Penalty Avoidance</p>
+                        <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
+                          POTENTIAL
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#888888]">Avoid CMS penalties for hospital-acquired conditions</p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {docQualityInputs.nursingHacEnabled && (
+                        <button
+                          onClick={() => setHacExpanded(!hacExpanded)}
+                          className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                        >
+                          {hacExpanded ? (
+                            <ChevronUp className="w-5 h-5 text-[#888888]" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-[#888888]" />
+                          )}
+                        </button>
+                      )}
+                      <Switch
+                        checked={docQualityInputs.nursingHacEnabled}
+                        onCheckedChange={(checked) => {
+                          updateDocQualityInputs({ nursingHacEnabled: checked });
+                          if (checked) setHacExpanded(true);
+                        }}
+                        className="data-[state=checked]:bg-[#EA2C00]"
+                        data-testid="toggle-hac"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {docQualityInputs.nursingHacEnabled && hacExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-white rounded-b-lg p-5 pt-0">
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
+                        <p className="text-sm text-black mb-6">
+                          The CMS HAC Reduction Program penalizes hospitals in the bottom quartile of HAC scores by reducing Medicare payments by 1%. Many HAC measures—pressure injuries, falls with injury, infections—are driven by documentation completeness and timeliness. Real-time nursing documentation helps ensure assessments and interventions are captured accurately.
+                        </p>
+
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: QUARTILE STATUS</p>
+                        <div className="mb-6">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={docQualityInputs.nursingHacBottomQuartile}
+                              onChange={(e) => updateDocQualityInputs({ nursingHacBottomQuartile: e.target.checked })}
+                              className="w-5 h-5 rounded border-[#D1D5DB] text-[#EA2C00] focus:ring-[#EA2C00] cursor-pointer"
+                              data-testid="checkbox-hac-bottom-quartile"
+                            />
+                            <span className="text-sm text-black font-medium">We are currently in the bottom quartile of HAC scores</span>
+                          </label>
+                          <p className="text-xs text-[#888888] mt-2 ml-8">~25% of hospitals are penalized each year</p>
+                        </div>
+
+                        {docQualityInputs.nursingHacBottomQuartile && (
+                          <>
+                            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: MEDICARE REVENUE</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                              <div className="space-y-2">
+                                <label className="text-sm text-[#888888]">Annual Medicare Inpatient Revenue</label>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                                  <FormattedNumberInput
+                                    value={docQualityInputs.nursingHacMedicareRevenue}
+                                    onChange={(v: number) => updateDocQualityInputs({ nursingHacMedicareRevenue: v })}
+                                    className="h-12 bg-[#F5F0EB] pl-7 text-base"
+                                    data-testid="input-hac-medicare-revenue"
+                                  />
+                                </div>
+                                <p className="text-xs text-[#888888]">Typical range: $20M–$200M</p>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm text-[#888888]">1% CMS Penalty</label>
+                                <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                                  {formatCurrency(hacPenalty)}
+                                </div>
+                                <p className="text-xs text-[#888888]">Automatic—1% of Medicare revenue</p>
+                              </div>
+                            </div>
+
+                            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: DOCUMENTATION ATTRIBUTION</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                              <div className="space-y-2">
+                                <label className="text-sm text-[#888888]">Attribution to Documentation %</label>
+                                <div className="relative">
+                                  <FormattedNumberInput
+                                    value={docQualityInputs.nursingHacAbridgeAttribution}
+                                    onChange={(v: number) => updateDocQualityInputs({ nursingHacAbridgeAttribution: v })}
+                                    className="h-12 bg-[#F5F0EB] pr-8 text-base"
+                                    data-testid="input-hac-attribution"
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                                </div>
+                                <p className="text-xs text-[#888888]">HAC measures are heavily documentation-driven</p>
+                              </div>
+                            </div>
+
+                            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 4: POTENTIAL VALUE</p>
+                            <div className="bg-[#F5F0EB] rounded-lg p-4">
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-[#666666]">Medicare Revenue</span>
+                                  <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingHacMedicareRevenue)}</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-[#666666]">x 1% CMS penalty</span>
+                                  <span className="font-semibold text-black flex-shrink-0">{formatCurrency(hacPenalty)}</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-[#666666]">x Attribution to documentation</span>
+                                  <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHacAbridgeAttribution}%</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-[#666666]">x Care time effectiveness</span>
+                                  <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
+                                </div>
+                                <div className="h-px bg-[#E5E5E5] my-2" />
+                                <div className="flex justify-between gap-2">
+                                  <span className="font-medium text-black">Potential HAC Value</span>
+                                  <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(hacValue)}</span>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 bg-white/60 rounded-lg p-3">
+                                <p className="text-xs text-[#888888]">
+                                  This represents the portion of the CMS penalty that better nursing documentation could help avoid. Actual HAC scores depend on multiple clinical and operational factors.
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {!docQualityInputs.nursingHacBottomQuartile && (
+                          <div className="bg-[#F5F0EB]/60 rounded-lg p-4">
+                            <p className="text-sm text-[#666666]">
+                              If your hospital isn't in the bottom quartile, this penalty doesn't apply today—but improved documentation helps maintain your standing and supports HAC measure performance.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Driver 4: Patient Experience (HCAHPS) */}
               <div className="space-y-0">
                 <div
                   className={`w-full p-4 text-left transition-all ${
@@ -610,6 +786,18 @@ export default function ExploreCareQuality({
                       </div>
                       <span className={`text-sm font-semibold ${docQualityInputs.nursingFallsEnabled ? 'text-white' : 'text-[#666666]'}`}>
                         {docQualityInputs.nursingFallsEnabled ? formatCurrency(fallsValue) : '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.nursingHacEnabled && hacValue > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">HAC Penalty</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.nursingHacEnabled && hacValue > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.nursingHacEnabled && hacValue > 0 ? formatCurrency(hacValue) : '—'}
                       </span>
                     </div>
                   </div>

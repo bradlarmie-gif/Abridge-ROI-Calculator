@@ -62,7 +62,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Confidence Haircuts**: Applied at the display layer based on data mode (benchmark, estimated, measured).
 -   **Consolidated Benchmarks**: Single source of truth for key metrics.
 -   **S-curve Adoption Model**: 3-year projections use a sigmoid adoption curve for realistic modeling.
--   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing.
+-   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing. Nursing includes potential-value drivers: HAPI Prevention, Falls Prevention, HAC Penalty Avoidance (CMS 1% Medicare penalty for bottom-quartile hospitals, 75% documentation attribution), and qualitative HCAHPS.
 -   **Component-Driven UI**: Utilizes reusable components.
 -   **Configuration-driven**: ROI levers and properties are externally managed.
 -   **Pure Functions**: Encapsulated ROI calculation logic.
