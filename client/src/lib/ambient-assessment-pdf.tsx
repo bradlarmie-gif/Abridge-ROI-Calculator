@@ -987,7 +987,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={{ marginBottom: 12 }}>
           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>3. PARTNER WITH INTENTION</Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-            Abridge{"\u2019"}s highest-performing customers share one trait: they treat ambient AI as clinical infrastructure, not a feature. That shift in mindset {"\u2014"} supported by the right operational model {"\u2014"} is what separates a good deployment from an industry-leading one.
+            The organizations seeing the greatest returns from Abridge share one trait: they treat ambient AI as clinical infrastructure, not just a documentation tool. That shift {"\u2014"} building the operational model around it {"\u2014"} is what turns a strong deployment into a category-defining one.
           </Text>
         </View>
 
