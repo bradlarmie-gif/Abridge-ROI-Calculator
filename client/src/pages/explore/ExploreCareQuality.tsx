@@ -85,8 +85,8 @@ export default function ExploreCareQuality({
   }, [docQualityInputs.nursingHacBottomQuartile, docQualityInputs.nursingHacMedicareRevenue]);
 
   const hacValue = useMemo(() => {
-    return hacPenalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * careTimeEffectiveness;
-  }, [hacPenalty, docQualityInputs.nursingHacAbridgeAttribution, careTimeEffectiveness]);
+    return hacPenalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100) * careTimeEffectiveness;
+  }, [hacPenalty, docQualityInputs.nursingHacAbridgeAttribution, docQualityInputs.nursingHacRealization, careTimeEffectiveness]);
 
   const totalPotentialValue = useMemo(() => {
     return (docQualityInputs.nursingHapiEnabled ? hapiValue : 0) +
@@ -531,7 +531,7 @@ export default function ExploreCareQuality({
                       <div className="bg-white rounded-b-lg p-5 pt-0">
                         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
-                          The CMS HAC Reduction Program penalizes hospitals in the bottom quartile of HAC scores by reducing Medicare payments by 1%. Many HAC measures—pressure injuries, falls with injury, infections—are driven by documentation completeness and timeliness. Real-time nursing documentation helps ensure assessments and interventions are captured accurately.
+                          The CMS HAC Reduction Program penalizes hospitals in the bottom quartile of HAC scores by reducing Medicare payments by 1%. HAC scores are measured annually, and quartile rankings shift slowly—exiting the bottom quartile is a multi-year trajectory, not a switch. Documentation is one contributing factor alongside clinical protocols, staffing, and infection control. Better documentation supports earlier intervention and more accurate reporting, which over time can improve HAC performance.
                         </p>
 
                         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: QUARTILE STATUS</p>
@@ -575,7 +575,7 @@ export default function ExploreCareQuality({
                               </div>
                             </div>
 
-                            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: DOCUMENTATION ATTRIBUTION</p>
+                            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: ATTRIBUTION & REALIZATION</p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                               <div className="space-y-2">
                                 <label className="text-sm text-[#888888]">Attribution to Documentation %</label>
@@ -588,7 +588,20 @@ export default function ExploreCareQuality({
                                   />
                                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                                 </div>
-                                <p className="text-xs text-[#888888]">HAC measures are heavily documentation-driven</p>
+                                <p className="text-xs text-[#888888]">Documentation is one of several contributing factors. 15–30% is a defensible range.</p>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm text-[#888888]">Year 1 Realization %</label>
+                                <div className="relative">
+                                  <FormattedNumberInput
+                                    value={docQualityInputs.nursingHacRealization}
+                                    onChange={(v: number) => updateDocQualityInputs({ nursingHacRealization: v })}
+                                    className="h-12 bg-[#F5F0EB] pr-8 text-base"
+                                    data-testid="input-hac-realization"
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                                </div>
+                                <p className="text-xs text-[#888888]">HAC scores shift slowly—25–75% reflects phased improvement over time</p>
                               </div>
                             </div>
 
@@ -608,6 +621,10 @@ export default function ExploreCareQuality({
                                   <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHacAbridgeAttribution}%</span>
                                 </div>
                                 <div className="flex justify-between gap-2">
+                                  <span className="text-[#666666]">x Year 1 realization</span>
+                                  <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHacRealization}%</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
                                   <span className="text-[#666666]">x Care time effectiveness</span>
                                   <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                                 </div>
@@ -620,7 +637,7 @@ export default function ExploreCareQuality({
 
                               <div className="mt-4 bg-white/60 rounded-lg p-3">
                                 <p className="text-xs text-[#888888]">
-                                  This represents the portion of the CMS penalty that better nursing documentation could help avoid. Actual HAC scores depend on multiple clinical and operational factors.
+                                  This is a long-term metric. HAC scores are measured annually and quartile rankings shift slowly. The realization factor reflects that improvement builds over time—not overnight. Actual results depend on clinical practice, staffing, and multiple operational factors beyond documentation.
                                 </p>
                               </div>
                             </div>

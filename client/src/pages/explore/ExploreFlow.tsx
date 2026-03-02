@@ -190,6 +190,7 @@ export interface DocQualityInputs {
   nursingHacBottomQuartile: boolean;
   nursingHacMedicareRevenue: number;
   nursingHacAbridgeAttribution: number;
+  nursingHacRealization: number;
 
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
@@ -399,7 +400,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingHacEnabled: false,
     nursingHacBottomQuartile: false,
     nursingHacMedicareRevenue: 50000000,
-    nursingHacAbridgeAttribution: 75,
+    nursingHacAbridgeAttribution: 25,
+    nursingHacRealization: 50,
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
     // Expanded states (auto-expand when first toggled on)

@@ -173,7 +173,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       category: "qualitySafety",
       description: "Reduce CMS Hospital-Acquired Condition penalties through complete, timely nursing documentation.",
       driverSummary: "Bottom-quartile hospitals lose 1% of Medicare inpatient revenue",
-      keyMetric: "$250K-$750K for a mid-size hospital (potential)",
+      keyMetric: "$30K-$100K Year 1 for a mid-size hospital (potential)",
       hasWarning: true,
       warningText: "Shown as potential value—not included in main ROI total",
       isPotentialValue: true,

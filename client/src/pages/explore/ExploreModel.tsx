@@ -225,7 +225,7 @@ export default function ExploreModel({
     }
     if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
       const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
-      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * nursingCareTimeEffectiveness;
+      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100) * nursingCareTimeEffectiveness;
     }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
@@ -250,7 +250,7 @@ export default function ExploreModel({
   const nursingHacValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingHacEnabled || !state.docQualityInputs.nursingHacBottomQuartile) return 0;
     const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01;
-    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * nursingCareTimeEffectiveness);
+    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100) * nursingCareTimeEffectiveness);
   }, [isNursing, state.docQualityInputs, nursingCareTimeEffectiveness]);
 
   const nursingCareTimePerWeek = isNursing && state.timeDriverInputs.nursingCareTimeEnabled 
