@@ -736,7 +736,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
       return `This model focuses on ${settingNames}. A single-setting deployment provides a focused proof of value. Once baselines are established and outcomes measured, this model can be extended to additional care settings to compound organizational impact.`;
     }
     const dominant = docPct > timePct ? "documentation quality" : "capacity & efficiency";
-    return `Across ${settings.length} care settings (${settingNames}), your value model is ${dominant}-dominant (${docPct}% documentation, ${timePct}% capacity & efficiency, ${retPct}% retention). Multi-setting deployments compound value: clinicians share best practices across departments, and the organizational change management overhead is amortized. The staggered go-live schedule reduces implementation risk while accelerating time to value.`;
+    return `Across ${settings.length} care setting${settings.length > 1 ? "s" : ""} (${settingNames}), this model is ${dominant}-weighted: ${docPct}% documentation quality, ${timePct}% capacity and efficiency, ${retPct}% retention. Each setting is modeled independently with its own onset timing and adoption curve. The ${termLabel.toLowerCase()} horizon allows retention value — the slowest-building driver — to reach meaningful scale. Payback is projected at month ${summary.paybackMonth ?? "N/A"}.`;
   })();
 
   return (
@@ -744,17 +744,17 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
       <PDFCoverPage
         reportLabel="ORGANIZATION PROFORMA"
         title="Organization"
-        subtitle={`Multi-Setting Financial Model \u00B7 ${settings.length} Care Setting${settings.length > 1 ? "s" : ""} \u00B7 ${termLabel} Contract`}
-        disclaimerText="This proforma is for financial planning purposes. Projections are modeled estimates based on user-provided inputs and published benchmarks. They do not constitute a guarantee of financial outcomes."
+        subtitle={`${termLabel} Financial Model  \u00B7  ${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Observed Abridge Deployment Data`}
+        disclaimerText="This model reflects conservative estimates derived from user inputs and observed outcomes across Abridge deployments. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
       />
 
       {/* PAGE 1: THE THESIS */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>THE THESIS</Text>
-          <Text style={styles.sectionHeadline}>What happens when you deploy ambient documentation across your entire organization?</Text>
+          <Text style={styles.sectionHeadline}>The case for ambient documentation at scale.</Text>
           <Text style={styles.body}>
-            This proforma models the financial impact of Abridge across {settings.length} care setting{settings.length > 1 ? "s" : ""} over a {termLabel.toLowerCase()} contract term. It accounts for provider expansion, adoption ramp, onset timing by driver type, and conservative retention phasing to produce a defensible investment case.
+            This model projects the financial impact of ambient documentation across {settings.length} care setting{settings.length > 1 ? "s" : ""} over a {termLabel.toLowerCase()} term. Value is modeled in two streams — time efficiency and documentation quality — each with independent onset timing, adoption ramps, and conservative attribution. The output is a defensible, auditable investment case.
           </Text>
 
           <View style={[styles.cardBg, { paddingVertical: 16, paddingHorizontal: 18, marginBottom: 10 }]}>
@@ -793,7 +793,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <Text style={styles.sectionLabel}>TWO SOURCES OF VALUE</Text>
           <Text style={styles.body}>
-            Ambient documentation creates value in two distinct ways: by returning time to clinicians (which translates to capacity, cost reduction, and retention) and by improving documentation quality (which captures revenue that already exists but isn{"\u2019"}t being coded). Across your settings, these sources combine to create {fmt(summary.termValue)} in total projected value.
+            Time returned to clinicians converts to capacity, reduced overtime, and lower turnover. Documentation quality captures revenue already present in the clinical encounter — but lost to incomplete coding, missed complexity, and claim errors. Together, across your settings, these two streams project {fmt(summary.termValue)} in total term value.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
@@ -805,7 +805,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 {totalTimeValue > 0 ? fmt(totalTimeValue) : "\u2014"}
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                {timePct}% of total value. Hours returned to patient care, capacity expansion, and operational efficiency.
+                {timePct}% of projected value. Reclaimed hours modeled across access capacity, overtime reduction, and retention — using conservative conversion rates and phased onset.
               </Text>
             </View>
 
@@ -817,7 +817,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                 {totalDocValue > 0 ? fmt(totalDocValue) : "\u2014"}
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                {docPct}% of total value. Capture of complexity, denial prevention, and coding accuracy.
+                {docPct}% of projected value. Documentation quality improvements applied to wRVU accuracy, E&M level capture, HCC recapture, and denial prevention — modeled at 75% attribution to account for non-Abridge factors.
               </Text>
             </View>
           </View>
@@ -829,7 +829,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   RETENTION & WELLBEING
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  {retPct}% of total value. Phased conservatively over {termLabel.toLowerCase()}.
+                  {retPct}% of projected value. Reduced burnout-driven turnover modeled with a 6-month onset delay and phased realization — consistent with published ambient documentation impact studies.
                 </Text>
               </View>
               <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.retentionAmber }}>{fmt(totalRetentionValue)}</Text>
