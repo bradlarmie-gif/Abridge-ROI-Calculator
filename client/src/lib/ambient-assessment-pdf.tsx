@@ -862,7 +862,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
     <PDFCoverPage
       reportLabel="Ambient Assessment"
       title="Ambient Assessment"
-      subtitle={`A structured analysis of how your organization is capturing value from ambient documentation \u2014 across capacity, revenue, workforce, and infrastructure readiness.`}
+      subtitle="Ambient AI Maturity Assessment \u2014 Prepared by Abridge"
       clientName={data.organizationName || "Your Organization"}
       preparedBy={data.preparedBy || "Abridge Partner Success"}
       disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
