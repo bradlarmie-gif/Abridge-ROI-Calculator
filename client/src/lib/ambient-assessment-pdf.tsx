@@ -503,7 +503,7 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
             { label: "Annual encounters", value: data.annualEncounters.toLocaleString() },
             { label: "Utilization rate", value: `${data.utilization}%` },
             { label: "Time saved / encounter", value: timeSavedEntered ? `${data.timeSavings} min` : "Benchmark used" },
-            { label: "Hours reclaimed", value: timeSavedEntered ? `${hoursReclaimed.toLocaleString()} hrs` : "Benchmark used" },
+            { label: "Hours reclaimed", value: timeSavedEntered ? `${hoursReclaimed.toLocaleString()} hrs` : "See domain analysis" },
             { label: "FTE equivalent", value: fteEquivalent || "Benchmark used" },
           ].map((row, i, arr) => (
             <View key={row.label} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, paddingHorizontal: 10, backgroundColor: i % 2 === 0 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
