@@ -754,6 +754,9 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>YOUR VALUE OPPORTUNITY</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>What Strategic Action Could Unlock</Text>
+        <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
+          Based on your deployment scale and Abridge-observed benchmarks {"\u2014"} conservative estimates, not ceiling projections.
+        </Text>
         <Text style={styles.body}>
           This page consolidates your domain-level findings into a single view of total organizational opportunity. Values reflect measured inputs where available and conservative projections where not.
         </Text>
