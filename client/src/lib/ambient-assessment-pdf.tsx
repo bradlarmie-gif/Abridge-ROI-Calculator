@@ -560,7 +560,7 @@ function getDomainDisplayValue(domain: DomainData): string {
   if (domain.hasValue !== false && domain.gapValue > 0) {
     return fmt(domain.gapValue);
   }
-  return "\u2014";
+  return "Not yet entered";
 }
 
 function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: AmbientAssessmentPDFData; isLast: boolean }) {
@@ -585,8 +585,8 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
               <Text style={styles.domainLevel}>Level {domain.activationLevel}: {domain.activationLabel} {"\u00B7"} Score: {domainScore}/25</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={[styles.domainValueBig, { color: displayValue === "\u2014" ? colors.tertiary : colors.primary }]}>{displayValue}</Text>
-              {displayValue !== "\u2014" && <Text style={styles.domainValueLabel}>your measured value</Text>}
+              <Text style={[styles.domainValueBig, { color: displayValue === "Not yet entered" ? colors.tertiary : colors.primary }]}>{displayValue}</Text>
+              {displayValue !== "Not yet entered" && <Text style={styles.domainValueLabel}>your measured value</Text>}
             </View>
           </View>
 
@@ -766,7 +766,7 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={[styles.twoColRow, { marginBottom: 14 }]}>
           <View style={[styles.col, styles.darkPanel]}>
             <Text style={styles.heroLabel}>Annual Value Opportunity</Text>
-            <Text style={[styles.heroNumber, { color: colors.primary }]}>{hasData ? fmt(data.totalAnnualGap) : "\u2014"}</Text>
+            <Text style={[styles.heroNumber, { color: colors.primary }]}>{hasData ? fmt(data.totalAnnualGap) : "Not yet entered"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
               {hasData ? "Total across all four domains" : "Enter domain data to calculate"}
@@ -875,7 +875,7 @@ function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={[styles.col, styles.darkPanel]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Monthly Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.monthlyGap) : "\u2014"}</Text>
+            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.monthlyGap) : "Not yet entered"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
               {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate cost of waiting"}
@@ -883,7 +883,7 @@ function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
           </View>
           <View style={[styles.col, styles.darkPanel]}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Daily Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.dailyGap) : "\u2014"}</Text>
+            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.dailyGap) : "Not yet entered"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
               {hasData ? "Every business day your organization does not systematically capture this value." : "Enter domain data to calculate cost of waiting"}
@@ -908,8 +908,8 @@ function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
           ].map((row, i, arr) => (
             <View key={row.label} style={{ flexDirection: "row", paddingVertical: 6, paddingHorizontal: 12, backgroundColor: i % 2 === 1 ? colors.cards : colors.background, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
               <Text style={{ flex: 2.5, fontSize: 9.5, fontWeight: i === 0 ? "bold" : "normal", color: colors.primaryText }}>{row.label}</Text>
-              <Text style={{ flex: 2, fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, textAlign: "center" }}>{hasData ? fmt(row.value3yr) : "\u2014"}</Text>
-              <Text style={{ flex: 2, fontSize: 9.5, fontWeight: "bold", color: row.lost ? colors.primary : colors.tertiary, textAlign: "center" }}>{row.lost && hasData ? fmt(row.lost) : "\u2014"}</Text>
+              <Text style={{ flex: 2, fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, textAlign: "center" }}>{hasData ? fmt(row.value3yr) : "Not yet entered"}</Text>
+              <Text style={{ flex: 2, fontSize: 9.5, fontWeight: "bold", color: row.lost ? colors.primary : colors.tertiary, textAlign: "center" }}>{row.lost && hasData ? fmt(row.lost) : "Not yet entered"}</Text>
             </View>
           ))}
         </View>
@@ -951,7 +951,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
             { assumption: "Providers on ambient", yours: String(data.providers), range: "Varies by org" },
             { assumption: "Annual encounters", yours: data.annualEncounters.toLocaleString(), range: "Varies by org" },
             { assumption: "Utilization rate", yours: `${data.utilization}%`, range: "76% (deployment avg)" },
-            { assumption: "Time saved per encounter", yours: data.timeSavings > 0 ? `${data.timeSavings} min` : "\u2014", range: "2\u20133 min (deployment avg)" },
+            { assumption: "Time saved per encounter", yours: data.timeSavings > 0 ? `${data.timeSavings} min` : "Not yet entered", range: "2\u20133 min (deployment avg)" },
             { assumption: "Revenue per visit", yours: `$${data.revenuePerVisit || 200}`, range: "$200 default" },
             { assumption: "Provider hourly rate", yours: `$${data.providerRate || 150}`, range: "$150 default" },
             { assumption: "Working days per year", yours: "230", range: "Clinical standard" },
