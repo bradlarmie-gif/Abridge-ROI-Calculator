@@ -357,7 +357,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                     </div>
 
                     <p className="text-xs text-[#888888] italic leading-relaxed mt-4">
-                      Each domain contributes up to 25 points based on the maturity level selected during the assessment. Your total score reflects how intentionally your organization is managing the value created by ambient documentation. This is a self-assessment — it does not guarantee specific financial outcomes.
+                      Scoring uses a 25-point scale per domain. Level 1 = 6 pts, Level 2 = 12 pts, Level 3 = 19 pts, Level 4 = 25 pts. Weighted equally across four domains (max 100). Your total score reflects how intentionally your organization is managing the value created by ambient documentation. This is a self-assessment — it does not guarantee specific financial outcomes.
                     </p>
                   </div>
                 </motion.div>

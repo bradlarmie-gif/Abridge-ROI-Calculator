@@ -135,9 +135,11 @@ function getNextLevelContent(
     }
   } else if (domain === 'risk') {
     if (level === 1) {
-      base.narrative = "Your documentation is better — but no one is measuring how or why. Without quality monitoring, you have no baseline for what improved documentation is actually worth downstream. Establishing any form of measurement is the foundation for everything that follows.";
+      base.narrative = "Your documentation is better — but no one is measuring how or why. Without quality monitoring, you have no baseline for what improved documentation is actually worth downstream. Establishing any form of measurement is the foundation for everything that follows.\n\nOPPORTUNITY AHEAD: Documentation gaps create measurable financial exposure. Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. Without monitoring, this value remains invisible.";
     } else if (level === 2) {
-      base.narrative = "You're tracking quality dimensions. The next step is connecting documentation quality to the workflows that depend on it — CDI, coding, quality reporting, chart abstraction. Each connection unlocks operational efficiency and positions your documentation infrastructure for what's coming: AI-driven CDI, automated quality reporting, and structured data for payer negotiations.";
+      const riskLow = Math.round(documentedEncounters * 0.15 * 75 / 1000) * 1000;
+      const riskHigh = Math.round(documentedEncounters * 0.15 * 200 / 1000) * 1000;
+      base.narrative = `You're tracking quality dimensions. The next step is connecting documentation quality to the workflows that depend on it — CDI, coding, quality reporting, chart abstraction. Each connection unlocks operational efficiency and positions your documentation infrastructure for what's coming: AI-driven CDI, automated quality reporting, and structured data for payer negotiations.\n\nOPPORTUNITY AHEAD: Active monitoring positions you for quantified improvement. Organizations advancing to Level 3–4 with closed-loop correction typically capture an additional $75–$200 per patient in HCC/risk-adjustment accuracy. At ${documentedEncounters.toLocaleString()} encounters with 15% risk-adjustment relevance, that's a ${formatDollar(riskLow)}–${formatDollar(riskHigh)} annual opportunity at the next level.`;
     } else if (level === 3) {
       base.narrative = `You've connected downstream workflows${hasValue ? `, saving an estimated ${formatDollar(currentValue)} annually` : ''}. The next level is making documentation quality a strategic input — informing payer strategy, value-based care design, and compliance governance. This is where documentation stops being a clinical byproduct and becomes organizational intelligence.`;
     } else {
@@ -363,9 +365,25 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
                     {isExpanded && (
                       <div className="px-2 pb-4">
-                        <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
-                          {content.narrative}
-                        </p>
+                        {content.narrative.includes('OPPORTUNITY AHEAD:') ? (
+                          <div data-testid={`narrative-${domain}`}>
+                            <p className="text-sm text-[#888888] leading-relaxed mb-3">
+                              {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                            </p>
+                            <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50">
+                              <p className="text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5">
+                                Opportunity Ahead
+                              </p>
+                              <p className="text-sm text-[#888888] italic leading-relaxed">
+                                {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
+                            {content.narrative}
+                          </p>
+                        )}
                         {content.formula && (
                           <div className="bg-white/50 rounded-md p-3">
                             <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
