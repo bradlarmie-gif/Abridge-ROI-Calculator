@@ -126,7 +126,7 @@ export interface ProformaScenario {
 
 export const ONSET_LABELS: Record<DriverOnset, string> = {
   immediate: "Immediate",
-  delayed: "Delayed (M3+)",
+  delayed: "Delayed (M6+)",
   phased: "Phased (Y1/Y2/Y3)",
 };
 
