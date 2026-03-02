@@ -297,9 +297,64 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <p className="text-sm text-[#888888] leading-relaxed mb-8 pl-1" data-testid="text-methodology">
-                    Each domain contributes up to 25 points based on the maturity level you selected. Level 1 = 6 pts, Level 2 = 12 pts, Level 3 = 19 pts, Level 4 = 25 pts. Your total score reflects how intentionally your organization is managing the value created by ambient documentation.
-                  </p>
+                  <div className="bg-[#F5F0EB] rounded-lg p-6 md:p-8 mb-8" data-testid="panel-methodology">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Scoring Methodology
+                    </p>
+                    <div className="h-px bg-[#E5E7EB] mb-4" />
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm" data-testid="table-methodology">
+                        <thead>
+                          <tr className="border-b border-[#E5E7EB]">
+                            <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Domain</th>
+                            <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Your Level</th>
+                            <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Points</th>
+                            <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Max</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {DOMAIN_ORDER.map((domain) => {
+                            const level = scoreToActivationLevel(domain, domainScores[domain]) as 1 | 2 | 3 | 4;
+                            return (
+                              <tr key={domain} className="border-b border-[#E5E7EB]/50" data-testid={`methodology-row-${domain}`}>
+                                <td className="py-2.5 font-semibold text-black">{DOMAIN_LABELS[domain]}</td>
+                                <td className="py-2.5 text-[#888888]">
+                                  <span className="text-black font-medium">L{level}</span>
+                                  <span className="text-[#888888] ml-1.5 hidden sm:inline">— {ACTIVATION_LABELS[domain][level]}</span>
+                                </td>
+                                <td className="py-2.5 text-right font-bold text-black">{domainScores[domain]}</td>
+                                <td className="py-2.5 text-right text-[#888888]">25</td>
+                              </tr>
+                            );
+                          })}
+                          <tr data-testid="methodology-row-total">
+                            <td className="py-3 font-bold text-black" colSpan={2}>Total</td>
+                            <td className="py-3 text-right font-bold text-[#C8372D] text-lg">{totalScore}</td>
+                            <td className="py-3 text-right font-bold text-[#888888]">100</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                        Point Scale
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {([1, 2, 3, 4] as const).map((lvl) => (
+                          <div key={lvl} className="bg-white/60 rounded-md px-3 py-2 text-center">
+                            <p className="text-xs text-[#888888]">Level {lvl}</p>
+                            <p className="font-bold text-sm text-black">{SCORE_MAP[lvl]} pts</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-[#888888] italic leading-relaxed mt-4">
+                      Each domain contributes up to 25 points based on the maturity level selected during the assessment. Your total score reflects how intentionally your organization is managing the value created by ambient documentation. This is a self-assessment — it does not guarantee specific financial outcomes.
+                    </p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
