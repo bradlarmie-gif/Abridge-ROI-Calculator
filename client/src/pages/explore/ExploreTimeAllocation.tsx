@@ -3045,7 +3045,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 min={50000}
                 max={1000000}
                 step={10000}
-                hint="Full cost to replace a provider (recruitment, onboarding, lost revenue)"
+                hint="Estimated cost to replace a departing provider. Industry estimates range from $300K–$1M depending on specialty. Default is $400K (conservative midpoint)."
               />
               <div className="pt-3 border-t border-slate-100">
                 <Button

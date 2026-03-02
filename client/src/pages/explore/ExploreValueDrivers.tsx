@@ -1374,7 +1374,7 @@ export default function ExploreValueDrivers({
                               data-testid="input-replacement-cost"
                             />
                           </div>
-                          <p className="text-xs text-[#888888] italic mt-1">Includes recruitment, onboarding, and lost revenue during transition</p>
+                          <p className="text-xs text-[#888888] italic mt-1">Estimated cost to replace a departing provider. Industry estimates range from $300K–$1M depending on specialty. Default is $400K (conservative midpoint).</p>
                         </div>
 
                         <div className="h-px bg-[#E5E5E5] my-4" />

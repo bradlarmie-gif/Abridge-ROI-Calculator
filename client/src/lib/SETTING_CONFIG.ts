@@ -22,7 +22,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Patient Access",
       category: "time",
       description:
-        "Turn documentation efficiency into additional visit capacity.",
+        "When documentation takes less time, that time can flow back into patient access.",
       driverSummary: "visits per provider per day, downstream revenue.",
     },
     {
@@ -30,7 +30,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Overtime & Locum Cost Savings",
       category: "time",
       description:
-        "Reduce overtime and locum reliance driven by after-hours documentation.",
+        "After-hours documentation is a direct driver of overtime cost. Less charting after hours means less overtime.",
       driverSummary: "overtime spend, locum hours.",
     },
     {
@@ -101,7 +101,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "Documentation-Related Denials",
       category: "documentation",
       description:
-        "Reduce claim rejections from incomplete documentation.",
+        "Complete, structured documentation at the point of care reduces the documentation gaps that drive claim denials.",
       driverSummary: "ED claims face heavy payer scrutiny",
       keyMetric: "$200K-450K for 25 physicians",
     },
@@ -122,7 +122,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       id: "nursingOvertime",
       label: "Overtime Reduction",
       category: "laborCost",
-      description: "Eliminate end-of-shift documentation catch-up",
+      description: "Reduce end-of-shift documentation burden — and the overtime that comes with it.",
       driverSummary: "Most directly measurable—shows up in payroll data",
       keyMetric: "$300K-$600K for 200 beds",
     },
@@ -204,7 +204,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       category: "capacityLabor",
       description:
         "Address the #1 driver of hospitalist turnover.",
-      driverSummary: "Hospitalist turnover is a crisis (15-20% typical)",
+      driverSummary: "Hospitalist turnover is a persistent challenge — typical attrition runs 15–20% annually",
       keyMetric: "$100K-250K for 20 providers",
       hasWarning: true,
       warningText: "Long-term—12+ months to see full impact",
@@ -214,7 +214,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "DRG Accuracy (Prevent Downcoding)",
       category: "qualityRevenue",
       description:
-        "Document the complexity you're managing.",
+        "Ambient documentation captures clinical context that supports accurate DRG assignment — including CC/MCC codes that reflect true patient complexity.",
       driverSummary: "Directly impacts DRG weight and reimbursement",
       keyMetric: "$250K-500K for 20 providers",
     },
@@ -223,7 +223,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       label: "CDI Query Reduction",
       category: "qualityRevenue",
       description:
-        "Better initial documentation = less rework.",
+        "When documentation is complete on first pass, CDI query volume goes down — reducing rework for both clinical and coding teams.",
       driverSummary: "Operational efficiency—CDI teams love this",
       keyMetric: "$20K-50K for 20 providers",
     },
