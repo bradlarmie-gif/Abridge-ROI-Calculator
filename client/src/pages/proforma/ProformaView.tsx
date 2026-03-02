@@ -550,9 +550,14 @@ export default function ProformaView({
                 </div>
                 <p className="text-base sm:text-lg font-bold" style={{ color: s.color }}>{fmt(s.annualValue)}</p>
                 <p className="text-[12px] sm:text-xs text-neutral-500 mt-1">
-                  {s.yearlyProviders
-                    ? `Y1: ${fmtNum(s.yearlyProviders.year1)} → Y2: ${fmtNum(s.yearlyProviders.year2)} → Y3: ${fmtNum(s.yearlyProviders.year3)} ${SETTING_UNIT_LABELS[s.careSetting]}`
-                    : `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`}
+                  {(() => {
+                    const cYears = Math.ceil(config.contractTermMonths / 12);
+                    const yp = s.yearlyProviders;
+                    if (!yp) return `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
+                    const finalCount = cYears >= 3 ? yp.year3 : cYears >= 2 ? yp.year2 : yp.year1;
+                    if (cYears <= 1) return `${fmtNum(yp.year1)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
+                    return `Y1: ${fmtNum(yp.year1)} → Y${cYears}: ${fmtNum(finalCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
+                  })()}
                 </p>
               </div>
             );
@@ -572,10 +577,12 @@ export default function ProformaView({
               <Users className="w-3.5 h-3.5" />
               <span>
                 {(() => {
+                  const cYears = Math.ceil(config.contractTermMonths / 12);
                   const y1 = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
-                  const y3 = settings.reduce((s, v) => s + (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount), 0);
+                  const yFinal = settings.reduce((s, v) => s + (cYears >= 3 ? (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount) : cYears >= 2 ? (v.yearlyProviders?.year2 || v.fullScaleProviders || v.providerCount) : (v.yearlyProviders?.year1 || v.providerCount)), 0);
                   const label = settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting];
-                  return `${fmtNum(y1)} → ${fmtNum(y3)} total ${label}`;
+                  if (cYears <= 1) return `${fmtNum(y1)} total ${label}`;
+                  return `${fmtNum(y1)} → ${fmtNum(yFinal)} total ${label}`;
                 })()}
               </span>
             </div>
@@ -767,7 +774,7 @@ export default function ProformaView({
 
             {config.retentionPhasing.year2Pct > 0 && (
               <div className="flex items-center justify-center gap-4 mt-2 text-[12px] text-neutral-400">
-                <span>Retention: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3</span>
+                <span>Retention: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3{config.contractTermMonths > 36 ? "+" : ""}</span>
               </div>
             )}
           </div>
@@ -786,20 +793,44 @@ export default function ProformaView({
             <h2 className="text-base sm:text-lg font-bold text-neutral-900">Pricing & Configuration</h2>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 flex-wrap">
             <span className="text-xs sm:text-sm font-medium text-neutral-600">Contract:</span>
             <div className="flex items-center gap-1 bg-white rounded-full p-0.5 border border-neutral-200">
               {([24, 36] as const).map(t => (
                 <button
                   key={t}
                   onClick={() => setConfig(c => ({ ...c, contractTermMonths: t }))}
-                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${config.contractTermMonths === t ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
+                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${config.contractTermMonths === t && ![24, 36].includes(config.contractTermMonths) ? "" : config.contractTermMonths === t ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
                   data-testid={`toggle-term-${t}`}
                 >
-                  {t / 12} Year
+                  {t / 12}-Year
                 </button>
               ))}
+              <button
+                onClick={() => setConfig(c => ({ ...c, contractTermMonths: ![24, 36].includes(c.contractTermMonths) ? c.contractTermMonths : 48 }))}
+                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${![24, 36].includes(config.contractTermMonths) ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
+                data-testid="toggle-term-custom"
+              >
+                Custom
+              </button>
             </div>
+            {![24, 36].includes(config.contractTermMonths) && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={6}
+                  value={config.contractTermMonths / 12}
+                  onChange={(e) => {
+                    const years = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
+                    setConfig(c => ({ ...c, contractTermMonths: years * 12 }));
+                  }}
+                  className="w-16 h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm text-center"
+                  data-testid="input-custom-years"
+                />
+                <span className="text-xs sm:text-sm text-neutral-500">years</span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -815,7 +846,9 @@ export default function ProformaView({
               const y2Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year2 / baseProv) : s.costPerUnit * yp.year2 * 12;
               const y3Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year3 / baseProv) : s.costPerUnit * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
-              const is3yr = config.contractTermMonths >= 36;
+              const contractYears = Math.ceil(config.contractTermMonths / 12);
+              const showY2 = contractYears >= 2;
+              const showY3 = contractYears >= 3;
               return (
                 <div
                   key={s.id}
@@ -831,13 +864,13 @@ export default function ProformaView({
                         </div>
                         <div>
                           <h3 className="text-sm font-bold text-neutral-900">{s.label}</h3>
-                          <p className="text-xs text-neutral-500">{fmtNum(yp.year1)} → {fmtNum(is3yr ? yp.year3 : yp.year2)} {unitLabel}</p>
+                          <p className="text-xs text-neutral-500">{showY2 ? `${fmtNum(yp.year1)} → ${fmtNum(showY3 ? yp.year3 : yp.year2)} ${unitLabel}` : `${fmtNum(yp.year1)} ${unitLabel}`}</p>
                         </div>
                       </div>
 
                       <div className="mb-4">
                         <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
-                        <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                        <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                           <div>
                             <label className="block text-[12px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
                             <FormattedNumberInput
@@ -847,18 +880,20 @@ export default function ProformaView({
                               data-testid={`input-y1-${s.careSetting}`}
                             />
                           </div>
-                          <div>
-                            <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
-                            <FormattedNumberInput
-                              value={yp.year2}
-                              onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
-                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                              data-testid={`input-y2-${s.careSetting}`}
-                            />
-                          </div>
-                          {is3yr && (
+                          {showY2 && (
                             <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y3 {unitLabel}</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
+                              <FormattedNumberInput
+                                value={yp.year2}
+                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-y2-${s.careSetting}`}
+                              />
+                            </div>
+                          )}
+                          {showY3 && (
+                            <div>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} {unitLabel}</label>
                               <FormattedNumberInput
                                 value={yp.year3}
                                 onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
@@ -947,7 +982,7 @@ export default function ProformaView({
 
                       <div className="bg-[#F9F6F2] rounded-lg px-3 py-2.5">
                         <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
-                        <div className={`grid gap-3 ${is3yr ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                        <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                           <div>
                             <p className="text-[12px] text-neutral-500">Year 1</p>
                             <p className="text-sm font-semibold text-neutral-800">{fmtFull(y1Cost)}</p>
@@ -956,7 +991,7 @@ export default function ProformaView({
                             <p className="text-[12px] text-neutral-500">Year 2</p>
                             <p className="text-sm font-semibold text-neutral-800">{fmtFull(y2Cost)}</p>
                           </div>
-                          {is3yr && (
+                          {showY3 && (
                             <div>
                               <p className="text-[12px] text-neutral-500">Year 3</p>
                               <p className="text-sm font-semibold text-neutral-800">{fmtFull(y3Cost)}</p>
@@ -979,7 +1014,7 @@ export default function ProformaView({
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
                 <div key={key}>
-                  <label className="block text-[12px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}</label>
+                  <label className="block text-[12px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}{idx === 2 && config.contractTermMonths > 36 ? "+" : ""}</label>
                   <div className="flex items-center gap-1 sm:gap-2">
                     <input
                       type="range"
@@ -1303,7 +1338,7 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
-              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3.</p>
+              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}.</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis varying only value realization rate. Conservative models 70% realization (not all drivers materialize fully). Optimistic models 130% realization (better-than-expected outcomes). Subscription cost is held constant across all scenarios — it's contractual. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
@@ -1369,7 +1404,7 @@ export default function ProformaView({
                     {[
                       { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
                       { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
-                      { label: "3-Year Value", current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
+                      { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
                       { label: "Total Investment", current: fmt(summary.threeYearInvestment), values: scenarioSummaries.map(s => fmt(s.summary.threeYearInvestment)) },
                       { label: "Net Value", current: fmt(summary.threeYearNet), values: scenarioSummaries.map(s => fmt(s.summary.threeYearNet)) },
                       { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.threeYearInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },

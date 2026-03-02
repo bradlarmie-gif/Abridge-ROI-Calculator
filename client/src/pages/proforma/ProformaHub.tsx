@@ -26,6 +26,10 @@ const SETTING_ICONS: Record<string, typeof Building2> = {
   nursing: Stethoscope,
 };
 
+function contractTermLabel(months: number): string {
+  return `${months / 12}-Year`;
+}
+
 const ALL_SETTINGS = ["outpatient", "ed", "inpatient", "nursing"];
 
 function fmt(n: number) {
@@ -159,7 +163,7 @@ export default function ProformaHub({
                 <p className="text-xl font-bold text-[#EA2C00]" data-testid="hub-annual-value">{fmt(summary.runRateValue)}</p>
               </div>
               <div>
-                <p className="text-xs text-[#8C7E6E] mb-1">3-Year Total</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">{contractTermLabel(config.contractTermMonths)} Total</p>
                 <p className="text-xl font-bold text-neutral-900" data-testid="hub-3yr-value">{fmt(summary.threeYearValue)}</p>
               </div>
               <div>
@@ -167,7 +171,7 @@ export default function ProformaHub({
                 <p className="text-xl font-bold text-neutral-900" data-testid="hub-investment">{fmt(summary.threeYearInvestment)}</p>
               </div>
               <div>
-                <p className="text-xs text-[#8C7E6E] mb-1">Net 3-Year Value</p>
+                <p className="text-xs text-[#8C7E6E] mb-1">Net {contractTermLabel(config.contractTermMonths)} Value</p>
                 <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-[#9CA3AF]"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
               </div>
             </div>

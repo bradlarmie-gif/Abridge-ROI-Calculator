@@ -1332,7 +1332,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y1</Text>
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y2</Text>
               {config.contractTermMonths >= 36 && (
-                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y3</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y3{config.contractTermMonths > 36 ? "+" : ""}</Text>
               )}
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Annual Value</Text>
               <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Monthly Cost</Text>
@@ -1365,7 +1365,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Providers expand according to per-year allocation (Y1 {"\u2192"} Y2 {"\u2192"} Y3). Within each year, providers ramp linearly between targets. This models a realistic organizational rollout {"\u2014"} not a theoretical day-one deployment. Investment cost scales proportionally with provider count.
+              Providers expand according to per-year allocation (Y1 {"\u2192"} Y2 {"\u2192"} Y3{config.contractTermMonths > 36 ? " steady state" : ""}). Within each year, providers ramp linearly between targets. This models a realistic organizational rollout {"\u2014"} not a theoretical day-one deployment. Investment cost scales proportionally with provider count.
             </Text>
           </View>
 
@@ -1393,7 +1393,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
                     Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
                     Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
-                    {config.contractTermMonths >= 36 ? `Y3: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
+                    {config.contractTermMonths >= 36 ? `Y3${config.contractTermMonths > 36 ? "+" : ""}: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
                     {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat license` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/encounter` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}{"\n"}
                     {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
                   </Text>
@@ -1413,7 +1413,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
                 Adoption ramp: S-curve over 12 months{"\n"}
-                Provider expansion: Per-year allocation (Y1/Y2/Y3){"\n"}
+                Provider expansion: Per-year allocation (Y1/Y2/Y3{config.contractTermMonths > 36 ? "+" : ""}){"\n"}
                 Utilization ramp: S-curve to full utilization
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, marginTop: 4 }}>
@@ -1422,7 +1422,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
                 Year 1: {config.retentionPhasing.year1Pct}%{"\n"}
                 Year 2: {config.retentionPhasing.year2Pct}%{"\n"}
-                Year 3: {config.retentionPhasing.year3Pct}%
+                Year 3{config.contractTermMonths > 36 ? "+" : ""}: {config.retentionPhasing.year3Pct}%
               </Text>
             </View>
           </View>

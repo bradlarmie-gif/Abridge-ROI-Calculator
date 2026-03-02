@@ -557,7 +557,7 @@ export function buildAnnualIRRCashFlows(
   cashFlows: ProformaCashFlowRow[]
 ): number[] {
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const contractYears = config.contractTermMonths >= 36 ? 3 : 2;
+  const contractYears = Math.ceil(config.contractTermMonths / 12);
 
   const yearBuckets: { grossValue: number; subscription: number }[] = [];
   for (let y = 0; y < contractYears; y++) {
@@ -713,11 +713,11 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   const start = startDate || getContractStartDate();
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
 
-  const years = [
-    { rows: cashFlows.filter(r => r.period <= 12) },
-    { rows: cashFlows.filter(r => r.period > 12 && r.period <= 24) },
-    { rows: cashFlows.filter(r => r.period > 24 && r.period <= 36) },
-  ];
+  const contractYears = Math.ceil(cashFlows.length / 12);
+  const years: { rows: ProformaCashFlowRow[] }[] = [];
+  for (let y = 0; y < contractYears; y++) {
+    years.push({ rows: cashFlows.filter(r => r.period > y * 12 && r.period <= (y + 1) * 12) });
+  }
 
   return years
     .filter(y => y.rows.length > 0)
