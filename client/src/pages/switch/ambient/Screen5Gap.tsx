@@ -74,6 +74,7 @@ function getNextLevelContent(
   providerRate: number,
   currentValue: number,
   hasValue: boolean,
+  recoveredHours: number = 0,
 ): NextLevelContent {
   const base: NextLevelContent = {
     domainLabel: DOMAIN_LABELS[domain].toUpperCase(),
@@ -93,10 +94,19 @@ function getNextLevelContent(
         base.highEstimate = capacityHigh;
       }
     } else if (level === 2) {
-      const low = 3 * providers * 12 * revenuePerVisit;
-      const high = 5 * providers * 12 * revenuePerVisit;
-      base.narrative = `You've quantified recovered hours annually. The question your organization hasn't answered yet is whether that time can be structurally converted into access. Organizations who answer that question typically find ${formatDollar(low)}-${formatDollar(high)} in annual capacity value.`;
-      base.formula = `3 × ${providers.toLocaleString()} providers × 12 × $${revenuePerVisit.toLocaleString()} = ${formatDollar(low)}\n5 × ${providers.toLocaleString()} providers × 12 × $${revenuePerVisit.toLocaleString()} = ${formatDollar(high)}\nRange based on 3-5 additional patients/provider/month.`;
+      const hardSavingsLow = Math.round(recoveredHours * providerRate * 0.20);
+      const hardSavingsHigh = Math.round(recoveredHours * providerRate * 0.35);
+      const additionalVisits = Math.round(recoveredHours * 2);
+      const revenueOpportunity = additionalVisits * revenuePerVisit;
+      const low = hardSavingsLow;
+      const high = hardSavingsHigh + revenueOpportunity;
+      if (recoveredHours > 0) {
+        base.narrative = `Your ${recoveredHours.toLocaleString()} recovered hours = ${formatDollar(hardSavingsLow)}–${formatDollar(hardSavingsHigh)} in hard savings (at $${providerRate.toLocaleString()}/hr with 20%–35% redeployment), plus capacity for ${additionalVisits.toLocaleString()} additional patient visits × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)} in potential revenue. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
+        base.formula = `Hard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(hardSavingsLow)}\nHard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(hardSavingsHigh)}\nRevenue: ${recoveredHours.toLocaleString()} hrs × 2 visits/hr × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)}\nTotal opportunity range: ${formatDollar(low)}–${formatDollar(high)}`;
+      } else {
+        base.narrative = `You've quantified recovered hours annually. The question your organization hasn't answered yet is whether that time can be structurally converted into access. Organizations who answer that question typically find ${formatDollar(3 * providers * 12 * revenuePerVisit)}-${formatDollar(5 * providers * 12 * revenuePerVisit)} in annual capacity value.`;
+        base.formula = `3 × ${providers.toLocaleString()} providers × 12 × $${revenuePerVisit.toLocaleString()} = ${formatDollar(3 * providers * 12 * revenuePerVisit)}\n5 × ${providers.toLocaleString()} providers × 12 × $${revenuePerVisit.toLocaleString()} = ${formatDollar(5 * providers * 12 * revenuePerVisit)}\nRange based on 3-5 additional patients/provider/month.`;
+      }
       base.lowEstimate = low;
       base.highEstimate = high;
     } else if (level === 3) {
@@ -217,11 +227,12 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
     for (const d of DOMAIN_ORDER) {
       result[d] = getNextLevelContent(
         d, domainLevels[d], providers, documentedEncounters,
-        revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d]
+        revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d],
+        userHoursRecovered
       );
     }
     return result;
-  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue]);
+  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
