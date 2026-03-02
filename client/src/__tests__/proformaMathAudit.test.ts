@@ -233,16 +233,16 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     expect(cashFlows[7].timeValue).toBeGreaterThan(0);
   });
 
-  it("phased (retention) driver is $0 during year 1 (phasing=0%)", () => {
-    for (let m = 0; m < 12; m++) {
-      expect(cashFlows[m].retentionValue).toBe(0);
-    }
+  it("phased (retention) driver at 20% during year 1 (with onset ramp)", () => {
+    const y1Retention = cashFlows.slice(0, 12).reduce((s, r) => s + r.retentionValue, 0);
+    expect(y1Retention).toBeGreaterThan(0);
+    expect(y1Retention).toBeLessThan(25000);
   });
 
-  it("phased driver starts at 50% in year 2 (month 13+)", () => {
+  it("phased driver at 65% in year 2 (month 13+)", () => {
     const month13Ret = cashFlows[12].retentionValue;
     const fullMonthlyRet = 100000 / 12;
-    expect(month13Ret).toBeCloseTo(fullMonthlyRet * 0.5, -1);
+    expect(month13Ret).toBeCloseTo(fullMonthlyRet * 0.65, -1);
   });
 
   it("phased driver reaches 100% in year 3 (month 25+)", () => {
@@ -263,10 +263,10 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     expect(y1Total).toBeLessThan(130000);
   });
 
-  it("year 2 total matches hand calculation (~$350K)", () => {
+  it("year 2 total matches hand calculation (~$365K)", () => {
     const y2Total = cashFlows.slice(12, 24).reduce((s, r) => s + r.totalValue, 0);
-    expect(y2Total).toBeGreaterThan(340000);
-    expect(y2Total).toBeLessThan(360000);
+    expect(y2Total).toBeGreaterThan(350000);
+    expect(y2Total).toBeLessThan(380000);
   });
 
   it("year 3 total matches hand calculation (~$400K)", () => {

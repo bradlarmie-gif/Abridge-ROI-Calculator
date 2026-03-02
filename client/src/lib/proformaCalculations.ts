@@ -53,7 +53,7 @@ function getOnsetMultiplier(
   if (onset === "delayed") {
     if (monthsSinceGoLive < delayMonths) return 0;
     const monthsSinceOnset = monthsSinceGoLive - delayMonths;
-    const rampUpMonths = 3;
+    const rampUpMonths = 6;
     if (monthsSinceOnset >= rampUpMonths) return 1;
     return monthsSinceOnset / rampUpMonths;
   }

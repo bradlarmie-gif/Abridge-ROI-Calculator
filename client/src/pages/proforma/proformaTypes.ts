@@ -110,8 +110,8 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   contractTermMonths: 36,
   viewMode: "quarterly",
   retentionPhasing: {
-    year1Pct: 0,
-    year2Pct: 50,
+    year1Pct: 20,
+    year2Pct: 65,
     year3Pct: 100,
   },
 };
