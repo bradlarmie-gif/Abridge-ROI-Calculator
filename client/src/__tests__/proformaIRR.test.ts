@@ -536,9 +536,9 @@ describe("calculateProformaSummary", () => {
     expect(summary.irrValid).toBe(true);
     expect(summary.simpleROI).toBeGreaterThan(0);
     expect(summary.valueToCost).toBeGreaterThan(1);
-    expect(summary.threeYearValue).toBeGreaterThan(0);
-    expect(summary.threeYearInvestment).toBeGreaterThan(0);
-    expect(summary.threeYearNet).toBeGreaterThan(0);
+    expect(summary.termValue).toBeGreaterThan(0);
+    expect(summary.termInvestment).toBeGreaterThan(0);
+    expect(summary.termNet).toBeGreaterThan(0);
   });
 
   it("uses annual IRR (not monthly compounding) — rate should be reasonable", () => {
@@ -552,13 +552,13 @@ describe("calculateProformaSummary", () => {
     expect(summary.irr).toBeGreaterThan(0);
   });
 
-  it("valueToCost equals threeYearValue / threeYearInvestment", () => {
+  it("valueToCost equals termValue / termInvestment", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const summary = calculateProformaSummary(settings, config, cashFlows);
 
-    const expected = summary.threeYearValue / summary.threeYearInvestment;
+    const expected = summary.termValue / summary.termInvestment;
     expect(summary.valueToCost).toBeCloseTo(expected, 5);
   });
 

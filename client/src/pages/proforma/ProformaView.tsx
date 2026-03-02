@@ -219,7 +219,7 @@ export default function ProformaView({
         irrValid: consIRR.isValid,
         irrMethod: consIRR.method,
         paybackMonth: consSummary.paybackMonth,
-        threeYearNet: consSummary.threeYearNet,
+        termNet: consSummary.termNet,
         simpleROI: consSummary.simpleROI,
       },
       base: {
@@ -229,7 +229,7 @@ export default function ProformaView({
         irrValid: summary.irrValid,
         irrMethod: summary.irrMethod,
         paybackMonth: summary.paybackMonth,
-        threeYearNet: summary.threeYearNet,
+        termNet: summary.termNet,
         simpleROI: summary.simpleROI,
       },
       optimistic: {
@@ -239,7 +239,7 @@ export default function ProformaView({
         irrValid: optIRR.isValid,
         irrMethod: optIRR.method,
         paybackMonth: optSummary.paybackMonth,
-        threeYearNet: optSummary.threeYearNet,
+        termNet: optSummary.termNet,
         simpleROI: optSummary.simpleROI,
       },
     };
@@ -1081,7 +1081,7 @@ export default function ProformaView({
                   {yearlyData.map(y => (
                     <td key={y.label} className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-bold text-neutral-900">{fmt(y.totalValue)}</td>
                   ))}
-                  <td className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-bold text-[#EA2C00]">{fmt(summary.threeYearValue)}</td>
+                  <td className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-bold text-[#EA2C00]">{fmt(summary.termValue)}</td>
                 </tr>
                 {!isMobile && (
                   <>
@@ -1136,7 +1136,7 @@ export default function ProformaView({
                   {yearlyData.map(y => (
                     <td key={y.label} className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 text-red-600">({fmt(y.investment)})</td>
                   ))}
-                  <td className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-medium text-red-600">({fmt(summary.threeYearInvestment)})</td>
+                  <td className="text-right py-2 sm:py-2.5 px-1.5 sm:px-4 font-medium text-red-600">({fmt(summary.termInvestment)})</td>
                 </tr>
                 <tr className="bg-neutral-50">
                   <td className="py-2.5 sm:py-3 font-bold text-neutral-900">Net Value</td>
@@ -1145,8 +1145,8 @@ export default function ProformaView({
                       {y.netValue >= 0 ? fmt(y.netValue) : `(${fmt(Math.abs(y.netValue))})`}
                     </td>
                   ))}
-                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
-                    {summary.threeYearNet >= 0 ? fmt(summary.threeYearNet) : `(${fmt(Math.abs(summary.threeYearNet))})`}
+                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
+                    {summary.termNet >= 0 ? fmt(summary.termNet) : `(${fmt(Math.abs(summary.termNet))})`}
                   </td>
                 </tr>
               </tbody>
@@ -1184,8 +1184,8 @@ export default function ProformaView({
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
-            <p className={`text-2xl sm:text-3xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
-              {fmt(summary.threeYearNet)}
+            <p className={`text-2xl sm:text-3xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
+              {fmt(summary.termNet)}
             </p>
           </div>
         </motion.div>
@@ -1241,8 +1241,8 @@ export default function ProformaView({
                       </div>
                       <div>
                         <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
-                        <p className={`text-sm sm:text-lg font-bold ${data.threeYearNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
-                          {fmt(data.threeYearNet)}
+                        <p className={`text-sm sm:text-lg font-bold ${data.termNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
+                          {fmt(data.termNet)}
                         </p>
                       </div>
                     </div>
@@ -1307,7 +1307,7 @@ export default function ProformaView({
 
             <div className="px-4 sm:px-6 pb-4 sm:pb-5">
               <p className="text-[12px] sm:text-xs text-neutral-400 leading-relaxed">
-                Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.threeYearInvestment)}.
+                Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.termInvestment)}.
               </p>
             </div>
           </div>
@@ -1404,10 +1404,10 @@ export default function ProformaView({
                     {[
                       { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
                       { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
-                      { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.threeYearValue), values: scenarioSummaries.map(s => fmt(s.summary.threeYearValue)) },
-                      { label: "Total Investment", current: fmt(summary.threeYearInvestment), values: scenarioSummaries.map(s => fmt(s.summary.threeYearInvestment)) },
-                      { label: "Net Value", current: fmt(summary.threeYearNet), values: scenarioSummaries.map(s => fmt(s.summary.threeYearNet)) },
-                      { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.threeYearInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
+                      { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.termValue), values: scenarioSummaries.map(s => fmt(s.summary.termValue)) },
+                      { label: "Total Investment", current: fmt(summary.termInvestment), values: scenarioSummaries.map(s => fmt(s.summary.termInvestment)) },
+                      { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
+                      { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
                       { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
                       { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
                       { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },

@@ -764,7 +764,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   PROJECTED {termLabel.toUpperCase()} NET VALUE
                 </Text>
                 <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primary }}>
-                  {fmt(summary.threeYearNet)}
+                  {fmt(summary.termNet)}
                 </Text>
               </View>
             </View>
@@ -793,7 +793,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <Text style={styles.sectionLabel}>TWO SOURCES OF VALUE</Text>
           <Text style={styles.body}>
-            Ambient documentation creates value in two distinct ways: by returning time to clinicians (which translates to capacity, cost reduction, and retention) and by improving documentation quality (which captures revenue that already exists but isn{"\u2019"}t being coded). Across your settings, these sources combine to create {fmt(summary.threeYearValue)} in total projected value.
+            Ambient documentation creates value in two distinct ways: by returning time to clinicians (which translates to capacity, cost reduction, and retention) and by improving documentation quality (which captures revenue that already exists but isn{"\u2019"}t being coded). Across your settings, these sources combine to create {fmt(summary.termValue)} in total projected value.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
@@ -945,7 +945,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </View>
             <View style={[styles.cardBg, { flex: 1 }]}>
               <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{termLabel.toUpperCase()} TOTAL VALUE</Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmt(summary.threeYearValue)}</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmt(summary.termValue)}</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>cumulative across all quarters</Text>
             </View>
             {summary.paybackMonth && (
@@ -1173,7 +1173,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{fmt(y.totalValue)}</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.threeYearValue)}</Text>
+              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.termValue)}</Text>
             </View>
 
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
@@ -1218,7 +1218,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 9, color: colors.negative, textAlign: "right" }}>({fmt(y.investment)})</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 9, color: colors.negative, fontWeight: "bold", textAlign: "right" }}>({fmt(summary.threeYearInvestment)})</Text>
+              <Text style={{ flex: 1, fontSize: 9, color: colors.negative, fontWeight: "bold", textAlign: "right" }}>({fmt(summary.termInvestment)})</Text>
             </View>
 
             <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 4 }} />
@@ -1230,8 +1230,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   {y.netValue >= 0 ? fmt(y.netValue) : `(${fmt(Math.abs(y.netValue))})`}
                 </Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: summary.threeYearNet >= 0 ? colors.positive : colors.negative, textAlign: "right" }}>
-                {summary.threeYearNet >= 0 ? fmt(summary.threeYearNet) : `(${fmt(Math.abs(summary.threeYearNet))})`}
+              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: summary.termNet >= 0 ? colors.positive : colors.negative, textAlign: "right" }}>
+                {summary.termNet >= 0 ? fmt(summary.termNet) : `(${fmt(Math.abs(summary.termNet))})`}
               </Text>
             </View>
           </View>
@@ -1239,7 +1239,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           {summary.paybackMonth && (
             <View style={[styles.calloutBox, { marginBottom: 8 }]}>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-                The investment reaches payback at Month {summary.paybackMonth}. After that point, every dollar of value generated is net positive. By the end of the contract, the organization has generated {fmt(summary.threeYearNet)} above its total investment of {fmt(summary.threeYearInvestment)}.
+                The investment reaches payback at Month {summary.paybackMonth}. After that point, every dollar of value generated is net positive. By the end of the contract, the organization has generated {fmt(summary.termNet)} above its total investment of {fmt(summary.termInvestment)}.
               </Text>
             </View>
           )}
@@ -1432,7 +1432,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           <Text style={styles.sectionLabelGray}>RETURN METHODOLOGY</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} Period 0 is the total cost basis (implementation fees plus full contract subscription: {fmt(summary.threeYearInvestment)}). Subsequent periods are annual gross value realized. This total-cost-basis approach answers: {"\u201C"}What is my annualized return on total spend?{"\u201D"}
+              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} Period 0 is the total cost basis (implementation fees plus full contract subscription: {fmt(summary.termInvestment)}). Subsequent periods are annual gross value realized. This total-cost-basis approach answers: {"\u201C"}What is my annualized return on total spend?{"\u201D"}
               {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes." : ""}
             </Text>
           </View>

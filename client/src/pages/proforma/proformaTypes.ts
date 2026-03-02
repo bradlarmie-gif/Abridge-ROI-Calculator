@@ -82,9 +82,9 @@ export interface ProformaSummary {
   irrMethod: "irr" | "mirr";
   irrValid: boolean;
   paybackMonth: number | null;
-  threeYearNet: number;
-  threeYearValue: number;
-  threeYearInvestment: number;
+  termNet: number;
+  termValue: number;
+  termInvestment: number;
   runRateValue: number;
   runRateInvestment: number;
 }

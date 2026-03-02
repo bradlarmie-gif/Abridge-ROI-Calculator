@@ -678,13 +678,13 @@ export function calculateProformaSummary(
   const annualIrrCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
   const irrResult = calculateAnnualIRR(annualIrrCF);
 
-  const threeYearValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
+  const termValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const threeYearInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
-  const threeYearNet = threeYearValue - threeYearInvestment;
+  const termInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
+  const termNet = termValue - termInvestment;
 
-  const simpleROI = threeYearInvestment > 0 ? threeYearNet / threeYearInvestment : 0;
-  const valueToCost = threeYearInvestment > 0 ? threeYearValue / threeYearInvestment : 0;
+  const simpleROI = termInvestment > 0 ? termNet / termInvestment : 0;
+  const valueToCost = termInvestment > 0 ? termValue / termInvestment : 0;
 
   const lastYearRows = cashFlows.slice(-12);
   const runRateValue = lastYearRows.reduce((s, r) => s + r.totalValue, 0);
@@ -701,9 +701,9 @@ export function calculateProformaSummary(
     irrMethod: irrResult.method,
     irrValid: irrResult.isValid,
     paybackMonth,
-    threeYearNet,
-    threeYearValue,
-    threeYearInvestment,
+    termNet,
+    termValue,
+    termInvestment,
     runRateValue,
     runRateInvestment,
   };

@@ -106,25 +106,25 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
   });
 
   it("3-year total value matches hand calculation within 1%", () => {
-    expect(summary.threeYearValue).toBeGreaterThan(730000);
-    expect(summary.threeYearValue).toBeLessThan(745000);
+    expect(summary.termValue).toBeGreaterThan(730000);
+    expect(summary.termValue).toBeLessThan(745000);
   });
 
   it("3-year total investment = 36 months × $2000 + $25K impl = $97,000", () => {
-    expect(summary.threeYearInvestment).toBe(97000);
+    expect(summary.termInvestment).toBe(97000);
   });
 
   it("3-year net = value - investment", () => {
-    expect(summary.threeYearNet).toBeCloseTo(summary.threeYearValue - summary.threeYearInvestment, 0);
+    expect(summary.termNet).toBeCloseTo(summary.termValue - summary.termInvestment, 0);
   });
 
-  it("simple ROI = threeYearNet / threeYearInvestment", () => {
-    const expected = summary.threeYearNet / summary.threeYearInvestment;
+  it("simple ROI = termNet / termInvestment", () => {
+    const expected = summary.termNet / summary.termInvestment;
     expect(summary.simpleROI).toBeCloseTo(expected, 5);
   });
 
-  it("value-to-cost = threeYearValue / threeYearInvestment", () => {
-    const expected = summary.threeYearValue / summary.threeYearInvestment;
+  it("value-to-cost = termValue / termInvestment", () => {
+    const expected = summary.termValue / summary.termInvestment;
     expect(summary.valueToCost).toBeCloseTo(expected, 5);
   });
 
@@ -138,7 +138,7 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
   });
 
   it("cumulative net at month 36 matches 3-year net", () => {
-    expect(cashFlows[35].cumulativeNet).toBeCloseTo(summary.threeYearNet, 0);
+    expect(cashFlows[35].cumulativeNet).toBeCloseTo(summary.termNet, 0);
   });
 
   it("IRR is valid and positive", () => {
@@ -195,16 +195,16 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
     const noExpSettings = [makeSetting()];
     const noExpCF = buildMonthlyCashFlows(noExpSettings, config);
     const noExpSummary = calculateProformaSummary(noExpSettings, config, noExpCF);
-    expect(summary.threeYearValue).toBeGreaterThan(noExpSummary.threeYearValue * 2);
+    expect(summary.termValue).toBeGreaterThan(noExpSummary.termValue * 2);
   });
 
   it("3-year investment includes expansion costs (> pilot-only cost)", () => {
-    expect(summary.threeYearInvestment).toBeGreaterThan(97000);
+    expect(summary.termInvestment).toBeGreaterThan(97000);
   });
 
   it("3-year total value near $3M (hand-calculated ~$3,004,099)", () => {
-    expect(summary.threeYearValue).toBeGreaterThan(2800000);
-    expect(summary.threeYearValue).toBeLessThan(3200000);
+    expect(summary.termValue).toBeGreaterThan(2800000);
+    expect(summary.termValue).toBeLessThan(3200000);
   });
 });
 
@@ -307,18 +307,18 @@ describe("Test Case 4: Sensitivity Value-Only Scaling", () => {
   const optSummary = calculateProformaSummary(optSettings, config, optCF);
 
   it("conservative value = ~70% of base value", () => {
-    const ratio = consSummary.threeYearValue / baseSummary.threeYearValue;
+    const ratio = consSummary.termValue / baseSummary.termValue;
     expect(ratio).toBeCloseTo(0.7, 1);
   });
 
   it("optimistic value = ~130% of base value", () => {
-    const ratio = optSummary.threeYearValue / baseSummary.threeYearValue;
+    const ratio = optSummary.termValue / baseSummary.termValue;
     expect(ratio).toBeCloseTo(1.3, 1);
   });
 
   it("cost is IDENTICAL across all three scenarios", () => {
-    expect(consSummary.threeYearInvestment).toBe(baseSummary.threeYearInvestment);
-    expect(optSummary.threeYearInvestment).toBe(baseSummary.threeYearInvestment);
+    expect(consSummary.termInvestment).toBe(baseSummary.termInvestment);
+    expect(optSummary.termInvestment).toBe(baseSummary.termInvestment);
   });
 
   it("monthly investment is identical across scenarios", () => {
@@ -369,9 +369,9 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
     expect(yearlyTotalInvestment).toBeCloseTo(monthlyTotalInvestment, 0);
   });
 
-  it("yearly net value sums match threeYearNet from summary", () => {
+  it("yearly net value sums match termNet from summary", () => {
     const yearlyTotalNet = yearlyData.reduce((s, y) => s + y.netValue, 0);
-    expect(yearlyTotalNet).toBeCloseTo(summary.threeYearNet, 0);
+    expect(yearlyTotalNet).toBeCloseTo(summary.termNet, 0);
   });
 
   it("value breakdown (doc + time + retention) matches total per year", () => {
@@ -389,14 +389,14 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
     }
   });
 
-  it("summary.threeYearValue matches sum of monthly cash flows", () => {
+  it("summary.termValue matches sum of monthly cash flows", () => {
     const monthlySum = cashFlows.reduce((s, r) => s + r.totalValue, 0);
-    expect(summary.threeYearValue).toBeCloseTo(monthlySum, 0);
+    expect(summary.termValue).toBeCloseTo(monthlySum, 0);
   });
 
-  it("summary.threeYearInvestment = subscription + impl fees", () => {
+  it("summary.termInvestment = subscription + impl fees", () => {
     const subTotal = cashFlows.reduce((s, r) => s + r.investment, 0);
-    expect(summary.threeYearInvestment).toBe(subTotal + 25000);
+    expect(summary.termInvestment).toBe(subTotal + 25000);
   });
 });
 
@@ -472,9 +472,9 @@ describe("Edge Cases and Guardrails", () => {
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const summary = calculateProformaSummary(settings, config, cashFlows);
 
-    expect(isFinite(summary.threeYearValue)).toBe(true);
+    expect(isFinite(summary.termValue)).toBe(true);
     expect(isFinite(summary.valueToCost)).toBe(true);
-    expect(summary.threeYearValue).toBeGreaterThan(0);
+    expect(summary.termValue).toBeGreaterThan(0);
   });
 
   it("no-expansion means value does not scale beyond base", () => {
@@ -573,8 +573,8 @@ describe("PDF Math Consistency", () => {
     const summary1 = calculateProformaSummary(settings, config, cf1);
     const summary2 = calculateProformaSummary(settings, config, cf2);
 
-    expect(summary1.threeYearValue).toBe(summary2.threeYearValue);
-    expect(summary1.threeYearInvestment).toBe(summary2.threeYearInvestment);
+    expect(summary1.termValue).toBe(summary2.termValue);
+    expect(summary1.termInvestment).toBe(summary2.termInvestment);
     expect(summary1.valueToCost).toBe(summary2.valueToCost);
     expect(summary1.simpleROI).toBe(summary2.simpleROI);
     expect(summary1.irr).toBe(summary2.irr);
@@ -874,7 +874,7 @@ describe("Variable contract term (1–6 years)", () => {
     expect(ys1.length).toBe(1);
   });
 
-  it("4-year summary threeYearValue accumulates all 48 months", () => {
+  it("4-year summary termValue accumulates all 48 months", () => {
     const settings = [makeSetting()];
     const config = makeConfig({ contractTermMonths: 48 });
     const cashFlows = buildMonthlyCashFlows(settings, config);
@@ -882,7 +882,7 @@ describe("Variable contract term (1–6 years)", () => {
     const config36 = makeConfig({ contractTermMonths: 36 });
     const cf36 = buildMonthlyCashFlows(settings, config36);
     const summary36 = calculateProformaSummary(settings, config36, cf36);
-    expect(summary.threeYearValue).toBeGreaterThan(summary36.threeYearValue);
+    expect(summary.termValue).toBeGreaterThan(summary36.termValue);
   });
 
   it("longer contracts produce higher total investment", () => {
@@ -895,6 +895,6 @@ describe("Variable contract term (1–6 years)", () => {
     const cf48 = buildMonthlyCashFlows(settings, config48);
     const s48 = calculateProformaSummary(settings, config48, cf48);
 
-    expect(s48.threeYearInvestment).toBeGreaterThan(s24.threeYearInvestment);
+    expect(s48.termInvestment).toBeGreaterThan(s24.termInvestment);
   });
 });
