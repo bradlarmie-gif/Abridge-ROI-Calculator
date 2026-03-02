@@ -285,7 +285,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               className="text-sm text-[#888888] italic underline underline-offset-2 cursor-pointer bg-transparent border-none mb-6 hover:text-[#666666] transition-colors"
               data-testid="button-methodology-toggle"
             >
-              How is this calculated?
+              {methodologyOpen ? 'Scoring Methodology ↑' : 'How we calculate your score →'}
             </button>
 
             <AnimatePresence>
