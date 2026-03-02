@@ -780,7 +780,7 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
             </View>
             <View style={styles.cardBg}>
               <Text style={styles.heroLabel}>Per Encounter</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? `$${perEncounter}` : "\u2014"}</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? `$${perEncounter}` : "Pending inputs"}</Text>
               <Text style={{ fontSize: 8.5, color: colors.secondary }}>value opportunity per encounter</Text>
             </View>
           </View>
