@@ -861,7 +861,7 @@ function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>COST OF WAITING</Text>
+        <Text style={styles.sectionLabel}>THE STRATEGIC IMPERATIVE: WHY MATURITY LEVEL MATTERS NOW</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Every Month at Current Maturity Levels</Text>
         <Text style={styles.body}>
           Based on your assessment and next-level projections. These estimates reflect what strategic action across your four domains could unlock.
