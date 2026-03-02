@@ -58,8 +58,24 @@ export interface DomainFeedback {
 
 export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
 
-export function computeDomainScore(_domain: Domain, level: ActivationLevel, _inputs: Record<string, number | string>): number {
-  return SCORE_MAP[level] || 0;
+export function computeDomainScore(domain: Domain, level: ActivationLevel, inputs: Record<string, number | string>): number {
+  const base = SCORE_MAP[level] || 0;
+  if (domain === 'workforce' && (level === 3 || level === 4)) {
+    if (level === 3) {
+      const turnoverRate = inputs.turnoverRate as number | undefined;
+      const replacementCost = inputs.replacementCost as number | undefined;
+      if (!turnoverRate || turnoverRate <= 0 || !replacementCost || replacementCost <= 0) {
+        return 12;
+      }
+    }
+    if (level === 4) {
+      const agencyReduction = inputs.agencyReduction as number | undefined;
+      if (!agencyReduction || agencyReduction <= 0) {
+        return 15;
+      }
+    }
+  }
+  return base;
 }
 
 export function computeCapacityFeedback(

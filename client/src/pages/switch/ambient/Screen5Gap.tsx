@@ -16,6 +16,7 @@ import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 interface Screen5Props {
   onNext: () => void;
   onBack: () => void;
+  onNavigateToBaseline?: () => void;
 }
 
 function CountUpNumber({ target, duration = 1400, prefix = "$" }: { target: number; duration?: number; prefix?: string }) {
@@ -174,7 +175,7 @@ function getNextLevelContent(
   return base;
 }
 
-export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
+export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
   const { state } = useAssessment();
   const { inputs } = state;
 
@@ -332,7 +333,13 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                     </tr>
                     <tr className="border-b border-[#E5E7EB]/50">
                       <td className="py-3 font-semibold text-black">Time saved / encounter</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-time-you">{userTimeSaved > 0 ? `${userTimeSaved} min` : '—'}</td>
+                      <td className="py-3 text-right font-bold text-black" data-testid="reality-time-you">
+                        {userTimeSaved > 0 ? `${userTimeSaved} min` : (
+                          onNavigateToBaseline ? (
+                            <button type="button" onClick={onNavigateToBaseline} className="text-xs text-[#E8350A] underline cursor-pointer bg-transparent border-none p-0" data-testid="link-add-time-saved">Add in baseline →</button>
+                          ) : '—'
+                        )}
+                      </td>
                       <td className="py-3 text-right text-[#888888]">{benchmarkTimeSavedLow}–{benchmarkTimeSavedHigh} min</td>
                     </tr>
                     <tr className="border-b border-[#E5E7EB]/50">
@@ -342,7 +349,13 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                     </tr>
                     <tr>
                       <td className="py-3 font-semibold text-black">Hours recovered annually</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-hours-you">{userHoursRecovered > 0 ? userHoursRecovered.toLocaleString() : '—'}</td>
+                      <td className="py-3 text-right font-bold text-black" data-testid="reality-hours-you">
+                        {userHoursRecovered > 0 ? `${userHoursRecovered.toLocaleString()} hrs` : (
+                          userTimeSaved <= 0 && onNavigateToBaseline ? (
+                            <button type="button" onClick={onNavigateToBaseline} className="text-xs text-[#E8350A] underline cursor-pointer bg-transparent border-none p-0" data-testid="link-add-hours-recovered">Add in baseline →</button>
+                          ) : '—'
+                        )}
+                      </td>
                       <td className="py-3 text-right text-[#888888]">{benchmarkHoursRecovered.toLocaleString()}</td>
                     </tr>
                   </tbody>

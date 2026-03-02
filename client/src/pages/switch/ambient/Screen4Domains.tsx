@@ -1321,6 +1321,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <FormulaDisplay formula={feedback.formula} />
 
+                {activeDomain === 'workforce' && currentState.activationLevel && (currentState.activationLevel === 3 || currentState.activationLevel === 4) && !feedback.hasValue && (
+                  <p className="text-xs text-[#EA2C00]/80 italic mt-3 leading-relaxed" data-testid="text-workforce-score-note">
+                    Enter {currentState.activationLevel === 3 ? 'turnover rate and replacement cost' : 'agency/locum spend'} to complete your score
+                  </p>
+                )}
+
                 <p className="text-[12px] text-white/30 italic mt-3">
                   Estimates based on your inputs. Individual results vary.
                 </p>

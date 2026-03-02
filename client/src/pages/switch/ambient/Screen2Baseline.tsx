@@ -214,6 +214,24 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   )}
                 </AnimatePresence>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Avg. time saved per documented encounter
+                </label>
+                <p className="text-xs text-[#888888] italic mb-2">Abridge observed: 2–3 min. Industry range: 2–4 min.</p>
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={inputs.timeSavedPerEncounter || 0}
+                    onChange={(v) => updateInput("timeSavedPerEncounter", Math.min(10, Math.max(0, v)))}
+                    placeholder="e.g. 3"
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-time-saved-per-encounter"
+                    step={0.5}
+                  />
+                  <span className="text-sm text-[#888888]">min</span>
+                </div>
+              </div>
             </div>
 
             <div className="mt-8">
@@ -351,6 +369,22 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                       <p className="text-xs text-[#EA2C00] font-semibold mt-1">
                         +{encounterGap.toLocaleString()} at observed avg
                       </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">Hours recovered / yr</p>
+                    {(inputs.timeSavedPerEncounter || 0) > 0 ? (
+                      <>
+                        <p className="text-lg font-bold text-white leading-none" data-testid="text-rail-hours-recovered">
+                          {Math.round((inputs.timeSavedPerEncounter * documentedEncounters) / 60).toLocaleString()} hrs
+                        </p>
+                        <p className="text-xs text-white/30 italic mt-1">
+                          {inputs.timeSavedPerEncounter} min × {documentedEncounters.toLocaleString()} / 60
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-lg font-bold text-white leading-none" data-testid="text-rail-hours-recovered">—</p>
                     )}
                   </div>
 
