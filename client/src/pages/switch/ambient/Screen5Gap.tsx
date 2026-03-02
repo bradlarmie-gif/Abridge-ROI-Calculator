@@ -296,7 +296,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          THE COST OF STANDING STILL
+          WHAT YOUR DEPLOYMENT IS WORTH — AND WHAT IT SHOULD BE
         </h1>
         <p className="text-base text-[#888888]">
           What your organization could capture — and what every month of delay costs.
@@ -319,7 +319,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                     <tr className="border-b border-[#E5E7EB]">
                       <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide"></th>
                       <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">You</th>
-                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Benchmark</th>
+                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Abridge-Observed</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -356,7 +356,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-next-level">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                What Each Level Is Worth
+                What Each Maturity Level Unlocks
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -449,7 +449,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                       <Legend
                         formatter={(value: string) => (
                           <span className="text-xs text-black">
-                            {value === 'strategic' ? 'With strategic action' : 'Current trajectory'}
+                            {value === 'strategic' ? 'With strategic action' : 'Status quo (current path)'}
                           </span>
                         )}
                         wrapperStyle={{ paddingTop: 12 }}
@@ -464,6 +464,9 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                   Over 36 months, the gap between your current trajectory and strategic action is approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
                 </p>
                 <p className="text-xs text-[#888888] italic mt-2">
+                  Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap.
+                </p>
+                <p className="text-xs text-[#888888] italic mt-1">
                   Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary.
                 </p>
               </div>
@@ -493,6 +496,9 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
             <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
               Value at a Glance
+            </p>
+            <p className="text-xs text-white/40 leading-relaxed mb-4">
+              Based on your inputs and maturity levels across all four domains:
             </p>
 
             {hasMeasuredDomains ? (
@@ -563,6 +569,9 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                   {formatDollar(monthlyGap)}
                 </span>
               </div>
+              <p className="text-[11px] text-white/40 italic leading-relaxed">
+                This isn't future opportunity — it's value your deployment is already failing to capture.
+              </p>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-white/70">Wait 6 months</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-6mo">

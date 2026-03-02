@@ -48,10 +48,10 @@ type DomainConfig = {
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'Where does recovered time actually go?',
+    headline: 'Is your time savings translating into capacity or revenue?',
     reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.',
     cards: [
-      { level: 1, label: 'Time Saved, Not Deployed', description: 'Providers are faster. Schedules and panels are unchanged.' },
+      { level: 1, label: 'Time Recovered. Nothing Done With It.', description: 'Providers are faster. No operational change has followed.' },
       { level: 2, label: 'Measured, Not Redesigned', description: 'Time savings tracked and quantified. Operational changes not yet implemented.' },
       { level: 3, label: 'Access Redesigned', description: 'Schedules, templates, or panels changed based on recovered capacity.' },
       { level: 4, label: 'Capacity Modeled into Workforce Planning', description: 'Recovered capacity is a variable in hiring, expansion, and FTE decisions.' },
@@ -59,7 +59,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'What is documentation fidelity worth to your revenue cycle?',
+    headline: 'Is every encounter capturing the revenue it earned?',
     reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
     cards: [
       { level: 1, label: 'Revenue Cycle Unaware', description: 'Revenue cycle has not evaluated documentation changes from ambient.' },
@@ -70,10 +70,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'What is documentation burden costing your workforce?',
+    headline: 'What is documentation burden actually costing you in turnover and retention?',
     reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
     cards: [
-      { level: 1, label: 'Pajama Time Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
+      { level: 1, label: 'After-Hours Burden Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
       { level: 2, label: 'Burden Measured and Validated', description: 'In-clinic time savings quantified. Provider sentiment captured.' },
       { level: 3, label: 'Retention Risk Quantified', description: 'Turnover exposure calculated against documentation burden.' },
       { level: 4, label: 'Labor Spend Structurally Reduced', description: 'Agency and locum spend declining. Workforce costs structurally improving.' },
@@ -81,10 +81,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'RISK',
-    headline: 'Is your documentation infrastructure ready for what comes next?',
+    headline: 'Are documentation gaps creating financial exposure you can\'t quantify?',
     reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
     cards: [
-      { level: 1, label: 'Better Notes, Same Infrastructure', description: 'Documentation quality improved. Nothing downstream has changed.' },
+      { level: 1, label: 'Quality Improved. Exposure Unmeasured.', description: 'Notes are better. No system is monitoring what that means for revenue, compliance, or risk.' },
       { level: 2, label: 'Active Quality Monitoring', description: 'Documentation completeness and specificity are being tracked.' },
       { level: 3, label: 'Downstream Systems Connected', description: 'Quality reporting, CDI, or coding workflows are leveraging improved documentation.' },
       { level: 4, label: 'Documentation as Strategic Data Asset', description: 'Structured documentation informs payer, quality, and compliance strategy.' },
@@ -1295,6 +1295,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {feedback ? (
               <>
                 {renderImpactValue(feedback)}
+
+                {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
+                  <p className="text-xs text-white/50 italic leading-relaxed mb-3">
+                    {activeDomain === 'capacity' ? `Recoverable capacity value — based on your ${documentedEncounters.toLocaleString()} encounters and industry time estimates.` :
+                     activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
+                     activeDomain === 'workforce' ? `Turnover exposure — based on your ${providers.toLocaleString()} providers and AAMC replacement cost benchmarks.` :
+                     ''}
+                  </p>
+                )}
 
                 <div className="h-px bg-white/10 my-4" />
 

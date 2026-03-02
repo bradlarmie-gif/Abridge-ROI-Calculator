@@ -83,7 +83,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             Your Organization
           </h1>
           <p className="text-base text-[#888888]">
-            Two inputs. Benchmarks handle the rest.
+            Tell us your deployment scale. We'll show you what you're capturing — and what you're leaving behind.
           </p>
         </motion.div>
 
@@ -195,10 +195,10 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     data-testid="pill-util-abridge"
                   >
                     <span className="font-bold">76%</span>
-                    <span>Observed avg</span>
+                    <span>Observed avg — Abridge deployments</span>
                   </button>
                 </div>
-                <p className="text-[12px] text-[#999] text-center mt-2">Based on published industry data and aggregated deployment experience.</p>
+                <p className="text-[12px] text-[#999] text-center mt-2">Based on aggregated Abridge deployment data and published industry research.</p>
 
                 <AnimatePresence>
                   {utilInsight && (
@@ -298,7 +298,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           </div>
         </motion.div>
 
-        <StepFooter onBack={onBack} onNext={onNext} nextLabel="See Capacity Reality →" nextDisabled={!canProceed} />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="Begin Your Assessment →" nextDisabled={!canProceed} />
       </motion.div>
 
       {hasFirstInput && (

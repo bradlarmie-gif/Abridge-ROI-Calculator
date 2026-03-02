@@ -130,30 +130,30 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     if (score <= 30) {
       return {
         headline: 'Early stages. Significant opportunity across all domains.',
-        body: `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your biggest opportunity is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — ${domainInsight.toLowerCase()}`,
+        body: `Early stage across all domains. Your deployment is producing time savings that aren't yet being captured operationally, financially, or strategically.`,
       };
     }
     if (score <= 50) {
       return {
         headline: 'Emerging awareness. Key domains remain unmeasured.',
-        body: `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — ${domainInsight.toLowerCase()}`,
+        body: `Emerging in some areas. Your biggest opportunity is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — organizations at Level 2 here typically leave $200K–$800K in annual value unmeasured.`,
       };
     }
     if (score <= 70) {
       return {
         headline: 'Actively managing in some areas. Significant opportunity remains.',
-        body: `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — ${domainInsight.toLowerCase()}`,
+        body: `Actively managing in key areas. The gap between your current score and best-in-class represents real, quantifiable value. ${DOMAIN_LABELS[lowestDomain]} is where the most upside lives.`,
       };
     }
     if (score <= 85) {
       return {
         headline: 'Strategically managed. Closing the final gaps.',
-        body: `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${DOMAIN_LABELS[lowestDomain].toLowerCase()} to reach full maturity — ${domainInsight.toLowerCase()}`,
+        body: `Strong foundation. You're capturing value most organizations miss. The remaining gap is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — closing it typically unlocks $100K–$400K in additional annual value.`,
       };
     }
     return {
       headline: 'Best in class across domains.',
-      body: 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.',
+      body: 'Best-in-class documentation infrastructure. You\'re in the top tier of Abridge deployments for strategic value capture.',
     };
   };
 
@@ -170,7 +170,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           Your Score
         </h1>
         <p className="text-base text-[#888888]">
-          Ambient Assessment Score across four domains
+          How intentionally your organization captures the value ambient documentation creates
         </p>
       </motion.div>
 

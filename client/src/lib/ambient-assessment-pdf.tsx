@@ -188,11 +188,11 @@ const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string 
   const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
   const lowestName = domainLabels[lowest].toLowerCase();
 
-  if (score <= 30) return `Your organization is in the early stages of capturing ambient ROI. Significant opportunity exists across all four domains.`;
-  if (score <= 50) return `Your organization is beginning to measure ambient ROI. Key domains remain unmeasured.`;
-  if (score <= 70) return `Your organization is actively managing ambient ROI in some domains. Significant opportunity remains in ${lowestName}.`;
-  if (score <= 85) return `Your organization is strategically managing ambient ROI across most domains. Focus on ${lowestName} to close the remaining gap.`;
-  return "Your organization is operating at the highest level of ambient maturity across domains.";
+  if (score <= 30) return `Early stage across all domains. Your deployment is producing time savings that aren\u2019t yet being captured operationally, financially, or strategically.`;
+  if (score <= 50) return `Emerging in some areas. Your biggest opportunity is in ${lowestName} \u2014 organizations at Level 2 here typically leave $200K\u2013$800K in annual value unmeasured.`;
+  if (score <= 70) return `Actively managing in key areas. The gap between your current score and best-in-class represents real, quantifiable value. ${domainLabels[lowest]} is where the most upside lives.`;
+  if (score <= 85) return `Strong foundation. You\u2019re capturing value most organizations miss. The remaining gap is in ${lowestName} \u2014 closing it typically unlocks $100K\u2013$400K in additional annual value.`;
+  return "Best-in-class documentation infrastructure. You\u2019re in the top tier of Abridge deployments for strategic value capture.";
 };
 
 function PageFooter({ pageNum, total, orgName }: { pageNum: number; total: number; orgName: string }) {
@@ -421,7 +421,7 @@ function getWhatThisMeansText(data: AmbientAssessmentPDFData): string {
   }
 
   if (hasData) {
-    text += `Your biggest opportunity is in ${lowestName}. The gap between current performance and strategic action represents approximately ${fmt(data.totalAnnualGap)} annually.`;
+    text += `Your biggest opportunity is in ${lowestName}. The gap between current performance and strategic action represents approximately ${fmt(data.totalAnnualGap)} annually. Your lowest-scoring domain is ${domainLabels[lowestDomain]}. This is where the most immediate opportunity lives.`;
   } else {
     text += `Enter domain-specific data to calculate the gap between current performance and strategic action.`;
   }
@@ -472,7 +472,7 @@ function Page3CostOfInaction({ data }: { data: AmbientAssessmentPDFData }) {
           <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 7, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
             <Text style={{ flex: 2.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>SCENARIO</Text>
             <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primaryText, textAlign: "center" }}>3-YEAR VALUE</Text>
-            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary, textAlign: "center" }}>VALUE FORGONE</Text>
+            <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: colors.primary, textAlign: "center" }}>VALUE LEFT BEHIND</Text>
           </View>
           {[
             { label: "Act now", value3yr: data.actNow3yr, lost: null },
@@ -572,7 +572,7 @@ function Page4NextSteps({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={styles.divider} />
 
         <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-          This assessment provides directional estimates based on organizational self-assessment and your inputs. It does not guarantee specific financial outcomes. Benchmarks reflect aggregated deployment data. Individual results depend on organizational context and execution.
+          All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
         </Text>
 
         <PageFooter pageNum={4} total={4} orgName={data.organizationName} />
@@ -600,7 +600,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
 
 const opportunityText: Record<string, Record<number, string>> = {
   capacity: {
-    1: "Providers are faster, but schedules and panels are unchanged. Recovered time isn't being tracked or deployed.",
+    1: "Providers are faster. No operational change has followed. Recovered time isn't being tracked or deployed.",
     2: "Time savings are measured but not being converted to additional access or volume. No scheduling or template changes implemented.",
     3: "Structured access expansion is delivering results. Schedules and templates are redesigned based on recovered capacity.",
     4: "Recovered capacity is embedded into workforce planning, hiring decisions, and FTE models.",
@@ -612,13 +612,13 @@ const opportunityText: Record<string, Record<number, string>> = {
     4: "Documentation quality is an ongoing, managed input to revenue cycle performance and financial reporting.",
   },
   workforce: {
-    1: "After-hours charting reduced, improving provider satisfaction, but labor strategy remains unchanged.",
+    1: "After-hours burden reduced, improving provider satisfaction, but labor strategy remains unchanged.",
     2: "In-clinic documentation burden measured and validated. Provider sentiment captured through surveys.",
     3: "Turnover exposure calculated against documentation burden. Retention risk quantified.",
     4: "Agency and locum spend declining. Workforce costs structurally improving through burden reduction.",
   },
   risk: {
-    1: "Documentation quality improved but nothing downstream has changed. Same infrastructure, better notes.",
+    1: "Notes are better. No system is monitoring what that means for revenue, compliance, or risk.",
     2: "Documentation completeness and specificity are being tracked. Quality monitoring is active.",
     3: "Quality reporting, CDI, or coding workflows are leveraging improved documentation.",
     4: "Structured documentation informs payer, quality, and compliance strategy as a strategic data asset.",

@@ -14,7 +14,7 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Time Saved, Not Deployed',
+    1: 'Time Recovered. Nothing Done With It.',
     2: 'Measured, Not Redesigned',
     3: 'Access Redesigned',
     4: 'Capacity Modeled into Workforce Planning',
@@ -26,13 +26,13 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Revenue Cycle Integration',
   },
   workforce: {
-    1: 'Pajama Time Reduced',
+    1: 'After-Hours Burden Reduced',
     2: 'Burden Measured and Validated',
     3: 'Retention Risk Quantified',
     4: 'Labor Spend Structurally Reduced',
   },
   risk: {
-    1: 'Better Notes, Same Infrastructure',
+    1: 'Quality Improved. Exposure Unmeasured.',
     2: 'Active Quality Monitoring',
     3: 'Downstream Systems Connected',
     4: 'Documentation as Strategic Data Asset',
