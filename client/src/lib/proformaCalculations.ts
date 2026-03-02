@@ -162,14 +162,14 @@ export function buildMonthlyCashFlows(
       const utilScale = currentUtil / setting.utilizationPercent;
       const expansionMultiplier = providerScale * utilScale;
 
-      const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, 12);
-
       let settingDocValue = 0;
       let settingTimeValue = 0;
       let settingRetentionValue = 0;
 
       for (const driver of setting.drivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
+        const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 3 : 12;
+        const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, rampMonths);
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
           : config.retentionPhasing;
@@ -187,7 +187,8 @@ export function buildMonthlyCashFlows(
 
       const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0);
       if (nonDriverValue > 0) {
-        settingDocValue += (nonDriverValue / 12) * adoptionRamp * expansionMultiplier;
+        const nonDriverRamp = getAdoptionRamp(monthsSinceGoLive, 3);
+        settingDocValue += (nonDriverValue / 12) * nonDriverRamp * expansionMultiplier;
       }
 
       let monthlyInvestment: number;

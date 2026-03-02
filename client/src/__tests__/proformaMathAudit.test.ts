@@ -105,9 +105,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     }
   });
 
-  it("3-year total value matches hand calculation within 1%", () => {
-    expect(summary.termValue).toBeGreaterThan(730000);
-    expect(summary.termValue).toBeLessThan(745000);
+  it("3-year total value matches hand calculation within 1% (3-month doc ramp)", () => {
+    expect(summary.termValue).toBeGreaterThan(845000);
+    expect(summary.termValue).toBeLessThan(855000);
   });
 
   it("3-year total investment = 36 months × $2000 + $25K impl = $97,000", () => {
@@ -132,9 +132,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     expect(summary.valueToCost).toBeCloseTo(1 + summary.simpleROI, 5);
   });
 
-  it("payback occurs around month 8 (hand-calculated)", () => {
-    expect(summary.paybackMonth).toBeGreaterThanOrEqual(7);
-    expect(summary.paybackMonth).toBeLessThanOrEqual(9);
+  it("payback occurs around month 4 (3-month doc ramp accelerates payback)", () => {
+    expect(summary.paybackMonth).toBeGreaterThanOrEqual(3);
+    expect(summary.paybackMonth).toBeLessThanOrEqual(5);
   });
 
   it("cumulative net at month 36 matches 3-year net", () => {
@@ -257,10 +257,10 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     }
   });
 
-  it("year 1 total matches hand calculation (~$110K)", () => {
+  it("year 1 total matches hand calculation (~$178K, faster doc ramp)", () => {
     const y1Total = cashFlows.slice(0, 12).reduce((s, r) => s + r.totalValue, 0);
-    expect(y1Total).toBeGreaterThan(100000);
-    expect(y1Total).toBeLessThan(130000);
+    expect(y1Total).toBeGreaterThan(170000);
+    expect(y1Total).toBeLessThan(190000);
   });
 
   it("year 2 total matches hand calculation (~$330K, with 9-month retention delay)", () => {
