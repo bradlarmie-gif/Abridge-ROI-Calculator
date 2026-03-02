@@ -647,7 +647,7 @@ function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
     },
     risk: {
       letter: "Rx",
-      name: "Risk & Readiness",
+      name: "Risk & Compliance Posture",
       desc: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. This domain measures infrastructure readiness.",
     },
   };
