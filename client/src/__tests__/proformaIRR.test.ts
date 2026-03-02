@@ -728,3 +728,46 @@ describe("yearly provider allocation", () => {
     expect(cashFlows[0].investment).toBeGreaterThan(0);
   });
 });
+
+describe("Variable term IRR calculations", () => {
+  it("4-year term produces 5 annual IRR cash flows (period 0 + 4 years)", () => {
+    const settings = [makeSetting({ implementationFee: 25000 })];
+    const config = makeConfig({ contractTermMonths: 48 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    expect(annualCF.length).toBe(5);
+    expect(annualCF[0]).toBeLessThan(0);
+    for (let i = 1; i < annualCF.length; i++) {
+      expect(annualCF[i]).toBeGreaterThan(0);
+    }
+  });
+
+  it("5-year term produces 6 annual IRR cash flows", () => {
+    const settings = [makeSetting({ implementationFee: 25000 })];
+    const config = makeConfig({ contractTermMonths: 60 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    expect(annualCF.length).toBe(6);
+  });
+
+  it("1-year term produces 2 annual IRR cash flows", () => {
+    const settings = [makeSetting({ implementationFee: 25000 })];
+    const config = makeConfig({ contractTermMonths: 12 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+    expect(annualCF.length).toBe(2);
+  });
+
+  it("IRR is valid and positive for various contract lengths", () => {
+    const settings = [makeSetting({ implementationFee: 25000 })];
+
+    for (const months of [12, 24, 36, 48, 60]) {
+      const config = makeConfig({ contractTermMonths: months });
+      const cf = buildMonthlyCashFlows(settings, config);
+      const annualCF = buildAnnualIRRCashFlows(settings, config, cf);
+      const irr = calculateAnnualIRR(annualCF);
+      expect(irr.isValid).toBe(true);
+      expect(irr.annualizedRate).toBeGreaterThan(0);
+    }
+  });
+});

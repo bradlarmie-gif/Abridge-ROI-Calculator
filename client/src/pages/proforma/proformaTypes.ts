@@ -48,6 +48,7 @@ export interface RetentionPhasing {
   year3Pct: number;
   year4Pct?: number;
   year5Pct?: number;
+  year6Pct?: number;
 }
 
 export interface ProformaConfig {

@@ -831,3 +831,70 @@ describe("Annual Flat License Pricing", () => {
     expect(summary.totalInvestment).toBe(200 * 10 * 12 + 240000 + 10 * 30000);
   });
 });
+
+describe("Variable contract term (1–6 years)", () => {
+  it("48-month (4-year) term generates 48 cash flow rows", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 48 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    expect(cashFlows.length).toBe(48);
+    expect(cashFlows[47].period).toBe(48);
+  });
+
+  it("60-month (5-year) term generates 60 cash flow rows", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 60 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    expect(cashFlows.length).toBe(60);
+    expect(cashFlows[59].period).toBe(60);
+  });
+
+  it("12-month (1-year) term generates 12 cash flow rows", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 12 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    expect(cashFlows.length).toBe(12);
+  });
+
+  it("getYearlySummary returns correct number of year buckets", () => {
+    const settings = [makeSetting()];
+    const config4 = makeConfig({ contractTermMonths: 48 });
+    const cf4 = buildMonthlyCashFlows(settings, config4);
+    const ys4 = getYearlySummary(cf4, settings);
+    expect(ys4.length).toBe(4);
+
+    const config5 = makeConfig({ contractTermMonths: 60 });
+    const cf5 = buildMonthlyCashFlows(settings, config5);
+    const ys5 = getYearlySummary(cf5, settings);
+    expect(ys5.length).toBe(5);
+
+    const config1 = makeConfig({ contractTermMonths: 12 });
+    const cf1 = buildMonthlyCashFlows(settings, config1);
+    const ys1 = getYearlySummary(cf1, settings);
+    expect(ys1.length).toBe(1);
+  });
+
+  it("4-year summary threeYearValue accumulates all 48 months", () => {
+    const settings = [makeSetting()];
+    const config = makeConfig({ contractTermMonths: 48 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+    const summary = calculateProformaSummary(settings, config, cashFlows);
+    const config36 = makeConfig({ contractTermMonths: 36 });
+    const cf36 = buildMonthlyCashFlows(settings, config36);
+    const summary36 = calculateProformaSummary(settings, config36, cf36);
+    expect(summary.threeYearValue).toBeGreaterThan(summary36.threeYearValue);
+  });
+
+  it("longer contracts produce higher total investment", () => {
+    const settings = [makeSetting()];
+    const config24 = makeConfig({ contractTermMonths: 24 });
+    const cf24 = buildMonthlyCashFlows(settings, config24);
+    const s24 = calculateProformaSummary(settings, config24, cf24);
+
+    const config48 = makeConfig({ contractTermMonths: 48 });
+    const cf48 = buildMonthlyCashFlows(settings, config48);
+    const s48 = calculateProformaSummary(settings, config48, cf48);
+
+    expect(s48.threeYearInvestment).toBeGreaterThan(s24.threeYearInvestment);
+  });
+});
