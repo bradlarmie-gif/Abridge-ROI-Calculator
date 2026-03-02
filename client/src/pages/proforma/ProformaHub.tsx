@@ -168,13 +168,13 @@ export default function ProformaHub({
               </div>
               <div>
                 <p className="text-xs text-[#8C7E6E] mb-1">Net 3-Year Value</p>
-                <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-emerald-600" : "text-red-600"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
+                <p className={`text-xl font-bold ${summary.threeYearNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`} data-testid="hub-net-value">{fmt(summary.threeYearNet)}</p>
               </div>
             </div>
             <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="flex flex-col items-center">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mb-1" />
-                <p className="text-sm font-bold text-emerald-600" data-testid="hub-vtc">{summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+                <TrendingUp className="w-3.5 h-3.5 text-[#E8350A] mb-1" />
+                <p className="text-sm font-bold text-[#E8350A]" data-testid="hub-vtc">{summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
                 <p className="text-[12px] text-[#A39888]">Value-to-Cost</p>
               </div>
               <div className="flex flex-col items-center">
