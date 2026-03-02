@@ -86,6 +86,14 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     backgroundColor: "#FFFFFF",
   },
+  sectionPage: {
+    padding: 40,
+    paddingBottom: 50,
+    fontFamily: "Manrope",
+    fontSize: 10.5,
+    color: "#1A1A1A",
+    backgroundColor: "#FDFAF7",
+  },
   pageWrapper: {
     flex: 1,
     display: "flex",
@@ -556,7 +564,7 @@ function Page2DomainIntro({ data }: { data: AmbientAssessmentPDFData }) {
   );
 
   return (
-    <Page size="LETTER" style={styles.page} wrap={false}>
+    <Page size="LETTER" style={styles.sectionPage} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>THE FOUR DOMAINS OF AMBIENT VALUE</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Why These Four Domains Matter</Text>
