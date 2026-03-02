@@ -115,6 +115,55 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     maxWidth: 440,
   },
+  domainRow: {
+    flexDirection: "row",
+    marginBottom: 14,
+    gap: 12,
+  },
+  domainIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 4,
+    backgroundColor: "#C8372D",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  domainIconText: {
+    fontSize: 13,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+  domainContent: {
+    flex: 1,
+  },
+  domainName: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#1A1A1A",
+    marginBottom: 3,
+  },
+  domainDesc: {
+    fontSize: 9,
+    color: "#555555",
+    lineHeight: 1.5,
+  },
+  insightBox: {
+    backgroundColor: "#1A1A1A",
+    padding: 20,
+    marginTop: 16,
+    borderRadius: 4,
+  },
+  insightBoxText: {
+    fontSize: 9.5,
+    color: "#FFFFFF",
+    lineHeight: 1.65,
+  },
+  insightBoxHighlight: {
+    fontSize: 9.5,
+    color: "#E5432D",
+    fontWeight: "bold",
+  },
   pageWrapper: {
     flex: 1,
     display: "flex",
@@ -574,71 +623,59 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
   );
 }
 
-function Page2DomainIntro({ data }: { data: AmbientAssessmentPDFData }) {
+function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
   const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
-  const SCORE_MAP: Record<number, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
   const lowestDomain = domainOrder.reduce((lowest, d) =>
     data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
   );
-  const highestDomain = domainOrder.reduce((highest, d) =>
-    data.domains[d].activationLevel > data.domains[highest].activationLevel ? d : highest
-  );
+
+  const domainIntros: Record<string, { letter: string; desc: string }> = {
+    capacity: {
+      letter: "C",
+      desc: "Where does recovered time actually go? Most organizations save 2\u20133 minutes per encounter but haven\u2019t structurally converted that time into additional access, volume, or FTE redeployment.",
+    },
+    revenue: {
+      letter: "R",
+      desc: "Complete, structured clinical notes drive coding accuracy, HCC capture, and denial prevention. Every encounter either captures or leaks revenue through your documentation infrastructure.",
+    },
+    workforce: {
+      letter: "W",
+      desc: "Documentation burden is the #1 driver of clinician burnout and turnover. Reducing after-hours work and in-clinic inefficiency has a direct, measurable impact on retention costs.",
+    },
+    risk: {
+      letter: "R",
+      desc: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. This domain measures infrastructure readiness.",
+    },
+  };
 
   return (
     <Page size="LETTER" style={styles.sectionPage} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionPageTitle}>THE FOUR DOMAINS OF AMBIENT VALUE</Text>
-        <Text style={styles.sectionPageSubtitle}>Why These Four Domains Matter</Text>
+        <Text style={styles.sectionPageTitle}>AMBIENT AI MATURITY FRAMEWORK</Text>
+        <Text style={styles.sectionPageSubtitle}>What You{"\u2019"}re Being Assessed On {"\u2014"} And Why It Matters</Text>
         <Text style={styles.sectionPageIntro}>
-          Most organizations measure ambient AI by a single metric: time saved per encounter. But time savings alone don{"\u2019"}t translate to enterprise value. The organizations capturing the most value from ambient documentation are the ones who have built operational systems around four interconnected domains.
+          Most ambient AI evaluations stop at adoption rate. That misses 80% of the value story. Abridge measures four domains because each one represents a distinct financial lever {"\u2014"} and together, they determine whether ambient AI becomes a productivity tool or a strategic infrastructure.
         </Text>
 
-        <View style={styles.divider} />
+        {domainOrder.map((key) => (
+          <View key={key} style={styles.domainRow}>
+            <View style={styles.domainIcon}>
+              <Text style={styles.domainIconText}>{domainIntros[key].letter}</Text>
+            </View>
+            <View style={styles.domainContent}>
+              <Text style={styles.domainName}>{domainMeta[key].name}</Text>
+              <Text style={styles.domainDesc}>{domainIntros[key].desc}</Text>
+            </View>
+          </View>
+        ))}
 
-        <View style={[styles.twoColRow, { marginBottom: 12 }]}>
-          {domainOrder.slice(0, 2).map((key) => {
-            const domain = data.domains[key];
-            const meta = domainMeta[key];
-            const accentColor = activationColors[domain.activationLevel];
-            const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
-            return (
-              <View key={key} style={[styles.col, { borderLeftWidth: 3, borderLeftColor: accentColor, paddingLeft: 10 }]}>
-                <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{meta.name}</Text>
-                <Text style={{ fontSize: 8.5, color: accentColor, fontWeight: "bold", marginBottom: 6 }}>Level {domain.activationLevel} {"\u00B7"} {domainScore}/25</Text>
-                <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>{meta.description}</Text>
-              </View>
-            );
-          })}
-        </View>
-
-        <View style={[styles.twoColRow, { marginBottom: 12 }]}>
-          {domainOrder.slice(2, 4).map((key) => {
-            const domain = data.domains[key];
-            const meta = domainMeta[key];
-            const accentColor = activationColors[domain.activationLevel];
-            const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
-            return (
-              <View key={key} style={[styles.col, { borderLeftWidth: 3, borderLeftColor: accentColor, paddingLeft: 10 }]}>
-                <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{meta.name}</Text>
-                <Text style={{ fontSize: 8.5, color: accentColor, fontWeight: "bold", marginBottom: 6 }}>Level {domain.activationLevel} {"\u00B7"} {domainScore}/25</Text>
-                <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>{meta.description}</Text>
-              </View>
-            );
-          })}
-        </View>
-
-        <View style={styles.thickDivider} />
-
-        <Text style={styles.sectionLabel}>YOUR PROFILE</Text>
-        <View style={[styles.calloutBox, { marginBottom: 12 }]}>
-          <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.6 }}>
-            Your strongest domain is {domainMeta[highestDomain].name} (Level {data.domains[highestDomain].activationLevel}). Your largest opportunity is in {domainMeta[lowestDomain].name} (Level {data.domains[lowestDomain].activationLevel}) {"\u2014"} this is where strategic action will yield the highest return relative to current maturity.
+        <View style={styles.insightBox}>
+          <Text style={styles.insightBoxText}>
+            Your lowest-scoring domain is{" "}
+            <Text style={styles.insightBoxHighlight}>{domainMeta[lowestDomain].name}</Text>
+            {" "}(Level {data.domains[lowestDomain].activationLevel}). This is where strategic action will yield the highest return relative to current maturity. The following pages break down each domain in detail.
           </Text>
         </View>
-
-        <Text style={styles.body}>
-          The following pages break down each domain in detail: your current level, what it means operationally, and what advancing to the next level could unlock for your organization.
-        </Text>
 
         <PageFooter pageNum={2} orgName={data.organizationName} />
       </View>
@@ -969,7 +1006,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
     />
     <Page1ScoreAndValue data={data} />
-    <Page2DomainIntro data={data} />
+    <Page2Domains data={data} />
     <Page3DomainsCapacityRevenue data={data} />
     <Page4DomainsWorkforceRisk data={data} />
     <Page5ValueOpportunity data={data} />
