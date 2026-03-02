@@ -62,7 +62,7 @@ export interface DomainData {
   primaryOpportunity: string;
 }
 
-const TOTAL_PAGES = 6;
+const TOTAL_PAGES = 7;
 
 const colors = {
   background: "#FFFFFF",
@@ -545,19 +545,71 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
   );
 }
 
-function Page2DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData }) {
+function Page2DomainIntro({ data }: { data: AmbientAssessmentPDFData }) {
+  const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
+  const SCORE_MAP: Record<number, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
+  const lowestDomain = domainOrder.reduce((lowest, d) =>
+    data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
+  );
+  const highestDomain = domainOrder.reduce((highest, d) =>
+    data.domains[d].activationLevel > data.domains[highest].activationLevel ? d : highest
+  );
+
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>THE FOUR DOMAINS OF AMBIENT VALUE</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Where Enterprise Value Lives</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Why These Four Domains Matter</Text>
         <Text style={styles.body}>
-          Each domain reflects your organization{"\u2019"}s self-assessed maturity level. All four domains contribute to your Ambient Assessment Score.
+          Most organizations measure ambient AI by a single metric: time saved per encounter. But time savings alone don{"\u2019"}t translate to enterprise value. The organizations capturing the most value from ambient documentation are the ones who have built operational systems around four interconnected domains.
         </Text>
+
         <View style={styles.divider} />
 
-        <DomainCard domainKey="capacity" data={data} isLast={false} />
-        <DomainCard domainKey="revenue" data={data} isLast={true} />
+        <View style={[styles.twoColRow, { marginBottom: 12 }]}>
+          {domainOrder.slice(0, 2).map((key) => {
+            const domain = data.domains[key];
+            const meta = domainMeta[key];
+            const accentColor = activationColors[domain.activationLevel];
+            const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
+            return (
+              <View key={key} style={[styles.col, { borderLeftWidth: 3, borderLeftColor: accentColor, paddingLeft: 10 }]}>
+                <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{meta.name}</Text>
+                <Text style={{ fontSize: 8.5, color: accentColor, fontWeight: "bold", marginBottom: 6 }}>Level {domain.activationLevel} {"\u00B7"} {domainScore}/25</Text>
+                <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>{meta.description}</Text>
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={[styles.twoColRow, { marginBottom: 12 }]}>
+          {domainOrder.slice(2, 4).map((key) => {
+            const domain = data.domains[key];
+            const meta = domainMeta[key];
+            const accentColor = activationColors[domain.activationLevel];
+            const domainScore = SCORE_MAP[domain.activationLevel] || domain.score;
+            return (
+              <View key={key} style={[styles.col, { borderLeftWidth: 3, borderLeftColor: accentColor, paddingLeft: 10 }]}>
+                <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{meta.name}</Text>
+                <Text style={{ fontSize: 8.5, color: accentColor, fontWeight: "bold", marginBottom: 6 }}>Level {domain.activationLevel} {"\u00B7"} {domainScore}/25</Text>
+                <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>{meta.description}</Text>
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={styles.thickDivider} />
+
+        <Text style={styles.sectionLabel}>YOUR PROFILE</Text>
+        <View style={[styles.calloutBox, { marginBottom: 12 }]}>
+          <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.6 }}>
+            Your strongest domain is {domainMeta[highestDomain].name} (Level {data.domains[highestDomain].activationLevel}). Your largest opportunity is in {domainMeta[lowestDomain].name} (Level {data.domains[lowestDomain].activationLevel}) {"\u2014"} this is where strategic action will yield the highest return relative to current maturity.
+          </Text>
+        </View>
+
+        <Text style={styles.body}>
+          The following pages break down each domain in detail: your current level, what it means operationally, and what advancing to the next level could unlock for your organization.
+        </Text>
 
         <PageFooter pageNum={2} orgName={data.organizationName} />
       </View>
@@ -565,12 +617,32 @@ function Page2DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData 
   );
 }
 
-function Page3DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData }) {
+function Page3DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>THE FOUR DOMAINS (CONTINUED)</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Workforce Stability & Risk Readiness</Text>
+        <Text style={styles.sectionLabel}>DOMAIN DETAIL</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Capacity & Revenue</Text>
+        <Text style={styles.body}>
+          These domains capture how recovered time and documentation quality convert to operational capacity and financial performance.
+        </Text>
+        <View style={styles.divider} />
+
+        <DomainCard domainKey="capacity" data={data} isLast={false} />
+        <DomainCard domainKey="revenue" data={data} isLast={true} />
+
+        <PageFooter pageNum={3} orgName={data.organizationName} />
+      </View>
+    </Page>
+  );
+}
+
+function Page4DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData }) {
+  return (
+    <Page size="LETTER" style={styles.page} wrap={false}>
+      <View style={styles.pageWrapper}>
+        <Text style={styles.sectionLabel}>DOMAIN DETAIL (CONTINUED)</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Workforce & Risk</Text>
         <Text style={styles.body}>
           These domains capture the workforce and infrastructure dimensions of your documentation strategy {"\u2014"} often the largest and most overlooked sources of value.
         </Text>
@@ -579,13 +651,13 @@ function Page3DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData })
         <DomainCard domainKey="workforce" data={data} isLast={false} />
         <DomainCard domainKey="risk" data={data} isLast={true} />
 
-        <PageFooter pageNum={3} orgName={data.organizationName} />
+        <PageFooter pageNum={4} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page4ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
+function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
   const hasData = data.totalAnnualGap > 0;
   const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
   const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
@@ -670,7 +742,7 @@ function Page4ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
           </View>
         </View>
 
-        <PageFooter pageNum={4} orgName={data.organizationName} />
+        <PageFooter pageNum={5} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -710,7 +782,7 @@ function getWhatThisMeansText(data: AmbientAssessmentPDFData): string {
   return text;
 }
 
-function Page5CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
+function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
   const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
   const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
   const hasData = data.totalAnnualGap > 0;
@@ -776,13 +848,13 @@ function Page5CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
           {getWhatThisMeansText(data)}
         </Text>
 
-        <PageFooter pageNum={5} orgName={data.organizationName} />
+        <PageFooter pageNum={6} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page6Methodology({ data }: { data: AmbientAssessmentPDFData }) {
+function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
@@ -851,7 +923,7 @@ function Page6Methodology({ data }: { data: AmbientAssessmentPDFData }) {
           All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
         </Text>
 
-        <PageFooter pageNum={6} orgName={data.organizationName} />
+        <PageFooter pageNum={7} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -868,11 +940,12 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
     />
     <Page1ScoreAndValue data={data} />
-    <Page2DomainsCapacityRevenue data={data} />
-    <Page3DomainsWorkforceRisk data={data} />
-    <Page4ValueOpportunity data={data} />
-    <Page5CostOfWaiting data={data} />
-    <Page6Methodology data={data} />
+    <Page2DomainIntro data={data} />
+    <Page3DomainsCapacityRevenue data={data} />
+    <Page4DomainsWorkforceRisk data={data} />
+    <Page5ValueOpportunity data={data} />
+    <Page6CostOfWaiting data={data} />
+    <Page7Methodology data={data} />
   </Document>
 );
 
