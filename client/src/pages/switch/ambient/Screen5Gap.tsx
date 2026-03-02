@@ -298,7 +298,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          WHAT YOUR DEPLOYMENT IS WORTH — AND WHAT IT SHOULD BE
+          WHAT YOUR DEPLOYMENT IS WORTH — AND WHERE IT'S HEADED
         </h1>
         <p className="text-base text-[#888888]">
           What your organization could capture — and what every month of delay costs.
