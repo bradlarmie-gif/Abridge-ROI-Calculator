@@ -829,7 +829,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   RETENTION & WELLBEING
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  {retPct}% of projected value. Reduced burnout-driven turnover modeled with a 6-month onset delay and phased realization — consistent with published ambient documentation impact studies.
+                  {retPct}% of projected value. Retention impact modeled from Month 8 (nursing) and Month 11 (physician/APP) — aligned with peer-reviewed burnout reduction timelines (Shanafelt et al., NEJM Catalyst 2022; AMA Physician Burnout Survey 2023). Turnover avoidance savings use conservative replacement cost estimates ($50K–$250K per provider by role) and apply only after demonstrated adoption thresholds are met.
                 </Text>
               </View>
               <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.retentionAmber }}>{fmt(totalRetentionValue)}</Text>
@@ -1442,7 +1442,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
               {"\u2022"} Capacity & efficiency benchmarks: Based on validated data from Abridge implementations across 200+ health systems.{"\n"}
               {"\u2022"} Industry benchmarks: Revenue, cost, and utilization parameters from MGMA, CMS, and proprietary health system datasets.{"\n"}
-              {"\u2022"} Conservative by design: Where uncertainty exists, calculations use conservative assumptions to avoid overstating projected benefits.
+              {"\u2022"} Conservative by design: Where uncertainty exists, calculations use conservative assumptions to avoid overstating projected benefits.{"\n"}
+              {"\u2022"} Retention projections use delayed-onset modeling. No retention savings are credited before Month 8 post-go-live for nursing or Month 11 for physician/APP populations.
             </Text>
           </View>
 

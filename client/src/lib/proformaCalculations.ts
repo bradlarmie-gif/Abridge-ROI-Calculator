@@ -49,7 +49,7 @@ function getOnsetMultiplier(
   const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
 
   if (onset === "phased") {
-    const retentionDelay = careSetting === "nursing" ? 6 : 9;
+    const retentionDelay = careSetting === "nursing" ? 8 : 11;
     const adjustedMonths = monthsSinceGoLive - retentionDelay;
     if (adjustedMonths < 0) return 0;
     if (adjustedMonths < 12) return phasing.year1Pct / 100;
