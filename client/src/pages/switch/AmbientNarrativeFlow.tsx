@@ -29,6 +29,7 @@ const STEP_NAMES = [
 export default function AmbientNarrativeFlow({
   onBack,
   onBackToJourney,
+  onNavigateToExplore,
 }: AmbientNarrativeFlowProps) {
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
@@ -101,7 +102,7 @@ export default function AmbientNarrativeFlow({
       case 5:
         return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;
       case 6:
-        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} />;
+        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} onNavigateToExplore={onNavigateToExplore} />;
       default:
         return null;
     }

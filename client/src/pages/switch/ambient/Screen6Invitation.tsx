@@ -30,6 +30,7 @@ import {
 interface Screen6Props {
   onBack: () => void;
   onBackToJourney?: () => void;
+  onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
 const ROADMAP_TEXT: Record<Domain, Record<ActivationLevel, { line1: string; line2: string }>> = {
@@ -115,13 +116,10 @@ function getScoreSummaryLine(score: number): string {
   return "operating at best-in-class documentation intelligence";
 }
 
-export default function Screen6Invitation({ onBack }: Screen6Props) {
+export default function Screen6Invitation({ onBack, onNavigateToExplore }: Screen6Props) {
   const { state } = useAssessment();
   const { inputs } = state;
 
-  const [showForm, setShowForm] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({ name: '', org: '', title: '', email: '' });
   const [isExporting, setIsExporting] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -207,11 +205,6 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
   const actNow3yr = Math.round(dt * 3.45);
   const permanentlyLost6mo = Math.round(dt * 0.42);
   const permanentlyLost12mo = Math.round(dt * 0.95);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-  };
 
   const openExportModal = () => {
     setExportSuccess(false);
@@ -505,81 +498,26 @@ export default function Screen6Invitation({ onBack }: Screen6Props) {
                 This is not a product demonstration. It is a strategic working session where we walk through your organization's specific opportunities across each domain and build a roadmap together.
               </p>
 
-              {!showForm && !formSubmitted && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <Button
-                    onClick={() => setShowForm(true)}
-                    className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
-                    data-testid="button-request-session"
-                  >
-                    Request a Working Session
-                    <ArrowRight size={16} />
-                  </Button>
-                  <Button
-                    onClick={openExportModal}
-                    variant="outline"
-                    className="rounded-full px-6 font-medium gap-2"
-                    data-testid="button-export"
-                  >
-                    <Download size={16} />
-                    Export My Assessment
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <Button
+                  onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
+                  className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                  data-testid="button-explore-value"
+                >
+                  Explore Value with Abridge
+                  <ArrowRight size={16} />
+                </Button>
+                <Button
+                  onClick={openExportModal}
+                  variant="outline"
+                  className="rounded-full px-6 font-medium gap-2"
+                  data-testid="button-export"
+                >
+                  <Download size={16} />
+                  Export My Assessment
+                </Button>
+              </div>
 
-              {showForm && !formSubmitted && (
-                <form onSubmit={handleSubmit} data-testid="form-contact">
-                  <div className="flex flex-col gap-3">
-                    <input
-                      type="text" placeholder="Name" value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                      data-testid="input-name"
-                    />
-                    <input
-                      type="text" placeholder="Organization" value={formData.org}
-                      onChange={(e) => setFormData({ ...formData, org: e.target.value })}
-                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                      data-testid="input-org"
-                    />
-                    <input
-                      type="text" placeholder="Title" value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                      data-testid="input-title"
-                    />
-                    <input
-                      type="email" placeholder="Email" value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
-                      data-testid="input-email"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-4"
-                    data-testid="button-submit"
-                  >
-                    Submit
-                    <ArrowRight size={16} />
-                  </Button>
-                </form>
-              )}
-
-              {formSubmitted && (
-                <div className="text-center" data-testid="form-confirmation">
-                  <p className="text-base text-black font-semibold mb-3">
-                    We'll be in touch within one business day.
-                  </p>
-                  <button
-                    onClick={openExportModal}
-                    className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer"
-                    data-testid="button-copy-link"
-                  >
-                    Download your assessment
-                  </button>
-                </div>
-              )}
             </div>
           </motion.div>
 
