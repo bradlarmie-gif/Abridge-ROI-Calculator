@@ -35,74 +35,74 @@ interface Screen6Props {
 const ROADMAP_TEXT: Record<Domain, Record<ActivationLevel, { line1: string; line2: string }>> = {
   capacity: {
     1: {
-      line1: "You're recovering time but haven't quantified the total across your deployment.",
-      line2: "Understanding your aggregate recovered capacity is the first step toward making strategic decisions about how to use it.",
+      line1: "You're recovering time but no decision has been made about how to use it.",
+      line2: "Quantifying the total recovery across your deployment and presenting it to leadership is the first step toward making strategic decisions.",
     },
     2: {
-      line1: "You've quantified your recovered capacity but haven't made operational changes to deploy it.",
-      line2: "The organizations capturing the most value from recovered time are the ones who have intentionally redesigned how that time is used.",
+      line1: "You've quantified aggregate hours and presented the opportunity to leadership, but no operational changes have followed.",
+      line2: "The organizations capturing the most value from recovered time are the ones who redeploy it into patient access — changing schedules, panels, or slots.",
     },
     3: {
-      line1: "You've redesigned access and are generating measurable capacity value.",
-      line2: "The next frontier is using recovered capacity as a planning input for hiring, expansion, and service line decisions.",
+      line1: "You've redeployed capacity into patient access — schedules, panels, or slots changed based on recovered time.",
+      line2: "The next frontier is using recovered capacity as a planning input for hiring, expansion, and growth decisions.",
     },
     4: {
-      line1: "Recovered capacity is embedded in your workforce planning.",
+      line1: "Recovered FTE equivalent is a variable in your hiring, expansion, and build planning.",
       line2: "Continue expanding and deepening measurement across the organization.",
     },
   },
   revenue: {
     1: {
-      line1: "Your revenue cycle hasn't engaged with the documentation change.",
+      line1: "No one has connected your ambient deployment to coding or billing. Revenue cycle has not been asked.",
       line2: "The single highest-value conversation you can start is between your ambient deployment team and your CDI or coding leadership.",
     },
     2: {
-      line1: "Your revenue cycle has noticed signals but hasn't measured the impact.",
-      line2: "Moving from anecdotal observation to formal measurement is what turns signals into a financial story.",
+      line1: "CDI, coding, or billing leadership has an active analysis in progress.",
+      line2: "Moving from investigation to a formal before/after analysis is what turns signals into a dollar number leadership can stand behind.",
     },
     3: {
-      line1: "You've measured documentation-driven revenue impact.",
-      line2: "Formalizing this as an ongoing, governed metric — not a one-time study — is what separates measurement from management.",
+      line1: "Before/after analysis is complete and a dollar number exists that leadership can stand behind.",
+      line2: "Formalizing this as an ongoing, real-time integration — not a one-time study — is what separates measurement from management.",
     },
     4: {
-      line1: "Documentation quality is integrated into revenue cycle operations.",
+      line1: "Documentation quality is an ongoing, managed input to revenue cycle operations.",
       line2: "Continue expanding governance and connecting documentation quality to payer strategy.",
     },
   },
   workforce: {
     1: {
-      line1: "Providers report less after-hours work but the broader impact isn't being tracked.",
-      line2: "Combining operational measurement with clinician feedback gives your organization a complete picture of how burden reduction is landing.",
+      line1: "Providers report less after-hours work, but it hasn't been measured yet — anecdotal only, no structured data.",
+      line2: "Formally quantifying in-clinic and after-hours time savings gives your organization the data to act on what providers are telling you.",
     },
     2: {
-      line1: "You've measured in-clinic burden reduction and captured provider sentiment.",
-      line2: "Understanding what turnover is costing your organization — and how much of it connects to documentation burden — is the next layer of insight.",
+      line1: "In-clinic and after-hours time formally quantified; survey data captured.",
+      line2: "Understanding what turnover is costing your organization — and modeling documentation burden as a variable in retention strategy — is the next layer of insight.",
     },
     3: {
-      line1: "You've quantified turnover exposure against documentation burden.",
+      line1: "Turnover exposure modeled; documentation burden is a named variable in retention strategy.",
       line2: "The long-term proof is in labor spend — tracking agency and locum costs against burden reduction over time.",
     },
     4: {
-      line1: "Documentation burden reduction is showing up in your labor spend.",
+      line1: "Agency and locum costs measurably reduced; workforce economics are improving.",
       line2: "Continue validating the trend and connecting it to long-term workforce strategy.",
     },
   },
   risk: {
     1: {
-      line1: "Your documentation is better but nothing downstream has changed.",
-      line2: "Establishing any form of quality measurement — even informal — is the foundation for everything that follows.",
+      line1: "Documentation quality has improved, but exposure is still invisible — no system is translating that into financial or compliance value.",
+      line2: "Establishing quality monitoring — tracking completeness, specificity, and HCC capture — is the foundation for everything that follows.",
     },
     2: {
-      line1: "You're monitoring documentation quality.",
-      line2: "Connecting that quality to the workflows that depend on it — CDI, coding, quality reporting — is where operational value begins to surface.",
+      line1: "Completeness, specificity, and HCC capture are tracked; gaps are visible.",
+      line2: "Connecting that quality to the workflows that depend on it — CDI, coding, quality reporting, prior auth — is where operational value begins to surface.",
     },
     3: {
-      line1: "You've connected downstream workflows to documentation quality.",
-      line2: "The strategic opportunity is in making documentation quality a variable in organizational decisions — payer strategy, value-based care design, compliance governance.",
+      line1: "CDI, coding, quality reporting, and prior auth workflows are actively using improved documentation.",
+      line2: "The strategic opportunity is in making documentation quality a governed input to payer contracts, value-based care programs, and compliance strategy.",
     },
     4: {
-      line1: "Your documentation infrastructure is a strategic data asset.",
-      line2: "Continue expanding its role in organizational strategy and positioning for next-generation AI applications.",
+      line1: "Payer contracts, value-based care programs, compliance governance, and quality strategy are all built on documentation quality as a formal input.",
+      line2: "Continue expanding documentation's role as a governed strategic asset across the organization.",
     },
   },
 };

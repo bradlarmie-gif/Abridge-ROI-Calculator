@@ -51,10 +51,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Is your time savings translating into capacity or revenue?',
     reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.',
     cards: [
-      { level: 1, label: 'Time Recovered. Nothing Done With It.', description: 'Providers are faster. No operational change has followed.' },
-      { level: 2, label: 'Measured, Not Redesigned', description: 'Time savings tracked and quantified. Operational changes not yet implemented.' },
-      { level: 3, label: 'Access Redesigned', description: 'Schedules, templates, or panels changed based on recovered capacity.' },
-      { level: 4, label: 'Capacity Modeled into Workforce Planning', description: 'Recovered capacity is a variable in hiring, expansion, and FTE decisions.' },
+      { level: 1, label: 'Time Recovered. No Decision Made About It.', description: 'Deployment exists, but no operational response has followed.' },
+      { level: 2, label: 'Total Recovery Quantified. Opportunity Identified.', description: 'Aggregate hours known and presented to leadership.' },
+      { level: 3, label: 'Capacity Redeployed Into Patient Access.', description: 'Schedules, panels, or slots changed based on the recovered time.' },
+      { level: 4, label: 'Capacity Drives Staffing and Growth Decisions.', description: 'Recovered FTE equivalent is a variable in hiring, expansion, and build planning.' },
     ],
   },
   revenue: {
@@ -62,10 +62,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Is every encounter capturing the revenue it earned?',
     reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
     cards: [
-      { level: 1, label: 'Revenue Cycle Unaware', description: 'Revenue cycle has not evaluated documentation changes from ambient.' },
-      { level: 2, label: 'Anecdotal Revenue Signal', description: 'Coding or billing teams report changes, but no formal analysis completed.' },
-      { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue change quantified.' },
-      { level: 4, label: 'Revenue Cycle Integration', description: 'Documentation quality is an ongoing, managed input to revenue cycle performance.' },
+      { level: 1, label: 'Revenue Cycle Has Not Been Asked.', description: 'No one has connected ambient deployment to coding or billing.' },
+      { level: 2, label: 'Revenue Cycle Is Investigating.', description: 'CDI, coding, or billing leadership has an active analysis in progress.' },
+      { level: 3, label: 'Revenue Impact Measured and Attributed.', description: 'Before/after analysis complete; a dollar number exists that leadership can stand behind.' },
+      { level: 4, label: 'Documentation Quality Is a Managed Revenue Input.', description: 'Ongoing, real-time integration between documentation quality and revenue cycle operations.' },
     ],
   },
   workforce: {
@@ -73,10 +73,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'What is documentation burden actually costing you in turnover and retention?',
     reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
     cards: [
-      { level: 1, label: 'After-Hours Burden Reduced', description: 'Less after-hours charting. Labor strategy unchanged.' },
-      { level: 2, label: 'Burden Measured and Validated', description: 'In-clinic time savings quantified. Provider sentiment captured.' },
-      { level: 3, label: 'Retention Risk Quantified', description: 'Turnover exposure calculated against documentation burden.' },
-      { level: 4, label: 'Labor Spend Structurally Reduced', description: 'Agency and locum spend declining. Workforce costs structurally improving.' },
+      { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'Anecdotal feedback; no structured data.' },
+      { level: 2, label: 'Burden Reduction Measured and Validated.', description: 'In-clinic and after-hours time formally quantified; survey data captured.' },
+      { level: 3, label: 'Retention Risk Calculated Against Burden Reduction.', description: 'Turnover exposure modeled; documentation burden is a named variable in retention strategy.' },
+      { level: 4, label: 'Labor Spend Is Structurally Declining.', description: 'Agency and locum costs measurably reduced; workforce economics improving.' },
     ],
   },
   risk: {
@@ -84,10 +84,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Are documentation gaps creating financial exposure you can\'t quantify?',
     reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
     cards: [
-      { level: 1, label: 'Quality Improved. Exposure Unmeasured.', description: 'Notes are better. No system is monitoring what that means for revenue, compliance, or risk.' },
-      { level: 2, label: 'Active Quality Monitoring', description: 'Documentation completeness and specificity are being tracked.' },
-      { level: 3, label: 'Downstream Systems Connected', description: 'Quality reporting, CDI, or coding workflows are leveraging improved documentation.' },
-      { level: 4, label: 'Documentation as Strategic Data Asset', description: 'Structured documentation informs payer, quality, and compliance strategy.' },
+      { level: 1, label: 'Documentation Quality Improved. Exposure Still Invisible.', description: 'Notes are better; no system is translating that into financial or compliance value.' },
+      { level: 2, label: 'Documentation Quality Is Being Monitored.', description: 'Completeness, specificity, and HCC capture are tracked; gaps are visible.' },
+      { level: 3, label: 'Documentation Quality Is Closing Revenue and Compliance Gaps.', description: 'CDI, coding, quality reporting, and prior auth workflows are actively using improved documentation.' },
+      { level: 4, label: 'Documentation Is a Governed Strategic Asset.', description: 'Payer contracts, value-based care programs, compliance governance, and quality strategy are all built on documentation quality as a formal input.' },
     ],
   },
 };

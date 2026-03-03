@@ -14,28 +14,28 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Time Recovered. Nothing Done With It.',
-    2: 'Measured, Not Redesigned',
-    3: 'Access Redesigned',
-    4: 'Capacity Modeled into Workforce Planning',
+    1: 'Time Recovered. No Decision Made About It.',
+    2: 'Total Recovery Quantified. Opportunity Identified.',
+    3: 'Capacity Redeployed Into Patient Access.',
+    4: 'Capacity Drives Staffing and Growth Decisions.',
   },
   revenue: {
-    1: 'Revenue Cycle Unaware',
-    2: 'Anecdotal Revenue Signal',
-    3: 'Impact Measured',
-    4: 'Revenue Cycle Integration',
+    1: 'Revenue Cycle Has Not Been Asked.',
+    2: 'Revenue Cycle Is Investigating.',
+    3: 'Revenue Impact Measured and Attributed.',
+    4: 'Documentation Quality Is a Managed Revenue Input.',
   },
   workforce: {
-    1: 'After-Hours Burden Reduced',
-    2: 'Burden Measured and Validated',
-    3: 'Retention Risk Quantified',
-    4: 'Labor Spend Structurally Reduced',
+    1: 'Providers Report Less After-Hours Work. Not Measured Yet.',
+    2: 'Burden Reduction Measured and Validated.',
+    3: 'Retention Risk Calculated Against Burden Reduction.',
+    4: 'Labor Spend Is Structurally Declining.',
   },
   risk: {
-    1: 'Quality Improved. Exposure Unmeasured.',
-    2: 'Active Quality Monitoring',
-    3: 'Downstream Systems Connected',
-    4: 'Documentation as Strategic Data Asset',
+    1: 'Documentation Quality Improved. Exposure Still Invisible.',
+    2: 'Documentation Quality Is Being Monitored.',
+    3: 'Documentation Quality Is Closing Revenue and Compliance Gaps.',
+    4: 'Documentation Is a Governed Strategic Asset.',
   },
 };
 

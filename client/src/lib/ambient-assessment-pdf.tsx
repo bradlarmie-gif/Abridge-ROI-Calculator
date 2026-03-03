@@ -1023,28 +1023,28 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
 
 const opportunityText: Record<string, Record<number, string>> = {
   capacity: {
-    1: "Providers are faster. No operational change has followed. Recovered time isn't being tracked or deployed.",
-    2: "Time savings are measured but not being converted to additional access or volume. No scheduling or template changes implemented.",
-    3: "Structured access expansion is delivering results. Schedules and templates are redesigned based on recovered capacity.",
-    4: "Recovered capacity is embedded into workforce planning, hiring decisions, and FTE models.",
+    1: "Deployment exists, but no operational response has followed. Recovered time isn't being tracked or deployed.",
+    2: "Aggregate hours are known and presented to leadership, but not yet converted to additional access or volume.",
+    3: "Schedules, panels, or slots have been changed based on the recovered time. Capacity is being redeployed into patient access.",
+    4: "Recovered FTE equivalent is a variable in hiring, expansion, and build planning. Capacity drives staffing and growth decisions.",
   },
   revenue: {
-    1: "Revenue cycle has not evaluated how ambient documentation is affecting coding, billing, or collections.",
-    2: "Coding or billing teams report changes, but no formal before/after analysis completed.",
-    3: "Before/after analysis completed. Documentation-driven revenue change quantified and measured.",
-    4: "Documentation quality is an ongoing, managed input to revenue cycle performance and financial reporting.",
+    1: "No one has connected ambient deployment to coding or billing. Revenue cycle has not been asked.",
+    2: "CDI, coding, or billing leadership has an active analysis in progress. Revenue cycle is investigating.",
+    3: "Before/after analysis complete; a dollar number exists that leadership can stand behind. Revenue impact measured and attributed.",
+    4: "Ongoing, real-time integration between documentation quality and revenue cycle operations. Documentation quality is a managed revenue input.",
   },
   workforce: {
-    1: "After-hours burden reduced, improving provider satisfaction, but labor strategy remains unchanged.",
-    2: "In-clinic documentation burden measured and validated. Provider sentiment captured through surveys.",
-    3: "Turnover exposure calculated against documentation burden. Retention risk quantified.",
-    4: "Agency and locum spend declining. Workforce costs structurally improving through burden reduction.",
+    1: "Providers report less after-hours work, but it has not been measured yet. Anecdotal feedback only; no structured data.",
+    2: "In-clinic and after-hours time formally quantified; survey data captured. Burden reduction measured and validated.",
+    3: "Turnover exposure modeled; documentation burden is a named variable in retention strategy. Retention risk calculated against burden reduction.",
+    4: "Agency and locum costs measurably reduced; workforce economics improving. Labor spend is structurally declining.",
   },
   risk: {
-    1: "Notes are better. No system is monitoring what that means for revenue, compliance, or risk.",
-    2: "Documentation completeness and specificity are being tracked. Quality monitoring is active.",
-    3: "Quality reporting, CDI, or coding workflows are leveraging improved documentation.",
-    4: "Structured documentation informs payer, quality, and compliance strategy as a strategic data asset.",
+    1: "Notes are better; no system is translating that into financial or compliance value. Exposure is still invisible.",
+    2: "Completeness, specificity, and HCC capture are tracked; gaps are visible. Documentation quality is being monitored.",
+    3: "CDI, coding, quality reporting, and prior auth workflows are actively using improved documentation. Documentation quality is closing revenue and compliance gaps.",
+    4: "Payer contracts, value-based care programs, compliance governance, and quality strategy are all built on documentation quality as a formal input.",
   },
 };
 
