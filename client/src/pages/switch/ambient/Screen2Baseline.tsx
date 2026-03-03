@@ -219,7 +219,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 <label className="block text-sm font-medium text-black mb-1">
                   Avg. time saved per documented encounter
                 </label>
-                <p className="text-xs text-[#888888] italic mb-2">Abridge observed: 2–3 min. Industry range: 2–4 min.</p>
+                <p className="text-xs text-[#888888] italic mb-2">Abridge observed: 2–3 min. Industry range: 1–3 min.</p>
                 <div className="flex items-center gap-2">
                   <FormattedNumberInput
                     value={inputs.timeSavedPerEncounter || 0}
