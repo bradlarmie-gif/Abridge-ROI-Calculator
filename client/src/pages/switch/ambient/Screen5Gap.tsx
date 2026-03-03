@@ -87,15 +87,12 @@ function getNextLevelContent(
 
   if (domain === 'capacity') {
     if (level === 1) {
-      const timeSavedLow = netTimeSaved;
-      const timeSavedHigh = Math.max(netTimeSaved + 1, 3);
-      const bmkHrsLow = Math.round((documentedEncounters * timeSavedLow) / 60);
-      const bmkHrsHigh = Math.round((documentedEncounters * timeSavedHigh) / 60);
-      const bmkValueLow = Math.round(bmkHrsLow * providerRate * 0.20 / 1000) * 1000;
-      const bmkValueHigh = Math.round(bmkHrsHigh * providerRate * 0.35 / 1000) * 1000;
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: Benchmark estimate: ${timeSavedLow}–${timeSavedHigh} min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrsLow.toLocaleString()}–${bmkHrsHigh.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      const bmkHrs = Math.round((documentedEncounters * netTimeSaved) / 60);
+      const bmkValueLow = Math.round(bmkHrs * providerRate * 0.20 / 1000) * 1000;
+      const bmkValueHigh = Math.round(bmkHrs * providerRate * 0.35 / 1000) * 1000;
+      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
       if (documentedEncounters > 0) {
-        base.formula = `${timeSavedLow}–${timeSavedHigh} min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrsLow.toLocaleString()}–${bmkHrsHigh.toLocaleString()} hrs\nLow: ${bmkHrsLow.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrsHigh.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
+        base.formula = `${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\nLow: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
       }
