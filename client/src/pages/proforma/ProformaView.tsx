@@ -596,7 +596,7 @@ export default function ProformaView({
               ? "Annual value by driver type"
               : isMobile
                 ? "Quarterly value by driver type"
-                : "Quarterly value by driver type — Year 1 reflects partial retention and capacity effects. Years 2-3 reflect maturing adoption across all value drivers."}
+                : `Quarterly value by driver type — Year 1 reflects partial retention and capacity effects. Years 2${Math.ceil(config.contractTermMonths / 12) > 2 ? `-${Math.ceil(config.contractTermMonths / 12)}` : ""} reflect maturing adoption across all value drivers.`}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>

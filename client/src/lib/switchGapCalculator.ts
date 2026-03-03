@@ -60,6 +60,14 @@ export interface SwitchInputs {
   revenueHeadlineMetric: string;
   workforceHeadlineMetric: string;
   riskHeadlineMetric: string;
+  capacityActivationLevel: number | null;
+  revenueActivationLevel: number | null;
+  workforceActivationLevel: number | null;
+  riskActivationLevel: number | null;
+  capacityDomainInputs: string;
+  revenueDomainInputs: string;
+  workforceDomainInputs: string;
+  riskDomainInputs: string;
 }
 
 export interface GapItem {

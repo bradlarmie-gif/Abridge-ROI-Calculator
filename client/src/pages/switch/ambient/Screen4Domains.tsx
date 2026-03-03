@@ -113,12 +113,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   const { inputs } = state;
   const [activeDomain, setActiveDomain] = useState<Domain>('capacity');
 
-  const [domainStates, setDomainStates] = useState<Record<Domain, DomainState>>({
-    capacity: { activationLevel: null, inputs: {} },
-    revenue: { activationLevel: null, inputs: {} },
-    workforce: { activationLevel: null, inputs: {} },
-    risk: { activationLevel: null, inputs: {} },
-  });
+  const parseDomainInputs = (json: string): Record<string, number | string> => {
+    try { return JSON.parse(json); } catch { return {}; }
+  };
+
+  const [domainStates, setDomainStates] = useState<Record<Domain, DomainState>>(() => ({
+    capacity: { activationLevel: (inputs.capacityActivationLevel as ActivationLevel | null), inputs: parseDomainInputs(inputs.capacityDomainInputs) },
+    revenue: { activationLevel: (inputs.revenueActivationLevel as ActivationLevel | null), inputs: parseDomainInputs(inputs.revenueDomainInputs) },
+    workforce: { activationLevel: (inputs.workforceActivationLevel as ActivationLevel | null), inputs: parseDomainInputs(inputs.workforceDomainInputs) },
+    risk: { activationLevel: (inputs.riskActivationLevel as ActivationLevel | null), inputs: parseDomainInputs(inputs.riskDomainInputs) },
+  }));
 
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
@@ -135,17 +139,22 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       ...prev,
       [activeDomain]: { ...prev[activeDomain], activationLevel: level },
     }));
-  }, [activeDomain]);
+    dispatch(assessmentActions.updateInput(`${activeDomain}ActivationLevel` as keyof typeof inputs, level));
+  }, [activeDomain, dispatch]);
 
   const setDomainInput = useCallback((key: string, value: number | string) => {
-    setDomainStates((prev) => ({
-      ...prev,
-      [activeDomain]: {
-        ...prev[activeDomain],
-        inputs: { ...prev[activeDomain].inputs, [key]: value },
-      },
-    }));
-  }, [activeDomain]);
+    setDomainStates((prev) => {
+      const next = {
+        ...prev,
+        [activeDomain]: {
+          ...prev[activeDomain],
+          inputs: { ...prev[activeDomain].inputs, [key]: value },
+        },
+      };
+      dispatch(assessmentActions.updateInput(`${activeDomain}DomainInputs` as keyof typeof inputs, JSON.stringify(next[activeDomain].inputs)));
+      return next;
+    });
+  }, [activeDomain, dispatch]);
 
   const feedback = useMemo((): DomainFeedback | null => {
     if (!currentState.activationLevel) return null;
@@ -1152,9 +1161,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <div key={d} className="flex items-center gap-1.5 sm:gap-3">
               <div className="flex flex-col items-center">
                 <button
-                  onClick={() => isComplete && setActiveDomain(d)}
+                  onClick={() => setActiveDomain(d)}
                   className={`text-[12px] sm:text-xs font-medium uppercase tracking-[1px] sm:tracking-[1.5px] mb-2 px-1 py-1 ${
-                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888]'
+                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888] cursor-not-allowed'
                   }`}
                   data-testid={`domain-label-${d}`}
                   disabled={!isComplete && !isActive}
