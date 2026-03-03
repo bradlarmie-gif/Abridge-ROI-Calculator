@@ -466,14 +466,15 @@ export function computeRevenueFeedback(
   }
 
   if (count > 0 && (!recognizedRevenue || recognizedRevenue <= 0)) {
+    const floorEstimate = Math.round(documentedEncounters * revenuePerVisit * 0.005) * count;
     return {
       label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: `${count} integration${count > 1 ? 's' : ''} active`,
-      context: `Documentation quality is integrated into ${count} revenue cycle operation${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter your organization's attributed annual revenue to calculate impact. If this number doesn't exist yet, that's the next step \u2014 formalizing the attribution.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
-      formula: '',
-      footnote: '',
+      value: floorEstimate,
+      hasValue: true,
+      headlineMetric: `${formatDollar(floorEstimate)} conservative floor estimate`,
+      context: `Documentation quality is integrated into ${count} revenue cycle operation${count > 1 ? 's' : ''}:\n${checkedLabels}\n\nThis is a conservative floor estimate of 0.5% of encounter revenue per integration. Enter your organization's confirmed attributed revenue to replace this estimate.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+      formula: `[floorEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 0.5% × ${count} integration${count > 1 ? 's' : ''} = ${formatDollar(floorEstimate)}`,
+      footnote: 'Conservative floor: 0.5% of encounter revenue per active integration. Replace with your confirmed number for a precise figure.',
     };
   }
 
@@ -532,7 +533,7 @@ export function computeWorkforceFeedback(
 
   if (level === 2) {
     const minutesSaved = inputs.editTimeSaved as number | undefined;
-    const confirmedAfterHours = inputs.confirmedAfterHoursReduction as number | undefined;
+    const confirmedAfterHours = (inputs.confirmedAfterHoursReduction as number | undefined) || (inputs.afterHoursReduction as number | undefined);
     const surveyType = inputs.surveyType as string | undefined;
     const surveyFindingsStr = inputs.surveyFindings as string | undefined;
     const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];
@@ -934,14 +935,15 @@ export function computeRiskFeedback(
   }
 
   if (count > 0 && (!strategicValue || strategicValue <= 0)) {
+    const estimate = Math.round(documentedEncounters * revenuePerVisit * 0.008 * count);
     return {
       label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: `${count} strategic integration${count > 1 ? 's' : ''}`,
-      context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}${ownerLine}\n\nEnter the recognized annual strategic value to quantify this level.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
-      formula: '',
-      footnote: '',
+      value: estimate,
+      hasValue: true,
+      headlineMetric: `${formatDollar(estimate)} estimated strategic value`,
+      context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}${ownerLine}\n\nThis is an estimate based on 0.8% of encounter revenue per strategic integration. Enter your confirmed recognized annual strategic value to replace this estimate.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+      formula: `[estimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 0.8% × ${count} integration${count > 1 ? 's' : ''} = ${formatDollar(estimate)}`,
+      footnote: 'Estimate based on 0.8% of encounter revenue per governance integration. Replace with your confirmed number for precision.',
     };
   }
 

@@ -824,22 +824,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <BenchmarkContext text="Organizations at this stage have reported 10–20 min/day reduction in chart editing and review. Based on aggregated deployment experience." />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Measured after-hours reduction per provider per week
-            </label>
-            <p className="text-xs text-[#888888] mb-2">Confirmed measurement, not estimate. Leave at 0 if not yet measured.</p>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.confirmedAfterHoursReduction as number) || 0}
-                onChange={(v) => setDomainInput('confirmedAfterHoursReduction', Math.max(0, v))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-confirmed-after-hours"
-              />
-              <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
-            </div>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-black mb-2">
