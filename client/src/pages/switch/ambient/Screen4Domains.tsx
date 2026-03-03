@@ -184,6 +184,28 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
   }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
 
+  const nextLevelFeedback = useMemo((): DomainFeedback | null => {
+    if (!currentState.activationLevel || currentState.activationLevel >= 4) return null;
+    const nextLevel = (currentState.activationLevel + 1) as ActivationLevel;
+    const inp = currentState.inputs;
+    switch (activeDomain) {
+      case 'capacity': {
+        const capacityInp = inp.timeSaved ? inp : { ...inp, timeSaved: inputs.timeSavedPerEncounter || 0 };
+        return computeCapacityFeedback(nextLevel, capacityInp, providers, documentedEncounters, revenuePerVisit, providerRate);
+      }
+      case 'revenue': return computeRevenueFeedback(nextLevel, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
+      case 'workforce': return computeWorkforceFeedback(nextLevel, inp, providers, providerRate);
+      case 'risk': return computeRiskFeedback(nextLevel, inp, documentedEncounters, revenuePerVisit);
+    }
+  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
+
+  const incrementalValue = useMemo(() => {
+    if (!feedback || !nextLevelFeedback) return 0;
+    const currentVal = feedback.value || 0;
+    const nextVal = nextLevelFeedback.value || 0;
+    return Math.max(0, nextVal - currentVal);
+  }, [feedback, nextLevelFeedback]);
+
   const handleAdvance = () => {
     if (currentState.activationLevel) {
       const score = computeDomainScore(activeDomain, currentState.activationLevel, currentState.inputs);
@@ -1523,59 +1545,136 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             </p>
             <div className="h-px bg-[#E5E7EB] mb-6" />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="flex flex-col">
               {config.cards.map((card, cardIdx) => {
-                const isSelected = currentState.activationLevel === card.level;
+                const selectedLevel = currentState.activationLevel;
+                const isSelected = selectedLevel === card.level;
+                const isClaimed = selectedLevel !== null && card.level < selectedLevel;
+                const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
+
+                const leftBorderStyle = isSelected
+                  ? '3px solid #EA2C00'
+                  : card.level === 3 && !isClaimed ? '2px solid rgba(234, 44, 0, 0.3)'
+                  : card.level === 4 && !isClaimed ? '2px solid #EA2C00'
+                  : '2px solid transparent';
+
                 return (
-                  <motion.button
-                    key={card.level}
-                    type="button"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: cardIdx * 0.06, ease: "easeOut" }}
-                    onClick={() => setActivation(card.level)}
-                    className={`rounded-lg p-4 sm:p-5 text-left min-h-[110px] transition-all cursor-pointer active:scale-[0.98] ${
-                      isSelected
-                        ? "bg-[#EA2C00]/5 border-2 border-[#EA2C00] shadow-sm"
-                        : "bg-white/80 border border-[#E5E7EB] hover:border-[#D1D5DB]"
-                    }`}
-                    data-testid={`activation-card-${activeDomain}-${card.level}`}
-                  >
-                    <p className={`font-bold text-2xl leading-none mb-2 ${isSelected ? 'text-[#EA2C00]' : 'text-[#E5E7EB]'}`}>
-                      {card.level}
-                    </p>
-                    <p className={`text-sm text-black mb-1 ${isSelected ? 'font-bold' : 'font-semibold'}`}>
-                      {card.label}
-                    </p>
-                    <p className={`text-sm leading-snug ${isSelected ? 'text-black/80' : 'text-[#888888]'}`}>
-                      {card.description}
-                    </p>
-                  </motion.button>
+                  <div key={card.level}>
+                    <motion.button
+                      type="button"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
+                      onClick={() => setActivation(card.level)}
+                      className="w-full text-left cursor-pointer active:scale-[0.99] transition-all bg-white hover:bg-[#FAFAF8]"
+                      style={{
+                        borderLeft: leftBorderStyle,
+                        padding: isClaimed ? '10px 16px' : '16px 16px',
+                      }}
+                      data-testid={`activation-card-${activeDomain}-${card.level}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        {isClaimed ? (
+                          <Check size={18} className="text-[#EA2C00] mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <span
+                            className="flex-shrink-0 leading-none"
+                            style={{
+                              fontSize: '52px',
+                              fontWeight: 300,
+                              color: `rgba(234, 44, 0, ${isSelected ? 1 : NUMERAL_OPACITIES[card.level]})`,
+                            }}
+                          >
+                            {card.level}
+                          </span>
+                        )}
+                        <div className={`flex-1 ${isClaimed ? 'pt-0' : 'pt-2'}`}>
+                          <p
+                            className={`text-sm leading-snug ${isSelected || card.level === 4 ? 'font-bold' : 'font-semibold'}`}
+                            style={{ color: isClaimed ? '#999999' : isSelected ? '#000000' : TITLE_COLORS[card.level] }}
+                          >
+                            {card.label}
+                          </p>
+                          {!isClaimed && (
+                            <p
+                              className="text-sm leading-snug mt-1"
+                              style={{ color: isSelected ? '#555555' : DESC_COLORS[card.level] }}
+                            >
+                              {card.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.button>
+
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div
+                            className="bg-white px-5 pb-5"
+                            style={{ borderLeft: '3px solid #EA2C00' }}
+                          >
+                            {card.level === 1 ? (
+                              <p className="text-[13px] text-[#666666] leading-relaxed mt-1">
+                                This is where most deployments begin. The value emerges as your organization decides what to do with the time recovered.
+                              </p>
+                            ) : feedback ? (
+                              <div className="mt-1">
+                                {feedback.headlineMetric ? (
+                                  <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
+                                    {feedback.headlineMetric}
+                                  </p>
+                                ) : feedback.hasValue && feedback.value ? (
+                                  <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
+                                    {formatDollar(feedback.value)}
+                                  </p>
+                                ) : null}
+                                {feedback.context && (
+                                  <p className="text-[13px] text-[#666666] leading-relaxed mt-2">
+                                    {feedback.context.split('\n').filter(Boolean)[0]}
+                                  </p>
+                                )}
+                              </div>
+                            ) : null}
+
+                            <div className="mt-4 pt-4 border-t border-[#E8E4DC]">
+                              {renderDomainInputs()}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {isNextAbove && incrementalValue > 0 && (
+                      <div
+                        className="bg-white/60 px-5 py-2"
+                        style={{
+                          borderLeft: card.level === 3 ? '2px solid rgba(234, 44, 0, 0.3)'
+                            : card.level === 4 ? '2px solid #EA2C00'
+                            : '2px solid transparent',
+                        }}
+                      >
+                        <p className="text-[13px] leading-relaxed">
+                          <span className="font-semibold" style={{ color: 'rgba(234, 44, 0, 0.7)' }}>
+                            +{formatDollar(incrementalValue)} at this level
+                          </span>
+                          {' '}<span className="text-[#888888]">— {OPERATIONAL_CONDITIONS[activeDomain]}</span>
+                        </p>
+                      </div>
+                    )}
+
+                    {cardIdx < 3 && <div className="h-px bg-[#E8E4DC]" />}
+                  </div>
                 );
               })}
             </div>
           </div>
-
-          <AnimatePresence mode="wait">
-            {currentState.activationLevel && (
-              <motion.div
-                key={`${activeDomain}-${currentState.activationLevel}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="mb-8"
-              >
-                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                    Refine Your Inputs
-                  </p>
-                  <div className="h-px bg-[#E5E7EB] mb-6" />
-                  {renderDomainInputs()}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <StepFooter
             onBack={handleDomainBack}
