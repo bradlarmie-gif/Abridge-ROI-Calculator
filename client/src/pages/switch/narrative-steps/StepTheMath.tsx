@@ -470,7 +470,7 @@ export default function StepTheMath({
         )}
       </section>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextLabel="See the Documentation Intelligence Gap" />
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="See the Ambient Value Maturity Gap" />
     </div>
   );
 }

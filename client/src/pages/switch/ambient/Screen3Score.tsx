@@ -34,7 +34,8 @@ const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2, string>> = {
 const TIEBREAKER_ORDER: DomainKey[] = ['risk', 'revenue', 'workforce', 'capacity'];
 
 function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number; duration?: number; delay?: number }) {
-  const [current, setCurrent] = useState(0);
+  const startValue = Math.max(target - 8, 0);
+  const [current, setCurrent] = useState(startValue);
   const [started, setStarted] = useState(false);
   const startTime = useRef<number | null>(null);
   const rafRef = useRef<number>(0);
@@ -52,12 +53,12 @@ function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number
       const elapsed = timestamp - startTime.current;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCurrent(Math.round(eased * target));
+      setCurrent(startValue + Math.round(eased * (target - startValue)));
       if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
     rafRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [target, duration, started]);
+  }, [target, duration, started, startValue]);
 
   return <>{current}</>;
 }
@@ -240,7 +241,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   data-testid="card-composite-score"
                 >
                   <p className="font-semibold text-sm text-black">
-                    Documentation Intelligence Score
+                    Ambient Value Maturity Score
                   </p>
 
                   <div className="flex-1 max-w-[200px]" style={{ height: 8 }}>
@@ -394,8 +395,11 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
-              Documentation Intelligence Score
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+              Ambient Value Maturity Score
+            </p>
+            <p className="text-xs text-white/40 leading-relaxed mb-4">
+              Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Risk.
             </p>
 
             <div className="text-center mb-2">
