@@ -317,7 +317,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           </div>
         </motion.div>
 
-        <StepFooter onBack={onBack} onNext={onNext} nextLabel="Begin Your Assessment →" nextDisabled={!canProceed} />
+        <StepFooter onBack={onBack} onNext={onNext} nextLabel="Show Me the Domains →" nextDisabled={!canProceed} />
       </motion.div>
 
       {hasFirstInput && (

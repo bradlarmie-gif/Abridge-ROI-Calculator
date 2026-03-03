@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Check } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import {
   type Domain, type ActivationLevel,
@@ -26,6 +28,17 @@ const DOMAIN_CTA: Record<Domain, string> = {
   workforce: 'See Quality Exposure →',
   risk: 'See My Score →',
 };
+
+const OPERATIONAL_CONDITIONS: Record<Domain, string> = {
+  capacity: 'when recovered FTE equivalent enters staffing decisions',
+  revenue: 'when documentation quality becomes a revenue input',
+  workforce: 'when turnover risk is structurally measured',
+  risk: 'when structured data feeds quality reporting',
+};
+
+const NUMERAL_OPACITIES: Record<number, number> = { 1: 0.15, 2: 0.35, 3: 0.65, 4: 1 };
+const TITLE_COLORS: Record<number, string> = { 1: '#999999', 2: '#666666', 3: '#333333', 4: '#000000' };
+const DESC_COLORS: Record<number, string> = { 1: '#aaaaaa', 2: '#888888', 3: '#555555', 4: '#333333' };
 
 type DomainState = {
   activationLevel: ActivationLevel | null;
