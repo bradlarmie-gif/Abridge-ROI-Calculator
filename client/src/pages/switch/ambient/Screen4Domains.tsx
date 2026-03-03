@@ -774,6 +774,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       return (
         <div>
+          <p className="text-sm text-[#888888] italic mb-4">
+            Documentation burden affects provider retention and labor costs. The estimate below is auto-computed from your baseline data.
+          </p>
           <label className="block text-sm font-medium text-black mb-1">
             Estimated hours per provider per week of after-hours documentation reduced
           </label>
