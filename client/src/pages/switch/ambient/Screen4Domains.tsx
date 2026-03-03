@@ -1552,7 +1552,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
 
         <motion.div
-          className="hidden lg:block w-[320px] flex-shrink-0"
+          className="w-full lg:w-[320px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
