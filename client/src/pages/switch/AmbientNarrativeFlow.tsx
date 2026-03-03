@@ -15,11 +15,10 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_SCREENS = 6;
+const TOTAL_SCREENS = 5;
 
 const STEP_NAMES = [
   "Baseline",
-  "Framework",
   "Domains",
   "Score",
   "Gap Analysis",
@@ -72,36 +71,12 @@ export default function AmbientNarrativeFlow({
       case 1:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 2:
-        return (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="bg-[#1A1A1A] rounded-2xl p-10 md:p-14 max-w-[640px] w-full text-center">
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-3 font-abridge uppercase tracking-tight" data-testid="text-interstitial-heading">
-                Most vendors measure one thing: time saved per encounter.
-              </h1>
-              <p className="text-lg text-white/70 mb-6" data-testid="text-interstitial-subheading">
-                That's one dimension of a four-part value equation.
-              </p>
-              <p className="text-sm text-white/50 leading-relaxed mb-8" data-testid="text-interstitial-body">
-                We're going to assess all four — because your actual ROI depends on what your organization does with that time across Capacity, Revenue, Workforce, and Risk.
-              </p>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="bg-[#EA2C00] text-white font-semibold px-8 py-3 rounded-lg text-sm hover:bg-[#D02800] transition-colors"
-                data-testid="button-begin-assessment"
-              >
-                Begin Assessment →
-              </button>
-            </div>
-          </div>
-        );
-      case 3:
         return <Screen3Domains onNext={handleNext} onBack={handleBack} />;
+      case 3:
+        return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={() => goToStep(2)} />;
       case 4:
-        return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={() => goToStep(3)} />;
-      case 5:
         return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;
-      case 6:
+      case 5:
         return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} onNavigateToExplore={onNavigateToExplore} />;
       default:
         return null;
