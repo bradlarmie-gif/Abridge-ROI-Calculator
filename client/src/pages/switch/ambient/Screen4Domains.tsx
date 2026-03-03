@@ -23,7 +23,7 @@ interface Screen4Props {
 const DOMAIN_CTA: Record<Domain, string> = {
   capacity: 'See Revenue Impact →',
   revenue: 'See Workforce Impact →',
-  workforce: 'See Risk Exposure →',
+  workforce: 'See Quality Exposure →',
   risk: 'See My Score →',
 };
 
@@ -80,7 +80,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     ],
   },
   risk: {
-    label: 'RISK',
+    label: 'QUALITY',
     headline: 'Are documentation gaps creating financial exposure you can\'t quantify?',
     reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
     cards: [

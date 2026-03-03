@@ -399,7 +399,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               Ambient Value Maturity Score
             </p>
             <p className="text-xs text-white/40 leading-relaxed mb-4">
-              Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Risk.
+              Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Quality.
             </p>
 
             <div className="text-center mb-2">

@@ -327,7 +327,7 @@ const getScoreVerdict = (score: number, data: AmbientAssessmentPDFData): string 
   for (const d of TIEBREAKER_ORDER) {
     if (levels[d] < lowestLevel) { lowest = d; lowestLevel = levels[d]; }
   }
-  const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
+  const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Quality' };
   const lowestName = domainLabels[lowest].toLowerCase();
 
   if (score <= 30) return `Your organization is in the early stages of building ambient AI value. Time savings are being generated \u2014 the opportunity now is building the infrastructure to capture them.`;
@@ -432,7 +432,7 @@ const domainMeta: Record<string, { name: string; question: string; drivers: stri
     drivers: ["After-hours reduction", "In-clinic time saved", "Clinician survey findings", "Turnover exposure quantified"],
   },
   risk: {
-    name: "Risk",
+    name: "Quality",
     question: "Is your documentation ready for what comes next?",
     drivers: ["Quality dimensions tracked", "Downstream workflows connected", "Hours saved in reporting", "Strategic integrations active"],
   },
@@ -538,7 +538,7 @@ function Page3DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData })
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>DOMAIN DETAIL (CONTINUED)</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Workforce & Risk</Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Workforce & Quality</Text>
         <Text style={styles.body}>
           These domains capture the workforce and infrastructure dimensions of your documentation strategy {"\u2014"} often the largest and most overlooked sources of value.
         </Text>

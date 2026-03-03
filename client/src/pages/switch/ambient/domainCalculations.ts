@@ -9,7 +9,7 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
   capacity: 'Capacity',
   revenue: 'Revenue',
   workforce: 'Workforce',
-  risk: 'Risk',
+  risk: 'Quality',
 };
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
