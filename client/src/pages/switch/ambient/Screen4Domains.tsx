@@ -11,7 +11,7 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
-  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS, REVENUE_INTEGRATIONS,
+  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
   type DomainFeedback,
 } from "./domainCalculations";
 
@@ -164,7 +164,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       case 'capacity': return computeCapacityFeedback(level, inp, providers, documentedEncounters, revenuePerVisit, providerRate);
       case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
       case 'workforce': return computeWorkforceFeedback(level, inp, providers, providerRate);
-      case 'risk': return computeRiskFeedback(level, inp);
+      case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit);
     }
   }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor]);
 
@@ -380,10 +380,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     const CAPACITY_PLANNING_OPTIONS = [
-      'Avoided or deferred new hires (absorbed growth with existing providers)',
-      'Redeployed providers to underserved panels or new sites',
+      'Avoided or deferred new hires',
       'Absorbed patient volume growth without adding FTEs',
-      'Factored into annual FTE / staffing models',
+      'Redeployed providers to underserved panels or new sites',
+      'Factored into annual FTE / staffing model',
       'Used in business case for new service lines or locations',
     ];
 
@@ -420,7 +420,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Estimated FTEs redeployed</label>
+          <label className="block text-sm font-medium text-black mb-1">FTEs avoided or deferred</label>
           <FormattedNumberInput
             value={(currentState.inputs.fteAvoided as number) || 0}
             onChange={(v) => setDomainInput('fteAvoided', Math.max(0, v))}
@@ -428,7 +428,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-fte-avoided"
           />
-          <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent impact in workforce planning." />
+          <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent in avoided or deferred hires." />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">Annual cost per physician FTE</label>
+          <p className="text-xs text-[#888888] mb-2">Fully-loaded cost including salary, benefits, and recruitment. Default $350,000.</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.annualCostPerFte as number) || 350000}
+              onChange={(v) => setDomainInput('annualCostPerFte', Math.max(0, v))}
+              placeholder="350000"
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-annual-cost-per-fte"
+            />
+          </div>
         </div>
       </div>
     );
@@ -454,73 +468,97 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 1) {
       return (
-        <p className="text-sm text-[#888888] italic">
-          No additional inputs at this level. Revenue cycle has not evaluated documentation changes from ambient.
-        </p>
+        <div>
+          <p className="text-sm text-[#888888] italic mb-4">
+            Your revenue cycle hasn't been asked to evaluate documentation changes from ambient. The numbers below are auto-computed from your baseline data.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              What % of patients are in value-based contracts?
+            </label>
+            <p className="text-xs text-[#888888] mb-2">Used to estimate HCC/risk adjustment exposure. Default 30%.</p>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.vbcSharePct as number) || 30}
+                onChange={(v) => setDomainInput('vbcSharePct', Math.min(100, Math.max(0, v)))}
+                placeholder="30"
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-revenue-vbc-pct"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+        </div>
       );
     }
 
     if (level === 2) {
-      const noneObserved = currentState.inputs.revenueNoneObserved === 'true';
+      const INVESTIGATION_AREAS = [
+        'CDI query volume before vs. after',
+        'ICD-10 coding specificity',
+        'HCC/risk adjustment capture rates',
+        'Claim denial rates related to documentation',
+        'wRVU per encounter trends',
+        'Collections per encounter',
+      ];
+      const duration = currentState.inputs.investigationDuration as string || '';
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-3">
-              What signals has your revenue cycle observed?
+              What is your revenue cycle team analyzing?
             </label>
             <div className="flex flex-col gap-2.5">
-              {REVENUE_SIGNALS.map((signal, i) => {
-                const checked = !noneObserved && isChecked('revenueSignals', i);
+              {INVESTIGATION_AREAS.map((area, i) => {
+                const checked = isChecked('investigationAreas', i);
                 return (
                   <label
                     key={i}
-                    htmlFor={`revenue-signal-${i}`}
+                    htmlFor={`investigation-area-${i}`}
                     className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
-                      noneObserved ? 'border-[#E5E7EB] bg-[#F9FAFB] opacity-50' : checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                     }`}
                   >
                     <Checkbox
-                      id={`revenue-signal-${i}`}
+                      id={`investigation-area-${i}`}
                       checked={checked}
-                      onCheckedChange={() => {
-                        if (noneObserved) setDomainInput('revenueNoneObserved', 'false');
-                        toggleCheckboxItem('revenueSignals', i);
-                      }}
-                      disabled={noneObserved}
-                      data-testid={`checkbox-revenue-signal-${i}`}
+                      onCheckedChange={() => toggleCheckboxItem('investigationAreas', i)}
+                      data-testid={`checkbox-investigation-${i}`}
                       className="mt-0.5"
                     />
-                    <span className={`text-sm select-none leading-snug ${noneObserved ? 'text-[#999]' : 'text-[#525252]'}`}>
-                      {signal}
+                    <span className="text-sm text-[#525252] select-none leading-snug">
+                      {area}
                     </span>
                   </label>
                 );
               })}
-              <div className="h-px bg-[#E5E7EB] my-1" />
-              <label
-                htmlFor="revenue-none-observed"
-                className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
-                  noneObserved ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                }`}
-              >
-                <Checkbox
-                  id="revenue-none-observed"
-                  checked={noneObserved}
-                  onCheckedChange={(checked) => {
-                    if (checked === true) {
-                      setDomainInput('revenueNoneObserved', 'true');
-                      setDomainInput('revenueSignals', '');
-                    } else {
-                      setDomainInput('revenueNoneObserved', 'false');
-                    }
-                  }}
-                  data-testid="checkbox-revenue-none"
-                  className="mt-0.5"
-                />
-                <span className="text-sm text-[#525252] select-none leading-snug">
-                  None observed yet
-                </span>
-              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              How long has the analysis been in progress?
+            </label>
+            <div className="flex flex-col gap-2">
+              {[
+                { id: 'under30', label: 'Less than 30 days' },
+                { id: '30to90', label: '30–90 days' },
+                { id: '90plus', label: '90+ days' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('investigationDuration', opt.id)}
+                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    duration === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-investigation-duration-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -628,19 +666,39 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
+                className="flex flex-col gap-4"
               >
-                <label className="block text-sm font-medium text-black mb-1">
-                  Measured denial rate reduction since deployment
-                </label>
-                <div className="flex items-center gap-2">
-                  <FormattedNumberInput
-                    value={(currentState.inputs.measuredDenialReduction as number) || 0}
-                    onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-denial-reduction"
-                  />
-                  <span className="text-sm text-[#888888]">%</span>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Denial rate before ambient deployment
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.denialRateBefore as number) || 0}
+                      onChange={(v) => setDomainInput('denialRateBefore', Math.min(100, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-denial-before"
+                      step={0.1}
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Denial rate after ambient deployment
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.denialRateAfter as number) || 0}
+                      onChange={(v) => setDomainInput('denialRateAfter', Math.min(100, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-denial-after"
+                      step={0.1}
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
                 </div>
                 <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.denial_rate} />
               </motion.div>
@@ -767,6 +825,23 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Measured after-hours reduction per provider per week
+            </label>
+            <p className="text-xs text-[#888888] mb-2">Confirmed measurement, not estimate. Leave at 0 if not yet measured.</p>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.confirmedAfterHoursReduction as number) || 0}
+                onChange={(v) => setDomainInput('confirmedAfterHoursReduction', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-confirmed-after-hours"
+              />
+              <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-black mb-2">
               Have you conducted a clinician survey since deploying ambient documentation?
             </label>
@@ -813,37 +888,74 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           )}
 
           {surveyType === 'structured' && (
-            <div>
-              <label className="block text-sm font-medium text-black mb-2">
-                What did your survey show?
-              </label>
-              <div className="flex flex-col gap-2">
-                {SURVEY_FINDINGS.map((finding, i) => {
-                  const checked = isChecked('surveyFindings', i);
-                  return (
-                    <label
-                      key={i}
-                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
-                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                      }`}
-                      data-testid={`checkbox-survey-finding-${i}`}
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
-                      />
-                      <span className="text-sm text-black">{finding}</span>
-                    </label>
-                  );
-                })}
+            <>
+              <div>
+                <label className="block text-sm font-medium text-black mb-2">
+                  What did your survey show?
+                </label>
+                <div className="flex flex-col gap-2">
+                  {SURVEY_FINDINGS.map((finding, i) => {
+                    const checked = isChecked('surveyFindings', i);
+                    return (
+                      <label
+                        key={i}
+                        className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                          checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`checkbox-survey-finding-${i}`}
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
+                        />
+                        <span className="text-sm text-black">{finding}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Documentation burden score before
+                  </label>
+                  <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.burdenScoreBefore as number) || 0}
+                    onChange={(v) => setDomainInput('burdenScoreBefore', Math.min(10, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-burden-before"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Documentation burden score after
+                  </label>
+                  <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.burdenScoreAfter as number) || 0}
+                    onChange={(v) => setDomainInput('burdenScoreAfter', Math.min(10, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-burden-after"
+                  />
+                </div>
+              </div>
+            </>
           )}
         </div>
       );
     }
 
     if (level === 3) {
+      const docBurdenOptions = [
+        { value: 10, label: '~10% — a contributing factor' },
+        { value: 20, label: '~20% — a significant factor' },
+        { value: 30, label: '~30% — a primary driver' },
+        { value: 40, label: '40%+ — the dominant driver' },
+      ];
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -878,26 +990,62 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             </div>
             <BenchmarkContext text="Industry estimates for physician replacement range from $250K–$500K (AAMC, Physician Recruitment studies)." />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              What portion of turnover is driven or worsened by documentation burden?
+            </label>
+            <div className="flex flex-col gap-2">
+              {docBurdenOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDomainInput('docBurdenShare', opt.value)}
+                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    (currentState.inputs.docBurdenShare as number) === opt.value
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-burden-share-${opt.value}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       );
     }
 
     return (
-      <div>
-        <label className="block text-sm font-medium text-black mb-1">
-          Monthly reduction in agency or locum spend
-        </label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-[#888888]">$</span>
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            Monthly reduction in agency or locum spend
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.agencyReduction as number) || 0}
+              onChange={(v) => setDomainInput('agencyReduction', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-agency-reduction"
+            />
+          </div>
+          <BenchmarkContext text="Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">
+            How many months has this reduction been sustained?
+          </label>
           <FormattedNumberInput
-            value={(currentState.inputs.agencyReduction as number) || 0}
-            onChange={(v) => setDomainInput('agencyReduction', v)}
+            value={(currentState.inputs.monthsSustained as number) || 0}
+            onChange={(v) => setDomainInput('monthsSustained', Math.max(0, v))}
             placeholder=""
             className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-agency-reduction"
+            data-testid="input-months-sustained"
           />
         </div>
-        <BenchmarkContext text="Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
       </div>
     );
   };
@@ -914,9 +1062,27 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 1) {
       return (
-        <p className="text-sm text-[#888888] italic">
-          No additional inputs at this level. Documentation quality improved. Nothing downstream has changed.
-        </p>
+        <div>
+          <p className="text-sm text-[#888888] italic mb-4">
+            Documentation quality improved, but nothing downstream has changed. The exposure below is auto-computed from your baseline data.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              What % of patients are in value-based or risk contracts?
+            </label>
+            <p className="text-xs text-[#888888] mb-2">Used to estimate HCC/risk adjustment exposure. Default 30%.</p>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.riskVbcPct as number) || 30}
+                onChange={(v) => setDomainInput('riskVbcPct', Math.min(100, Math.max(0, v)))}
+                placeholder="30"
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-risk-vbc-pct"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+        </div>
       );
     }
 
@@ -995,6 +1161,23 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   })}
                 </div>
                 <BenchmarkContext text="Organizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience." />
+
+                <div className="mt-5">
+                  <label className="block text-sm font-medium text-black mb-1">
+                    What % of reviewed charts have documentation gaps?
+                  </label>
+                  <p className="text-xs text-[#888888] mb-2">Optional. Enter if your monitoring has produced a gap rate.</p>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.chartGapRate as number) || 0}
+                      onChange={(v) => setDomainInput('chartGapRate', Math.min(100, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-chart-gap-rate"
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1003,6 +1186,32 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 3) {
+      const WORKFLOW_DELTA_FIELDS: Record<number, { fields: { key: string; label: string; suffix?: string; step?: number }[] }> = {
+        0: { fields: [
+          { key: 'cdiQueriesBefore', label: 'CDI queries/month before', suffix: '/mo' },
+          { key: 'cdiQueriesAfter', label: 'CDI queries/month after', suffix: '/mo' },
+        ] },
+        1: { fields: [
+          { key: 'riskDenialBefore', label: 'Denial rate before (%)', suffix: '%', step: 0.1 },
+          { key: 'riskDenialAfter', label: 'Denial rate after (%)', suffix: '%', step: 0.1 },
+        ] },
+        2: { fields: [
+          { key: 'qualityGapsClosed', label: 'Quality gaps closed per month', suffix: '/mo' },
+        ] },
+        3: { fields: [
+          { key: 'priorAuthBefore', label: 'Prior auth approval rate before (%)', suffix: '%' },
+          { key: 'priorAuthAfter', label: 'Prior auth approval rate after (%)', suffix: '%' },
+        ] },
+        4: { fields: [
+          { key: 'abstractionHoursSaved', label: 'Abstraction hours saved per month', suffix: 'hrs/mo' },
+        ] },
+        5: { fields: [
+          { key: 'rafChange', label: 'RAF score change', step: 0.01 },
+          { key: 'vbcMembers', label: 'Members in VBC contracts' },
+          { key: 'capitationRate', label: 'Annual capitation rate per member', suffix: '$' },
+        ] },
+      };
+
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -1013,51 +1222,104 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {DOWNSTREAM_WORKFLOWS.map((wf, i) => {
                 const checked = isChecked('connectedWorkflows', i);
                 return (
-                  <label
-                    key={i}
-                    htmlFor={`workflow-${i}`}
-                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
-                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                    }`}
-                  >
-                    <Checkbox
-                      id={`workflow-${i}`}
-                      checked={checked}
-                      onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
-                      data-testid={`checkbox-workflow-${i}`}
-                      className="mt-0.5"
-                    />
-                    <span className="text-sm text-[#525252] select-none leading-snug">
-                      {wf}
-                    </span>
-                  </label>
+                  <div key={i}>
+                    <label
+                      htmlFor={`workflow-${i}`}
+                      className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      }`}
+                    >
+                      <Checkbox
+                        id={`workflow-${i}`}
+                        checked={checked}
+                        onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
+                        data-testid={`checkbox-workflow-${i}`}
+                        className="mt-0.5"
+                      />
+                      <span className="text-sm text-[#525252] select-none leading-snug">
+                        {wf}
+                      </span>
+                    </label>
+                    {checked && WORKFLOW_DELTA_FIELDS[i] && (
+                      <div className="ml-8 mt-2 mb-1 flex flex-col gap-2">
+                        {WORKFLOW_DELTA_FIELDS[i].fields.map((f) => (
+                          <div key={f.key} className="flex items-center gap-2">
+                            {f.suffix === '$' && <span className="text-sm text-[#888888]">$</span>}
+                            <FormattedNumberInput
+                              value={(currentState.inputs[f.key] as number) || 0}
+                              onChange={(v) => setDomainInput(f.key, Math.max(0, v))}
+                              placeholder=""
+                              className="w-full h-10 bg-white border-[#E5E7EB] text-sm"
+                              data-testid={`input-${f.key}`}
+                              step={f.step}
+                            />
+                            {f.suffix && f.suffix !== '$' && <span className="text-xs text-[#888888] whitespace-nowrap">{f.suffix}</span>}
+                            <span className="text-xs text-[#888888] whitespace-nowrap min-w-[100px]">{f.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              If known: estimated hours saved per month across these workflows
-            </label>
-            <p className="text-xs text-[#888888] mb-2">
-              Optional. If you can estimate the combined time savings across the workflows you selected, enter it here. If not, the workflow connections above are the primary assessment.
-            </p>
-            <FormattedNumberInput
-              value={(currentState.inputs.workflowHoursSaved as number) || 0}
-              onChange={(v) => setDomainInput('workflowHoursSaved', Math.max(0, v))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-workflow-hours"
-            />
-            <BenchmarkContext text="Organizations with connected workflows have reported 10–40 hrs/month in combined efficiency gains. Based on aggregated deployment experience." />
           </div>
         </div>
       );
     }
 
+    const executiveOwner = currentState.inputs.executiveOwner as string || '';
     return (
       <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-medium text-black mb-2">
+            Is there a named executive owner of documentation quality strategy?
+          </label>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'yes', label: 'Yes' },
+              { id: 'no', label: 'Not yet' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDomainInput('executiveOwner', opt.id)}
+                className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                  executiveOwner === opt.id
+                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-executive-owner-${opt.id}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {executiveOwner === 'yes' && (
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">Role</label>
+            <div className="flex flex-col gap-2">
+              {['CMO / CMIO', 'VP of Quality', 'CIO / CDO', 'VP of Revenue Cycle', 'Other'].map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setDomainInput('executiveOwnerRole', role)}
+                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    (currentState.inputs.executiveOwnerRole as string) === role
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-owner-role-${role}`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-black mb-3">
             Where does documentation quality factor into organizational strategy?
@@ -1091,10 +1353,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Can you estimate the annual strategic value?
+            Recognized annual strategic value
           </label>
           <p className="text-xs text-[#888888] mb-2">
-            This is hard to quantify precisely. If you can estimate the combined value of documentation-driven improvements across payer, quality, compliance, and risk programs — enter it here. If not, leave blank.
+            The combined value of documentation-driven improvements across payer, quality, compliance, and risk programs.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -1106,7 +1368,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-strategic-value"
             />
           </div>
-          <BenchmarkContext text="Organizations at the highest maturity level have reported $100K–$500K+ in attributed strategic value. Based on aggregated deployment experience." />
+          <BenchmarkContext text="Organizations at this level have reported $200K–$1M+ in attributed strategic value." />
         </div>
       </div>
     );
@@ -1321,6 +1583,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     <p key={i}>{line}</p>
                   ))}
                 </div>
+
+                {feedback.costOfWaiting && (
+                  <div className="bg-[#EA2C00]/10 border border-[#EA2C00]/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-cost-of-waiting">
+                    <p className="text-sm text-[#EA2C00] font-medium leading-relaxed">
+                      {feedback.costOfWaiting}
+                    </p>
+                  </div>
+                )}
 
                 {feedback.footnote && (
                   <p className="text-xs text-white/40 italic leading-relaxed">
