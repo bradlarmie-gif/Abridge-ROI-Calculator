@@ -294,7 +294,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       >
         <div className="max-w-[800px] mx-auto text-center">
           <p className="text-[12px] font-medium text-white/40 uppercase tracking-[2px] mb-6" data-testid="text-hero-label">
-            Ambient Assessment
+            Your Ambient AI Assessment
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 mb-8">
@@ -365,11 +365,11 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
           >
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-roadmap">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Your Strategic Roadmap
+                Where to Focus First
               </p>
               <div className="h-px bg-[#E5E7EB] mb-2" />
               <p className="text-sm text-[#888888] leading-relaxed mb-6">
-                Based on your assessment, these are the highest-value focus areas for your organization.
+                Ranked by opportunity. Start with what moves the needle most.
               </p>
 
               {roadmapDomains.map((domain, idx) => {
@@ -403,7 +403,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
           >
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-assessment-details">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Assessment Details
+                Your Assessment at a Glance
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -514,7 +514,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                   data-testid="button-export"
                 >
                   <Download size={16} />
-                  Export My Assessment
+                  Download Your Assessment
                 </Button>
               </div>
 

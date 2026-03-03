@@ -18,11 +18,11 @@ interface AmbientNarrativeFlowProps {
 const TOTAL_SCREENS = 5;
 
 const STEP_NAMES = [
-  "Baseline",
-  "Domains",
-  "Score",
-  "Gap Analysis",
-  "Summary",
+  "Your Deployment",
+  "Four Lenses",
+  "The Reveal",
+  "Cost of Inaction",
+  "Strategic Next Steps",
 ];
 
 export default function AmbientNarrativeFlow({

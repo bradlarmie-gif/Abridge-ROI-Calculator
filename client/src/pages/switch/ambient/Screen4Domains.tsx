@@ -48,8 +48,8 @@ type DomainConfig = {
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'Is the time your providers recovered being turned into patient access or revenue?',
-    reframe: 'Most organizations track ambient AI by satisfaction scores. The real question is what happened to the clinic time it returned — and whether your organization has a plan to capture that value.',
+    headline: 'You\'re recovering time. But is anyone deciding what to do with it?',
+    reframe: 'The difference between a productivity tool and a strategic asset is whether recovered time converts to measurable capacity.',
     cards: [
       { level: 1, label: 'Time Recovered. No Decision Made About It.', description: 'Ambient AI is deployed and time is being saved in clinic, but no operational decision has followed about where that time goes.' },
       { level: 2, label: 'Total Recovery Quantified. Opportunity Identified.', description: 'Aggregate hours known and presented to leadership.' },
@@ -59,8 +59,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'Is every encounter capturing the revenue it earned?',
-    reframe: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
+    headline: 'Is documentation fidelity worth anything to your revenue cycle — or is no one asking?',
+    reframe: 'Every encounter either captures or leaks revenue through your documentation infrastructure. The question is whether anyone is measuring which.',
     cards: [
       { level: 1, label: 'Revenue Cycle Has Not Been Asked.', description: 'No one has connected ambient deployment to coding or billing.' },
       { level: 2, label: 'Revenue Cycle Is Investigating.', description: 'CDI, coding, or billing leadership has an active analysis in progress.' },
@@ -70,8 +70,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'Is documentation burden driving your people away — and do you know the cost?',
-    reframe: 'Capacity measures what happens to time saved during clinic hours. Workforce measures what happens after hours — the documentation burden that follows providers home, accelerates burnout, and quietly drives turnover.',
+    headline: 'Documentation burden is driving turnover. Do you know how much it\'s costing?',
+    reframe: 'At $100K–$1M per physician departure, documentation burden isn\'t a satisfaction issue — it\'s a financial exposure.',
     cards: [
       { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'After-hours documentation burden exists, but no formal measurement of its impact on provider experience or retention has been done.' },
       { level: 2, label: 'Burden Reduction Measured and Validated.', description: 'In-clinic and after-hours time formally quantified; survey data captured.' },
@@ -81,8 +81,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'Are documentation gaps creating financial exposure you can\'t quantify?',
-    reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete, defensible documentation at scale.',
+    headline: 'Your notes are better. But is anything downstream actually changing?',
+    reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete documentation at scale.',
     cards: [
       { level: 1, label: 'Documentation Quality Improved. Exposure Still Invisible.', description: 'Notes are better; no system is translating that into financial or compliance value.' },
       { level: 2, label: 'Documentation Quality Is Being Monitored.', description: 'Completeness, specificity, and HCC capture are tracked; gaps are visible.' },

@@ -168,10 +168,10 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
-          Your Score
+          Here's where you stand.
         </h1>
         <p className="text-base text-[#888888]">
-          How intentionally your organization captures the value ambient documentation creates
+          This is how intentionally your organization is converting ambient AI into measurable value.
         </p>
       </motion.div>
 
@@ -185,7 +185,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           >
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-buildup">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-buildup-label">
-                How Your Score Is Built
+                Score Breakdown
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -211,7 +211,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                             {DOMAIN_LABELS[domain]}
                           </p>
                           <p className="text-xs text-[#888888] italic">
-                            {ACTIVATION_LABELS[domain][level]}
+                            → {ACTIVATION_LABELS[domain][level]}
                           </p>
                         </div>
                         <div className="w-[45%]">
@@ -241,7 +241,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   data-testid="card-composite-score"
                 >
                   <p className="font-semibold text-sm text-black">
-                    Ambient Value Maturity Score
+                    Your Maturity Score
                   </p>
 
                   <div className="flex-1 max-w-[200px]" style={{ height: 8 }}>
@@ -286,7 +286,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               className="text-sm text-[#888888] italic underline underline-offset-2 cursor-pointer bg-transparent border-none mb-6 hover:text-[#666666] transition-colors"
               data-testid="button-methodology-toggle"
             >
-              {methodologyOpen ? 'Scoring Methodology ↑' : 'How we calculate your score →'}
+              {methodologyOpen ? 'How Points Are Awarded ↑' : 'How points are awarded →'}
             </button>
 
             <AnimatePresence>
@@ -300,7 +300,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                 >
                   <div className="bg-[#F5F0EB] rounded-lg p-6 md:p-8 mb-8" data-testid="panel-methodology">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Scoring Methodology
+                      How Points Are Awarded
                     </p>
                     <div className="h-px bg-[#E5E7EB] mb-4" />
 
@@ -396,7 +396,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
 
             <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
-              Ambient Value Maturity Score
+              Your Maturity Score
             </p>
             <p className="text-xs text-white/40 leading-relaxed mb-4">
               Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Quality.

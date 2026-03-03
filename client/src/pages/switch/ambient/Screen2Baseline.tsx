@@ -80,24 +80,24 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight"
             data-testid="text-screen2-headline"
           >
-            Your Organization
+            Before we can show you what's possible — we need to understand what's real.
           </h1>
           <p className="text-base text-[#888888]">
-            Tell us your deployment scale. We'll show you what you're capturing — and what you're leaving behind.
+            Three inputs establish the foundation. Everything that follows is built on what you tell us here.
           </p>
         </motion.div>
 
         <motion.div variants={staggerItem}>
           <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-screen2-label">
-              Standard Inputs
+              Your Deployment Profile
             </p>
             <div className="h-px bg-[#E5E7EB] mb-6" />
 
             <div className="flex flex-col gap-6">
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  Physicians and APPs using ambient documentation
+                  How many providers are on ambient today?
                 </label>
                 <FormattedNumberInput
                   value={inputs.providers}
@@ -110,7 +110,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  Annual encounters where ambient is available
+                  How many encounters per year does ambient touch?
                 </label>
                 <FormattedNumberInput
                   value={inputs.annualEncounters}
@@ -156,7 +156,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  What % of encounters use ambient documentation?
+                  What share of encounters go through ambient?
                 </label>
 
                 <div className="flex items-center gap-2">
@@ -217,9 +217,9 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-1">
-                  Avg. time saved per documented encounter
+                  How much time does ambient return per encounter?
                 </label>
-                <p className="text-xs text-[#888888] italic mb-2">Abridge observed: 2–3 min. Industry range: 1–3 min.</p>
+                <p className="text-xs text-[#888888] italic mb-2">Most deployments see 2–3 min. Industry range: 1–3 min.</p>
                 <div className="flex items-center gap-2">
                   <FormattedNumberInput
                     value={inputs.timeSavedPerEncounter || 0}
@@ -246,7 +246,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   className="transition-transform duration-200"
                   style={{ transform: showAdvanced ? 'rotate(180deg)' : 'rotate(0)' }}
                 />
-                Advanced inputs
+                Financial Assumptions
               </button>
 
               <AnimatePresence>
@@ -258,6 +258,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     className="overflow-hidden"
                   >
                     <div className="flex flex-col gap-5 mt-4 pt-4 border-t border-[#E5E7EB]">
+                      <p className="text-xs text-[#888888] italic leading-relaxed -mt-1 mb-1">These defaults reflect published benchmarks. Adjust only if you have organization-specific data.</p>
                       <div>
                         <label className="block text-sm font-medium text-black mb-1">
                           Average revenue per visit
@@ -327,8 +328,11 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
           transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
-            <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
-              Your Baseline
+            <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-2">
+              Emerging Picture
+            </p>
+            <p className="text-xs text-white/40 leading-relaxed mb-4">
+              This is what your deployment looks like on paper.
             </p>
 
             <div className="space-y-4 text-sm">
@@ -400,8 +404,8 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 </div>
 
                 <div className="h-px bg-white/10 my-5" />
-                <p className="text-xs text-white/30 italic leading-relaxed">
-                  Benchmarks used: 76% utilization observed across deployments. Individual results vary.
+                <p className="text-xs text-white/40 italic leading-relaxed">
+                  That's {documentedEncounters.toLocaleString()} documented encounters generating data. The question is what you're doing with it.
                 </p>
               </>
             )}

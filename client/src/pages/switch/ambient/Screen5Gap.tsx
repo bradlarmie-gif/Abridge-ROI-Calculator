@@ -300,10 +300,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          WHAT YOUR DEPLOYMENT IS WORTH — AND WHERE IT'S HEADED
+          What standing still is costing you.
         </h1>
         <p className="text-base text-[#888888]">
-          What your organization could capture — and what every month of delay costs.
+          The gap between where you are and where strategic action takes you — quantified.
         </p>
       </motion.div>
 
@@ -313,7 +313,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Your Deployment Reality
+                Reality Check
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -372,7 +372,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-next-level">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                What Each Maturity Level Unlocks
+                Where the Value Lives
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -440,13 +440,19 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 );
               })}
             </div>
+
+            {annualGap > 0 && (
+              <p className="text-sm text-[#E8350A] font-semibold text-center mt-6 mb-4">
+                Every month at current maturity levels, your organization forgoes approximately {formatDollar(monthlyGap)} in capturable value.
+              </p>
+            )}
           </motion.div>
 
           {(hasMeasuredDomains || annualGap > 0) && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
               <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-chart">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                  3-Year Projection
+                  36-Month Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
                   Cumulative value captured: current trajectory vs. strategic action
@@ -589,13 +595,13 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 This is value your deployment is positioned to capture with greater operational intentionality.
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Wait 6 months</span>
+                <span className="text-sm text-white/70">Every 6 months of delay</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-6mo">
                   {formatDollar(sixMonthGap)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Wait 12 months</span>
+                <span className="text-sm text-white/70">A year of inaction costs</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-12mo">
                   {formatDollar(wait12mo)}
                 </span>
