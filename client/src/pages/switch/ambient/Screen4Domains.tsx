@@ -48,10 +48,10 @@ type DomainConfig = {
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'Is your time savings translating into capacity or revenue?',
-    reframe: 'Most organizations measure ambient AI by physician satisfaction. The real question is what happened to the time it returned — and whether your organization has a system for capturing it.',
+    headline: 'Is the time your providers recovered being turned into patient access or revenue?',
+    reframe: 'Most organizations track ambient AI by satisfaction scores. The real question is what happened to the clinic time it returned — and whether your organization has a plan to capture that value.',
     cards: [
-      { level: 1, label: 'Time Recovered. No Decision Made About It.', description: 'Deployment exists, but no operational response has followed.' },
+      { level: 1, label: 'Time Recovered. No Decision Made About It.', description: 'Ambient AI is deployed and time is being saved in clinic, but no operational decision has followed about where that time goes.' },
       { level: 2, label: 'Total Recovery Quantified. Opportunity Identified.', description: 'Aggregate hours known and presented to leadership.' },
       { level: 3, label: 'Capacity Redeployed Into Patient Access.', description: 'Schedules, panels, or slots changed based on the recovered time.' },
       { level: 4, label: 'Capacity Drives Staffing and Growth Decisions.', description: 'Recovered FTE equivalent is a variable in hiring, expansion, and build planning.' },
@@ -70,10 +70,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'What is documentation burden actually costing you in turnover and retention?',
-    reframe: 'Physician satisfaction surveys tell you what already happened. After-hours documentation burden tells you what is about to happen.',
+    headline: 'Is documentation burden driving your people away — and do you know the cost?',
+    reframe: 'Capacity measures what happens to time saved during clinic hours. Workforce measures what happens after hours — the documentation burden that follows providers home, accelerates burnout, and quietly drives turnover.',
     cards: [
-      { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'Anecdotal feedback; no structured data.' },
+      { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'After-hours documentation burden exists, but no formal measurement of its impact on provider experience or retention has been done.' },
       { level: 2, label: 'Burden Reduction Measured and Validated.', description: 'In-clinic and after-hours time formally quantified; survey data captured.' },
       { level: 3, label: 'Retention Risk Calculated Against Burden Reduction.', description: 'Turnover exposure modeled; documentation burden is a named variable in retention strategy.' },
       { level: 4, label: 'Labor Spend Is Structurally Declining.', description: 'Agency and locum costs measurably reduced; workforce economics improving.' },
@@ -1011,6 +1011,22 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </button>
               ))}
             </div>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {[
+                { label: 'Conservative', value: 40 },
+                { label: 'Shanafelt benchmark', value: 60 },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setDomainInput('docBurdenShare', opt.value)}
+                  className="text-xs px-3 py-1.5 rounded-full border border-[#D1D5DB] text-[#525252] hover:border-[#E8350A] hover:text-[#E8350A] transition-all"
+                >
+                  {opt.label} ({opt.value}%)
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-[#888888] mt-2">Shanafelt et al. found documentation burden is a top-3 driver of physician burnout. Most organizations use 40–60%.</p>
           </div>
         </div>
       );
@@ -1068,18 +1084,34 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </p>
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              What % of patients are in value-based or risk contracts?
+              What % of your patient panel is in value-based or risk contracts?
             </label>
-            <p className="text-xs text-[#888888] mb-2">Used to estimate HCC/risk adjustment exposure. Default 30%.</p>
+            <p className="text-xs text-[#888888] mb-2">If unknown or primarily fee-for-service, leave at 0. HCC undercapture only applies to VBC/capitation populations.</p>
             <div className="flex items-center gap-2">
               <FormattedNumberInput
-                value={(currentState.inputs.riskVbcPct as number) || 30}
+                value={(currentState.inputs.riskVbcPct as number) ?? 0}
                 onChange={(v) => setDomainInput('riskVbcPct', Math.min(100, Math.max(0, v)))}
-                placeholder="30"
+                placeholder="0"
                 className="w-full h-12 bg-white border-[#E5E7EB]"
                 data-testid="input-risk-vbc-pct"
               />
               <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {[
+                { label: 'Mostly fee-for-service', value: 8 },
+                { label: 'Mixed payer mix', value: 28 },
+                { label: 'VBC-heavy', value: 52 },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setDomainInput('riskVbcPct', opt.value)}
+                  className="text-xs px-3 py-1.5 rounded-full border border-[#D1D5DB] text-[#525252] hover:border-[#E8350A] hover:text-[#E8350A] transition-all"
+                >
+                  {opt.label} (~{opt.value}%)
+                </button>
+              ))}
             </div>
           </div>
         </div>

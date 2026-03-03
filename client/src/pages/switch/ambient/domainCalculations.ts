@@ -721,7 +721,7 @@ export function computeRiskFeedback(
   revenuePerVisit: number = 200,
 ): DomainFeedback {
   if (level === 1) {
-    const vbcPct = (inputs.riskVbcPct as number) || 30;
+    const vbcPct = (inputs.riskVbcPct as number) ?? 0;
     const denialExposure = Math.round(documentedEncounters * revenuePerVisit * 0.04);
     const hccExposure = Math.round(documentedEncounters * (vbcPct / 100) * 200);
     const qualityExposure = Math.round(documentedEncounters * 0.04 * 100);
@@ -732,9 +732,9 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${formatDollar(totalExposure)} in combined annual risk exposure — invisible.`,
-      context: `Your documentation quality has improved — but nothing downstream has changed to leverage it. The risk isn't that documentation is bad. The risk is that no one is translating better documentation into financial protection.\n\nDenial exposure: ${formatDollar(denialExposure)}\nHCC/risk adjustment undercapture: ${formatDollar(hccExposure)}\nQuality measure gaps: ${formatDollar(qualityExposure)}`,
+      context: `Your documentation quality may have improved — but three risk exposures remain unaddressed downstream.\n\nDenial exposure: ${formatDollar(denialExposure)} annually (${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × 4% avg denial rate).\n\n${vbcPct > 0 ? `HCC / risk adjustment undercapture: ${formatDollar(hccExposure)} (${documentedEncounters.toLocaleString()} encounters × ${vbcPct}% VBC panel × $200/member).\n\n` : ''}Quality measure gaps: ${formatDollar(qualityExposure)} (${documentedEncounters.toLocaleString()} encounters × 4% gap rate × $100/gap).\n\nTotal unaddressed exposure: ${formatDollar(totalExposure)} annually.`,
       formula: `[denialExposure] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 4% = ${formatDollar(denialExposure)}\n[hccExposure] = ${documentedEncounters.toLocaleString()} × ${vbcPct}% VBC × $200 = ${formatDollar(hccExposure)}\n[qualityExposure] = ${documentedEncounters.toLocaleString()} × 4% × $100 = ${formatDollar(qualityExposure)}`,
-      footnote: 'Exposure estimates based on national averages. Not a prediction — a measure of what is at stake.',
+      footnote: 'Denial rate: 4% national average (MGMA). HCC uplift: $200/member conservative estimate. Quality gap impact: $100/encounter. These are exposure estimates, not confirmed losses — the point is that no one is measuring them.',
       costOfWaiting: `Every month without a documentation quality strategy = ${formatDollar(monthlyExposure)} in unmanaged risk.`,
     };
   }
