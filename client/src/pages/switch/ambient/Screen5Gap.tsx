@@ -77,6 +77,7 @@ function getNextLevelContent(
   hasValue: boolean,
   recoveredHours: number = 0,
   netTimeSaved: number = 3,
+  annualEncounters: number = 0,
 ): NextLevelContent {
   const base: NextLevelContent = {
     domainLabel: DOMAIN_LABELS[domain].toUpperCase(),
@@ -87,12 +88,12 @@ function getNextLevelContent(
 
   if (domain === 'capacity') {
     if (level === 1) {
-      const bmkHrs = Math.round((documentedEncounters * netTimeSaved) / 60);
-      const bmkValueLow = Math.round(bmkHrs * providerRate * 0.20 / 1000) * 1000;
-      const bmkValueHigh = Math.round(bmkHrs * providerRate * 0.35 / 1000) * 1000;
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${documentedEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHrs.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
-      if (documentedEncounters > 0) {
-        base.formula = `${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHrs.toLocaleString()} hrs\nLow: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHrs.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
+      const hoursFromUserInput = Math.round((netTimeSaved * annualEncounters) / 60);
+      const bmkValueLow = Math.round(hoursFromUserInput * providerRate * 0.20);
+      const bmkValueHigh = Math.round(hoursFromUserInput * providerRate * 0.35);
+      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters ÷ 60 = ${hoursFromUserInput.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      if (annualEncounters > 0) {
+        base.formula = `${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters / 60 = ${hoursFromUserInput.toLocaleString()} hrs\nLow: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
       }
@@ -237,11 +238,12 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         d, domainLevels[d], providers, documentedEncounters,
         revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d],
         userHoursRecovered,
-        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSavedHigh
+        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSavedHigh,
+        annualEncounters
       );
     }
     return result;
-  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh]);
+  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh, annualEncounters]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
