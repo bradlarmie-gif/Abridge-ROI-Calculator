@@ -1,0 +1,505 @@
+Here is the complete input and math specification for all 16 levels, mapped to your new level definitions.
+CAPACITY
+
+C-L1: Time Recovered. No Decision Made About It.
+What this level means: The org deployed ambient AI, providers are faster, and nothing operationally has changed. This is the most common state in the market.
+Inputs to collect:
+The baseline already has providers, encounters, utilization %, and time saved per encounter. At this level you need one refinement:
+
+Time saved per documented encounter (min) — pre-filled from baseline, let them adjust
+"I haven't measured this yet" checkbox — if checked, use Abridge observed avg (2.5 min)
+Math to run and display immediately:
+
+documented_encounters = annual_encounters × (utilization / 100)
+hours_recovered = documented_encounters × time_saved_min / 60
+fte_equivalent = hours_recovered / 2,080
+redeployment_rate = 0%  ← explicit at this level, because no decision has been made
+capacity_dollar_value = $0  ← honest
+What the right panel should show:
+Headline: "2,250 hours recovered. $0 captured."
+Then: "At $150/hr with even 20% redeployment, that's $67,500/year your organization is currently not capturing. Every month at this level costs you $5,625."
+That last sentence IS the cost of waiting for this domain. Make it red. Make it explicit.
+C-L2: Total Recovery Quantified. Opportunity Identified.
+What this level means: Someone ran the math. Leadership has seen a number. A presentation happened. No operational change yet.
+Inputs to collect:
+
+Time saved per documented encounter (min) — carried from L1 or re-entered
+Confirmed total recovered hours annually — pre-calculated from above, but allow override: "Our team calculated [X] hours. Adjust if your measurement differs."
+Has this been presented to leadership? (Yes / Scheduled / Not yet) — radio, no dollar impact but feeds narrative
+Math to run:
+
+confirmed_hours = user_input OR (documented_encounters × time_saved / 60)
+fte_equivalent = confirmed_hours / 2,080
+opportunity_low  = confirmed_hours × provider_hourly_rate × 0.20
+opportunity_high = confirmed_hours × provider_hourly_rate × 0.35
+What the right panel should show:
+Headline: "2,250 hours quantified. $45K–$118K in reachable value."
+Below: "The number exists. The question is whether your organization has decided what to do with it. Organizations that present this number to leadership and schedule an operational response capture value within 60–90 days. Organizations that don't are still at this level 12 months later."
+Cost of waiting: "Each month without an operational decision = $3,750–$9,800 in unrealized capacity value."
+C-L3: Capacity Redeployed Into Patient Access.
+What this level means: Schedules changed. Panel sizes expanded. Slots were added. The recovered time became visible patient access.
+Inputs to collect:
+
+Additional patients seen per provider per month (number field) — benchmark hint: "Organizations with structured access redesign report 3–8 additional patients/provider/month"
+Number of providers with redesigned schedules (number, defaults to total providers, allow override)
+Average revenue per visit ($ — carried from baseline, $200 default)
+Math to run:
+
+new_encounters_annual = additional_patients × providers_redesigned × 12
+capacity_revenue = new_encounters_annual × revenue_per_visit
+example: 5 patients × 40 providers × 12 months × $200 = $480,000/year
+What the right panel should show:
+Headline: "$480,000 in new patient revenue annually."
+Below: "This is recovered capacity converting into real access — patients who couldn't get in before, now seen. At 5 additional patients per provider per month across 40 providers, that's 2,400 new encounters per year."
+Cost of waiting: "Each month before full schedule redesign = $40,000 in unrealized patient revenue."
+C-L4: Capacity Drives Staffing and Growth Decisions.
+What this level means: The recovered FTE equivalent is a formal variable in hiring models, expansion plans, or service line decisions. This is the org that says "we don't need to hire another cardiologist yet because we have 1.1 FTE of recovered capacity to deploy."
+Inputs to collect:
+
+How is recovered capacity being used in planning? (multi-select checkboxes)
+
+Avoided or deferred new hires
+Absorbed patient volume growth without adding FTEs
+Redeployed providers to underserved panels or new sites
+Factored into annual FTE/staffing model
+Used in business case for new service lines or locations
+
+
+FTEs avoided or deferred (number field) — "Organizations at this level report 1–2 FTE equivalent impact on hiring decisions"
+Annual cost per physician FTE ($ field, default $350,000) — "Fully-loaded physician FTE cost including salary, benefits, recruitment. Industry range $300K–$500K."
+Math to run:
+
+avoided_hire_value = ftes_avoided × annual_cost_per_fte
+example: 1.1 FTE × $350,000 = $385,000 in avoided hiring cost annually
+What the right panel should show:
+Headline: "$385,000 in avoided hiring cost."
+Below: "This is the level where ambient AI stops being a documentation tool and becomes a workforce strategy. 1.1 FTE of recovered capacity, modeled into your staffing plan, is $385,000 you didn't spend on recruitment, onboarding, and salary — this year alone."
+REVENUE
+
+R-L1: Revenue Cycle Has Not Been Asked.
+What this level means: Nobody in CDI, coding, or billing has looked at whether documentation changed after ambient deployment. The revenue impact is completely invisible.
+Inputs to collect:
+None from the user. But this level should auto-compute from baseline to show the exposure. This is the level where you show them what they're flying blind on.
+Math to run automatically from baseline:
+documented_encounters = annual_encounters × (utilization / 100)   // 45,000
+// Denial exposure (what they're at risk for)
+avg_denial_rate = 0.04  // 4% national average
+denial_exposure = documented_encounters × revenue_per_visit × avg_denial_rate
+// 45,000 × $200 × 4% = $360,000 at-risk annually
+// wRVU uplift potential (conservative)
+conservative_wrvu_uplift = 0.10  // wRVU per encounter
+wrvu_opportunity = documented_encounters × conservative_wrvu_uplift × conversion_factor
+// 45,000 × 0.10 × $33 = $148,500 potential
+// HCC/risk adjustment (for VBC orgs)
+// Surface as a question: "What % of your patients are in value-based contracts?"
+// vbc_share × documented_encounters × $200 avg HCC capture value = exposure
+What the right panel should show:
+Headline: "$360,000 in annual denial exposure. $148,500 in potential wRVU uplift. Nobody has looked at either."
+Below: "Your revenue cycle is operating as if documentation didn't change — because no one told them it did. This is the most common and most expensive blind spot in ambient AI deployments. Organizations that connect revenue cycle to documentation quality within 90 days of deployment identify measurable impact before the first contract renewal."
+Cost of waiting: "Each month your revenue cycle hasn't analyzed documentation changes = another month of invisible leakage." Then show: "$[denial_exposure / 12] in monthly denial exposure unmonitored."
+R-L2: Revenue Cycle Is Investigating.
+What this level means: A meeting happened. CDI, coding, or billing leadership has been told about the ambient deployment and has an active data pull or analysis in progress. No results yet.
+Inputs to collect:
+
+Who is leading the investigation? (multi-select, helps with narrative)
+
+CDI leadership
+Coding/HIM team
+Revenue cycle VP or CFO office
+Billing and collections
+External revenue cycle consultant
+
+
+How long has the analysis been in progress? (radio)
+
+Just started (< 30 days)
+In progress (30–90 days)
+Taking longer than expected (90+ days)
+
+
+What are they analyzing? (multi-select checkboxes — these are your signal checkers)
+
+CDI query volume before vs. after
+ICD-10 coding specificity
+HCC/risk adjustment capture rates
+Claim denial rates related to documentation
+wRVU per encounter trends
+Collections per encounter
+Math to run:
+No confirmed dollar yet — this level produces a projected range based on what they're investigating. Each checked analysis item maps to a dollar range:
+
+
+
+CDI queries: $150–$400 per patient in combined CDI efficiency + coding completeness
+ICD specificity: 0.1–0.3 wRVU × documented_encounters × $33 = $148K–$445K
+HCC capture: $150–$400 × encounters × vbc_share
+Denial rate: 1% point improvement × encounters × revenue_per_visit = $90K per point
+wRVU trends: 0.1–0.3 wRVU × encounters × $33 = $148K–$445K
+Collections: 1–3% improvement × (encounters × revenue_per_visit) = $90K–$270K
+Show the sum of ranges for checked items as a potential band.
+**What the right panel should show:**
+Headline: **"Analysis in progress. Potential impact: $148K–$445K annually based on what's being investigated."**
+Below: *"The analysis is running. Based on what your team is looking at, the potential impact ranges from [low]to[low] to [
+low]to[high]. Organizations that complete this analysis and act on findings within 90 days typically move to Level 3 within a single quarter."*
+Cost of waiting: *"Each additional month of analysis without action = [potentiallow/12]–[potential_low/12]–[
+potentiall​ow/12]–[potential_high/12] in unrealized revenue."*
+
+R-L3: Revenue Impact Measured and Attributed.
+What this level means: The analysis is done. A number exists. Leadership has a figure they're willing to stand behind.
+Inputs to collect — this is the critical gap that must be fixed:
+First ask: What did you measure? (radio, single select — pick the primary metric)
+Then based on selection, show the corresponding number field:
+If wRVU change selected:
+
+"wRVU change per encounter (pre vs. post ambient)" — delta field, e.g., +0.15
+Math: wrvu_delta × documented_encounters × conversion_factor
+Example: 0.15 × 45,000 × $33 = $222,750/year
+If collections change selected:
+"Change in collections per encounter ($)" — delta field, e.g., +$12
+Math: collections_delta × documented_encounters
+Example: $12 × 45,000 = $540,000/year
+If denial rate reduction selected:
+"Denial rate before ambient (%)" and "Denial rate after ambient (%)" — two fields
+Math: (before% - after%) × documented_encounters × revenue_per_visit
+Example: (5% - 3%) × 45,000 × $200 = $180,000/year
+If overall revenue % change selected:
+"Revenue change attributed to documentation improvement (%)" — % field
+Math: revenue_change% × (documented_encounters × revenue_per_visit)
+Example: 2% × $9,000,000 = $180,000/year
+What the right panel should show:
+Headline: "$222,750 in measured annual revenue impact."
+Below: "This is a number your organization can stand behind — before/after analysis, documented and attributed. This is what makes ambient AI a revenue strategy, not just a documentation tool."
+Cost of waiting to get here from L1: "You were leaving $[measured_number] on the table every year before this analysis."
+
+
+R-L4: Documentation Quality Is a Managed Revenue Input.
+What this level means: This isn't a one-time analysis. Documentation quality is continuously monitored as a revenue input — it's in dashboards, CDI workflows, and contract negotiations.
+Inputs to collect:
+
+How is documentation quality integrated into revenue cycle operations? (multi-select)
+
+Ongoing wRVU or collections monitoring linked to documentation quality
+CDI workflow incorporates ambient documentation in query prioritization
+Denial management tracks documentation-related root causes by provider
+Revenue cycle dashboards include documentation quality metrics
+Payer contract negotiations reference documentation-driven outcomes
+Value-based care quality metrics are tracked against documentation completeness
+
+
+Recognized annual revenue attributed to documentation quality ($) — required, not optional
+
+Pre-populate from L3 calculation if completed
+Benchmark: "Organizations with revenue cycle integration report $200K–$1M+ in annually attributed revenue"
+If blank, use L3 calculated value with a note that it's estimated
+Math to run:
+
+
+
+L4_revenue = user_entered_attributed_revenue OR L3_calculated_value
+What the right panel should show:
+Headline: "$[attributed_revenue] in annually managed revenue impact."
+Below: "Documentation quality is no longer a one-time story — it's a managed input. Every provider, every encounter, every payer conversation is informed by it."
+WORKFORCE
+
+W-L1: Providers Report Less After-Hours Work. Not Measured Yet.
+What this level means: Providers are saying they chart less at night. Nobody has measured it. No structured data exists.
+Inputs to collect:
+
+Have providers reported reduced after-hours charting? (radio)
+
+Yes — multiple providers have mentioned it
+Yes — it came up in a department meeting or survey
+Not yet observed / too early to tell
+
+
+Estimated hours per provider per week of after-hours reduction (number field) — clearly labeled as estimate
+
+Benchmark: "Ambient AI deployments typically report 1–3 hrs/week reduction in after-hours documentation"
+"I'm estimating" checkbox so they don't feel locked in
+Math to run:
+
+
+
+// Even with anecdotal data, compute the direction
+after_hours_weekly = estimated_hours_per_week
+annual_burden_hours = after_hours_weekly × providers × 52
+// Dollar value of reclaimed personal time (use provider hourly rate as proxy)
+after_hours_value = annual_burden_hours × provider_hourly_rate
+// 2 hrs × 50 providers × 52 wks × $150 = $780,000 in provider time returned
+// Burnout/turnover proxy — this is the key number
+// AAMC data: documentation burden is top 3 driver of physician burnout
+// Turnover probability increases ~15% per additional hour of after-hours charting per week
+turnover_proxy = after_hours_weekly × 0.15 × providers
+// Surface as: "At 2 hrs/week, documentation burden alone puts X% more of your providers at elevated turnover risk"
+**What the right panel should show:**
+Headline: **"2 hrs/week × 50 providers = $780,000 in physician time returned annually."**
+Then, the second number that hits harder: *"Providers averaging 2+ hrs of after-hours charting per week are 30% more likely to report burnout symptoms associated with near-term departure intent. At 350Kreplacementcost,that′s[350K replacement cost, that's [
+350Kreplacementcost,that′s[number] in retention exposure this number is starting to protect."*
+
+W-L2: Burden Reduction Measured and Validated.
+What this level means: Structured measurement happened. Surveys were run. In-clinic time savings are quantified alongside after-hours reduction. This is a validated data point, not anecdote.
+Inputs to collect:
+
+Measured after-hours reduction per provider per week (hrs/wk) — now a confirmed number not an estimate
+In-clinic chart editing time saved per provider per day (min/day)
+
+Benchmark: "10–20 min/day reduction in chart editing and reconciliation is commonly reported at this stage"
+
+
+Clinician survey completed? (radio)
+
+No structured survey yet
+Informal pulse survey
+Formal structured survey (burnout index, satisfaction, documentation burden scale)
+
+
+If formal survey: average documentation burden score before vs. after (1–10 scale, two fields)
+Math to run:
+
+// After-hours value (now confirmed, not estimated)
+after_hours_value = confirmed_hrs × providers × 52 × provider_hourly_rate
+// In-clinic editing savings
+clinic_daily_savings_hrs = clinic_min_saved / 60
+annual_clinic_savings = clinic_daily_savings_hrs × providers × 250 clinic_days × provider_hourly_rate
+// 15 min/day × 50 providers × 250 days / 60 × $150 = $468,750/year
+// Total measured workforce value
+total_workforce_value = after_hours_value + annual_clinic_savings
+// Burnout delta (if survey completed with scores)
+burnout_improvement = before_score - after_score
+// Each 1-point improvement on a 10-point burden scale correlates with ~8% reduction in near-term departure intent (citable)
+// Surface as a retention probability statement, not a hard dollar
+What the right panel should show:
+Headline: "$1,248,750 in total measured workforce value — after-hours and in-clinic combined."
+(That's $780K after-hours + $468K in-clinic editing for the sample inputs)
+Below: "This is no longer anecdote — it's data. Your providers are getting [X] hours of their life back every week. That's the number that goes in a retention strategy."
+W-L3: Retention Risk Calculated Against Burden Reduction.
+What this level means: The org has done the math connecting documentation burden to turnover risk. A dollar figure exists for how much retention exposure ambient AI is protecting against.
+Inputs to collect:
+
+Annual physician turnover rate (%) — number field
+
+Benchmark: "National physician turnover averages 6–8% annually (AAMC)"
+
+
+Average cost to recruit and onboard a replacement ($) — dollar field
+
+Benchmark: "$250K–$500K per physician (AAMC and physician recruitment studies)"
+
+
+What portion of your turnover is driven or worsened by documentation burden? (% estimate)
+
+Slider or select: 10% / 20% / 30% / 40%+
+Benchmark note: "AAMC surveys show documentation burden is cited as a primary factor in 20–35% of physician departure decisions"
+
+
+Has documentation burden reduction been formally named in your retention strategy? (Yes/No) — maturity gate, no dollar impact
+Math to run:
+
+// Total annual turnover exposure
+annual_departures = providers × (turnover_rate / 100)
+total_turnover_cost = annual_departures × replacement_cost
+// 50 × 7% × $350,000 = $1,225,000 annual exposure
+// Documentation-attributable share
+doc_driven_turnover_cost = total_turnover_cost × (doc_burden_share / 100)
+// $1,225,000 × 25% = $306,250 documentation-attributable exposure
+// What ambient AI is protecting
+// Ambient reduces after-hours burden by reported hrs; use reduction as proxy for risk reduction
+// Conservative: if 2 hrs/wk reduced → 15% reduction in doc-driven departure risk
+risk_reduction_rate = min(after_hours_hrs_reduced × 0.075, 0.30)  // cap at 30%
+protected_value = doc_driven_turnover_cost × risk_reduction_rate
+// $306,250 × 20% = $61,250 annually protected
+What the right panel should show (two numbers, both matter):
+Total exposure: "$1,225,000 in annual physician turnover cost. Documentation burden drives an estimated $306,250 of that."
+Protected value: "Ambient AI's burden reduction is protecting an estimated $61,250 of that exposure annually — and growing as utilization increases."
+The total exposure number is what stops the CFO. The protected value is what makes Abridge defensible. You need both.
+W-L4: Labor Spend Is Structurally Declining.
+What this level means: Agency and locum costs are measurably lower. This isn't projected — it's in the books.
+Inputs to collect:
+
+Monthly reduction in agency or locum physician spend ($) — dollar field
+
+Benchmark: "$5K–$30K/month reported at this maturity level"
+
+
+How many months has this reduction been sustained? (number field)
+
+This turns a monthly figure into a cumulative trajectory
+
+
+What drove the reduction? (multi-select)
+
+Reduced provider turnover (fewer gaps to fill)
+Increased provider willingness to take additional shifts
+Increased capacity per existing provider (fewer locums needed for volume)
+Slower rate of new hires needed
+Math to run:
+
+
+
+annual_labor_savings = monthly_reduction × 12
+cumulative_savings_to_date = monthly_reduction × months_sustained
+// Trajectory statement
+monthly_savings = monthly_reduction
+// "You've already avoided $[cumulative] in agency spend. On current trajectory, that's $[annual] annually."
+What the right panel should show:
+Headline: "$[annual_labor_savings] in annual labor spend reduction. $[cumulative] already realized."
+Below: "This is the level where ambient AI shows up in the CFO's P&L — not as a cost line, but as a cost reduction. Agency and locum dependency is structurally lower. That compounds."
+RISK
+
+R(isk)-L1: Documentation Quality Improved. Exposure Still Invisible.
+What this level means: Notes are better — everyone agrees. But no downstream system has been told to look for it, measure it, or use it. The improvement is real; its financial value is invisible.
+Inputs to collect:
+Zero new inputs required. This level runs entirely from baseline data. That is the point — they haven't done anything, so you compute from what you know.
+Math to run automatically:
+documented_encounters = annual_encounters × (utilization / 100)
+// Denial exposure (what poor documentation historically costs)
+avg_denial_rate = 0.04  // 4% industry average
+denial_exposure = documented_encounters × revenue_per_visit × avg_denial_rate
+// 45,000 × $200 × 4% = $360,000
+// HCC undercapture (for value-based orgs)
+// Ask one question: "What % of your patients are in value-based or risk contracts?"
+// vbc_pct field with default 30%
+hcc_exposure = documented_encounters × (vbc_pct/100) × 200  // $200 avg HCC value per patient
+// 45,000 × 30% × $200 = $2,700,000 at risk (this is total contract value, not annual loss)
+// Show as: "Your value-based patient population represents $X in HCC-sensitive contract value"
+// Quality measure miss cost (MIPS/HEDIS)
+// Rough proxy: 3–5% of encounters have a closeable care gap worth $50–$150 in performance value
+quality_exposure = documented_encounters × 0.04 × 100  // midpoint estimate
+// 45,000 × 4% × $100 = $180,000
+What the right panel should show:
+Headline: "$360,000 in annual denial exposure. $180,000 in quality measure risk. None of it is being monitored."
+Below: "Your documentation is better. But your revenue cycle, CDI team, and compliance function are operating as if it isn't. The improvement is real — the capture of its value isn't. Until someone looks downstream, the financial benefit of better documentation is invisible."
+This is the most powerful use of "cost of waiting" in the entire tool — because at L1, the exposure exists independently of Abridge. Abridge improved documentation quality. The question is whether the org is harvesting that improvement.
+R(isk)-L2: Documentation Quality Is Being Monitored.
+What this level means: Someone is tracking it. Completeness rates, specificity scores, HCC capture — structured measurement is happening.
+Inputs to collect:
+
+What is being monitored? (multi-select checkboxes)
+
+Documentation completeness rate (% of notes meeting completeness thresholds)
+Diagnosis specificity scores (ICD-10 specificity tracking)
+HCC/RAF score trends
+CDI query rates (tracking whether queries are increasing or decreasing)
+Denial rates linked to documentation
+Prior auth approval rates linked to documentation quality
+
+
+How are you monitoring? (radio)
+
+Spot checks — informal review, anecdotal from CDI or coding
+Systematic — structured audits or dashboards measuring documentation attributes
+
+
+Since monitoring began, what % of reviewed charts have documentation gaps? (% field, optional but high-value)
+
+Benchmark: "Organizations beginning systematic monitoring typically find gaps in 8–15% of reviewed charts"
+Math to run:
+
+
+
+// If gap rate entered:
+gap_rate = user_entered_gap_pct / 100  // e.g., 10%
+recoverable_revenue_per_closed_gap = 75  // midpoint of $50–$100 range
+gap_revenue_opportunity = documented_encounters × gap_rate × recoverable_revenue_per_closed_gap
+// 45,000 × 10% × $75 = $337,500 in closeable revenue gaps identified
+// Systematic vs. spot check multiplier
+// Organizations with systematic tracking identify 40–60% more gaps than spot checks (citable)
+tracking_multiplier = (monitoring_type === 'systematic') ? 1.0 : 0.5
+adjusted_opportunity = gap_revenue_opportunity × tracking_multiplier
+What the right panel should show:
+Headline: "$337,500 in documentation gaps identified and closeable."
+Below: "You can see the gaps now. The question is whether your downstream systems — coding, CDI, revenue cycle — are set up to close them. Organizations that move from monitoring to action at this stage typically realize 60–80% of identified gap value within 6 months."
+Cost of waiting: "Each month gaps are identified but not acted on = $[gap_revenue_opportunity/12] in unclosed revenue."
+R(isk)-L3: Documentation Quality Is Closing Revenue and Compliance Gaps.
+What this level means: The monitoring is connected to action. CDI, coding, prior auth, and quality workflows are actively using improved documentation to close real financial gaps.
+Inputs to collect:
+
+Which downstream workflows have been impacted? (multi-select checkboxes — each maps to a dollar range)
+
+CDI query volume reduced (fewer queries because notes are more complete upfront)
+Coding accuracy improved (fewer rejections, faster turnaround)
+Quality measure capture improved (HEDIS, MIPS, Stars gap closure)
+Prior authorization documentation streamlined (fewer denials, faster approvals)
+HCC/risk adjustment capture improved
+Chart abstraction time reduced (registries, research, compliance reporting)
+
+
+For each checked workflow, ask the delta: (this is what's missing currently)
+
+CDI queries: "Monthly CDI query volume before vs. after" (two number fields)
+Coding accuracy: "Denial rate before vs. after (%)" (two % fields)
+Quality measures: "Closeable gaps addressed per month" (number field)
+Prior auth: "Prior auth approval rate before vs. after (%)" (two % fields)
+HCC capture: "RAF score change per member per year" (delta field)
+Chart abstraction: "Hours saved per month" (number field)
+Math per workflow:
+
+
+
+// CDI query reduction
+cdi_query_cost = 25  // $25 avg cost per query (physician + CDI time)
+cdi_savings = (queries_before - queries_after) × cdi_query_cost × 12
+// Denial rate reduction
+denial_savings = (denial_before% - denial_after%) × documented_encounters × revenue_per_visit
+// 2% point reduction × 45,000 × $200 = $180,000
+// Quality measure capture (MIPS example)
+mips_value_per_gap = 100  // avg MIPS performance value per closed gap
+quality_value = gaps_per_month × 12 × mips_value_per_gap
+// Prior auth improvement
+// Each 1% improvement in approval rate saves roughly:
+prior_auth_savings = (approval_after% - approval_before%) × documented_encounters × 15
+// $15 avg cost of a denied prior auth (rework, appeal, delay)
+// HCC/RAF
+raf_delta_value = raf_change × members_in_vbc × capitation_rate
+// Rough: 0.05 RAF improvement × 5,000 members × $8,000 capitation = $2,000,000 (for large VBC orgs)
+// Chart abstraction
+abstraction_savings = hours_saved_monthly × 12 × 50  // $50/hr for abstraction staff
+// Total
+risk_l3_value = sum of all above
+What the right panel should show:
+Show each checked workflow with its dollar line:
+
+CDI query reduction: $[cdi_savings]
+Denial rate reduction: $[denial_savings]
+Quality measure capture: $[quality_value]
+etc.
+Total: $[risk_l3_value] annually in documented risk-to-revenue conversion.
+
+
+R(isk)-L4: Documentation Is a Governed Strategic Asset.
+What this level means: Documentation quality isn't just measured and acted on — it's governed. It informs payer negotiations, value-based care program design, compliance strategy, and workforce planning. It's a board-level asset.
+Inputs to collect:
+
+Where does documentation quality factor into organizational strategy? (multi-select)
+
+Payer contract negotiations (documentation quality supports rate arguments)
+Value-based care program design (documentation feeds quality metrics)
+Compliance/audit governance (documentation quality is a formally governed metric)
+Clinical documentation review program (formal CDR program in place)
+Workforce/FTE modeling (documentation efficiency formally informs staffing)
+Research and registry participation (structured documentation enables data use)
+
+
+Recognized annual strategic value attributed to documentation quality ($) — required
+
+Pre-populated from L3 total if completed
+Prompt: "This should be a number your revenue cycle VP, CMO, and CFO have seen and agreed to. It doesn't need to be exact — it needs to be defensible."
+Benchmark: "Organizations at this level report $200K–$1M+ in formally attributed annual value"
+
+
+Is there a named executive owner of documentation quality strategy? (Yes/No)
+
+If yes: which role? (CMO / CFO / VP Revenue Cycle / Chief Quality Officer / Other)
+This is a maturity signal, not a dollar input — but it's powerful for the narrative
+Math to run:
+
+
+
+L4_risk_value = user_entered_strategic_value OR L3_calculated_total
+What the right panel should show:
+Headline: "$[strategic_value] in annually governed strategic value."
+Below: "Documentation is no longer a clinical asset with financial side effects. It's a strategic asset — governed, measured, and reported at the executive level. Your payer conversations, your quality program, your compliance posture, and your workforce strategy all run on it."
+THE COST OF WAITING — HOW IT ADDS UP ACROSS ALL 16
+Here's the final summary of what "cost of waiting" looks like when every level produces a number:
+For an org at all Level 1s with 50 providers, 100K encounters, 45% utilization, $200/visit:
+DomainCurrent L1 Value VisibleL4 PotentialMonthly Cost of WaitingCapacity$0 captured of $67.5K possible$385K avoided hire$5,625/monthRevenue$360K denial exposure unmonitored$222K+ measured impact$18,500/monthWorkforce$780K provider time returned$180K agency savings$15,250/monthRisk$360K denial + $180K quality exposure$500K+ governed value$11,700/monthTotal$51,075/monthThat is the number that goes on the summary page. $51,075 per month. $612,900 per year. Not "$45K gap." Not "cost of waiting: $4K/month."That is the number that kills the "let's revisit this next quarter" conversation.
