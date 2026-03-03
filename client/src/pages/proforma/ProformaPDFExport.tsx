@@ -700,9 +700,11 @@ interface ProformaPDFProps {
   summary: ProformaSummary;
   yearlyData: ReturnType<typeof getYearlySummary>;
   sensitivityIRR: { conservative: number; optimistic: number; consValid: boolean; optValid: boolean };
+  organizationName?: string;
+  preparedBy?: string;
 }
 
-function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR, chartData, paybackQuarter }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null }) {
+function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR, chartData, paybackQuarter, organizationName, preparedBy }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null; organizationName?: string; preparedBy?: string }) {
   const termLabel = contractTermLabel(config.contractTermMonths);
   const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
@@ -743,8 +745,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
     <Document>
       <PDFCoverPage
         reportLabel="ORGANIZATION PROFORMA"
-        title="Organization"
+        title={organizationName || "Organization"}
         subtitle={`${termLabel} Financial Model  \u00B7  ${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Observed Abridge Deployment Data`}
+        preparedBy={preparedBy}
         disclaimerText="This model reflects conservative estimates derived from user inputs and observed outcomes across Abridge deployments. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
       />
 
@@ -1534,7 +1537,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
 export async function generateProformaPDF(
   settings: ProformaSettingSnapshot[],
-  config: ProformaConfig
+  config: ProformaConfig,
+  organizationName?: string,
+  preparedBy?: string
 ): Promise<void> {
   const cashFlows = buildMonthlyCashFlows(settings, config);
   const summary = calculateProformaSummary(settings, config, cashFlows);
@@ -1588,8 +1593,11 @@ export async function generateProformaPDF(
       sensitivityIRR={sensitivityIRR}
       chartData={chartData}
       paybackQuarter={paybackQuarter}
+      organizationName={organizationName}
+      preparedBy={preparedBy}
     />
   ).toBlob();
 
-  await savePdfBlob(blob, "Abridge_Organization_Proforma.pdf", "Organization Proforma");
+  const sanitizedOrg = (organizationName || "Organization").replace(/[^a-zA-Z0-9]/g, "_");
+  await savePdfBlob(blob, `Abridge_${sanitizedOrg}_Proforma.pdf`, `${organizationName || "Organization"} Proforma`);
 }

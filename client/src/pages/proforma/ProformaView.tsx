@@ -9,6 +9,7 @@ import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_C
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProformaViewProps {
@@ -160,10 +161,13 @@ export default function ProformaView({
 
   const startDate = useMemo(() => getContractStartDate(), []);
 
-  const handleExportPDF = async () => {
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await generateProformaPDF(settings, config);
+      await generateProformaPDF(settings, config, clientName, preparedBy);
+      setShowExportModal(false);
       toast({ title: "Proforma PDF exported" });
     } catch (e) {
       toast({ title: "Export failed", description: String(e), variant: "destructive" });
@@ -1355,13 +1359,12 @@ export default function ProformaView({
             <Settings className="w-4 h-4" /> Edit Settings
           </Button>
           <Button
-            onClick={handleExportPDF}
-            disabled={isExporting}
+            onClick={() => setShowExportModal(true)}
             className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white px-6 sm:px-8 h-12 text-base font-semibold order-1 sm:order-2"
             data-testid="button-export-pdf"
           >
-            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            {isExporting ? "Exporting..." : "Export Proforma PDF"}
+            <Download className="w-4 h-4" />
+            Export Proforma PDF
           </Button>
         </div>
 
@@ -1548,6 +1551,14 @@ export default function ProformaView({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PDFExportModal
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExportPDF}
+        isExporting={isExporting}
+        documentType="proforma"
+      />
     </div>
   );
 }
