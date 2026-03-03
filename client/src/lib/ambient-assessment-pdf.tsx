@@ -62,7 +62,7 @@ export interface DomainData {
   primaryOpportunity: string;
 }
 
-const TOTAL_PAGES = 7;
+const TOTAL_PAGES = 5;
 
 const colors = {
   background: "#FFFFFF",
@@ -85,84 +85,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: "#1A1A1A",
     backgroundColor: "#FFFFFF",
-  },
-  sectionPage: {
-    padding: 40,
-    paddingBottom: 50,
-    fontFamily: "Manrope",
-    fontSize: 10.5,
-    color: "#1A1A1A",
-    backgroundColor: "#FDFAF7",
-  },
-  sectionPageTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: "#1A1A1A",
-    letterSpacing: 1.5,
-    marginBottom: 8,
-    textTransform: "uppercase",
-  },
-  sectionPageSubtitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1A1A1A",
-    marginBottom: 6,
-  },
-  sectionPageIntro: {
-    fontSize: 9.5,
-    color: "#555555",
-    lineHeight: 1.6,
-    marginBottom: 20,
-    maxWidth: 440,
-  },
-  domainRow: {
-    flexDirection: "row",
-    marginBottom: 14,
-    gap: 12,
-  },
-  domainIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 4,
-    backgroundColor: "#C8372D",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 2,
-  },
-  domainIconText: {
-    fontSize: 13,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  domainContent: {
-    flex: 1,
-  },
-  domainName: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#1A1A1A",
-    marginBottom: 3,
-  },
-  domainDesc: {
-    fontSize: 9,
-    color: "#555555",
-    lineHeight: 1.5,
-  },
-  insightBox: {
-    backgroundColor: "#1A1A1A",
-    padding: 20,
-    marginTop: 16,
-    borderRadius: 4,
-  },
-  insightBoxText: {
-    fontSize: 9.5,
-    color: "#FFFFFF",
-    lineHeight: 1.65,
-  },
-  insightBoxHighlight: {
-    fontSize: 9.5,
-    color: "#E5432D",
-    fontWeight: "bold",
   },
   pageWrapper: {
     flex: 1,
@@ -256,14 +178,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 8,
   },
-  metricRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
   metricLabel: {
     fontSize: 9,
     color: "#666666",
@@ -297,12 +211,6 @@ const styles = StyleSheet.create({
     fontSize: 8.5,
     color: "#999999",
     marginBottom: 6,
-  },
-  domainDescription: {
-    fontSize: 9.5,
-    color: "#666666",
-    lineHeight: 1.5,
-    marginBottom: 8,
   },
   domainValueBig: {
     fontSize: 18,
@@ -361,13 +269,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#F5F0EB",
     paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  scenarioTableRow: {
-    flexDirection: "row",
-    paddingVertical: 6,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
@@ -451,6 +352,8 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
   const hoursReclaimed = timeSavedEntered ? Math.round((data.annualEncounters * data.timeSavings) / 60) : 0;
   const fteEquivalent = timeSavedEntered ? (hoursReclaimed / 2080).toFixed(1) : null;
 
+  const combinedNarrative = `${getScoreVerdict(data.documentationScore, data)} ${data.assessmentNarrative}`;
+
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
@@ -480,19 +383,12 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
                 </View>
               ))}
             </View>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.5 }}>
-              {getScoreVerdict(data.documentationScore, data)}
-            </Text>
           </View>
         </View>
 
-        <View style={styles.thickDivider} />
-
-        <Text style={styles.sectionLabel}>YOUR ASSESSMENT</Text>
-
         <View style={[styles.calloutBox, { marginBottom: 14 }]}>
           <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.6 }}>
-            {data.assessmentNarrative}
+            {combinedNarrative}
           </Text>
         </View>
 
@@ -519,29 +415,25 @@ function Page1ScoreAndValue({ data }: { data: AmbientAssessmentPDFData }) {
   );
 }
 
-const domainMeta: Record<string, { name: string; question: string; description: string; drivers: string[] }> = {
+const domainMeta: Record<string, { name: string; question: string; drivers: string[] }> = {
   capacity: {
     name: "Capacity",
     question: "What happened to the time ambient AI returned?",
-    description: "Where does recovered time actually go? Most organizations save time with ambient but haven't structurally converted it to capacity. Your level reflects how intentionally your organization deploys recovered time.",
     drivers: ["Time saved per encounter", "Recovered hours annually", "Additional patients per month", "FTEs avoided or redeployed"],
   },
   revenue: {
     name: "Revenue",
     question: "What is documentation fidelity worth to your revenue cycle?",
-    description: "Coding accuracy, HCC capture, and denial prevention driven by complete clinical notes. Every encounter either captures or leaks revenue through your documentation infrastructure.",
     drivers: ["Revenue signals observed", "wRVU or collections change", "Yield improvement measured", "Revenue formally attributed"],
   },
   workforce: {
     name: "Workforce",
     question: "What is documentation burden costing your workforce?",
-    description: "Documentation burden drives after-hours work, in-clinic inefficiency, and turnover. Your level reflects how deeply your organization is measuring and managing the workforce impact of burden reduction.",
     drivers: ["After-hours reduction", "In-clinic time saved", "Clinician survey findings", "Turnover exposure quantified"],
   },
   risk: {
     name: "Risk",
     question: "Is your documentation ready for what comes next?",
-    description: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. Your level reflects whether your organization is building on that foundation or sitting on it.",
     drivers: ["Quality dimensions tracked", "Downstream workflows connected", "Hours saved in reporting", "Strategic integrations active"],
   },
 };
@@ -554,7 +446,7 @@ const RELEVANT_DRIVERS: Record<string, Record<number, number[]>> = {
 };
 
 function getDomainDisplayValue(domain: DomainData): string {
-  if (domain.headlineMetric && domain.headlineMetric !== '\u2014' && domain.headlineMetric !== '—' && domain.headlineMetric !== 'Not yet entered') {
+  if (domain.headlineMetric && domain.headlineMetric !== '\u2014' && domain.headlineMetric !== '\u2014' && domain.headlineMetric !== 'Not yet entered') {
     return domain.headlineMetric;
   }
   if (domain.hasValue !== false && domain.gapValue > 0) {
@@ -599,8 +491,6 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
             <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, width: 40, textAlign: "right" }}>{domainScore}/25</Text>
           </View>
 
-          <Text style={styles.domainDescription}>{meta.description}</Text>
-
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
             {meta.drivers.map((driver, di) => {
               const isRelevant = relevantIdx.includes(di);
@@ -623,69 +513,7 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
   );
 }
 
-function Page2Domains({ data }: { data: AmbientAssessmentPDFData }) {
-  const domainOrder: Array<keyof typeof data.domains> = ["capacity", "revenue", "workforce", "risk"];
-  const lowestDomain = domainOrder.reduce((lowest, d) =>
-    data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
-  );
-
-  const domainIntros: Record<string, { letter: string; name?: string; desc: string }> = {
-    capacity: {
-      letter: "C",
-      name: "Capacity Realization",
-      desc: "Time saved per encounter is only valuable if it becomes something \u2014 more patients, shorter days, or reduced overtime. Level 1 organizations recover hours on paper. Level 4 organizations deploy those hours into measurable throughput gain.",
-    },
-    revenue: {
-      letter: "R",
-      name: "Revenue Integrity",
-      desc: "Complete, structured clinical notes drive coding accuracy, HCC capture, and denial prevention. Organizations at higher maturity levels see measurable wRVU lift and fewer missed risk-adjustment codes \u2014 not because providers document more, but because they document completely.",
-    },
-    workforce: {
-      letter: "W",
-      name: "Workforce Stability",
-      desc: "Documentation burden is the #1 driver of clinician burnout and turnover. At $100K\u2013$1M per physician departure, even a 10% retention improvement changes the financial picture fundamentally.",
-    },
-    risk: {
-      letter: "Rx",
-      name: "Risk & Compliance Posture",
-      desc: "Every AI initiative your organization wants in the next three years runs on one foundation \u2014 structured, complete documentation at scale. This domain measures infrastructure readiness.",
-    },
-  };
-
-  return (
-    <Page size="LETTER" style={styles.sectionPage} wrap={false}>
-      <View style={styles.pageWrapper}>
-        <Text style={styles.sectionPageTitle}>AMBIENT AI MATURITY FRAMEWORK</Text>
-        <Text style={styles.sectionPageSubtitle}>What You{"\u2019"}re Being Assessed On {"\u2014"} And Why It Matters</Text>
-        <Text style={styles.sectionPageIntro}>
-          Most ambient AI evaluations focus on adoption rate. That captures only part of the value story. Abridge measures four domains because each one represents a distinct value lever {"\u2014"} and together, they determine whether ambient AI becomes a productivity tool or a strategic infrastructure.
-        </Text>
-
-        {domainOrder.map((key) => (
-          <View key={key} style={styles.domainRow}>
-            <View style={styles.domainIcon}>
-              <Text style={styles.domainIconText}>{domainIntros[key].letter}</Text>
-            </View>
-            <View style={styles.domainContent}>
-              <Text style={styles.domainName}>{domainMeta[key].name}</Text>
-              <Text style={styles.domainDesc}>{domainIntros[key].desc}</Text>
-            </View>
-          </View>
-        ))}
-
-        <View style={styles.insightBox}>
-          <Text style={styles.insightBoxText}>
-            The maturity score is a map, not a grade. Every gap between where your organization is today and where it could be represents a quantifiable opportunity. The goal of this assessment is to make those opportunities visible, specific, and worth acting on.
-          </Text>
-        </View>
-
-        <PageFooter pageNum={2} orgName={data.organizationName} />
-      </View>
-    </Page>
-  );
-}
-
-function Page3DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData }) {
+function Page2DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
@@ -699,13 +527,13 @@ function Page3DomainsCapacityRevenue({ data }: { data: AmbientAssessmentPDFData 
         <DomainCard domainKey="capacity" data={data} isLast={false} />
         <DomainCard domainKey="revenue" data={data} isLast={true} />
 
-        <PageFooter pageNum={3} orgName={data.organizationName} />
+        <PageFooter pageNum={2} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page4DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData }) {
+function Page3DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
@@ -719,13 +547,21 @@ function Page4DomainsWorkforceRisk({ data }: { data: AmbientAssessmentPDFData })
         <DomainCard domainKey="workforce" data={data} isLast={false} />
         <DomainCard domainKey="risk" data={data} isLast={true} />
 
-        <PageFooter pageNum={4} orgName={data.organizationName} />
+        <PageFooter pageNum={3} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
+function getValueSourceLabel(data: AmbientAssessmentPDFData): string {
+  const domainsWithValue = (['capacity', 'revenue', 'workforce', 'risk'] as const).filter(d => data.domains[d].hasValue && data.domains[d].gapValue > 0);
+  const domainsWithoutValue = (['capacity', 'revenue', 'workforce', 'risk'] as const).filter(d => !data.domains[d].hasValue || data.domains[d].gapValue <= 0);
+  if (domainsWithValue.length === 0) return "Based on next-level projections across your domains";
+  if (domainsWithoutValue.length === 0) return "Based on your measured inputs";
+  return "Based on measured inputs and next-level projections";
+}
+
+function Page4ValueAndUrgency({ data }: { data: AmbientAssessmentPDFData }) {
   const hasData = data.totalAnnualGap > 0;
   const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
   const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
@@ -750,36 +586,27 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>YOUR VALUE OPPORTUNITY</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>What Strategic Action Could Unlock</Text>
-        <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
-          Based on your deployment scale and Abridge-observed benchmarks {"\u2014"} conservative estimates, not ceiling projections.
-        </Text>
-        <Text style={styles.body}>
-          This page consolidates your domain-level findings into a single view of total organizational opportunity. Values reflect measured inputs where available and conservative projections where not.
-        </Text>
+        <Text style={styles.sectionLabel}>VALUE OPPORTUNITY & COST OF WAITING</Text>
 
-        <View style={styles.thickDivider} />
-
-        <View style={[styles.twoColRow, { marginBottom: 14 }]}>
+        <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={[styles.col, styles.darkPanel]}>
             <Text style={styles.heroLabel}>Annual Value Opportunity</Text>
             <Text style={[styles.heroNumber, { color: colors.primary }]}>{hasData ? fmt(data.totalAnnualGap) : "Not yet entered"}</Text>
             {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
             <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {hasData ? "Total across all four domains" : "Enter domain data to calculate"}
+              {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate"}
             </Text>
           </View>
           <View style={styles.col}>
             <View style={[styles.cardBg, { marginBottom: 8 }]}>
-              <Text style={styles.heroLabel}>Per Provider</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(perProvider) : "Pending inputs"}</Text>
-              <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual opportunity per provider</Text>
+              <Text style={styles.heroLabel}>Monthly Uncaptured</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(data.monthlyGap) : "Pending inputs"}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary }}>value left on the table each month</Text>
             </View>
             <View style={styles.cardBg}>
-              <Text style={styles.heroLabel}>Per Encounter</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? `$${perEncounter}` : "Pending inputs"}</Text>
-              <Text style={{ fontSize: 8.5, color: colors.secondary }}>value opportunity per encounter</Text>
+              <Text style={styles.heroLabel}>Daily Uncaptured</Text>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, lineHeight: 1, marginBottom: 2 }}>{hasData ? fmt(data.dailyGap) : "Pending inputs"}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary }}>every business day at current maturity</Text>
             </View>
           </View>
         </View>
@@ -798,96 +625,18 @@ function Page5ValueOpportunity({ data }: { data: AmbientAssessmentPDFData }) {
                   <View style={{ height: 4, backgroundColor: domainColors[d.key], borderRadius: 2, width: `${barWidth}%` }} />
                 </View>
               </View>
-              <Text style={styles.valueBarAmount}>{d.value > 0 ? fmt(d.value) : "—"}</Text>
+              <Text style={styles.valueBarAmount}>{d.value > 0 ? fmt(d.value) : "\u2014"}</Text>
             </View>
           );
         })}
 
-        <View style={{ marginTop: 6 }}>
-          <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {hasData
-                ? `Your highest-value domain is ${domainValues.sort((a, b) => b.value - a.value)[0].name}. The distribution across domains indicates where operational focus will yield the greatest return.`
-                : "Enter domain-specific data across all four domains to see your value distribution."}
+        {hasData && (
+          <View style={[styles.calloutBox, { marginBottom: 6 }]}>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
+              Your highest-value domain is {[...domainValues].sort((a, b) => b.value - a.value)[0].name}. The distribution across domains indicates where operational focus will yield the greatest return.
             </Text>
           </View>
-        </View>
-
-        <PageFooter pageNum={5} orgName={data.organizationName} />
-      </View>
-    </Page>
-  );
-}
-
-function getValueSourceLabel(data: AmbientAssessmentPDFData): string {
-  const domainsWithValue = (['capacity', 'revenue', 'workforce', 'risk'] as const).filter(d => data.domains[d].hasValue && data.domains[d].gapValue > 0);
-  const domainsWithoutValue = (['capacity', 'revenue', 'workforce', 'risk'] as const).filter(d => !data.domains[d].hasValue || data.domains[d].gapValue <= 0);
-  if (domainsWithValue.length === 0) return "Based on next-level projections across your domains";
-  if (domainsWithoutValue.length === 0) return "Based on your measured inputs";
-  return "Based on measured inputs and next-level projections";
-}
-
-function getWhatThisMeansText(data: AmbientAssessmentPDFData): string {
-  const domainLabels: Record<string, string> = { capacity: 'Capacity', revenue: 'Revenue', workforce: 'Workforce', risk: 'Risk' };
-  const lowestDomain = (['risk', 'revenue', 'workforce', 'capacity'] as const).reduce((lowest, d) =>
-    data.domains[d].activationLevel < data.domains[lowest].activationLevel ? d : lowest
-  );
-  const lowestName = domainLabels[lowestDomain].toLowerCase();
-  const hasData = data.totalAnnualGap > 0;
-  const timeSavedEntered = data.timeSavings > 0;
-
-  let text = `Your organization has ${data.providers} providers generating ${data.annualEncounters.toLocaleString()} encounters annually. `;
-
-  if (timeSavedEntered) {
-    const hoursReclaimed = Math.round((data.annualEncounters * data.timeSavings) / 60);
-    text += `At ${data.utilization}% utilization and ${data.timeSavings} minutes saved per encounter, your documentation infrastructure is returning ${hoursReclaimed.toLocaleString()} hours annually. `;
-  } else {
-    text += `At ${data.utilization}% utilization, your organization hasn\u2019t yet measured time savings per encounter. Establishing this metric is the foundation for understanding capacity value. `;
-  }
-
-  if (hasData) {
-    text += `Your biggest opportunity is in ${lowestName}. The gap between current performance and strategic action represents approximately ${fmt(data.totalAnnualGap)} annually. Your lowest-scoring domain is ${domainLabels[lowestDomain]}. This is where the most immediate opportunity lives.`;
-  } else {
-    text += `Enter domain-specific data to calculate the gap between current performance and strategic action.`;
-  }
-  return text;
-}
-
-function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
-  const perProvider = data.providers > 0 ? Math.round(data.totalAnnualGap / data.providers) : 0;
-  const perEncounter = data.annualEncounters > 0 ? Math.round(data.totalAnnualGap / data.annualEncounters) : 0;
-  const hasData = data.totalAnnualGap > 0;
-  const sourceLabel = getValueSourceLabel(data);
-
-  return (
-    <Page size="LETTER" style={styles.page} wrap={false}>
-      <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>THE STRATEGIC IMPERATIVE: WHY MATURITY LEVEL MATTERS NOW</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Every Month at Current Maturity Levels</Text>
-        <Text style={styles.body}>
-          Based on your assessment and next-level projections. These estimates reflect what strategic action across your four domains could unlock.
-        </Text>
-
-        <View style={styles.divider} />
-
-        <View style={[styles.twoColRow, { marginBottom: 10 }]}>
-          <View style={[styles.col, styles.darkPanel]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Monthly Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.primary, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.monthlyGap) : "Not yet entered"}</Text>
-            {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
-            <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {hasData ? `${fmt(perProvider)} per provider \u00B7 $${perEncounter} per encounter` : "Enter domain data to calculate cost of waiting"}
-            </Text>
-          </View>
-          <View style={[styles.col, styles.darkPanel]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Daily Value Uncaptured</Text>
-            <Text style={{ fontSize: 40, fontWeight: "bold", color: colors.white, lineHeight: 1, marginBottom: 4 }}>{hasData ? fmt(data.dailyGap) : "Not yet entered"}</Text>
-            {hasData && <Text style={{ fontSize: 8, color: "#777777", marginBottom: 4 }}>{sourceLabel}</Text>}
-            <Text style={{ fontSize: 9, color: "#999999", lineHeight: 1.5 }}>
-              {hasData ? "Every business day your organization does not systematically capture this value." : "Enter domain data to calculate cost of waiting"}
-            </Text>
-          </View>
-        </View>
+        )}
 
         <View style={styles.thickDivider} />
 
@@ -912,24 +661,17 @@ function Page6CostOfWaiting({ data }: { data: AmbientAssessmentPDFData }) {
           ))}
         </View>
 
-        <View style={styles.thickDivider} />
-
-        <Text style={styles.sectionLabel}>WHAT THIS MEANS</Text>
-        <Text style={styles.body}>
-          {getWhatThisMeansText(data)}
-        </Text>
-
-        <PageFooter pageNum={6} orgName={data.organizationName} />
+        <PageFooter pageNum={4} orgName={data.organizationName} />
       </View>
     </Page>
   );
 }
 
-function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
+function Page5Methodology({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>YOUR NEXT MOVE</Text>
+        <Text style={styles.sectionLabel}>METHODOLOGY & NEXT STEPS</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>How We Calculate This</Text>
         <Text style={styles.body}>
           Every number in this assessment traces directly to your inputs and the assumptions listed below. We use published industry data and conservative benchmark ranges. No additional discounting is applied {"\u2014"} the estimates are designed to be defensible as presented.
@@ -995,7 +737,7 @@ function Page7Methodology({ data }: { data: AmbientAssessmentPDFData }) {
           All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
         </Text>
 
-        <PageFooter pageNum={7} orgName={data.organizationName} />
+        <PageFooter pageNum={5} orgName={data.organizationName} />
       </View>
     </Page>
   );
@@ -1012,12 +754,10 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
     />
     <Page1ScoreAndValue data={data} />
-    <Page2Domains data={data} />
-    <Page3DomainsCapacityRevenue data={data} />
-    <Page4DomainsWorkforceRisk data={data} />
-    <Page5ValueOpportunity data={data} />
-    <Page6CostOfWaiting data={data} />
-    <Page7Methodology data={data} />
+    <Page2DomainsCapacityRevenue data={data} />
+    <Page3DomainsWorkforceRisk data={data} />
+    <Page4ValueAndUrgency data={data} />
+    <Page5Methodology data={data} />
   </Document>
 );
 
