@@ -161,12 +161,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const level = currentState.activationLevel;
     const inp = currentState.inputs;
     switch (activeDomain) {
-      case 'capacity': return computeCapacityFeedback(level, inp, providers, documentedEncounters, revenuePerVisit, providerRate);
+      case 'capacity': {
+        const capacityInp = inp.timeSaved ? inp : { ...inp, timeSaved: inputs.timeSavedPerEncounter || 0 };
+        return computeCapacityFeedback(level, capacityInp, providers, documentedEncounters, revenuePerVisit, providerRate);
+      }
       case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
       case 'workforce': return computeWorkforceFeedback(level, inp, providers, providerRate);
       case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit);
     }
-  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor]);
+  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
 
   const handleAdvance = () => {
     if (currentState.activationLevel) {
@@ -219,7 +222,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const level = currentState.activationLevel;
     if (!level) return null;
 
-    const timeSavedValue = (currentState.inputs.timeSaved as number) || 0;
+    const timeSavedValue = (currentState.inputs.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
 
     const showUnmeasuredCheckbox = level === 1;
 
