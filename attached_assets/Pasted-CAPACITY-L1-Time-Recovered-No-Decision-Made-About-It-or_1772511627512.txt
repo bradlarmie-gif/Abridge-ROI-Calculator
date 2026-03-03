@@ -1,0 +1,33 @@
+CAPACITY
+
+L1: Time Recovered. No Decision Made About It. (org has deployment, no operational response)
+
+L2: Total Recovery Quantified. Opportunity Identified. (aggregate hours known, presented to leadership)
+
+L3: Capacity Redeployed Into Patient Access. (schedules, panels, or slots changed based on the recovered time)
+
+L4: Capacity Drives Staffing and Growth Decisions. (recovered FTE equivalent is a variable in hiring, expansion, and build planning) REVENUE
+
+L1: Revenue Cycle Has Not Been Asked. (no one has connected ambient deployment to coding or billing)
+
+L2: Revenue Cycle Is Investigating. (CDI, coding, or billing leadership has an active analysis in progress)
+
+L3: Revenue Impact Measured and Attributed. (before/after analysis complete, a dollar number exists that leadership can stand behind)
+
+L4: Documentation Quality Is a Managed Revenue Input. (ongoing, real-time integration between documentation quality and revenue cycle operations) WORKFORCE
+
+L1: Providers Report Less After-Hours Work. Not Measured Yet. (anecdotal, no structured data)
+
+L2: Burden Reduction Measured and Validated. (in-clinic and after-hours time formally quantified, survey data captured)
+
+L3: Retention Risk Calculated Against Burden Reduction. (turnover exposure modeled; documentation burden is a named variable in retention strategy)
+
+L4: Labor Spend Is Structurally Declining. (agency and locum costs measurably reduced; workforce economics improving) RISK
+
+L1: Documentation Quality Improved. Exposure Still Invisible. (notes are better; no system is translating that into financial or compliance value)
+
+L2: Documentation Quality Is Being Monitored. (completeness, specificity, and HCC capture are tracked; gaps are visible)
+
+L3: Documentation Quality Is Closing Revenue and Compliance Gaps. (CDI, coding, quality reporting, and prior auth workflows are actively using improved documentation)
+
+L4: Documentation Is a Governed Strategic Asset. (payer contracts, value-based care programs, compliance governance, and quality strategy are all built on documentation quality as a formal input)
