@@ -172,12 +172,12 @@ export default function ExploreCareQuality({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-black">HAPI Prevention</p>
+                        <p className="font-semibold text-black">HAPI Risk: Documentation Impact</p>
                         <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
                           POTENTIAL
                         </span>
                       </div>
-                      <p className="text-sm text-[#888888]">Real-time documentation enables earlier intervention</p>
+                      <p className="text-sm text-[#888888]">Real-time skin assessment and risk score capture creates the clinical visibility that enables earlier intervention</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       {docQualityInputs.nursingHapiEnabled && (
@@ -259,7 +259,7 @@ export default function ExploreCareQuality({
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                             </div>
-                            <p className="text-xs text-[#888888]">5% is conservative—represents cases where real-time documentation would have triggered earlier intervention.</p>
+                            <p className="text-xs text-[#888888]">A 2012 multi-site study of 29 hospitals found nursing documentation technology associated with a 13% reduction in HAPU rates (Dowding et al., Journal of the American Medical Informatics Association, 2012). We model 6.5% as Abridge's attributable share — exactly half the observed effect — to reflect that Abridge improves documentation timeliness and completeness within a broader care system.</p>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Cost per HAPI $</label>
@@ -290,6 +290,9 @@ export default function ExploreCareQuality({
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Care time allocation (from your time split)</span>
                               <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
+                            </div>
+                            <div className="text-xs text-[#888888] italic mt-1 mb-1">
+                              6.5% represents the share of HAPIs where real-time documentation of skin assessments, Braden scores, and turning schedules would have created earlier clinical visibility. Source: Conservative relative to Dowding et al. (JAMIA 2012), which observed 13% HAPU reduction following nursing documentation technology implementation across 29 hospitals.
                             </div>
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= HAPIs prevented</span>
@@ -333,12 +336,12 @@ export default function ExploreCareQuality({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-black">Falls Prevention</p>
+                        <p className="font-semibold text-black">Fall Risk Visibility Gap</p>
                         <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
                           POTENTIAL
                         </span>
                       </div>
-                      <p className="text-sm text-[#888888]">Comprehensive documentation supports fall risk assessment</p>
+                      <p className="text-sm text-[#888888]">Real-time Morse score and mobility documentation ensures fall risk status reflects the patient's current condition — not end-of-shift catch-up charting</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       {docQualityInputs.nursingFallsEnabled && (
@@ -410,7 +413,7 @@ export default function ExploreCareQuality({
                         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Prevention Rate %</label>
+                            <label className="text-sm text-[#888888]">Documentation Gap Rate %</label>
                             <div className="relative">
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingFallsPreventionRate}
@@ -420,7 +423,7 @@ export default function ExploreCareQuality({
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                             </div>
-                            <p className="text-xs text-[#888888]">5% is conservative—represents cases where real-time documentation would have triggered earlier intervention.</p>
+                            <p className="text-xs text-[#888888]">10% represents falls where a documentation timeliness gap — risk status not updated to reflect a change in patient condition — was a primary contributing factor. Joint Commission sentinel event data identifies communication and assessment failures as contributing factors in the majority of inpatient falls; we model a conservative 10% where documentation timing was the primary gap.</p>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Cost per Fall $</label>
@@ -445,15 +448,18 @@ export default function ExploreCareQuality({
                               <span className="font-semibold text-black flex-shrink-0">{fallsPerYear.toFixed(1)}</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Prevention rate</span>
+                              <span className="text-[#666666]">x Documentation gap rate</span>
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">× Care time allocation (from your time split)</span>
                               <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
+                            <div className="text-xs text-[#888888] italic mt-1 mb-1">
+                              This models falls where real-time Morse score and mobility documentation would have ensured updated fall precautions were in place. This is not a prevention claim — it is a documentation timeliness gap claim. Abridge's role is ensuring risk status is current; clinical response to that risk status remains with the care team.
+                            </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">= Falls prevented</span>
+                              <span className="text-[#666666]">= Falls addressed</span>
                               <span className="font-semibold text-black flex-shrink-0">{fallsPrevented.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between gap-2">
@@ -462,7 +468,7 @@ export default function ExploreCareQuality({
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
                             <div className="flex justify-between gap-2">
-                              <span className="font-medium text-black">Potential Falls Value</span>
+                              <span className="font-medium text-black">Potential Fall Risk Value</span>
                               <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(fallsValue)}</span>
                             </div>
                           </div>
@@ -794,7 +800,7 @@ export default function ExploreCareQuality({
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                        <span className="text-sm text-[#888888]">HAPI Prevention</span>
+                        <span className="text-sm text-[#888888]">HAPI Risk: Documentation Impact</span>
                       </div>
                       <span className={`text-sm font-semibold ${docQualityInputs.nursingHapiEnabled ? 'text-white' : 'text-[#666666]'}`}>
                         {docQualityInputs.nursingHapiEnabled ? formatCurrency(hapiValue) : '—'}
@@ -806,7 +812,7 @@ export default function ExploreCareQuality({
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                        <span className="text-sm text-[#888888]">Falls Prevention</span>
+                        <span className="text-sm text-[#888888]">Fall Risk Visibility Gap</span>
                       </div>
                       <span className={`text-sm font-semibold ${docQualityInputs.nursingFallsEnabled ? 'text-white' : 'text-[#666666]'}`}>
                         {docQualityInputs.nursingFallsEnabled ? formatCurrency(fallsValue) : '—'}

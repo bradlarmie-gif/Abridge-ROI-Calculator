@@ -173,10 +173,10 @@ export default function ExploreDocQuality({
       pageSubtitle: 'Complete nursing documentation supports better outcomes and reduces adverse events.',
       driver1Title: 'Care Plan Quality',
       driver1Subtitle: 'Comprehensive care plans improve patient outcomes',
-      driver2Title: 'Falls Prevention',
-      driver2Subtitle: 'Better documentation supports fall risk assessment',
-      driver3Title: 'HAPI Prevention',
-      driver3Subtitle: 'Pressure injury documentation and prevention',
+      driver2Title: 'Fall Risk Visibility Gap',
+      driver2Subtitle: 'Real-time Morse score and mobility documentation ensures fall risk status reflects current condition',
+      driver3Title: 'HAPI Risk: Documentation Impact',
+      driver3Subtitle: 'Real-time skin assessment and risk score capture enables earlier intervention',
     },
   };
 
@@ -186,8 +186,8 @@ export default function ExploreDocQuality({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={5}
-        totalSteps={7}
+        currentStep={6}
+        totalSteps={8}
         stepName="Documentation Quality"
         onBack={onBack}
         onHome={onHome}
@@ -282,7 +282,7 @@ export default function ExploreDocQuality({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-black">HAPI Prevention</p>
+                    <p className="font-semibold text-black">HAPI Risk: Documentation Impact</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
                   <p className="text-sm text-[#888888]">Real-time flowsheet capture creates the visibility that makes earlier intervention possible.</p>
@@ -440,7 +440,7 @@ export default function ExploreDocQuality({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-black">Falls Prevention</p>
+                    <p className="font-semibold text-black">Fall Risk Visibility Gap</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
                   <p className="text-sm text-[#888888]">Timely documentation of mobility status and fall risk scores means risk is visible when it matters, not hours later.</p>
@@ -1975,7 +1975,7 @@ export default function ExploreDocQuality({
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full border border-dashed ${docQualityInputs.nursingHapiEnabled ? 'border-[#EA2C00] bg-[#EA2C00]/20' : 'border-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">HAPI Prevention</span>
+                          <span className="text-sm text-[#888888]">HAPI Risk: Documentation Impact</span>
                         </div>
                         <span className={`text-sm font-semibold ${docQualityInputs.nursingHapiEnabled ? 'text-[#EA2C00]/80' : 'text-[#666666]'}`}>
                           {docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}
@@ -1985,7 +1985,7 @@ export default function ExploreDocQuality({
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full border border-dashed ${docQualityInputs.nursingFallsEnabled ? 'border-[#EA2C00] bg-[#EA2C00]/20' : 'border-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Falls Prevention</span>
+                          <span className="text-sm text-[#888888]">Fall Risk Visibility Gap</span>
                         </div>
                         <span className={`text-sm font-semibold ${docQualityInputs.nursingFallsEnabled ? 'text-[#EA2C00]/80' : 'text-[#666666]'}`}>
                           {docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}

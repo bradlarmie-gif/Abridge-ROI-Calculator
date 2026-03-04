@@ -71,8 +71,8 @@ export default function ExploreInvestment({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={isNursing ? 7 : 6}
-        totalSteps={isNursing ? 8 : 7}
+        currentStep={7}
+        totalSteps={8}
         stepName="Investment"
         onBack={onBack}
         onHome={onHome}

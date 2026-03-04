@@ -289,8 +289,8 @@ export default function ExploreModel({
     if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", onset: "immediate" as const });
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Prevention", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Falls Prevention", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
+    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
+    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
 
     const retentionValue = isNursing
@@ -734,8 +734,8 @@ export default function ExploreModel({
       driver3: 'Agency Reduction',
       docCardTitle: 'Care Quality',
       docCardDescription: 'Complete documentation supports better care and fewer adverse events.',
-      docDriver1: 'HAPI Prevention',
-      docDriver2: 'Falls Prevention',
+      docDriver1: 'HAPI Risk: Documentation Impact',
+      docDriver2: 'Fall Risk Visibility Gap',
       docDriver3: 'HCAHPS',
       showHCC: false,
     },
@@ -747,8 +747,8 @@ export default function ExploreModel({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={isNursing ? 8 : 7}
-        totalSteps={isNursing ? 8 : 7}
+        currentStep={8}
+        totalSteps={8}
         stepName="Your Model"
         onBack={onBack}
         onHome={onHome}
@@ -1241,14 +1241,14 @@ export default function ExploreModel({
                 {isNursing ? (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">• HAPI Prevention</span>
+                      <span className="text-[#666666]">• HAPI Risk: Documentation Impact</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
                     </div>
                     {state.docQualityInputs.nursingHapiEnabled && (
                       <p className="text-xs text-[#888888] pl-4">(potential)</p>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">• Falls Prevention</span>
+                      <span className="text-[#666666]">• Fall Risk Visibility Gap</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
                     </div>
                     {state.docQualityInputs.nursingFallsEnabled && (

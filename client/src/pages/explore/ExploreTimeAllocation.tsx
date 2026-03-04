@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { type ExploreState } from "./ExploreFlow";
+import { type ExploreState, type TimeDriverInputs } from "./ExploreFlow";
 
 interface ExploreTimeAllocationProps {
   state: ExploreState;
@@ -14,26 +14,116 @@ interface ExploreTimeAllocationProps {
   onHome: () => void;
 }
 
-const BUCKETS = [
-  {
-    field: 'nursingOtReductionPercent' as const,
-    label: 'Overtime reduction',
-    description: 'Time that directly reduces end-of-shift overtime',
-    color: '#EA2C00',
-  },
-  {
-    field: 'nursingShiftSustainabilityPercent' as const,
-    label: 'Shift sustainability',
-    description: 'Time absorbed into shift breathing room; reduces documentation stress and supports retention',
-    color: '#F07B5F',
-  },
-  {
-    field: 'nursingCareTimePercent' as const,
-    label: 'Direct patient care',
-    description: 'Time returned to the bedside for assessments, interventions, and presence',
-    color: '#1A1A1A',
-  },
-];
+type BucketField = keyof TimeDriverInputs;
+
+interface BucketConfig {
+  field: BucketField;
+  label: string;
+  description: string;
+  color: string;
+}
+
+function getBuckets(careSetting: string): BucketConfig[] {
+  switch (careSetting) {
+    case 'ed':
+      return [
+        {
+          field: 'edAllocThroughputPercent',
+          label: 'Patient throughput',
+          description: 'Faster documentation means faster disposition — fewer walkouts, more capacity',
+          color: '#EA2C00',
+        },
+        {
+          field: 'edAllocCostPercent',
+          label: 'Reduce premium staffing',
+          description: 'Less reliance on overtime and agency coverage during high-volume shifts',
+          color: '#F07B5F',
+        },
+        {
+          field: 'edAllocWellbeingPercent',
+          label: 'Clinician wellbeing',
+          description: 'Shift sustainability that reduces burnout and supports emergency physician retention',
+          color: '#1A1A1A',
+        },
+      ];
+    case 'inpatient':
+      return [
+        {
+          field: 'ipAllocQualityPercent',
+          label: 'Documentation quality',
+          description: 'Better notes mean fewer CDI queries, more accurate DRGs, and stronger clinical records',
+          color: '#EA2C00',
+        },
+        {
+          field: 'ipAllocCostPercent',
+          label: 'Cost reduction',
+          description: 'Operational efficiency gains from reduced documentation overhead',
+          color: '#F07B5F',
+        },
+        {
+          field: 'ipAllocWellbeingPercent',
+          label: 'Clinician wellbeing',
+          description: 'Sustainable workload that protects hospitalist retention and reduces burnout',
+          color: '#1A1A1A',
+        },
+      ];
+    case 'nursing':
+      return [
+        {
+          field: 'nursingOtReductionPercent',
+          label: 'Overtime reduction',
+          description: 'Time that directly reduces end-of-shift overtime',
+          color: '#EA2C00',
+        },
+        {
+          field: 'nursingShiftSustainabilityPercent',
+          label: 'Shift sustainability',
+          description: 'Time absorbed into shift breathing room; reduces documentation stress and supports retention',
+          color: '#F07B5F',
+        },
+        {
+          field: 'nursingCareTimePercent',
+          label: 'Direct patient care',
+          description: 'Time returned to the bedside for assessments, interventions, and presence',
+          color: '#1A1A1A',
+        },
+      ];
+    default:
+      return [
+        {
+          field: 'opAllocCapacityPercent',
+          label: 'See more patients',
+          description: 'Time converted to additional patient visits and reduced wait times',
+          color: '#EA2C00',
+        },
+        {
+          field: 'opAllocCostPercent',
+          label: 'Reduce locums & overtime',
+          description: 'Time that offsets premium labor costs and extended hours',
+          color: '#F07B5F',
+        },
+        {
+          field: 'opAllocWellbeingPercent',
+          label: 'Clinician wellbeing',
+          description: 'Breathing room that reduces burnout, supports work-life balance, and protects retention',
+          color: '#1A1A1A',
+        },
+      ];
+  }
+}
+
+function getIntroCopy(careSetting: string): string {
+  switch (careSetting) {
+    case 'ed':
+      return "You've estimated how much documentation time Abridge saves your emergency physicians. Now decide how that time gets used — different allocations drive different kinds of value.";
+    case 'inpatient':
+      return "You've estimated how much documentation time Abridge saves your hospitalists. Now decide how that time gets used — different allocations drive different kinds of value.";
+    case 'nursing':
+      return "You've estimated how much documentation time Abridge saves your nurses. Now decide how that time gets used — different allocations drive different kinds of value.";
+    default:
+      return "You've estimated how much documentation time Abridge saves your clinicians. Now decide how that time gets used — different allocations drive different kinds of value.";
+  }
+}
 
 export default function ExploreTimeAllocation({
   state,
@@ -43,6 +133,8 @@ export default function ExploreTimeAllocation({
   onHome,
 }: ExploreTimeAllocationProps) {
   const { timeDriverInputs } = state;
+  const buckets = useMemo(() => getBuckets(state.careSetting), [state.careSetting]);
+  const introCopy = useMemo(() => getIntroCopy(state.careSetting), [state.careSetting]);
 
   const updateTimeDriverInputs = (updates: Partial<typeof timeDriverInputs>) => {
     updateState({
@@ -51,16 +143,8 @@ export default function ExploreTimeAllocation({
   };
 
   const total = useMemo(() => {
-    return (
-      timeDriverInputs.nursingOtReductionPercent +
-      timeDriverInputs.nursingShiftSustainabilityPercent +
-      timeDriverInputs.nursingCareTimePercent
-    );
-  }, [
-    timeDriverInputs.nursingOtReductionPercent,
-    timeDriverInputs.nursingShiftSustainabilityPercent,
-    timeDriverInputs.nursingCareTimePercent,
-  ]);
+    return buckets.reduce((sum, bucket) => sum + (timeDriverInputs[bucket.field] as number), 0);
+  }, [buckets, timeDriverInputs]);
 
   const isValid = total === 100;
 
@@ -93,7 +177,7 @@ export default function ExploreTimeAllocation({
             Where Does Reclaimed Time Go?
           </h1>
           <p className="text-base text-[#666666] leading-relaxed max-w-2xl">
-            You've estimated how much documentation time Abridge saves. Now decide how that time gets used — different allocations drive different kinds of value.
+            {introCopy}
           </p>
         </motion.div>
 
@@ -110,8 +194,8 @@ export default function ExploreTimeAllocation({
             </span>
           </div>
           <div className="h-4 bg-white rounded-full overflow-hidden flex shadow-inner" data-testid="budget-bar">
-            {BUCKETS.map((bucket) => {
-              const pct = timeDriverInputs[bucket.field];
+            {buckets.map((bucket) => {
+              const pct = timeDriverInputs[bucket.field] as number;
               return pct > 0 ? (
                 <div
                   key={bucket.field}
@@ -125,7 +209,7 @@ export default function ExploreTimeAllocation({
             })}
           </div>
           <div className="flex items-center gap-4 mt-2 flex-wrap">
-            {BUCKETS.map((bucket) => (
+            {buckets.map((bucket) => (
               <div key={bucket.field} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: bucket.color }} />
                 <span className="text-xs text-[#666666]">{bucket.label}</span>
@@ -141,7 +225,7 @@ export default function ExploreTimeAllocation({
           transition={{ delay: 0.12 }}
         >
           <div className="space-y-6">
-            {BUCKETS.map((bucket) => (
+            {buckets.map((bucket) => (
               <div key={bucket.field} className="bg-white rounded-lg p-4 sm:p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1">
@@ -156,7 +240,7 @@ export default function ExploreTimeAllocation({
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <FormattedNumberInput
-                      value={timeDriverInputs[bucket.field]}
+                      value={timeDriverInputs[bucket.field] as number}
                       onChange={(v: number) =>
                         updateTimeDriverInputs({ [bucket.field]: Math.max(0, Math.min(100, v)) })
                       }

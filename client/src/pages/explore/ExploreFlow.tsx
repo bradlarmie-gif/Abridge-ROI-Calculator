@@ -98,6 +98,21 @@ export interface TimeDriverInputs {
   ipCdiCapacitySalary: number;
   ipCdiCapacityExpanded: boolean;
   
+  // Outpatient time allocation
+  opAllocCapacityPercent: number;
+  opAllocCostPercent: number;
+  opAllocWellbeingPercent: number;
+  
+  // ED time allocation
+  edAllocThroughputPercent: number;
+  edAllocCostPercent: number;
+  edAllocWellbeingPercent: number;
+  
+  // Inpatient time allocation
+  ipAllocQualityPercent: number;
+  ipAllocCostPercent: number;
+  ipAllocWellbeingPercent: number;
+  
   // Nursing-specific inputs
   nursingOtEnabled: boolean;
   nursingOtExpanded: boolean;
@@ -332,6 +347,18 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
     ipReplacementCost: 300000, // $300,000 replacement cost
+    // Outpatient time allocation defaults
+    opAllocCapacityPercent: 40,
+    opAllocCostPercent: 25,
+    opAllocWellbeingPercent: 35,
+    // ED time allocation defaults
+    edAllocThroughputPercent: 45,
+    edAllocCostPercent: 20,
+    edAllocWellbeingPercent: 35,
+    // Inpatient time allocation defaults
+    ipAllocQualityPercent: 40,
+    ipAllocCostPercent: 25,
+    ipAllocWellbeingPercent: 35,
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtExpanded: true,
@@ -357,10 +384,10 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCareQualityEnabled: false,
     nursingCareQualityExpanded: true,
     nursingFallsRate: 3.5, // per 1,000 patient days
-    nursingFallsPreventablePct: 5, // % preventable with more bedside time
+    nursingFallsPreventablePct: 10, // % where documentation timeliness gap was primary factor
     nursingCostPerFall: 6500, // $ per fall
     nursingHapiRate: 2.5, // per 1,000 patient days
-    nursingHapiPreventablePct: 5, // % preventable with timely assessments
+    nursingHapiPreventablePct: 6.5, // % preventable with timely assessments
     nursingCostPerHapi: 25000, // $ per HAPI
     nursingCareQualityRealization: 85, // % realization rate
     // Collapsible state defaults
@@ -422,12 +449,12 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Nursing: HAPI Prevention defaults
     nursingHapiEnabled: false,
     nursingHapiRate: 2.5, // 2.5 per 1,000 patient days
-    nursingHapiPreventionRate: 5, // 5% prevention rate (conservative)
+    nursingHapiPreventionRate: 6.5, // 6.5% - half of 13% observed in Dowding et al. (JAMIA 2012)
     nursingHapiCost: 25000, // $25,000 per HAPI
     // Nursing: Falls Prevention defaults
     nursingFallsEnabled: false,
     nursingFallsRate: 3.5, // 3.5 per 1,000 patient days
-    nursingFallsPreventionRate: 5, // 5% prevention rate (conservative)
+    nursingFallsPreventionRate: 10, // 10% documentation timeliness gap rate
     nursingFallsCost: 6500, // $6,500 per fall
     // Nursing: HAC Penalty Avoidance defaults
     nursingHacEnabled: false,
@@ -749,6 +776,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   }, [state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);
 
   const isNursing = state.careSetting === 'nursing';
+  const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
 
   switch (phase) {
     case 'careSetting':
@@ -782,7 +811,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreTimeSavings
           state={state}
           updateState={updateState}
-          onNext={() => navigate(isNursing ? 'timeAllocation' : 'valueDrivers')}
+          onNext={() => navigate('timeAllocation')}
           onBack={() => navigate('practice')}
           onHome={goHome}
         />
@@ -794,20 +823,50 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           onNext={() => {
-            const { nursingOtReductionPercent, nursingShiftSustainabilityPercent } = state.timeDriverInputs;
-            const { nursingCareTimePercent } = state.timeDriverInputs;
-            updateState({
-              timeDriverInputs: {
-                ...state.timeDriverInputs,
-                nursingOtEnabled: nursingOtReductionPercent > 0,
-                nursingRetentionEnabled: nursingShiftSustainabilityPercent > 0,
-              },
-              docQualityInputs: {
-                ...state.docQualityInputs,
-                nursingHapiEnabled: nursingCareTimePercent > 0,
-                nursingFallsEnabled: nursingCareTimePercent > 0,
-              },
-            });
+            const td = state.timeDriverInputs;
+            if (isNursing) {
+              updateState({
+                timeDriverInputs: {
+                  ...td,
+                  nursingOtEnabled: td.nursingOtReductionPercent > 0,
+                  nursingRetentionEnabled: td.nursingShiftSustainabilityPercent > 0,
+                },
+                docQualityInputs: {
+                  ...state.docQualityInputs,
+                  nursingHapiEnabled: td.nursingCareTimePercent > 0,
+                  nursingFallsEnabled: td.nursingCareTimePercent > 0,
+                },
+              });
+            } else if (isED) {
+              updateState({
+                timeDriverInputs: {
+                  ...td,
+                  edLwbsEnabled: td.edAllocThroughputPercent > 0,
+                  edThroughputEnabled: td.edAllocThroughputPercent > 0,
+                  costReductionEnabled: td.edAllocCostPercent > 0,
+                  wellbeingEnabled: td.edAllocWellbeingPercent > 0,
+                },
+              });
+            } else if (isInpatient) {
+              updateState({
+                timeDriverInputs: {
+                  ...td,
+                  ipRoundingEnabled: td.ipAllocQualityPercent > 0,
+                  ipCdiCapacityEnabled: td.ipAllocQualityPercent > 0,
+                  costReductionEnabled: td.ipAllocCostPercent > 0,
+                  wellbeingEnabled: td.ipAllocWellbeingPercent > 0,
+                },
+              });
+            } else {
+              updateState({
+                timeDriverInputs: {
+                  ...td,
+                  patientAccessEnabled: td.opAllocCapacityPercent > 0,
+                  costReductionEnabled: td.opAllocCostPercent > 0,
+                  wellbeingEnabled: td.opAllocWellbeingPercent > 0,
+                },
+              });
+            }
             navigate('valueDrivers');
           }}
           onBack={() => navigate('timeSavings')}
@@ -822,7 +881,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
           onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
-          onBack={() => navigate(isNursing ? 'timeAllocation' : 'timeSavings')}
+          onBack={() => navigate('timeAllocation')}
           onHome={goHome}
         />
       );
@@ -872,10 +931,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     case 'model': {
       const stepPhaseMap: ExplorePhase[] = isNursing
         ? ['careSetting', 'practice', 'timeSavings', 'timeAllocation', 'valueDrivers', 'careQuality', 'investment', 'model']
-        : ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'docQuality', 'investment', 'model'];
+        : ['careSetting', 'practice', 'timeSavings', 'timeAllocation', 'valueDrivers', 'docQuality', 'investment', 'model'];
       const stepLabels = isNursing
         ? ['Care Setting', 'Practice', 'Time Savings', 'Time Allocation', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
-        : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
+        : ['Care Setting', 'Practice', 'Time Savings', 'Time Allocation', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
       return (
         <ExploreModel
           state={state}
