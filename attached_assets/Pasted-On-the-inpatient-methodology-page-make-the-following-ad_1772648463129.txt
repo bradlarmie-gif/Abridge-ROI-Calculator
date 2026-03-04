@@ -1,0 +1,15 @@
+On the inpatient methodology page, make the following additions:
+1. In "The Value Mechanisms" section, add a new subsection under "DOCUMENTATION QUALITY → DRG VALUE" called "OBS/IP STATUS DEFENSE".
+The mechanism text should read: "Medical necessity denials often trace back to a single document: the H&P written at admission. Payers reviewing observation vs. inpatient status decisions look for the attending's clinical reasoning captured in real time. When that reasoning is discussed verbally but not documented, the hospital loses the argument retrospectively. Ambient AI captures the clinical justification for inpatient level of care at the moment it's articulated — the strongest possible defense against medical necessity audits."
+The calculation should be: Admissions at risk × Denial rate × Average denied claim value × Documentation-attributable %
+Key assumptions: Average obs/IP contested claim: $8,000–$15,000. Denial rate for medical necessity: 3–7% of inpatient admissions. Documentation attributed as contributing factor: ~40% (based on denial root cause data).
+Why this is defensible: "Revenue cycle teams already categorize denial root causes. If your denial management team tracks 'medical necessity — documentation insufficient' as a category, this is measurable before and after deployment."
+2. In "The Value Mechanisms" section, add a new subsection under "TIME SAVED → EFFICIENCY VALUE" called "CDI CAPACITY EXTENSION".
+The mechanism text should read: "CDI specialists have fixed capacity. Today, a significant portion of their review time is spent sending queries and waiting for physician responses to fill gaps that should have been in the note. When documentation captures clinical complexity at the point of care, CDI spends less time on reactive querying and more time on proactive case review. The same team can cover more admissions — or cover current admissions with less rework."
+The calculation should be: CDI FTEs × % time on query follow-up × Reduction % × CDI FTE cost
+Key assumptions: CDI specialist salary: $75,000–$95,000. Time spent on query creation and follow-up: 25–40% of CDI workload. Reduction with improved upstream documentation: 15–30%.
+Why this is defensible: "CDI productivity metrics (cases reviewed per day, query response time, query rate per 1,000 admissions) are standard ACDIS benchmarks. Before/after comparison is straightforward."
+3. In "The Honest Limits" section, move "Discharge documentation quality" from the yellow "WE CAN INFLUENCE THIS" tier and split it into two entries:
+- Keep the readmission note in yellow as-is
+- Add a new green "WE CAN MEASURE THIS" entry: "Discharge documentation lag: Time from discharge order to completed discharge summary is an EHR-measurable metric. Abridge reduces this lag by enabling real-time documentation during the discharge conversation rather than retrospective charting."
+4. In "The Honest Limits" section, add "Obs/IP status defense" to the green "WE CAN MEASURE THIS" tier with the note: "Medical necessity denial rates by root cause are tracked by revenue cycle. Documentation-attributed denials are an identifiable subset."
