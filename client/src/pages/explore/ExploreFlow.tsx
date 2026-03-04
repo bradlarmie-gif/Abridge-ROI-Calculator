@@ -839,6 +839,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}
+          onEditAllocation={() => navigate('timeAllocation')}
         />
       );
     

@@ -17,6 +17,7 @@ interface ExploreCareQualityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  onEditAllocation?: () => void;
 }
 
 export default function ExploreCareQuality({
@@ -29,6 +30,7 @@ export default function ExploreCareQuality({
   onNext,
   onBack,
   onHome,
+  onEditAllocation,
 }: ExploreCareQualityProps) {
   const { docQualityInputs } = state;
 
@@ -306,7 +308,10 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set in your time split on the Time Savings page. More bedside time = better assessment and intervention.
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set on the Time Allocation page.{' '}
+                              {onEditAllocation && (
+                                <button onClick={onEditAllocation} className="text-[#EA2C00] font-medium hover:underline" data-testid="link-edit-hapi-allocation">Edit</button>
+                              )}
                             </p>
                           </div>
                         </div>
@@ -464,7 +469,10 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set in your time split on the Time Savings page. More bedside time = better assessment and intervention.
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set on the Time Allocation page.{' '}
+                              {onEditAllocation && (
+                                <button onClick={onEditAllocation} className="text-[#EA2C00] font-medium hover:underline" data-testid="link-edit-falls-allocation">Edit</button>
+                              )}
                             </p>
                           </div>
                         </div>

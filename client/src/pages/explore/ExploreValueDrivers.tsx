@@ -726,12 +726,18 @@ export default function ExploreValueDrivers({
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">OT ALLOCATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">OT allocation (from your time split above)</span>
-                      <span className="text-sm font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
+                      <span className="text-sm text-[#666666]">OT allocation (from your time split)</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
+                        <button
+                          onClick={onBack}
+                          className="text-xs font-medium text-[#EA2C00] hover:underline"
+                          data-testid="link-edit-ot-allocation"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-[#888888] mt-2">
-                      This is set in the time allocation on the previous page. Adjust it there to change how much reclaimed time goes to OT reduction.
-                    </p>
                   </div>
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
