@@ -195,7 +195,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     data-testid="pill-util-abridge"
                   >
                     <span className="font-bold">76%</span>
-                    <span>Observed avg — Abridge deployments</span>
+                    <span>Industry benchmark for ambient AI deployments</span>
                   </button>
                 </div>
                 <p className="text-[12px] text-[#999] text-center mt-2">Based on aggregated Abridge deployment data and published industry research.</p>

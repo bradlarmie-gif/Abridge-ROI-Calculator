@@ -189,7 +189,7 @@ export function computeCapacityFeedback(
   ];
   const planningCsv = inputs.capacityPlanningAreas as string | undefined;
   const fteAvoided = inputs.fteAvoided as number | undefined;
-  const annualCostPerFte = (inputs.annualCostPerFte as number) || 350000;
+  const annualCostPerFte = (inputs.annualCostPerFte as number) || 0;
   const checkedSet = new Set((planningCsv || '').split(',').filter(Boolean));
   const checkedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => checkedSet.has(String(i)));
   const uncheckedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => !checkedSet.has(String(i)));
@@ -285,17 +285,8 @@ export function computeRevenueFeedback(
       'Collections per encounter': [Math.round(documentedEncounters * revenuePerVisit * 0.01), Math.round(documentedEncounters * revenuePerVisit * 0.03)],
     };
 
-    let totalLow = 0;
-    let totalHigh = 0;
-    for (const area of checked) {
-      const range = areaRanges[area];
-      if (range) {
-        totalLow += range[0];
-        totalHigh += range[1];
-      }
-    }
-    const monthlyLow = Math.round(totalLow / 12);
-    const monthlyHigh = Math.round(totalHigh / 12);
+    const floorEstimate = Math.round(documentedEncounters * revenuePerVisit * 0.005);
+    const monthlyFloor = Math.round(floorEstimate / 12);
 
     const checkedLabels = checked.map(shortLabel).join(', ');
     const duration = inputs.investigationDuration as string | undefined;
@@ -305,14 +296,11 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `Analysis in progress. Potential impact: ${formatDollar(totalLow)}–${formatDollar(totalHigh)} annually.`,
-      context: `The analysis is running. Based on what your team is looking at, the potential impact ranges from ${formatDollar(totalLow)} to ${formatDollar(totalHigh)}.\n\nAreas under investigation: ${checkedLabels}${durationNote}`,
-      formula: checked.map(area => {
-        const range = areaRanges[area];
-        return range ? `[${shortLabel(area)}] = ${formatDollar(range[0])}–${formatDollar(range[1])}` : '';
-      }).filter(Boolean).join('\n'),
-      footnote: 'Ranges based on industry benchmarks for each analysis area.',
-      costOfWaiting: `Each additional month of analysis without action = ${formatDollar(monthlyLow)}–${formatDollar(monthlyHigh)} in unrealized revenue.`,
+      headlineMetric: `Analysis in progress. Conservative floor estimate: ${formatDollar(floorEstimate)} annually.`,
+      context: `The analysis is running. Based on what your team is looking at, the conservative floor estimate is ${formatDollar(floorEstimate)}.\n\nAreas under investigation: ${checkedLabels}${durationNote}`,
+      formula: `[floorEstimate] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × 0.5% = ${formatDollar(floorEstimate)}`,
+      footnote: 'Conservative floor: 0.5% of encounter revenue. Replace with your confirmed CDI-attributed revenue for a precise figure.',
+      costOfWaiting: `Each additional month of analysis without action = ${formatDollar(monthlyFloor)} in unrealized revenue.`,
     };
   }
 
@@ -526,7 +514,7 @@ export function computeWorkforceFeedback(
       hasValue: true,
       headlineMetric: `${afterHoursReduction} hrs/wk × ${providers} providers = ${formatDollar(burdenValue)} in physician time returned annually.`,
       context: `${burdenHours.toLocaleString()} hours of after-hours documentation burden eliminated annually.\n\nProviders averaging ${afterHoursReduction}+ hrs of after-hours charting per week are ${turnoverProxyPct}% more likely to report burnout symptoms associated with near-term departure intent. At ${formatDollar(replacementCost)} replacement cost, that's ${formatDollar(retentionExposure)} in retention exposure this reduction is starting to protect.`,
-      formula: `[burdenHours] = ${afterHoursReduction} × ${providers} × 52 = ${burdenHours.toLocaleString()}\n[burdenValue] = ${burdenHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(burdenValue)}\n[turnoverProxy] = ${afterHoursReduction} hrs × 15% risk/hr = ${turnoverProxyPct}% elevated risk`,
+      formula: `[burdenHours] = ${afterHoursReduction} × ${providers} × 52 = ${burdenHours.toLocaleString()}\n[burdenValue] = ${burdenHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(burdenValue)}\n[turnoverProxy] = ${afterHoursReduction} hrs × 15% risk/hr = ${turnoverProxyPct}% elevated risk\nAssumption: $350K physician replacement cost (AMGA benchmark).`,
       footnote: 'Turnover risk proxy based on AAMC data: documentation burden is a top-3 driver of physician burnout.',
     };
   }

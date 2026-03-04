@@ -83,7 +83,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'Documentation burden is driving turnover. Do you know how much it\'s costing?',
+    headline: 'Documentation burden is a leading driver of physician burnout and turnover risk.',
     reframe: 'At $100K–$1M per physician departure, documentation burden isn\'t a satisfaction issue — it\'s a financial exposure.',
     cards: [
       { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'After-hours documentation burden exists, but no formal measurement of its impact on provider experience or retention has been done.' },
@@ -470,13 +470,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
         <div>
           <label className="block text-sm font-medium text-black mb-1">Annual cost per physician FTE</label>
-          <p className="text-xs text-[#888888] mb-2">Fully-loaded cost including salary, benefits, and recruitment. Default $350,000.</p>
+          <p className="text-xs text-[#888888] mb-2">Fully-loaded cost including salary, benefits, and recruitment.</p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
-              value={(currentState.inputs.annualCostPerFte as number) || 350000}
+              value={(currentState.inputs.annualCostPerFte as number) || 0}
               onChange={(v) => setDomainInput('annualCostPerFte', Math.max(0, v))}
-              placeholder="350000"
+              placeholder="e.g. 350000"
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-annual-cost-per-fte"
             />
@@ -1039,7 +1039,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <div className="flex gap-2 mt-2 flex-wrap">
               {[
                 { label: 'Conservative', value: 40 },
-                { label: 'Shanafelt benchmark', value: 60 },
+                { label: 'Research benchmark', value: 60 },
               ].map((opt) => (
                 <button
                   key={opt.label}
@@ -1051,7 +1051,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-[#888888] mt-2">Shanafelt et al. found documentation burden is a top-3 driver of physician burnout. Most organizations use 40–60%.</p>
+            <p className="text-xs text-[#888888] mt-2">Research benchmark: Documentation burden is a top-3 driver of physician burnout (Shanafelt et al.). Organizations report 20–40% of voluntary turnover attributed to workload and documentation fatigue.</p>
           </div>
         </div>
       );
