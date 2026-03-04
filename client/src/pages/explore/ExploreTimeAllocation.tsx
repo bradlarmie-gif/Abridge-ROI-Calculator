@@ -25,13 +25,13 @@ const BUCKETS = [
     field: 'nursingShiftSustainabilityPercent' as const,
     label: 'Shift sustainability',
     description: 'Time absorbed into shift breathing room; reduces documentation stress and supports retention',
-    color: '#D97706',
+    color: '#F07B5F',
   },
   {
     field: 'nursingCareTimePercent' as const,
     label: 'Direct patient care',
     description: 'Time returned to the bedside for assessments, interventions, and presence',
-    color: '#0D9488',
+    color: '#1A1A1A',
   },
 ];
 
@@ -64,8 +64,8 @@ export default function ExploreTimeAllocation({
 
   const isValid = total === 100;
 
-  const totalColor = isValid ? 'text-emerald-600' : total > 100 ? 'text-[#EA2C00]' : 'text-amber-600';
-  const barBgColor = isValid ? 'bg-emerald-50' : total > 100 ? 'bg-red-50' : 'bg-amber-50';
+  const totalColor = isValid ? 'text-[#1A1A1A]' : total > 100 ? 'text-[#EA2C00]' : 'text-[#888888]';
+  const barBgColor = isValid ? 'bg-[#F5F0EB]' : total > 100 ? 'bg-[#EA2C00]/5' : 'bg-[#F5F0EB]';
 
   return (
     <div className="min-h-screen bg-[#FAF9F7]">
@@ -172,7 +172,7 @@ export default function ExploreTimeAllocation({
 
           {!isValid && (
             <motion.p
-              className={`text-sm font-medium mt-4 ${totalColor}`}
+              className="text-sm font-medium mt-4 text-[#EA2C00]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               data-testid="text-allocation-warning"
