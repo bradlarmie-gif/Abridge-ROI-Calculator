@@ -1,0 +1,17 @@
+Make the following targeted changes to the HAPI Prevention and Falls Prevention sections on the Care Quality screen. Do not change any other calculations, toggles, or screens.
+HAPI Prevention — three changes:
+
+Change the default Prevention Rate from 5% to 6.5%
+Rename the section from "HAPI Prevention" to "HAPI Risk: Documentation Impact" and update the sub-label to: "Real-time skin assessment and risk score capture creates the clinical visibility that enables earlier intervention"
+Update the Step 2 footnote below the Prevention Rate input to read: "A 2012 multi-site study of 29 hospitals found nursing documentation technology associated with a 13% reduction in HAPU rates (Dowding et al., Journal of the American Medical Informatics Association, 2012). We model 6.5% as Abridge's attributable share — exactly half the observed effect — to reflect that Abridge improves documentation timeliness and completeness within a broader care system."
+Update the Step 3 calculation footnote to read: "6.5% represents the share of HAPIs where real-time documentation of skin assessments, Braden scores, and turning schedules would have created earlier clinical visibility. Source: Conservative relative to Dowding et al. (JAMIA 2012), which observed 13% HAPU reduction following nursing documentation technology implementation across 29 hospitals."
+
+Falls Prevention — four changes:
+
+Rename the section from "Falls Prevention" to "Fall Risk Visibility Gap" everywhere it appears on this screen
+Update the sub-label to: "Real-time Morse score and mobility documentation ensures fall risk status reflects the patient's current condition — not end-of-shift catch-up charting"
+Rename "Prevention Rate %" label to "Documentation Gap Rate %" and change the default value from 5% to 10%. Update the helper text below it to read: "10% represents falls where a documentation timeliness gap — risk status not updated to reflect a change in patient condition — was a primary contributing factor. Joint Commission sentinel event data identifies communication and assessment failures as contributing factors in the majority of inpatient falls; we model a conservative 10% where documentation timing was the primary gap."
+Update the Step 3 calculation footnote to read: "This models falls where real-time Morse score and mobility documentation would have ensured updated fall precautions were in place. This is not a prevention claim — it is a documentation timeliness gap claim. Abridge's role is ensuring risk status is current; clinical response to that risk status remains with the care team."
+
+Do not change the cost per fall default, any other calculation logic, or any other section of the calculator.
+
