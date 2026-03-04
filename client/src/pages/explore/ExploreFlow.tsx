@@ -793,7 +793,23 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreTimeAllocation
           state={state}
           updateState={updateState}
-          onNext={() => navigate('valueDrivers')}
+          onNext={() => {
+            const { nursingOtReductionPercent, nursingShiftSustainabilityPercent } = state.timeDriverInputs;
+            const { nursingCareTimePercent } = state.timeDriverInputs;
+            updateState({
+              timeDriverInputs: {
+                ...state.timeDriverInputs,
+                nursingOtEnabled: nursingOtReductionPercent > 0,
+                nursingRetentionEnabled: nursingShiftSustainabilityPercent > 0,
+              },
+              docQualityInputs: {
+                ...state.docQualityInputs,
+                nursingHapiEnabled: nursingCareTimePercent > 0,
+                nursingFallsEnabled: nursingCareTimePercent > 0,
+              },
+            });
+            navigate('valueDrivers');
+          }}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
