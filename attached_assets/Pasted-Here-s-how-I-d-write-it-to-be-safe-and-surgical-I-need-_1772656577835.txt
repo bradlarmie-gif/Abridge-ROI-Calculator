@@ -1,0 +1,11 @@
+Here's how I'd write it to be safe and surgical:
+
+I need three focused updates to the Nursing methodology page and the Nursing explore path. Do not change any calculations, assumptions, default values, or the labor economics sections. Only update copy and framing in the care quality sections.
+Update 1 — Methodology page, HAPI & Falls Prevention mechanism text:
+Strengthen the mechanism description to emphasize that the value of flowsheet documentation is specifically about timeliness — real-time documentation creates a clinical visibility layer that enables earlier intervention, not just more care time. The current text focuses on "more time at bedside." Add that when something is documented matters as much as whether it is documented, and that ambient capture at the point of care is what makes the visibility argument defensible.
+Update 2 — Methodology page, Care Quality Enablement section (The Context):
+Reframe "Care Quality Enablement" to make documentation timeliness a first-class concept alongside completeness. The current framing treats this as indirect and apologetic. Make it confident: real-time flowsheet documentation is the visibility infrastructure that the rest of clinical decision-making runs on.
+Update 3 — Explore path, Care Quality step and Value Drivers step:
+Update the "Care Time" label and description so it reads as the connective tissue between time savings and outcomes — not a standalone qualitative bucket. It should feel like it explains why the other care quality outcomes are achievable, not like a separate vague benefit. Also update the HAPI Prevention and Falls Prevention descriptions to reference timeliness, not just documentation completeness.
+Keep all toggle mechanics, calculations, and dollar value logic exactly as they are. Only change descriptive copy. The goal is to make the story feel like one coherent argument: time saved → documented in real-time → risk signals visible earlier → earlier intervention → better outcomes. Every piece should point at that chain.
+
