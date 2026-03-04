@@ -109,7 +109,8 @@ export interface TimeDriverInputs {
   nursingReplacementCost: number;
   nursingCareTimeEnabled: boolean;
   nursingCareTimeExpanded: boolean;
-  nursingCareTimePercent: number; // User-adjustable percentage going to direct care
+  nursingCareTimePercent: number; // Direct patient care allocation percentage
+  nursingShiftSustainabilityPercent: number; // Shift sustainability allocation percentage
   
   // Agency Cost Avoidance (Nursing)
   nursingAgencyEnabled: boolean;
@@ -342,7 +343,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingReplacementCost: 50000,
     nursingCareTimeEnabled: false,
     nursingCareTimeExpanded: true,
-    nursingCareTimePercent: 45,
+    nursingCareTimePercent: 40,
+    nursingShiftSustainabilityPercent: 35,
     // Agency Cost Avoidance defaults
     nursingAgencyEnabled: false,
     nursingAgencyExpanded: true,

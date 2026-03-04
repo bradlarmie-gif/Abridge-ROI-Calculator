@@ -57,7 +57,7 @@ export default function ExploreModel({
     if (state.careSetting === 'outpatient') return t.wellbeingEnabled && !t.calculateRetentionValue;
     if (state.careSetting === 'ed') return t.wellbeingEnabled && !t.calculateRetentionValue;
     if (state.careSetting === 'inpatient') return (t.wellbeingEnabled && !t.calculateRetentionValue) || t.ipRoundingEnabled;
-    if (state.careSetting === 'nursing') return d.nursingHcahpsEnabled || t.nursingCareTimeEnabled;
+    if (state.careSetting === 'nursing') return d.nursingHcahpsEnabled;
     return false;
   }, [state]);
   const isQualitativeOnly = totalValue === 0 && hasQualitativeDrivers;
@@ -206,8 +206,7 @@ export default function ExploreModel({
 
   const nursingCareTimeEffectiveness = useMemo(() => {
     if (!isNursing) return 1;
-    const carePercent = state.timeDriverInputs.nursingCareTimePercent / 100;
-    return 0.30 + (carePercent * 0.70);
+    return state.timeDriverInputs.nursingCareTimePercent / 100;
   }, [isNursing, state.timeDriverInputs.nursingCareTimePercent]);
 
   const nursingCareQualityPotential = useMemo(() => {
@@ -253,7 +252,7 @@ export default function ExploreModel({
     return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100) * nursingCareTimeEffectiveness);
   }, [isNursing, state.docQualityInputs, nursingCareTimeEffectiveness]);
 
-  const nursingCareTimePerWeek = isNursing && state.timeDriverInputs.nursingCareTimeEnabled 
+  const nursingCareTimePerWeek = isNursing 
     ? ((totalHoursSaved / state.numberOfProviders / 48) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
     : '0';
 
@@ -583,7 +582,7 @@ export default function ExploreModel({
           drivers.push({
             id: 'nursingOT', name: 'OT Reduction', value: nursingOtValue, category: 'time',
             calcSteps: [
-              `${totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${timeDriverInputs.nursingOtReductionPercent}% OT conversion = ${otHours.toLocaleString()} OT hrs`,
+              `${totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${timeDriverInputs.nursingOtReductionPercent}% OT allocation = ${otHours.toLocaleString()} OT hrs`,
               `${otHours.toLocaleString()} \u00D7 $${timeDriverInputs.nursingOtHourlyRate}/hr = ${fmtK(nursingOtValue)}/year`,
             ],
           });
@@ -635,7 +634,6 @@ export default function ExploreModel({
         if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
       } else if (state.careSetting === 'nursing') {
         if (state.docQualityInputs.nursingHcahpsEnabled) qualitativeDrivers.push('HCAHPS Improvement');
-        if (state.timeDriverInputs.nursingCareTimeEnabled) qualitativeDrivers.push('Bedside Time');
       }
 
       const pdfData: ExplorePDFData = {
@@ -1116,7 +1114,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}</span>
                     </div>
                     {state.timeDriverInputs.nursingOtEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtReductionPercent}% conversion)</p>
+                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtReductionPercent}% OT allocation)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• Retention Savings</span>
@@ -1134,7 +1132,8 @@ export default function ExploreModel({
                     )}
                     <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
                     <p className="text-sm text-[#666666]">
-                      Care time returned: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse
+                      Direct patient care: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse
+                      <span className="text-xs text-[#888888] ml-1">({state.timeDriverInputs.nursingCareTimePercent}% of reclaimed time)</span>
                     </p>
                   </>
                 ) : isED ? (

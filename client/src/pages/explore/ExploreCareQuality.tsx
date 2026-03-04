@@ -51,8 +51,7 @@ export default function ExploreCareQuality({
   }, [state.nursingStaffedBeds, state.nursingOccupancyRate]);
 
   const careTimeEffectiveness = useMemo(() => {
-    const carePercent = timeDriverInputs.nursingCareTimePercent / 100;
-    return 0.30 + (carePercent * 0.70);
+    return timeDriverInputs.nursingCareTimePercent / 100;
   }, [timeDriverInputs.nursingCareTimePercent]);
 
   const hapisPerYear = useMemo(() => {
@@ -287,7 +286,7 @@ export default function ExploreCareQuality({
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHapiPreventionRate}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Care time effectiveness</span>
+                              <span className="text-[#666666]">× Care time allocation (from your time split)</span>
                               <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
@@ -307,7 +306,7 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set in your time split on the Time Savings page. More bedside time = better assessment and intervention.
                             </p>
                           </div>
                         </div>
@@ -445,7 +444,7 @@ export default function ExploreCareQuality({
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Care time effectiveness</span>
+                              <span className="text-[#666666]">× Care time allocation (from your time split)</span>
                               <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
@@ -465,7 +464,7 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set in your time split on the Time Savings page. More bedside time = better assessment and intervention.
                             </p>
                           </div>
                         </div>
@@ -625,7 +624,7 @@ export default function ExploreCareQuality({
                                   <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHacRealization}%</span>
                                 </div>
                                 <div className="flex justify-between gap-2">
-                                  <span className="text-[#666666]">x Care time effectiveness</span>
+                                  <span className="text-[#666666]">× Care time allocation (from your time split)</span>
                                   <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                                 </div>
                                 <div className="h-px bg-[#E5E5E5] my-2" />

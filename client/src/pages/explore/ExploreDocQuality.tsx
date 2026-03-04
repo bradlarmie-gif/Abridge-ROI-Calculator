@@ -252,14 +252,7 @@ export default function ExploreDocQuality({
             How to Use This Section
           </p>
           <p className="text-sm text-black leading-relaxed">
-            Real-time documentation is the visibility infrastructure that enables earlier clinical 
-            intervention. When assessments are captured at the point of care, risk signals surface 
-            immediately — not hours later during end-of-shift charting.
-          </p>
-          <p className="text-sm text-[#888888] mt-2">
-            We show these as <strong>potential value</strong> because the clinical team converts 
-            visibility into action. The value is real — these outcomes are achievable because 
-            real-time documentation makes them visible in time to act.
+            The link between flowsheet documentation and outcomes runs through two things: timeliness — risk signals documented in the moment, not at end of shift — and the share of reclaimed time that goes back to direct care. Both are reflected in your model.
           </p>
         </motion.div>
 
@@ -292,7 +285,7 @@ export default function ExploreDocQuality({
                     <p className="font-semibold text-black">HAPI Prevention</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
-                  <p className="text-sm text-[#888888]">Timely point-of-care documentation makes risk signals visible before harm occurs</p>
+                  <p className="text-sm text-[#888888]">Real-time flowsheet capture creates the visibility that makes earlier intervention possible.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {docQualityInputs.nursingHapiEnabled && (
@@ -450,7 +443,7 @@ export default function ExploreDocQuality({
                     <p className="font-semibold text-black">Falls Prevention</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
-                  <p className="text-sm text-[#888888]">Real-time assessment documentation surfaces fall risk when there's still time to intervene</p>
+                  <p className="text-sm text-[#888888]">Timely documentation of mobility status and fall risk scores means risk is visible when it matters, not hours later.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {docQualityInputs.nursingFallsEnabled && (
