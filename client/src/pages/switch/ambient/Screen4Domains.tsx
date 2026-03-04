@@ -1743,7 +1743,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 <p className="text-[12px] text-white/30 italic mt-3">
                   Estimates based on your inputs. Individual results vary.
                 </p>
-              </>HCC
+              </>
             ) : (
               <>
                 <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">—</p>

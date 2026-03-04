@@ -7,7 +7,7 @@
 
 export type SolutionType = "ambient-ai" | "human-scribes";
 export type SpecialtyMix = "primary-care" | "balanced" | "specialty";
-export type DeployIntentOption hcc= "reduce-backlog" | "grow-visits" | "protect-time" | "not-sure";
+export type DeployIntentOption = "reduce-backlog" | "grow-visits" | "protect-time" | "not-sure";
 export type CareSetting = "outpatient" | "ed" | "inpatient" | "mixed";
 export type DataMode = "benchmark" | "estimated" | "measured";
 export type CurrentVendor = "dax" | "other" | "none";

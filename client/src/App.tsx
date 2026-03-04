@@ -374,9 +374,9 @@ export default function App() {
     
     // HCC not applicable for ED - matching PDF expected field names
     if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled && hccValue > 0) {
-      const maPercentage = 30;
-      const gapRate = 25;
-      const avgMissedHccs = 1.5;
+      const maPercentage = 20;
+      const gapRate = 12;
+      const avgMissedHccs = 0.7;
       const rafImpact = 0.15;
       const annualPayment = 10000;
       const realizationRate = 40;

@@ -285,9 +285,9 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   wrvuRealization: 75,
   // HCC panel-based defaults
   panelSizePerProvider: 1500,
-  maPatientPct: 30,
-  hccGapRate: 25,
-  avgMissedHccsPerPatient: 1.5,
+  maPatientPct: 20,
+  hccGapRate: 12,
+  avgMissedHccsPerPatient: 0.7,
   rafImpactPerHcc: 0.15,
   annualPaymentPerRaf: 10000,
   hccRealization: 40,
@@ -929,7 +929,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
             <div className="space-y-3">
               <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
                 <p className="text-xs text-slate-500">
-                  <span className="font-medium text-slate-700">The logic:</span> Risk adjustment pays based on documented conditions. Many MA patients have documentation gaps—conditions discussed but not captured. Better notes recapture missed HCCs.
+                  <span className="font-medium text-slate-700">The logic:</span> Risk adjustment pays based on documented conditions. Many MA patients have documentation gaps — conditions discussed but not captured. This models the HCC recapture attributable to ambient AI at point-of-care, not full population gap programs.
                 </p>
               </div>
               
@@ -952,7 +952,10 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
               
               {/* Step 2: MA population */}
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Medicare Advantage %</span>
+                <div>
+                  <span className="text-sm text-slate-600">Medicare Advantage %</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Check your actual MA mix</p>
+                </div>
                 <EditableValue 
                   value={assumptions.maPatientPct} 
                   onChange={(v) => updateAssumption('maPatientPct', v)}
@@ -989,6 +992,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
                 <div>
                   <span className="text-sm text-slate-600">Avg missed HCCs per patient</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Attributable to ambient capture at point-of-care</p>
                 </div>
                 <EditableValue 
                   value={assumptions.avgMissedHccsPerPatient} 

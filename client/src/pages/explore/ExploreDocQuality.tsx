@@ -1332,9 +1332,10 @@ export default function ExploreDocQuality({
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-[#666666] leading-relaxed mb-4">
-                    For Medicare Advantage populations, better documentation captures more HCCs. 
-                    Risk adjustment pays based on documented conditions—many MA patients have 
-                    documentation gaps where conditions were discussed but not captured.
+                    For Medicare Advantage populations, better documentation at point-of-care captures 
+                    more HCCs. This models only the MA share Abridge touches in documented encounters — not 
+                    your full panel. Risk adjustment pays based on documented conditions, and many patients 
+                    have gaps where conditions were discussed but not captured.
                   </p>
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
@@ -1392,7 +1393,10 @@ export default function ExploreDocQuality({
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">× Medicare Advantage %</span>
+                        <div>
+                          <span className="text-[#666666]">× Medicare Advantage %</span>
+                          <p className="text-xs text-[#888888] mt-0.5">Check your actual MA mix — 20% is a conservative starting point for many settings.</p>
+                        </div>
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
@@ -1430,7 +1434,10 @@ export default function ExploreDocQuality({
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">× Avg missed HCCs per patient</span>
+                        <div>
+                          <span className="text-[#666666]">× Avg missed HCCs per patient</span>
+                          <p className="text-xs text-[#888888] mt-0.5">Attributable to ambient capture at point-of-care; full population gap programs may yield higher rates.</p>
+                        </div>
                         <input
                           type="number"
                           step="0.1"
