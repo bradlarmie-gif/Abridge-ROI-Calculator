@@ -1,0 +1,71 @@
+SUMMARY PAGE NARRATIVE RESTRUCTURE — Nursing Care Setting
+Do NOT change any default values, math logic, or calculation formulas.
+Do NOT change any other care setting pages.
+Do NOT change the Methodology page.
+The goal: each section of the summary page should earn its place by adding new information — not repeating what was already shown. The page should build a progressive story: WHAT → WHY → HOW IT GROWS → WHAT'S CONNECTED.
+─────────────────────────────────────────
+SECTION 1 — HERO (keep as-is structurally)
+No changes needed. The hero ($609K headline, ROI, per bed, hours saved) is the "WHAT."
+─────────────────────────────────────────
+─────────────────────────────────────────
+SECTION 2 — "Where the Value Comes From" (CHANGE COPY + STRUCTURE)
+─────────────────────────────────────────
+Current section title: "Where the Value Comes From"
+Current subtitle: "Abridge creates value through staffing efficiency and care quality—each with its own drivers and assumptions."
+Change title to: "How Your Numbers Were Built"
+Change subtitle to: "Each value driver uses your inputs — not industry averages — to calculate a defensible return."
+── LEFT CARD: STAFFING EFFICIENCY ──
+Current subtitle: "Less time documenting means nurses finish on time and stay longer."
+Change subtitle to: "Time saved on flowsheet documentation reduces end-of-shift overtime and improves nurse retention."
+Remove the "Direct patient care: 0.5 hrs/wk per nurse (40% of reclaimed time)" line from this card.
+This line belongs in the Care Quality card context, not Staffing Efficiency.
+The OT Reduction sub-label currently says "(25% OT allocation)"
+Change to: "(from your time split: 25% allocated to OT reduction)"
+── RIGHT CARD: CARE QUALITY ──
+Current subtitle: "Complete documentation supports better care and fewer adverse events."
+Change subtitle to: "Better flowsheet documentation creates a real-time clinical picture — reducing the risk events that are most sensitive to documentation gaps."
+Current label: "• HAPI Prevention"
+Change to: "• HAPI Risk Reduction"
+Keep sub-label "(potential)" but change it to: "(6.5% rate · Dowding et al., JAMIA 2012)"
+Note: Only show this sub-label when HAPI is enabled (toggled on). The sub-label should be conditionally rendered — if HAPI is disabled, the line item shows "—" with no sub-label.
+Current label: "• Falls Prevention"
+Change to: "• Fall Risk Visibility Gap"
+If Falls is enabled, add sub-label: "(documentation gap rate · Joint Commission sentinel data)"
+If Falls is disabled, show "—" with no sub-label.
+Add one line at the bottom of the Care Quality card, below the existing italic disclaimer:
+"Direct care time available: [X] hrs/wk per nurse — based on your [40]% direct care allocation"
+where [X] and [40] are pulled dynamically from the user's time allocation inputs (nursingCareTimePercent and the derived hours).
+This makes the connection explicit: the time allocation the user set is what powers the care quality math.
+─────────────────────────────────────────
+SECTION 3 — CONNECTED VALUE (CHANGE COPY)
+─────────────────────────────────────────
+Current header: "CONNECTED VALUE"
+Current subtitle: "Nursing documentation supports the inpatient revenue cycle"
+Change subtitle to: "Nursing flowsheet documentation amplifies value in connected care settings"
+Current body copy: "When nurses document thoroughly and in real-time, it directly supports inpatient coding and reimbursement."
+Change to: "Real-time flowsheet documentation creates the clinical record that downstream teams depend on — from inpatient coders to hospitalist billers."
+The dark card at the bottom currently reads:
+"These benefits are quantified in the Inpatient setting."
+"If your organization uses Abridge for both Nursing and Hospitalists, the documentation creates a complete clinical picture from admission through discharge."
+Change to:
+"The value above reflects nursing-only documentation. If your organization also uses Abridge for Hospitalists, the clinical record built by nursing directly extends the ROI of the Inpatient model — no double-counting."
+─────────────────────────────────────────
+SECTION 4 — EXPANSION OPPORTUNITY (ADD CONTEXT LINE)
+─────────────────────────────────────────
+Below the "TODAY'S VALUE / FULL SCALE VALUE" cards, before the Growth Trajectory chart, add one line of explanatory copy:
+"As adoption scales, documentation consistency improves — which compounds the care quality benefits above."
+Do NOT change the chart, the expansion numbers, or the pace toggle.
+─────────────────────────────────────────
+SECTION 5 — 3-YEAR PROJECTION (CHANGE FOOTNOTE)
+─────────────────────────────────────────
+Current footnote: "Years 2-3 assume 10% value growth from improved utilization."
+Change to: "Years 2-3 assume 10% growth as adoption matures and documentation habits improve across the unit."
+─────────────────────────────────────────
+IMPORTANT RULES:
+- All dollar figures, percentages, bed counts, FTE counts, and calculated values must remain fully dynamic — pulled from user inputs exactly as they are today
+- Do not hardcode any numbers into copy strings — only use interpolation
+- Do not add new calculation logic — only change text and layout
+- Do not change any step in the Explore path
+- Do not change any Methodology page content
+- Do not change any other care setting
+─────────────────────────────────────────
