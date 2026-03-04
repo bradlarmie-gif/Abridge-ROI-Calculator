@@ -198,7 +198,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     <span>Industry benchmark for ambient AI deployments</span>
                   </button>
                 </div>
-                <p className="text-[12px] text-[#999] text-center mt-2">Based on aggregated Abridge deployment data and published industry research.</p>
+                <p className="text-[12px] text-[#999] text-center mt-2">Based on aggregated deployment experience.</p>
 
                 <AnimatePresence>
                   {utilInsight && (
