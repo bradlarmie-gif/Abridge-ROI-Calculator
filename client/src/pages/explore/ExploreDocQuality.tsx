@@ -76,6 +76,10 @@ export default function ExploreDocQuality({
   const ipDrgGrossValue = ipAdmissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
   const ipDrgNetValue = ipDrgGrossValue * (docQualityInputs.ipDrgRealization / 100);
 
+  // Inpatient: Obs/IP Status Defense Calculation
+  const ipObsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
+  const ipObsDefenseNet = ipObsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
+
   // Inpatient: CDI Query Reduction Calculation
   const ipCdiReductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
   const ipTotalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
@@ -119,8 +123,8 @@ export default function ExploreDocQuality({
   // Calculate total based on care setting
   const totalDocValue = useMemo(() => {
     if (isInpatient) {
-      // Inpatient: DRG Accuracy + CDI Query Reduction
       return (docQualityInputs.ipDrgEnabled ? ipDrgNetValue : 0) + 
+             (docQualityInputs.ipObsDefenseEnabled ? ipObsDefenseNet : 0) +
              (docQualityInputs.ipCdiEnabled ? ipCdiSavingsValue : 0);
     }
     if (isNursing) {
@@ -131,7 +135,7 @@ export default function ExploreDocQuality({
     return (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
            (showHCC && docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
            (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
-  }, [isInpatient, isNursing, docQualityInputs, ipDrgNetValue, ipCdiSavingsValue, wrvuRevenueNet, hccRevenueNet, denialsRevenueNet, showHCC]);
+  }, [isInpatient, isNursing, docQualityInputs, ipDrgNetValue, ipObsDefenseNet, ipCdiSavingsValue, wrvuRevenueNet, hccRevenueNet, denialsRevenueNet, showHCC]);
 
   const docConfig = {
     outpatient: {
@@ -940,6 +944,196 @@ export default function ExploreDocQuality({
                     <p className="text-[13px] text-[#888888] flex items-start gap-2">
                       <span>⚠️</span>
                       <span>Validate with your CDI team. They know your case mix and current gap rates better than any benchmark.</span>
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Obs/IP Status Defense */}
+        <div className="space-y-0">
+          <div
+            className={`w-full p-4 text-left transition-all ${
+              docQualityInputs.ipObsDefenseEnabled 
+                ? (docQualityInputs.ipObsDefenseExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">Obs/IP Status Defense</p>
+                <p className="text-sm text-[#888888]">Protect against medical necessity denials at the point of admission</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {docQualityInputs.ipObsDefenseEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ ipObsDefenseExpanded: !docQualityInputs.ipObsDefenseExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-obs-defense-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.ipObsDefenseExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ ipObsDefenseEnabled: !docQualityInputs.ipObsDefenseEnabled, ipObsDefenseExpanded: !docQualityInputs.ipObsDefenseEnabled ? true : docQualityInputs.ipObsDefenseExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.ipObsDefenseEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-obs-defense"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.ipObsDefenseEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {docQualityInputs.ipObsDefenseEnabled && docQualityInputs.ipObsDefenseExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-6 md:p-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                    Better documentation at admission supports medical necessity and reduces observation-to-inpatient status denials.
+                  </p>
+
+                  {/* STEP 1: DENIAL EXPOSURE */}
+                  <div className="mb-10">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 1: Denial Exposure
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Denial Rate</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="1"
+                              min={3}
+                              max={7}
+                              value={docQualityInputs.ipObsDefenseDenialRate}
+                              onChange={(e) => updateDocInputs({ ipObsDefenseDenialRate: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                              data-testid="input-obs-denial-rate"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        Medical necessity denial rates typically range 3–7%. 5% is average for status-related denials.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STEP 2: CLAIM VALUE */}
+                  <div className="mb-10">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 2: Average Contested Claim Value
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex-1">
+                        <label className="text-[13px] text-[#666666] mb-1.5 block">Avg Contested Claim Value</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
+                          <FormattedNumberInput
+                            value={docQualityInputs.ipObsDefenseClaimValue}
+                            onChange={(val) => updateDocInputs({ ipObsDefenseClaimValue: val })}
+                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
+                            data-testid="input-obs-claim-value"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        The average inpatient claim subject to status denials. $10,000 is a conservative benchmark.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STEP 3: DOCUMENTATION CONTRIBUTION */}
+                  <div className="mb-10">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 3: Documentation Contribution
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex-1">
+                        <label className="text-[13px] text-[#666666] mb-1.5 block">Documentation Contribution %</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            step="5"
+                            min={25}
+                            max={55}
+                            value={docQualityInputs.ipObsDefenseDocContribution}
+                            onChange={(e) => updateDocInputs({ ipObsDefenseDocContribution: parseFloat(e.target.value) || 0 })}
+                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                            data-testid="input-obs-doc-contribution"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        Your denial management team can tell you what % of medical necessity denials cite documentation gaps. Range: 25–55%.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STEP 4: REALIZATION */}
+                  <div className="mb-8">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 4: What You Can Count On
+                    </p>
+                    <p className="text-[13px] text-[#666666] mb-4">Not all improved documentation prevents every denial.</p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Value</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatCurrency(Math.round(ipObsDefenseGross))}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Conservative Realization</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseRealization}%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipObsDefenseNet))} net</span>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        35% is a conservative realization rate that accounts for cases where documentation alone doesn't resolve the denial.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Final Value */}
+                  <div className="border-t border-[#E5E5E5] pt-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-black">Annual Obs/IP Defense Value</span>
+                      <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipObsDefenseNet))}</span>
+                    </div>
+                    <p className="text-[13px] text-[#888888] flex items-start gap-2">
+                      <span>⚠️</span>
+                      <span>Validate with your denial management team. They know your status denial patterns better than any benchmark.</span>
                     </p>
                   </div>
                 </div>
@@ -1821,6 +2015,16 @@ export default function ExploreDocQuality({
                       </div>
                       <span className={`text-sm font-semibold ${docQualityInputs.ipDrgEnabled ? 'text-white' : 'text-[#666666]'}`}>
                         {docQualityInputs.ipDrgEnabled ? formatCurrency(Math.round(ipDrgNetValue)) : '—'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.ipObsDefenseEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">Obs/IP Defense</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.ipObsDefenseEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.ipObsDefenseEnabled ? formatCurrency(Math.round(ipObsDefenseNet)) : '—'}
                       </span>
                     </div>
 

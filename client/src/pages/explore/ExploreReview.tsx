@@ -56,7 +56,19 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const wrvuValue = calculateWrvuValue();
   const hccValue = calculateHccValue();
   const denialValue = calculateDenialValue();
-  const totalDocValue = wrvuValue + hccValue + denialValue;
+
+  const ipObsDefenseValue = (() => {
+    if (!isInpatient || !state.docQualityInputs.ipObsDefenseEnabled) return 0;
+    const gross = eligibleEncounters * (state.docQualityInputs.ipObsDefenseDenialRate / 100) * state.docQualityInputs.ipObsDefenseClaimValue * (state.docQualityInputs.ipObsDefenseDocContribution / 100);
+    return Math.round(gross * (state.docQualityInputs.ipObsDefenseRealization / 100));
+  })();
+
+  const ipCdiCapacityValue = (() => {
+    if (!isInpatient || !state.timeDriverInputs.ipCdiCapacityEnabled) return 0;
+    return Math.round(state.timeDriverInputs.ipCdiCapacityFtes * state.timeDriverInputs.ipCdiCapacitySalary * (state.timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (state.timeDriverInputs.ipCdiCapacityReductionPct / 100));
+  })();
+
+  const totalDocValue = wrvuValue + hccValue + denialValue + ipObsDefenseValue;
 
   const calculateTimeValue = () => {
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
@@ -81,7 +93,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };
 
-  const timeValue = calculateTimeValue();
+  const timeValue = calculateTimeValue() + ipCdiCapacityValue;
   const totalValue = totalDocValue + timeValue;
 
   const getTimePathLabel = () => {
@@ -193,6 +205,18 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
         ? `Regulatory Compliance (${state.docDrivers.denials.value}% improvement)`
         : `Denial Prevention (${state.docDrivers.denials.value}% reduction)`,
       value: denialValue,
+    });
+  }
+  if (isInpatient && state.docQualityInputs.ipObsDefenseEnabled) {
+    enabledDriverDetails.push({
+      label: 'Obs/IP Status Defense (35% realization)',
+      value: ipObsDefenseValue,
+    });
+  }
+  if (isInpatient && state.timeDriverInputs.ipCdiCapacityEnabled) {
+    enabledDriverDetails.push({
+      label: 'CDI Capacity Extension',
+      value: ipCdiCapacityValue,
     });
   }
 

@@ -89,6 +89,14 @@ export interface TimeDriverInputs {
   ipBurnoutRelatedTurnover: number; // % of turnover burnout-related
   ipReplacementCost: number; // Hospitalist replacement cost
   
+  // Inpatient: CDI Capacity Extension
+  ipCdiCapacityEnabled: boolean;
+  ipCdiCapacityFtes: number;
+  ipCdiCapacityQueryTimePct: number;
+  ipCdiCapacityReductionPct: number;
+  ipCdiCapacitySalary: number;
+  ipCdiCapacityExpanded: boolean;
+  
   // Nursing-specific inputs
   nursingOtEnabled: boolean;
   nursingOtExpanded: boolean;
@@ -166,6 +174,14 @@ export interface DocQualityInputs {
   ipDrgWeightIncrease: number; // Average DRG weight difference
   ipDrgBasePayment: number; // Base DRG payment
   ipDrgRealization: number; // Realization rate (audit adjustments)
+  
+  // Inpatient: Obs/IP Status Defense
+  ipObsDefenseEnabled: boolean;
+  ipObsDefenseDenialRate: number;
+  ipObsDefenseClaimValue: number;
+  ipObsDefenseDocContribution: number;
+  ipObsDefenseRealization: number;
+  ipObsDefenseExpanded: boolean;
   
   // Inpatient: CDI Query Reduction
   ipCdiEnabled: boolean;
@@ -351,6 +367,13 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsExpanded: true,
     edThroughputExpanded: true,
     ipRoundingExpanded: true,
+    // Inpatient: CDI Capacity Extension defaults
+    ipCdiCapacityEnabled: false,
+    ipCdiCapacityFtes: 5,
+    ipCdiCapacityQueryTimePct: 30,
+    ipCdiCapacityReductionPct: 20,
+    ipCdiCapacitySalary: 85000,
+    ipCdiCapacityExpanded: true,
   },
   // Documentation quality inputs
   docQualityInputs: {
@@ -381,6 +404,13 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgWeightIncrease: 0.4, // Average DRG weight difference
     ipDrgBasePayment: 6000, // $6,000 base DRG payment
     ipDrgRealization: 33, // 33% realization (RAC/PEPPER audits) - conservative
+    // Inpatient: Obs/IP Status Defense defaults
+    ipObsDefenseEnabled: false,
+    ipObsDefenseDenialRate: 5,
+    ipObsDefenseClaimValue: 10000,
+    ipObsDefenseDocContribution: 40,
+    ipObsDefenseRealization: 35,
+    ipObsDefenseExpanded: true,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',

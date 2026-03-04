@@ -308,7 +308,9 @@ export default function ExploreValueDrivers({
         total += retentionCalcs.retentionValue;
       }
     } else if (isInpatient) {
-      // Inpatient: Rounding is qualitative (no dollar value), only Wellbeing has $ value
+      if (timeDriverInputs.ipCdiCapacityEnabled) {
+        total += timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100);
+      }
       if (timeDriverInputs.costReductionEnabled) {
         total += timeDriverInputs.estimatedCostReduction;
       }
@@ -1620,6 +1622,154 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
+        {/* CDI Capacity Extension - Inpatient Only */}
+        {isInpatient && (
+        <div className="space-y-0 mt-6">
+          <div
+            className={`w-full p-4 text-left transition-all ${
+              timeDriverInputs.ipCdiCapacityEnabled 
+                ? (timeDriverInputs.ipCdiCapacityExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">CDI Capacity Extension</p>
+                <p className="text-sm text-[#888888]">If better upstream documentation reduces CDI query workload and extends team capacity</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.ipCdiCapacityEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ ipCdiCapacityExpanded: !timeDriverInputs.ipCdiCapacityExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-cdi-capacity-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.ipCdiCapacityExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ ipCdiCapacityEnabled: !timeDriverInputs.ipCdiCapacityEnabled, ipCdiCapacityExpanded: !timeDriverInputs.ipCdiCapacityEnabled ? true : timeDriverInputs.ipCdiCapacityExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.ipCdiCapacityEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-cdi-capacity"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.ipCdiCapacityEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.ipCdiCapacityEnabled && timeDriverInputs.ipCdiCapacityExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-6 md:p-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                    When Abridge captures clinical conversations with sufficient detail, many CDI queries become unnecessary — freeing your CDI team to focus on complex cases.
+                  </p>
+
+                  <div className="space-y-6">
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">CDI FTEs</label>
+                          <input
+                            type="number"
+                            step="1"
+                            min={1}
+                            value={timeDriverInputs.ipCdiCapacityFtes}
+                            onChange={(e) => updateTimeDriverInputs({ ipCdiCapacityFtes: parseFloat(e.target.value) || 0 })}
+                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
+                            data-testid="input-cdi-ftes"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">CDI Avg Salary</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
+                            <FormattedNumberInput
+                              value={timeDriverInputs.ipCdiCapacitySalary}
+                              onChange={(val) => updateTimeDriverInputs({ ipCdiCapacitySalary: val })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
+                              data-testid="input-cdi-salary"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">% Time on Query Follow-up</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="5"
+                              min={25}
+                              max={40}
+                              value={timeDriverInputs.ipCdiCapacityQueryTimePct}
+                              onChange={(e) => updateTimeDriverInputs({ ipCdiCapacityQueryTimePct: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                              data-testid="input-cdi-query-time"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
+                          <p className="text-[12px] text-[#888888] mt-1.5">Typical range: 25–40%</p>
+                        </div>
+                        <div>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Reduction %</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="5"
+                              min={15}
+                              max={30}
+                              value={timeDriverInputs.ipCdiCapacityReductionPct}
+                              onChange={(e) => updateTimeDriverInputs({ ipCdiCapacityReductionPct: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                              data-testid="input-cdi-reduction"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
+                          <p className="text-[12px] text-[#888888] mt-1.5">Typical range: 15–30%</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Formula</p>
+                      <p className="text-[13px] text-[#666666] mb-3">
+                        CDI FTEs × Salary × Time % × Reduction %
+                      </p>
+                      <p className="text-[13px] text-[#666666]">
+                        {timeDriverInputs.ipCdiCapacityFtes} × ${timeDriverInputs.ipCdiCapacitySalary.toLocaleString()} × {timeDriverInputs.ipCdiCapacityQueryTimePct}% × {timeDriverInputs.ipCdiCapacityReductionPct}%
+                      </p>
+                    </div>
+
+                    <div className="border-t border-[#E5E5E5] pt-6">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-black">Annual CDI Capacity Value</span>
+                        <span className="text-2xl font-bold text-[#EA2C00]">
+                          {formatCurrency(Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100)))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        )}
+
         {/* Optional Section */}
         <motion.div
           className="mt-8 mb-6"
@@ -2059,6 +2209,18 @@ export default function ExploreValueDrivers({
                       {timeDriverInputs.ipRoundingEnabled && (
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">(qualitative)</p>
                       )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.ipCdiCapacityEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">CDI Capacity</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.ipCdiCapacityEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.ipCdiCapacityEnabled ? formatCurrency(Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100))) : '—'}
+                        </span>
+                      </div>
                     </div>
 
                     <div>
