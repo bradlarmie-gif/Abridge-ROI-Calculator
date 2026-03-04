@@ -78,25 +78,6 @@ export default function ExploreTimeSavings({
     });
   };
 
-  const handleTimeAllocationChange = (field: 'nursingOtReductionPercent' | 'nursingShiftSustainabilityPercent' | 'nursingCareTimePercent', newValue: number) => {
-    const clamped = Math.max(0, Math.min(100, newValue));
-    const fields = ['nursingOtReductionPercent', 'nursingShiftSustainabilityPercent', 'nursingCareTimePercent'] as const;
-    const otherFields = fields.filter(f => f !== field);
-    const remaining = 100 - clamped;
-    const otherSum = otherFields.reduce((s, f) => s + timeDriverInputs[f], 0);
-
-    const updates: Partial<typeof timeDriverInputs> = { [field]: clamped };
-    if (otherSum === 0) {
-      updates[otherFields[0]] = Math.round(remaining / 2);
-      updates[otherFields[1]] = remaining - Math.round(remaining / 2);
-    } else {
-      const ratio0 = timeDriverInputs[otherFields[0]] / otherSum;
-      updates[otherFields[0]] = Math.round(remaining * ratio0);
-      updates[otherFields[1]] = remaining - Math.round(remaining * ratio0);
-    }
-    updateTimeDriverInputs(updates);
-  };
-
   const scenarioLabels: Record<string, string> = {
     conservative: 'Conservative',
     typical: 'Typical',
@@ -139,7 +120,7 @@ export default function ExploreTimeSavings({
       <UnifiedHeader
         pathType="explore"
         currentStep={3}
-        totalSteps={7}
+        totalSteps={isNursing ? 8 : 7}
         stepName="Time Savings"
         onBack={onBack}
         onHome={onHome}
@@ -197,73 +178,12 @@ export default function ExploreTimeSavings({
               </p>
             </motion.div>
 
-            {/* Where Does Reclaimed Time Go? - Nursing Only */}
-            {isNursing && (
-            <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6 sm:mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-            >
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                WHERE DOES RECLAIMED TIME GO?
-              </p>
-              <div className="h-px bg-[#D1D5DB] mb-6" />
-
-              <div className="space-y-5">
-                {[
-                  { field: 'nursingOtReductionPercent' as const, label: 'Overtime reduction', description: 'Time that directly reduces end-of-shift overtime' },
-                  { field: 'nursingShiftSustainabilityPercent' as const, label: 'Shift sustainability', description: 'Time absorbed into shift breathing room; reduces documentation stress and supports retention' },
-                  { field: 'nursingCareTimePercent' as const, label: 'Direct patient care', description: 'Time returned to the bedside for assessments, interventions, and presence' },
-                ].map((item) => (
-                  <div key={item.field}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div>
-                        <span className="text-sm font-semibold text-black">{item.label}</span>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <FormattedNumberInput
-                          value={timeDriverInputs[item.field]}
-                          onChange={(v: number) => handleTimeAllocationChange(item.field, v)}
-                          className="h-9 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
-                          data-testid={`input-allocation-${item.field}`}
-                        />
-                        <span className="text-sm text-[#888888]">%</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-[#888888] mb-2">{item.description}</p>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={timeDriverInputs[item.field]}
-                      onChange={(e) => handleTimeAllocationChange(item.field, parseInt(e.target.value))}
-                      className="w-full h-2 bg-[#D1D5DB] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
-                      data-testid={`slider-allocation-${item.field}`}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex items-center justify-between text-xs">
-                <span className={`font-medium ${timeDriverInputs.nursingOtReductionPercent + timeDriverInputs.nursingShiftSustainabilityPercent + timeDriverInputs.nursingCareTimePercent === 100 ? 'text-[#888888]' : 'text-[#EA2C00]'}`}>
-                  Total: {timeDriverInputs.nursingOtReductionPercent + timeDriverInputs.nursingShiftSustainabilityPercent + timeDriverInputs.nursingCareTimePercent}%
-                </span>
-              </div>
-
-              <p className="text-xs text-[#888888] italic mt-4">
-                Not all reclaimed time creates direct dollar value — some makes shifts more sustainable. That's real value too, just harder to count.
-              </p>
-            </motion.div>
-            )}
-
             {/* Choose Your Scenario */}
             <motion.div
               className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: isNursing ? 0.2 : 0.15 }}
+              transition={{ delay: 0.15 }}
             >
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 CHOOSE YOUR SCENARIO

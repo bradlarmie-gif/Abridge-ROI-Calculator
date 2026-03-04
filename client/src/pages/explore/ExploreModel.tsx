@@ -747,8 +747,8 @@ export default function ExploreModel({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={7}
-        totalSteps={7}
+        currentStep={isNursing ? 8 : 7}
+        totalSteps={isNursing ? 8 : 7}
         stepName="Your Model"
         onBack={onBack}
         onHome={onHome}

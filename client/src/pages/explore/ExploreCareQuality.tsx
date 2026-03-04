@@ -104,8 +104,8 @@ export default function ExploreCareQuality({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={5}
-        totalSteps={7}
+        currentStep={6}
+        totalSteps={8}
         stepName="Care Quality"
         onBack={onBack}
         onHome={onHome}

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
+import ExploreTimeAllocation from "./ExploreTimeAllocation";
 import ExploreValueDrivers from "./ExploreValueDrivers";
 import ExploreDocQuality from "./ExploreDocQuality";
 import ExploreCareQuality from "./ExploreCareQuality";
@@ -459,6 +460,7 @@ type ExplorePhase =
   | 'careSetting' 
   | 'practice' 
   | 'timeSavings' 
+  | 'timeAllocation'
   | 'valueDrivers' 
   | 'careQuality'
   | 'docQuality'
@@ -780,8 +782,19 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreTimeSavings
           state={state}
           updateState={updateState}
-          onNext={() => navigate('valueDrivers')}
+          onNext={() => navigate(isNursing ? 'timeAllocation' : 'valueDrivers')}
           onBack={() => navigate('practice')}
+          onHome={goHome}
+        />
+      );
+    
+    case 'timeAllocation':
+      return (
+        <ExploreTimeAllocation
+          state={state}
+          updateState={updateState}
+          onNext={() => navigate('valueDrivers')}
+          onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
       );
@@ -793,7 +806,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
           onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
-          onBack={() => navigate('timeSavings')}
+          onBack={() => navigate(isNursing ? 'timeAllocation' : 'timeSavings')}
           onHome={goHome}
         />
       );
@@ -840,8 +853,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       );
     
     case 'model': {
-      const stepPhaseMap: ExplorePhase[] = ['careSetting', 'practice', 'timeSavings', 'valueDrivers', isNursing ? 'careQuality' : 'docQuality', 'investment', 'model'];
-      const stepLabels = ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', isNursing ? 'Care Quality' : 'Doc Quality', 'Investment', 'Your Model'];
+      const stepPhaseMap: ExplorePhase[] = isNursing
+        ? ['careSetting', 'practice', 'timeSavings', 'timeAllocation', 'valueDrivers', 'careQuality', 'investment', 'model']
+        : ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'docQuality', 'investment', 'model'];
+      const stepLabels = isNursing
+        ? ['Care Setting', 'Practice', 'Time Savings', 'Time Allocation', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
+        : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
       return (
         <ExploreModel
           state={state}

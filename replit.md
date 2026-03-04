@@ -24,7 +24,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
     -   Global `useIsMobile` hook at 820px breakpoint (captures iPad portrait).
     -   UnifiedHeader: compact "X / Y" step counter on phones <480px, progress dots on 480px+, full breadcrumb on tablets/desktop.
     -   Global CSS safety: `overflow-x: hidden` on html/body, `-webkit-text-size-adjust: 100%`, 16px minimum input font to prevent iOS zoom-on-focus, `safe-area-inset-bottom` padding, `viewport-fit=cover`.
-    -   Explore flow: all 7 steps polished for 320px–1920px+ (responsive grids, touch targets, label/value collision prevention via gap + flex-shrink-0 patterns, stacking sidebars on mobile).
+    -   Explore flow: 7 steps for non-nursing (8 for nursing with dedicated Time Allocation page), polished for 320px–1920px+ (responsive grids, touch targets, label/value collision prevention via gap + flex-shrink-0 patterns, stacking sidebars on mobile).
     -   Custom Tailwind breakpoints: `min-[400px]`, `min-[480px]`, `min-[820px]` alongside standard `sm`/`md`/`lg`.
     -   Minimum text size: 12px (no `text-[10px]` or `text-[11px]` in codebase). Touch targets: 44px minimum for primary actions, 40px for secondary buttons.
     -   `prefers-reduced-motion` support for splash screen animations.

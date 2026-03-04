@@ -339,8 +339,8 @@ export default function ExploreValueDrivers({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={4}
-        totalSteps={7}
+        currentStep={isNursing ? 5 : 4}
+        totalSteps={isNursing ? 8 : 7}
         stepName="Value Drivers"
         onBack={onBack}
         onHome={onHome}
