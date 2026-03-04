@@ -287,8 +287,8 @@ export default function ExploreValueDrivers({
       driver1Subtitle: 'When nurses finish charting faster, they leave on time',
       driver2Title: 'Retention Savings',
       driver2Subtitle: 'Reduced documentation burden helps retain experienced nurses',
-      driver3Title: 'Care Time',
-      driver3Subtitle: 'Time returned to direct patient care',
+      driver3Title: 'Real-Time Care Visibility',
+      driver3Subtitle: 'Time saved becomes real-time documentation — the visibility layer that enables earlier intervention',
     },
   };
 
@@ -1528,8 +1528,9 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                   <p className="text-sm text-black mb-6">
-                    After accounting for OT reduction, the remaining time is returned to direct patient care. 
-                    More time at the bedside improves patient outcomes and satisfaction.
+                    After accounting for OT reduction, the remaining time is where the clinical visibility story begins. 
+                    When nurses document at the point of care instead of end-of-shift, risk signals surface in real time — 
+                    making earlier intervention possible and connecting time savings directly to better outcomes.
                   </p>
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">HOW MUCH TIME GOES TO DIRECT CARE?</p>
@@ -1602,17 +1603,17 @@ export default function ExploreValueDrivers({
                     })()}
                   </div>
 
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-6 mb-3">WHERE DOES CARE TIME GO?</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-6 mb-3">WHAT DOES REAL-TIME VISIBILITY ENABLE?</p>
                   <ul className="space-y-2 text-sm text-[#333333] list-disc pl-5 mb-6">
-                    <li>Reduced falls through more frequent rounding</li>
-                    <li>Fewer pressure injuries with timely assessments</li>
-                    <li>Higher patient satisfaction (HCAHPS)</li>
-                    <li>Better clinical outcomes overall</li>
+                    <li>Earlier fall-risk visibility through real-time assessment documentation</li>
+                    <li>Faster pressure injury intervention when skin assessments are captured at the point of care</li>
+                    <li>Higher patient satisfaction from more present, less distracted caregivers (HCAHPS)</li>
+                    <li>Clinical decision-making informed by current data, not end-of-shift charting</li>
                   </ul>
 
                   <div className="bg-[#F5F0EB]/60 rounded-lg p-3">
                     <p className="text-xs text-[#888888]">
-                      We don't calculate a dollar value for care time because the link to outcomes is indirect. But we DO explore the potential quality impact in the next section.
+                      This driver quantifies the time that becomes real-time documentation — the visibility infrastructure that makes the care quality outcomes in the next section achievable. We model the financial impact of those outcomes there.
                     </p>
                   </div>
                 </div>

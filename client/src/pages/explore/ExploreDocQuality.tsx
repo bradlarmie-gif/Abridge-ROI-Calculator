@@ -252,12 +252,14 @@ export default function ExploreDocQuality({
             How to Use This Section
           </p>
           <p className="text-sm text-black leading-relaxed">
-            The link between documentation and outcomes is <strong>indirect</strong>—we don't cause 
-            fewer falls, we enable the visibility that helps prevent them.
+            Real-time documentation is the visibility infrastructure that enables earlier clinical 
+            intervention. When assessments are captured at the point of care, risk signals surface 
+            immediately — not hours later during end-of-shift charting.
           </p>
           <p className="text-sm text-[#888888] mt-2">
-            We show these as <strong>potential value</strong> because clinical practice matters more 
-            than documentation alone. This value is real, just harder to attribute directly to Abridge.
+            We show these as <strong>potential value</strong> because the clinical team converts 
+            visibility into action. The value is real — these outcomes are achievable because 
+            real-time documentation makes them visible in time to act.
           </p>
         </motion.div>
 
@@ -290,7 +292,7 @@ export default function ExploreDocQuality({
                     <p className="font-semibold text-black">HAPI Prevention</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
-                  <p className="text-sm text-[#888888]">Real-time documentation enables earlier intervention</p>
+                  <p className="text-sm text-[#888888]">Timely point-of-care documentation makes risk signals visible before harm occurs</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {docQualityInputs.nursingHapiEnabled && (
@@ -328,9 +330,10 @@ export default function ExploreDocQuality({
                   <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
                     <p className="text-sm text-black mb-6">
-                      HAPIs happen when assessments are missed or interventions are delayed. Real-time 
-                      documentation ensures skin assessments, turning schedules, and risk factors are 
-                      captured as they're observed—enabling earlier intervention.
+                      HAPIs happen when risk signals aren't visible in time to act. When skin assessments 
+                      and turning schedules are documented at the point of care — not hours later — the care 
+                      team sees risk factors as they emerge. Timeliness of documentation, not just completeness, 
+                      is what creates the window for earlier intervention.
                     </p>
 
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>
@@ -447,7 +450,7 @@ export default function ExploreDocQuality({
                     <p className="font-semibold text-black">Falls Prevention</p>
                     <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
                   </div>
-                  <p className="text-sm text-[#888888]">Better visibility enables faster intervention</p>
+                  <p className="text-sm text-[#888888]">Real-time assessment documentation surfaces fall risk when there's still time to intervene</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {docQualityInputs.nursingFallsEnabled && (
@@ -485,9 +488,10 @@ export default function ExploreDocQuality({
                   <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
                     <p className="text-sm text-black mb-6">
-                      Falls often happen when risk factors aren't visible or communicated in real-time. 
-                      When nurses document assessments as they observe them, high-risk patients get 
-                      the attention they need faster.
+                      Falls happen when risk factors aren't visible at the moment they matter. When fall-risk 
+                      assessments are documented at the point of care, the care team sees who's high-risk 
+                      right now — not at the end of shift. This timeliness is the difference between 
+                      a preventive intervention and a post-event incident report.
                     </p>
 
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>

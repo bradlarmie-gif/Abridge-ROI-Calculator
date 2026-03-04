@@ -189,15 +189,16 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">2. Care Quality Enablement</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      Falls, pressure injuries, patient satisfaction. These outcomes are influenced by how much time 
-                      nurses spend at bedside. More time caring, less time charting, better outcomes. But the causal 
-                      chain is indirect—documentation supports care, it doesn't replace it.
+                      Falls, pressure injuries, patient satisfaction. These outcomes depend on clinical visibility—knowing 
+                      what's happening with a patient in real time, not hours later. Real-time flowsheet documentation 
+                      is the visibility infrastructure that clinical decision-making runs on. When assessments are captured 
+                      at the point of care, risk signals surface earlier and interventions happen faster.
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-4 text-[#666666] italic">
-                  We model both—but we're honest about which value is direct and which is potential.
+                  We model both. Labor economics show up in the budget. Care quality enablement shows up in the outcomes that real-time visibility makes possible.
                 </p>
               </div>
             </CollapsibleSection>
@@ -326,8 +327,10 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        When assessments are documented in real-time, risk factors are visible faster. 
-                        Earlier visibility enables earlier intervention. Earlier intervention can prevent some adverse events.
+                        When something is documented matters as much as whether it is documented. Ambient capture at the 
+                        point of care creates a real-time clinical visibility layer—skin assessments, turning schedules, 
+                        fall-risk factors, and vital signs are visible to the care team as they're observed, not hours later 
+                        during end-of-shift charting. This timeliness is what makes earlier intervention possible.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
@@ -345,22 +348,22 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                     </div>
                     <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
                       <p className="text-[#888888] mb-2 font-medium">Why we call this "potential" value:</p>
-                      <p className="text-[#666666] mb-3">The causal chain is indirect:</p>
+                      <p className="text-[#666666] mb-3">The value chain runs through clinical visibility:</p>
                       <div className="flex items-center gap-2 text-sm text-black font-mono">
-                        <span>Documentation</span>
+                        <span>Real-time capture</span>
                         <span className="text-[#888888]">→</span>
-                        <span>Visibility</span>
+                        <span>Risk signals visible</span>
                         <span className="text-[#888888]">→</span>
-                        <span>Intervention</span>
+                        <span>Earlier intervention</span>
                         <span className="text-[#888888]">→</span>
-                        <span>Outcome</span>
+                        <span>Better outcome</span>
                       </div>
                       <p className="text-[#666666] mt-3">
-                        We control the first step. Clinical practice controls the rest. 
-                        Documentation supports good care—it doesn't replace it.
+                        We provide the visibility infrastructure—real-time documentation that makes risk factors actionable 
+                        when they matter most. Clinical teams convert that visibility into interventions.
                       </p>
                       <p className="text-[#666666] mt-2 italic">
-                        We show this value separately because honesty builds trust.
+                        We show this value separately because the clinical conversion step depends on your team's workflows.
                       </p>
                     </div>
                   </div>
