@@ -334,6 +334,44 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     </div>
                   </div>
                 </MechanismCard>
+
+                <MechanismCard title="OBS/IP Status Defense">
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="text-[#888888] mb-1">The mechanism:</p>
+                      <p className="text-black">
+                        Medical necessity denials often trace back to a single document: the H&P written at 
+                        admission. Payers reviewing observation vs. inpatient status decisions look for the 
+                        attending's clinical reasoning captured in real time. When that reasoning is discussed 
+                        verbally but not documented, the hospital loses the argument retrospectively. Ambient 
+                        AI captures the clinical justification for inpatient level of care at the moment it's 
+                        articulated — the strongest possible defense against retrospective denial.
+                      </p>
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-[#888888] mb-1">The calculation:</p>
+                      <p className="font-mono text-black text-sm">
+                        Admissions at risk × Denial rate × Average denied claim value × Documentation-attributable %
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[#888888] mb-1">Key assumptions:</p>
+                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
+                        <li>Average obs/IP contested claim: $8,000–$15,000</li>
+                        <li>Denial rate for medical necessity: 3–7% of inpatient admissions</li>
+                        <li>Documentation attributed as contributing factor: ~40% (based on denial root cause data)</li>
+                      </ul>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        Revenue cycle teams already categorize denial root causes. If your denial management 
+                        team tracks "medical necessity — documentation insufficient" as a category, this is 
+                        measurable before and after deployment.
+                      </p>
+                    </div>
+                  </div>
+                </MechanismCard>
               </div>
 
               {/* Time Efficiency */}
@@ -370,6 +408,42 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                         If 20 hospitalists each save 30 minutes per admission across 15 admissions/month, 
                         that's 150 hours of physician time returned to clinical care monthly. That's real 
                         capacity — even if we can't put a precise dollar figure on it.
+                      </p>
+                    </div>
+                  </div>
+                </MechanismCard>
+
+                <MechanismCard title="CDI Capacity Extension">
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="text-[#888888] mb-1">The mechanism:</p>
+                      <p className="text-black">
+                        CDI specialists have fixed capacity. Today, a significant portion of their review time 
+                        is spent sending queries and waiting for physician responses to fill gaps that should 
+                        have been in the note. When documentation captures clinical complexity at the point of 
+                        care, CDI spends less time on reactive querying and more time on proactive case review. 
+                        The same team can cover more admissions — or cover current admissions with less rework.
+                      </p>
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-[#888888] mb-1">The calculation:</p>
+                      <p className="font-mono text-black text-sm">
+                        CDI FTEs × % time on query follow-up × Reduction % × CDI FTE cost
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[#888888] mb-1">Key assumptions:</p>
+                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
+                        <li>CDI specialist salary: $75,000–$95,000</li>
+                        <li>Time spent on query creation and follow-up: 25–40% of CDI workload</li>
+                        <li>Reduction with improved upstream documentation: 15–30%</li>
+                      </ul>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        CDI productivity metrics (cases reviewed per day, query response time, query rate per 
+                        1,000 admissions) are standard ACDIS benchmarks. Before/after comparison is straightforward.
                       </p>
                     </div>
                   </div>
@@ -564,6 +638,8 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                       <li><strong>CDI query rates:</strong> CDI departments track this daily. Before/after comparison is clean and fast.</li>
                       <li><strong>CMI trends:</strong> Claims data, tracked quarterly. Compare Abridge providers vs. control group.</li>
                       <li><strong>Note completeness:</strong> CDI can assess documentation quality directly. Audit-ready evidence.</li>
+                      <li><strong>Discharge documentation lag:</strong> Time from discharge order to completed discharge summary is an EHR-measurable metric. Abridge reduces this lag by enabling real-time documentation during the discharge conversation rather than retrospective charting.</li>
+                      <li><strong>Obs/IP status defense:</strong> Medical necessity denial rates by root cause are tracked by revenue cycle. Documentation-attributed denials are an identifiable subset.</li>
                     </ul>
                   </div>
 
@@ -575,7 +651,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
                       <li><strong>DRG accuracy:</strong> Documentation is the input; CDI, coding, and payer response determine the output. Trackable, but multi-factorial.</li>
                       <li><strong>Denial prevention:</strong> Documentation-related denials are identifiable. Requires 6+ months of data to see trends.</li>
-                      <li><strong>Discharge documentation quality:</strong> Better discharge summaries may reduce readmissions, but many factors contribute.</li>
+                      <li><strong>Readmission-related documentation:</strong> Better discharge summaries may reduce readmissions, but many factors contribute.</li>
                     </ul>
                   </div>
 
