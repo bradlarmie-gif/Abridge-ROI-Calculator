@@ -551,7 +551,7 @@ export function computeWorkforceFeedback(
       };
     }
 
-    const clinicSavedHours = Math.round(minutesSaved * providers * 250 / 60);
+    const clinicSavedHours = Math.round(minutesSaved * providers * 230 / 60);
     const clinicValue = Math.round(clinicSavedHours * providerRate);
 
     const afterHoursValue = confirmedAfterHours && confirmedAfterHours > 0
@@ -586,7 +586,7 @@ export function computeWorkforceFeedback(
       hasValue: true,
       headlineMetric: `${formatDollar(totalValue)} in total measured workforce value${afterHoursValue > 0 ? ' — after-hours and in-clinic combined' : ''}.`,
       context: `This is no longer anecdote — it's data. Your providers are getting measurable time back every day.\n\n${afterHoursValue > 0 ? `After-hours: ${formatDollar(afterHoursValue)}\n` : ''}In-clinic editing: ${formatDollar(clinicValue)}${surveyNarrative}${burnoutNarrative}`,
-      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 250 days / 60 = ${clinicSavedHours.toLocaleString()}\n[clinicValue] = ${clinicSavedHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(clinicValue)}${afterHoursValue > 0 ? `\n[afterHoursValue] = ${confirmedAfterHours} × ${providers} × 52 × ${formatDollar(providerRate)} = ${formatDollar(afterHoursValue)}` : ''}\n[total] = ${formatDollar(totalValue)}`,
+      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 230 working days / 60 = ${clinicSavedHours.toLocaleString()}\n[clinicValue] = ${clinicSavedHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(clinicValue)}${afterHoursValue > 0 ? `\n[afterHoursValue] = ${confirmedAfterHours} × ${providers} × 52 × ${formatDollar(providerRate)} = ${formatDollar(afterHoursValue)}` : ''}\n[total] = ${formatDollar(totalValue)}`,
       footnote: '',
     };
   }
