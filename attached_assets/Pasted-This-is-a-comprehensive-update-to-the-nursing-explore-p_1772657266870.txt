@@ -1,0 +1,24 @@
+This is a comprehensive update to the nursing explore path. Please implement all of the following changes together. Do not change any default dollar values, rates, or calculations unless explicitly stated below.
+CHANGE 1 — Add time allocation question at the top of the Time Savings screen (Step 2), above the scenario selector:
+Add a section titled "Where Does Reclaimed Time Go?" with three sliders or editable inputs that must sum to 100%:
+
+Overtime reduction — Time that directly reduces end-of-shift overtime. Default: 25%
+Shift sustainability — Time absorbed into shift breathing room; reduces documentation stress and supports retention. Default: 35%
+Direct patient care — Time returned to the bedside for assessments, interventions, and presence. Default: 40%
+
+Include a short explanatory line: "Not all reclaimed time creates direct dollar value — some makes shifts more sustainable. That's real value too, just harder to count."
+These three percentages must be stored as variables and passed forward to downstream calculations.
+CHANGE 2 — Wire the time allocation into existing math:
+
+The "Overtime reduction" percentage (default 25%) replaces the current fixed "Time-to-OT conversion" default of 25% on the OT Reduction toggle. They should be the same number — if the user changes it in the allocation, it should reflect in the OT math. Label it in the OT calculation table as "OT allocation (from your time split above)" so the linkage is visible.
+The "Direct patient care" percentage (default 40%) replaces the hardcoded 62% "care time effectiveness" multiplier in the HAPI Prevention and Falls Prevention calculations. Label it in those calculation tables as "Care time allocation (from your time split above)" so the user can see where it comes from.
+The "Shift sustainability" percentage does not feed a dollar calculation. Instead, add a single line in the Retention Savings logic section that reads: "The 35% of reclaimed time absorbed into shift sustainability is the primary mechanism behind burnout reduction — it's what makes documentation burden relief feel real to nurses."
+
+CHANGE 3 — Remove Care Time as a standalone toggle on the Value Drivers screen:
+Delete the "Care Time / Qualitative" toggle entirely. It is now represented structurally through the time allocation above. Do not replace it with anything.
+CHANGE 4 — Update the HAPI and Falls Prevention descriptions on the Care Quality screen:
+Change the sub-label under HAPI Prevention from "Real-time documentation enables earlier intervention" to "Real-time flowsheet capture creates the visibility that makes earlier intervention possible."
+Change the sub-label under Falls Prevention from "Comprehensive documentation supports fall risk assessment" to "Timely documentation of mobility status and fall risk scores means risk is visible when it matters, not hours later."
+Update the "How to Use This Section" copy to say: "The link between flowsheet documentation and outcomes runs through two things: timeliness — risk signals documented in the moment, not at end of shift — and the share of reclaimed time that goes back to direct care. Both are reflected in your model."
+CHANGE 5 — Do not touch:
+All dollar defaults, replacement costs, turnover rates, burnout percentages, HAPI rates, falls rates, cost-per-event figures, the OT hourly rate default, or the retention impact percentages. Do not change the Agency Labor Reduction or HAC Penalty toggles. Do not change any other care setting methodology pages.
