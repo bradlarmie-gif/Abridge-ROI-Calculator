@@ -154,7 +154,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     }
     return {
       headline: 'Best in class across domains.',
-      body: 'Best-in-class documentation infrastructure. You\'re in the top tier of Abridge deployments for strategic value capture.',
+      body: 'Best-in-class documentation infrastructure. Based on aggregated deployment experience, organizations at this stage are capturing strategic value across all domains.',
     };
   };
 
