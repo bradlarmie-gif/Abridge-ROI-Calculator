@@ -102,7 +102,7 @@ export default function StepEnterpriseCaptureScore({
           <span className="font-bold tabular-nums">{TOP_QUARTILE} / 100</span>
         </p>
         <p className="text-xs text-[#999] mt-2" data-testid="text-benchmark-source">
-          Based on Abridge deployment data and published industry benchmarks.
+          Based on aggregated deployment experience and published industry benchmarks.
         </p>
       </div>
 

@@ -7804,7 +7804,7 @@ export default function RoiCalculator({
                     Deployment Configuration
                   </h4>
                   <p className="text-sm text-neutral-500 mb-4">
-                    Model a different configuration of your Abridge deployment. Adjust the fundamentals and optionally add specificity with advanced inputs.
+                    Model a different configuration of your deployment. Adjust the fundamentals and optionally add specificity with advanced inputs.
                   </p>
 
                   <div className="space-y-6">
@@ -8470,7 +8470,7 @@ export default function RoiCalculator({
                     setExportForm({ ...exportForm, customNotes: e.target.value });
                   }
                 }}
-                placeholder="Example: This analysis models a phased Abridge deployment starting with our cardiology and primary care departments (40 providers). Based on early adoption metrics, we project expansion to 100 providers. The expansion scenario reflects this growth plan with expected utilization improvements and inclusion of our Medicare Advantage population for HCC capture."
+                placeholder="Example: This analysis models a phased deployment starting with our cardiology and primary care departments (40 providers). Based on early adoption metrics, we project expansion to 100 providers. The expansion scenario reflects this growth plan with expected utilization improvements and inclusion of our Medicare Advantage population for HCC capture."
                 className="min-h-[160px]"
                 data-testid="textarea-custom-notes"
               />

@@ -359,7 +359,7 @@ export default function ExpandBenchmarkComparison({
           </h1>
           <p className="text-base text-[#6B7280] max-w-2xl mx-auto">
             Your data tells a story of transformation. Let's see how you compare to other 
-            successful Abridge deployments.
+            successful ambient AI deployments.
           </p>
         </motion.div>
 

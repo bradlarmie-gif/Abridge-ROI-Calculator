@@ -337,7 +337,7 @@ export default function StepTheInvitation({
       </section>
 
       <p className="text-xs text-[#AAAAAA] leading-relaxed max-w-2xl mx-auto mt-12 mb-6" data-testid="text-methodology-disclaimer">
-        Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. All values shown after stated confidence adjustments. This assessment does not constitute a guarantee of financial outcomes.
+        Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. All values shown after stated confidence adjustments. This assessment does not constitute a guarantee of financial outcomes.
       </p>
 
       <div className="flex items-center justify-between pt-4 border-t border-[#E8E0D8]">

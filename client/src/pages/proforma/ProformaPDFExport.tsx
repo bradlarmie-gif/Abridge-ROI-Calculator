@@ -746,9 +746,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
       <PDFCoverPage
         reportLabel="ORGANIZATION PROFORMA"
         title={organizationName || "Organization"}
-        subtitle={`${termLabel} Financial Model  \u00B7  ${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Observed Abridge Deployment Data`}
+        subtitle={`${termLabel} Financial Model  \u00B7  ${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Aggregated Deployment Experience`}
         preparedBy={preparedBy}
-        disclaimerText="This model reflects conservative estimates derived from user inputs and observed outcomes across Abridge deployments. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
+        disclaimerText="This model reflects conservative estimates derived from user inputs and aggregated deployment experience. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
       />
 
       {/* PAGE 1: THE THESIS */}

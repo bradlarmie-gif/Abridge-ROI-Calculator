@@ -199,7 +199,7 @@ export function calculateTieredROI(
       type: "roi",
       severity: "warning",
       title: `Your projected ROI is ${roi.toFixed(1)}× — worth a second look`,
-      message: "Most Abridge deployments see 2–4× ROI. Review your inputs — particularly time conversion and wRVU assumptions — to make sure they reflect your organization's realistic scenario.",
+      message: "Organizations at this stage typically see 2–4× ROI. Review your inputs — particularly time conversion and wRVU assumptions — to make sure they reflect your organization's realistic scenario.",
     });
   }
   

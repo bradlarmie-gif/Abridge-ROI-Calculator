@@ -450,7 +450,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Based on Abridge deployment data across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p>
+                          <p className="text-xs">Based on aggregated deployment experience across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>
@@ -737,7 +737,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
         </motion.div>
 
         <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">
-          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and Abridge deployment data. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+          Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
         </p>
 
         {/* Related Care Settings */}

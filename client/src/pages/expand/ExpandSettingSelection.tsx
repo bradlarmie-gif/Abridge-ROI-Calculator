@@ -29,7 +29,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             Analyze Your Results
           </h1>
           <p className="text-base md:text-lg text-[#6B7280] px-2">
-            See how your Abridge deployment is performing and model expansion
+            See how your deployment is performing and model expansion
           </p>
         </div>
 
