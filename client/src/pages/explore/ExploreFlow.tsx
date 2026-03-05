@@ -348,17 +348,17 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
     ipReplacementCost: 300000, // $300,000 replacement cost
     // Outpatient time allocation defaults
-    opAllocCapacityPercent: 25,
-    opAllocDocQualityPercent: 15,
-    opAllocWellbeingPercent: 60,
+    opAllocCapacityPercent: 0,
+    opAllocDocQualityPercent: 0,
+    opAllocWellbeingPercent: 0,
     // ED time allocation defaults
-    edAllocThroughputPercent: 45,
-    edAllocDocQualityPercent: 15,
-    edAllocWellbeingPercent: 40,
+    edAllocThroughputPercent: 0,
+    edAllocDocQualityPercent: 0,
+    edAllocWellbeingPercent: 0,
     // Inpatient time allocation defaults
-    ipAllocQualityPercent: 40,
-    ipAllocCostPercent: 25,
-    ipAllocWellbeingPercent: 35,
+    ipAllocQualityPercent: 0,
+    ipAllocCostPercent: 0,
+    ipAllocWellbeingPercent: 0,
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtExpanded: true,
