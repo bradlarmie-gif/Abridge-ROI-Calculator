@@ -1,0 +1,67 @@
+Fix ED Calculator Math Display Bugs
+I've done a deep source code audit of the ED (Emergency Department) calculator and found math display issues that undermine credibility. The Retention calculation card is the gold standard — every step shown, every intermediate value visible, math always checks out visually. The LWBS and Admission Capture cards need to match that standard.
+
+BUG 1 (Critical): LWBS Recovery — Hidden Multiplier Makes Displayed Math Wrong
+Current display:
+
+Annual LWBS patients:     2,700
+× LWBS reduction:           15%
+= Patients recovered:        91
+× Revenue per visit:       $450
+= Gross value:           $41,006
+× Realization rate:          75%
+= Net LWBS Value:       $30,755
+The problem: 2,700 × 15% = 405, not 91. A CFO will catch this instantly and lose trust in the entire model. What the code actually does: There is a variable called abridgeAttributionPercent that gets multiplied in silently but is NEVER shown as a line item in the calculation card. The actual formula in the source is:
+
+js
+patientsRecovered = annualEdVisits × (lwbsRate/100) × (improvementRate/100) × (abridgeAttributionPercent/100)
+```
+So it's doing: `90,000 × 3% × 15% × 22.5% = 91` — but only showing three of the four multiplication steps.
+**The fix:** Add the missing step to the calculation card display so the math is transparent and checks out, just like the Retention card. It should display like:
+```
+Annual LWBS patients:           2,700
+× LWBS reduction:                 15%
+= Patients retained:              405
+× Abridge attribution:          22.5%
+= Patients recovered:              91
+× Revenue per visit:             $450
+= Gross value:                $41,006
+× Realization rate:                75%
+= Net LWBS Value:             $30,755
+```
+The label "Abridge attribution" can be whatever makes sense contextually (e.g., "Throughput attribution" or "Documentation-driven recovery rate") — the point is the step must be VISIBLE so the math multiplies out correctly on screen.
+### BUG 2 (High): Admission Capture — Rounding Display Inconsistency
+**Current display:**
+```
+Recovered ED patients:        91
+× Admission rate:             18%
+= Potential admissions:        16
+× Avg admission revenue:  $8,000
+= Gross value:           $131,220
+```
+**The problem:** 16 × $8,000 = $128,000, not $131,220. The code calculates gross value using the unrounded intermediate value (16.402 × $8,000 = $131,218 ≈ $131,220) but displays the rounded integer (16). So a reader multiplying the displayed numbers gets a different answer than what's shown.
+**The fix:** Display intermediate values with one decimal place when the rounding causes a visible discrepancy. Show "Potential admissions: 16.4" so that 16.4 × $8,000 = $131,200 ≈ $131,220 (close enough to pass the sniff test). Alternatively, you could round all downstream values consistently from the displayed rounded integer — but showing one decimal is cleaner.
+### BUG 3 (Medium): Conflicting Default Values for `abridgeAttributionPercent`
+The source code has THREE different default values for `abridgeAttributionPercent` in different places:
+- **Config/defaults object:** `33`
+- **Calculation function fallback:** `||100`  
+- **UI settings panel definition:** `defaultValue: 50`
+Consolidate these to a single source of truth. Pick one canonical default and reference it everywhere.
+### REFERENCE: The Retention Card Is the Gold Standard
+Look at the Retention calculation card — this is exactly how every calculation card should work:
+```
+Providers:                         50
+× Annual turnover rate:            6%
+= Providers leaving per year:     3.0
+× Burnout-related turnover:       40%
+= Burnout-related departures:    1.20
+× Abridge retention impact:       30%
+= Providers retained:            0.36
+× Replacement cost:          $400,000
+= Retention value:           $144,000
+Every multiplicative step is shown. Every intermediate value is visible. The math checks out line by line. Apply this same pattern to LWBS Recovery and Admission Capture.
+
+DO NOT change any underlying calculation logic, formulas, or values. Only fix the DISPLAY of the math in the calculation cards so that every visible equation actually multiplies out correctly.
+
+
+
