@@ -608,14 +608,14 @@ export default function ExploreModel({
         }
         if (nursingCareQualityPotential > 0) {
           const parts: string[] = [];
-          if (nursingHapiValue > 0) parts.push(`HAPI prevention: ${fmtK(nursingHapiValue)}`);
-          if (nursingFallsValue > 0) parts.push(`Falls prevention: ${fmtK(nursingFallsValue)}`);
+          if (nursingHapiValue > 0) parts.push(`HAPI risk reduction: ${fmtK(nursingHapiValue)}`);
+          if (nursingFallsValue > 0) parts.push(`Fall risk visibility gap: ${fmtK(nursingFallsValue)}`);
           if (nursingHacValue > 0) parts.push(`HAC penalty avoidance: ${fmtK(nursingHacValue)}`);
           parts.push(`= ${fmtK(nursingCareQualityPotential)}/year`);
           drivers.push({
             id: 'nursingCareQuality', name: 'Care Quality (Potential)', value: nursingCareQualityPotential, category: 'documentation',
             calcSteps: parts,
-            calibrationNote: 'Potential value based on adverse event prevention rates.',
+            calibrationNote: 'Potential value based on documentation-attributable risk reduction rates.',
           });
         }
       }
@@ -728,12 +728,12 @@ export default function ExploreModel({
     },
     nursing: {
       timeCardTitle: 'Staffing Efficiency',
-      timeCardDescription: 'Less time documenting means nurses finish on time and stay longer.',
+      timeCardDescription: 'Time saved on flowsheet documentation reduces end-of-shift overtime and improves nurse retention.',
       driver1: 'OT Reduction',
       driver2: 'Retention Savings',
       driver3: 'Agency Reduction',
       docCardTitle: 'Care Quality',
-      docCardDescription: 'Complete documentation supports better care and fewer adverse events.',
+      docCardDescription: 'Better flowsheet documentation creates a real-time clinical picture — reducing the risk events that are most sensitive to documentation gaps.',
       docDriver1: 'HAPI Risk: Documentation Impact',
       docDriver2: 'Fall Risk Visibility Gap',
       docDriver3: 'HCAHPS',
@@ -1077,11 +1077,11 @@ export default function ExploreModel({
           transition={{ delay: 0.1 }}
         >
           <p className="text-center text-xl font-bold text-black mb-2">
-            Where the Value Comes From
+            {isNursing ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
           </p>
           {isNursing ? (
             <p className="text-center text-base text-[#888888] mb-6">
-              Abridge creates value through staffing efficiency and care quality—each with its own drivers and assumptions.
+              Each value driver uses your inputs — not industry averages — to calculate a defensible return.
             </p>
           ) : (
             <p className="text-center text-base text-[#888888] mb-6">
@@ -1114,7 +1114,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}</span>
                     </div>
                     {state.timeDriverInputs.nursingOtEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtReductionPercent}% OT allocation)</p>
+                      <p className="text-xs text-[#888888] pl-4">(from your time split: {state.timeDriverInputs.nursingOtReductionPercent}% allocated to OT reduction)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• Retention Savings</span>
@@ -1130,11 +1130,6 @@ export default function ExploreModel({
                     {state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks × ${state.timeDriverInputs.nursingAgencyWeeklyPremium.toLocaleString()})</p>
                     )}
-                    <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
-                    <p className="text-sm text-[#666666]">
-                      Direct patient care: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse
-                      <span className="text-xs text-[#888888] ml-1">({state.timeDriverInputs.nursingCareTimePercent}% of reclaimed time)</span>
-                    </p>
                   </>
                 ) : isED ? (
                   <>
@@ -1241,18 +1236,18 @@ export default function ExploreModel({
                 {isNursing ? (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">• HAPI Risk: Documentation Impact</span>
+                      <span className="text-[#666666]">• HAPI Risk Reduction</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
                     </div>
                     {state.docQualityInputs.nursingHapiEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                      <p className="text-xs text-[#888888] pl-4">(6.5% rate · Dowding et al., JAMIA 2012)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• Fall Risk Visibility Gap</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
                     </div>
                     {state.docQualityInputs.nursingFallsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                      <p className="text-xs text-[#888888] pl-4">(documentation gap rate · Joint Commission sentinel data)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• HAC Penalty</span>
@@ -1269,6 +1264,9 @@ export default function ExploreModel({
                     <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
                     <p className="text-xs text-[#888888] italic">
                       This is potential value—requires clinical practice, not just docs.
+                    </p>
+                    <p className="text-sm text-[#666666] mt-2">
+                      Direct care time available: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse — based on your {state.timeDriverInputs.nursingCareTimePercent}% direct care allocation
                     </p>
                   </>
                 ) : isInpatient ? (
@@ -1450,12 +1448,12 @@ export default function ExploreModel({
               </div>
               <div>
                 <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                <p className="text-sm text-[#888888]">Nursing documentation supports the inpatient revenue cycle</p>
+                <p className="text-sm text-[#888888]">Nursing flowsheet documentation amplifies value in connected care settings</p>
               </div>
             </div>
             <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
               <p className="text-sm text-[#666666] mb-5">
-                When nurses document thoroughly and in real-time, it directly supports inpatient coding and reimbursement.
+                Real-time flowsheet documentation creates the clinical record that downstream teams depend on — from inpatient coders to hospitalist billers.
               </p>
               <div className="grid md:grid-cols-2 gap-4 mb-5">
                 <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
@@ -1471,8 +1469,7 @@ export default function ExploreModel({
                 <div className="flex items-start gap-3">
                   <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-medium">These benefits are quantified in the <span className="font-bold">Inpatient setting</span>.</p>
-                    <p className="text-sm opacity-80 mt-1">If your organization uses Abridge for both Nursing and Hospitalists, the documentation creates a complete clinical picture from admission through discharge.</p>
+                    <p className="text-sm opacity-90">The value above reflects nursing-only documentation. If your organization also uses Abridge for Hospitalists, the clinical record built by nursing directly extends the ROI of the Inpatient model — no double-counting.</p>
                   </div>
                 </div>
               </div>
@@ -1547,6 +1544,12 @@ export default function ExploreModel({
               </div>
             </div>
           </div>
+
+          {isNursing && (
+            <p className="text-sm text-[#888888] text-center mt-4">
+              As adoption scales, documentation consistency improves — which compounds the care quality benefits above.
+            </p>
+          )}
         </motion.div>
 
         {/* GROWTH TRAJECTORY */}
@@ -1754,7 +1757,9 @@ export default function ExploreModel({
 
           <p className="text-sm text-[#888888] text-center mt-4">
             {implementationCost > 0 ? `Year 1 includes ${formatCurrency(implementationCost)} implementation fee. ` : ''}
-            Years 2-3 assume 10% value growth from improved utilization.
+            {isNursing
+              ? 'Years 2-3 assume 10% growth as adoption matures and documentation habits improve across the unit.'
+              : 'Years 2-3 assume 10% value growth from improved utilization.'}
           </p>
         </motion.div>
 

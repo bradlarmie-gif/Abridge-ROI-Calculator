@@ -321,12 +321,12 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerTypePlural: "beds",
     coverSubtitle: (d) => `${fmtNum(d.nursingStaffedBeds || 0)} beds \u00B7 ${fmtNum(d.nursingFTEs || d.providers)} nurse FTEs \u00B7 Inpatient Nursing`,
     thesisQuestion: "Nurses don\u2019t bill. So where does the value live?",
-    thesisParagraph: "Nursing documentation creates value through two mechanisms: labor economics (overtime reduction, retention, agency cost avoidance) and care quality (HAPI prevention, falls reduction, patient experience). The budget impact is real\u2014and so is the care improvement.",
+    thesisParagraph: "Nursing documentation creates value through two mechanisms: labor economics (overtime reduction, retention, agency cost avoidance) and care quality (HAPI risk reduction, fall risk visibility, patient experience). The budget impact is real\u2014and so is the care improvement.",
     source1Label: "LABOR ECONOMICS",
     source1Description: "Overtime reduction, nurse retention savings, and agency cost avoidance.",
     source1Tagline: "The budget impact is real.",
     source2Label: "CARE QUALITY",
-    source2Description: "HAPI prevention, falls reduction, and patient experience improvement.",
+    source2Description: "HAPI risk reduction, fall risk visibility, and patient experience improvement.",
     source2Tagline: "Better care starts with better information.",
     strategicObservation: (d) => {
       if (d.totalValue === 0 && d.qualitativeDrivers.length > 0) {
@@ -338,7 +338,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
         : `Your model balances labor economics (${timePct}%) with care quality (${100 - timePct}%). This profile suggests both staffing and patient outcomes can improve simultaneously.`;
     },
     page2Intro: (d) => `${fmtNum(d.hoursReturned)} hours returned to your nursing staff. Here\u2019s how each driver works.`,
-    closingInsight: "Nurses don\u2019t bill. But their documentation drives care quality, and their time drives labor economics. Ambient documentation creates value in the two places it matters most for nursing\u2014the budget and the bedside.",
+    closingInsight: "Nurses don\u2019t bill. But their flowsheet documentation drives care quality\u2014reducing the risk events most sensitive to documentation gaps\u2014and their time drives labor economics. Ambient documentation creates value in the two places it matters most for nursing: the budget and the bedside.",
     keyMetrics: [
       "1. Documentation time per shift (target: -40%)",
       "2. Nurse satisfaction / burnout score (target: +15 pts)",
