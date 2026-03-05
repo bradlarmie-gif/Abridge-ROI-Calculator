@@ -64,14 +64,14 @@ type DomainConfig = {
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'Time is being returned. The strategic question is what your organization does with it.',
-    subheadline: '',
-    reframe: 'Ambient documentation creates recovered capacity. Where that capacity goes — and whether it\'s intentionally directed — is what separates a productivity win from a strategic one.',
+    headline: 'CAPACITY',
+    subheadline: 'The question isn\'t whether ambient saves time. It\'s what your organization does with it.',
+    reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
     cards: [
-      { level: 1, label: 'Time Is Being Returned.', description: 'Ambient is deployed and time is being returned per encounter. This is the foundation — understanding the magnitude of what\'s being recovered.' },
-      { level: 2, label: 'Recovery Quantified and Brought to Leadership.', description: 'Total recovered capacity has been calculated and presented to operational or executive leadership.' },
-      { level: 3, label: 'Recovered Capacity Is Expanding Access.', description: 'Recovered time has a confirmed destination — additional patients seen through scheduling redesign or panel expansion.' },
-      { level: 4, label: 'Capacity Is Shaping Workforce Strategy.', description: 'Ambient-enabled capacity is formally part of how your organization plans its provider workforce — influencing hiring decisions, growth modeling, and service line development.' },
+      { level: 1, label: 'Documentation Recovery Established', description: 'You know what you\'re getting back.' },
+      { level: 2, label: 'Recovery Quantified and Escalated', description: 'Leadership knows the number.' },
+      { level: 3, label: 'Capacity Deployed Into Patient Access', description: 'The time has a destination.' },
+      { level: 4, label: 'Workforce Architecture Impact', description: 'Ambient is in your hiring model.' },
     ],
     framingQuestions: {
       1: 'Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?',
@@ -87,14 +87,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'Is documentation fidelity worth anything to your revenue cycle — or is no one asking?',
-    reframe: 'Every encounter either captures or leaks revenue through your documentation infrastructure. The question is whether anyone is measuring which.',
+    headline: 'Better documentation produces better coding. Better coding produces better reimbursement. The question is whether your organization is connecting those dots.',
+    reframe: 'Every encounter is coded. The opportunity is in whether it\'s coded at the specificity your documentation now supports — and whether your revenue cycle team is part of that conversation.',
     cards: [
-      { level: 1, label: 'Revenue Cycle Has Not Been Asked.', description: 'No one has connected ambient deployment to coding or billing.' },
-      { level: 2, label: 'Revenue Cycle Is Investigating.', description: 'CDI, coding, or billing leadership has an active analysis in progress.' },
-      { level: 3, label: 'Revenue Impact Measured and Attributed.', description: 'Before/after analysis complete; a dollar number exists that leadership can stand behind.' },
-      { level: 4, label: 'Documentation Quality Is a Managed Revenue Input.', description: 'Ongoing, real-time integration between documentation quality and revenue cycle operations.' },
+      { level: 1, label: 'Revenue Cycle Hasn\'t Been Brought In Yet.', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
+      { level: 2, label: 'The Analysis Is Underway.', description: 'Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes.' },
+      { level: 3, label: 'The Impact Has Been Measured.', description: 'Your organization has before/after data that connects ambient documentation to a specific revenue outcome — a number leadership can work with.' },
+      { level: 4, label: 'Documentation Quality Is Built Into Revenue Cycle Operations.', description: 'Documentation quality and revenue cycle operate as a connected system — monitored, attributed, and factored into operational planning.' },
     ],
+    framingQuestions: {
+      1: 'Has your revenue cycle team been formally engaged on what ambient documentation means for coding accuracy or reimbursement?',
+      2: 'What is your revenue cycle team analyzing — and how far along is the investigation?',
+      3: 'What did your organization measure — and what does your data show?',
+      4: 'How is documentation quality formally integrated into your revenue cycle operations — and what has your organization attributed to it?',
+    },
+    unlockTeasers: {
+      2: 'Unlock: begin revenue cycle analysis',
+      3: 'Unlock: measure before/after impact',
+      4: 'Unlock: integrate into operations',
+    },
   },
   workforce: {
     label: 'WORKFORCE',
@@ -542,10 +553,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   };
 
   const REVENUE_METRIC_OPTIONS = [
-    { id: 'wrvu', label: 'wRVU change per encounter' },
-    { id: 'collections', label: 'Collections change per encounter' },
+    { id: 'wrvu', label: 'wRVU change per encounter (coding specificity improved)' },
+    { id: 'collections', label: 'Collections change per encounter (dollars collected per visit)' },
     { id: 'revenue_pct', label: 'Overall revenue change (%) attributed to documentation' },
-    { id: 'denial_rate', label: 'Denial rate reduction (%)' },
+    { id: 'denial_rate', label: 'Denial rate reduction (documentation-related claims)' },
   ];
 
   const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
@@ -560,39 +571,97 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (!level) return null;
 
     if (level === 1) {
+      const revenueCycleEngaged = currentState.inputs.revenueCycleEngaged as string | undefined;
+      const revenueCycleStatus = currentState.inputs.revenueCycleStatus as string | undefined;
       return (
-        <div>
-          <p className="text-sm text-[#888888] italic mb-4">
-            Your revenue cycle hasn't been asked to evaluate documentation changes from ambient. The numbers below are auto-computed from your baseline data.
-          </p>
+        <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              What % of patients are in value-based contracts?
+            <label className="block text-sm font-medium text-black mb-3">
+              Has your revenue cycle team been formally engaged?
             </label>
-            <p className="text-xs text-[#888888] mb-2">Used to estimate HCC/risk adjustment exposure. Default 30%.</p>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.vbcSharePct as number) || 30}
-                onChange={(v) => setDomainInput('vbcSharePct', Math.min(100, Math.max(0, v)))}
-                placeholder="30"
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-revenue-vbc-pct"
-              />
-              <span className="text-sm text-[#888888]">%</span>
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'no', label: 'Not yet — ambient and revenue cycle are operating independently' },
+                { id: 'informal', label: 'Some awareness — conversations have started informally' },
+                { id: 'yes', label: 'Yes — formally engaged and involved' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('revenueCycleEngaged', opt.id)}
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    revenueCycleEngaged === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-revenue-engaged-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
+
+          <AnimatePresence>
+            {revenueCycleEngaged === 'yes' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-black mb-3">
+                    Where is that engagement?
+                  </label>
+                  <div className="flex flex-col gap-2.5">
+                    {[
+                      { id: 'aware', label: 'Aware but no formal analysis yet' },
+                      { id: 'analyzing', label: 'Active analysis in progress → Level 2' },
+                      { id: 'measured', label: 'We have before/after data → Level 3' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setDomainInput('revenueCycleStatus', opt.id)}
+                        className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                          revenueCycleStatus === opt.id
+                            ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                            : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`radio-revenue-status-${opt.id}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {revenueCycleStatus === 'analyzing' && (
+                  <p className="text-sm text-[#EA2C00] font-medium mt-2">
+                    It sounds like your team is already at Level 2. Jump there to capture what's being analyzed.
+                  </p>
+                )}
+                {revenueCycleStatus === 'measured' && (
+                  <p className="text-sm text-[#EA2C00] font-medium mt-2">
+                    You have measured data — that puts you at Level 3. Jump there to enter your numbers.
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
 
     if (level === 2) {
       const INVESTIGATION_AREAS = [
-        'CDI query volume before vs. after',
-        'ICD-10 coding specificity',
-        'HCC/risk adjustment capture rates',
-        'Claim denial rates related to documentation',
         'wRVU per encounter trends',
-        'Collections per encounter',
+        'ICD-10 coding specificity and code level distribution',
+        'Claim denial rates related to documentation quality',
+        'Collections per encounter before vs. after ambient',
+        'CDI query volume before vs. after',
+        'Coder productivity and turnaround time',
       ];
       const duration = currentState.inputs.investigationDuration as string || '';
       return (
@@ -636,7 +705,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {[
                 { id: 'under30', label: 'Less than 30 days' },
                 { id: '30to90', label: '30–90 days' },
-                { id: '90plus', label: '90+ days' },
+                { id: '90plus', label: '90+ days — findings are maturing' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -694,8 +763,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 transition={{ duration: 0.2 }}
               >
                 <label className="block text-sm font-medium text-black mb-1">
-                  Measured wRVU change per encounter since deployment
+                  Measured wRVU change per encounter
                 </label>
+                <p className="text-xs text-[#888888] mb-2">The average change in wRVU per encounter your coding team attributes to improved documentation specificity.</p>
                 <FormattedNumberInput
                   value={(currentState.inputs.measuredWrvuDelta as number) || 0}
                   onChange={(v) => setDomainInput('measuredWrvuDelta', Math.max(0, v))}
@@ -704,7 +774,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   data-testid="input-wrvu-delta"
                   step={0.01}
                 />
-                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.wrvu} />
+                <BenchmarkContext text="For context: ambient deployments with active CDI review have reported 0.05–0.15 wRVU improvement per encounter. Enter your measured value." />
               </motion.div>
             )}
             {metricType === 'collections' && (
@@ -836,10 +906,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Recognized annual revenue attributed to documentation quality
+            Revenue formally attributed to documentation quality
           </label>
           <p className="text-xs text-[#888888] mb-2">
-            Annual revenue impact that your organization formally attributes to documentation improvements. This should be a number your leadership team or revenue cycle VP would stand behind.
+            The annual figure your organization attributes to ambient-enabled documentation improvements — a number your CFO or VP of Revenue Cycle has confirmed.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -851,7 +921,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-recognized-revenue"
             />
           </div>
-          <BenchmarkContext text="Organizations with revenue cycle integration have reported $200K\u2013$1M+ in attributed revenue." />
+          <BenchmarkContext text="Organizations with revenue cycle integration have reported $200K–$1M+ in attributed revenue." />
         </div>
       </div>
     );
@@ -1601,10 +1671,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
-              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : 'Where is your organization today?'}
+              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : 'Where is your organization today?'}
             </p>
 
-            {activeDomain === 'capacity' && (
+            {(activeDomain === 'capacity' || activeDomain === 'revenue') && (
               <div className="flex items-center justify-center gap-3 mb-4">
                 {[1, 2, 3, 4].map((lvl) => {
                   const selectedLevel = currentState.activationLevel;
@@ -1616,7 +1686,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         className={`w-3 h-3 rounded-full transition-all ${
                           isActive ? 'bg-[#EA2C00] scale-125' : isComplete ? 'bg-[#EA2C00]/60' : 'bg-[#D1D5DB]'
                         }`}
-                        data-testid={`capacity-dot-${lvl}`}
+                        data-testid={`${activeDomain}-dot-${lvl}`}
                       />
                       {lvl < 4 && <div className="w-6 h-px bg-[#D1D5DB]" />}
                     </div>
@@ -1633,8 +1703,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 const isSelected = selectedLevel === card.level;
                 const isClaimed = selectedLevel !== null && card.level < selectedLevel;
                 const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
-                const isFuture = activeDomain === 'capacity' && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
-                const isFutureOrNext = activeDomain === 'capacity' && selectedLevel !== null && card.level > selectedLevel;
+                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue';
+                const isFuture = hasStaircase && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
 
                 const leftBorderStyle = isSelected
                   ? '3px solid #EA2C00'
@@ -1643,27 +1713,53 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   : card.level === 4 && !isClaimed ? '2px solid #EA2C00'
                   : '2px solid transparent';
 
-                const capacityCompletedSummary = activeDomain === 'capacity' && isClaimed ? (() => {
+                const staircaseCompletedSummary = hasStaircase && isClaimed ? (() => {
                   const inp = currentState.inputs;
-                  const ts = (inp.timeSaved as number) || 0;
-                  if (card.level === 1 && ts > 0) {
-                    const hrs = Math.round(documentedEncounters * ts / 60);
-                    return `${hrs.toLocaleString()} hrs/yr`;
+                  if (activeDomain === 'capacity') {
+                    const ts = (inp.timeSaved as number) || 0;
+                    if (card.level === 1 && ts > 0) {
+                      const hrs = Math.round(documentedEncounters * ts / 60);
+                      return `${hrs.toLocaleString()} hrs/yr`;
+                    }
+                    if (card.level === 2) {
+                      const agg = inp.capacityAggregated as string;
+                      const ld = inp.capacityLeadershipDecision as string;
+                      let status = 'pending';
+                      if (agg === 'yes' && ld === 'yes') status = 'confirmed';
+                      else if (agg === 'yes' && ld === 'partial') status = 'in progress';
+                      return `Decision ${status}`;
+                    }
+                    if (card.level === 3) {
+                      const pts = (inp.additionalPatientsPerMonth as number) || 0;
+                      const rp = (inp.redesignedProviders as number) || providers;
+                      if (pts > 0) {
+                        const val = Math.round(pts * rp * 11 * revenuePerVisit);
+                        return formatDollar(val);
+                      }
+                    }
                   }
-                  if (card.level === 2) {
-                    const agg = inp.capacityAggregated as string;
-                    const ld = inp.capacityLeadershipDecision as string;
-                    let status = 'pending';
-                    if (agg === 'yes' && ld === 'yes') status = 'confirmed';
-                    else if (agg === 'yes' && ld === 'partial') status = 'in progress';
-                    return `Decision ${status}`;
-                  }
-                  if (card.level === 3) {
-                    const pts = (inp.additionalPatientsPerMonth as number) || 0;
-                    const rp = (inp.redesignedProviders as number) || providers;
-                    if (pts > 0) {
-                      const val = Math.round(pts * rp * 11 * revenuePerVisit);
-                      return formatDollar(val);
+                  if (activeDomain === 'revenue') {
+                    if (card.level === 1) {
+                      const engaged = inp.revenueCycleEngaged as string;
+                      const status = inp.revenueCycleStatus as string;
+                      if (engaged === 'yes' && status === 'measured') return 'Engaged — has data';
+                      if (engaged === 'yes' && status === 'analyzing') return 'Engaged — analyzing';
+                      if (engaged === 'yes') return 'Engaged';
+                      if (engaged === 'informal') return 'Informally aware';
+                      return 'Not yet engaged';
+                    }
+                    if (card.level === 2) {
+                      const areas = (inp.investigationAreas as string) || '';
+                      const count = areas.split(',').filter(Boolean).length;
+                      return count > 0 ? `${count} area${count !== 1 ? 's' : ''} analyzed` : null;
+                    }
+                    if (card.level === 3) {
+                      const metricType = inp.revenueMetricType as string;
+                      if (metricType) {
+                        const fb = computeRevenueFeedback(3, inp, documentedEncounters, revenuePerVisit);
+                        if (fb.hasValue && fb.value) return formatDollar(fb.value);
+                        return metricType === 'wrvu' ? 'wRVU measured' : metricType === 'collections' ? 'Collections measured' : metricType === 'denial_rate' ? 'Denial rate measured' : 'Revenue measured';
+                      }
                     }
                   }
                   return null;
@@ -1677,11 +1773,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
                       onClick={() => {
-                        if (activeDomain === 'capacity' && isFuture && !isClaimed) return;
+                        if (hasStaircase && isFuture && !isClaimed) return;
                         setActivation(card.level);
                       }}
                       className={`w-full text-left transition-all bg-white ${
-                        activeDomain === 'capacity' && isFuture && !isClaimed
+                        hasStaircase && isFuture && !isClaimed
                           ? 'opacity-40 cursor-not-allowed'
                           : 'cursor-pointer active:scale-[0.99] hover:bg-[#FAFAF8]'
                       }`}
@@ -1713,8 +1809,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                           >
                             {card.label}
                           </p>
-                          {isClaimed && capacityCompletedSummary && (
-                            <p className="text-xs text-[#888888] mt-0.5">{capacityCompletedSummary}</p>
+                          {isClaimed && staircaseCompletedSummary && (
+                            <p className="text-xs text-[#888888] mt-0.5">{staircaseCompletedSummary}</p>
                           )}
                           {!isClaimed && (
                             <p
@@ -1724,7 +1820,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                               {card.description}
                             </p>
                           )}
-                          {activeDomain === 'capacity' && isFuture && !isClaimed && config.unlockTeasers?.[card.level] && (
+                          {hasStaircase && isFuture && !isClaimed && config.unlockTeasers?.[card.level] && (
                             <p className="text-xs text-[#888888] italic mt-1">
                               {config.unlockTeasers[card.level]}
                             </p>
@@ -1746,16 +1842,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                             className="bg-white px-5 pb-5"
                             style={{ borderLeft: '3px solid #EA2C00' }}
                           >
-                            {activeDomain === 'capacity' && config.framingQuestions?.[card.level] && (
+                            {hasStaircase && config.framingQuestions?.[card.level] && (
                               <p className="text-[13px] text-[#666666] leading-relaxed mt-1 mb-3 italic">
                                 {config.framingQuestions[card.level]}
                               </p>
                             )}
-                            {activeDomain !== 'capacity' && card.level === 1 ? (
+                            {!hasStaircase && card.level === 1 ? (
                               <p className="text-[13px] text-[#666666] leading-relaxed mt-1">
                                 This is where most deployments begin. The value emerges as your organization decides what to do with the time recovered.
                               </p>
-                            ) : activeDomain !== 'capacity' && feedback ? (
+                            ) : !hasStaircase && feedback ? (
                               <div className="mt-1">
                                 {feedback.headlineMetric ? (
                                   <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
@@ -1772,7 +1868,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                                   </p>
                                 )}
                               </div>
-                            ) : activeDomain === 'capacity' && feedback ? (
+                            ) : hasStaircase && feedback ? (
                               <div className="mt-1">
                                 {feedback.headlineMetric && (
                                   <p className="font-bold text-xl text-[#EA2C00] leading-none mb-2" data-testid="text-ladder-value">
@@ -1790,7 +1886,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       )}
                     </AnimatePresence>
 
-                    {activeDomain !== 'capacity' && isNextAbove && incrementalValue > 0 && (
+                    {!hasStaircase && isNextAbove && incrementalValue > 0 && (
                       <div
                         className="bg-white/60 px-5 py-2"
                         style={{
@@ -1865,7 +1961,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </div>
                 )}
 
-                {feedback.costOfWaiting && activeDomain !== 'capacity' && (
+                {feedback.costOfWaiting && activeDomain !== 'capacity' && activeDomain !== 'revenue' && (
                   <div className="bg-[#EA2C00]/10 border border-[#EA2C00]/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-cost-of-waiting">
                     <p className="text-sm text-[#EA2C00] font-medium leading-relaxed">
                       {feedback.costOfWaiting}
@@ -1881,7 +1977,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <FormulaDisplay formula={feedback.formula} />
 
-                {activeDomain === 'capacity' && feedback.nextLevelTeaser && (
+                {(activeDomain === 'capacity' || activeDomain === 'revenue') && feedback.nextLevelTeaser && (
                   <p className="text-xs text-white/50 italic leading-relaxed mt-3" data-testid="text-next-level-teaser">
                     {feedback.nextLevelTeaser}
                   </p>

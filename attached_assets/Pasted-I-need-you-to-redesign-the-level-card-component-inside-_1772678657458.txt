@@ -1,0 +1,197 @@
+I need you to redesign the level card component inside the 
+Four Lenses domain pages. This applies to all four domains 
+(Capacity, Revenue, Workforce, Quality). 
+Do NOT change:
+- The beige outer wrapper (bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10)
+- The right panel (Estimated Impact + Domain Progress)
+- The domain tab nav at the top
+- Any formulas, calculations, or state logic
+- The domain headline and reframe text
+- The benchmark chips (Industry range / Abridge observed avg)
+- Any copy or content
+Only change: the visual design of the level cards and 
+how the three states (completed, active, upcoming) look.
+Fonts in use: 
+  Headings: font-abridge (the "Abridge" custom font)
+  Body: font-sans which is Manrope
+Brand red: #EA2C00
+Background beige: #F5F0EB
+Dark: #1A1A1A
+---
+## THE SECTION LABEL
+Find the text "WHERE IS YOUR ORGANIZATION TODAY?"
+Replace with "YOUR [DOMAIN] MATURITY" 
+(e.g. "YOUR CAPACITY MATURITY", "YOUR REVENUE MATURITY")
+Style: keep existing style (text-xs uppercase tracking) 
+but change color to #888888 and add mb-4 below it.
+---
+## ADD A STEP PROGRESS INDICATOR
+Directly below the section label and above the first 
+level card, add a horizontal 4-step progress indicator.
+Structure: four numbered nodes connected by a line.
+  Container: flex items-center w-full mb-6
+  The connecting line between nodes:
+    flex-1 height 2px
+    Completed segment: background #EA2C00
+    Upcoming segment: background #E5E0D9
+  Each node is a circle 32px × 32px:
+    Completed node:
+      bg-[#EA2C00] rounded-full
+      White checkmark SVG icon centered, 14px
+    Active node:
+      bg-[#EA2C00] rounded-full
+      ring-4 ring-[#EA2C00]/20  (soft glow)
+      White level number centered, 14px font-bold
+    Upcoming node:
+      bg-[#F5F0EB] rounded-full
+      border-2 border-[#D9D3CB]
+      Level number centered, 14px, color #AAAAAA
+  Below each node, a small label:
+    text-[10px] text-[#AAAAAA] text-center mt-1
+    Show the level name in 1-2 words max:
+      Level 1: "Measured"
+      Level 2: "Quantified" 
+      Level 3: "Deployed"
+      Level 4: "Strategic"
+    Active and completed nodes: color #1A1A1A text-[10px]
+---
+## LEVEL CARD — THREE STATES
+Each level card is currently a div with a conditional 
+left border and opacity. Replace with a fully 
+differentiated card design per state.
+All cards share:
+  border-radius: rounded-xl  (12px)
+  margin-bottom: mb-3
+  overflow: hidden
+  transition: all 200ms ease
+---
+## STATE 1 — COMPLETED LEVEL
+Triggered when: activationLevel > this level's number
+className:
+  "bg-white border border-[#E8E3DC] rounded-xl 
+   mb-3 cursor-pointer hover:border-[#EA2C00]/40 
+   transition-all duration-200"
+Internal layout — single horizontal row, 
+  padding: px-5 py-4
+  display: flex items-center gap-4
+  LEFT: completion badge
+    w-8 h-8 rounded-full bg-[#EA2C00] 
+    flex items-center justify-center flex-shrink-0
+    White checkmark SVG, 14px
+  MIDDLE: level name
+    text-sm font-semibold text-[#1A1A1A] font-sans
+    (just the level name — no description text)
+  RIGHT: output value (pushed to far right with ml-auto)
+    text-sm font-semibold text-[#EA2C00]
+    Show recovered hours for L1/L2 
+    Show dollar value for L3/L4
+    Show "—" if no value yet
+    Next to the value, a small "Edit" text:
+    text-xs text-[#AAAAAA] ml-3
+    Shows on hover only (use group-hover:opacity-100 
+    opacity-0 transition)
+Add class "group" to the outer card div.
+DO NOT grey out or reduce opacity of completed cards.
+They are the user's established foundation — they 
+should feel present and solid, not dismissed.
+---
+## STATE 2 — ACTIVE LEVEL (currently selected)
+Triggered when: activationLevel === this level's number
+The active card has TWO sections — a header and an 
+input body — separated visually.
+OUTER container:
+  "bg-white border-2 border-[#EA2C00] rounded-xl 
+   mb-3 shadow-[0_4px_20px_rgba(234,44,0,0.10)]"
+HEADER section (top part of card):
+  padding: px-5 pt-5 pb-4
+  border-bottom: border-b border-[#F5F0EB]
+  display: flex items-start gap-4
+  LEFT: active level badge
+    w-10 h-10 rounded-full bg-[#EA2C00] 
+    flex items-center justify-center flex-shrink-0
+    Level number in white, text-base font-bold 
+    font-abridge
+  RIGHT of badge: two lines stacked
+    Line 1 (level name):
+      text-base font-semibold text-[#1A1A1A] font-sans
+    Line 2 (maturity descriptor):
+      text-xs text-[#888888] italic mt-0.5
+      This is the maturity label 
+      e.g. "You know what you're getting back."
+      Pull this from the updated level card labels 
+      defined in the domain rebuild prompts.
+BODY section (input area):
+  padding: px-5 pb-6 pt-5
+  background: keep transparent (white, same as card)
+  The framing question text, if present, renders here:
+    text-sm text-[#444444] leading-relaxed mb-5
+    font-sans
+  Then all the existing inputs render exactly as now,
+  with one change to radio/checkbox options:
+  RADIO and CHECKBOX option rows:
+    Each option gets its own container:
+    className: "flex items-start gap-3 p-3.5 
+      rounded-lg border border-[#E8E3DC] mb-2 
+      cursor-pointer transition-all duration-150
+      hover:border-[#EA2C00]/50 hover:bg-[#FFF9F8]"
+    Selected state adds:
+      "border-[#EA2C00] bg-[#FFF5F3]"
+    The radio circle or checkbox sits left (existing).
+    The label text sits right: 
+      text-sm text-[#333333] font-sans
+  This replaces the current plain-text radio rows
+  which have no visual affordance.
+---
+## STATE 3 — UPCOMING LEVEL
+Triggered when: activationLevel < this level's number 
+OR activationLevel is null (nothing selected yet)
+className:
+  "bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl 
+   mb-3 opacity-70"
+Internal layout — single horizontal row:
+  padding: px-5 py-4
+  display: flex items-center gap-4
+  LEFT: upcoming badge
+    w-8 h-8 rounded-full bg-[#EAE5DF] 
+    flex items-center justify-center flex-shrink-0
+    Level number, text-sm, color #AAAAAA
+  MIDDLE: two lines
+    Level name: text-sm font-medium text-[#AAAAAA]
+    Unlock teaser: text-xs text-[#BBBBBB] italic mt-0.5
+    e.g. "Unlocks when access expansion is confirmed."
+    The unlock teaser text for each level:
+    Level 2: "Unlocks when time recovery is established."
+    Level 3: "Unlocks when leadership has the number."
+    Level 4: "Unlocks when access expansion is confirmed."
+    (adjust per domain — these are Capacity examples)
+  RIGHT: 
+    A small forward arrow icon →, color #CCCCCC, 
+    text-sm ml-auto
+NOT interactive — remove the onClick handler from 
+upcoming level cards. They are previews only.
+---
+## WHAT THE OVERALL PANEL SHOULD FEEL LIKE
+When a user is at Level 1 active:
+  - 0 completed cards (none above)
+  - 1 large active card with the input expanded
+  - 3 quiet upcoming cards below, like steps 
+    they can see but haven't reached
+When a user is at Level 3 active:
+  - 2 compact completed cards above 
+    (white, solid, showing their values)
+  - 1 prominent active card in the middle
+  - 1 quiet upcoming card below
+The visual weight should pull the eye to the 
+active card immediately. Completed cards feel 
+like a record of progress. Upcoming cards feel 
+like a visible horizon — aspirational, not locked.
+---
+## DO NOT CHANGE
+- bg-[#F5F0EB] outer wrapper — keep exactly
+- Right panel — keep exactly
+- Domain tab nav — keep exactly  
+- All Tailwind classes on anything outside 
+  the level card component
+- All state logic, scoring, calculations
+- Benchmark chips styling — keep exactly
+- The "See [Domain] Impact →" button — keep exactly

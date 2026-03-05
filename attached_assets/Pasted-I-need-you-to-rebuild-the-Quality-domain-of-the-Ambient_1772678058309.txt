@@ -1,0 +1,453 @@
+I need you to rebuild the Quality domain of the Ambient AI Assessment.
+This domain is called "Quality" in the UI but uses the key "risk" 
+internally throughout the codebase — do not change any key names.
+The calculation function is Vee(). The config is in Q8t under "risk".
+This domain is used with CMIOs, Quality Officers, and CMOs. The core
+insight is this: documentation quality is the foundation of everything
+downstream — coding, compliance, quality reporting, and population
+health. But not every organization is value-based. The frame must be
+universal. HCC and risk adjustment are one path, not the only one.
+Tone is strategic and orienting — never threatening or loss-focused.
+Do not touch any other domain.
+---
+## PART 1 — DOMAIN HEADLINE AND FRAMING
+Find in Q8t under "risk":
+Find headline:
+  "Your notes are better. But is anything downstream 
+  actually changing?"
+Replace with:
+  "Documentation quality is the foundation. The question 
+  is whether your organization is building on it."
+Find reframe:
+  "Every AI initiative your organization wants in the next 
+  three years runs on one foundation — structured, complete 
+  documentation at scale."
+Replace with:
+  "When documentation improves, the clinical record becomes 
+  more complete, more specific, and more useful — to coders, 
+  quality teams, compliance officers, and care managers. 
+  This domain measures how far that signal has traveled 
+  downstream."
+Level card labels and descriptions:
+Level 1:
+  Find label: "Documentation Quality Improved. 
+               Exposure Still Invisible."
+  Replace:    "Documentation Quality Has Improved."
+  Find description: "Notes are better; no system is 
+    translating that into financial or compliance value."
+  Replace: "Ambient is producing better clinical notes. 
+    The downstream opportunity — in coding, quality 
+    reporting, and compliance — is not yet connected."
+Level 2:
+  Find label: "Documentation Quality Is Being Monitored."
+  Replace:    "Documentation Quality Is Being Tracked."
+  Find description: "Completeness, specificity, and HCC 
+    capture are tracked; gaps are visible."
+  Replace: "Your organization is actively measuring 
+    documentation quality attributes — completeness, 
+    specificity, and accuracy — and gaps are visible."
+Level 3:
+  Find label: "Documentation Quality Is Closing Revenue 
+               and Compliance Gaps."
+  Replace:    "Documentation Quality Is Driving 
+               Downstream Improvement."
+  Find description: "CDI, coding, quality reporting, and 
+    prior auth workflows are actively using improved 
+    documentation."
+  Replace: "Improved documentation is producing measurable 
+    results in downstream workflows — CDI, coding accuracy, 
+    quality measure performance, or prior authorization."
+Level 4:
+  Find label: "Documentation Is a Governed Strategic Asset."
+  Keep as-is — this is correct.
+  Find description: "Payer contracts, value-based care 
+    programs, compliance governance, and quality strategy 
+    are all built on documentation quality as a formal input."
+  Replace: "Documentation quality is formally embedded in 
+    your organization's strategic operations — from payer 
+    relationships and quality programs to compliance 
+    governance and clinical governance."
+---
+## PART 2 — UX STRUCTURE
+Apply the same staircase UX as the other three domains:
+- Completed levels: compact summary card with checkmark
+- Active level: fully expanded
+- Future levels: dimmed preview with unlock teaser
+- Replace "WHERE IS YOUR ORGANIZATION TODAY?" with
+  "YOUR QUALITY MATURITY"
+- Add 4-step progress indicator, active step in #EA2C00
+---
+## PART 3 — LEVEL 1 REBUILD
+Level name: "Documentation Quality Has Improved"
+Maturity label: "The clinical record is more complete. 
+                 The downstream connection is not yet made."
+Framing question:
+  "Ambient is producing better notes. Has your organization 
+  started connecting that improvement to anything downstream 
+  — coding, quality reporting, compliance, or care management?"
+CRITICAL FORMULA CHANGE — In Vee(), Level 1 block:
+The current Level 1 fires three fabricated dollar values:
+  [denialExposure] = encounters × revenue × 4%
+  [hccExposure]    = encounters × VBC% × $200/member
+  [qualityExposure]= encounters × 4% × $100/gap
+All three use hardcoded national averages applied to this
+organization's encounter volume. They are presented as
+"exposure" but are not this organization's numbers.
+A quality officer or CFO will immediately ask where 
+4%, $200/member, and $100/gap come from. 
+Remove all three dollar values entirely.
+DELETE from Vee() Level 1:
+  - Variable m: encounters × revenue × 4% (denial)
+  - Variable p: encounters × VBC% × $200 (HCC)
+  - Variable g: encounters × 4% × $100 (quality gaps)
+  - Variable y: m + p + g (combined)
+  - Variable v: y/12 (monthly)
+  - The costOfWaiting field
+  - The formula block entirely
+  - SET hasValue: false, value: null
+REMOVE the VBC% input ("What % of your patient panel is
+in value-based or risk contracts?") from the Level 1 UI.
+This input feeds the HCC calculation which is being
+removed. The VBC% question will reappear at Level 3
+only for organizations where it is relevant — as an
+optional input, not a required one.
+Replace the VBC% input with a qualifying question that
+works for ALL organizations regardless of payer mix.
+State key: qualityDownstreamConnected
+  Label: "Has your organization started connecting 
+  ambient documentation quality to any downstream 
+  workflow or team?"
+  Options (radio buttons):
+    value: "no"
+    label: "Not yet — the clinical improvement 
+            is visible but hasn't reached downstream teams"
+    value: "informal"
+    label: "Informally — some teams are aware 
+            and starting to explore it"
+    value: "yes"
+    label: "Yes — at least one downstream team 
+            is formally engaged"
+If "yes", show a follow-up, state key: qualityDownstreamArea
+  Label: "Which area has been engaged first?"
+  Options (checkboxes, multiple allowed):
+    □ CDI / coding accuracy
+    □ Quality measure performance (HEDIS, MIPS, Stars)
+    □ Compliance and audit readiness
+    □ Prior authorization
+    □ Care management / population health
+    □ HCC / risk adjustment (if value-based contracts apply)
+The HCC option is last and parenthetical — it is one
+path among many, not the frame.
+RIGHT PANEL — Level 1:
+Find headlineMetric:
+  "${Nt(y)} in combined annual risk exposure — invisible."
+Replace with:
+  "${n.toLocaleString()} encounters documented annually 
+  with improved clinical specificity."
+Find context (the entire block starting with "Your 
+documentation quality may have improved..."):
+  Replace entirely with:
+  "Better documentation creates better signal downstream 
+  — for coders, quality teams, compliance officers, and 
+  care managers. The opportunity at this level is 
+  identifying which downstream teams are ready to 
+  receive that signal.
+  The organizations that move fastest on this tend to 
+  start with one team, one workflow, and one measurable 
+  outcome — then build from there."
+Remove the "costOfWaiting" banner entirely:
+  DELETE: "Every month without a documentation quality 
+  strategy = ${Nt(v)} in unmanaged risk."
+Footnote: "Downstream value appears at Level 3, when 
+  a specific workflow shows measurable improvement."
+Next level teaser:
+  "Level 2 — when documentation quality is being 
+  formally tracked, the gaps become visible and 
+  actionable."
+---
+## PART 4 — LEVEL 2 REBUILD
+Level name: "Documentation Quality Is Being Tracked"
+Maturity label: "Gaps are visible. The opportunity 
+                 is in acting on them."
+Framing question:
+  "How is your organization monitoring documentation 
+  quality — and which attributes are being tracked?"
+Keep the existing monitoring approach radio buttons.
+Update their copy:
+  value: "not_yet"
+  label: "Not yet — we know quality has improved 
+          but haven't started formal tracking"
+  value: "spot_checks"
+  label: "Informally — spot checks and anecdotal 
+          feedback from CDI or coding"
+  value: "systematic"
+  label: "Systematically — structured audits or 
+          dashboards tracking documentation attributes"
+Update the "not_yet" right panel response:
+  Find context:
+    "Documentation quality monitoring hasn't started yet.
+    If no one is reviewing documentation attributes — even 
+    informally — your organization may be at Level 1 for 
+    this domain.
+    The single most important next step is establishing 
+    any form of documentation quality review.
+    Organizations that begin systematic monitoring have 
+    reported 15–30% improvement in documentation 
+    completeness and specificity."
+  Replace with:
+    "Formal documentation quality tracking is the step 
+    that turns ambient's clinical improvement into 
+    something your organization can build on.
+    Even a lightweight review process — spot checks 
+    from CDI, periodic coding audits, or a documentation 
+    quality dashboard — creates the visibility needed 
+    to connect quality to outcomes."
+Update the "spot_checks" right panel response:
+  Find context:
+    "Your organization is informally reviewing 
+    documentation quality through spot checks and 
+    anecdotal feedback. This is a meaningful step — 
+    but informal processes don't scale and can't 
+    drive organizational strategy.
+    Consider formalizing a review cadence..."
+  Replace with:
+    "Informal review is a meaningful starting point — 
+    it surfaces issues and builds awareness across 
+    CDI and coding teams.
+    The natural progression is formalizing that 
+    review into a cadence with tracked attributes, 
+    so patterns become visible over time and 
+    improvement can be demonstrated."
+Keep the qualityAttributes checkbox list (w1e array).
+Update checkbox labels to remove HCC-first framing:
+  Current w1e array:
+    "Note completeness (all relevant elements captured)"
+    "Diagnostic specificity (ICD-10 precision)"
+    "HCC / risk adjustment alignment"
+    "Quality measure documentation (HEDIS, MIPS gaps)"
+    "Compliance defensibility (audit-readiness)"
+  Replace with:
+    "Note completeness (history, exam, assessment, plan)"
+    "Diagnostic specificity (ICD-10 code level and accuracy)"
+    "Quality measure documentation (HEDIS, MIPS, Stars gaps)"
+    "Compliance and audit readiness"
+    "HCC and risk adjustment capture 
+     (for value-based populations)"
+  The HCC option is last, parenthetical, and clearly
+  scoped to VBC populations — not the frame for everyone.
+FORMULA CHANGE — In Vee() Level 2:
+The current formula fires:
+  [gapRevenue] = encounters × gapRate% × $75 × multiplier
+The $75/gap figure is a hardcoded assumption with no
+cited source. Remove it.
+If chartGapRate is entered, replace the dollar
+calculation with a volume signal only:
+  Show: "${Math.round(n*(E/100)).toLocaleString()} 
+  charts with documentation gaps identified annually 
+  — based on your ${E}% review gap rate."
+  No dollar value. The volume signal is enough to
+  drive the conversation. Dollar value appears at 
+  Level 3 when specific workflow improvement is measured.
+  SET hasValue: false even when chartGapRate is entered.
+  SET value: null.
+  Update headlineMetric when attributes checked and 
+  gap rate entered:
+    "${g} of 5 quality dimensions tracked. 
+    ${Math.round(n*(E/100)).toLocaleString()} charts 
+    with gaps identified annually."
+  Remove formula block and footnote referencing $75.
+Next level teaser:
+  "Level 3 — when a downstream workflow shows 
+  measurable improvement, documentation quality 
+  becomes a number your organization can act on."
+---
+## PART 5 — LEVEL 3 REBUILD
+Level name: "Documentation Quality Is Driving 
+             Downstream Improvement"
+Maturity label: "Measurable outcomes exist in at 
+                 least one workflow."
+Framing question:
+  "Which downstream workflows has improved documentation 
+  quality measurably impacted — and what does your 
+  data show?"
+Keep the connectedWorkflows checkbox list (E1e array).
+This is the right structure. Update labels to lead
+with universal workflows, HCC last:
+  Replace E1e array with:
+    "CDI query volume reduced 
+     (fewer queries, more complete notes)"
+    "Coding accuracy improved 
+     (fewer rejections, faster turnaround)"
+    "Prior authorization approval rate improved"
+    "Quality measure gap closure improved 
+     (HEDIS, MIPS, Stars)"
+    "Chart abstraction time reduced 
+     (registries, research, reporting)"
+    "HCC and risk adjustment capture improved 
+     (value-based populations)"
+Keep all the conditional metric inputs that appear
+when each workflow is checked — the before/after
+logic for CDI queries, denial rate, quality gaps,
+prior auth, abstraction hours, and RAF change.
+These are correct in structure.
+FORMULA CHANGES in Vee() Level 3:
+Keep all existing calculation paths. They are correct
+when user-entered data drives them:
+  CDI: (before - after queries) × $25 × 12 ✓
+  Denial: (before% - after%) × encounters × revenue ✓
+  Quality gaps: gaps/mo × 12 × $100/gap ✓
+    NOTE: $100/gap needs a label in the UI:
+    Add sublabel: "Value per quality gap varies by 
+    contract. $100 is a common planning estimate — 
+    use your organization's contract terms if known."
+  Prior auth: (after% - before%) × encounters × $15 ✓
+    NOTE: $15 needs a label:
+    Add sublabel: "Estimated administrative cost per 
+    prior auth. Adjust to your organization's actual 
+    cost if known."
+  Abstraction: hrs/mo × 12 × $50 ✓
+    NOTE: $50 needs a label:
+    Add sublabel: "Staff cost per abstraction hour. 
+    Adjust to your actual rate."
+  HCC/RAF: rafChange × members × capitationRate ✓
+    This path is correct and fully user-driven.
+    Label it clearly as optional and VBC-specific.
+When total calculated value is $0 (workflows selected
+but no before/after data entered yet):
+  Find headlineMetric:
+    "${p} downstream workflow${p>1?'s':''} connected"
+  Keep as-is — correct.
+  Find context (the "enter before/after metrics" block):
+  Replace with:
+    "Your documentation infrastructure is connected to 
+    ${p} downstream workflow${p>1?'s':''}: ${g}.
+    Enter before/after metrics for each connected 
+    workflow to calculate the impact. Use your 
+    organization's actual data — even directional 
+    improvements (e.g., CDI queries down 20%) 
+    produce a defensible number."
+RIGHT PANEL when value exists:
+  Keep existing logic.
+  Update headlineMetric template:
+    "${Nt(E)} in measured downstream improvement 
+    across ${p} workflow${p>1?'s':''}."
+  Update context:
+    "Your documentation quality improvements are 
+    producing measurable results:
+    ${v.map(j=>`${j.name}: ${Nt(j.value)}`).join('\\n')}
+    ${m.length>0?`\\nNot yet connected: ${y}`:''}"
+Next level teaser:
+  "Level 4 — when documentation quality is formally 
+  embedded in strategy, payer relationships, and 
+  governance, it becomes a durable organizational asset."
+---
+## PART 6 — LEVEL 4 REBUILD
+Level name: "Documentation Is a Governed Strategic Asset"
+Maturity label: "Quality, compliance, and payer strategy 
+                 are built on documentation quality."
+Framing question:
+  "How is documentation quality formally embedded in 
+  your organization's strategic operations?"
+Keep the strategicIntegrations checkbox list (j1e array).
+Update labels to be universal first:
+  Replace j1e array with:
+    "Compliance and audit governance 
+     (documentation quality is a tracked metric)"
+    "Quality program strategy 
+     (documentation completeness feeds quality reporting)"
+    "Clinical documentation review 
+     (formal governance structure exists)"
+    "Payer contract negotiations 
+     (documentation quality supports rate and 
+     quality arguments)"
+    "Value-based care program design 
+     (documentation feeds quality and risk metrics)"
+Keep the strategicValue dollar input and executiveOwner
+text input exactly as they are — correct structure.
+Update strategicValue input:
+  Label: "Strategic value formally attributed to 
+          documentation quality"
+  Sublabel: "The annual figure your organization 
+    formally connects to documentation quality 
+    improvements — across quality programs, 
+    compliance risk reduction, or contract 
+    performance. A number your CMO or Quality 
+    Officer has confirmed."
+RIGHT PANEL — Level 4:
+Keep existing logic when strategic value is entered.
+Update context copy (find beginning "Documentation 
+quality is integrated into..."):
+  Replace with:
+    "Documentation quality is embedded in 
+    ${c} strategic area${c>1?'s':''}: 
+    ${u}.
+    ${o>0?`Your organization formally attributes 
+    ${Nt(o)} in strategic value to documentation 
+    quality — a number that belongs in your 
+    ambient program narrative.`:`Enter the 
+    strategic value your organization attributes 
+    to documentation quality to complete this level.`}"
+---
+## PART 7 — RIGHT PANEL RUNNING SUMMARY
+Add a persistent Quality Summary at the bottom of 
+the right panel once any level is engaged:
+  Downstream Areas:       [N connected  or  "—"]
+  Workflows Impacted:     [N active  or  "—"]
+  Measured Value:         [value  or  "—"]
+  Strategic Value:        [value  or  "—"]
+  ──────────────────────────────────────────────
+  Total Quality Value:    [sum  or  "—"]
+Use "—" for any value not entered. Never show $0.
+Levels 1 and 2 contribute status signals, not dollars.
+Levels 3 and 4 contribute dollar values.
+---
+## PART 8 — FORMULA CHANGES SUMMARY
+REMOVE from Vee():
+  Level 1:
+  - m: encounters × revenue × 4% (denial exposure)
+  - p: encounters × VBC% × $200 (HCC exposure)
+  - g: encounters × 4% × $100 (quality gap exposure)
+  - y: combined total
+  - v: monthly cost
+  - costOfWaiting field and banner
+  - formula block entirely
+  Level 2:
+  - j: encounters × gapRate × $75 × multiplier
+  - The $75/gap dollar calculation
+  - formula block referencing gapRevenue
+  - SET hasValue: false when gap rate entered
+  - Replace with volume signal only
+KEEP in Vee():
+  Level 3 CDI path:    (before-after) × $25 × 12 ✓
+  Level 3 denial path: rate delta × encounters 
+                       × revenue ✓
+  Level 3 quality gap: gaps/mo × 12 × $100 
+                       (label the $100 assumption) ✓
+  Level 3 prior auth:  rate delta × encounters 
+                       × $15 (label the $15) ✓
+  Level 3 abstraction: hrs/mo × 12 × $50 
+                       (label the $50) ✓
+  Level 3 HCC/RAF:     rafChange × members 
+                       × capitationRate ✓ (fully user-driven)
+  Level 4:             user-entered strategic value ✓
+Dollar values only appear at Level 3 (user has 
+before/after workflow data) and Level 4 (user has 
+a confirmed strategic figure). Levels 1 and 2 
+are diagnostic only.
+---
+## PART 9 — DO NOT TOUCH
+- Capacity domain (Hee and all Capacity UI)
+- Revenue domain (Uee and all Revenue UI)
+- Workforce domain (Wee and all Workforce UI)
+- Step 1 baseline inputs
+- Steps 3, 4, 5 (Reveal, Inaction, Next Steps)
+- Sh() scoring function
+- A1e = {1:6, 2:12, 3:19, 4:25}
+- P8t() scoring adjustment function
+- yE() checkbox utility function
+- op() label trimmer function
+- App routing and state management
+- The internal key name "risk" — do not change to 
+  "quality" anywhere in state, props, or function 
+  calls. UI label "QUALITY" is correct, internal 
+  key "risk" must remain unchanged.
