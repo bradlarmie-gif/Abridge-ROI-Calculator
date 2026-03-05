@@ -1,0 +1,556 @@
+Replace the entire PDF document for this assessment. The PDF is built with @react-pdf/renderer. 
+The main document component is `t4t` and is called by `n4t`. Replace ONLY the PDF document 
+component `t4t` and its page sub-components (G8t, K8t, X8t, J8t, e4t). Do not change n4t, 
+the data object passed to it, or any other part of the app.
+The new PDF is 8 pages. It is a POINT OF VIEW document — not a vendor report. The voice 
+is that of a strategic peer, not a software company. Abridge is present but not loud. 
+The document makes the reader think differently about ambient AI, and their own numbers 
+are the evidence for a framework they didn't have before they filled this out.
+Keep ALL existing brand constants (or, In, etc.) exactly as they are. Keep the existing 
+Ov cover page component completely untouched. Keep JC page footer component untouched.
+Keep the existing StyleSheet and color palette (or.primary = #EA2C00, or.primaryText = 
+#1A1A1A, or.background = #F5F0EB, etc.) exactly as-is.
+---
+## FONT REGISTRATION
+At the top of the PDF file, register Manrope if not already registered:
+Font.register({
+  family: 'Manrope',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRqAuZuw.woff2', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggSIXg.woff2', fontWeight: 600 },
+    { src: 'https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggSYXA.woff2', fontWeight: 800 },
+  ]
+});
+---
+## HELPER FUNCTIONS (add these, scoped to PDF file)
+const fmt = (n) => {
+  if (!n || n === 0) return '—';
+  if (n >= 1000000) return `$${(n/1000000).toFixed(1)}M`;
+  if (n >= 1000) return `$${Math.round(n/1000)}K`;
+  return `$${n.toLocaleString()}`;
+};
+const scoreBand = (score) => {
+  if (score <= 30) return 'Foundation building';
+  if (score <= 50) return 'Foundation building';
+  if (score <= 64) return 'Value in motion';
+  if (score <= 79) return 'Strategically managed';
+  return 'Leading practice';
+};
+const domainDisplayName = { capacity: 'Capacity', revenue: 'Revenue', 
+  workforce: 'Workforce', risk: 'Quality' };
+const domainOrder = ['capacity', 'revenue', 'workforce', 'risk'];
+---
+## SHARED PDF STYLES (pdfStyles — use in addition to existing In/or constants)
+const pdfStyles = StyleSheet.create({
+  page: { backgroundColor: '#F5F0EB', padding: 48, fontFamily: 'Manrope', fontSize: 10 },
+  whitePage: { backgroundColor: '#FFFFFF', padding: 48, fontFamily: 'Manrope', fontSize: 10 },
+  darkPage: { backgroundColor: '#1A1A1A', padding: 48, fontFamily: 'Manrope', fontSize: 10 },
+  eyebrow: { fontSize: 8, fontWeight: 600, color: '#EA2C00', letterSpacing: 2, 
+    textTransform: 'uppercase', marginBottom: 10 },
+  headline: { fontSize: 26, fontWeight: 800, color: '#1A1A1A', lineHeight: 1.15, 
+    textTransform: 'uppercase', marginBottom: 14 },
+  subhead: { fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 },
+  body: { fontSize: 10.5, fontWeight: 400, color: '#555555', lineHeight: 1.65, marginBottom: 10 },
+  bodyDark: { fontSize: 10.5, fontWeight: 400, color: 'rgba(255,255,255,0.75)', lineHeight: 1.65 },
+  statNumber: { fontSize: 36, fontWeight: 800, color: '#EA2C00', lineHeight: 1 },
+  statLabel: { fontSize: 8, fontWeight: 600, color: '#888888', letterSpacing: 1.5, 
+    textTransform: 'uppercase', marginBottom: 4 },
+  statUnit: { fontSize: 9, fontWeight: 400, color: '#888888', marginTop: 3 },
+  redRule: { height: 2, backgroundColor: '#EA2C00', width: 48, marginBottom: 14 },
+  divider: { height: 1, backgroundColor: '#E5E0D9', marginVertical: 16 },
+  darkDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 14 },
+  tile: { backgroundColor: '#FFFFFF', borderRadius: 4, padding: 16, 
+    border: '1pt solid #E5E0D9' },
+  darkTile: { backgroundColor: '#1A1A1A', borderRadius: 4, padding: 16 },
+  beigeBox: { backgroundColor: '#F5F0EB', borderRadius: 4, padding: 16 },
+  redAccentBar: { width: 3, backgroundColor: '#EA2C00', marginRight: 14, borderRadius: 2 },
+  footerText: { fontSize: 8, color: '#AAAAAA', fontWeight: 400 },
+  domainLabel: { fontSize: 8, fontWeight: 700, color: '#EA2C00', letterSpacing: 2, 
+    textTransform: 'uppercase', marginBottom: 6 },
+  levelBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#EA2C00', 
+    alignItems: 'center', justifyContent: 'center' },
+  levelBadgeText: { fontSize: 10, fontWeight: 800, color: '#FFFFFF' },
+  nextLevelLabel: { fontSize: 8, fontWeight: 700, color: '#888888', letterSpacing: 1.5, 
+    textTransform: 'uppercase', marginBottom: 5, marginTop: 12 },
+  nextLevelText: { fontSize: 10, fontWeight: 400, color: '#555555', lineHeight: 1.6 },
+  coachText: { fontSize: 9.5, fontWeight: 400, color: 'rgba(255,255,255,0.65)', 
+    lineHeight: 1.6, fontStyle: 'italic' },
+  coachLabel: { fontSize: 8, fontWeight: 700, color: '#EA2C00', letterSpacing: 1.5, 
+    textTransform: 'uppercase', marginBottom: 5 },
+});
+---
+## PAGE 1 — COVER (keep existing Ov component — do not touch)
+The cover is already handled by the Ov component. Keep it exactly as-is.
+---
+## PAGE 2 — THE FRAMEWORK (replaces G8t)
+This page establishes the strategic frame. The reader's numbers appear here for the 
+first time — but they are introduced inside a claim about how leading organizations 
+think differently.
+function G8t({ data: e }) {
+  const hoursRecovered = e.timeSavings > 0 
+    ? Math.round(e.annualEncounters * e.timeSavings / 60) : 0;
+  const fteEquivalent = hoursRecovered > 0 
+    ? (hoursRecovered / 2080).toFixed(1) : '—';
+  const encountersFormatted = e.annualEncounters.toLocaleString();
+  const band = scoreBand(e.documentationScore);
+  return (
+    <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
+      {/* EYEBROW */}
+      <Text style={pdfStyles.eyebrow}>THE FRAMEWORK</Text>
+      {/* MAIN HEADLINE */}
+      <Text style={pdfStyles.headline}>
+        {"Most organizations treat ambient AI as a documentation tool.\\nThe ones creating the most value treat it as infrastructure."}
+      </Text>
+      {/* RED RULE */}
+      <View style={pdfStyles.redRule} />
+      {/* FRAMEWORK INTRO PARAGRAPH */}
+      <Text style={pdfStyles.body}>
+        {"The distinction isn't about the technology — it's about the decision. Organizations that have crossed that line share a pattern: they stopped asking \\"is ambient saving time?\\" and started asking \\"what is our organization doing with the time it's saving?\\" That shift in question is what this assessment measures.\\n\\nAmbient documentation, at scale, creates recoverable value across four domains — Capacity, Revenue, Workforce, and Quality. Most organizations are capturing one. Leading organizations are managing all four as a coordinated strategy. The framework below is built from your deployment."}
+      </Text>
+      <View style={pdfStyles.divider} />
+      {/* DEPLOYMENT STATS — 4 TILES in 2x2 grid */}
+      <Text style={[pdfStyles.eyebrow, { marginBottom: 12 }]}>YOUR DEPLOYMENT AT A GLANCE</Text>
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+        {/* Tile 1 */}
+        <View style={[pdfStyles.tile, { flex: 1 }]}>
+          <Text style={pdfStyles.statLabel}>Providers on Ambient</Text>
+          <Text style={pdfStyles.statNumber}>{e.providers || '—'}</Text>
+          <Text style={pdfStyles.statUnit}>providers</Text>
+        </View>
+        {/* Tile 2 */}
+        <View style={[pdfStyles.tile, { flex: 1 }]}>
+          <Text style={pdfStyles.statLabel}>Encounters Documented</Text>
+          <Text style={pdfStyles.statNumber}>{encountersFormatted}</Text>
+          <Text style={pdfStyles.statUnit}>annually</Text>
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        {/* Tile 3 */}
+        <View style={[pdfStyles.tile, { flex: 1 }]}>
+          <Text style={pdfStyles.statLabel}>Clinical Time Returned</Text>
+          <Text style={pdfStyles.statNumber}>
+            {hoursRecovered > 0 ? hoursRecovered.toLocaleString() : '—'}
+          </Text>
+          <Text style={pdfStyles.statUnit}>hrs/yr recovered</Text>
+        </View>
+        {/* Tile 4 */}
+        <View style={[pdfStyles.tile, { flex: 1 }]}>
+          <Text style={pdfStyles.statLabel}>FTE Equivalent</Text>
+          <Text style={pdfStyles.statNumber}>{fteEquivalent}</Text>
+          <Text style={pdfStyles.statUnit}>FTE of recovered time</Text>
+        </View>
+      </View>
+      {/* FRAMING CALLOUT — the key insight paragraph */}
+      <View style={[pdfStyles.darkTile, { flexDirection: 'row', alignItems: 'flex-start' }]}>
+        <View style={[pdfStyles.redAccentBar, { height: '100%' }]} />
+        <View style={{ flex: 1 }}>
+          <Text style={[pdfStyles.coachLabel, { color: '#EA2C00' }]}>THE QUESTION YOUR NUMBERS RAISE</Text>
+          <Text style={pdfStyles.bodyDark}>
+            {hoursRecovered > 0
+              ? `At ${e.timeSavings} minutes returned per encounter across ${encountersFormatted} documented encounters, your deployment is generating ${hoursRecovered.toLocaleString()} hours of recovered clinical time annually — ${fteEquivalent} FTE equivalent. That number is the raw material. What follows in this assessment measures what your organization has decided to do with it.`
+              : `Your deployment is generating recovered clinical time across ${encountersFormatted} documented encounters. What follows in this assessment measures what your organization has decided to do with it.`
+            }
+          </Text>
+        </View>
+      </View>
+      {/* FOOTNOTE */}
+      <Text style={[pdfStyles.footerText, { marginTop: 14 }]}>
+        {`Financial assumptions: $${e.revenuePerVisit || 200}/visit · $${e.providerRate || 150}/hr · $${e.conversionFactor || 33} wRVU conversion factor`}
+      </Text>
+      <JC pageNum={1} orgName={e.organizationName} />
+    </Page>
+  );
+}
+---
+## PAGE 3 — YOUR MATURITY POSITION (replaces K8t)
+This page delivers the score — but frames it as a position on a strategic journey, 
+not a grade. The narrative paragraph is the most important copy on the page.
+function K8t({ data: e }) {
+  const band = scoreBand(e.documentationScore);
+  const capLevel = e.domains?.capacity?.activationLevel || 1;
+  const revLevel = e.domains?.revenue?.activationLevel || 1;
+  const wfLevel  = e.domains?.workforce?.activationLevel || 1;
+  const riskLevel = e.domains?.risk?.activationLevel || 1;
+  const domainScores = {
+    capacity: e.domains?.capacity?.score || 0,
+    revenue: e.domains?.revenue?.score || 0,
+    workforce: e.domains?.workforce?.score || 0,
+    risk: e.domains?.risk?.score || 0,
+  };
+  const domainLabels = {
+    capacity: e.domains?.capacity?.activationLabel || '',
+    revenue: e.domains?.revenue?.activationLabel || '',
+    workforce: e.domains?.workforce?.activationLabel || '',
+    risk: e.domains?.risk?.activationLabel || '',
+  };
+  // Score band strategic narrative — tone: trusted advisor, not grader
+  const narrativeByBand = {
+    low: `Your organization has established the foundation. Ambient is deployed, time is being recovered, and at least one domain is beginning to produce signal. This is the right starting position — but the organizations that extract the most value from ambient don't stay here. The next stage is a decision: what is this recovered time for? That decision, made deliberately, is what separates a ${e.documentationScore}/100 organization from a 65/100 one.`,
+    mid: `Your organization is beginning to connect ambient to outcomes. Some domains are producing measurable data; others are still establishing signal. The pattern in organizations at this maturity level is typically the same: one or two domains move first, and the discipline from those domains pulls the others forward. ${e.assessmentNarrative || ''}`,
+    high: `Your organization is managing ambient as a strategic asset in multiple domains. The remaining opportunity is in the domains that haven't yet been connected to operational outcomes — and the compounding effect of closing those gaps is significant. ${e.assessmentNarrative || ''}`,
+    leading: `Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence — a genuine competitive differentiator. The opportunity at this stage is governance and sustainability: ensuring the discipline that got you here is encoded into operations, not dependent on individual champions.`,
+  };
+  const narrative = e.documentationScore <= 30 ? narrativeByBand.low
+    : e.documentationScore <= 64 ? narrativeByBand.mid
+    : e.documentationScore <= 85 ? narrativeByBand.high
+    : narrativeByBand.leading;
+  return (
+    <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
+      <Text style={pdfStyles.eyebrow}>YOUR MATURITY POSITION</Text>
+      {/* TWO COLUMN LAYOUT */}
+      <View style={{ flexDirection: 'row', gap: 20, marginBottom: 16 }}>
+        {/* LEFT: Score + narrative */}
+        <View style={{ flex: 1.1 }}>
+          <Text style={[pdfStyles.subhead, { fontSize: 18, fontWeight: 800, 
+            color: '#1A1A1A', marginBottom: 4 }]}>
+            {band}.
+          </Text>
+          {/* Score display */}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', 
+            marginBottom: 10, gap: 4 }}>
+            <Text style={{ fontSize: 64, fontWeight: 800, color: '#EA2C00', lineHeight: 1 }}>
+              {e.documentationScore}
+            </Text>
+            <Text style={{ fontSize: 20, fontWeight: 400, color: '#AAAAAA', 
+              marginBottom: 8, lineHeight: 1 }}>/100</Text>
+          </View>
+          {/* Progress bar */}
+          <View style={{ height: 6, backgroundColor: '#E5E0D9', borderRadius: 3, 
+            marginBottom: 14, width: '100%' }}>
+            <View style={{ height: 6, backgroundColor: '#EA2C00', borderRadius: 3, 
+              width: `${e.documentationScore}%` }} />
+          </View>
+          {/* Strategic narrative */}
+          <Text style={pdfStyles.body}>{narrative}</Text>
+        </View>
+        {/* RIGHT: Domain breakdown */}
+        <View style={{ flex: 0.9 }}>
+          <Text style={pdfStyles.eyebrow}>SCORE BY DOMAIN</Text>
+          {domainOrder.map((key) => {
+            const score = domainScores[key];
+            const level = e.domains?.[key]?.activationLevel || 1;
+            const label = domainLabels[key];
+            const pct = (score / 25) * 100;
+            return (
+              <View key={key} style={{ marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', 
+                  alignItems: 'center', marginBottom: 3 }}>
+                  <Text style={{ fontSize: 10, fontWeight: 700, color: '#1A1A1A' }}>
+                    {domainDisplayName[key]}
+                  </Text>
+                  <Text style={{ fontSize: 10, fontWeight: 700, color: '#1A1A1A' }}>
+                    {score} / 25
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 9, fontWeight: 400, color: '#888888', 
+                  marginBottom: 5, fontStyle: 'italic' }}>
+                  {`Level ${level} — ${label}`}
+                </Text>
+                <View style={{ height: 4, backgroundColor: '#E5E0D9', 
+                  borderRadius: 2, width: '100%' }}>
+                  <View style={{ height: 4, backgroundColor: '#EA2C00', 
+                    borderRadius: 2, width: `${pct}%` }} />
+                </View>
+              </View>
+            );
+          })}
+          <View style={pdfStyles.divider} />
+          {/* Total row */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', 
+            alignItems: 'center' }}>
+            <Text style={{ fontSize: 11, fontWeight: 700, color: '#1A1A1A' }}>
+              TOTAL SCORE
+            </Text>
+            <Text style={{ fontSize: 16, fontWeight: 800, color: '#EA2C00' }}>
+              {e.documentationScore} / 100
+            </Text>
+          </View>
+        </View>
+      </View>
+      {/* SCORE BAND REFERENCE */}
+      <View style={[pdfStyles.beigeBox, { flexDirection: 'row', 
+        justifyContent: 'space-between', alignItems: 'center' }]}>
+        {[
+          { label: 'Foundation building', range: '0–50' },
+          { label: 'Value in motion', range: '51–64' },
+          { label: 'Strategically managed', range: '65–79' },
+          { label: 'Leading practice', range: '80–100' },
+        ].map((b, i) => {
+          const isCurrent = scoreBand(e.documentationScore) === b.label;
+          return (
+            <View key={i} style={{ alignItems: 'center', flex: 1 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, 
+                backgroundColor: isCurrent ? '#EA2C00' : '#CCCCCC', 
+                marginBottom: 4 }} />
+              <Text style={{ fontSize: 8, fontWeight: isCurrent ? 700 : 400, 
+                color: isCurrent ? '#EA2C00' : '#888888', textAlign: 'center' }}>
+                {b.label}
+              </Text>
+              <Text style={{ fontSize: 8, color: '#AAAAAA', textAlign: 'center' }}>
+                {b.range}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+      <JC pageNum={2} orgName={e.organizationName} />
+    </Page>
+  );
+}
+---
+## PAGES 4–5 — ONE DOMAIN PER PAGE (Capacity, Revenue)
+## PAGE 6 — WORKFORCE
+## PAGE 7 — QUALITY
+Each domain gets its own full page. Replace X8t and split into individual domain pages.
+Use this shared DomainPage component for all four:
+function DomainPage({ domainKey, data, pageNum }) {
+  const domain = data.domains?.[domainKey] || {};
+  const level = domain.activationLevel || 1;
+  const label = domain.activationLabel || '';
+  const headlineMetric = domain.headlineMetric || '';
+  const hasValue = domain.hasValue || false;
+  const value = domain.gapValue || 0;
+  const name = domainDisplayName[domainKey];
+  // Domain-specific strategic framing sentences
+  const domainFrame = {
+    capacity: {
+      what: `Recovered time is ambient's most universal output. Every organization sees it. The strategic divide is between organizations that measure it and stop — and organizations that assign it a destination. Capacity is the domain that measures that decision.`,
+      atThisLevel: `At Level ${level}, your organization has ${
+        level === 1 ? 'established that time is being recovered. The total picture hasn\\'t been formally assembled yet.'
+        : level === 2 ? 'quantified the recovered time and brought it to leadership. The next move is deciding what the hours are for.'
+        : level === 3 ? 'connected recovered time to a specific operational outcome — more patients seen, schedules redesigned, or panels expanded.'
+        : 'fully operationalized recovered capacity as a variable in strategic planning, hiring, and growth decisions.'
+      }`,
+    },
+    revenue: {
+      what: `Every encounter is coded. The question is whether it's coded at the specificity your documentation now supports — and whether your revenue cycle team is part of that conversation. Organizations that close that loop systematically find it is worth millions. Most organizations haven't asked the question yet.`,
+      atThisLevel: `At Level ${level}, your organization has ${
+        level === 1 ? 'deployed ambient without formally engaging revenue cycle. The documentation has improved. The financial signal from that improvement is invisible.'
+        : level === 2 ? 'opened the conversation with revenue cycle. Analysis is in motion. The value isn\\'t confirmed yet, but the gap is becoming visible.'
+        : level === 3 ? 'measured a before/after impact. A number exists that leadership can stand behind — and that\\'s a different kind of credibility than a projection.'
+        : 'integrated documentation quality into revenue cycle operations as a managed, ongoing input. This is systematic revenue integrity.'
+      }`,
+    },
+    workforce: {
+      what: `Provider burnout is one of the most expensive problems in health system operations — and ambient documentation is one of the few interventions that measurably addresses it. But the value only becomes visible when someone is looking for it. Most organizations have the signal. Very few have the measurement.`,
+      atThisLevel: `At Level ${level}, your organization has ${
+        level === 1 ? 'reduced after-hours documentation burden — providers feel it. That signal hasn\\'t been formally quantified or connected to a retention or workforce strategy.'
+        : level === 2 ? 'measured the burden reduction. In-clinic and after-hours data exists. The next step is wiring that measurement into operational and HR decisions.'
+        : level === 3 ? 'connected burden reduction to retention risk. Turnover exposure has been modeled. Documentation quality is a named variable in how you manage your workforce.'
+        : 'made provider experience data a full strategic input. Staffing, scheduling, and labor cost decisions account for what ambient has changed.'
+      }`,
+    },
+    risk: {
+      what: `When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. Whether that improved signal reaches those downstream functions is what this domain measures.`,
+      atThisLevel: `At Level ${level}, your organization has ${
+        level === 1 ? 'improved its documentation quality. Nothing downstream has changed yet — not because the value isn\\'t there, but because no one has connected the pipes.'
+        : level === 2 ? 'begun tracking documentation quality. Gaps are becoming visible. The data exists. It isn\\'t yet an active input to the workflows that depend on it.'
+        : level === 3 ? 'connected documentation quality to downstream workflows — CDI, coding, prior auth, or quality reporting. The improved signal is reaching the teams built to use it.'
+        : 'made documentation quality a governed strategic asset — an input to payer strategy, value-based care contracts, and compliance governance.'
+      }`,
+    },
+  };
+  const frame = domainFrame[domainKey];
+  // Level data lookup from i4t
+  const levelData = {
+    capacity: {
+      1: { nextUnlock: 'A full accounting of hours recovered across your deployment — the number that anchors every downstream conversation about what to do with that time.' },
+      2: { nextUnlock: 'A documented redeployment strategy — whether that\\'s access expansion, administrative offload, or revenue-generating visits — that turns recovered hours into a planned organizational outcome.' },
+      3: { nextUnlock: 'Continuous monitoring of recovered capacity and redeployment efficiency — so the value stays captured, not just planned.' },
+      4: { nextUnlock: '' },
+    },
+    revenue: {
+      1: { nextUnlock: 'Visibility into wRVU accuracy and documentation specificity gaps — the starting point for understanding what revenue integrity looks like at your scale.' },
+      2: { nextUnlock: 'A closed-loop process connecting documentation quality to coding correction — so that specificity gaps get fixed before they become denials or underpayments.' },
+      3: { nextUnlock: 'Documentation governance tied to payer strategy — where your coding accuracy data directly informs contract negotiations and prior auth workflows.' },
+      4: { nextUnlock: '' },
+    },
+    workforce: {
+      1: { nextUnlock: 'Structured measurement of in-clinic and after-hours time savings — turning anecdotal relief into an organizational data point that supports retention decisions and provider contracts.' },
+      2: { nextUnlock: 'Workforce data wired into operational planning — informing scheduling, staffing ratios, and provider engagement in a way that\\'s defensible to leadership and HR.' },
+      3: { nextUnlock: 'A direct connection between documentation burden reduction and retention outcomes — giving your organization a measurable ROI story on provider experience investment.' },
+      4: { nextUnlock: '' },
+    },
+    risk: {
+      1: { nextUnlock: 'Visibility into documentation completeness, specificity, and accuracy at scale — the foundation that CDI, coding, and compliance workflows all depend on.' },
+      2: { nextUnlock: 'Quality data wired into CDI workflows, coding accuracy, and prior auth — so documentation intelligence becomes an active input to revenue cycle and compliance, not just a report.' },
+      3: { nextUnlock: 'Documentation infrastructure positioned for value-based care — where quality data supports risk adjustment, population health reporting, and payer negotiations.' },
+      4: { nextUnlock: '' },
+    },
+  };
+  const nextUnlock = level < 4 ? levelData[domainKey][level].nextUnlock : '';
+  return (
+    <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
+      {/* LEFT + RIGHT COLUMN LAYOUT */}
+      <View style={{ flexDirection: 'row', gap: 20, flex: 1 }}>
+        {/* LEFT COLUMN — 62% */}
+        <View style={{ flex: 1.55 }}>
+          <Text style={pdfStyles.domainLabel}>{name}</Text>
+          {/* Level badge + label */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', 
+            gap: 10, marginBottom: 8 }}>
+            <View style={pdfStyles.levelBadge}>
+              <Text style={pdfStyles.levelBadgeText}>{level}</Text>
+            </View>
+            <Text style={{ fontSize: 16, fontWeight: 800, color: '#1A1A1A', flex: 1, 
+              lineHeight: 1.2 }}>
+              {label}
+            </Text>
+          </View>
+          {/* Domain framing */}
+          <Text style={pdfStyles.body}>{frame.what}</Text>
+          <View style={pdfStyles.divider} />
+          {/* At this level copy */}
+          <Text style={[pdfStyles.eyebrow, { marginBottom: 6 }]}>
+            WHERE YOU STAND
+          </Text>
+          <Text style={pdfStyles.body}>{frame.atThisLevel}</Text>
+          {/* Headline metric if exists */}
+          {headlineMetric ? (
+            <View style={[pdfStyles.beigeBox, { marginTop: 8 }]}>
+              <Text style={pdfStyles.eyebrow}>MEASURED IMPACT</Text>
+              <Text style={{ fontSize: 18, fontWeight: 800, color: '#EA2C00', 
+                lineHeight: 1.2 }}>
+                {headlineMetric}
+              </Text>
+            </View>
+          ) : null}
+          {/* Next level unlock */}
+          {nextUnlock ? (
+            <View style={{ marginTop: 14 }}>
+              <Text style={pdfStyles.nextLevelLabel}>NEXT LEVEL UNLOCKS</Text>
+              <Text style={pdfStyles.nextLevelText}>{nextUnlock}</Text>
+            </View>
+          ) : null}
+        </View>
+        {/* RIGHT COLUMN — dark panel 38% */}
+        <View style={[pdfStyles.darkTile, { flex: 0.95, padding: 20 }]}>
+          <Text style={[pdfStyles.eyebrow, { color: 'rgba(255,255,255,0.4)' }]}>
+            ESTIMATED IMPACT
+          </Text>
+          {/* Value display */}
+          {hasValue && value > 0 ? (
+            <Text style={{ fontSize: 32, fontWeight: 800, color: '#EA2C00', 
+              lineHeight: 1.1, marginBottom: 4 }}>
+              {fmt(value)}
+            </Text>
+          ) : headlineMetric ? (
+            <Text style={{ fontSize: 16, fontWeight: 700, color: '#EA2C00', 
+              lineHeight: 1.3, marginBottom: 8 }}>
+              {headlineMetric}
+            </Text>
+          ) : (
+            <Text style={{ fontSize: 13, fontWeight: 600, 
+              color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+              Enter domain inputs to calculate
+            </Text>
+          )}
+          <View style={pdfStyles.darkDivider} />
+          {/* Domain-specific coaching note — the peer voice */}
+          <Text style={[pdfStyles.coachLabel]}>A THOUGHT ON THIS</Text>
+          <Text style={pdfStyles.coachText}>
+            {domainKey === 'capacity' && level <= 2
+              ? `The organizations moving fastest from Level 2 to Level 3 share one thing: they scheduled the operational conversation — with a recommendation in hand — before they thought they were ready. The number doesn't need to be perfect. It needs to be in the room.`
+              : domainKey === 'capacity' && level >= 3
+              ? `Connecting recovered time to access revenue is one thing. Connecting it to a hiring model is another. Level 4 is where ambient stops being a documentation decision and starts being a workforce strategy.`
+              : domainKey === 'revenue' && level <= 2
+              ? `The revenue cycle team almost always finds something when they look. The barrier isn't data — it's the first conversation. Organizations that formalize that conversation within 90 days of deployment typically have a number before their first contract renewal.`
+              : domainKey === 'revenue' && level >= 3
+              ? `A measured revenue impact is a different kind of asset than a projection. It changes the conversation with payers, with leadership, and with the board. The question at this level is: who owns maintaining it?`
+              : domainKey === 'workforce' && level <= 2
+              ? `Provider experience is the most politically powerful data in a health system — and it's consistently under-quantified. Organizations that formalize this measurement tend to use it in ways they didn't initially plan: recruitment, contracts, board presentations.`
+              : domainKey === 'workforce' && level >= 3
+              ? `The transition from Level 3 to Level 4 is a governance decision, not a measurement decision. It's asking: is provider sustainability a formal variable in our FTE model? The organizations that say yes are building a moat.`
+              : domainKey === 'risk' && level <= 2
+              ? `The downstream value of better documentation compounds — but only when someone has built the pipe. CDI, coding, and prior auth teams need to know documentation has changed. That notification, formally structured, is the Level 2 to Level 3 move.`
+              : `Documentation quality as a payer strategy input is where ambient AI's long-term value gets locked in. It's also the domain where most organizations have done the least work. That gap is an opportunity.`
+            }
+          </Text>
+          {/* Maturity level position indicator */}
+          <View style={[pdfStyles.darkDivider, { marginTop: 16 }]} />
+          <Text style={[pdfStyles.coachLabel, { marginBottom: 8 }]}>
+            MATURITY LEVEL
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+            {[1, 2, 3, 4].map(l => (
+              <View key={l} style={{ flex: 1, height: 4, borderRadius: 2,
+                backgroundColor: l <= level ? '#EA2C00' : 'rgba(255,255,255,0.1)' }} />
+            ))}
+          </View>
+          <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)', marginTop: 5 }}>
+            {`Level ${level} of 4`}
+          </Text>
+        </View>
+      </View>
+      <JC pageNum={pageNum} orgName={e.organizationName} />
+    </Page>
+  );
+}
+// Then render four separate domain pages:
+function X8t({ data: e }) {
+  return <DomainPage domainKey="capacity" data={e} pageNum={3} />;
+}
+function J8t({ data: e }) {
+  return <DomainPage domainKey="revenue" data={e} pageNum={4} />;
+}
+// Add two new components for workforce and quality:
+function W8t({ data: e }) {
+  return <DomainPage domainKey="workforce" data={e} pageNum={5} />;
+}
+function Q8t({ data: e }) {
+  return <DomainPage domainKey="risk" data={e} pageNum={6} />;
+}
+// Update t4t to include all four domain pages:
+// Replace the existing t4t call chain to:
+// Ov (cover), G8t, K8t, X8t, J8t, W8t, Q8t, e4t (trajectory+roadmap), closing page
+---
+## PAGE 7 — TRAJECTORY + ROADMAP (replaces e4t)
+function e4t({ data: e }) {
+  const hasGap = e.totalAnnualGap > 0;
+  const threeYearGap = hasGap ? e.totalAnnualGap * 3 : 0;
+  return (
+    <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
+      <Text style={pdfStyles.eyebrow}>YOUR ROADMAP</Text>
+      <Text style={pdfStyles.headline}>
+        {"Four domains.\\nFour next levels.\\nOne direction."}
+      </Text>
+      <View style={pdfStyles.redRule} />
+      {/* Trajectory gap — only if values exist */}
+      {hasGap ? (
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+          {[
+            { label: 'Annual Trajectory Gap', value: fmt(e.totalAnnualGap), 
+              sub: 'projected annually at next-level maturity' },
+            { label: '6-Month Gap', value: fmt(e.monthlyGap * 6), 
+              sub: 'value in the next 6 months' },
+            { label: '36-Month Gap', value: fmt(threeYearGap), 
+              sub: 'full period, conservative estimates' },
+          ].map((stat, i) => (
+            <View key={i} style={[pdfStyles.beigeBox, { flex: 1 }]}>
+              <Text style={pdfStyles.statLabel}>{stat.label}</Text>
+              <Text style={{ fontSize: 22, fontWeight: 800, color: '#EA2C00', 
+                lineHeight: 1.1, marginBottom: 3 }}>
+                {stat.value}
+              </Text>
+              <Text style={{ fontSize: 8.5, color: '#888888', lineHeight: 1.4 }}>
+                {stat.sub}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {/* Four domain roadmap cards */}
+      {domainOrder.map((key) => {
+        const domain = e.domains?.[key] || {};
+        const level = domain.activationLevel || 1;
+        const label = domain.activationLabel || '';
+        const name = domainDisplayName[key];
+        const nextUnlocksByDomain = {
+          capacity: ['', 
+            'Quantify recovered hours across the full deployment and bring the number to leadership with a recommended use.',
+            'Assign recovered time a destination — more patients, administrative offload, or a reduced hiring need — and track the conversion.',
+            'Wire recovered capacity into your annual FTE and growth model as a standing variable.',
+          ],
+          revenue: ['',
+            'Formally engage your revenue cycle team in a conversation about what documentation quality change means for coding accuracy and reimbursement.',
+            'Complete a before/after analysis that produces a number revenue cycle leadership can stand behind
