@@ -1,0 +1,167 @@
+COMPREHENSIVE FIX PROMPT — COPY THIS ENTIRE BLOCK INTO REPLIT
+I need you to make a series of targeted fixes to this ROI calculator. Do NOT change any domain formulas, scoring logic, routing, or brand colors. Work only on the specific issues below. Make all fixes together in one pass.
+---
+## FIX 1: STEP 1 HEADLINE + SUBHEAD REWRITE (w8t component)
+Find this exact string:
+  "Before we can show you what's possible — we need to understand what's real."
+Replace with:
+  "Let's build your deployment profile."
+Find this exact string:
+  "Three inputs establish the foundation. Everything that follows is built on what you tell us here."
+Replace with:
+  "Three inputs. Everything that follows is built on what you tell us here."
+---
+## FIX 2: FINANCIAL ASSUMPTIONS — SURFACE ABOVE THE FOLD (w8t component)
+Currently the Financial Assumptions section is hidden behind a collapsed accordion. Find the accordion toggle div that renders "Financial Assumptions" and is controlled by state `o`. Change the initial state of `o` from `false` to `true` so it starts expanded.
+Find:
+  const [o,l]=x(!1)
+Replace with:
+  const [o,l]=x(!0)
+This ensures the $200/visit, $150/hr, and wRVU rate inputs are visible immediately when the user arrives at Step 1, not hidden.
+---
+## FIX 3: RIGHT PANEL — CONTEXT-SPECIFIC HINTS WHEN LEVEL IS SELECTED BUT INPUT IS EMPTY
+This is the most critical fix. Currently when a user selects a maturity level (e.g., Level 3 for Capacity) but hasn't entered the required numeric input yet, the right panel shows "Not yet measured" with no guidance. This must be replaced with a helpful domain-and-level-specific prompt.
+Find the `se` function:
+se=K=>K.headlineMetric?r.jsx("p",{className:"font-bold text-2xl text-[#EA2C00] leading-[1.1] mb-4","data-testid":"text-feedback-value",children:K.headlineMetric}):!K.hasValue&&K.value===null?r.jsx("p",{className:"font-bold text-2xl text-white/40 leading-[1.1] mb-4","data-testid":"text-feedback-value",children:"Not yet measured"})
+Replace "Not yet measured" static text with a dynamic value pulled from the `j` object's `context` field. The `context` field already contains the right prompt (e.g., "Enter additional patients seen per provider per month to calculate capacity impact."). Change the "Not yet measured" branch to render the context instead:
+Replace:
+  children:"Not yet measured"
+With:
+  children:K.context||"Enter the inputs above to see your estimated impact."
+AND change the className on that branch from `text-white/40` to `text-white/60` and change from `text-2xl` to `text-sm leading-relaxed italic` so it reads as a guidance prompt rather than a value:
+Full replacement for the null branch:
+!K.hasValue&&K.value===null?r.jsx("p",{className:"text-sm text-white/60 leading-relaxed italic mb-4","data-testid":"text-feedback-value",children:K.context||"Enter the inputs above to see your estimated impact."})
+---
+## FIX 4: CAPACITY SUMMARY — ALWAYS SHOW TIME RECOVERED AT ALL LEVELS
+The Capacity Summary block in the right panel has this early return condition:
+if(!(ae>0||Ie!==null||re!==null))return null;
+Where `ae` = hours recovered (from Level 1 timeSaved), `Ie` = access revenue (Level 3), `re` = avoided cost (Level 4).
+The bug: at Level 3 or 4, if the user hasn't entered `additionalPatientsPerMonth` yet, `ae` is re-calculated but may be 0 if `timeSaved` isn't found in state. The hours from Level 1 should always persist.
+Find the Capacity Summary function (it contains "text-capacity-summary-hours" and "text-capacity-summary-label"). Inside that function, find where `ie` is set from inputs:
+const ie=K.timeSaved||0
+This should use a fallback that reaches up to the top-level baseline inputs. Change the Capacity Summary to accept `timeSavedBaseline` as a prop or closure variable that is always the value entered at Step 1, not re-read from level-specific inputs object.
+Specifically: in the Capacity Summary renderer function, change:
+const K=y.inputs,ie=K.timeSaved||0
+To also check the baseline inputs from the parent `w8t` state (which holds `timeSaved` from Step 1). The variable `g` already equals the total encounter count. Add:
+const K=y.inputs,ie=K.timeSaved||t.timeSaved||0
+Where `t` is the baseline inputs object passed from the parent component (Step 1 data). Verify that `t` or the equivalent prop for Step 1 baseline data is available in this function's scope. If not, thread it through from the `O8t` props.
+---
+## FIX 5: UPCOMING LEVEL CARDS — REMOVE "UNLOCK:" PREFIX FROM SUBTITLES
+Find the `unlockTeasers` data object. It currently has values like:
+  "Unlock: quantify and escalate to leadership"
+  "Unlock: deploy time into patient access"
+  "Unlock: connect to workforce planning"
+And similar for other domains. Do a global search-and-replace to remove the "Unlock: " prefix from ALL unlockTeasers values across all domains:
+For capacity:
+  "Unlock: quantify and escalate to leadership" → "Next: quantify and escalate to leadership"
+  "Unlock: deploy time into patient access" → "Next: deploy time into patient access"
+  "Unlock: connect to workforce planning" → "Next: connect to workforce planning"
+For revenue — find the revenue unlockTeasers and apply same pattern.
+For workforce — find the workforce unlockTeasers and apply same pattern.
+For quality/risk — find those unlockTeasers and apply same pattern.
+Also in the upcoming card rendering, the subtitle renders with this class:
+  className:"text-xs text-[#BBBBBB] italic mt-0.5"
+Change to:
+  className:"text-xs text-[#999999] mt-0.5"
+(Remove italic, slightly darker so it's readable but still secondary.)
+---
+## FIX 6: LEVEL CARDS — VISUAL HIERARCHY (COMPLETED / ACTIVE / UPCOMING)
+**Completed level cards** currently render as flat white rectangles with a checkmark circle. They need to feel compressed and "behind you."
+Find the completed card rendering block — it has:
+  className:"group bg-white border border-[#E8E3DC] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 transition-all duration-200"
+Change to:
+  className:"group bg-[#FAFAF9] border border-[#E8E3DC] rounded-xl mb-2 cursor-pointer hover:border-[#EA2C00]/30 transition-all duration-200 opacity-85"
+And inside the completed card, the inner div has:
+  className:"flex items-center gap-4 px-5 py-4"
+Change to:
+  className:"flex items-center gap-4 px-4 py-3"
+(Smaller padding = compressed feel.)
+**Active level card** currently has:
+  className:"bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_4px_20px_rgba(234,44,0,0.10)] overflow-hidden"
+Change to:
+  className:"bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_6px_28px_rgba(234,44,0,0.14)] overflow-hidden ring-1 ring-[#EA2C00]/10"
+(Stronger shadow to give more visual weight and make active state unambiguous.)
+**Upcoming cards that are NOT the next level** (i.e., `!de` = not clickable) currently have `opacity-70`. These should be slightly more faded:
+Find:
+  className:`bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 ${de?"cursor-pointer hover:border-[#D9D3CB] transition-all duration-200":"opacity-70"}`
+Change to:
+  className:`bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 ${de?"cursor-pointer hover:border-[#D9D3CB] transition-all duration-200":"opacity-40 pointer-events-none"}`
+The immediately clickable "next" level card (`de` = true) should feel inviting. Add a subtle dashed border variant:
+  className:`bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200`
+To do this cleanly, split the upcoming card className into two branches:
+className: ge
+? "bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200"
+: "bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 opacity-40 pointer-events-none"
+Where `ge` is the "is next level" boolean (currently called `de` in this component — confirm variable name in context).
+---
+## FIX 7: RADIO BUTTON + CHECKBOX VISUAL AFFORDANCE
+Level 2 inputs use radio-style options and Level 4 uses checkboxes. Currently they render as plain text with no interactive visual cue.
+Find where Level 2 radio options are rendered (look for the `capacityAggregated` input or similar radio-group patterns). For EVERY radio option group in the domain input renderers:
+Add these styles to each option row wrapper:
+  - Border: `border border-[#E5E7EB] rounded-lg`
+  - Padding: `px-4 py-3`
+  - Hover: `hover:border-[#EA2C00]/40 hover:bg-[#FFF8F6] cursor-pointer`
+  - Selected state: `border-[#EA2C00] bg-[#FFF8F6]`
+Add a visible radio indicator to the left of each option. For each radio option, prepend a circle indicator:
+```jsx
+<div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${selected ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+```
+Where `selected` = whether this option's value matches current input state.
+For checkboxes (Level 4), similarly add:
+  - Row border + padding
+  - A square checkbox indicator with checkmark SVG when checked
+---
+## FIX 8: DOMAIN NAV DOTS — SHOW LEVEL NUMBER AFTER COMPLETION
+The domain navigation dots in the stepper show as filled black circles after completion with no level indicator.
+Find the stepper dot rendering for each domain — it currently uses something like:
+  `className:"w-3 h-3 rounded-full bg-[#1A1A1A]"` for active/completed
+Replace completed domain dots with a badge that shows the level number. For a completed domain (where `activationLevel !== null`):
+Change from a simple dot to a small pill:
+```jsx
+// Instead of a 12px dot, render:
+<div className="flex items-center justify-center w-5 h-5 rounded-full bg-[#EA2C00] text-white text-[9px] font-bold font-abridge">
+  {activationLevel}
+</div>
+```
+This tells the user at a glance which level they reached in each domain.
+---
+## FIX 9: STEP 1 — LIVE ENCOUNTER PREVIEW AS USER TYPES
+Currently the right panel on Step 1 is empty until the user clicks "Show Me the Domains." Add a live preview line that updates as user types.
+In the `w8t` component, find where the right panel / rail is rendered. It has a conditional like `h&&r.jsx(...)` where `h` is whether the CTA is available. Before that condition, add a live calculation display:
+After the inputs section but before or alongside the CTA, render this calculated line whenever `providers > 0` and `encounters > 0`:
+```jsx
+{providers > 0 && encounters > 0 && (
+  <div className="mt-6 p-4 bg-[#F5F0EB] rounded-lg border border-[#E5E0D9]">
+    <p className="text-sm text-[#888888]">Based on your inputs</p>
+    <p className="text-lg font-semibold text-[#1A1A1A] mt-1">
+      {(encounters).toLocaleString()} documented encounters annually
+    </p>
+    {timeSaved > 0 && (
+      <p className="text-sm text-[#EA2C00] font-medium mt-1">
+        {Math.round(encounters * timeSaved / 60).toLocaleString()} hours recovered
+      </p>
+    )}
+  </div>
+)}
+```
+Use whatever variable names exist in `w8t` scope for providers, encounters, and timeSaved. The encounter variable is typically `f` or derived from `e.encounters` in the form state.
+---
+## FIX 10: STRATEGIC COACHING PROMPTS — VISUAL DIFFERENTIATION IN RIGHT PANEL
+The right panel shows `nextLevelTeaser` italic text prompts like "Level 2 — Is this number in front of your leadership with a plan attached to it?" These are gold but look identical to other text.
+Find where `nextLevelTeaser` is rendered in the right panel (look for `j.nextLevelTeaser` in the JSX). It likely has a class like `text-xs text-white/50 italic`.
+Replace that className with:
+  className:"text-xs text-white/70 italic leading-relaxed mt-3 pl-3 border-l border-[#EA2C00]/40"
+This gives it a distinct left-border treatment, making coaching prompts visually separable from formula text.
+---
+## WHAT NOT TO TOUCH
+- Do NOT change any domain formula logic (I8t, $ee, T8t, D8t functions)
+- Do NOT change the Sh() scoring function or A1e point map
+- Do NOT change P8t[] button label map
+- Do NOT change routing or navigation logic
+- Do NOT change brand colors (#EA2C00, #F5F0EB, #1A1A1A)
+- Do NOT change the PDF cover page
+- Do NOT change Step 4 or Step 5 page layouts
+- Do NOT add dark backgrounds anywhere
+- Do NOT change the internal domain key names (capacity, revenue, workforce, risk)
+- Do NOT change font families
+Apply all 10 fixes above, then confirm each one is complete. Do not ask clarifying questions — make the changes as specified.
