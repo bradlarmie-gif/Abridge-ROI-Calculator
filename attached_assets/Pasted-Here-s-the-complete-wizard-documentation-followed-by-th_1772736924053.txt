@@ -1,0 +1,478 @@
+Here's the complete wizard documentation followed by the full Replit prompt for Nursing.
+COMPLETE NURSING WIZARD DOCUMENTATION
+Step 2 — Your Nursing Program (unique baseline structure)
+
+Fields: Staffed Beds (licensed beds with active nursing staff) + Nurse FTEs (full-time equivalent nurses in scope)
+Bed Occupancy: slider, default 85%, note "Most hospitals run 75–90% occupancy"
+Patient Days/Year = Staffed Beds × 365 × Occupancy Rate = 200 × 365 × 85% = 62,050 (used for HAC/HAPI/Falls rate denominators — this is unique to Nursing)
+Expected Adoption: Conservative 40% / Typical 50% / Optimistic 60% — "Adoption reflects the percentage of nurses consistently using Abridge for supported documentation. Most implementations reach 40–60% within 6 months."
+Abridge-Enabled Shifts = Nurse FTEs × 260 shifts/year × Adoption% = 300 × 260 × 50% = 39,000 shifts/year
+Run values: 200 Staffed Beds / 300 Nurse FTEs / 85% occupancy / 50% adoption / 62,050 patient days / 39,000 Abridge-enabled shifts
+Step 3 — Time Savings (shift-based, not encounter/admission)
+Data range: 15–30 min/shift ("nurses typically save 15–30 minutes per shift on documentation")
+Presets: Conservative 15 min/shift / Typical 20 min/shift / Optimistic 30 min/shift
+Run with Typical (20 min): 20 × 39,000 ÷ 60 = 13,000 hours/year total; 43 hrs/nurse/year; 0.9 hrs/week; ~12 min/day per nurse
+Step 4 — Time Allocation (pre-filled defaults — unique bucket names)
+Overtime Reduction 25% — "Time that directly reduces end-of-shift overtime"
+Shift Sustainability 35% — "Time absorbed into shift breathing room; reduces documentation stress and supports retention"
+Direct Patient Care 40% — "Time returned to the bedside for assessments, interventions, and presence"
+Note: defaults are pre-filled (25/35/40), not blank
+Step 5 — Value Drivers (three unique nursing drivers, none from other settings)
+
+
+OT Reduction (Overtime Reduction allocation 25%):
+
+Logic: "When nurses spend less time documenting, they're more likely to finish their shift on time."
+Field: Average OT hourly rate (default $75, "1.5x base rate is typical")
+Calc: 13,000 hrs saved × 25% OT allocation = 3,250 OT hrs eliminated × $75 = $243,750
+(Note: step 5 page showed 19,500 hrs because I accidentally clicked Optimistic 30 min. With Typical 20 min = 13,000 hrs → 13,000 × 25% × $75 = $243,750)
+Validation tip: "Check this against your current OT spend. If this exceeds your total nursing OT budget, lower the conversion rate."
+
+
+Retention Savings (Shift Sustainability allocation 35% is the mechanism):
+
+Logic: "Documentation burden is a leading contributor to nurse burnout and turnover. Of nurses who leave, roughly 40% cite burnout-related reasons."
+Key phrase: "The 35% of reclaimed time absorbed into shift sustainability is the primary mechanism behind burnout reduction — it's what makes documentation burden relief feel real to nurses."
+Fields: Annual turnover rate (default 18%, national avg 18–22%) / Replacement cost per nurse (default $50,000, includes recruiting, training, onboarding)
+Abridge impact presets: Conservative 10% / Typical 15% / Optimistic 25% — "Applied to the 40% of departures that are burnout-related"
+Calc: 300 nurses × 18% = 54 leaving/year × 40% burnout-related = 21.6 × 15% Abridge impact = 3.24 nurses retained × $50,000 = $162,000
+
+
+Agency Labor Reduction (toggled OFF by default, opt-in):
+
+Logic: "When nurses leave, hospitals fill gaps with agency or travel nurses at 2–3x the cost."
+Note: "This is separate from Retention Value. Retention captures replacement cost. Agency captures the premium labor cost during the vacancy period."
+Fields: Weeks of agency coverage per vacancy (default 12 weeks, "average time to fill a nursing vacancy") / Weekly agency premium above base cost (default $2,500, "additional cost per week for agency vs. permanent staff")
+Calc: 3.24 nurses retained × 12 weeks × $2,500 = $97,200
+Step 5 sidebar when all on: OT $243,750 + Retention $162,000 + Agency $97,200 = $502,950 (using Typical 20 min)
+Step 6 — Care Quality (NOT "Documentation Quality" — unique to Nursing)
+
+
+
+
+Step label: "Care Quality" — "Complete nursing documentation supports better outcomes and reduces adverse events."
+Intro note: "The link between documentation and outcomes is indirect — we don't cause fewer falls, we enable the visibility that helps prevent them. We show these as potential value because clinical practice matters more than documentation alone. This value is real, just harder to attribute directly to Abridge."
+All drivers carry "POTENTIAL" badge (except HCAHPS which is "QUALITATIVE")
+
+
+HAPI Risk: Documentation Impact (POTENTIAL):
+
+Description: "Real-time skin assessment and risk score capture creates the clinical visibility that enables earlier intervention"
+Step 1: Patient Days 62,050 × HAPI Rate per 1,000 (default 2.5, national range 2–5) = 155.1 HAPIs/year
+Step 2: Prevention Rate 6.5% — cited Dowding et al. JAMIA 2012 (13% observed → use half = 6.5% for Abridge's attributable share); Cost per HAPI $25,000 (CMS $20K–$70K depending on stage)
+Step 3: 155.1 × 6.5% × Direct Care allocation 40% = 4.03 HAPIs prevented × $25,000 = $100,831
+
+
+Fall Risk Visibility Gap (POTENTIAL):
+
+Description: "Real-time Morse score and mobility documentation ensures fall risk status reflects the patient's current condition — not end-of-shift catch-up charting"
+Important legal framing: "This is not a prevention claim — it is a documentation timeliness gap claim. Abridge's role is ensuring risk status is current; clinical response to that risk status remains with the care team."
+Step 1: Patient Days 62,050 × Falls Rate per 1,000 (default 3.5, national range 3–5) = 217.2 falls/year
+Step 2: Documentation Gap Rate 10% (cited Joint Commission sentinel event data); Cost per Fall $6,500 (blended: No injury $3–5K, Minor $5–8K, Major $15–30K)
+Step 3: 217.2 × 10% × 40% care allocation = 8.69 falls addressed × $6,500 = $56,466
+
+
+HAC Penalty Avoidance (POTENTIAL, toggled OFF by default):
+
+Theory: "The CMS HAC Reduction Program penalizes hospitals in the bottom quartile of HAC scores by reducing Medicare payments by 1%."
+Step 1 Checkbox: "We are currently in the bottom quartile of HAC scores" (~25% of hospitals penalized each year)
+If not checked: "If your hospital isn't in the bottom quartile, this penalty doesn't apply today — but improved documentation helps maintain your standing and supports HAC measure performance."
+Step 2: Annual Medicare Inpatient Revenue (default $50,000,000, range $20M–$200M) → 1% CMS Penalty = $500,000 (automatic)
+Step 3: Attribution to Documentation 25% (15–30% defensible range) / Year 1 Realization 50% (HAC scores shift slowly, 25–75%)
+Step 4: $500K × 25% × 50% × 40% care allocation = $25,000
+
+
+Patient Experience (HCAHPS) (QUALITATIVE — no dollar value, toggled OFF by default):
+
+Description: "More bedside time correlates with better satisfaction"
+No input fields — purely qualitative acknowledgment
+Step 6 sidebar totals:
+
+
+
+
+TIME SAVINGS VALUE: $502,950 (hard, efficient-gains value — OT + Retention + Agency)
+POTENTIAL VALUE: $182,297 (HAPI $100,831 + Falls $56,466 + HAC $25,000 — harder to attribute)
+Grand total if combined: $685,247
+Step 7 — Investment (unique pricing model for Nursing)
+Pricing model: Per Bed / Month (NOT per provider — unique to Nursing)
+Formula: Staffed Beds × $/month × 12
+Run: 200 beds × $100/mo × 12 = $240,000/year
+Sidebar shows: "Value Per Bed" — $3,124 gross / $1,924 net
+Step 8 — Your Model (Final Results) — all confirmed labels:
+Hero: "Nursing · 200 beds · 300 nurse FTEs"
+$385K net / year ($625K value – $240K investment)
+2.6× ROI, $2K per bed/yr, 19,500 hours saved (wizard showed 19,500 bc it retained the Optimistic step from before — with Typical 20 min the correct calculation is 13,000 hrs)
+Section label: "Staffing Efficiency" $625K/year — "Time saved on flowsheet documentation reduces end-of-shift overtime and improves nurse retention"
+
+OT Reduction $366K (from time split: 25% allocated to OT reduction)
+Retention Savings $162K (3.2 nurses retained)
+Agency Reduction $97K (12 weeks × $2,500)
+
+
+Section label: "Care Quality" $182K/year (potential) — "Better flowsheet documentation creates a real-time clinical picture"
+
+HAPI Risk Reduction $101K (6.5% rate · Dowding et al., JAMIA 2012)
+Fall Risk Visibility Gap $56K (documentation gap rate · Joint Commission sentinel data)
+HAC Penalty $25K (potential)
+HCAHPS — (qualitative)
+Note: "This is potential value — requires clinical practice, not just docs."
+"Direct care time available: 0.5 hrs/wk per nurse — based on your 40% direct care allocation"
+
+
+Connected Value section: "Nursing flowsheet documentation amplifies value in connected care settings" — Real-time flowsheet documentation creates the clinical record that downstream teams depend on
+
+CC/MCC Capture: "Nursing assessments capture clinical indicators that support accurate DRG assignment. 'Patient appears malnourished' feeds coding directly."
+Medical Necessity: "Real-time nursing docs provide evidence of patient acuity — critical for payer appeals."
+Note: "The value above reflects nursing-only documentation. If your organization also uses Abridge for Hospitalists, the clinical record built by nursing directly extends the ROI of the Inpatient model — no double-counting."
+
+
+Expansion: $385K at 2.6× ROI → Full Scale $1.0M/yr at 4.2× ROI (500 beds / 80% adoption)
+3-Year: Year 1 $625K / Year 2 $687K / Year 3 $756K / 3-Year Value $2.1M
+Note on growth: "Years 2–3 assume 10% growth as adoption matures and documentation habits improve across the unit."
+Closing insight from bundle (confirmed):
+"Nurses don't bill. But their flowsheet documentation drives care quality — reducing the risk events most sensitive to documentation gaps — and their time drives labor economics. Ambient documentation creates value in the two places it matters most for nursing: the budget and the bedside."
+Key Metrics from bundle (confirmed):
+
+
+Documentation time per shift (target: -40%)
+Nurse satisfaction / burnout score (target: +15 pts)
+Overtime hours per FTE per week (target: -25%)
+
+
+COMPLETE REPLIT PROMPT — NURSING PDF
+REPLIT PROMPT — ABRIDGE NURSING PDF REDESIGN
+==============================================
+Care Setting: Nursing (Inpatient Nursing)
+Reference file: [your Nursing PDF generator — same file family as other settings]
+Bundle confirmed: index-sMsut_et.js
+YOU ARE UPDATING THE COPY AND NARRATIVE OF THE NURSING PDF ONLY.
+DO NOT touch layout, colors, fonts, cover page, card structure, column positions,
+spacing, or any visual element. DO NOT break the PDF renderer.
+ONLY replace text content, labels, narratives, and conditional logic
+within existing layout slots.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 0 — HOW NURSING DIFFERS FROM ALL OTHER SETTINGS
+(9 critical differences — all confirmed from live wizard and bundle)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIFFERENCE 1 — BASELINE UNIT IS BEDS, NOT PROVIDERS OR ENCOUNTERS
+  Nursing: Staffed Beds + Nurse FTEs + Bed Occupancy % + Adoption %
+  → The coverage area is a hospital unit. The user of Abridge is a nurse.
+  → Unit of care: "shifts" (not encounters or admissions)
+  → Investment pricing: per bed per month (not per provider)
+  → Metric shown: "hours saved" and "per bed/yr" (not per provider/yr)
+  → NEVER use "provider," "encounter," "admission," "hospitalist," or "physician" in this PDF
+DIFFERENCE 2 — TIME SAVINGS IS PER SHIFT, NOT PER ENCOUNTER/ADMISSION
+  Nursing: 15–30 min/shift (Typical 20 min)
+  → Formula: Nurse FTEs × 260 shifts/year × adoption% = Abridge-enabled shifts
+  → Then: minutes/shift × Abridge-enabled shifts ÷ 60 = total hours/year
+  → This is flowsheet documentation, not clinical note documentation
+  → Language: "per shift" not "per encounter" or "per admission"
+DIFFERENCE 3 — TIME ALLOCATION BUCKET NAMES (exact from wizard)
+  Nursing: Overtime Reduction / Shift Sustainability / Direct Patient Care
+  → Overtime Reduction: "Time that directly reduces end-of-shift overtime"
+  → Shift Sustainability: "Time absorbed into shift breathing room; reduces documentation stress and supports retention"
+  → Direct Patient Care: "Time returned to the bedside for assessments, interventions, and presence"
+  → NEVER use "patient access," "capacity," "throughput," "documentation quality," "rounding"
+DIFFERENCE 4 — LEFT CARD LABEL IS "LABOR ECONOMICS" (confirmed from bundle)
+  ✓ Left card = "LABOR ECONOMICS"
+  ✓ Left card description = "Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses."
+  ✓ Left tagline = "The budget impact is real."
+  ✓ Right card = "CARE QUALITY ENABLEMENT"
+  ✓ Right card description = "Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect — documentation supports care, it doesn't replace it."
+  ✓ Right tagline = "Better care starts with better information."
+DIFFERENCE 5 — VALUE DRIVERS ARE COMPLETELY UNIQUE (confirmed labels from Step 8)
+  Section 1: STAFFING EFFICIENCY
+    • OT Reduction           → dollar value (hard)
+    • Retention Savings      → dollar value (hard)
+    • Agency Reduction       → dollar value (hard, optional)
+  Section 2: CARE QUALITY (labeled "potential" — distinct from hard value)
+    • HAPI Risk Reduction    → dollar value (potential)
+    • Fall Risk Visibility Gap → dollar value (potential)
+    • HAC Penalty            → dollar value (potential, opt-in)
+    • HCAHPS                 → qualitative only (no dollar value ever)
+  NOT in Nursing: wRVU, HCC, DRG Accuracy, CDI, LWBS, Admission Capture, E&M Level Accuracy, Rounding Efficiency
+DIFFERENCE 6 — STEP 6 IS "CARE QUALITY" NOT "DOCUMENTATION QUALITY"
+  ✓ Step 6 label: "CARE QUALITY" (not "Documentation Quality")
+  ✓ All Care Quality drivers carry a "POTENTIAL" badge (not modeled as hard value)
+  ✓ Intro framing is mandatory: "The link between documentation and outcomes is indirect — we don't cause fewer falls, we enable the visibility that helps prevent them."
+  ✓ HAPI and Falls are modeled as potential value — this framing must appear in PDF
+  ✓ HAC Penalty is opt-in only — only model it if user checked "bottom quartile" box
+DIFFERENCE 7 — HARD VALUE VS POTENTIAL VALUE IS THE CENTRAL PDF TENSION
+  Hard value (Staffing Efficiency) = real dollars that show up in the budget
+  Potential value (Care Quality) = real but harder to attribute directly to Abridge
+  → The PDF must maintain this distinction throughout
+  → Never combine hard + potential into a single net value number in body copy
+  → The hero net value uses hard value only
+  → Potential value gets its own dedicated treatment with clear "potential" framing
+DIFFERENCE 8 — THESIS QUESTION IS UNIQUE
+  ✓ Confirmed from bundle: "Nurses don't bill. So where does the value live?"
+  This is the central reframe — nurses don't generate billable wRVUs, so the value
+  story is completely different from physician settings. Do not use physician-oriented
+  value framing anywhere in this PDF.
+DIFFERENCE 9 — CONNECTED VALUE IS NURSING → INPATIENT (reverse of Inpatient → ED)
+  Nursing Connected Value:
+  • CC/MCC Capture: "Nursing assessments capture clinical indicators that support accurate DRG assignment. 'Patient appears malnourished' feeds coding directly."
+  • Medical Necessity: "Real-time nursing docs provide evidence of patient acuity — critical for payer appeals."
+  • Note: "If your organization also uses Abridge for Hospitalists, the clinical record built by nursing directly extends the ROI of the Inpatient model — no double-counting."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — COMPLETE VARIABLE REFERENCE
+(verified from full wizard run: 200 beds, 300 FTEs, 85% occupancy,
+50% adoption, 20 min/shift, 25/35/40 allocation, all drivers on, $100/bed/mo)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BASELINE (Step 2)
+  staffedBeds               = 200       // licensed beds with active nursing staff
+  nurseFTEs                 = 300       // full-time equivalent nurses in scope
+  bedOccupancyRate          = 0.85      // slider default 85%, range 75–90%
+  patientDaysPerYear        = 62,050    // staffedBeds × 365 × bedOccupancyRate
+  adoptionRate              = 0.50      // Typical 50% (Conservative 40%, Optimistic 60%)
+  abridgeEnabledShifts      = 39,000    // nurseFTEs × 260 × adoptionRate
+TIME SAVINGS (Step 3)
+  minutesSavedPerShift      = 20        // Conservative 15 / Typical 20 / Optimistic 30
+  hoursReturnedTotal        = 13,000    // abridgeEnabledShifts × minutesSavedPerShift ÷ 60
+  hoursPerNurse             = 43        // hoursReturnedTotal ÷ nurseFTEs
+  hoursPerWeek              = 0.9       // hoursPerNurse ÷ 52
+  minutesPerDayPerNurse     = 12        // hoursPerWeek × 60 ÷ 5
+TIME ALLOCATION (Step 4 — pre-filled defaults)
+  overtimeReductionPct      = 25%       // "Overtime reduction"
+  shiftSustainabilityPct    = 35%       // "Shift sustainability"
+  directPatientCarePct      = 40%       // "Direct patient care"
+  otHoursEliminated         = hoursReturnedTotal × overtimeReductionPct = 3,250 hrs/yr
+  sustainabilityHours       = hoursReturnedTotal × shiftSustainabilityPct = 4,550 hrs/yr
+  directCareHours           = hoursReturnedTotal × directPatientCarePct = 5,200 hrs/yr
+  directCareHoursPerNursePerWeek = directCareHours ÷ nurseFTEs ÷ 52   = 0.33 hrs/wk
+  [Note: Step 8 says "0.5 hrs/wk per nurse" — this is based on a different hours total
+   from my Optimistic run. With Typical (13,000 hrs): 13,000 × 40% ÷ 300 ÷ 52 = 0.33 hrs/wk]
+VALUE DRIVERS — STAFFING EFFICIENCY (Step 5)
+  // OT Reduction
+  otHourlyRate              = $75       // "1.5x base rate is typical"
+  annualOTSavings           = otHoursEliminated × otHourlyRate = $243,750
+  // Retention Savings
+  annualTurnoverRate        = 0.18      // default 18%, national average 18–22%
+  burnoutTurnoverPct        = 0.40      // 40% of departures burnout-related (fixed assumption)
+  replacementCostPerNurse   = $50,000  // includes recruiting, training, onboarding
+  abridgeRetentionImpact    = 0.15      // Typical 15% (Conservative 10%, Optimistic 25%)
+  nursesLeavingPerYear      = nurseFTEs × annualTurnoverRate = 54.0
+  burnoutDepartures         = nursesLeavingPerYear × burnoutTurnoverPct = 21.6
+  nursesRetained            = burnoutDepartures × abridgeRetentionImpact = 3.24
+  annualRetentionSavings    = nursesRetained × replacementCostPerNurse = $162,000
+  // Agency Labor Reduction (opt-in, off by default)
+  agencyDriverOn            = true/false
+  weeksAgencyCoveragePerVacancy = 12   // "average time to fill a nursing vacancy"
+  weeklyAgencyPremium       = $2,500   // "additional cost per week for agency vs. permanent staff"
+  annualAgencySavings       = nursesRetained × weeksAgencyCoveragePerVacancy × weeklyAgencyPremium
+                            = 3.24 × 12 × $2,500 = $97,200
+  [Note: Agency savings are SEPARATE from retention — retention = replacement cost,
+   agency = premium labor cost during the vacancy period]
+  staffingEfficiencyTotal   = annualOTSavings + annualRetentionSavings
+                            + (agencyDriverOn ? annualAgencySavings : 0)
+                            = $243,750 + $162,000 + $97,200 = $502,950
+VALUE DRIVERS — CARE QUALITY / POTENTIAL (Step 6)
+  // HAPI Risk: Documentation Impact (POTENTIAL)
+  hapiRatePer1000           = 2.5       // default; national range 2–5 per 1,000 patient days
+  hapIsPerYear              = patientDaysPerYear × hapiRatePer1000 ÷ 1000 = 155.1
+  hapiPreventionRate        = 0.065     // 6.5% — half of Dowding et al. 13% observed effect
+  costPerHAPI               = $25,000  // CMS blended conservative ($20K–$70K)
+  hapIsAddressed            = hapIsPerYear × hapiPreventionRate × directPatientCarePct = 4.03
+  potentialHAPIValue        = hapIsAddressed × costPerHAPI = $100,831
+  // Fall Risk Visibility Gap (POTENTIAL)
+  fallsRatePer1000          = 3.5       // default; national range 3–5 per 1,000 patient days
+  fallsPerYear              = patientDaysPerYear × fallsRatePer1000 ÷ 1000 = 217.2
+  documentationGapRate      = 0.10      // 10% of falls where doc timing was primary gap
+  costPerFall               = $6,500   // blended; no injury $3–5K, minor $5–8K, major $15–30K
+  fallsAddressed            = fallsPerYear × documentationGapRate × directPatientCarePct = 8.69
+  potentialFallValue        = fallsAddressed × costPerFall = $56,466
+  // HAC Penalty Avoidance (POTENTIAL, opt-in, bottom quartile only)
+  hacPenaltyDriverOn        = true/false (checkbox)
+  inBottomQuartile          = true/false (checkbox within driver)
+  annualMedicareRevenue     = $50,000,000 // default, range $20M–$200M
+  cmsPenalty1Pct            = annualMedicareRevenue × 0.01 = $500,000 (automatic)
+  attributionToDocumentation = 0.25     // 15–30% defensible range
+  year1Realization          = 0.50      // 25–75% — HAC scores shift slowly
+  potentialHACValue         = cmsPenalty1Pct × attributionToDocumentation
+                            × year1Realization × directPatientCarePct
+                            = $500,000 × 25% × 50% × 40% = $25,000
+  // Patient Experience HCAHPS (QUALITATIVE — no dollar value ever)
+  hcahpsDriverOn            = true/false
+  hcahpsValue               = "Qualitative" [always]
+  totalPotentialValue       = potentialHAPIValue + potentialFallValue
+                            + (hacPenaltyDriverOn && inBottomQuartile ? potentialHACValue : 0)
+                            = $100,831 + $56,466 + $25,000 = $182,297
+INVESTMENT (Step 7)
+  costPerBedMonth           = $100      // per staffed BED per month (NOT per provider)
+  annualInvestment          = staffedBeds × costPerBedMonth × 12 = $240,000
+FINAL OUTPUTS (Step 8 — confirmed labels)
+  totalHardValue            = staffingEfficiencyTotal                 = $502,950
+  netAnnualValue            = totalHardValue - annualInvestment        = $262,950 → display "$263K"
+  roiMultiple               = totalHardValue ÷ annualInvestment        = 2.1×
+  netValuePerBed            = netAnnualValue ÷ staffedBeds             = $1,315/bed → display "$1.3K"
+  [Note: Step 8 showed different numbers because of the Optimistic hours run I did.
+   With Typical 20 min (correct): OT = $243,750, Retention = $162,000, Agency = $97,200
+   Total hard = $502,950, net = $262,950, ROI = 2.1×]
+  year1Value                = totalHardValue                          = $503K (gross)
+  year2Value                = year1Value × 1.10                       = $553K
+  year3Value                = year2Value × 1.10                       = $608K
+  threeYearCumulative       = year1 + year2 + year3                   ≈ $1.7M
+  [3-Year note: "Years 2–3 assume 10% growth as adoption matures and documentation habits
+  improve across the unit."]
+  fullScaleValue            = $1.0M/yr at 4.2× ROI (500 beds / 80% adoption)
+NUMBER FORMAT:
+  ≥$1M → "$X.XM" | ≥$1K → "$XXXK" | <$1K → "$XXX"
+  "Not Modeled" for inactive optional drivers (Agency, HAC) — never "$0" or "—"
+  "Qualitative" for HCAHPS — always
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — PAGE-BY-PAGE COPY
+(all text strings verified from live bundle + wizard walkthrough)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE COUNT:
+  4 pages always (Care Quality drivers are "potential" not a separate section like
+  doc quality — they are included in Page 2 of the standard layout)
+  Exception: if ANY care quality driver is active, Page 2 expands or a Page 4 is added
+  Footer: "Page X of 4" (standard) or "Page X of 5" if care quality page added
+  Cover page: COMPLETELY LOCKED — DO NOT TOUCH
+──────────────────────────────────────────────────
+PAGE 1 — THE THESIS
+──────────────────────────────────────────────────
+SECTION LABEL: THE THESIS
+SECTION TITLE (large):
+  "Two Sources of Value, One Strategic Choice"
+SECTION INTRO (2 prose paragraphs):
+  Para 1: "Ambient documentation creates value through two distinct mechanisms:
+  time returned and care quality enabled. Most analyses conflate these. We
+  separate them — because the strategic implications are different."
+  Para 2: "Time returned is a labor economics story. You decide how to deploy it.
+  Care quality enabled is a visibility story. It happens when nurses document in
+  real time instead of catching up at the end of a shift."
+HERO CARD (full-width warm gray):
+  Sub-question (medium weight, confirmed from bundle):
+  "Nurses don't bill. So where does the value live?"
+  Paragraph below (confirmed from bundle):
+  "Nursing documentation creates value through two mechanisms: labor economics
+  (overtime reduction, retention, agency cost avoidance) and care quality
+  (HAPI risk reduction, fall risk visibility, patient experience). The budget
+  impact is real — and so is the care improvement."
+FRAMEWORK TWO-COLUMN CARDS:
+  LEFT — LABOR ECONOMICS:
+    Label: LABOR ECONOMICS
+    Value: {staffingEfficiencyTotal formatted}
+      [IF staffingEfficiencyTotal = 0: show "Not Modeled"]
+    Description (confirmed from bundle): "Overtime, retention, and agency spend.
+      These are real dollars that show up in the budget. When nurses spend less
+      time documenting, they finish shifts on time, burn out less, and the
+      organization needs fewer expensive travel nurses."
+    Tagline: "The budget impact is real."
+  RIGHT — CARE QUALITY ENABLEMENT:
+    Label: CARE QUALITY ENABLEMENT
+    Value: {totalPotentialValue formatted} [label as "potential"]
+      [IF all potential drivers = 0: show "Not Modeled"]
+    Description (confirmed from bundle): "Falls, pressure injuries, patient
+      satisfaction. These outcomes are influenced by bedside time. More time
+      caring, less time charting, better outcomes. But the causal chain is
+      indirect — documentation supports care, it doesn't replace it."
+    Tagline: "Better care starts with better information."
+STRATEGIC OBSERVATION BLOCK (red left border, light gray bg):
+  Label: STRATEGIC OBSERVATION
+  CONDITIONAL — confirmed logic from bundle:
+  IF staffingEfficiencyTotal = 0 AND totalPotentialValue = 0:
+    "Your assessment focused on qualitative drivers
+    ({qualitativeDriverList}). These represent strategic value for your
+    nursing program — patient experience, bedside presence, and care quality —
+    that is meaningful but not easily dollarized. To build a financial case,
+    consider enabling OT Reduction or Retention Savings."
+  ELSE, calculate laborPct = overtimeReductionPct + shiftSustainabilityPct
+                             (= 60% with 25/35/40 defaults)
+  IF laborPct > 50:
+    IF agencyDriverOn:
+      "Your model weights labor economics heavily — [laborPct]% of reclaimed time
+      maps to OT, retention, and agency costs. Overtime and agency costs dominate.
+      This is typical for organizations with high turnover or significant agency
+      dependence."
+    ELSE:
+      "Your model weights labor economics heavily — [laborPct]% of reclaimed time
+      maps to OT and retention. This is the right starting point for organizations
+      where end-of-shift overtime is measurable and turnover costs are high."
+  IF laborPct ≤ 50 AND directPatientCarePct ≥ 40:
+    "Your model balances labor economics ({laborPct}%) with care quality
+    ({100 - laborPct}%). This profile suggests both staffing and patient
+    outcomes can improve simultaneously."
+  IF shiftSustainabilityPct ≥ 35 AND annualRetentionSavings > 0:
+    "You put real weight on clinician sustainability — {shiftSustainabilityPct}%
+    of reclaimed time, plus a quantified retention model. That's an organization
+    trying to solve for all three at once — OT, retention, and bedside time —
+    which is exactly the right instinct. The model reflects that balance."
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Nursing Value Assessment
+  Right: Page 1 of {totalPages}
+──────────────────────────────────────────────────
+PAGE 2 — YOUR VALUE DRIVERS
+──────────────────────────────────────────────────
+SECTION LABEL: YOUR VALUE DRIVERS
+PAGE HEADLINE: "How Documentation Time Becomes Value"
+SUB-HEADLINE (dynamic, confirmed from bundle):
+  "{hoursReturnedTotal} hours returned to your nursing staff.
+  Here's how each driver works."
+DIVIDER
+SECTION LABEL: STAFFING EFFICIENCY
+DRIVER CARD 1 — OT REDUCTION:
+  Name: "OT Reduction"
+  Value: {annualOTSavings formatted}
+  Narrative:
+  "You allocated {overtimeReductionPct}% of reclaimed time to overtime reduction.
+  That translates to roughly {otHoursEliminated} hours of end-of-shift overtime
+  eliminated per year. When nurses finish charting during their shift instead of
+  after it, they clock out on time — and the overtime line in the staffing budget
+  shrinks directly. At {otHourlyRate formatted}/hour, that's {annualOTSavings formatted}
+  annually in avoided overtime spend."
+  Note beneath card (small gray italic):
+  "Validation: Check this against your current OT spend. If this exceeds your
+  total nursing OT budget, the conversion rate may need adjustment."
+DRIVER CARD 2 — RETENTION SAVINGS:
+  Name: "Retention Savings"
+  Value: {annualRetentionSavings formatted}
+  Narrative:
+  "Documentation burden is among the most frequently cited contributors to nurse
+  burnout. At a {annualTurnoverRate × 100}% annual turnover rate, your program
+  loses roughly {nursesLeavingPerYear | 1 decimal} nurses per year — and about
+  {burnoutDepartures | 1 decimal} of those departures are burnout-related. The
+  {shiftSustainabilityPct}% of reclaimed time absorbed into shift sustainability
+  is the primary mechanism: it's what makes documentation burden relief feel real
+  to nurses on the unit, not just in a pilot survey. Modeled at a
+  {abridgeRetentionImpact × 100}% impact on burnout-driven departures,
+  {nursesRetained | 2 decimal} nurses retained at {replacementCostPerNurse formatted}
+  each yields {annualRetentionSavings formatted} annually."
+DRIVER CARD 3 — AGENCY REDUCTION (if agencyDriverOn = true):
+  Name: "Agency Labor Reduction"
+  Value: {annualAgencySavings formatted}
+  Narrative:
+  "Every nursing vacancy filled with travel agency staff costs roughly
+  {weeklyAgencyPremium formatted}/week in labor premium above base — over and above
+  replacement cost. That {weeksAgencyCoveragePerVacancy}-week gap at full premium
+  adds up. With {nursesRetained | 2 decimal} nurses retained, the avoided agency
+  premium is {annualAgencySavings formatted} per year. This is separate from the
+  retention value above — retention captures the replacement cost of recruiting and
+  onboarding; agency captures the premium labor spend during the vacancy window."
+  IF agencyDriverOn = false: show "Agency Labor Reduction: Not Modeled"
+  SUBTOTAL:
+  "Staffing Efficiency Subtotal   {staffingEfficiencyTotal formatted}"
+DIVIDER
+SECTION LABEL: CARE QUALITY — POTENTIAL VALUE
+FRAMING NOTE (must appear before any care quality numbers):
+  "The value below reflects potential impact — not a guarantee. Documentation
+  enables the clinical visibility that supports better care; it doesn't replace
+  clinical judgment or protocol. These figures are shown separately from hard
+  staffing value."
+DRIVER CARD 4 — HAPI RISK: DOCUMENTATION IMPACT (if active):
+  Name: "HAPI Risk: Documentation Impact"
+  Value: {potentialHAPIValue formatted} [with "potential" label]
+  Narrative:
+  "Your program generates roughly {hapIsPerYear | 1 decimal} hospital-acquired
+  pressure injuries per year across {patientDaysPerYear} patient days — consistent
+  with a national rate of {hapiRatePer1000}/1,000 patient days. Real-time
+  documentation of skin assessments, Braden scores, and turning schedules creates
+  the clinical visibility that enables earlier intervention. Abridge's attributable
+  share is modeled at {hapiPreventionRate × 100}% — exactly half the 13% reduction
+  observed in Dowding et al. (JAMIA 2012) — to reflect that documentation is one
+  input in a broader care system. Applied to your direct care allocation
+  ({directPatientCarePct}%), the potential value is {potentialHAPIValue formatted}."
+  Note: "Source:
