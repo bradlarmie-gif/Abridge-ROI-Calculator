@@ -1,0 +1,313 @@
+REPLIT PROMPT — ABRIDGE EMERGENCY DEPARTMENT PDF (EXPLORE FLOW)
+
+WHAT YOU ARE BUILDING
+You are updating the Download PDF function in the Abridge ROI Calculator (Explore flow, Emergency Department care setting). The PDF is generated from wizard state at the end of step 8 ("Your Model"). You are not changing any wizard logic, any calculations, any existing UI, or any state management. You are only modifying the PDF generation output — the copy, narrative structure, and content of pages 1 through 4 (or 5 if documentation quality drivers are activated).
+The cover page is locked and untouched. Do not modify it in any way.
+This prompt is scoped entirely to the Emergency care setting. It runs when careSetting === "emergency". It does not affect Outpatient, Inpatient, or Nursing PDF output.
+WHAT NOT TO TOUCH
+Same as Outpatient — all layout, font, color, spacing, card structure, section label style, and footer format are unchanged. Refer to the Outpatient prompt for those specs. The only things changing are copy, variable names, and narrative logic.
+HOW ED DIFFERS FROM OUTPATIENT — READ THIS FIRST
+These differences are not cosmetic. They reflect fundamentally different clinical and financial logic. Every section of this prompt is written around them.
+Step 2 — Practice: Label is "ED Physicians" not "Number of Providers." Encounter presets are 1,400 (Lighter) / 1,800 (Typical) / 2,200 (Busy) — not the outpatient values. Sidebar label is "ED Physicians." Footer note says "Typical reflects blended community ED."
+Step 3 — Time Savings: Body copy says "your ED providers" and "acuity mix, EHR configuration, and workflow adoption" — not "specialty." Same 2/3/4 min presets.
+Step 4 — Time Allocation: Buckets have different names and descriptions:
+
+"Patient throughput" (not "Patient Capacity") — "Faster documentation means faster disposition — fewer walkouts, more capacity"
+"Documentation Quality Time" — same label but framing is "E&M accuracy and denial prevention"
+"Clinician Wellbeing" (not "Clinician Sustainability") — "Shift sustainability that reduces burnout and supports emergency physician retention"
+Step 5 — Value Drivers: Completely different from Outpatient:
+LWBS Recovery replaces Patient Access — "Recover patients who leave without being seen"
+Admission Capture is a second linked driver unique to ED — "Recover revenue when ED admits become inpatient." It feeds directly from LWBS Recovery calculations.
+Clinician Wellbeing is the same retention/sustainability concept but uses the "Wellbeing" label throughout
+Step 6 — Documentation Quality: Only TWO drivers (not three):
+E&M Level Accuracy replaces wRVU Improvement — "Capture the true complexity of ED visits"
+Denial Prevention — same structure as Outpatient but ED-specific defaults
+No HCC Capture driver in ED
+Step 8 — Results page:
+Header: "Emergency Department · [N] providers"
+Summary section label: "Throughput Value" (not "Efficiency Value")
+Connected value section is called "Downstream Value" with completely different content about the ED→Inpatient documentation chain
+Denial rate default displayed as 10% (vs 8% outpatient)
+
+
+DATA VARIABLES AVAILABLE FROM WIZARD STATE — ED SPECIFIC
+Step 2 — Your Emergency Department:
+
+edPhysicians — number entered (e.g. 30). Note: this is the same variable as numProviders in Outpatient — confirm variable name in codebase. Label in UI is "ED Physicians."
+encountersPerProvider — selected or entered (Lighter: 1,400 / Typical: 1,800 / Busy: 2,200) or totalPracticeVolume if entered directly
+annualEncounters — computed: edPhysicians × encountersPerProvider (e.g. 54,000)
+utilizationRate — % (e.g. 70%)
+eligibleEncounters — computed: annualEncounters × utilizationRate (e.g. 37,800)
+Step 3 — Time Savings:
+minutesSavedPerEncounter — 2, 3, or 4 min, or custom (e.g. 3)
+timeSavingsScenario — "Conservative", "Typical", "Optimistic", or "Custom"
+totalHoursReclaimed — computed: eligibleEncounters × minutesSavedPerEncounter ÷ 60 (e.g. 1,890)
+hoursPerProviderPerYear — computed: totalHoursReclaimed ÷ edPhysicians (e.g. 63)
+hoursPerProviderPerWeek — computed: hoursPerProviderPerYear ÷ 52 (e.g. 1.2)
+dailyImpactMinutes — computed and displayed as shown in wizard
+Step 4 — Time Allocation:
+throughputAllocationPct — % entered for "Patient throughput" bucket (e.g. 40%)
+docQualityAllocationPct — % entered (e.g. 40%)
+wellbeingAllocationPct — % entered for "Clinician Wellbeing" bucket (e.g. 20%)
+throughputHours — computed: totalHoursReclaimed × throughputAllocationPct (e.g. 756)
+docQualityHours — computed: totalHoursReclaimed × docQualityAllocationPct (e.g. 756)
+wellbeingHours — computed: totalHoursReclaimed × wellbeingAllocationPct (e.g. 378)
+Step 5 — Value Drivers (LWBS Recovery):
+lwbsEnabled — boolean (toggle on/off)
+currentLwbsRatePct — entered (default 3%)
+expectedLwbsReductionPct — entered (default 15%)
+revenuePerEdVisit — entered (default $450)
+annualLwbsPatients — computed: annualEncounters × currentLwbsRatePct (e.g. 1,620)
+patientsRetained — computed: annualLwbsPatients × expectedLwbsReductionPct (e.g. 243)
+throughputAttribution — computed from allocation (e.g. 20.0% — this is throughputAllocationPct ÷ 2)
+patientsRecovered — computed: patientsRetained × throughputAttribution (e.g. 48.6)
+lwbsGrossValue — computed: patientsRecovered × revenuePerEdVisit (e.g. $21,870)
+lwbsRealizationRate — entered (default 75%) — label: "Not all recovered patients complete visits"
+netLwbsValue — computed: lwbsGrossValue × lwbsRealizationRate (e.g. $16,403)
+Step 5 — Value Drivers (Admission Capture):
+admissionCaptureEnabled — boolean — linked to LWBS Recovery; both are typically on together
+admissionRate — entered (default 18%)
+avgAdmissionRevenue — entered (default $8,000)
+recoveredEdPatients — pulled from LWBS Recovery (rounds patientsRecovered, e.g. 49)
+potentialAdmissions — computed: recoveredEdPatients × admissionRate (e.g. 8.7)
+admissionGrossValue — computed: potentialAdmissions × avgAdmissionRevenue (e.g. $69,984)
+admissionRealizationRate — entered (default 40%) — label: "Bed availability, payer mix"
+annualAdmissionCaptureValue — computed: admissionGrossValue × admissionRealizationRate (e.g. $27,994)
+Step 5 — Value Drivers (Clinician Wellbeing):
+wellbeingEnabled — boolean
+hoursPerProviderPerWeekBack — computed: wellbeingHours ÷ edPhysicians ÷ 52 (e.g. 0.3 hrs/wk)
+retentionValueEnabled — boolean (checkbox: "Calculate retention value")
+annualTurnoverRate — entered (default 6%)
+burnoutRelatedTurnoverPct — entered (default 40%)
+replacementCostPerProvider — entered (default $400,000)
+abridgeRetentionImpact — selected: Conservative 20% / Typical 30% / Optimistic 40%
+providersLeavingPerYear — computed: edPhysicians × annualTurnoverRate
+burnoutDepartures — computed: providersLeavingPerYear × burnoutRelatedTurnoverPct
+providersRetained — computed: burnoutDepartures × abridgeRetentionImpact
+retentionValue — computed: providersRetained × replacementCostPerProvider
+clinicianWellbeingValue — equals retentionValue if retention enabled, otherwise qualitative
+Step 6 — Documentation Quality (E&M Level Accuracy):
+emAccuracyEnabled — boolean
+emScenario — "Conservative" (2%), "Typical" (5%), "Aggressive" (7%)
+emImprovementPct — selected (e.g. 5%)
+currentAvgWrvuPerVisit — entered (default 2.5 wRVU — note: higher than outpatient 1.8)
+emWrvuLiftPerVisit — computed: currentAvgWrvuPerVisit × emImprovementPct (e.g. 0.125 wRVU)
+totalAdditionalWrvus — computed: eligibleEncounters × emWrvuLiftPerVisit (e.g. 4,725)
+emConversionFactor — entered (default $33)
+emRealizationRate — entered (default 75%)
+annualEmValue — computed: totalAdditionalWrvus × emConversionFactor × emRealizationRate (e.g. $116,944)
+Step 6 — Documentation Quality (Denial Prevention):
+denialEnabled — boolean
+denialPreventionScenario — "Conservative" (25%), "Typical" (50%), "Aggressive" (75%)
+baselineDenialRate — entered (default 10% — note: higher than outpatient's 8%)
+totalDenials — computed: eligibleEncounters × baselineDenialRate (e.g. 3,780)
+unappealableDenialRate — entered (default 30%)
+unrecoverableDenials — computed: totalDenials × unappealableDenialRate (e.g. 1,134)
+preventionTarget — selected (e.g. 50%)
+denialsPrevented — computed: unrecoverableDenials × preventionTarget (e.g. 567)
+avgDeniedClaimValue — entered (default $300)
+denialGrossValue — computed: denialsPrevented × avgDeniedClaimValue (e.g. $170,100)
+denialRealizationRate — entered (default 60%)
+annualDenialValue — computed: denialGrossValue × denialRealizationRate (e.g. $102,060)
+Step 7 — Investment: Same structure as Outpatient.
+totalAnnualInvestment — computed: costPerProviderPerMonth × edPhysicians × 12 (e.g. $36,000)
+Step 8 — Summary outputs:
+throughputValue — sum of LWBS Recovery + Admission Capture + Clinician Wellbeing values (e.g. $44K) — label in UI is "Throughput Value" not "Efficiency Value"
+documentationQualityValue — sum of activated doc quality drivers (e.g. $219K)
+totalGrossValue — throughputValue + documentationQualityValue (e.g. $263K)
+netAnnualValue — totalGrossValue − totalAnnualInvestment (e.g. $227K)
+roiMultiple — totalGrossValue ÷ totalAnnualInvestment (e.g. 7.3×)
+netValuePerProvider — netAnnualValue ÷ edPhysicians (e.g. $8K)
+year1Value, year2Value, year3Value, threeYearCumulative — same logic as Outpatient (10% annual growth)
+expansionFullScaleProviders, expansionFullScaleUtil, fullScaleValue, fullScaleRoi — same expansion logic
+
+
+PAGE STRUCTURE — 4 PAGES (5 IF DOC QUALITY DRIVERS ACTIVATED)
+Same page count logic as Outpatient: if emAccuracyEnabled OR denialEnabled → 5 pages. Otherwise 4 pages.
+PAGE 1 — THE THESIS
+[SECTION LABEL] THE THESIS
+[HERO CARD]
+{edPhysicians} physicians · {annualEncounters formatted} visits · Emergency Department
+PROJECTED NET ANNUAL VALUE
+{netAnnualValue} (large, red)
+What changes when your ED moves faster?
+[4-STAT BAR]
+{edPhysicians} / physicians | {annualEncounters} / annual visits | {utilizationRate}% / utilization | {totalAnnualInvestmentDisplay} / investment
+[SECTION LABEL] TWO SOURCES OF VALUE
+In the emergency department, time is the unit of currency. When documentation is faster, everything downstream accelerates — door-to-disposition time shrinks, fewer patients walk before being seen, and the complexity that was delivered gets properly coded. Abridge creates value on both ends: faster documentation and more complete documentation.
+[LEFT CARD — THROUGHPUT VALUE]
+THROUGHPUT VALUE
+{throughputValue formatted}
+{edPhysicians} physicians reclaim {totalHoursReclaimed} hours annually. You directed {throughputAllocationPct}% of that time toward patient throughput — reducing wait times and the LWBS rate that quietly drains ED revenue every shift.
+{IF retentionValueEnabled:} The remaining allocations address documentation quality and physician wellbeing — including a quantified retention case built from your turnover data.
+{IF NOT retentionValueEnabled AND wellbeingEnabled:} The {wellbeingAllocationPct}% directed to wellbeing returns {hoursPerProviderPerWeekBack} hours per week per physician — shift sustainability that compounds over time.
+The constraint in the ED is always time. This is what changes when documentation stops slowing it down.
+[RIGHT CARD — REVENUE OPTIMIZED]
+REVENUE OPTIMIZED
+{IF emAccuracyEnabled OR denialEnabled:}
+{documentationQualityValue formatted}
+In high-volume settings, notes often understate acuity — especially during surges. {IF emAccuracyEnabled AND denialEnabled: "E&M accuracy and denial prevention together recover " + documentationQualityValue + " annually."} {IF emAccuracyEnabled AND NOT denialEnabled: "E&M accuracy alone recovers " + annualEmValue + " by capturing the complexity that was always there."} {IF NOT emAccuracyEnabled AND denialEnabled: "Denial prevention recovers " + annualDenialValue + " by stopping documentation-related claim losses before they occur."}
+{IF NOT emAccuracyEnabled AND NOT denialEnabled:}
+Not Modeled
+No documentation quality drivers were selected. E&M level accuracy and denial prevention are available to model — both are particularly high-impact in ED settings where documentation often understates acuity and denial rates run above the national average.
+[STRATEGIC OBSERVATION BLOCK]
+WHAT YOUR CHOICES REVEAL
+Generated dynamically. Use these rules:
+
+If throughputAllocationPct >= 40 AND retentionValueEnabled = false:
+"Your model leads with throughput — {throughputAllocationPct}% of reclaimed time flowing into faster disposition and LWBS recovery. That's the right starting point for an ED: every minute of faster documentation is a minute of faster patient movement. The wellbeing allocation ({wellbeingAllocationPct}%) adds a quiet but important buffer — emergency physician burnout has a replacement cost that dwarfs this investment."
+If retentionValueEnabled = true:
+"You quantified the retention case — {edPhysicians} physicians, {annualTurnoverRate}% annual turnover, {replacementCostPerProvider formatted} to replace each one. That puts the sustainability allocation in financial terms most organizations avoid calculating. The result is a model that accounts for both what Abridge generates and what it protects."
+If emAccuracyEnabled = true AND denialEnabled = true:
+"You activated both documentation quality drivers — E&M accuracy and denial prevention. In the ED, these are not separate problems. Notes that understate acuity are the same notes that get denied. Fixing the documentation fixes both simultaneously."
+If emAccuracyEnabled = true AND denialEnabled = false:
+"You activated E&M accuracy but not denial prevention. That captures the coding upside. The denial prevention driver addresses a separate loss — claims denied because medical necessity wasn't explicit in the note. Both are worth modeling before your 90-day review."
+If neither doc quality driver enabled:
+"No documentation quality drivers were activated. That's a conservative and defensible starting point. The throughput model stands on its own. When you're ready to add the revenue capture layer, E&M accuracy and denial prevention are the two highest-impact drivers for ED settings."
+
+
+PAGE 2 — HOW YOUR TIME ALLOCATION BECOMES VALUE
+[SECTION LABEL] YOUR VALUE DRIVERS
+How Your Time Allocation Drives ED Revenue
+{totalHoursReclaimed} hours returned to your {edPhysicians} emergency physicians. In the ED, every allocation decision has a direct throughput consequence.
+[SECTION LABEL] THROUGHPUT VALUE
+[DRIVER BLOCK — LWBS Recovery] (render if lwbsEnabled = true)
+LWBS Recovery · {netLwbsValue formatted} (right-aligned, red)
+You directed {throughputAllocationPct}% of reclaimed time — {throughputHours} hours — toward patient throughput. Faster documentation reduces door-to-doc time. Shorter wait times mean fewer patients leave without being seen.
+Your current LWBS rate of {currentLwbsRatePct}% generates {annualLwbsPatients} walkouts annually. At a {expectedLwbsReductionPct}% reduction — the expected impact of faster documentation on wait times — that's {patientsRetained} patients retained. Applying your {throughputAllocationPct}% throughput allocation as an attribution factor, {patientsRecovered} of those patients complete visits. At {revenuePerEdVisit} per visit and a {lwbsRealizationRate}% completion rate, the annual recovery is {netLwbsValue}.
+LWBS is one of the most undercounted losses in emergency medicine. These patients were already in the department. The visit was already scheduled. The only thing missing was time.
+[DRIVER BLOCK — Admission Capture] (render if admissionCaptureEnabled = true)
+Admission Capture · {annualAdmissionCaptureValue formatted} (right-aligned, red)
+{IF lwbsEnabled:} Of the {patientsRecovered formatted} patients recovered through LWBS reduction, {admissionRate}% require inpatient admission. That's {potentialAdmissions} additional admissions — each one generating {avgAdmissionRevenue formatted} in admission revenue. At a {admissionRealizationRate}% realization rate accounting for bed availability and payer mix, the annual value is {annualAdmissionCaptureValue}.
+These are not speculative admissions. They are patients who were already sick enough to admit — they just left before the decision was made.
+[DRIVER BLOCK — Clinician Wellbeing] (render if wellbeingEnabled = true)
+Clinician Wellbeing · {IF retentionValueEnabled: clinicianWellbeingValue formatted ELSE: hoursPerProviderPerWeekBack + " hrs/wk per physician"} (right-aligned)
+You allocated {wellbeingAllocationPct}% of reclaimed time — {wellbeingHours} hours — to physician wellbeing. That returns {hoursPerProviderPerWeekBack} hours per week to each emergency physician.
+{IF retentionValueEnabled:} At {annualTurnoverRate}% annual turnover, {burnoutRelatedTurnoverPct}% burnout attribution, and {replacementCostPerProvider formatted} to replace a departing physician, Abridge's estimated retention impact is {retentionValue formatted} annually — {providersRetained} physicians retained at the {abridgeRetentionImpact} scenario.
+{IF NOT retentionValueEnabled:} Emergency medicine has among the highest burnout rates in medicine. Documentation burden is consistently cited as the primary driver. {hoursPerProviderPerWeekBack} hours per week is not a large number in isolation — but multiplied across {edPhysicians} physicians and compounded over three years of shifts, it is the difference between a department that loses physicians and one that keeps them.
+[THROUGHPUT VALUE SUBTOTAL ROW]
+THROUGHPUT VALUE SUBTOTAL · {throughputValue formatted}
+[PROJECTED ANNUAL VALUE CARD]
+PROJECTED ANNUAL VALUE
+{netAnnualValue formatted} · Per physician: ~{netValuePerProvider formatted}/year
+{IF documentationQualityValue > 0:} This reflects throughput value only. Documentation quality adds {documentationQualityValue formatted} — detailed on the next page.
+{IF documentationQualityValue == 0:} This is year one, before documentation quality drivers are measured. E&M accuracy and denial prevention are available to model when you're ready.
+PAGE 3 — DOCUMENTATION QUALITY (render only if emAccuracyEnabled OR denialEnabled; otherwise skip to Investment Case)
+[SECTION LABEL] DOCUMENTATION QUALITY
+The Acuity Was Always There. The Notes Just Didn't Show It.
+In high-volume ED settings, documentation often understates clinical complexity — not because the care wasn't delivered, but because there wasn't time to capture it fully. Abridge closes that gap in real time, during the encounter, before the physician moves to the next patient.
+[SECTION LABEL] REVENUE DRIVERS
+[E&M ACCURACY BLOCK] (render if emAccuracyEnabled = true)
+E&M Level Accuracy · {annualEmValue formatted}
+When ED notes fully reflect visit complexity, E/M levels code higher. The current average of {currentAvgWrvuPerVisit} wRVU per visit has room to move. At a {emImprovementPct}% documentation improvement — the {emScenario} scenario in a range where industry data shows 2–7% is achievable — that's {emWrvuLiftPerVisit} additional wRVU per visit, {totalAdditionalWrvus} across your {eligibleEncounters} eligible encounters. At a {emConversionFactor} conversion factor and {emRealizationRate}% realization, the annual value is {annualEmValue}.
+This is not upcoding. It is accurate coding of complexity that was delivered and documented — just documented completely.
+[DENIAL PREVENTION BLOCK] (render if denialEnabled = true)
+Denial Prevention · {annualDenialValue formatted}
+ED denial rates run above average for a specific reason: high-volume documentation pressure leads to notes that lack explicit medical necessity language. Payers know this. Your {baselineDenialRate}% baseline denial rate generates {totalDenials} annual denials, of which {unrecoverableDenials} are unappealable. At the {denialPreventionScenario} prevention target of {preventionTarget}%, Abridge prevents {denialsPrevented} of those claims from being denied in the first place. At {avgDeniedClaimValue} per claim and a {denialRealizationRate}% realization rate, that's {annualDenialValue} annually.
+The window to prevent a denial is during the encounter. After the claim is submitted, that {unrecoverableDenials} unappealable share is gone permanently.
+[DOCUMENTATION QUALITY SUBTOTAL]
+DOCUMENTATION QUALITY SUBTOTAL · {documentationQualityValue formatted}
+All figures use conservative realization rates based on observed Abridge deployments. The full opportunity is larger — and measurable once baseline data is established.
+[IF any driver NOT enabled — "WHAT WASN'T MODELED" section]
+{IF NOT emAccuracyEnabled:} E&M Level Accuracy — Not modeled. Requires baseline wRVU data per physician and current E/M level distribution to size accurately.
+{IF NOT denialEnabled:} Denial Prevention — Not modeled. Requires current denial rate and average denied claim value from your revenue cycle team. In ED settings, this is typically the faster driver to activate because the baseline data is readily available.
+PAGE 3 OR 4 — THE INVESTMENT CASE
+[SECTION LABEL] THE INVESTMENT CASE
+Infrastructure, Not Expense.
+{totalAnnualInvestmentDisplay} annually. Fixed. Every year, whether you see 30 physicians or 300.
+[SECTION LABEL] 3-YEAR PROJECTION
+PERIODVALUEINVESTMENTNET VALUECUMULATIVEYear 1{year1Value}{totalAnnualInvestmentDisplay}{year1NetValue}{year1NetValue}Year 2{year2Value}{totalAnnualInvestmentDisplay}{year2NetValue}{year1NetValue + year2NetValue}Year 3{year3Value}{totalAnnualInvestmentDisplay}{year3NetValue}{year3CumulativeNet}Years 2–3 reflect 10% annual value growth as physician adoption deepens and documentation patterns mature. The investment doesn't move.[CALLOUT BLOCK]By Year 3, you're generating {year3Value ÷ totalAnnualInvestment formatted as Nx} for every dollar invested — {year3CumulativeNet formatted} cumulative net value against {totalAnnualInvestment × 3 formatted} in total investment. In an environment where every capital expenditure competes, this one pays for itself before year one ends.
+
+[SECTION LABEL] AT SCALE
+ED economics improve at scale for a specific reason: documentation workflows mature faster in high-volume environments. Physicians adopt ambient documentation faster when they see its impact on their shift, not just on a dashboard.
+CURRENT MODELAT FULL SCALE{netAnnualValue formatted}/yrexpansion →{fullScaleValue formatted}/yr{edPhysicians} physicians{expansionFullScaleProviders} physicians{utilizationRate}% utilization{expansionFullScaleUtil}% utilization~{netValuePerProvider}/physician/yr~{fullScaleNetValuePerProvider}/physician/yr
+
+[SECTION LABEL] WHAT TO MEASURE AT 90 DAYS
+These are the signals that confirm the model is working in your specific department.
+
+Door-to-provider time trend (target: measurable reduction from documentation baseline)
+LWBS rate (target: reduction proportional to wait time improvement)
+E&M level distribution shift (target: upward movement in level 4–5 frequency if E&M driver relevant)
+Tracking these at 90 days gives you the data to validate this model and activate any drivers that weren't modeled in this initial assessment.
+
+
+PAGE 4 OR 5 — YOUR ASSESSMENT (always last page)
+[HERO SUMMARY BLOCK]
+YOUR ASSESSMENT
+{edPhysicians} physicians.
+{annualEncounters formatted} ED visits.
+{netAnnualValue} projected net value.
+{netValuePerProvider} per physician per year.
+[QUOTE CALLOUT BLOCK — generated dynamically]
+
+If throughputAllocationPct >= 50:
+"In an emergency department, the documentation bottleneck and the patient flow bottleneck are the same bottleneck. When physicians spend less time charting, patients move faster, wait times fall, and fewer people leave without care. The math follows from there."
+If retentionValueEnabled = true:
+"Replacing an emergency physician costs {replacementCostPerProvider formatted}. Burning one out costs that — plus the patients they would have seen, the residents they would have trained, and the institutional knowledge that walks out the door with them. Abridge doesn't solve burnout. But it removes the thing most emergency physicians cite when they say they're thinking about leaving."
+If emAccuracyEnabled = true AND denialEnabled = true:
+"The note written at the end of a twelve-hour shift — fast, abbreviated, adequate but not complete — is the note that gets denied, downcoded, and queried. Abridge captures what happened in the room while it's still happening. That's the difference between documentation that pays and documentation that creates more work."
+If emAccuracyEnabled = true AND denialEnabled = false:
+"The acuity was always there. The physician delivered it. The patient experienced it. The only thing the note didn't fully capture was the complexity that determines how the visit codes. That's what changes."
+DEFAULT:
+"In the ED, every minute of documentation time is a minute the next patient waits. Abridge gives that time back — to the patient, to the physician, and to the department."
+
+
+[SECTION LABEL] AT A GLANCE
+[LEFT — VALUE SUMMARY]
+VALUE SUMMARY
+THROUGHPUT VALUE
+· LWBS Recovery · {IF lwbsEnabled: netLwbsValue ELSE: "Not modeled"}
+· Admission Capture · {IF admissionCaptureEnabled: annualAdmissionCaptureValue ELSE: "Not modeled"}
+· Clinician Wellbeing · {IF retentionValueEnabled: clinicianWellbeingValue ELSE IF wellbeingEnabled: hoursPerProviderPerWeekBack + " hrs/wk" ELSE: "Not modeled"}
+REVENUE OPTIMIZED
+· E&M Level Accuracy · {IF emAccuracyEnabled: annualEmValue ELSE: "Not modeled"}
+· Denial Prevention · {IF denialEnabled: annualDenialValue ELSE: "Not modeled"}
+Net Annual Value · {netAnnualValue}
+[RIGHT — INVESTMENT SUMMARY]
+INVESTMENT SUMMARY
+Annual Investment · {totalAnnualInvestmentDisplay}
+Per physician · {costPerProviderPerMonth × 12 formatted}
+Year 1 ROI · {roiMultiple}
+Year 3 Cumulative Net · {year3CumulativeNet}
+UTILIZATION
+Projected · {utilizationRate}%
+Hours Returned · {totalHoursReclaimed}
+Per physician/week · {hoursPerProviderPerWeek} hrs
+[SECTION LABEL] METHODOLOGY
+[LEFT — YOUR INPUTS]
+YOUR INPUTS
+{edPhysicians} ED physicians
+{annualEncounters formatted} annual visits
+{utilizationRate}% utilization
+{minutesSavedPerEncounter} min saved per encounter
+{currentLwbsRatePct}% current LWBS rate
+{totalAnnualInvestmentDisplay} annual investment
+{totalHoursReclaimed formatted} hrs returned annually
+{IF retentionValueEnabled: annualTurnoverRate + "% annual turnover · $" + replacementCostPerProvider + " replacement cost"}
+[RIGHT — HOW WE CALCULATED THIS]
+HOW WE CALCULATED THIS
+All figures are built from your inputs. The LWBS and Admission Capture calculations link directly — recovered patients who require admission generate a second layer of value that conventional ROI models miss. Both figures use conservative realization rates: 75% for LWBS (not all recovered patients complete visits) and 40% for Admission Capture (bed availability and payer mix constraints).
+The most reliable validation comes after deployment, when you can measure door-to-provider time and LWBS rate against the baselines entered here.
+[LEGAL FOOTER]
+This assessment is for planning purposes. Projections are based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, and organizational factors. This does not constitute a guarantee of financial outcomes.
+ED-SPECIFIC RENDERING RULES
+
+Never use the word "patient access" anywhere in the ED PDF. The correct framing is "throughput," "LWBS recovery," "door-to-disposition," or "wait time reduction."
+Never use "Efficiency Value" as a section label. The correct label throughout is "Throughput Value" — matching the wizard's exact output label.
+Admission Capture always appears linked to LWBS Recovery — it feeds from LWBS patient numbers. If LWBS is off, Admission Capture should be off. If both are on, the narrative on Page 2 must show the connection explicitly.
+There is no HCC Capture driver in ED. Do not reference it anywhere. Do not render a "Not modeled" row for it.
+The "Downstream Value" section on the final summary page (the equivalent of "Connected Value" in Outpatient) must describe the ED→Inpatient documentation chain. Use these four subsections exactly as they appear in the wizard:
+
+DRG & CMI Capture — "CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix."
+Medical Necessity — "The admission decision is documented in ED. This is your first line of defense against status denials and downgrades."
+CDI Efficiency — "When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases."
+Denial Prevention — "Payer audits start with the admission note. Complete documentation from day one means stronger appeals."
+Close with: "These benefits are not double-counted in this model. If your organization admits patients from the ED, the value compounds when both settings use Abridge."
+
+
+"Physician" not "provider" throughout the ED PDF. Emergency medicine uses physician-specific language. The exception: if a nurse practitioner or PA context is implied by the organization name or inputs, use "clinician" as a neutral alternative.
+Page count in footer must accurately reflect whether doc quality drivers were activated: "Page X of 4" or "Page X of 5."
+Number formatting rules are identical to Outpatient: ≥1M→"1M → "
+1M→"X.XM", ≥1K→"1K → "
+1K→"XXK", <1K→"1K → "
+1K→"XXX", percentages → "X%", hours → "X,XXX hrs", ROI → "X.Xx".
