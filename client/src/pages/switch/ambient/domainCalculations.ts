@@ -14,10 +14,10 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Time Recovered. No Decision Made About It.',
-    2: 'Total Recovery Quantified. Opportunity Identified.',
-    3: 'Capacity Redeployed Into Patient Access.',
-    4: 'Capacity Drives Staffing and Growth Decisions.',
+    1: 'Documentation Recovery Established',
+    2: 'Recovery Quantified and Escalated',
+    3: 'Capacity Deployed Into Patient Access',
+    4: 'Workforce Architecture Impact',
   },
   revenue: {
     1: 'Revenue Cycle Has Not Been Asked.',
@@ -55,6 +55,8 @@ export interface DomainFeedback {
   footnote: string;
   headlineMetric?: string;
   costOfWaiting?: string;
+  nextLevelTeaser?: string;
+  warningBanner?: string;
 }
 
 export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
@@ -85,7 +87,7 @@ export function computeCapacityFeedback(
   providers: number,
   documentedEncounters: number,
   revenuePerVisit: number,
-  providerRate: number,
+  _providerRate: number,
 ): DomainFeedback {
   const timeSaved = inputs.timeSaved as number | undefined;
   const hasTimeSaved = timeSaved !== undefined && timeSaved > 0;
@@ -97,7 +99,7 @@ export function computeCapacityFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Time savings not yet measured. Enter estimated time saved per encounter, or check "I haven\'t measured this" to continue.',
+        context: 'Enter minutes returned per documented encounter, or check the benchmark box to continue.',
         formula: '',
         footnote: '',
       };
@@ -105,23 +107,20 @@ export function computeCapacityFeedback(
     const ts = hasTimeSaved ? timeSaved! : 0;
     const recoveredHours = Math.round(documentedEncounters * ts / 60);
     const fte = (recoveredHours / 2080).toFixed(1);
-    const potentialAt20 = Math.round(recoveredHours * providerRate * 0.20);
-    const monthlyCost = Math.round(potentialAt20 / 12);
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${recoveredHours.toLocaleString()} hours recovered. $0 captured.`,
-      context: `Your providers are recovering an estimated ${recoveredHours.toLocaleString()} hours annually — ${fte} FTE equivalent. None of this time is being structurally redeployed. Schedules and panel sizes are unchanged.\n\nAt ${formatDollar(providerRate)}/hr with even 20% redeployment, that's ${formatDollar(potentialAt20)}/year your organization is currently not capturing.`,
-      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}\n[redeployment] = 0% — no decision made`,
-      footnote: 'Redeployment = 0%. No dollar value claimed at this level — time is recovered but not yet deployed.',
-      costOfWaiting: `Every month at this level costs you ${formatDollar(monthlyCost)}.`,
+      headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
+      context: `Your ${providers.toLocaleString()} providers, across ${documentedEncounters.toLocaleString()} ambient-documented encounters per year, are recovering an estimated ${recoveredHours.toLocaleString()} hours of clinical time annually — the equivalent of ${fte} FTEs.\n\nThis is the foundation. Every level above this answers one question: where does this time go?`,
+      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
+      footnote: 'Time recovery is the foundation. Value is determined by where this time goes — which is what Levels 2–4 measure.',
+      nextLevelTeaser: 'Level 2 — Is this number in front of your leadership with a plan attached to it?',
     };
   }
 
   if (level === 2) {
     const ts = (inputs.timeSaved as number) || 0;
-    const aggregated = inputs.capacityAggregated as string | undefined;
     if (!hasTimeSaved && !unmeasuredChecked) {
       return {
         label: 'Estimated Impact',
@@ -132,24 +131,25 @@ export function computeCapacityFeedback(
         footnote: '',
       };
     }
-    const calculatedHours = Math.round(documentedEncounters * ts / 60);
-    const recoveredHours = aggregated === 'yes' && (inputs.confirmedHours as number) > 0
-      ? (inputs.confirmedHours as number)
-      : calculatedHours;
+    const recoveredHours = Math.round(documentedEncounters * ts / 60);
     const fte = (recoveredHours / 2080).toFixed(1);
-    const opportunityLow = Math.round(recoveredHours * providerRate * 0.20);
-    const opportunityHigh = Math.round(recoveredHours * providerRate * 0.35);
-    const monthlyLow = Math.round(opportunityLow / 12);
-    const monthlyHigh = Math.round(opportunityHigh / 12);
+    const aggregated = inputs.capacityAggregated as string | undefined;
+    const leadershipDecision = inputs.capacityLeadershipDecision as string | undefined;
+    let decisionStatus = 'pending';
+    if (aggregated === 'yes' && leadershipDecision === 'yes') {
+      decisionStatus = 'confirmed';
+    } else if (aggregated === 'yes' && leadershipDecision === 'partial') {
+      decisionStatus = 'in progress';
+    }
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. ${formatDollar(opportunityLow)}–${formatDollar(opportunityHigh)} in reachable value.`,
-      context: `Your organization has quantified ${recoveredHours.toLocaleString()} recovered hours annually (${fte} FTE equivalent). The number exists. The question is whether your organization has decided what to do with it.\n\nOrganizations that present this number to leadership and schedule an operational response capture value within 60–90 days. Organizations that don't are still at this level 12 months later.`,
-      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${calculatedHours.toLocaleString()}${aggregated === 'yes' ? `\n[confirmedHours] = ${recoveredHours.toLocaleString()} (organization-confirmed)` : ''}\n[FTE] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}\n[opportunityLow] = ${recoveredHours.toLocaleString()} × ${formatDollar(providerRate)} × 20% = ${formatDollar(opportunityLow)}\n[opportunityHigh] = ${recoveredHours.toLocaleString()} × ${formatDollar(providerRate)} × 35% = ${formatDollar(opportunityHigh)}`,
+      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
+      context: `The number exists. The question is whether it's attached to a plan.\n\nOrganizations that formally commit recovered capacity to an operational use case within 60–90 days of quantifying it capture 3–5× more value in year one than organizations that treat it as a reporting metric.\n\nThe value of this capacity is not in the hours. It's in what the hours fund.`,
+      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
       footnote: 'Dollar value: $0 — time is quantified but not yet deployed through operational changes.',
-      costOfWaiting: `Each month without an operational decision = ${formatDollar(monthlyLow)}–${formatDollar(monthlyHigh)} in unrealized capacity value.`,
+      nextLevelTeaser: 'Level 3 — This becomes a dollar value when the hours have a destination: more patients seen.',
     };
   }
 
@@ -166,17 +166,20 @@ export function computeCapacityFeedback(
       };
     }
     const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
-    const annualAdditionalVisits = additionalPatients * redesignedProviders * 12;
-    const capacityValue = Math.round(annualAdditionalVisits * revenuePerVisit);
-    const monthlyCost = Math.round(capacityValue / 12);
+    const annualAdditionalVisits = additionalPatients * redesignedProviders * 11;
+    const accessRevenue = Math.round(annualAdditionalVisits * revenuePerVisit);
+    const confidence = inputs.capacityAccessConfidence as string | undefined;
+    const isAspirational = confidence === 'aspirational';
     return {
       label: 'Estimated Impact',
-      value: capacityValue,
+      value: accessRevenue,
       hasValue: true,
-      context: `${formatDollar(capacityValue)} in new patient revenue annually. This is recovered capacity converting into real access — patients who couldn't get in before, now seen.\n\nAt ${additionalPatients} additional patients per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, that's ${annualAdditionalVisits.toLocaleString()} new encounters per year.`,
-      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 12 = ${annualAdditionalVisits.toLocaleString()}\n[capacityValue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(capacityValue)}`,
-      footnote: 'Revenue per visit inherited from baseline inputs.',
-      costOfWaiting: `Each month before full schedule redesign = ${formatDollar(monthlyCost)} in unrealized patient revenue.`,
+      headlineMetric: `${formatDollar(accessRevenue)} in access revenue annually`,
+      context: `${formatDollar(accessRevenue)} in new patient revenue annually. This is recovered capacity converting into real access — patients who couldn't get in before, now seen.\n\nAt ${additionalPatients} additional patients per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, that's ${annualAdditionalVisits.toLocaleString()} new encounters per year.`,
+      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
+      footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
+      nextLevelTeaser: 'Level 4 — Is ambient changing whether you need to hire at all?',
+      warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }
 
@@ -223,10 +226,10 @@ export function computeCapacityFeedback(
     label: 'Estimated Impact',
     value: capacityValue,
     hasValue: true,
-    headlineMetric: `${formatDollar(capacityValue)} in avoided hiring cost`,
-    context: `This is the level where ambient AI stops being a documentation tool and becomes a workforce strategy. ${fteAvoided} FTE of recovered capacity, modeled into your staffing plan, is ${formatDollar(capacityValue)} you didn't spend on recruitment, onboarding, and salary — this year alone.\n\n${planCount > 0 ? `Connected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
-    formula: `[avoidedHireCost] = ${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} / FTE = ${formatDollar(capacityValue)}`,
-    footnote: 'Fully-loaded physician FTE cost including salary, benefits, and recruitment.',
+    headlineMetric: `${formatDollar(capacityValue)} in avoided workforce cost`,
+    context: `This is your most durable capacity value — not revenue you might earn, but a cost your organization did not incur. These are line items in your budget that don't exist because ambient made them unnecessary.\n\n${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+    formula: `[avoidedWorkforceCost] = ${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} / FTE = ${formatDollar(capacityValue)}`,
+    footnote: 'Fully-loaded cost includes salary, benefits, malpractice, and recruitment. AMGA benchmark: $350K–$450K per outpatient physician FTE.',
   };
 }
 

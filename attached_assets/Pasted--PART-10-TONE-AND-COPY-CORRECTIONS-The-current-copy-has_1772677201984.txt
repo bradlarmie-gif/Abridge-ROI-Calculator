@@ -1,0 +1,150 @@
+## PART 10 — TONE AND COPY CORRECTIONS
+The current copy has an aggressive, loss-framing tone that 
+does not match Abridge's brand voice. Make the following 
+exact find-and-replace changes throughout the Capacity domain.
+Do not change any logic or formulas — copy only.
+---
+DOMAIN HEADLINE
+Find:
+  headline: "You're recovering time. But is anyone deciding 
+             what to do with it?"
+  reframe: "The difference between a productivity tool and a 
+            strategic asset is whether recovered time converts 
+            to measurable capacity."
+Replace with:
+  headline: "Time is being returned. The strategic question 
+             is what your organization does with it."
+  reframe: "Ambient documentation creates recovered capacity. 
+            Where that capacity goes — and whether it's 
+            intentionally directed — is what separates a 
+            productivity win from a strategic one."
+---
+LEVEL CARD LABELS AND DESCRIPTIONS (in Q8t.capacity.cards)
+Level 1:
+  Find label: "Time Recovered. No Decision Made About It."
+  Replace:    "Time Is Being Returned."
+  Find description: "Ambient AI is deployed and time is being 
+    saved in clinic, but no operational decision has followed 
+    about where that time goes."
+  Replace: "Ambient is deployed and time is being returned 
+    per encounter. This is the foundation — understanding 
+    the magnitude of what's being recovered."
+Level 2:
+  Find label: "Total Recovery Quantified. Opportunity Identified."
+  Replace:    "Recovery Quantified and Brought to Leadership."
+  Find description: "Aggregate hours known and presented 
+    to leadership."
+  Replace: "Total recovered capacity has been calculated 
+    and presented to operational or executive leadership."
+Level 3:
+  Find label: "Capacity Redeployed Into Patient Access."
+  Replace:    "Recovered Capacity Is Expanding Access."
+  Find description: "Schedules, panels, or slots changed 
+    based on the recovered time."
+  Replace: "Recovered time has a confirmed destination — 
+    additional patients seen through scheduling redesign 
+    or panel expansion."
+Level 4:
+  Find label: "Capacity Drives Staffing and Growth Decisions."
+  Replace:    "Capacity Is Shaping Workforce Strategy."
+  Find description: "Recovered FTE equivalent is a variable 
+    in hiring, expansion, and build planning."
+  Replace: "Ambient-enabled capacity is formally part of 
+    how your organization plans its provider workforce — 
+    influencing hiring decisions, growth modeling, and 
+    service line development."
+---
+IN Hee() FUNCTION — LEVEL 1 COPY
+Find context string:
+  "Your providers are recovering an estimated ${A.toLocaleString()} 
+  hours annually — ${j} FTE equivalent. None of this time is being 
+  structurally redeployed. Schedules and panel sizes are unchanged.
+  At ${Nt(s)}/hr with even 20% redeployment, that's ${Nt(N)}/year 
+  your organization is currently not capturing."
+Replace with:
+  "Your ${n} providers are returning an estimated 
+  ${A.toLocaleString()} hours of clinical time annually — 
+  the equivalent of ${j} FTEs.
+  This is the foundation every level above builds on. 
+  The next question is where this time goes."
+Find headlineMetric:
+  "${A.toLocaleString()} hours recovered. $0 captured."
+Replace with:
+  "${A.toLocaleString()} hours returned annually — 
+  ${j} FTE equivalent."
+Find footnote:
+  "Redeployment = 0%. No dollar value claimed at this level 
+  — time is recovered but not yet deployed."
+Replace with:
+  "Dollar value appears at Level 3, when recovered time 
+  has a confirmed destination."
+DELETE the costOfWaiting field entirely from Level 1 return.
+---
+IN Hee() FUNCTION — LEVEL 2 COPY
+Find headlineMetric:
+  "${N.toLocaleString()} hours quantified. ${Nt(k)}–${Nt(R)} 
+  in reachable value."
+Replace with:
+  "${N.toLocaleString()} hours quantified — ${B} FTE equivalent."
+Find context string:
+  "Your organization has quantified ${N.toLocaleString()} recovered 
+  hours annually (${B} FTE equivalent). The number exists. The 
+  question is whether your organization has decided what to do 
+  with it.
+  Organizations that present this number to leadership and schedule 
+  an operational response capture value within 60–90 days. 
+  Organizations that don't are still at this level 12 months later."
+Replace with:
+  "Your organization has quantified ${N.toLocaleString()} hours 
+  of recovered capacity annually — ${B} FTE equivalent.
+  Organizations that bring this number to leadership with a 
+  recommended use tend to move to operational deployment within 
+  a single quarter. The value of this capacity lives in what 
+  it funds next."
+Find footnote:
+  "Dollar value: $0 — time is quantified but not yet deployed 
+  through operational changes."
+Replace with:
+  "A dollar value appears at Level 3, when recovered capacity 
+  is directed toward a specific operational outcome."
+DELETE the costOfWaiting field entirely from Level 2 return.
+DELETE the opportunityLow and opportunityHigh variables 
+and lines from the formula block.
+---
+IN Hee() FUNCTION — LEVEL 3 COPY
+Find context string:
+  "${Nt(N)} in new patient revenue annually. This is recovered 
+  capacity converting into real access — patients who couldn't 
+  get in before, now seen.
+  At ${E} additional patients per provider per month across 
+  ${A} provider${A!==1?"s":""}, that's ${j.toLocaleString()} 
+  new encounters per year."
+Replace with:
+  "Recovered time has a destination — and that destination 
+  generates revenue.
+  ${E} additional patient${E!==1?"s":""} per provider per 
+  month, across ${A} provider${A!==1?"s":""}, is 
+  ${j.toLocaleString()} new encounters annually at 
+  ${Nt(a)} per visit."
+DELETE the costOfWaiting field from Level 3 return.
+---
+IN Hee() FUNCTION — LEVEL 4 COPY
+Find context string (beginning):
+  "This is the level where ambient AI stops being a 
+  documentation tool and becomes a workforce strategy."
+Replace with:
+  "At this level, ambient capacity is part of how your 
+  organization thinks about its workforce — not just 
+  its workflows."
+---
+NEXT LEVEL TEASERS (add these at the bottom of each 
+level's right panel, in small italic text)
+Level 1 teaser:
+  "Level 2 opens when this number reaches leadership 
+  with a plan attached."
+Level 2 teaser:
+  "Level 3 is where recovered time gets a destination — 
+  and a dollar value."
+Level 3 teaser:
+  "Level 4 is where ambient becomes part of your 
+  workforce strategy."

@@ -1,0 +1,409 @@
+I need you to rebuild the Workforce domain of the Ambient AI Assessment.
+This is used in live sessions with CMOs, CHROs, and COOs. The tone must
+be warm, strategic, and peer-level. This domain is deeply personal to
+providers — it's about their time, their wellbeing, and their sustainability.
+Treat it that way. Do not touch any other domain. Leave comments where
+something needs review.
+The Workforce calculation lives in function Wee(). The domain config is
+in Q8t under the "workforce" key. The survey findings options are in
+array R8t. All state updates go through dispatch(sp.updateInput(key, value)).
+---
+## PART 1 — DOMAIN HEADLINE AND LEVEL CARD COPY
+Find the workforce config in Q8t and replace as follows:
+Find headline:
+  "Documentation burden is a leading driver of physician 
+  burnout and turnover risk."
+Replace with:
+  "Provider sustainability is one of the most consequential 
+  — and undertracked — dimensions of an ambient deployment."
+Find reframe:
+  "At $100K–$1M per physician departure, documentation 
+  burden isn't a satisfaction issue — it's a financial 
+  exposure."
+Replace with:
+  "When documentation burden decreases, providers get time 
+  back — inside the visit and after it. Understanding where 
+  that relief shows up is what this domain measures."
+Level card labels and descriptions:
+Level 1:
+  Find label: "Providers Report Less After-Hours Work. 
+               Not Measured Yet."
+  Replace:    "After-Hours Burden Is Being Reduced."
+  Find description: "After-hours documentation burden exists, 
+    but no formal measurement of its impact on provider 
+    experience or retention has been done."
+  Replace: "Providers are spending less time on documentation 
+    outside clinical hours. This level establishes how much."
+Level 2:
+  Find label: "Burden Reduction Measured and Validated."
+  Replace:    "Burden Reduction Is Measured."
+  Find description: "In-clinic and after-hours time formally 
+    quantified; survey data captured."
+  Replace: "In-clinic and after-hours documentation time 
+    has been formally quantified, with provider experience 
+    data to support it."
+Level 3:
+  Find label: "Retention Risk Calculated Against 
+               Burden Reduction."
+  Replace:    "Retention Impact Is Being Tracked."
+  Find description: "Turnover exposure modeled; documentation 
+    burden is a named variable in retention strategy."
+  Replace: "Your organization has modeled turnover exposure 
+    and identified documentation burden as a measurable 
+    variable in provider retention."
+Level 4:
+  Find label: "Labor Spend Is Structurally Declining."
+  Replace:    "Labor Costs Are Reflecting the Difference."
+  Find description (get from source — likely): 
+    "Agency and locum dependency reduced through 
+    ambient-enabled retention improvements."
+  Replace: "Reduced documentation burden is showing up 
+    in your labor cost structure — through lower agency 
+    spend, fewer locum engagements, or both."
+---
+## PART 2 — UX STRUCTURE
+Apply the same staircase UX as Capacity and Revenue:
+- Completed levels: compact summary card with checkmark
+  and output value (hours or dollars)
+- Active level: fully expanded
+- Future levels: dimmed preview with unlock teaser
+- Replace "WHERE IS YOUR ORGANIZATION TODAY?" with
+  "YOUR WORKFORCE MATURITY"
+- Add 4-step progress indicator, active step in #EA2C00
+---
+## PART 3 — LEVEL 1 REBUILD
+Level name: "After-Hours Burden Is Being Reduced"
+Maturity label: "Providers are getting time back outside 
+                 clinical hours."
+Framing question:
+  "How much after-hours documentation time has ambient 
+  returned to your providers per week?"
+CRITICAL FORMULA CHANGE — In Wee(), Level 1 block:
+The current Level 1 fires a dollar value using:
+  [burdenValue] = burdenHours × providerRate ($150/hr)
+  [turnoverProxy] = afterHoursHrs × 15% risk/hr
+Both are indefensible. The hours × rate formula treats
+recovered personal time as billable revenue, which it is
+not. The 15% risk/hr turnover proxy is invented — there
+is no published research that quantifies burnout risk per
+hour of after-hours charting at that rate.
+DELETE from the Level 1 return in Wee():
+  - Variable h: Math.round(d*i) — burdenValue
+  - Variable f: 350000 — hardcoded replacement cost
+  - Variable m: Math.min(u*15,50) — turnoverProxy %
+  - Variable p: Math.round(n*m/100*10)/10 — at-risk FTEs
+  - Variable g: Math.round(p*f) — retention exposure
+  - SET hasValue: false
+  - SET value: null
+  - REMOVE the costOfWaiting field
+Also DELETE the formula lines:
+  [burdenValue] = burdenHours × providerRate
+  [turnoverProxy] = hrs × 15% risk/hr
+  Assumption: $350K physician replacement cost
+Keep ONLY:
+  [burdenHours] = afterHoursHrs × providers × 52 = total
+RIGHT PANEL — Level 1:
+Find headlineMetric:
+  "${u} hrs/wk × ${n} providers = ${Nt(h)} in physician 
+  time returned annually."
+Replace with:
+  "${d.toLocaleString()} hours returned to providers 
+  annually — outside clinical hours."
+Find context:
+  "${d.toLocaleString()} hours of after-hours documentation 
+  burden eliminated annually.
+  Providers averaging ${u}+ hrs of after-hours charting 
+  per week are ${m}% more likely to report burnout symptoms 
+  associated with near-term departure intent. At ${Nt(f)} 
+  replacement cost, that's ${Nt(g)} in retention exposure 
+  this reduction is starting to protect."
+Replace with:
+  "Across ${n} providers, ambient is returning an estimated 
+  ${d.toLocaleString()} hours of after-hours documentation 
+  time annually — time that was previously spent charting 
+  outside of clinical hours.
+  For providers, this is one of the most immediate and 
+  personal impacts of ambient. It shows up at home, on 
+  evenings, on weekends. Tracking it is the first step 
+  to understanding what it means for sustainability and 
+  retention."
+Find formula block and update:
+  Keep: [burdenHours] = ${u} × ${n} × 52 = 
+        ${d.toLocaleString()}
+  Remove: [burdenValue] and [turnoverProxy] lines
+  Update footnote: "Uses 52 weeks. For clinical weeks 
+    only, adjust to 46–48."
+Next level teaser:
+  "Level 2 — when in-clinic burden is measured alongside 
+  after-hours, the full picture of provider relief 
+  comes into focus."
+---
+## PART 4 — LEVEL 2 REBUILD
+Level name: "Burden Reduction Is Measured"
+Maturity label: "The data exists. Provider voice 
+                 can strengthen it."
+Framing question:
+  "How much in-clinic documentation time has ambient 
+  returned per provider per day — and what are 
+  providers saying about it?"
+CRITICAL FORMULA CHANGE — In Wee(), Level 2 block:
+The current Level 2 fires:
+  [clinicValue] = clinicHours × providerRate ($150/hr)
+  [afterHoursValue] = afterHoursHrs × providers × 
+                      52 × providerRate
+Both use hours × rate to generate a dollar value for 
+recovered personal and clinical time. This is the 
+formula we are removing. It is not defensible — 
+recovered time is not billable revenue.
+DELETE from Wee() Level 2:
+  - Variable v: Math.round(y*i) — clinicValue
+  - Variable E: Math.round(d*n*52*i) — afterHoursValue  
+  - Variable j: v+E — total combined value
+  - SET hasValue: false
+  - SET value: null
+Keep these variables (they are used in display):
+  - y: clinicHours (minutes × providers × 230 / 60)
+  - A: afterHoursHours (d × n × 52) if d exists
+Keep the survey integration logic (B variable — 
+surveyFindings display) and burden score logic 
+(z variable) — these are good, just don't attach 
+a dollar value to them.
+RIGHT PANEL — Level 2:
+Find headlineMetric:
+  "${Nt(j)} in total measured workforce value
+  ${E>0?' — after-hours and in-clinic combined':''}."
+Replace with (build dynamically from what exists):
+  If both after-hours and in-clinic data present:
+    "${y.toLocaleString()} in-clinic hours + 
+     ${A.toLocaleString()} after-hours hours recovered 
+     annually — ${Math.round((y+(A||0))/2080*10)/10} 
+     FTE equivalent of provider time."
+  If only in-clinic:
+    "${y.toLocaleString()} in-clinic hours recovered 
+     annually across ${n} providers."
+Find context:
+  "This is no longer anecdote — it's data. Your 
+  providers are getting measurable time back every day.
+  ${E>0?`After-hours: ${Nt(E)}\\n`:''}
+  In-clinic editing: ${Nt(v)}${B}${z}"
+Replace with:
+  "Your providers are getting measurable time back — 
+  inside the visit and after it.
+  In-clinic documentation time returned: 
+  ${y.toLocaleString()} hours annually 
+  (${u} min/provider/day × ${n} providers × 
+  230 clinical days).
+  ${d&&d>0?`After-hours time returned: 
+  ${A.toLocaleString()} hours annually.`:''}
+  ${B}${z}"
+Keep the survey type selector and survey findings 
+checkboxes exactly as they are — they are well designed.
+Keep the burden score before/after inputs as they are.
+Update formula block:
+  Keep: [clinicHours] = ${u} min × ${n} × 230 / 60 
+        = ${y.toLocaleString()}
+  Keep: [afterHoursHours] = ${d} × ${n} × 52 
+        = ${A.toLocaleString()} (if d exists)
+  Remove: [clinicValue], [afterHoursValue], [total] 
+          dollar lines entirely
+  Footnote: "230 clinical working days. Time returned 
+    is shown in hours — dollar value appears at Level 3 
+    when turnover data is entered."
+Next level teaser:
+  "Level 3 — when turnover data is in the picture, 
+  burden reduction connects to a retention value 
+  your CHRO can work with."
+---
+## PART 5 — LEVEL 3 REBUILD
+Level name: "Retention Impact Is Being Tracked"
+Maturity label: "Documentation burden is a named variable 
+                 in your retention strategy."
+Framing question:
+  "What does your organization's turnover data look like — 
+  and what share of it do you attribute to documentation 
+  burden?"
+This is the first level in Workforce where a dollar 
+value is defensible — because the user is entering 
+real organizational data: their actual turnover rate, 
+their actual replacement cost, and their own estimate 
+of what share is documentation-driven.
+CRITICAL FORMULA FIX — In Wee(), Level 3 block:
+The current headline fires total turnover cost 
+(all-cause) as the headline metric:
+  headlineMetric: "${Nt(m)} in annual physician 
+                   turnover cost."
+  value: m (total cost, not doc-attributable)
+This is misleading. The headline should show the
+documentation-attributable portion (p), not the
+total organizational turnover cost (m). The total
+is context, not the answer.
+CHANGE the Level 3 return:
+  headlineMetric: change from ${Nt(m)} to:
+    If h > 0 (docBurdenShare entered):
+      "${Nt(p)} in documentation-attributable 
+       turnover exposure."
+    If h === 0 (not yet entered):
+      "${f.toFixed(1)} projected departure
+      ${f !== 1 ? 's' : ''} per year. Enter 
+      documentation burden share to see 
+      attributable exposure."
+  value: change from m to p
+    (only fire a value when p > 0, i.e., when 
+    docBurdenShare has been entered)
+  SET hasValue: true only when h > 0 and p > 0
+  Otherwise hasValue: false
+REMOVE the g, y, v variables (burnout protection 
+proxy) and the A string referencing them:
+  - g: afterHoursReduction variable
+  - y: Math.min(g*.075,.3) — invented correlation
+  - v: Math.round(p*y) — "protected exposure"
+  - The A string: "Ambient AI's burden reduction is 
+    protecting an estimated..."
+This is a fabricated correlation — 7.5% reduction 
+in exposure per hour of after-hours reduction has 
+no cited source. Remove entirely.
+RIGHT PANEL — Level 3:
+Find context:
+  "At ${u}% turnover across ${n} providers, your 
+  organization expects approximately ${f.toFixed(1)} 
+  departure(s) per year. At ${Nt(d)} per replacement, 
+  total annual turnover cost is ${Nt(m)}.${E}${A}"
+Replace with:
+  "At ${u}% annual turnover across ${n} providers, 
+  your organization sees approximately 
+  ${f.toFixed(1)} departure${f!==1?'s':''} per year.
+  At ${Nt(d)} replacement cost per provider, 
+  total turnover cost is ${Nt(m)} annually.
+  ${h>0?`Of that, your estimate of ${h}% 
+  attributable to documentation burden represents 
+  ${Nt(p)} — the portion ambient retention 
+  improvement works directly against.`:
+  `Enter the share of turnover you attribute to 
+  documentation burden to see the portion ambient 
+  can influence.`}"
+Find footnote:
+  "Based on your inputs, AAMC turnover data, and 
+  burden-reduction correlation estimates."
+Replace with:
+  "All inputs are your organization's data. No 
+  external correlation estimates applied."
+Update formula block:
+  Keep: [annualDepartures] = ${n} × ${u}% = 
+        ${f.toFixed(1)}
+  Keep: [totalCost] = ${f.toFixed(1)} × ${Nt(d)} 
+        = ${Nt(m)}
+  Keep: [docDriven] = ${Nt(m)} × ${h}% = ${Nt(p)}
+        (only show when h > 0)
+  Remove: [protected] line entirely
+Next level teaser:
+  "Level 4 — when agency and locum spend start to 
+  reflect the difference, it shows up directly 
+  in the P&L."
+---
+## PART 6 — LEVEL 4 REBUILD
+Level name: "Labor Costs Are Reflecting the Difference"
+Maturity label: "Reduced burden is showing up in 
+                 your cost structure."
+Framing question:
+  "Has ambient-enabled retention improvement reduced 
+  your organization's dependence on agency or 
+  locum providers — and by how much?"
+Keep all existing inputs:
+  - Monthly agency/locum spend reduction (agencyReduction)
+  - Months sustained (monthsSustained)
+These are correct — user enters real numbers, 
+formula is transparent.
+RIGHT PANEL — Level 4:
+Find context:
+  "This is the level where ambient AI shows up in 
+  the CFO's P&L — not as a cost line, but as a 
+  cost reduction. Agency and locum dependency is 
+  structurally lower. That compounds.${c}"
+Replace with:
+  "Agency and locum spend is one of the most 
+  visible labor cost lines in a health system. 
+  When it decreases — and the decrease is 
+  attributable to improved provider retention — 
+  that's ambient showing up directly in your P&L.
+  ${l>0?`Your organization has already avoided 
+  ${Nt(l)} in agency spend over 
+  ${s} month${s!==1?'s':''}. At this rate, 
+  that's ${Nt(o)} annually.`:''}"
+Find headlineMetric:
+  "${Nt(o)} in annual labor spend reduction.
+  ${l>0?` ${Nt(l)} already realized.`:''}"
+Keep as-is — this is clean and correct.
+Keep formula block as-is — it is correct:
+  [annualSavings] = agencyReduction × 12
+  [cumulative] = agencyReduction × months (if entered)
+---
+## PART 7 — RIGHT PANEL RUNNING SUMMARY
+Add a persistent Workforce Summary at the bottom of 
+the right panel, visible once any level has been engaged:
+  After-Hours Returned:    [X,XXX hrs/yr  or  "—"]
+  In-Clinic Returned:      [X,XXX hrs/yr  or  "—"]
+  Retention Exposure:      [value  or  "—"]
+  Agency Reduction:        [value  or  "—"]
+  ──────────────────────────────────────────────
+  Total Workforce Value:   [sum  or  "—"]
+Use "—" for any value not yet entered.
+Never show $0.
+Only show Total row if at least one dollar value exists.
+Levels 1 and 2 contribute hours to the summary, 
+not dollars. Levels 3 and 4 contribute dollars.
+---
+## PART 8 — FORMULA CHANGES SUMMARY
+REMOVE from Wee():
+  Level 1:
+  - h: burdenHours × providerRate (hours × rate)
+  - f: hardcoded $350,000 replacement cost
+  - m: afterHoursHrs × 15% per hour (invented proxy)
+  - p: at-risk FTE calculation
+  - g: retention exposure dollar value
+  - costOfWaiting field
+  - formula lines: [burdenValue], [turnoverProxy]
+  Level 2:
+  - v: clinicHours × providerRate (hours × rate)
+  - E: afterHoursHours × providerRate (hours × rate)
+  - j: v + E combined total
+  - formula lines: [clinicValue], [afterHoursValue], 
+    [total]
+  Level 3:
+  - g: afterHoursReduction variable
+  - y: g × 7.5% burnout correlation (invented)
+  - v: p × y protection estimate (invented)
+  - A: "Ambient AI is protecting..." string
+  - formula line: [protected]
+  - Headline value: change from m (total) to p 
+    (doc-attributable only)
+KEEP in Wee():
+  Level 1: [burdenHours] = hrs × providers × 52 ✓
+  Level 2: [clinicHours] = min × providers × 230/60 ✓
+           [afterHoursHours] = hrs × providers × 52 ✓
+           Survey findings display logic ✓
+           Burden score before/after display ✓
+  Level 3: [annualDepartures] = providers × rate% ✓
+           [totalCost] = departures × replacementCost ✓
+           [docDriven] = totalCost × burdenShare% ✓
+  Level 4: [annualSavings] = agencyReduction × 12 ✓
+           [cumulative] = agencyReduction × months ✓
+Dollar values appear only at:
+  Level 3: when docBurdenShare is entered (p variable)
+  Level 4: when agencyReduction is entered
+Levels 1 and 2 show hours only — never dollars.
+---
+## PART 9 — DO NOT TOUCH
+- Capacity domain (Hee and all Capacity UI)
+- Revenue domain (Uee and all Revenue UI)
+- Quality domain and all Quality UI
+- Step 1 baseline inputs
+- Steps 3, 4, 5 (Reveal, Inaction, Next Steps)
+- Sh() scoring function
+- A1e = {1:6, 2:12, 3:19, 4:25}
+- P8t() scoring adjustment — note: this function 
+  currently checks turnoverRate and replacementCost 
+  for Level 3 scoring. Keep this logic exactly as-is.
+  The scoring check uses the total turnover inputs,
+  not the docBurdenShare — do not change this.
+- App routing and state management
+- R8t survey findings array

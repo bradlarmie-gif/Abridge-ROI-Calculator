@@ -54,21 +54,36 @@ type ActivationCard = {
 type DomainConfig = {
   label: string;
   headline: string;
+  subheadline?: string;
   reframe: string;
   cards: ActivationCard[];
+  framingQuestions?: Record<number, string>;
+  unlockTeasers?: Record<number, string>;
 };
 
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'You\'re recovering time. But is anyone deciding what to do with it?',
-    reframe: 'The difference between a productivity tool and a strategic asset is whether recovered time converts to measurable capacity.',
+    headline: 'CAPACITY',
+    subheadline: 'The question isn\'t whether ambient saves time. It\'s what your organization does with it.',
+    reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
     cards: [
-      { level: 1, label: 'Time Recovered. No Decision Made About It.', description: 'Ambient AI is deployed and time is being saved in clinic, but no operational decision has followed about where that time goes.' },
-      { level: 2, label: 'Total Recovery Quantified. Opportunity Identified.', description: 'Aggregate hours known and presented to leadership.' },
-      { level: 3, label: 'Capacity Redeployed Into Patient Access.', description: 'Schedules, panels, or slots changed based on the recovered time.' },
-      { level: 4, label: 'Capacity Drives Staffing and Growth Decisions.', description: 'Recovered FTE equivalent is a variable in hiring, expansion, and build planning.' },
+      { level: 1, label: 'Documentation Recovery Established', description: 'You know what you\'re getting back.' },
+      { level: 2, label: 'Recovery Quantified and Escalated', description: 'Leadership knows the number.' },
+      { level: 3, label: 'Capacity Deployed Into Patient Access', description: 'The time has a destination.' },
+      { level: 4, label: 'Workforce Architecture Impact', description: 'Ambient is in your hiring model.' },
     ],
+    framingQuestions: {
+      1: 'Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?',
+      2: 'Has your organization formally quantified total recovered capacity and brought it to leadership with a recommended use?',
+      3: 'Has your organization confirmed that recovered time is being used to expand patient access — through additional appointments, panel growth, or scheduling redesign?',
+      4: 'Has your organization formally attributed workforce planning decisions to ambient-enabled capacity — FTEs not hired, locums reduced, or panels rebalanced?',
+    },
+    unlockTeasers: {
+      2: 'Unlock: quantify and escalate to leadership',
+      3: 'Unlock: deploy time into patient access',
+      4: 'Unlock: connect to workforce planning',
+    },
   },
   revenue: {
     label: 'REVENUE',
@@ -264,9 +279,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const timeSavedSection = (
       <div className="mb-6" key="time-saved">
         <label className="block text-sm font-medium text-black mb-1">
-          Time saved per documented encounter
+          Minutes returned per documented encounter
         </label>
-        <p className="text-sm text-[#888888] mb-3">Minutes recovered per encounter using ambient documentation</p>
+        <p className="text-sm text-[#888888] mb-3">The clinical time per visit that ambient returns to your providers — previously spent on typing, clicking, or after-visit dictation.</p>
 
         {!(showUnmeasuredCheckbox && unmeasuredTimeChecked) && (
           <div className="flex items-center gap-2 mb-3">
@@ -307,7 +322,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="checkbox-unmeasured-time"
               />
               <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
-                I haven't measured this precisely
+                I haven't formally measured this — using the Abridge observed benchmark of 2–3 min
               </label>
             </div>
 
@@ -327,18 +342,19 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 2) {
       const capacityAggregated = currentState.inputs.capacityAggregated as string | undefined;
-      const calculatedHours = timeSavedValue > 0 ? Math.round(documentedEncounters * timeSavedValue / 60) : 0;
+      const capacityLeadershipDecision = currentState.inputs.capacityLeadershipDecision as string | undefined;
       return (
         <>
           {timeSavedSection}
           <div className="mb-5">
             <label className="block text-sm font-medium text-black mb-3">
-              Have you calculated total recovered capacity across your deployment?
+              Has your organization aggregated total recovered hours across providers?
             </label>
             <div className="flex flex-col gap-2.5">
               {[
-                { id: 'no', label: "No — we have time-per-encounter data but haven't aggregated it" },
-                { id: 'yes', label: 'Yes — we know our total recovered hours' },
+                { id: 'no', label: "No — time savings are known per encounter but not aggregated across the deployment" },
+                { id: 'informal', label: "Informally — we have estimates but no formal reporting" },
+                { id: 'yes', label: 'Yes — total recovered hours are formally quantified and reported' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -365,17 +381,32 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <label className="block text-sm font-medium text-black mb-1">
-                  Confirmed recovered hours annually
-                </label>
-                <p className="text-xs text-[#888888] mb-2">Calculated from your inputs. Adjust if your organization has measured a different number.</p>
-                <FormattedNumberInput
-                  value={(currentState.inputs.confirmedHours as number) || calculatedHours}
-                  onChange={(v) => setDomainInput('confirmedHours', Math.max(0, v))}
-                  placeholder=""
-                  className="w-full h-12 bg-white border-[#E5E7EB]"
-                  data-testid="input-confirmed-hours"
-                />
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-black mb-3">
+                    Has leadership made an operational decision about how to use this capacity?
+                  </label>
+                  <div className="flex flex-col gap-2.5">
+                    {[
+                      { id: 'no', label: "No — the number has been presented but no decision has been made" },
+                      { id: 'partial', label: "In progress — leadership is evaluating options" },
+                      { id: 'yes', label: 'Yes — there is a formal plan for deploying recovered capacity' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setDomainInput('capacityLeadershipDecision', opt.id)}
+                        className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                          capacityLeadershipDecision === opt.id
+                            ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                            : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`radio-leadership-decision-${opt.id}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -384,13 +415,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 3) {
+      const confidenceOptions = ['measured', 'estimated', 'aspirational'] as const;
+      const currentConfidence = (currentState.inputs.capacityAccessConfidence as string) || 'estimated';
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-1">
               Additional patients seen per provider per month
             </label>
-            <p className="text-sm text-[#888888] mb-3">Due to scheduling redesign, template changes, or panel expansion</p>
+            <p className="text-sm text-[#888888] mb-3">Appointments added due to scheduling redesign or panel expansion enabled by ambient. Enter what's confirmed or your best estimate.</p>
             <FormattedNumberInput
               value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
               onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
@@ -398,7 +431,29 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-additional-patients"
             />
-            <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients/provider/month." />
+            <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients per provider per month." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Data confidence
+            </label>
+            <div className="flex gap-2">
+              {confidenceOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setDomainInput('capacityAccessConfidence', opt)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                    currentConfidence === opt
+                      ? 'bg-[#EA2C00] text-white font-medium'
+                      : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                  }`}
+                  data-testid={`pill-confidence-${opt}`}
+                >
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-black mb-1">
@@ -469,8 +524,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent in avoided or deferred hires." />
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Annual cost per physician FTE</label>
-          <p className="text-xs text-[#888888] mb-2">Fully-loaded cost including salary, benefits, and recruitment.</p>
+          <label className="block text-sm font-medium text-black mb-1">Fully-loaded annual cost per FTE</label>
+          <p className="text-xs text-[#888888] mb-2">Include salary, benefits, malpractice, and onboarding. AMGA benchmark: $350K–$450K for outpatient physician.</p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -1513,6 +1568,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-domain-headline">
           {config.headline}
         </h1>
+        {config.subheadline && (
+          <p className="text-lg text-black/80 font-medium max-w-[560px] mx-auto mb-2" data-testid="text-domain-subheadline">
+            {config.subheadline}
+          </p>
+        )}
         <p className="text-base text-[#888888] max-w-[520px] mx-auto" data-testid="text-domain-reframe">
           {config.reframe}
         </p>
@@ -1541,8 +1601,30 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
-              Where is your organization today?
+              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : 'Where is your organization today?'}
             </p>
+
+            {activeDomain === 'capacity' && (
+              <div className="flex items-center justify-center gap-3 mb-4">
+                {[1, 2, 3, 4].map((lvl) => {
+                  const selectedLevel = currentState.activationLevel;
+                  const isActive = selectedLevel === lvl;
+                  const isComplete = selectedLevel !== null && lvl < selectedLevel;
+                  return (
+                    <div key={lvl} className="flex items-center gap-3">
+                      <div
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          isActive ? 'bg-[#EA2C00] scale-125' : isComplete ? 'bg-[#EA2C00]/60' : 'bg-[#D1D5DB]'
+                        }`}
+                        data-testid={`capacity-dot-${lvl}`}
+                      />
+                      {lvl < 4 && <div className="w-6 h-px bg-[#D1D5DB]" />}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="h-px bg-[#E5E7EB] mb-6" />
 
             <div className="flex flex-col">
@@ -1551,12 +1633,41 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 const isSelected = selectedLevel === card.level;
                 const isClaimed = selectedLevel !== null && card.level < selectedLevel;
                 const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
+                const isFuture = activeDomain === 'capacity' && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
+                const isFutureOrNext = activeDomain === 'capacity' && selectedLevel !== null && card.level > selectedLevel;
 
                 const leftBorderStyle = isSelected
                   ? '3px solid #EA2C00'
+                  : isClaimed ? '2px solid rgba(234, 44, 0, 0.3)'
                   : card.level === 3 && !isClaimed ? '2px solid rgba(234, 44, 0, 0.3)'
                   : card.level === 4 && !isClaimed ? '2px solid #EA2C00'
                   : '2px solid transparent';
+
+                const capacityCompletedSummary = activeDomain === 'capacity' && isClaimed ? (() => {
+                  const inp = currentState.inputs;
+                  const ts = (inp.timeSaved as number) || 0;
+                  if (card.level === 1 && ts > 0) {
+                    const hrs = Math.round(documentedEncounters * ts / 60);
+                    return `${hrs.toLocaleString()} hrs/yr`;
+                  }
+                  if (card.level === 2) {
+                    const agg = inp.capacityAggregated as string;
+                    const ld = inp.capacityLeadershipDecision as string;
+                    let status = 'pending';
+                    if (agg === 'yes' && ld === 'yes') status = 'confirmed';
+                    else if (agg === 'yes' && ld === 'partial') status = 'in progress';
+                    return `Decision ${status}`;
+                  }
+                  if (card.level === 3) {
+                    const pts = (inp.additionalPatientsPerMonth as number) || 0;
+                    const rp = (inp.redesignedProviders as number) || providers;
+                    if (pts > 0) {
+                      const val = Math.round(pts * rp * 11 * revenuePerVisit);
+                      return formatDollar(val);
+                    }
+                  }
+                  return null;
+                })() : null;
 
                 return (
                   <div key={card.level}>
@@ -1565,8 +1676,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                      onClick={() => setActivation(card.level)}
-                      className="w-full text-left cursor-pointer active:scale-[0.99] transition-all bg-white hover:bg-[#FAFAF8]"
+                      onClick={() => {
+                        if (activeDomain === 'capacity' && isFuture && !isClaimed) return;
+                        setActivation(card.level);
+                      }}
+                      className={`w-full text-left transition-all bg-white ${
+                        activeDomain === 'capacity' && isFuture && !isClaimed
+                          ? 'opacity-40 cursor-not-allowed'
+                          : 'cursor-pointer active:scale-[0.99] hover:bg-[#FAFAF8]'
+                      }`}
                       style={{
                         borderLeft: leftBorderStyle,
                         padding: isClaimed ? '10px 16px' : '16px 16px',
@@ -1595,12 +1713,20 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                           >
                             {card.label}
                           </p>
+                          {isClaimed && capacityCompletedSummary && (
+                            <p className="text-xs text-[#888888] mt-0.5">{capacityCompletedSummary}</p>
+                          )}
                           {!isClaimed && (
                             <p
                               className="text-sm leading-snug mt-1"
                               style={{ color: isSelected ? '#555555' : DESC_COLORS[card.level] }}
                             >
                               {card.description}
+                            </p>
+                          )}
+                          {activeDomain === 'capacity' && isFuture && !isClaimed && config.unlockTeasers?.[card.level] && (
+                            <p className="text-xs text-[#888888] italic mt-1">
+                              {config.unlockTeasers[card.level]}
                             </p>
                           )}
                         </div>
@@ -1620,11 +1746,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                             className="bg-white px-5 pb-5"
                             style={{ borderLeft: '3px solid #EA2C00' }}
                           >
-                            {card.level === 1 ? (
+                            {activeDomain === 'capacity' && config.framingQuestions?.[card.level] && (
+                              <p className="text-[13px] text-[#666666] leading-relaxed mt-1 mb-3 italic">
+                                {config.framingQuestions[card.level]}
+                              </p>
+                            )}
+                            {activeDomain !== 'capacity' && card.level === 1 ? (
                               <p className="text-[13px] text-[#666666] leading-relaxed mt-1">
                                 This is where most deployments begin. The value emerges as your organization decides what to do with the time recovered.
                               </p>
-                            ) : feedback ? (
+                            ) : activeDomain !== 'capacity' && feedback ? (
                               <div className="mt-1">
                                 {feedback.headlineMetric ? (
                                   <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
@@ -1641,6 +1772,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                                   </p>
                                 )}
                               </div>
+                            ) : activeDomain === 'capacity' && feedback ? (
+                              <div className="mt-1">
+                                {feedback.headlineMetric && (
+                                  <p className="font-bold text-xl text-[#EA2C00] leading-none mb-2" data-testid="text-ladder-value">
+                                    {feedback.headlineMetric}
+                                  </p>
+                                )}
+                              </div>
                             ) : null}
 
                             <div className="mt-4 pt-4 border-t border-[#E8E4DC]">
@@ -1651,7 +1790,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       )}
                     </AnimatePresence>
 
-                    {isNextAbove && incrementalValue > 0 && (
+                    {activeDomain !== 'capacity' && isNextAbove && incrementalValue > 0 && (
                       <div
                         className="bg-white/60 px-5 py-2"
                         style={{
@@ -1718,7 +1857,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   ))}
                 </div>
 
-                {feedback.costOfWaiting && (
+                {feedback.warningBanner && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-warning-banner">
+                    <p className="text-sm text-amber-400 font-medium leading-relaxed">
+                      {feedback.warningBanner}
+                    </p>
+                  </div>
+                )}
+
+                {feedback.costOfWaiting && activeDomain !== 'capacity' && (
                   <div className="bg-[#EA2C00]/10 border border-[#EA2C00]/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-cost-of-waiting">
                     <p className="text-sm text-[#EA2C00] font-medium leading-relaxed">
                       {feedback.costOfWaiting}
@@ -1733,6 +1880,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 )}
 
                 <FormulaDisplay formula={feedback.formula} />
+
+                {activeDomain === 'capacity' && feedback.nextLevelTeaser && (
+                  <p className="text-xs text-white/50 italic leading-relaxed mt-3" data-testid="text-next-level-teaser">
+                    {feedback.nextLevelTeaser}
+                  </p>
+                )}
 
                 {activeDomain === 'workforce' && currentState.activationLevel && (currentState.activationLevel === 3 || currentState.activationLevel === 4) && !feedback.hasValue && (
                   <p className="text-xs text-[#EA2C00]/80 italic mt-3 leading-relaxed" data-testid="text-workforce-score-note">
@@ -1776,6 +1929,67 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 );
               })}
             </div>
+
+            {activeDomain === 'capacity' && currentState.activationLevel && (() => {
+              const inp = currentState.inputs;
+              const ts = (inp.timeSaved as number) || 0;
+              const recoveredHours = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
+              const fte = ts > 0 ? (recoveredHours / 2080).toFixed(1) : null;
+
+              const pts = (inp.additionalPatientsPerMonth as number) || 0;
+              const rp = (inp.redesignedProviders as number) || providers;
+              const accessRevenue = pts > 0 ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
+
+              const fteAvoided = (inp.fteAvoided as number) || 0;
+              const annualCostPerFte = (inp.annualCostPerFte as number) || 0;
+              const avoidedCost = fteAvoided > 0 && annualCostPerFte > 0 ? Math.round(fteAvoided * annualCostPerFte) : null;
+
+              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || avoidedCost !== null;
+              if (!hasAnyValue) return null;
+
+              const totalDollar = (accessRevenue || 0) + (avoidedCost || 0);
+              const hasDollarValue = accessRevenue !== null || avoidedCost !== null;
+
+              return (
+                <>
+                  <div className="h-px bg-white/10 my-5" />
+                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-capacity-summary-label">
+                    Capacity Summary
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Time Recovered</span>
+                      <span className="text-white font-medium" data-testid="text-capacity-summary-hours">
+                        {recoveredHours > 0 ? `${recoveredHours.toLocaleString()} hrs/yr${fte ? ` (${fte} FTE)` : ''}` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Access Revenue</span>
+                      <span className="text-white font-medium" data-testid="text-capacity-summary-access">
+                        {accessRevenue !== null ? formatDollar(accessRevenue) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Avoided Cost</span>
+                      <span className="text-white font-medium" data-testid="text-capacity-summary-avoided">
+                        {avoidedCost !== null ? formatDollar(avoidedCost) : '—'}
+                      </span>
+                    </div>
+                    {hasDollarValue && (
+                      <>
+                        <div className="h-px bg-white/10 my-2" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">Total Capacity</span>
+                          <span className="text-[#EA2C00] font-bold" data-testid="text-capacity-summary-total">
+                            {formatDollar(totalDollar)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </motion.div>
       </div>

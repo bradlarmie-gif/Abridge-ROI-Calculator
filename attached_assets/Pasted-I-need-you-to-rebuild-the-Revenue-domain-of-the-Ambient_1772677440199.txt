@@ -1,0 +1,407 @@
+I need you to rebuild the Revenue domain of the Ambient AI Assessment.
+This is used in live sessions with CFOs, VPs of Revenue Cycle, and CMIOs.
+The tone must be strategic and peer-level — it should orient the executive,
+not pressure them. Every number must come from the user's own data.
+Do not touch any other domain. Do not add placeholder logic — leave 
+comments if something needs review.
+The Revenue calculation lives in function Uee(). The domain config is in
+the Q8t object under the "revenue" key. All state updates go through
+dispatch(sp.updateInput(key, value)).
+---
+## PART 1 — DOMAIN HEADLINE AND LEVEL CARD COPY
+Find the revenue config in Q8t and replace as follows:
+Find headline:
+  "Is documentation fidelity worth anything to your revenue 
+  cycle — or is no one asking?"
+Replace with:
+  "Better documentation produces better coding. Better coding 
+  produces better reimbursement. The question is whether your 
+  organization is connecting those dots."
+Find reframe:
+  "Every encounter either captures or leaks revenue through your 
+  documentation infrastructure. The question is whether anyone 
+  is measuring which."
+Replace with:
+  "Every encounter is coded. The opportunity is in whether it's 
+  coded at the specificity your documentation now supports — and 
+  whether your revenue cycle team is part of that conversation."
+Level card labels and descriptions:
+Level 1:
+  Find label: "Revenue Cycle Has Not Been Asked."
+  Replace:    "Revenue Cycle Hasn't Been Brought In Yet."
+  Find description: "No one has connected ambient deployment 
+    to coding or billing."
+  Replace: "Ambient is deployed, but the revenue cycle team 
+    hasn't been formally engaged on what it means for coding 
+    accuracy or reimbursement."
+Level 2:
+  Find label: "Revenue Cycle Is Investigating."
+  Replace:    "The Analysis Is Underway."
+  Find description: "CDI, coding, or billing leadership has 
+    an active analysis in progress."
+  Replace: "Your revenue cycle team is actively analyzing the 
+    connection between documentation quality and coding or 
+    reimbursement outcomes."
+Level 3:
+  Find label: "Revenue Impact Measured and Attributed."
+  Replace:    "The Impact Has Been Measured."
+  Find description: "Before/after analysis complete; a dollar 
+    number exists that leadership can stand behind."
+  Replace: "Your organization has before/after data that 
+    connects ambient documentation to a specific revenue 
+    outcome — a number leadership can work with."
+Level 4:
+  Find label: "Documentation Quality Is a Managed Revenue Input."
+  Replace:    "Documentation Quality Is Built Into Revenue 
+               Cycle Operations."
+  Find description: "Ongoing, real-time integration between 
+    documentation quality and revenue cycle operations."
+  Replace: "Documentation quality and revenue cycle operate 
+    as a connected system — monitored, attributed, and 
+    factored into operational planning."
+---
+## PART 2 — UX STRUCTURE
+Apply the same staircase UX as Capacity:
+- Completed levels: compact summary card with checkmark 
+  and output value (or hours/status for L1–L2)
+- Active level: fully expanded
+- Future levels: dimmed preview with unlock teaser
+- Replace "WHERE IS YOUR ORGANIZATION TODAY?" with 
+  "YOUR REVENUE MATURITY"
+- Add 4-step progress indicator, active step in #EA2C00
+---
+## PART 3 — LEVEL 1 REBUILD
+Level name: "Revenue Cycle Hasn't Been Brought In Yet"
+Maturity label (small, below level name): 
+  "The connection between ambient and coding is unmeasured."
+Framing question:
+  "Has your revenue cycle team been formally engaged on 
+  what ambient documentation means for coding accuracy 
+  or reimbursement?"
+CRITICAL FORMULA CHANGE — In Uee(), Level 1 block:
+DELETE the following entirely:
+  - Variable h: Math.round(n*i*.04) — denial exposure
+  - Variable f: Math.round(n*.1*a) — wRVU opportunity  
+  - Variable m: Math.round(h/12) — monthly cost
+  - The costOfWaiting field from the return object
+  - The formula block entirely
+These use hardcoded national averages (4% denial rate,
+0.10 wRVU) applied to the user's encounter volume and 
+presented as their exposure. They are not defensible.
+A CFO will immediately ask where those numbers come from.
+Remove them.
+SET in the Level 1 return:
+  hasValue: false
+  value: null
+  formula: ""
+  costOfWaiting: (remove field)
+Also REMOVE the VBC% input ("What % of patients are in 
+value-based contracts?") from the Level 1 UI. This fed 
+the HCC exposure calculation which belongs in Quality, 
+not Revenue.
+Replace the VBC% input with a single qualifying question,
+state key: revenueCycleEngaged
+  Label: "Has your revenue cycle team been formally engaged?"
+  Options (radio buttons):
+    value: "no"
+    label: "Not yet — ambient and revenue cycle 
+            are operating independently"
+    value: "informal"
+    label: "Some awareness — conversations have 
+            started informally"
+    value: "yes"
+    label: "Yes — formally engaged and involved"
+If "yes", show a follow-up, state key: revenueCycleStatus
+  Label: "Where is that engagement?"
+  Options:
+    value: "aware"
+    label: "Aware but no formal analysis yet"
+    value: "analyzing"
+    label: "Active analysis in progress → Level 2"
+    value: "measured"
+    label: "We have before/after data → Level 3"
+If "analyzing" selected: highlight Level 2 as active,
+show note below the radio group:
+  "It sounds like your team is already at Level 2. 
+  Jump there to capture what's being analyzed."
+If "measured" selected: highlight Level 3 as active,
+show note:
+  "You have measured data — that puts you at Level 3. 
+  Jump there to enter your numbers."
+RIGHT PANEL — Level 1:
+Find headlineMetric:
+  "${Nt(h)} in annual denial exposure. ${Nt(f)} in 
+  potential wRVU uplift. Nobody has looked at either."
+Replace with:
+  "${n.toLocaleString()} encounters documented annually.
+  The revenue cycle impact is not yet measured."
+Find context:
+  "Your revenue cycle is operating as if documentation 
+  didn't change — because no one told them it did. This 
+  is the most common and most expensive blind spot in 
+  ambient AI deployments.
+  Organizations that connect revenue cycle to 
+  documentation quality within 90 days of deployment 
+  identify measurable impact before the first contract 
+  renewal."
+Replace with:
+  "When ambient and revenue cycle aren't connected, 
+  any improvement in coding accuracy or reimbursement 
+  goes unmeasured — not because it isn't happening, 
+  but because no one is looking.
+  Bringing revenue cycle into the ambient conversation 
+  is the first step. Organizations that do this tend 
+  to have a quantified impact figure before their 
+  first contract renewal."
+Footnote:
+  "Revenue impact is measured at Level 3, when your 
+  organization has before/after data to work with."
+Next level teaser (small italic, below formula):
+  "Level 2 opens when your revenue cycle team is 
+  actively analyzing the connection."
+---
+## PART 4 — LEVEL 2 REBUILD
+Level name: "The Analysis Is Underway"
+Maturity label: "Your revenue cycle team is looking at this."
+Framing question:
+  "What is your revenue cycle team analyzing — and how 
+  far along is the investigation?"
+REMOVE "HCC/risk adjustment capture rates" from the 
+investigationAreas checkbox list. HCC belongs in the 
+Quality domain. The Revenue investigation areas are 
+strictly about coding accuracy and reimbursement.
+Updated checkbox list, state key: investigationAreas
+  □ wRVU per encounter trends
+  □ ICD-10 coding specificity and code level distribution
+  □ Claim denial rates related to documentation quality
+  □ Collections per encounter before vs. after ambient
+  □ CDI query volume before vs. after
+  □ Coder productivity and turnaround time
+Keep "How long has the analysis been in progress?" 
+radio buttons. Update labels:
+  value: "under30"  label: "Less than 30 days"
+  value: "30to90"   label: "30–90 days"
+  value: "90plus"   label: "90+ days — findings are maturing"
+CRITICAL FORMULA CHANGE — In Uee(), Level 2 block:
+DELETE the following entirely:
+  - Variable p: Math.round(n*i*.005) — floor estimate
+  - Variable g: Math.round(p/12) — monthly cost
+  - The costOfWaiting field from the return object
+  - The formula block ([floorEstimate] line)
+  - The footnote referencing "0.5% of encounter revenue"
+The 0.5% floor estimate is fabricated. Remove it.
+RIGHT PANEL — Level 2:
+Find headlineMetric:
+  "Analysis in progress. Conservative floor estimate: 
+  ${Nt(p)} annually."
+Replace with (when at least one checkbox checked):
+  "Analysis underway across ${f.length} area
+  ${f.length !== 1 ? 's' : ''}."
+If nothing checked yet:
+  "Select what's being analyzed."
+Find context:
+  "The analysis is running. Based on what your team is 
+  looking at, the conservative floor estimate is ${Nt(p)}.
+  Areas under investigation: ${y}${E}"
+Replace with:
+  "Your revenue cycle team is actively examining the 
+  relationship between documentation quality and 
+  ${y}.
+  The faster this analysis produces a before/after 
+  number, the faster your organization has something 
+  concrete to build on. 
+  [If investigationDuration === "90plus", append:]
+  At 90+ days, the analysis is mature enough to 
+  produce a confirmed figure — Level 3 is the 
+  natural next step."
+Footnote:
+  "A dollar value appears at Level 3, when your 
+  organization has before/after data to work with."
+Next level teaser:
+  "Level 3 is where the analysis becomes a number — 
+  one your CFO can work with."
+---
+## PART 5 — LEVEL 3 REBUILD
+Level name: "The Impact Has Been Measured"
+Maturity label: "A number exists that leadership can work with."
+Framing question:
+  "What did your organization measure — and what 
+  does your data show?"
+Keep all four measurement paths (wrvu, collections, 
+denial_rate, revenue_pct). The formulas are correct.
+Make copy changes only.
+"What did you measure?" selector — update option labels:
+  value: "wrvu"
+  label: "wRVU change per encounter 
+          (coding specificity improved)"
+  value: "collections"
+  label: "Collections change per encounter 
+          (dollars collected per visit)"
+  value: "denial_rate"
+  label: "Denial rate reduction 
+          (documentation-related claims)"
+  value: "revenue_pct"
+  label: "Overall revenue change (%) 
+          attributed to documentation"
+wRVU path:
+  Input label: "Measured wRVU change per encounter"
+  Input sublabel: "The average change in wRVU per 
+    encounter your coding team attributes to improved 
+    documentation specificity."
+  Add benchmark context (small italic):
+    "For context: ambient deployments with active CDI 
+    review have reported 0.05–0.15 wRVU improvement 
+    per encounter. Enter your measured value."
+  Find context:
+    "Your measured wRVU change of ${f} per encounter 
+    across ${n.toLocaleString()} documented encounters 
+    represents an estimated ${Nt(m)} in annual 
+    revenue impact.
+    Based on your organization's measured data. No 
+    attribution discount applied to user-measured values."
+  Replace with:
+    "A ${f} wRVU improvement per encounter, across 
+    ${n.toLocaleString()} documented encounters, 
+    represents ${Nt(m)} in annual revenue — sourced 
+    entirely from your organization's measured data."
+  Footnote: "CMS conversion factor: $${a}. Adjustable 
+    in baseline settings."
+Collections path:
+  Find context:
+    "Your measured collections increase of ${Nt(f)} 
+    per encounter across ${n.toLocaleString()} documented 
+    encounters represents ${Nt(m)} in annual revenue impact.
+    Based on your organization's measured data."
+  Replace with:
+    "A ${Nt(f)} increase in collections per encounter, 
+    across ${n.toLocaleString()} documented encounters, 
+    is ${Nt(m)} annually — based on your 
+    organization's data."
+Denial rate path:
+  Find and DELETE costOfWaiting:
+    "You were leaving ${Nt(g)} on the table every 
+    year before this analysis."
+  Remove entirely.
+  Find context (successful reduction case):
+    "Your documentation-related denial rate decreased 
+    from ${f}% to ${m}% — a ${p.toFixed(1)} percentage 
+    point improvement.
+    This is a number your organization can stand 
+    behind — before/after analysis, documented 
+    and attributed.
+    Based on your organization's measured data."
+  Replace with:
+    "Documentation-related denial rate: ${f}% → 
+    ${m}%. A ${p.toFixed(1)} point improvement 
+    across ${n.toLocaleString()} encounters.
+    This is your organization's data — before and 
+    after, attributed and auditable."
+Revenue % path:
+  Find context:
+    "Your measured ${f}% revenue improvement across 
+    ${n.toLocaleString()} documented encounters at 
+    ${Nt(i)}/visit represents ${Nt(m)} in annual 
+    revenue impact.
+    Based on your organization's measured data."
+  Replace with:
+    "A ${f}% revenue improvement across 
+    ${n.toLocaleString()} encounters at ${Nt(i)}/visit 
+    is ${Nt(m)} annually — based on your 
+    organization's measured data."
+Next level teaser (all paths):
+  "Level 4 is where this becomes a managed input — 
+  built into dashboards, CDI workflows, and 
+  revenue cycle operations."
+---
+## PART 6 — LEVEL 4 REBUILD
+Level name: "Documentation Quality Is Built Into Revenue Cycle"
+Maturity label: "Revenue cycle and documentation operate 
+                 as one system."
+Framing question:
+  "How is documentation quality formally integrated into 
+  your revenue cycle operations — and what has your 
+  organization attributed to it?"
+Keep existing checkbox list (revenueIntegrations) as-is.
+"Recognized annual revenue" input:
+  Update label: "Revenue formally attributed to 
+                 documentation quality"
+  Update sublabel: "The annual figure your organization 
+    attributes to ambient-enabled documentation 
+    improvements — a number your CFO or VP of Revenue 
+    Cycle has confirmed."
+FIX the unicode bug in the benchmark footnote:
+  Find:   "$200K\\u2013$1M+"
+  Replace with the actual en-dash character:
+    "$200K–$1M+"
+When integrations are checked but no dollar figure entered,
+REMOVE the floor estimate formula 
+([floorEstimate] = encounters × revenue × 0.5% × 
+integrations count). Replace with:
+  Headline: "${c} integration${c !== 1 ? 's' : ''} 
+             active."
+  Body: "Your revenue cycle and documentation quality 
+    are formally connected across ${c} area
+    ${c !== 1 ? 's' : ''}. Enter the revenue your 
+    organization has formally attributed to complete 
+    this level."
+  Show "—" not "$0" for the value.
+When confirmed revenue is entered, keep existing logic.
+Update context copy:
+  Find (beginning of context string):
+    "Documentation quality is integrated into ${c} 
+    revenue cycle operation..."
+  Replace context with:
+    "Your organization formally attributes ${Nt(l||0)} 
+    in annual revenue to documentation quality 
+    improvements — across ${c} integrated area
+    ${c !== 1 ? 's' : ''}: ${u}.
+    This is the number that belongs in your ambient 
+    strategic narrative."
+---
+## PART 7 — RIGHT PANEL RUNNING SUMMARY
+Add a persistent Revenue Summary at the bottom of the 
+right panel, visible once any level has been engaged:
+  Revenue Cycle Status:   [engaged / analyzing / measured]
+  Investigation Areas:    [N active  or  "—"]
+  Measured Impact:        [value  or  "—"]
+  Confirmed Revenue:      [value  or  "—"]
+  ─────────────────────────────────────────────────
+  Total Revenue Value:    [sum  or  "—"]
+Use "—" for any value not yet entered.
+Never show $0.
+Only show Total row if at least one dollar value exists.
+---
+## PART 8 — FORMULA CHANGES SUMMARY
+REMOVE from Uee():
+  - Level 1: h = encounters × revenue × 4% (denial)
+  - Level 1: f = encounters × 0.10 × CMS (wRVU)
+  - Level 1: costOfWaiting
+  - Level 1: formula block
+  - Level 2: p = encounters × revenue × 0.5% (floor)
+  - Level 2: costOfWaiting
+  - Level 2: formula block
+  - Level 3 denial path: costOfWaiting 
+    ("leaving on the table")
+  - Level 4: floor estimate when no revenue entered
+KEEP in Uee() — these are correct:
+  - Level 3 wRVU:        delta × encounters × CMS ✓
+  - Level 3 collections: delta × encounters ✓
+  - Level 3 denial:      (before-after)% × encounters 
+                         × revenue ✓
+  - Level 3 revenue_pct: encounters × revenue × pct ✓
+  - Level 4:             user-confirmed revenue ✓
+Dollar values only appear at Level 3 (user has 
+before/after data) and Level 4 (user has a confirmed 
+organizational figure). Levels 1 and 2 are diagnostic 
+and narrative only — no fabricated estimates.
+---
+## PART 9 — DO NOT TOUCH
+- Capacity domain (Hee and all Capacity UI)
+- Workforce domain (Wee and all Workforce UI)
+- Quality domain and all Quality UI
+- Step 1 baseline inputs
+- Steps 3, 4, 5 (Reveal, Inaction, Next Steps)
+- Sh() scoring function
+- A1e = {1:6, 2:12, 3:19, 4:25}
+- P8t() scoring adjustment function
+- App routing and state management
