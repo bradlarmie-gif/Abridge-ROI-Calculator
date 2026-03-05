@@ -42,6 +42,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Configuration-driven**: ROI levers and properties are externally managed.
 -   **Pure Functions**: Encapsulated ROI calculation logic.
 -   **Qualitative Driver Handling**: Adapts display and PDF exports for qualitative drivers.
+-   **Outpatient PDF Narrative Rewrite**: The Outpatient Explore PDF uses a dedicated rendering path with McKinsey-style narrative prose, dynamic conditional blocks (getOutpatientObservation, getOutpatientClosingQuote), and a conditional Documentation Quality page (page 3) that only renders when wRVU/HCC/Denial drivers are enabled (pushing total from 4 to 5 pages). Non-outpatient care settings (ED, Inpatient, Nursing) continue using the config-driven 4-page template. PageFooter accepts a dynamic `totalPages` prop.
 
 ## External Dependencies
 

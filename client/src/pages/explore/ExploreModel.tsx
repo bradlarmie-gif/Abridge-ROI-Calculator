@@ -642,6 +642,35 @@ export default function ExploreModel({
         if (state.docQualityInputs.nursingHcahpsEnabled) qualitativeDrivers.push('HCAHPS Improvement');
       }
 
+      const retentionImpactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
+      const providersLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
+      const burnoutDep = providersLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
+      const providersRet = burnoutDep * (retentionImpactPct / 100);
+
+      const wrvuLiftPctVal = wrvuScenarios[docQualityInputs.wrvuScenario] || 5;
+      const wrvuLift = docQualityInputs.currentWrvu * (wrvuLiftPctVal / 100);
+      const totalWrvusVal = eligibleEncounters * wrvuLift;
+
+      const hccRecapturePct = hccScenarios[docQualityInputs.hccScenario] || 10;
+      const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
+      const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
+      const hccsRecapturedVal = gapPatients * (hccRecapturePct / 100) * docQualityInputs.avgHccs;
+      const hccGrossVal = hccsRecapturedVal * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
+
+      const denialsPreventionPct = denialsScenarios[docQualityInputs.denialsScenario] || 50;
+      const totalDenialsVal = eligibleEncounters * (docQualityInputs.denialRate / 100);
+      const unappealableDenialsVal = totalDenialsVal * (docQualityInputs.unappealableRate / 100);
+      const denialsPrevVal = unappealableDenialsVal * (denialsPreventionPct / 100);
+      const denialGrossVal = denialsPrevVal * docQualityInputs.avgClaimValue;
+
+      const capHrs = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
+      const docQualHrs = totalHoursSaved * (timeDriverInputs.opAllocDocQualityPercent / 100);
+      const susHrs = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
+      const hrsPerWkBack = state.numberOfProviders > 0 ? susHrs / state.numberOfProviders / 52 : 0;
+
+      const hoursConverted = capHrs * (timeDriverInputs.capacityRealizationPercent / 100);
+      const projVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
+
       const pdfData: ExplorePDFData = {
         careSetting: state.careSetting as ExplorePDFData['careSetting'],
         clientName,
@@ -665,6 +694,81 @@ export default function ExploreModel({
         fullScaleValue,
         implementationCost: state.includeImplementation ? state.implementationFee : 0,
         minutesSavedPerEncounter: state.minutesSavedPerEncounter,
+
+        eligibleEncounters,
+        encountersPerProvider: state.numberOfProviders > 0 ? Math.round(state.annualEncounters / state.numberOfProviders) : 0,
+        efficiencyValue: timeValue,
+        documentationQualityValue: docValue,
+
+        capacityAllocationPct: timeDriverInputs.opAllocCapacityPercent,
+        docQualityAllocationPct: timeDriverInputs.opAllocDocQualityPercent,
+        sustainabilityAllocationPct: timeDriverInputs.opAllocWellbeingPercent,
+        capacityHours: Math.round(capHrs),
+        docQualityHours: Math.round(docQualHrs),
+        sustainabilityHours: Math.round(susHrs),
+
+        patientAccessEnabled: timeDriverInputs.patientAccessEnabled,
+        accessConversionPct: timeDriverInputs.capacityRealizationPercent,
+        avgVisitDurationMin: timeDriverInputs.visitDuration,
+        revenuePerVisit: timeDriverInputs.revenuePerVisit,
+        projectedAdditionalVisits: Math.round(projVisits),
+        patientAccessValue,
+
+        sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
+        retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
+        hoursPerProviderPerWeekBack: hrsPerWkBack,
+        annualTurnoverRate: timeDriverInputs.annualTurnoverRate,
+        burnoutRelatedTurnoverPct: timeDriverInputs.burnoutRelatedTurnover,
+        replacementCostPerProvider: timeDriverInputs.replacementCost,
+        abridgeRetentionImpactPct: retentionImpactPct,
+        abridgeRetentionImpactLabel: timeDriverInputs.retentionImpactScenario,
+        providersLeavingPerYear: providersLeaving,
+        burnoutDepartures: burnoutDep,
+        providersRetained: providersRet,
+        retentionValue: clinicianRetentionValue,
+
+        wrvuEnabled: docQualityInputs.wrvuEnabled,
+        wrvuScenario: docQualityInputs.wrvuScenario,
+        wrvuImprovementPct: wrvuLiftPctVal,
+        currentAvgWrvuPerVisit: docQualityInputs.currentWrvu,
+        wrvuLiftPerVisit: wrvuLift,
+        totalAdditionalWrvus: Math.round(totalWrvusVal),
+        wrvuConversionFactor: docQualityInputs.conversionFactor,
+        wrvuRealizationRate: docQualityInputs.wrvuRealization,
+        annualWrvuValue: wrvuValue,
+
+        hccEnabled: docQualityInputs.hccEnabled,
+        hccRecaptureScenario: docQualityInputs.hccScenario,
+        panelSizePerProvider: docQualityInputs.panelSize,
+        totalPatients: state.numberOfProviders * docQualityInputs.panelSize,
+        medicareAdvantagePct: docQualityInputs.maPercent,
+        maPatientPanel: Math.round(maPatients),
+        documentationGapRate: docQualityInputs.gapRate,
+        patientsWithGaps: Math.round(gapPatients),
+        avgMissedHccsPerPatient: docQualityInputs.avgHccs,
+        totalRecaptureOpportunity: Math.round(gapPatients * docQualityInputs.avgHccs),
+        hccRecaptureTargetPct: hccRecapturePct,
+        hccsDocumented: Math.round(hccsRecapturedVal),
+        rafImpactPerHcc: docQualityInputs.rafImpact,
+        annualPaymentPerRaf: docQualityInputs.annualPayment,
+        hccGrossValue: Math.round(hccGrossVal),
+        hccRealizationRate: docQualityInputs.hccRealization,
+        annualHccValue: hccValue,
+
+        denialEnabled: docQualityInputs.denialsEnabled,
+        denialPreventionScenario: docQualityInputs.denialsScenario,
+        baselineDenialRate: docQualityInputs.denialRate,
+        totalDenials: Math.round(totalDenialsVal),
+        unappealableDenialRate: docQualityInputs.unappealableRate,
+        unrecoverableDenials: Math.round(unappealableDenialsVal),
+        preventionTargetPct: denialsPreventionPct,
+        denialsPrevented: Math.round(denialsPrevVal),
+        avgDeniedClaimValue: docQualityInputs.avgClaimValue,
+        denialGrossValue: Math.round(denialGrossVal),
+        denialRealizationRate: docQualityInputs.denialsRealization,
+        annualDenialValue: denialsValue,
+
+        costPerProviderPerMonth: state.costPerUnit,
       };
 
       await generateExplorePDF(pdfData);

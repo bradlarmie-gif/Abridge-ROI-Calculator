@@ -166,6 +166,84 @@ export interface ExplorePDFData {
   implementationCost: number;
 
   minutesSavedPerEncounter: number;
+
+  eligibleEncounters?: number;
+  encountersPerProvider?: number;
+  timeSavingsScenario?: string;
+  dailyImpactMinutes?: number;
+
+  capacityAllocationPct?: number;
+  docQualityAllocationPct?: number;
+  sustainabilityAllocationPct?: number;
+  capacityHours?: number;
+  docQualityHours?: number;
+  sustainabilityHours?: number;
+
+  patientAccessEnabled?: boolean;
+  accessConversionPct?: number;
+  avgVisitDurationMin?: number;
+  revenuePerVisit?: number;
+  projectedAdditionalVisits?: number;
+  patientAccessValue?: number;
+
+  sustainabilityEnabled?: boolean;
+  retentionValueEnabled?: boolean;
+  hoursPerProviderPerWeekBack?: number;
+  annualTurnoverRate?: number;
+  burnoutRelatedTurnoverPct?: number;
+  replacementCostPerProvider?: number;
+  abridgeRetentionImpactPct?: number;
+  abridgeRetentionImpactLabel?: string;
+  providersLeavingPerYear?: number;
+  burnoutDepartures?: number;
+  providersRetained?: number;
+  retentionValue?: number;
+
+  wrvuEnabled?: boolean;
+  wrvuScenario?: string;
+  wrvuImprovementPct?: number;
+  currentAvgWrvuPerVisit?: number;
+  wrvuLiftPerVisit?: number;
+  totalAdditionalWrvus?: number;
+  wrvuConversionFactor?: number;
+  wrvuRealizationRate?: number;
+  annualWrvuValue?: number;
+
+  hccEnabled?: boolean;
+  hccRecaptureScenario?: string;
+  panelSizePerProvider?: number;
+  totalPatients?: number;
+  medicareAdvantagePct?: number;
+  maPatientPanel?: number;
+  documentationGapRate?: number;
+  patientsWithGaps?: number;
+  avgMissedHccsPerPatient?: number;
+  totalRecaptureOpportunity?: number;
+  hccRecaptureTargetPct?: number;
+  hccsDocumented?: number;
+  rafImpactPerHcc?: number;
+  annualPaymentPerRaf?: number;
+  hccGrossValue?: number;
+  hccRealizationRate?: number;
+  annualHccValue?: number;
+
+  denialEnabled?: boolean;
+  denialPreventionScenario?: string;
+  baselineDenialRate?: number;
+  totalDenials?: number;
+  unappealableDenialRate?: number;
+  unrecoverableDenials?: number;
+  preventionTargetPct?: number;
+  denialsPrevented?: number;
+  avgDeniedClaimValue?: number;
+  denialGrossValue?: number;
+  denialRealizationRate?: number;
+  annualDenialValue?: number;
+
+  pricingModel?: string;
+  costPerProviderPerMonth?: number;
+  efficiencyValue?: number;
+  documentationQualityValue?: number;
 }
 
 const fmtCurrency = (n: number): string => {
@@ -179,7 +257,7 @@ const fmtNum = (n: number): string => {
   return Math.round(safe(n)).toLocaleString();
 };
 
-const safe = (v: number) => (isNaN(v) || v === undefined || v === null ? 0 : v);
+const safe = (v: number | undefined | null) => (!v || isNaN(v) ? 0 : v);
 
 const ProgressBar = ({ percent, width = 400 }: { percent: number; width?: number }) => {
   const pct = Math.min(100, Math.max(0, safe(percent)));
@@ -192,11 +270,11 @@ const ProgressBar = ({ percent, width = 400 }: { percent: number; width?: number
   );
 };
 
-const PageFooter = ({ pageNum, orgName, settingLabel }: { pageNum: number; orgName: string; settingLabel: string }) => (
+const PageFooter = ({ pageNum, orgName, settingLabel, totalPages = 4 }: { pageNum: number; orgName: string; settingLabel: string; totalPages?: number }) => (
   <View style={styles.footer}>
     <Text style={styles.footerLeft}>ABRIDGE</Text>
     <Text style={styles.footerCenter}>{orgName} {"\u00B7"} {settingLabel} Value Assessment</Text>
-    <Text style={styles.footerRight}>Page {pageNum} of 4</Text>
+    <Text style={styles.footerRight}>Page {pageNum} of {totalPages}</Text>
   </View>
 );
 
@@ -347,6 +425,53 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
   },
 };
 
+const getOutpatientObservation = (data: ExplorePDFData): string => {
+  const capPct = safe(data.capacityAllocationPct);
+  const susPct = safe(data.sustainabilityAllocationPct);
+  const docPct = safe(data.docQualityAllocationPct);
+  const hasRetention = !!data.retentionValueEnabled;
+  const hasDocDrivers = !!(data.wrvuEnabled || data.hccEnabled || data.denialEnabled);
+
+  let obs = "";
+  const roughlyEqual = Math.abs(capPct - susPct) <= 5 && Math.abs(capPct - docPct) <= 5;
+
+  if (roughlyEqual) {
+    obs = `You spread the allocation evenly \u2014 capacity, documentation quality, and clinician sustainability each getting meaningful weight. That reflects an organization trying to solve for all three at once, which is exactly the right instinct. The model reflects that balance.`;
+  } else if (susPct >= 30 || hasRetention) {
+    obs = `You put real weight on clinician sustainability \u2014 ${susPct}% of reclaimed time${hasRetention ? ", plus a quantified retention model" : ""}. That\u2019s a leadership signal: this isn\u2019t just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment.`;
+  } else if (capPct >= 40 && !hasRetention) {
+    obs = `Your model is weighted toward capacity \u2014 ${capPct}% of reclaimed time flows back to patient access. That\u2019s the most direct line from documentation efficiency to revenue. The sustainability allocation (${susPct}%) adds a buffer against burnout without making it the headline.`;
+  } else if (docPct >= 40 && hasDocDrivers) {
+    obs = `The ${docPct}% you allocated to documentation quality time isn\u2019t passive \u2014 it\u2019s the foundation of the revenue capture on the right. Better notes require attention in the moment. Abridge creates the space for that.`;
+  } else {
+    obs = `Your model balances capacity (${capPct}%), documentation quality (${docPct}%), and clinician sustainability (${susPct}%). That reflects an organization working across multiple value dimensions simultaneously.`;
+  }
+
+  if (!hasDocDrivers) {
+    obs += ` The documentation quality drivers were not activated in this model. That\u2019s not a gap \u2014 it\u2019s the right starting point. Quantify the efficiency gains first. Then layer in revenue capture with real data.`;
+  }
+
+  return obs;
+};
+
+const getOutpatientClosingQuote = (data: ExplorePDFData): string => {
+  const susPct = safe(data.sustainabilityAllocationPct);
+  const capPct = safe(data.capacityAllocationPct);
+  if (susPct >= 30 || data.retentionValueEnabled) {
+    return "Give providers their time back \u2014 and the documentation gets better, not worse. That\u2019s the counterintuitive truth about ambient documentation. Less time at the keyboard means more attention in the room. Better notes follow naturally \u2014 and so does everything that depends on them.";
+  }
+  if (capPct >= 50 && susPct < 20) {
+    return "The scheduling problem and the documentation problem are the same problem. When providers spend less time writing notes, they have more time to see patients. Abridge doesn\u2019t create capacity \u2014 it uncovers capacity that was already there, buried in after-hours charting.";
+  }
+  if (data.wrvuEnabled && safe(data.annualWrvuValue) > 0) {
+    return "The complexity was always there. The provider delivered it. The patient experienced it. The only thing missing was a note that captured it fully. That\u2019s what changes.";
+  }
+  if (data.hccEnabled && data.denialEnabled) {
+    return "Revenue cycle isn\u2019t downstream from clinical documentation \u2014 it is clinical documentation. What gets captured in the room determines what gets paid. Abridge closes that gap in real time, before the encounter ends.";
+  }
+  return "Give providers their time back \u2014 and the documentation gets better, not worse. That\u2019s the counterintuitive truth about ambient documentation. Better notes come from less time documenting.";
+};
+
 const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const config = SETTING_CONFIGS[data.careSetting];
   const orgName = data.clientName || "Organization";
@@ -356,6 +481,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const docTotal = docDrivers.reduce((s, d) => s + safe(d.value), 0);
 
   const isNursing = data.careSetting === "nursing";
+  const isOutpatient = data.careSetting === "outpatient";
   const unitCount = isNursing ? (data.nursingStaffedBeds || data.providers) : data.providers;
 
   const derivedTotalValue = timeTotal + docTotal;
@@ -393,6 +519,624 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
       name: d.name,
       rate: `${safe(Number(d.inputs?.realizationRate || d.inputs?.realization || d.inputs?.wrvuRealization || 0))}%`,
     }));
+
+  const opHasDocQuality = isOutpatient && !!(data.wrvuEnabled || data.hccEnabled || data.denialEnabled);
+  const totalPages = isOutpatient ? (opHasDocQuality ? 5 : 4) : 4;
+
+  const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
+
+  if (isOutpatient) {
+    const effVal = safe(data.efficiencyValue);
+    const docQualVal = safe(data.documentationQualityValue);
+    const capPct = safe(data.capacityAllocationPct);
+    const docPct = safe(data.docQualityAllocationPct);
+    const susPct = safe(data.sustainabilityAllocationPct);
+    const capHrs = safe(data.capacityHours);
+    const susHrs = safe(data.sustainabilityHours);
+    const convPct = safe(data.accessConversionPct);
+    const hrsPerWkBack = safe(data.hoursPerProviderPerWeekBack);
+
+    const timeRecapturedCopy = (() => {
+      if (data.patientAccessEnabled && data.retentionValueEnabled) {
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You directed ${capPct}% toward patient access and ${susPct}% toward clinician wellbeing \u2014 a deliberate balance between near-term capacity and long-term retention.`;
+      }
+      if (data.patientAccessEnabled) {
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You directed ${capPct}% of that time toward patient access \u2014 the most direct path from documentation savings to revenue.`;
+      }
+      if (data.sustainabilityEnabled) {
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You chose to apply this time to clinician wellbeing \u2014 a signal that retention and sustainability are the priority right now.`;
+      }
+      return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually.`;
+    })();
+
+    const activatedDocDriversList: string[] = [];
+    if (data.wrvuEnabled && safe(data.annualWrvuValue) > 0) activatedDocDriversList.push(`wRVU improvement (${fmtCurrency(safe(data.annualWrvuValue))})`);
+    if (data.hccEnabled && safe(data.annualHccValue) > 0) activatedDocDriversList.push(`HCC capture (${fmtCurrency(safe(data.annualHccValue))})`);
+    if (data.denialEnabled && safe(data.annualDenialValue) > 0) activatedDocDriversList.push(`denial prevention (${fmtCurrency(safe(data.annualDenialValue))})`);
+
+    let investmentPageNum = opHasDocQuality ? 4 : 3;
+    let assessmentPageNum = opHasDocQuality ? 5 : 4;
+
+    return (
+      <Document>
+        <PDFCoverPage
+          reportLabel={config.coverLabel}
+          title={orgName}
+          subtitle={`${fmtNum(data.providers)} providers \u00B7 ${fmtNum(data.encounters)} encounters \u00B7 Outpatient`}
+          preparedBy={data.preparedBy}
+        />
+
+        {/* OUTPATIENT PAGE 1: THE THESIS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE THESIS</Text>
+
+            <View style={[styles.cardBg, { paddingVertical: 14, paddingHorizontal: 18, marginBottom: 8 }]}>
+              <Text style={{ fontSize: 14, color: colors.secondary, marginBottom: 6 }}>
+                {fmtNum(data.providers)} providers {"\u00B7"} {fmtNum(data.encounters)} encounters {"\u00B7"} Outpatient
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                    PROJECTED NET ANNUAL VALUE
+                  </Text>
+                  <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primary }}>
+                    {fmtCurrency(derivedNetValue)}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
+                What changes when your providers get time back?
+              </Text>
+
+              <View style={{ flexDirection: "row", gap: 6 }}>
+                <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.providers)}</Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>providers</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.encounters)}</Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{data.utilizationPercent}%</Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>utilization</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{investmentDisplay}</Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>investment</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>TWO SOURCES OF VALUE</Text>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
+              Ambient documentation creates value in two distinct ways. The first is time: when providers spend less time on notes, that time can flow back to patients, to breathing room, or to both. The second is documentation quality: when notes fully capture the complexity of what happened in the room, the revenue that was already earned gets properly coded and collected.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  TIME RECAPTURED
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
+                  {effVal > 0 ? fmtCurrency(effVal) : "Not Measured"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
+                  {timeRecapturedCopy}
+                </Text>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                  The constraint is time. This is what changes when documentation gets faster.
+                </Text>
+              </View>
+
+              <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  REVENUE OPTIMIZED
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: opHasDocQuality ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
+                  {opHasDocQuality
+                    ? `Better notes capture the complexity that\u2019s already there. ${activatedDocDriversList.join(", ")}. The notes drive the revenue.`
+                    : `No documentation quality drivers were selected for this assessment. wRVU improvement, HCC capture, and denial prevention are available to model \u2014 most organizations explore these at their 90-day review once baseline adoption is established.`}
+                </Text>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                  {opHasDocQuality ? "The notes drive the revenue." : ""}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.calloutBox}>
+              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
+                WHAT YOUR CHOICES REVEAL
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                {getOutpatientObservation(data)}
+              </Text>
+            </View>
+
+            <PageFooter pageNum={1} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* OUTPATIENT PAGE 2: HOW YOUR TIME ALLOCATION BECOMES REVENUE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
+            <Text style={styles.sectionHeadline}>How Your Time Allocation Becomes Revenue</Text>
+            <Text style={styles.body}>
+              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} providers. Here{"\u2019"}s what each allocation decision produces.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>TIME RECAPTURED</Text>
+
+            {data.patientAccessEnabled && safe(data.patientAccessValue) > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Patient Access</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.patientAccessValue))}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      You directed {capPct}% of reclaimed time {"\u2014"} {fmtNum(capHrs)} hours {"\u2014"} toward patient capacity. At a {convPct}% conversion rate to scheduled visits, that generates {fmtNum(safe(data.projectedAdditionalVisits))} additional encounters per year. At ${safe(data.revenuePerVisit)} per visit, the return is {fmtCurrency(safe(data.patientAccessValue))}.
+                    </Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      The {convPct}% conversion rate reflects the realistic friction between recovered time and scheduled appointments {"\u2014"} scheduling demand, slot availability, and provider willingness to add volume. {convPct === 10 ? "The 10% default is the midpoint of what Abridge-deployed organizations typically see." : convPct > 10 ? "You modeled this above the typical starting point \u2014 that reflects confidence in your scheduling capacity and demand." : "You modeled this conservatively, which is the right approach for a first-year model."}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.sustainabilityEnabled && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Sustainability</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled ? colors.primary : colors.secondary }}>
+                        {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : `${hrsPerWkBack.toFixed(1)} hrs/wk per provider`}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      You allocated {susPct}% of reclaimed time {"\u2014"} {fmtNum(susHrs)} hours {"\u2014"} to clinician wellbeing. That returns {hrsPerWkBack.toFixed(1)} hours per week to each provider.
+                    </Text>
+                    {data.retentionValueEnabled ? (
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                        You chose to quantify the retention value of that time. Based on a {safe(data.annualTurnoverRate)}% annual turnover rate, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually. That{"\u2019"}s {safe(data.providersRetained)?.toFixed(2)} providers retained per year at the {data.abridgeRetentionImpactLabel || "typical"} impact scenario.
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                        That{"\u2019"}s {Math.round(hrsPerWkBack * 60)} minutes back at the end of a shift. Not every hour of recovered time translates directly to a dollar figure {"\u2014"} but the evidence on documentation burden and physician attrition is clear. This allocation is protecting something that{"\u2019"}s harder to rebuild once it{"\u2019"}s gone.
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              </View>
+            )}
+
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>TIME RECAPTURED SUBTOTAL</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{fmtCurrency(effVal)}</Text>
+            </View>
+
+            <View style={[styles.cardBg, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}>
+              <View>
+                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                  PROJECTED ANNUAL VALUE
+                </Text>
+                <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>
+                  {fmtCurrency(derivedNetValue)}
+                </Text>
+                <Text style={{ fontSize: 10, color: colors.secondary, marginTop: 2 }}>
+                  Per provider: ~{fmtCurrency(perUnit)}/year
+                </Text>
+              </View>
+              <View style={{ maxWidth: 180 }}>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, textAlign: "right" }}>
+                  {docQualVal > 0
+                    ? `This reflects time value only. Documentation quality adds ${fmtCurrency(docQualVal)} \u2014 detailed on the next page.`
+                    : `This is year one, before documentation quality drivers are measured. The model has room to grow.`}
+                </Text>
+              </View>
+            </View>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* OUTPATIENT PAGE 3 (conditional): DOCUMENTATION QUALITY */}
+        {opHasDocQuality && (
+          <Page size="LETTER" style={styles.page} wrap={false}>
+            <View style={styles.pageWrapper}>
+              <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
+              <Text style={styles.sectionHeadline}>The Notes Were Already Earning This.</Text>
+              <Text style={styles.body}>
+                Better documentation doesn{"\u2019"}t create new revenue. It captures revenue that already exists {"\u2014"} for complexity that was delivered but not fully coded, for diagnoses that were discussed but not documented, for claims that were denied because the medical necessity wasn{"\u2019"}t explicit. Abridge captures it in the room, in the moment.
+              </Text>
+
+              <View style={styles.divider} />
+
+              <Text style={styles.sectionLabelGray}>REVENUE DRIVERS</Text>
+
+              {data.wrvuEnabled && safe(data.annualWrvuValue) > 0 && (
+                <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                  <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                    <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>wRVU Improvement</Text>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualWrvuValue))}</Text>
+                      </View>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        When visit notes fully reflect the complexity of what happened in the room, E/M levels code higher. The current average of {safe(data.currentAvgWrvuPerVisit)} wRVU per visit has room to move. At a {safe(data.wrvuImprovementPct)}% documentation improvement {"\u2014"} the {data.wrvuScenario} scenario, where industry data shows a 2{"\u2013"}7% lift range {"\u2014"} that{"\u2019"}s {safe(data.wrvuLiftPerVisit)?.toFixed(3)} additional wRVU per visit, {fmtNum(safe(data.totalAdditionalWrvus))} across your {fmtNum(safe(data.eligibleEncounters))} eligible encounters. At a ${safe(data.wrvuConversionFactor)} conversion factor and {safe(data.wrvuRealizationRate)}% realization, the annual value is {fmtCurrency(safe(data.annualWrvuValue))}.
+                      </Text>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                        This is not upcoding. It is accurate coding of complexity that was always there.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {data.hccEnabled && safe(data.annualHccValue) > 0 && (
+                <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                  <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                    <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HCC Capture</Text>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualHccValue))}</Text>
+                      </View>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        For your Medicare Advantage population, risk adjustment pays based on what{"\u2019"}s documented {"\u2014"} not what{"\u2019"}s known. Many patients have conditions that are managed and discussed at every visit but never formally captured in the note. Abridge surfaces those moments in real time.
+                      </Text>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                        This model covers only the MA patients touched in Abridge-documented encounters {"\u2014"} your estimated {fmtNum(safe(data.maPatientPanel))} MA patients at {safe(data.medicareAdvantagePct)}% of your {fmtNum(safe(data.totalPatients))} total panel. Of those, approximately {fmtNum(safe(data.patientsWithGaps))} have documentation gaps. At the {data.hccRecaptureScenario} recapture target of {safe(data.hccRecaptureTargetPct)}%, that{"\u2019"}s {fmtNum(safe(data.hccsDocumented))} HCCs documented. The annual value {"\u2014"} after a {safe(data.hccRealizationRate)}% realization rate {"\u2014"} is {fmtCurrency(safe(data.annualHccValue))}.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {data.denialEnabled && safe(data.annualDenialValue) > 0 && (
+                <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                  <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                    <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Denial Prevention</Text>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualDenialValue))}</Text>
+                      </View>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        Documentation gaps are the primary driver of claim denials that cannot be appealed {"\u2014"} permanent, unrecoverable revenue loss. Of your estimated {fmtNum(safe(data.totalDenials))} annual denials, {fmtNum(safe(data.unrecoverableDenials))} are unappealable. At the {data.denialPreventionScenario} prevention target of {safe(data.preventionTargetPct)}%, Abridge prevents {fmtNum(safe(data.denialsPrevented))} of those claims from being denied in the first place. At ${safe(data.avgDeniedClaimValue)} per claim and a {safe(data.denialRealizationRate)}% realization rate, that{"\u2019"}s {fmtCurrency(safe(data.annualDenialValue))} annually.
+                      </Text>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                        These are not recoverable through appeals. They either get documented correctly the first time, or they don{"\u2019"}t get paid.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>DOCUMENTATION QUALITY SUBTOTAL</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{fmtCurrency(docQualVal)}</Text>
+              </View>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
+                All figures use conservative realization rates based on observed Abridge deployments. The full opportunity is larger {"\u2014"} and measurable once baseline data is established.
+              </Text>
+
+              {(!data.wrvuEnabled || !data.hccEnabled || !data.denialEnabled) && (
+                <View style={{ marginTop: 4 }}>
+                  <Text style={{ ...styles.sectionLabelGray, marginBottom: 6 }}>WHAT WASN{"\u2019"}T MODELED</Text>
+                  {!data.wrvuEnabled && (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      wRVU Improvement {"\u2014"} Not modeled in this assessment. Requires baseline wRVU data per provider to size accurately.
+                    </Text>
+                  )}
+                  {!data.hccEnabled && (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      HCC Capture {"\u2014"} Not modeled in this assessment. Requires Medicare Advantage population size and current HCC capture rate.
+                    </Text>
+                  )}
+                  {!data.denialEnabled && (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Denial Prevention {"\u2014"} Not modeled in this assessment. Requires current denial rate and claim value data from your revenue cycle team.
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                    These are available to activate in a future model {"\u2014"} the inputs are straightforward once baseline data exists.
+                  </Text>
+                </View>
+              )}
+
+              <PageFooter pageNum={3} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+            </View>
+          </Page>
+        )}
+
+        {/* OUTPATIENT PAGE 3/4: THE INVESTMENT CASE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
+            <Text style={styles.sectionHeadline}>Infrastructure, Not Expense.</Text>
+            <Text style={styles.body}>
+              The investment is {investmentDisplay} annually and does not change as value grows. That asymmetry {"\u2014"} fixed cost, compounding return {"\u2014"} is what separates infrastructure from a line item.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>3-YEAR PROJECTION</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", marginBottom: 6 }}>
+                <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase" }}>Period</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Value</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Investment</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Net Value</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Cumulative</Text>
+              </View>
+              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 6 }} />
+
+              {[
+                { period: "Year 1", value: year1Value, cost: year1Cost, net: year1Value - year1Cost, cum: cumulative1 },
+                { period: "Year 2", value: year2Value, cost: year2Cost, net: year2Value - year2Cost, cum: cumulative2 },
+                { period: "Year 3", value: year3Value, cost: year3Cost, net: year3Value - year3Cost, cum: cumulative3 },
+              ].map((row, i) => (
+                <View key={i} style={{ flexDirection: "row", marginBottom: 4 }}>
+                  <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText }}>{row.period}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primaryText, textAlign: "right" }}>{fmtCurrency(row.value)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.secondary, textAlign: "right" }}>{fmtCurrency(row.cost)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primary, fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(row.net)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primary, fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(row.cum)}</Text>
+                </View>
+              ))}
+
+              <Text style={{ fontSize: 8.5, color: colors.tertiary, marginTop: 6, lineHeight: 1.4 }}>
+                Years 2{"\u2013"}3 reflect a 10% annual value improvement as provider adoption deepens and documentation patterns mature. The investment stays flat.
+              </Text>
+            </View>
+
+            <View style={styles.calloutBox}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                By Year 3, you{"\u2019"}re generating {year3Roi}{"\u00D7"} for every dollar invested {"\u2014"} {fmtCurrency(cumulative3)} cumulative net value against {fmtCurrency(data.annualInvestment * 3)} in total investment. That{"\u2019"}s not a cost to defend. That{"\u2019"}s a return to protect.
+              </Text>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>AT SCALE</Text>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
+              Per-provider economics hold at scale {"\u2014"} and improve slightly as workflow maturity compounds across a larger organization.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  CURRENT MODEL
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
+                  {fmtCurrency(derivedNetValue)}/yr
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(data.providers)} providers</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{data.utilizationPercent}% utilization</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 4 }}>~{fmtCurrency(perUnit)}/provider/yr</Text>
+              </View>
+
+              <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  AT FULL SCALE
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
+                  {fmtCurrency(fullScaleNetValue)}/yr
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(data.fullScaleProviders)} providers</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{data.fullScaleUtilization}% utilization</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 4 }}>~{fmtCurrency(perUnitFullScale)}/provider/yr</Text>
+              </View>
+            </View>
+
+            <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
+              The per-provider return improves at scale because utilization typically increases as workflows mature and more providers adopt Abridge as their default documentation approach {"\u2014"} not because the math changes.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>WHAT TO MEASURE AT 90 DAYS</Text>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 2 }}>
+              These are the signals that confirm the model is working {"\u2014"} and the levers that improve it if it isn{"\u2019"}t.
+            </Text>
+            <View style={[styles.cardBg, { marginBottom: 6 }]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                {"\u2022"} Documentation time per encounter (target: {"\u2212"}50% from baseline)
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                {"\u2022"} Provider satisfaction with documentation burden (target: +15 pts from baseline)
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                {"\u2022"} wRVU per encounter trend (target: +2{"\u2013"}5% if wRVU driver is relevant)
+              </Text>
+            </View>
+            <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
+              Tracking these at 90 days gives you the data to validate this model with real numbers {"\u2014"} and to activate any documentation quality drivers that weren{"\u2019"}t modeled here.
+            </Text>
+
+            <PageFooter pageNum={investmentPageNum} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* OUTPATIENT PAGE 4/5: YOUR ASSESSMENT */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>YOUR ASSESSMENT</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 10, paddingVertical: 16, paddingHorizontal: 20 }]}>
+              <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
+                {fmtNum(data.providers)} providers.
+              </Text>
+              <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
+                {fmtNum(data.encounters)} encounters.
+              </Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
+                {fmtCurrency(derivedNetValue)} projected net value.
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>
+                {fmtCurrency(perUnit)} per provider per year.
+              </Text>
+            </View>
+
+            <View style={[styles.calloutBox, { marginBottom: 10 }]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+                {getOutpatientClosingQuote(data)}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>AT A GLANCE</Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  VALUE SUMMARY
+                </Text>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>TIME RECAPTURED</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Patient Access</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.patientAccessEnabled ? fmtCurrency(safe(data.patientAccessValue)) : "Not modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>REVENUE OPTIMIZED</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>wRVU Improvement</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.wrvuEnabled ? fmtCurrency(safe(data.annualWrvuValue)) : "Not modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HCC Capture</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.hccEnabled ? fmtCurrency(safe(data.annualHccValue)) : "Not modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Denial Prevention</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.denialEnabled ? fmtCurrency(safe(data.annualDenialValue)) : "Not modeled"}</Text>
+                  </View>
+                </View>
+                <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Net Annual Value</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(derivedNetValue)}</Text>
+                </View>
+              </View>
+
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  INVESTMENT SUMMARY
+                </Text>
+                <View style={{ marginBottom: 2 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Annual Investment</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{investmentDisplay}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Per provider</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtCurrency(data.providers > 0 ? data.annualInvestment / data.providers * 12 / 12 : 0)}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Year 1 ROI</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{derivedRoi.toFixed(1)}{"\u00D7"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Year 3 Cumulative Net</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtCurrency(cumulative3)}</Text>
+                  </View>
+                </View>
+                <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                  UTILIZATION
+                </Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Projected</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>{data.utilizationPercent}%</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Hours Returned</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(data.hoursReturned)}</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Per provider/week</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>
+                    {data.providers > 0 ? `${(data.hoursReturned / data.providers / 52).toFixed(1)} hrs` : "0 hrs"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>METHODOLOGY</Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  YOUR INPUTS
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
+                  {fmtNum(data.providers)} providers{"\n"}
+                  {fmtNum(data.encounters)} encounters{"\n"}
+                  {data.utilizationPercent}% utilization{"\n"}
+                  {data.minutesSavedPerEncounter} min saved per encounter{"\n"}
+                  {investmentDisplay} annual investment{"\n"}
+                  {fmtNum(data.hoursReturned)} hrs returned annually
+                  {data.retentionValueEnabled ? `\n${safe(data.annualTurnoverRate)}% annual turnover / ${fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost` : ""}
+                </Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  HOW WE CALCULATED THIS
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  All figures are built from your inputs {"\u2014"} not industry averages applied generically. Where assumptions were required (conversion rates, realization rates, turnover benchmarks), we used the conservative end of observed Abridge deployment data.
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginTop: 4 }}>
+                  The goal of this model is to give you a defensible starting point, not a ceiling. The most reliable validation comes after deployment, when you can measure these baselines directly. This document gives you the numbers to track against.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
+              This assessment is for planning purposes. Projections are based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, and organizational factors. This does not constitute a guarantee of financial outcomes.
+            </Text>
+
+            <PageFooter pageNum={assessmentPageNum} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+      </Document>
+    );
+  }
 
   return (
     <Document>
