@@ -1,0 +1,145 @@
+The proforma's Value Growth Trajectory chart and 3-Year Financial Summary have critical math and logic bugs. The individual care setting calculators produce correct values — the problem is how those values get projected over time in the proforma. The three value categories (Doc Quality, Capacity & Efficiency, Retention) should each have fundamentally different onset behaviors, but right now they all scale similarly and the provider rollout is wrong.
+BUG 1 (Critical): Provider Count Uses Linear Interpolation Instead of Respecting the Rollout Plan
+The user configures a stepped rollout plan:
+
+Y1: 50 providers
+Y2: 230 providers
+Y3: 500 providers
+But the chart and financial summary ignore these steps entirely. Instead, the model linearly interpolates from 50 → 500 across 12 quarters:
+| Quarter | Expected Providers | Actual Providers Shown |
+|---|---|---|
+| Q1 '26 | 50 | 80 |
+| Q2 '26 | 50 | 125 |
+| Q3 '26 | 50 | 170 |
+| Q4 '26 | 50 | 215 |
+| Q1 '27 | 230 | 275 |
+By end of Y1, the model shows 215 providers instead of the configured 50. The "Active Providers" row in the Financial Summary confirms this: it shows 215 for 2026, not 50.
+This inflates Y1 value by ~4× and makes the proforma non-defensible. A CFO will look at the rollout plan (50 providers in Y1) and the financial summary ($1.5M in Y1) and the math won't reconcile.
+The fix: Provider counts must follow the configured rollout steps. Within each year, providers should ramp linearly from the previous year's end count to the current year's target:
+Y1 quarters: Hold at 50 (or ramp from 0 → 50 in Q1 if modeling go-live ramp, then hold at 50 for Q2-Q4)
+Y2 quarters: Ramp linearly from 50 → 230 across Q1-Q4 of Y2
+Y3 quarters: Ramp linearly from 230 → 500 across Q1-Q4 of Y3
+This means:
+Q1 '26: ~50, Q2 '26: 50, Q3 '26: 50, Q4 '26: 50
+Q1 '27: ~95, Q2 '27: ~140, Q3 '27: ~185, Q4 '27: ~230
+Q1 '28: ~298, Q2 '28: ~365, Q3 '28: ~433, Q4 '28: 500
+The "Active Providers" row in the Financial Summary should reflect the average active providers for each year (Y1: 50, Y2: ~140, Y3: ~365), not the linearly interpolated values currently shown (215, 478, 500).
+This single fix will cascade through all three value categories and correct the Financial Summary totals.
+
+
+BUG 2 (Critical): The Three Value Categories Must Have Visually Distinct Onset Curves
+Right now all three value categories (Doc Quality, Capacity & Efficiency, Retention) scale with roughly the same slope — they all just follow the (incorrect) provider ramp. The whole point of the three-category framework is that they have fundamentally different time-to-value behaviors. Here's exactly how each should work:
+A. Doc Quality (IMMEDIATE — accrues from Day 1)
+Doc Quality includes wRVU improvement, HCC capture, denial prevention, and DRG accuracy. These values are created the moment a provider starts using Abridge — the AI produces better notes from day one.
+How to calculate per quarter:
+quarterly_doc_quality = per_provider_annual_doc_value × active_providers_in_quarter / 4
+No delay. No phasing. No ramp-up factor. If 50 providers go live on Month 1 and each generates $9,214/year in doc quality value ($460,688 ÷ 50), then Q1 value is:
+$9,214 × 50 / 4 = $115,171
+(Adjust for partial months if go-live is mid-quarter.)
+On the chart: Doc Quality should be the FIRST band to appear and should step up immediately whenever new provider cohorts go live. It has the most linear/stepped shape of the three bands.
+B. Capacity & Efficiency (90-DAY DELAY — then accrues at full rate)
+Capacity & Efficiency includes patient access, throughput, locum reduction, and similar operational gains. These require the organization to operationalize the freed-up time — you can't fill appointment slots or reduce locum contracts on day one.
+How to calculate per quarter:
+if (months_since_cohort_golive < 3):
+    quarterly_capacity = 0  // within 90-day onset window
+else:
+    quarterly_capacity = per_provider_annual_capacity_value × active_providers_in_quarter / 4
+Current behavior is wrong: Capacity shows $0 in Q1, $0 in Q2, $44K in Q3. With a Month 1 go-live and 90-day delay, capacity should first appear in Q2 (Month 4 is early Q2), not Q3. The current behavior looks like a ~6-month delay.
+On the chart: The Capacity band should start $0 for approximately one quarter after go-live, then appear and track closely (but lagging) behind the Doc Quality band. There should be a visible 1-quarter gap between when the Doc Quality band appears and when the Capacity band appears. After that initial gap, the slope should be similar to Doc Quality.
+C. Retention (PHASED — fundamentally different slope, the slowest to materialize)
+Retention includes clinician/nurse retention and wellbeing value. This is the category where time-to-value is genuinely different — you can't prevent turnover in Month 1. Organizations need time to see burnout reduction translate into actual retention improvements.
+How to calculate per quarter:
+year = current_year_of_deployment  // 1, 2, or 3
+phasing = retention_phasing[year]  // e.g., 20%, 65%, 100% from sliders
+quarterly_retention = per_provider_annual_retention_value × active_providers_in_quarter × phasing / 4
+Current behavior is wrong in multiple ways:
+
+Retention shows $0 for Q1-Q3 of Y1, then suddenly $10K in Q4. It should show small but non-zero values from Q1 onward (at 20% phasing).
+At full scale (Q3 '28, 500 providers, 100% phasing), retention shows $267K/quarter but should be $360K/quarter ($144K × 10 × 100% ÷ 4).
+The retention band's slope looks proportional to the other two bands — it doesn't have a distinctly different shape.
+On the chart — this is the most important visual distinction: The retention band MUST have a visibly concave (accelerating) shape compared to the other two bands:
+
+
+Y1: Nearly invisible thin sliver. Even at 20% phasing with 50 providers, the quarterly value is only ~$7K. This should be barely visible — and that's the point. It communicates "retention value takes time."
+Y2: Noticeable thickening. The 65% phasing kicks in AND more providers are active. The band should visibly step up in thickness at the Y1→Y2 boundary.
+Y3: Thick, substantial band. 100% phasing with 500 providers. The band should be a significant portion of the total stack.
+The acceleration from Y1 → Y2 → Y3 should be visually obvious. When someone looks at this chart, the retention band should immediately communicate "this value builds over time" without needing to read any labels.
+
+
+BUG 3 (High): Financial Summary Table Values Don't Reconcile with Configured Providers
+The 3-Year Financial Summary currently shows:
+202620272028TotalDoc Quality (immediate)$1.1M$3.5M$5.2M$9.9MCapacity & Efficiency (3mo delay)$306K$3.0M$4.5M$7.8MRetention (phased)$10K$278K$1.1M$1.4MActive Providers215478500—With the correct provider counts (50 / ~140 avg / ~365 avg), these values should be dramatically lower in Y1:Rough expected values with correct provider counts:
+
+Y1 (50 providers): Doc Quality ~$461K, Capacity ~$296K (with 90-day delay), Retention ~$29K
+Y2 (50→230 ramp, ~140 avg): Doc Quality ~$1.3M, Capacity ~$1.1M, Retention ~$131K
+Y3 (230→500 ramp, ~365 avg): Doc Quality ~$3.4M, Capacity ~$2.9M, Retention ~$1.1M
+The current Y1 total of $1.5M with "50 providers" is not defensible. The corrected Y1 total should be closer to ~$786K.
+The fix: Once Bug 1 (provider rollout) is fixed, all Financial Summary values will cascade correctly. After fixing, verify that:
+
+
+The quarterly chart values sum to the annual Financial Summary values
+The annual values reconcile with: per_provider_value × avg_active_providers × onset_factor
+The "Active Providers" row shows the correct average for each year
+The 3-Year Total matches the sum of all three years
+
+
+BUG 4 (Medium): "3mo delay" Label vs "~6 months" Methodology Text
+The Financial Summary labels Capacity & Efficiency as "(3mo delay)". The methodology section says capacity gains take "~6 months." The actual chart behavior shows first non-zero value in Q3 (approximately 6 months).
+The fix: Decide on the correct onset delay and make it consistent across:
+
+The methodology text
+The Financial Summary row label
+The actual cash flow calculation
+Per the user's intent: capacity should be delayed approximately 90 days (one quarter). Update the methodology text to say "~3 months" and ensure the cash flow model starts accruing capacity value in Q2 (Month 4+), not Q3.
+
+
+BUG 5 (Medium): Retention Value at Full Scale Doesn't Hit Expected Amount
+At Q3 '28 (500 providers, Y3 = 100% phasing):
+
+Expected: $144K × (500/50) × 100% ÷ 4 = $360K/quarter
+Actual chart tooltip: $267K/quarter (only 74% of expected)
+Something is reducing the retention value below the expected 100% phased amount. Investigate whether:
+The 100% phasing isn't fully applied until Q4 '28
+There's a partial-year factor still being applied in Q3
+The per-provider retention value isn't scaling correctly with provider count
+The fix: At 100% phasing with all providers active, the quarterly retention value should exactly equal annual_retention_value_at_scale / 4. Verify and correct.
+
+
+VISUAL REFERENCE: How the Chart Should Look
+Imagine the three stacked bands in the Value Growth Trajectory chart:
+Y1 (50 providers)    Y2 (50→230)         Y3 (230→500)
+|                    |                    |
+|                    |         ████████████  ← Retention (thick, 100%)
+|                    |    ████████████████
+|                    | ██████████████████
+|                    |██████████████████   ← Retention (medium, 65%)
+|                    ████████████████████
+|▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ← Capacity (tracks Doc, 1Q lag)
+|▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+|░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  ← Doc Quality (immediate, largest)
+|░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+|░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+└────────────────────────────────────────→ Time
+Key visual signals:
+
+Doc Quality is always the bottom band (largest, most stable)
+Capacity appears one quarter after Doc Quality and then tracks it closely
+Retention is barely visible in Y1, visibly thickens in Y2, and becomes a substantial band in Y3
+The overall shape should show a STEPPED growth pattern (reflecting provider cohort go-lives) rather than a smooth linear ramp
+The retention band's acceleration (concave curve) should be the most visually distinctive feature of the chart
+
+
+IMPORTANT CONSTRAINTS
+
+DO NOT change any per-provider value calculations — the care setting calculators produce correct values. These are projection/phasing bugs only.
+DO NOT change the Retention Benefit Phasing slider UI — the 20%/65%/100% slider controls are great. Just make sure the underlying math actually applies those percentages correctly.
+After fixes, verify end-to-end:
+
+Chart tooltip values at each quarter reconcile with: per_provider_value × active_providers × onset_factor × phasing
+Chart quarterly values sum to Financial Summary annual values
+Financial Summary annual values sum to 3-Year Total
+"Active Providers" row matches the configured rollout plan
+At full scale with 100% phasing, values match care_setting_value × (full_scale_providers / pilot_providers)
+The PDF export reflects all corrected values
+
+
