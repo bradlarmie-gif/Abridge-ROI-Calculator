@@ -946,6 +946,122 @@ export default function ExploreModel({
             annualEmValue: wrvuValue,
           };
         })() : {}),
+
+      ...(state.careSetting === 'nursing' ? (() => {
+          const beds = state.nursingStaffedBeds;
+          const ftes = state.numberOfProviders;
+          const occRate = state.nursingOccupancyRate;
+          const adoptRate = state.utilizationPercent;
+          const patientDays = Math.round(beds * (occRate / 100) * 365);
+          const enabledShifts = Math.round(ftes * 260 * (adoptRate / 100));
+          const minsPerShift = state.minutesSavedPerEncounter;
+          const otPct = timeDriverInputs.nursingOtReductionPercent;
+          const sustainPct = 100 - otPct - timeDriverInputs.nursingCareTimePercent;
+          const directCarePct = timeDriverInputs.nursingCareTimePercent;
+          const otHrsElim = Math.round(totalHoursSaved * (otPct / 100));
+          const sustainHrs = Math.round(totalHoursSaved * (sustainPct / 100));
+          const directCareHrs = Math.round(totalHoursSaved * (directCarePct / 100));
+          const hrsPerNurse = ftes > 0 ? Math.round(totalHoursSaved / ftes) : 0;
+          const hrsPerWk = ftes > 0 ? parseFloat((totalHoursSaved / ftes / 52).toFixed(1)) : 0;
+          const directCarePerWk = ftes > 0 ? parseFloat((directCareHrs / ftes / 52).toFixed(2)) : 0;
+
+          const nOtRate = timeDriverInputs.nursingOtHourlyRate;
+          const nTurnover = timeDriverInputs.nursingTurnoverRate;
+          const nBurnoutPct = 40;
+          const nReplaceCost = timeDriverInputs.nursingReplacementCost;
+          const nImpactPct = nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15;
+          const nLeaving = ftes * (nTurnover / 100);
+          const nBurnoutDep = nLeaving * (nBurnoutPct / 100);
+          const nRetained = nBurnoutDep * (nImpactPct / 100);
+
+          const nAgencyOn = timeDriverInputs.nursingAgencyEnabled && timeDriverInputs.nursingRetentionEnabled;
+          const nAgencyWeeks = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
+          const nAgencyPrem = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
+          const nStaffingTotal = nursingOtValue + nursingRetentionValue + nursingAgencyValue;
+
+          const careEff = directCarePct / 100;
+          const hapiRate = docQualityInputs.nursingHapiRate;
+          const hapiPerYr = parseFloat(((patientDays / 1000) * hapiRate).toFixed(1));
+          const hapiPrevRate = docQualityInputs.nursingHapiPreventionRate;
+          const hapiCost = docQualityInputs.nursingHapiCost;
+          const hapiAddressed = parseFloat((hapiPerYr * (hapiPrevRate / 100) * careEff).toFixed(2));
+
+          const fallsRate = docQualityInputs.nursingFallsRate;
+          const fallsPerYr = parseFloat(((patientDays / 1000) * fallsRate).toFixed(1));
+          const fallsGapRate = docQualityInputs.nursingFallsPreventionRate;
+          const fallsCost = docQualityInputs.nursingFallsCost;
+          const fallsAddressed = parseFloat((fallsPerYr * (fallsGapRate / 100) * careEff).toFixed(2));
+
+          const hacMedRev = docQualityInputs.nursingHacMedicareRevenue;
+          const hacPenalty = Math.round(hacMedRev * 0.01);
+          const hacAttr = docQualityInputs.nursingHacAbridgeAttribution;
+          const hacReal = docQualityInputs.nursingHacRealization;
+
+          const nFullScaleBeds = expandedProviders;
+          const nFullScaleAdoption = expandedUtilization;
+          const nFullScaleMult = beds > 0 ? (nFullScaleBeds / beds) * (nFullScaleAdoption / adoptRate) : 1;
+          const nFullScaleHard = Math.round(nStaffingTotal * nFullScaleMult);
+          const nFullScalePerBed = nFullScaleBeds > 0 ? Math.round(nFullScaleHard / nFullScaleBeds) : 0;
+
+          return {
+            nursingOccupancyRate: occRate,
+            nursingPatientDays: patientDays,
+            nursingAdoptionRate: adoptRate,
+            nursingEnabledShifts: enabledShifts,
+            nursingMinutesPerShift: minsPerShift,
+            nursingOtAllocationPct: otPct,
+            nursingShiftSustainabilityPct: sustainPct,
+            nursingDirectPatientCarePct: directCarePct,
+            nursingOtHoursEliminated: otHrsElim,
+            nursingSustainabilityHours: sustainHrs,
+            nursingDirectCareHours: directCareHrs,
+            nursingDirectCareHrsPerNursePerWk: directCarePerWk,
+            nursingHoursPerNurse: hrsPerNurse,
+            nursingHoursPerWeek: hrsPerWk,
+            nursingOtHourlyRate: nOtRate,
+            nursingOtValue: nursingOtValue,
+            nursingTurnoverRate: nTurnover,
+            nursingBurnoutPct: nBurnoutPct,
+            nursingReplacementCost: nReplaceCost,
+            nursingRetentionImpactPct: nImpactPct,
+            nursingNursesLeaving: nLeaving,
+            nursingBurnoutDepartures: nBurnoutDep,
+            nursingNursesRetained: nRetained,
+            nursingRetentionValue: nursingRetentionValue,
+            nursingAgencyEnabled: nAgencyOn,
+            nursingAgencyWeeks: nAgencyWeeks,
+            nursingAgencyPremium: nAgencyPrem,
+            nursingAgencyValue: nursingAgencyValue,
+            nursingStaffingTotal: nStaffingTotal,
+            nursingHapiEnabled: docQualityInputs.nursingHapiEnabled,
+            nursingHapiRatePer1000: hapiRate,
+            nursingHapiPerYear: hapiPerYr,
+            nursingHapiPreventionRate: hapiPrevRate,
+            nursingHapiCostPer: hapiCost,
+            nursingHapiAddressed: hapiAddressed,
+            nursingHapiValue: nursingHapiValue,
+            nursingFallsEnabled: docQualityInputs.nursingFallsEnabled,
+            nursingFallsRatePer1000: fallsRate,
+            nursingFallsPerYear: fallsPerYr,
+            nursingFallsDocGapRate: fallsGapRate,
+            nursingFallsCostPer: fallsCost,
+            nursingFallsAddressed: fallsAddressed,
+            nursingFallsValue: nursingFallsValue,
+            nursingHacEnabled: docQualityInputs.nursingHacEnabled,
+            nursingHacBottomQuartile: docQualityInputs.nursingHacBottomQuartile,
+            nursingHacMedicareRevenue: hacMedRev,
+            nursingHacPenalty: hacPenalty,
+            nursingHacAttribution: hacAttr,
+            nursingHacRealization: hacReal,
+            nursingHacValue: nursingHacValue,
+            nursingHcahpsEnabled: docQualityInputs.nursingHcahpsEnabled,
+            nursingPotentialTotal: nursingCareQualityPotential,
+            nursingFullScaleBeds: nFullScaleBeds,
+            nursingFullScaleAdoption: nFullScaleAdoption,
+            nursingFullScaleValue: nFullScaleHard,
+            nursingFullScalePerBed: nFullScalePerBed,
+          };
+        })() : {}),
       };
 
       await generateExplorePDF(pdfData);

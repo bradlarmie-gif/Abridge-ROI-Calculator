@@ -314,6 +314,63 @@ export interface ExplorePDFData {
   ipFullScaleValue?: number;
   ipFullScaleROI?: number;
   ipFullScalePerProvider?: number;
+
+  nursingOccupancyRate?: number;
+  nursingPatientDays?: number;
+  nursingAdoptionRate?: number;
+  nursingEnabledShifts?: number;
+  nursingMinutesPerShift?: number;
+  nursingOtAllocationPct?: number;
+  nursingShiftSustainabilityPct?: number;
+  nursingDirectPatientCarePct?: number;
+  nursingOtHoursEliminated?: number;
+  nursingSustainabilityHours?: number;
+  nursingDirectCareHours?: number;
+  nursingDirectCareHrsPerNursePerWk?: number;
+  nursingHoursPerNurse?: number;
+  nursingHoursPerWeek?: number;
+  nursingOtHourlyRate?: number;
+  nursingOtValue?: number;
+  nursingTurnoverRate?: number;
+  nursingBurnoutPct?: number;
+  nursingReplacementCost?: number;
+  nursingRetentionImpactPct?: number;
+  nursingNursesLeaving?: number;
+  nursingBurnoutDepartures?: number;
+  nursingNursesRetained?: number;
+  nursingRetentionValue?: number;
+  nursingAgencyEnabled?: boolean;
+  nursingAgencyWeeks?: number;
+  nursingAgencyPremium?: number;
+  nursingAgencyValue?: number;
+  nursingStaffingTotal?: number;
+  nursingHapiEnabled?: boolean;
+  nursingHapiRatePer1000?: number;
+  nursingHapiPerYear?: number;
+  nursingHapiPreventionRate?: number;
+  nursingHapiCostPer?: number;
+  nursingHapiAddressed?: number;
+  nursingHapiValue?: number;
+  nursingFallsEnabled?: boolean;
+  nursingFallsRatePer1000?: number;
+  nursingFallsPerYear?: number;
+  nursingFallsDocGapRate?: number;
+  nursingFallsCostPer?: number;
+  nursingFallsAddressed?: number;
+  nursingFallsValue?: number;
+  nursingHacEnabled?: boolean;
+  nursingHacBottomQuartile?: boolean;
+  nursingHacMedicareRevenue?: number;
+  nursingHacPenalty?: number;
+  nursingHacAttribution?: number;
+  nursingHacRealization?: number;
+  nursingHacValue?: number;
+  nursingHcahpsEnabled?: boolean;
+  nursingPotentialTotal?: number;
+  nursingFullScaleBeds?: number;
+  nursingFullScaleAdoption?: number;
+  nursingFullScaleValue?: number;
+  nursingFullScalePerBed?: number;
 }
 
 const fmtCurrency = (n: number): string => {
@@ -604,6 +661,41 @@ const getInpatientObservation = (data: ExplorePDFData): string => {
   }
 
   return `Your model is ${revPct}% revenue-driven. DRG accuracy and denial prevention represent the largest value pools \u2014 typical for organizations with complex case mix and documentation gaps.`;
+};
+
+const getNursingObservation = (data: ExplorePDFData): string => {
+  const staffingTotal = safe(data.nursingStaffingTotal);
+  const potentialTotal = safe(data.nursingPotentialTotal);
+  const otPct = safe(data.nursingOtAllocationPct);
+  const sustainPct = safe(data.nursingShiftSustainabilityPct);
+  const directCarePct = safe(data.nursingDirectPatientCarePct);
+  const laborPct = otPct + sustainPct;
+  const retVal = safe(data.nursingRetentionValue);
+  const agencyOn = !!data.nursingAgencyEnabled;
+
+  if (staffingTotal === 0 && potentialTotal === 0) {
+    const activeQual = data.qualitativeDrivers || [];
+    const driverList = activeQual.length > 0 ? activeQual.join(", ") : "HCAHPS Improvement";
+    return `Your assessment focused on qualitative drivers (${driverList}). These represent strategic value for your nursing program \u2014 patient experience, bedside presence, and care quality \u2014 that is meaningful but not easily dollarized. To build a financial case, consider enabling OT Reduction or Retention Savings.`;
+  }
+
+  if (sustainPct >= 35 && retVal > 0) {
+    return `You put real weight on clinician sustainability \u2014 ${sustainPct}% of reclaimed time, plus a quantified retention model. That\u2019s an organization trying to solve for all three at once \u2014 OT, retention, and bedside time \u2014 which is exactly the right instinct. The model reflects that balance.`;
+  }
+
+  if (laborPct > 50 && agencyOn) {
+    return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT, retention, and agency costs. Overtime and agency costs dominate. This is typical for organizations with high turnover or significant agency dependence.`;
+  }
+
+  if (laborPct > 50) {
+    return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
+  }
+
+  if (directCarePct >= 40) {
+    return `Your model balances labor economics (${laborPct}%) with care quality (${100 - laborPct}%). This profile suggests both staffing and patient outcomes can improve simultaneously.`;
+  }
+
+  return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
 };
 
 const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
@@ -2446,6 +2538,622 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             </Text>
 
             <PageFooter pageNum={assessmentPageNum} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
+          </View>
+        </Page>
+      </Document>
+    );
+  }
+
+  if (isNursing) {
+    const beds = safe(data.nursingStaffedBeds);
+    const ftes = safe(data.nursingFTEs) || data.providers;
+    const staffingTotal = safe(data.nursingStaffingTotal);
+    const potentialTotal = safe(data.nursingPotentialTotal);
+    const otVal = safe(data.nursingOtValue);
+    const retVal = safe(data.nursingRetentionValue);
+    const agencyVal = safe(data.nursingAgencyValue);
+    const agencyOn = !!data.nursingAgencyEnabled;
+    const hapiVal = safe(data.nursingHapiValue);
+    const fallsVal = safe(data.nursingFallsValue);
+    const hacVal = safe(data.nursingHacValue);
+    const nursingHasCareQuality = !!(
+      (data.nursingHapiEnabled && hapiVal > 0) ||
+      (data.nursingFallsEnabled && fallsVal > 0) ||
+      (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0)
+    );
+    const nursingTotalPages = nursingHasCareQuality ? 5 : 4;
+    const investmentPageNum = 3;
+    const connectedPageNum = 4;
+    const assessmentPageNum = nursingHasCareQuality ? 5 : 4;
+    const costPerBedMo = beds > 0 ? Math.round(data.annualInvestment / beds / 12) : 0;
+    const hardNetValue = staffingTotal - data.annualInvestment;
+    const hardRoi = data.annualInvestment > 0 ? parseFloat((staffingTotal / data.annualInvestment).toFixed(1)) : 0;
+    const netPerBed = beds > 0 ? Math.round(hardNetValue / beds) : 0;
+    const hrsPerWk = safe(data.nursingHoursPerWeek);
+    const hrsPerNurse = safe(data.nursingHoursPerNurse);
+    const directCarePerWk = safe(data.nursingDirectCareHrsPerNursePerWk);
+    const otPct = safe(data.nursingOtAllocationPct);
+    const sustainPct = safe(data.nursingShiftSustainabilityPct);
+    const directCarePct = safe(data.nursingDirectPatientCarePct);
+    const otHrsElim = safe(data.nursingOtHoursEliminated);
+    const patientDays = safe(data.nursingPatientDays);
+
+    const nYear1Hard = staffingTotal;
+    const nYear1Cost = data.annualInvestment;
+    const nYear2Hard = Math.round(nYear1Hard * 1.10);
+    const nYear2Cost = nYear1Cost;
+    const nYear3Hard = Math.round(nYear2Hard * 1.10);
+    const nYear3Cost = nYear1Cost;
+    const nCum1 = nYear1Hard - nYear1Cost;
+    const nCum2 = nCum1 + (nYear2Hard - nYear2Cost);
+    const nCum3 = nCum2 + (nYear3Hard - nYear3Cost);
+    const nYear3Roi = nYear3Cost > 0 ? (nYear3Hard / nYear3Cost).toFixed(1) : "0.0";
+
+    const nFullScaleBeds = safe(data.nursingFullScaleBeds);
+    const nFullScaleAdopt = safe(data.nursingFullScaleAdoption);
+    const nFullScaleVal = safe(data.nursingFullScaleValue);
+    const nFullScalePerBed = safe(data.nursingFullScalePerBed);
+    const nFullScaleInv = nFullScaleBeds > 0 ? Math.round(data.annualInvestment * (nFullScaleBeds / beds)) : 0;
+    const nFullScaleNet = nFullScaleVal - nFullScaleInv;
+    const nFullScaleRoi = nFullScaleInv > 0 ? (nFullScaleVal / nFullScaleInv).toFixed(1) : "0.0";
+
+    return (
+      <Document>
+        <PDFCoverPage
+          reportLabel={config.coverLabel}
+          title={orgName}
+          subtitle={`${fmtNum(beds)} beds \u00B7 ${fmtNum(ftes)} nurse FTEs \u00B7 Inpatient Nursing`}
+          preparedBy={data.preparedBy}
+        />
+
+        {/* NURSING PAGE 1: THE THESIS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE THESIS</Text>
+            <Text style={styles.sectionHeadline}>Two Sources of Value, One Strategic Choice</Text>
+            <Text style={styles.body}>
+              Ambient documentation creates value through two distinct mechanisms: time returned and care quality enabled. Most analyses conflate these. We separate them {"\u2014"} because the strategic implications are different.
+            </Text>
+            <Text style={styles.body}>
+              Time returned is a labor economics story. You decide how to deploy it. Care quality enabled is a visibility story. It happens when nurses document in real time instead of catching up at the end of a shift.
+            </Text>
+
+            <View style={[styles.cardBg, { marginBottom: 10 }]}>
+              <Text style={{ fontSize: 12, color: colors.primaryText, marginBottom: 6 }}>
+                Nurses don{"\u2019"}t bill. So where does the value live?
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                Nursing documentation creates value through two mechanisms: labor economics (overtime reduction, retention, agency cost avoidance) and care quality (HAPI risk reduction, fall risk visibility, patient experience). The budget impact is real {"\u2014"} and so is the care improvement.
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  LABOR ECONOMICS
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
+                  {staffingTotal > 0 ? fmtCurrency(staffingTotal) : "Not Modeled"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
+                  Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
+                </Text>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                  The budget impact is real.
+                </Text>
+              </View>
+
+              <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  CARE QUALITY ENABLEMENT
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: potentialTotal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {potentialTotal > 0 ? fmtCurrency(potentialTotal) : "Not Modeled"}
+                </Text>
+                {potentialTotal > 0 && (
+                  <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>potential</Text>
+                )}
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
+                  Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect {"\u2014"} documentation supports care, it doesn{"\u2019"}t replace it.
+                </Text>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                  Better care starts with better information.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.calloutBox}>
+              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
+                STRATEGIC OBSERVATION
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                {getNursingObservation(data)}
+              </Text>
+            </View>
+
+            <PageFooter pageNum={1} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
+          </View>
+        </Page>
+
+        {/* NURSING PAGE 2: YOUR VALUE DRIVERS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
+            <Text style={styles.sectionHeadline}>How Documentation Time Becomes Value</Text>
+            <Text style={styles.body}>
+              {fmtNum(data.hoursReturned)} hours returned to your nursing staff. Here{"\u2019"}s how each driver works.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>STAFFING EFFICIENCY</Text>
+
+            {otVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>OT Reduction</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(otVal)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      You allocated {otPct}% of reclaimed time to overtime reduction. That translates to roughly {fmtNum(otHrsElim)} hours of end-of-shift overtime eliminated per year. When nurses finish charting during their shift instead of after it, they clock out on time {"\u2014"} and the overtime line in the staffing budget shrinks directly. At ${safe(data.nursingOtHourlyRate)}/hour, that{"\u2019"}s {fmtCurrency(otVal)} annually in avoided overtime spend.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Validation: Check this against your current OT spend. If this exceeds your total nursing OT budget, the conversion rate may need adjustment.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {retVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Retention Savings</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(retVal)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. The {sustainPct}% of reclaimed time absorbed into shift sustainability is the primary mechanism: it{"\u2019"}s what makes documentation burden relief feel real to nurses on the unit, not just in a pilot survey. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {agencyOn && agencyVal > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Agency Labor Reduction</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(agencyVal)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Every nursing vacancy filled with travel agency staff costs roughly {fmtCurrency(safe(data.nursingAgencyPremium))}/week in labor premium above base {"\u2014"} over and above replacement cost. That {safe(data.nursingAgencyWeeks)}-week gap at full premium adds up. With {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained, the avoided agency premium is {fmtCurrency(agencyVal)} per year. This is separate from the retention value above {"\u2014"} retention captures the replacement cost of recruiting and onboarding; agency captures the premium labor spend during the vacancy window.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Agency Labor Reduction</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Not Modeled</Text>
+              </View>
+            )}
+
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Staffing Efficiency Subtotal</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
+                {staffingTotal > 0 ? fmtCurrency(staffingTotal) : "Not Modeled"}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>CARE QUALITY {"\u2014"} POTENTIAL VALUE</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 8, paddingVertical: 8 }]}>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                The value below reflects potential impact {"\u2014"} not a guarantee. Documentation enables the clinical visibility that supports better care; it doesn{"\u2019"}t replace clinical judgment or protocol. These figures are shown separately from hard staffing value.
+              </Text>
+            </View>
+
+            {data.nursingHapiEnabled && hapiVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HAPI Risk: Documentation Impact</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hapiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Your program generates roughly {safe(data.nursingHapiPerYear)?.toFixed(1)} hospital-acquired pressure injuries per year across {fmtNum(patientDays)} patient days {"\u2014"} consistent with a national rate of {safe(data.nursingHapiRatePer1000)}/1,000 patient days. Real-time documentation of skin assessments, Braden scores, and turning schedules creates the clinical visibility that enables earlier intervention. Abridge{"\u2019"}s attributable share is modeled at {safe(data.nursingHapiPreventionRate)}% {"\u2014"} exactly half the 13% reduction observed in Dowding et al. (JAMIA 2012) {"\u2014"} to reflect that documentation is one input in a broader care system. Applied to your direct care allocation ({directCarePct}%), the potential value is {fmtCurrency(hapiVal)}.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.nursingFallsEnabled && fallsVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Fall Risk Visibility Gap</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(fallsVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Your hospital experiences roughly {safe(data.nursingFallsPerYear)?.toFixed(1)} patient falls per year. Real-time Morse score and mobility documentation ensures fall risk status reflects the patient{"\u2019"}s current condition {"\u2014"} not end-of-shift catch-up charting. This is not a prevention claim {"\u2014"} it is a documentation timeliness gap claim. At a {safe(data.nursingFallsDocGapRate)}% documentation gap rate (Joint Commission sentinel event data), with {directCarePct}% care allocation and {fmtCurrency(safe(data.nursingFallsCostPer))} cost per fall, the potential value is {fmtCurrency(fallsVal)}.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HAC Penalty Avoidance</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hacVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      The CMS HAC Reduction Program penalizes hospitals in the bottom quartile by reducing Medicare payments by 1%. At {fmtCurrency(safe(data.nursingHacMedicareRevenue))} in annual Medicare inpatient revenue, that{"\u2019"}s a {fmtCurrency(safe(data.nursingHacPenalty))} penalty. With {safe(data.nursingHacAttribution)}% attribution to documentation and {safe(data.nursingHacRealization)}% Year 1 realization, applied to your {directCarePct}% care allocation, the potential value is {fmtCurrency(hacVal)}.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>HAC Penalty Avoidance</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Not Modeled</Text>
+              </View>
+            )}
+
+            {data.nursingHcahpsEnabled && (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Patient Experience (HCAHPS)</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Qualitative</Text>
+              </View>
+            )}
+
+            <View style={[styles.cardBg, { marginTop: 10 }]}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <View>
+                  <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                    PROJECTED ANNUAL VALUE (HARD)
+                  </Text>
+                  <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>
+                    {fmtCurrency(hardNetValue)}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: colors.secondary, marginTop: 2 }}>
+                    Per bed: ~{fmtCurrency(netPerBed)}/year
+                  </Text>
+                </View>
+                {potentialTotal > 0 && (
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                      POTENTIAL VALUE
+                    </Text>
+                    <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.secondary }}>
+                      +{fmtCurrency(potentialTotal)}
+                    </Text>
+                    <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>
+                      not included in net
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
+          </View>
+        </Page>
+
+        {/* NURSING PAGE 3: THE INVESTMENT CASE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
+            <Text style={styles.sectionHeadline}>Infrastructure, Not Expense</Text>
+            <Text style={styles.body}>
+              The investment is {fmtCurrency(data.annualInvestment)} annually {"\u2014"} {fmtCurrency(costPerBedMo)} per bed per month. It does not change as value grows. Years 2{"\u2013"}3 assume 10% growth as adoption matures and documentation habits improve across the unit.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>3-YEAR PROJECTION (HARD VALUE)</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", marginBottom: 6 }}>
+                <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase" }}>Period</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Value</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Investment</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Net Value</Text>
+                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Cumulative</Text>
+              </View>
+              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 6 }} />
+
+              {[
+                { period: "Year 1", value: nYear1Hard, cost: nYear1Cost, net: nYear1Hard - nYear1Cost, cum: nCum1 },
+                { period: "Year 2", value: nYear2Hard, cost: nYear2Cost, net: nYear2Hard - nYear2Cost, cum: nCum2 },
+                { period: "Year 3", value: nYear3Hard, cost: nYear3Cost, net: nYear3Hard - nYear3Cost, cum: nCum3 },
+              ].map((row, i) => (
+                <View key={i} style={{ flexDirection: "row", marginBottom: 4 }}>
+                  <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText }}>{row.period}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primary, textAlign: "right" }}>{fmtCurrency(row.value)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.secondary, textAlign: "right" }}>{fmtCurrency(row.cost)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primary, fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(row.net)}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.primary, fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(row.cum)}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.calloutBox}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                By Year 3, you{"\u2019"}re generating {nYear3Roi}{"\u00D7"} for every $1 invested {"\u2014"} while your nursing staff spends more time at the bedside and less time charting after their shift.
+              </Text>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>AT SCALE</Text>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
+              Per-bed economics hold as the program expands to more units.
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  CURRENT MODEL
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
+                  {fmtCurrency(hardNetValue)}/yr
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(beds)} beds</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{data.utilizationPercent}% adoption</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 4 }}>Per bed: ~{fmtCurrency(netPerBed)}/yr</Text>
+              </View>
+
+              <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  AT FULL SCALE
+                </Text>
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
+                  {fmtCurrency(nFullScaleNet)}/yr
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(nFullScaleBeds)} beds</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>{nFullScaleAdopt}% adoption</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 4 }}>Per bed: ~{fmtCurrency(nFullScalePerBed)}/yr</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>KEY METRICS TO TRACK</Text>
+            <View style={[styles.cardBg, { marginBottom: 6 }]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                1. Documentation time per shift (target: {"\u2013"}40%)
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                2. Nurse satisfaction / burnout score (target: +15 pts)
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                3. Overtime hours per FTE per week (target: {"\u2013"}25%)
+              </Text>
+            </View>
+
+            <PageFooter pageNum={investmentPageNum} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
+          </View>
+        </Page>
+
+        {/* NURSING PAGE 4: CONNECTED VALUE (only if care quality drivers active) */}
+        {nursingHasCareQuality && (
+          <Page size="LETTER" style={styles.page} wrap={false}>
+            <View style={styles.pageWrapper}>
+              <Text style={styles.sectionLabel}>CONNECTED VALUE</Text>
+              <Text style={styles.sectionHeadline}>Nursing Documentation Doesn{"\u2019"}t Stay at the Bedside</Text>
+              <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
+                Real-time flowsheet documentation creates the clinical record that downstream teams depend on. When nurses document in the moment, the entire hospital benefits.
+              </Text>
+
+              <View style={styles.divider} />
+
+              <View style={[styles.calloutBox, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>CC/MCC CAPTURE</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  Nursing assessments capture clinical indicators that support accurate DRG assignment. {"\u201C"}Patient appears malnourished{"\u201D"} feeds coding directly. When the nursing flowsheet is complete, the clinical picture available to coders and CDI teams is richer from the start.
+                </Text>
+              </View>
+
+              <View style={[styles.calloutBox, { marginBottom: 10 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>MEDICAL NECESSITY</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  Real-time nursing docs provide evidence of patient acuity {"\u2014"} critical for payer appeals. When medical necessity is questioned, the nursing record is often the strongest supporting evidence.
+                </Text>
+              </View>
+
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  The value above reflects nursing-only documentation. If your organization also uses Abridge for inpatient medicine teams, the clinical record built by nursing directly extends the ROI of the Inpatient model {"\u2014"} no double-counting.
+                </Text>
+              </View>
+
+              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={5} />
+            </View>
+          </Page>
+        )}
+
+        {/* NURSING LAST PAGE: YOUR ASSESSMENT */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>YOUR ASSESSMENT</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 10, paddingVertical: 16, paddingHorizontal: 20 }]}>
+              <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
+                {fmtNum(beds)} staffed beds. {fmtNum(ftes)} nurse FTEs.
+              </Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
+                {fmtCurrency(hardNetValue)} projected net value.
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>
+                {fmtCurrency(netPerBed)} per bed per year.
+              </Text>
+            </View>
+
+            <View style={[styles.calloutBox, { marginBottom: 10 }]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+                Nurses don{"\u2019"}t bill. But their flowsheet documentation drives care quality {"\u2014"} reducing the risk events most sensitive to documentation gaps {"\u2014"} and their time drives labor economics. Ambient documentation creates value in the two places it matters most for nursing: the budget and the bedside.
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>AT A GLANCE</Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  VALUE SUMMARY
+                </Text>
+                <View style={{ marginBottom: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>STAFFING EFFICIENCY</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                      {staffingTotal > 0 ? fmtCurrency(staffingTotal) : "Not Modeled"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>OT Reduction</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{otVal > 0 ? fmtCurrency(otVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Retention Savings</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{retVal > 0 ? fmtCurrency(retVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Agency Reduction</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{agencyOn && agencyVal > 0 ? fmtCurrency(agencyVal) : "Not Modeled"}</Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>CARE QUALITY (POTENTIAL)</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                      {potentialTotal > 0 ? fmtCurrency(potentialTotal) : "Not Modeled"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HAPI Risk</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingHapiEnabled && hapiVal > 0 ? fmtCurrency(hapiVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Fall Risk</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingFallsEnabled && fallsVal > 0 ? fmtCurrency(fallsVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HAC Penalty</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0 ? fmtCurrency(hacVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HCAHPS</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingHcahpsEnabled ? "Qualitative" : "Not Modeled"}</Text>
+                  </View>
+                </View>
+                <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>Net Annual Value (Hard)</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hardNetValue)}</Text>
+                </View>
+              </View>
+
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  INVESTMENT SUMMARY
+                </Text>
+                <View style={{ marginBottom: 2 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Annual Investment</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtCurrency(data.annualInvestment)}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Per bed/month</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtCurrency(costPerBedMo)}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Year 1 ROI (hard value)</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{hardRoi.toFixed(1)}{"\u00D7"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>3-Year Cumulative</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtCurrency(nCum3)}</Text>
+                  </View>
+                </View>
+                <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+                  ADOPTION
+                </Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Projected</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>{data.utilizationPercent}%</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Hours Returned</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>{fmtNum(data.hoursReturned)}</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>Per nurse/week</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary }}>{hrsPerWk.toFixed(1)} hrs</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>METHODOLOGY</Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  YOUR INPUTS
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
+                  {fmtNum(beds)} staffed beds{"\n"}
+                  {fmtNum(ftes)} nurse FTEs{"\n"}
+                  {safe(data.nursingOccupancyRate)}% bed occupancy{"\n"}
+                  {data.utilizationPercent}% adoption{"\n"}
+                  {safe(data.nursingMinutesPerShift)} min saved/shift{"\n"}
+                  {fmtCurrency(data.annualInvestment)} investment ({fmtCurrency(costPerBedMo)}/bed/mo){"\n"}
+                  {fmtNum(data.hoursReturned)} hrs returned
+                </Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  HOW WE CALCULATED
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  Hard value (Staffing Efficiency) uses direct inputs: OT hours eliminated, retention modeling at conservative impact rates, and agency cost avoidance. Potential value (Care Quality) uses published rates and halved attribution {"\u2014"} conservative by design. The two are shown separately throughout.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
+              This assessment is for planning purposes. Hard value projections are based on user-provided staffing inputs. Potential value uses published clinical rates with halved attribution to reflect the indirect causal chain. Validate with your organization{"\u2019"}s data post-implementation.
+            </Text>
+
+            <PageFooter pageNum={assessmentPageNum} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
           </View>
         </Page>
       </Document>
