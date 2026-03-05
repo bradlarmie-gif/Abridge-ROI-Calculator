@@ -1,0 +1,474 @@
+REPLIT PROMPT — ABRIDGE INPATIENT PDF REDESIGN (UPDATED)
+=========================================================
+Care Setting: Inpatient (Hospital Medicine)
+Reference file: [your Inpatient PDF generator — same file family as Outpatient/ED]
+Bundle confirmed: index-sMsut_et.js (updated — verify against current bundle)
+YOU ARE UPDATING THE COPY AND NARRATIVE OF THE INPATIENT PDF ONLY.
+DO NOT touch layout, colors, fonts, cover page, card structure, column positions,
+spacing, or any visual element. DO NOT break the PDF renderer.
+ONLY replace text content, labels, narratives, and conditional logic
+within existing layout slots.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 0 — CONFIRMED DIFFERENCES FROM OUTPATIENT
+(verified from live bundle, not assumed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIFFERENCE 1 — UNIT OF CARE
+  Outpatient: encounters / providers
+  Inpatient:  admissions / hospitalists
+  → NEVER use "encounter" in the Inpatient PDF. Unit is "admission."
+  → NEVER use "provider" alone. Use "hospitalist" or "hospitalists."
+DIFFERENCE 2 — TIME SAVINGS MAGNITUDE
+  Outpatient: 3 min/encounter
+  Inpatient:  30 min/admission (Typical)
+  → 30 minutes per admission reflects H&Ps, progress notes, discharge summaries.
+  → This is a fundamentally heavier documentation burden — the narrative must reflect that.
+DIFFERENCE 3 — TIME ALLOCATION BUCKET NAMES (exact labels from wizard)
+  Inpatient: Direct Patient Care / Documentation Quality / Shift Sustainability
+  → NEVER use "patient access," "throughput," or "patient capacity"
+  → "Direct Patient Care" = rounding, bedside time, teaching
+  → "Shift Sustainability" = after-hours charting relief, retention
+DIFFERENCE 4 — LEFT CARD LABEL IS "CAPACITY UNLOCKED" NOT "TIME RECAPTURED"
+  ✓ Confirmed from bundle: left card = "CAPACITY UNLOCKED"
+  ✓ Right card = "REVENUE OPTIMIZED" (same as other settings)
+DIFFERENCE 5 — VALUE DRIVER LABELS (from Step 8 results page — use exactly)
+  CLINICAL OPERATIONS:
+    • Rounding Efficiency    → always qualitative (never dollar value)
+    • Clinician Wellbeing    → retention dollar value (when calculator on)
+  DOCUMENTATION QUALITY:
+    • DRG Accuracy           → dollar value
+    • CDI Query Reduction    → dollar value
+  NOT in Inpatient: wRVU Lift, HCC Capture, E&M Level Accuracy, LWBS Recovery,
+                    Admission Capture, Patient Access
+DIFFERENCE 6 — STRATEGIC OBSERVATION IS BINARY (capacity vs. revenue)
+  The inpatient strategic observation uses a single binary split:
+  IF capacityPct > 50:
+    "Your model is {capacityPct}% capacity-driven, indicating retention and
+    operational gains dominate. This is common when turnover costs are high
+    and replacement cycles are long."
+  ELSE:
+    "Your model is {revenuePct}% revenue-driven. DRG accuracy and denial
+    prevention represent the largest value pools — typical for organizations
+    with complex case mix and documentation gaps."
+  Where: capacityPct = directPatientCarePct + shiftSustainabilityPct
+         revenuePct  = documentationQualityPct
+  (If user entered qualitative-only drivers with no revenue activated, the
+  strategic obs should also note that all value is modeled on qualitative
+  drivers.)
+DIFFERENCE 7 — CLOSING INSIGHT (quote block, Page 4)
+  CONFIRMED FROM BUNDLE:
+  "Hospitalist documentation drives everything downstream — coding accuracy,
+  denial prevention, care transitions. When the notes are complete in real-time,
+  the entire revenue cycle benefits."
+  This is the single closing quote for Inpatient. Do not swap in a different quote.
+DIFFERENCE 8 — CLINICAL LANGUAGE REQUIRED
+  ✓ Use: DRG weight / CC/MCC capture / case mix index / CDI queries
+  ✓ Use: Medical necessity / Obs-to-IP denials / rounding / after-hours charting
+  ✗ Never: patient access, visit volume, throughput, LWBS, encounter rate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — COMPLETE VARIABLE REFERENCE
+(verified from full wizard run: 20 hospitalists, 400 adm/provider,
+70% util, 30 min/adm, 30/50/20 allocation, all drivers on, $100/mo)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BASELINE (Step 2)
+  hospitalistCount          = 20
+  admissionsPerProvider     = 400       // Lighter 300 / Typical 400 / Busy 500
+  annualAdmissions          = 8,000     // hospitalistCount × admissionsPerProvider
+  utilizationRate           = 0.70      // Conservative 50% / Typical 70% / Optimistic 85%
+  eligibleAdmissions        = 5,600     // annualAdmissions × utilizationRate
+TIME SAVINGS (Step 3)
+  minutesSavedPerAdmission  = 30        // Conservative 15 / Typical 30 / Optimistic 40
+  hoursReturnedTotal        = 2,800     // eligibleAdmissions × minutesSaved ÷ 60
+  hoursPerHospitalist       = 140       // hoursReturnedTotal ÷ hospitalistCount
+  hoursPerWeek              = 2.9       // hoursPerHospitalist ÷ 52
+  minutesPerDayPerProvider  = 38        // hoursPerWeek × 60 ÷ 5
+TIME ALLOCATION (Step 4)
+  directPatientCarePct      = 30%       // "Direct Patient Care"
+  documentationQualityPct   = 50%       // "Documentation Quality"
+  shiftSustainabilityPct    = 20%       // "Shift Sustainability"
+VALUE DRIVERS — CLINICAL OPERATIONS (Step 5)
+  // Rounding Efficiency (always qualitative)
+  roundingHoursTotal        = 840 hrs/yr  // hoursReturnedTotal × directPatientCarePct
+  roundingHoursPerProvider  = 42 hrs/yr   // ÷ hospitalistCount = 0.8 hrs/wk
+  // Clinician Wellbeing — Retention
+  retentionCalculatorOn     = true/false
+  annualTurnoverRate        = 0.06       // default 6%
+  burnoutTurnoverPct        = 0.40       // default 40%
+  replacementCost           = 400000     // default $400K
+  abridgeRetentionImpact    = 0.30       // Typical 30%
+  providersLeavingPerYear   = 1.2
+  burnoutDepartures         = 0.48
+  providersRetained         = 0.144
+  retentionValue            = $57,600
+  [IF retentionCalculatorOn = false: display "2.9 hrs/wk" qualitative only]
+  // CDI Capacity Extension (wizard Step 5 — supplementary, NOT in primary PDF model)
+  cdiFTEs                   = 5
+  cdiAvgSalary              = $85,000
+  cdiQueryTimePct           = 30%
+  cdiReductionPct           = 20%
+  cdiCapacityValue          = $25,500
+  // NOTE: DO NOT include cdiCapacityValue in any primary financial total.
+  // It is supplementary context only.
+  // Cost Reduction (optional, manual)
+  costReductionValue        = user input or $0
+  clinicalOperationsTotal   = retentionValue + costReductionValue
+  // Rounding Efficiency never summed — always qualitative
+VALUE DRIVERS — DOCUMENTATION QUALITY (Step 6)
+  // DRG Accuracy
+  drgOpportunityRate        = 25%        // CDI Opportunity Rate
+  admissionsWithGaps        = 1,400      // eligibleAdmissions × drgOpportunityRate
+  abridgeCaptureRate        = 20%        // Typical
+  admissionsCaptured        = 280
+  avgDRGWeightLift          = 0.4        // blended average, confirmed from bundle
+  baseDRGPayment            = $6,000
+  drgGrossValue             = $672,000
+  drgRealizationRate        = 33%
+  drgAccuracyValue          = $221,760   // displayed as $222K
+  // Obs/IP Status Defense — wizard only, NOT in PDF financial model
+  // Do not show this dollar value in the PDF. Reference as "additional upside."
+  // CDI Query Reduction
+  cdiQueryRate              = 30%
+  totalCDIQueries           = 1,680
+  queriesAvoidedRate        = 25%        // Typical
+  queriesAvoided            = 420
+  costPerQuery              = $50
+  cdiQueryValue             = $21,000
+INVESTMENT (Step 7)
+  costPerProviderMonth      = $100
+  annualInvestment          = $24,000    // 20 × $100 × 12
+FINAL OUTPUTS (Step 8 — confirmed)
+  totalGrossValue           = $300,360   // $57,600 + $221,760 + $21,000
+  netAnnualValue            = $276,360   // gross – investment → display "$276K"
+  roiMultiple               = 12.5×
+  netValuePerProvider       = $13,818    // display "$14K"
+  year1Value                = $300K (gross)
+  year2Value                = $330K (×1.10)
+  year3Value                = $363K (×1.10)
+  threeYearCumulative       = $994K
+  fullScaleValue            = $7.9M/yr at 14.3× ROI (500 hospitalists, 80% util)
+NUMBER FORMAT:
+  ≥$1M → "$X.XM" | ≥$1K → "$XXXK" | <$1K → "$XXX"
+  "Not Modeled" for any unactivated driver — never "$0" or "—"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — PAGE-BY-PAGE COPY
+(all text strings confirmed from live bundle read)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAGE COUNT:
+  4 pages if no doc quality drivers active
+  5 pages if any doc quality driver active
+  Footer: "Page X of 4" or "Page X of 5"
+  Cover page: COMPLETELY LOCKED — DO NOT TOUCH
+──────────────────────────────────────────────────
+PAGE 1 — THE THESIS
+──────────────────────────────────────────────────
+SECTION LABEL: THE THESIS
+SECTION TITLE (large):
+  "Two Sources of Value, One Strategic Choice"
+SECTION INTRO (flowing body copy, 2 sentences):
+  "Ambient documentation creates value through two distinct mechanisms: time
+  returned and documentation improved. Most analyses conflate these. We separate
+  them — because the strategic implications are different."
+  Second paragraph:
+  "Time returned is a resource. You decide how to deploy it. Documentation
+  improved is a capture. It happens automatically."
+HERO CARD (full-width warm gray):
+  Sub-question (medium weight):
+  "If we give hospitalists time back, what happens to your hospital?"
+  Paragraph below question:
+  "The answer reveals your strategy. There are two fundamental ways inpatient
+  documentation time creates value:"
+FRAMEWORK TWO-COLUMN CARDS:
+  LEFT — CAPACITY UNLOCKED:
+    Label: CAPACITY UNLOCKED
+    Value: {clinicalOperationsTotal formatted}
+      [IF clinicalOperationsTotal = 0: show "Qualitative"]
+    Description: "Hours returned to rounding, patient care, and throughput.
+      Beds freed by earlier discharges. Admits processed faster."
+    Tagline: "The constraint is time. Remove it."
+  RIGHT — REVENUE OPTIMIZED:
+    Label: REVENUE OPTIMIZED
+    Value: {drgAccuracyValue + cdiQueryValue formatted}
+      [IF both = 0: show "Not Modeled"]
+    Description: "Better documentation, higher CMI, reduced denials. Every
+      encounter captured completely, coded correctly."
+    Tagline: "The notes drive the revenue."
+STRATEGIC OBSERVATION BLOCK (red left border, light gray bg):
+  Label: STRATEGIC OBSERVATION
+  capacityPct = directPatientCarePct + shiftSustainabilityPct
+  IF clinicalOperationsTotal = 0 AND drgAccuracyValue = 0 AND cdiQueryValue = 0:
+    "Your model is built on qualitative drivers
+    ({list: e.g., Rounding Efficiency, Clinician Wellbeing}). These represent
+    strategic value — rounding efficiency, hospitalist experience, and retention
+    signal — that is meaningful but not easily dollarized. To build a financial
+    case, consider enabling Clinician Wellbeing with retention modeling or
+    activating documentation quality drivers."
+  ELSE IF capacityPct > 50:
+    "Your model is {capacityPct}% capacity-driven, indicating retention and
+    operational gains dominate. This is common when turnover costs are high
+    and replacement cycles are long."
+  ELSE:
+    "Your model is {documentationQualityPct}% revenue-driven. DRG accuracy
+    and denial prevention represent the largest value pools — typical for
+    organizations with complex case mix and documentation gaps."
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Inpatient Value Assessment
+  Right: Page 1 of {totalPages}
+──────────────────────────────────────────────────
+PAGE 2 — YOUR VALUE DRIVERS
+──────────────────────────────────────────────────
+SECTION LABEL: YOUR VALUE DRIVERS
+PAGE HEADLINE: "How Time Becomes Value"
+SUB-HEADLINE (dynamic):
+  "{hoursReturnedTotal} hours returned to your hospitalists.
+  Here's how each driver works."
+DIVIDER
+SECTION LABEL: CLINICAL OPERATIONS
+DRIVER CARD 1 — ROUNDING EFFICIENCY:
+  Name: "Rounding Efficiency"
+  Value: Qualitative [always — no dollar value ever assigned]
+  Narrative:
+  "You allocated {directPatientCarePct}% of reclaimed time to direct patient
+  care — {roundingHoursTotal} hours per year across your program, or
+  {roundingHoursPerProvider} hours per hospitalist. That time returns to
+  rounding, bedside presence, teaching, and managing complex census loads.
+  Its value appears in care quality, hospitalist satisfaction, and the
+  capacity to absorb growth without adding FTEs."
+DRIVER CARD 2 — CLINICIAN WELLBEING:
+  Name: "Clinician Wellbeing"
+  IF retentionCalculatorOn = true:
+    Value: {retentionValue formatted}
+    Narrative:
+    "After-hours charting is the piece of physician burnout that organizations
+    underestimate — not because it's invisible, but because its cost only
+    becomes visible when someone leaves. At a {annualTurnoverRate × 100}%
+    annual turnover rate, with {burnoutTurnoverPct × 100}% of departures
+    burnout-related, your program loses an estimated
+    {(providersLeavingPerYear × burnoutTurnoverPct) | 1 decimal} hospitalists
+    per year to documentation burden. Modeled at a
+    {abridgeRetentionImpact × 100}% retention impact — conservative — and a
+    {replacementCost formatted} replacement cost, the projected annual value
+    is {retentionValue formatted}."
+  ELSE:
+    Value: "{hoursPerWeek} hrs/wk"
+    Narrative:
+    "Your {shiftSustainabilityPct}% shift sustainability allocation returns
+    roughly {hoursPerWeek} hours per week to each hospitalist — time that
+    would otherwise be spent charting after shifts. When retention is a
+    concern, the retention model is available to quantify this further."
+  SUBTOTAL:
+  "Clinical Operations Subtotal   {clinicalOperationsTotal formatted}"
+  [If $0: show "Qualitative — see notes above"]
+DIVIDER
+SECTION LABEL: DOCUMENTATION QUALITY
+IF drgAccuracyValue > 0 OR cdiQueryValue > 0:
+  DRIVER CARD 3 — DRG ACCURACY (if active):
+    Name: "DRG Accuracy"
+    Value: {drgAccuracyValue formatted}
+    Narrative:
+    "Your hospitalists discuss clinical complexity that doesn't always make
+    it into the final note. CDI teams identify documentation opportunities in
+    roughly {drgOpportunityRate × 100}% of admissions —
+    {admissionsWithGaps} admissions per year carrying a documentation gap.
+    Abridge is modeled to close {abridgeCaptureRate × 100}% of those gaps —
+    the portion where clinical detail was spoken but not written. Each
+    captured case carries an average DRG weight lift of {avgDRGWeightLift},
+    worth roughly {baseDRGPayment formatted} in base payment. After a
+    conservative {drgRealizationRate × 100}% realization rate, the modeled
+    annual value is {drgAccuracyValue formatted}."
+    Note: "Common missed conditions: acute respiratory failure, sepsis,
+    malnutrition, acute encephalopathy, acute kidney injury.
+    Validate gap rates with your CDI team."
+  DRIVER CARD 4 — CDI QUERY REDUCTION (if active):
+    Name: "CDI Query Reduction"
+    Value: {cdiQueryValue formatted}
+    Narrative:
+    "CDI queries are a symptom of incomplete upstream documentation. At a
+    {cdiQueryRate × 100}% query rate, your team manages roughly
+    {totalCDIQueries} queries per year. When Abridge captures the clinical
+    conversation completely, many become unnecessary — the answer is already
+    in the note. At a typical {queriesAvoidedRate × 100}% reduction,
+    {queriesAvoided} queries avoided at {costPerQuery formatted} each yields
+    {cdiQueryValue formatted} annually in CDI team capacity."
+  IF drgAccuracyValue = 0: show "DRG Accuracy: Not Modeled"
+  IF cdiQueryValue = 0: show "CDI Query Reduction: Not Modeled"
+ELSE (no doc quality drivers):
+  Gray card:
+  "Documentation Quality: Not Modeled
+   No documentation quality drivers were selected. The DRG accuracy and CDI
+   opportunity is available to model when your program is ready."
+PROJECTED ANNUAL VALUE CARD:
+  Label: PROJECTED ANNUAL VALUE
+  Value: {netAnnualValue formatted} (Abridge red)
+  Right: "Per hospitalist: ~{netValuePerProvider formatted}/year"
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Inpatient Value Assessment
+  Right: Page 2 of {totalPages}
+──────────────────────────────────────────────────
+PAGE 3 — THE INVESTMENT CASE
+──────────────────────────────────────────────────
+SECTION LABEL: THE INVESTMENT CASE
+HEADLINE: "Infrastructure, Not Expense"
+BODY (confirmed from bundle):
+  "The investment is {annualInvestment formatted} annually and does not
+  change as value grows. That asymmetry — fixed cost, compounding return —
+  is what separates infrastructure from a line item."
+SECTION LABEL: 3-YEAR PROJECTION
+TABLE (5 columns: PERIOD / VALUE / INVESTMENT / NET VALUE / CUMULATIVE):
+  Year 1 | {year1Value} | {annualInvestment} | {year1Value - annualInvestment} | {year1Value - annualInvestment}
+  Year 2 | {year2Value} | {annualInvestment} | {year2Value - annualInvestment} | {(y1+y2) - (inv×2)}
+  Year 3 | {year3Value} | {annualInvestment} | {year3Value - annualInvestment} | {threeYearCumulative - (inv×3)}
+  [Year 1–3 value column cells in Abridge red per existing style]
+CALLOUT (red left border):
+  "By Year 3, you're generating
+  {(year3Value / annualInvestment) | 1 decimal}× for every $1 invested —
+  while your hospitalist program carries more complex cases with better
+  documentation integrity."
+SECTION LABEL: AT SCALE
+Sub-label: "Per-hospitalist economics hold as the program expands."
+TWO-COLUMN CARD:
+  LEFT — CURRENT MODEL:
+    Value: {netAnnualValue formatted}/yr
+    Sub: "{hospitalistCount} hospitalists"
+    Sub: "{utilizationRate × 100}% utilization"
+    Sub: "Per hospitalist: ~{netValuePerProvider formatted}/yr"
+  RIGHT (red card) — AT FULL SCALE:
+    Value: $7.9M/yr   [confirmed from Step 8 expansion section]
+    Sub: "500 hospitalists"
+    Sub: "80% utilization"
+    Sub: "Per hospitalist: ~$15.8K/yr"
+SECTION LABEL: KEY METRICS TO TRACK
+[Use existing numbered list style]
+  1. Documentation time per encounter (target: –50%)
+  2. Hospitalist satisfaction score (target: +15 pts)
+  3. CDI query rate per admission (target: –25%)
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Inpatient Value Assessment
+  Right: Page 3 of {totalPages}
+──────────────────────────────────────────────────
+PAGE 4 — CONNECTED VALUE
+(only if any doc quality driver is active; else skip, Page 4 = Assessment)
+──────────────────────────────────────────────────
+SECTION LABEL: CONNECTED VALUE
+HEADLINE: "Inpatient Documentation Doesn't Start at Admission"
+SUB-HEADLINE:
+  "The note that matters most to DRG accuracy is often written before the
+  patient reaches the floor."
+INTRO (flowing prose):
+  "When both ED and Inpatient use Abridge, the value compounds. The admission
+  documentation that starts in ED flows directly into inpatient coding, CDI
+  workflows, and denial defense."
+THREE BLOCKS (red left border cards):
+  1. DRG CAPTURE
+     "CCs/MCCs documented in ED carry forward — your case mix starts stronger
+     from admission."
+  2. CDI EFFICIENCY
+     "When the ED note is complete, CDI teams query less and focus on complex
+     cases."
+  3. DENIAL PREVENTION
+     "Medical necessity documented at admission is your first line of defense
+     against payer audits."
+SUPPLEMENTARY INSIGHT CARD (gray, full-width):
+  Label: ADDITIONAL OPPORTUNITY — NOT YET MODELED
+  Body: "Your wizard inputs support two additional value scenarios not included
+  in the primary model: Obs/IP Status Defense (documentation completeness
+  protecting against medical necessity denials) and CDI Capacity Extension
+  (reducing CDI query workload). These are available to model when your team
+  is ready to quantify them."
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Inpatient Value Assessment
+  Right: Page 4 of 5
+──────────────────────────────────────────────────
+PAGE 4 (no doc quality) or PAGE 5 — YOUR ASSESSMENT
+──────────────────────────────────────────────────
+SECTION LABEL: YOUR ASSESSMENT
+HERO CARD:
+  Line 1 (large black): "{hospitalistCount} hospitalists."
+  Line 2 (large black): "{eligibleAdmissions} admissions."
+  Line 3 (large red):   "{netAnnualValue formatted} projected net value."
+  Line 4 (gray):        "{netValuePerProvider formatted} per hospitalist per year."
+QUOTE BLOCK (left red border):
+  CONFIRMED FROM BUNDLE — USE THIS EXACT TEXT:
+  "Hospitalist documentation drives everything downstream — coding accuracy,
+  denial prevention, care transitions. When the notes are complete in
+  real-time, the entire revenue cycle benefits."
+DIVIDER
+SECTION LABEL: AT A GLANCE
+TWO-COLUMN LAYOUT:
+  LEFT — VALUE SUMMARY:
+    CLINICAL OPERATIONS          {clinicalOperationsTotal formatted}
+      Rounding Efficiency        Qualitative
+      Clinician Wellbeing        {IF retentionValue > 0: retentionValue | ELSE: "Qualitative"}
+      Cost Reduction             {IF costReductionValue > 0: value | ELSE: "Not Modeled"}
+    DOCUMENTATION QUALITY        {drgAccuracyValue + cdiQueryValue formatted}
+      DRG Accuracy               {IF > 0: formatted | ELSE: "Not Modeled"}
+      CDI Query Reduction        {IF > 0: formatted | ELSE: "Not Modeled"}
+    ─────────────────────────────────────────────
+    Net Annual Value             {netAnnualValue formatted}  [in Abridge red]
+  RIGHT — INVESTMENT SUMMARY:
+    Annual Investment            {annualInvestment formatted}
+    Per hospitalist              {costPerProviderMonth formatted}/mo
+    Year 1 ROI                   {roiMultiple}×
+    3-Year Cumulative            {threeYearCumulative formatted}
+    UTILIZATION
+    Projected                    {utilizationRate × 100}%
+    Hours Returned               {hoursReturnedTotal}
+    Per hospitalist/week         {hoursPerWeek} hrs
+DIVIDER
+SECTION LABEL: METHODOLOGY
+TWO-COLUMN:
+  LEFT — YOUR INPUTS:
+    {hospitalistCount} hospitalists
+    {eligibleAdmissions} admissions
+    {utilizationRate × 100}% utilization
+    {minutesSavedPerAdmission} min saved/admission
+    {annualInvestment formatted} investment
+    {hoursReturnedTotal} hrs returned
+  RIGHT — REALIZATION RATES:
+    "Values use conservative realization rates based on observed
+    implementations. Conservative by design. Based on observed implementations."
+LEGAL FOOTER (appears word-for-word, last page only, small gray text):
+  "This assessment is for planning purposes. Realization rates are conservative
+  and based on observed implementations. The goal is a framework for decisions,
+  not a prediction. Validate with your organization's data post-implementation."
+FOOTER:
+  Left: ABRIDGE
+  Center: {orgName} · Inpatient Value Assessment
+  Right: Page {X} of {totalPages}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — RENDERING RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RULE 1 — LEFT CARD LABEL IS "CAPACITY UNLOCKED" NOT "TIME RECAPTURED"
+  The Inpatient PDF uses "CAPACITY UNLOCKED" for the left value card.
+  Do not use "TIME RECAPTURED" (Outpatient) or "THROUGHPUT VALUE" (ED).
+RULE 2 — ROUNDING EFFICIENCY IS ALWAYS QUALITATIVE
+  Never assign a dollar value to Rounding Efficiency. Always display
+  as "Qualitative" or show hours returned.
+RULE 3 — CDI CAPACITY EXTENSION IS NOT IN THE PRIMARY FINANCIAL MODEL
+  $25,500 CDI Capacity value appears in the wizard Step 5 summary but
+  is NOT reflected in Step 8 totals or PDF financial model.
+  Do not add it to any total. Do not display it in AT A GLANCE.
+  You may reference it in the supplementary "not yet modeled" block on Page 4.
+RULE 4 — OBS/IP STATUS DEFENSE IS NOT IN THE PRIMARY FINANCIAL MODEL
+  $392,000 Obs/IP Defense value appears in Step 6 of the wizard but
+  is NOT reflected in Step 8 or the PDF. Same treatment as CDI Capacity.
+RULE 5 — STRATEGIC OBSERVATION IS BINARY
+  Use only the two variants specified above (capacity-driven vs revenue-driven).
+  Do not invent additional variants. The threshold is 50%.
+RULE 6 — CLOSING QUOTE IS FIXED
+  The Page 4/5 assessment quote is locked:
+  "Hospitalist documentation drives everything downstream — coding accuracy,
+  denial prevention, care transitions. When the notes are complete in
+  real-time, the entire revenue cycle benefits."
+  Do not substitute a different quote.
+RULE 7 — FOOTER CENTER TEXT IS "Inpatient Value Assessment"
+  Not "Inpatient · Outpatient" or any other variant.
+RULE 8 — PAGE 2 HEADLINE USES "admissions" NOT "encounters"
+  Sub-headline: "{X} hours returned to your hospitalists."
+  (Not "providers" — "hospitalists" throughout)
+RULE 9 — NEVER MENTION OBS/IP OR CDI CAPACITY DOLLAR VALUES IN BODY COPY
+  These are supplementary opportunities only. Reference them qualitatively
+  in the "not yet modeled" block if Connected Value page exists.
+  Never show $392K or $25.5K as part of main value story.
