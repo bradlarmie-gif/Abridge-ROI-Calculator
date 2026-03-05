@@ -281,7 +281,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       await generateAmbientAssessmentPDF(pdfData);
       setExportSuccess(true);
     } catch (err) {
-      console.error('PDF generation failed:', err);
+      console.error('PDF generation failed:', err instanceof Error ? err.message : err, err);
     } finally {
       setIsExporting(false);
     }
@@ -584,7 +584,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               </div>
 
               <div className="flex items-center justify-between text-sm text-neutral-500 border-t pt-4">
-                <span>Estimated length: <span className="font-medium">5 pages</span></span>
+                <span>Estimated length: <span className="font-medium">8 pages</span></span>
                 <span>Format: <span className="font-medium">PDF</span></span>
               </div>
 

@@ -336,7 +336,7 @@ function FrameworkPage({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
       </View>
       <View style={[pdfStyles.darkTile, { flexDirection: "row", alignItems: "flex-start" }]}>
-        <View style={[pdfStyles.redAccentBar, { height: "100%" }]} />
+        <View style={[pdfStyles.redAccentBar, { alignSelf: "stretch" }]} />
         <View style={{ flex: 1 }}>
           <Text style={[pdfStyles.coachLabel, { color: "#EA2C00" }]}>
             THE QUESTION YOUR NUMBERS RAISE
