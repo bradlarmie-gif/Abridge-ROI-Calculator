@@ -300,10 +300,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          What standing still is costing you.
+          Your 36-month trajectory.
         </h1>
         <p className="text-base text-[#888888]">
-          The gap between where you are and where strategic action takes you — quantified.
+          Based on your current maturity and what becomes possible at the next level across each domain.
         </p>
       </motion.div>
 
@@ -313,7 +313,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Reality Check
+                Where You Stand Today
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -369,10 +369,57 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+          {(hasMeasuredDomains || annualGap > 0) && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+              <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-chart">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                  36-Month Trajectory
+                </p>
+                <p className="text-sm text-[#888888] mb-6">
+                  Value in motion: current path vs. full strategic deployment
+                </p>
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
+                      <YAxis
+                        tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
+                        tick={{ fontSize: 12, fill: '#888888' }}
+                        width={70}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend
+                        formatter={(value: string) => (
+                          <span className="text-xs text-black">
+                            {value === 'strategic' ? 'With strategic action' : 'Status quo (current path)'}
+                          </span>
+                        )}
+                        wrapperStyle={{ paddingTop: 12 }}
+                      />
+                      <Line type="monotone" dataKey="strategic" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="strategic" />
+                      <Line type="monotone" dataKey="current" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="current" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
+                  The difference between your current trajectory and full strategic deployment over 36 months is approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
+                </p>
+                <p className="text-xs text-[#888888] italic mt-2">
+                  Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap.
+                </p>
+                <p className="text-xs text-[#888888] italic mt-1">
+                  Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-next-level">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Where the Value Lives
+                What Drives the Gap
               </p>
               <div className="h-px bg-[#E5E7EB] mb-6" />
 
@@ -413,7 +460,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                             </p>
                             <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50">
                               <p className="text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5">
-                                Opportunity Ahead
+                                The Next Level Unlocks
                               </p>
                               <p className="text-sm text-[#888888] italic leading-relaxed">
                                 {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
@@ -441,59 +488,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               })}
             </div>
 
-            {annualGap > 0 && (
-              <p className="text-sm text-[#E8350A] font-semibold text-center mt-6 mb-4">
-                Every month at current maturity levels, your organization forgoes approximately {formatDollar(monthlyGap)} in capturable value.
-              </p>
-            )}
           </motion.div>
-
-          {(hasMeasuredDomains || annualGap > 0) && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-              <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-chart">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                  36-Month Trajectory
-                </p>
-                <p className="text-sm text-[#888888] mb-6">
-                  Cumulative value captured: current trajectory vs. strategic action
-                </p>
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
-                      <YAxis
-                        tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
-                        tick={{ fontSize: 12, fill: '#888888' }}
-                        width={70}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend
-                        formatter={(value: string) => (
-                          <span className="text-xs text-black">
-                            {value === 'strategic' ? 'With strategic action' : 'Status quo (current path)'}
-                          </span>
-                        )}
-                        wrapperStyle={{ paddingTop: 12 }}
-                      />
-                      <Line type="monotone" dataKey="strategic" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="strategic" />
-                      <Line type="monotone" dataKey="current" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="current" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
-                  Over 36 months, the gap between your current trajectory and strategic action is approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
-                </p>
-                <p className="text-xs text-[#888888] italic mt-2">
-                  Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap.
-                </p>
-                <p className="text-xs text-[#888888] italic mt-1">
-                  Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary.
-                </p>
-              </div>
-            </motion.div>
-          )}
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
             <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" />
@@ -582,32 +577,32 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             <div className="h-px bg-white/10 my-5" />
 
             <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              Cost of Waiting
+              The Trajectory Gap
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Each month represents</span>
+                <span className="text-sm text-white/70">Monthly momentum gap</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-monthly">
                   {formatDollar(monthlyGap)}
                 </span>
               </div>
               <p className="text-[11px] text-white/40 italic leading-relaxed">
-                This is value your deployment is positioned to capture with greater operational intentionality.
+                This is value your deployment is positioned to generate as maturity deepens across each domain.
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Every 6 months of delay</span>
+                <span className="text-sm text-white/70">6-month trajectory gap</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-6mo">
                   {formatDollar(sixMonthGap)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">A year of inaction costs</span>
+                <span className="text-sm text-white/70">Annual trajectory gap</span>
                 <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-12mo">
                   {formatDollar(wait12mo)}
                 </span>
               </div>
               <p className="text-[11px] text-white/30 italic leading-relaxed mt-1" data-testid="text-ramp-note">
-                Reflects full run-rate value. First 3-6 months of new deployment include ramp period.
+                Reflects projected run-rate value at next-level maturity. First 3–6 months include a ramp period.
               </p>
             </div>
 

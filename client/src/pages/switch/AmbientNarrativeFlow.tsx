@@ -21,7 +21,7 @@ const STEP_NAMES = [
   "Your Deployment",
   "Four Lenses",
   "The Reveal",
-  "Cost of Inaction",
+  "Your Trajectory",
   "Strategic Next Steps",
 ];
 

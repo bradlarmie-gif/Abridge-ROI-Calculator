@@ -503,7 +503,7 @@ function DomainCard({ domainKey, data, isLast }: { domainKey: string; data: Ambi
           </View>
 
           <View style={styles.opportunityBox}>
-            <Text style={styles.opportunityLabel}>Opportunity Ahead</Text>
+            <Text style={styles.opportunityLabel}>The Next Level Unlocks</Text>
             <Text style={styles.opportunityText}>{oppText}</Text>
           </View>
         </View>
@@ -586,7 +586,7 @@ function Page4ValueAndUrgency({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>VALUE OPPORTUNITY & COST OF WAITING</Text>
+        <Text style={styles.sectionLabel}>VALUE OPPORTUNITY & TRAJECTORY GAP</Text>
 
         <View style={[styles.twoColRow, { marginBottom: 10 }]}>
           <View style={[styles.col, styles.darkPanel]}>
