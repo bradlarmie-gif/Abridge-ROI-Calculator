@@ -803,7 +803,85 @@ export default function ExploreModel({
 
         costPerProviderPerMonth: state.costPerUnit,
 
-        ...(state.careSetting === 'ed' ? (() => {
+        ...(state.careSetting === 'inpatient' ? (() => {
+          const ipDirectPct = timeDriverInputs.ipAllocQualityPercent;
+          const ipDocQPct = timeDriverInputs.ipAllocCostPercent;
+          const ipShiftPct = timeDriverInputs.ipAllocWellbeingPercent;
+          const ipRoundingHrsTotal = Math.round(totalHoursSaved * (ipDirectPct / 100));
+          const ipRoundingHrsPerProv = state.numberOfProviders > 0 ? Math.round(ipRoundingHrsTotal / state.numberOfProviders) : 0;
+          const ipHrsPerProvPerYear = state.numberOfProviders > 0 ? Math.round(totalHoursSaved / state.numberOfProviders) : 0;
+          const ipHrsPerWk = state.numberOfProviders > 0 ? parseFloat((totalHoursSaved / state.numberOfProviders / 52).toFixed(1)) : 0;
+          const ipMinPerDay = parseFloat((ipHrsPerWk * 60 / 5).toFixed(0));
+          const ipProvLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
+          const ipBurnoutDep = ipProvLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
+          const ipRetImpactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
+          const ipProvRetained = ipBurnoutDep * (ipRetImpactPct / 100);
+
+          const ipDrgProtScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+          const ipDrgCapRate = ipDrgProtScenarios[docQualityInputs.ipDrgScenario] || 20;
+          const ipAdmGaps = Math.round(eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100));
+          const ipAdmCaptured = Math.round(ipAdmGaps * (ipDrgCapRate / 100));
+
+          const ipCdiRedScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+          const ipCdiRedRate = ipCdiRedScenarios[docQualityInputs.ipCdiScenario] || 25;
+          const ipTotalQueries = Math.round(eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100));
+          const ipQueriesAvoided = Math.round(ipTotalQueries * (ipCdiRedRate / 100));
+
+          const ipFullScaleProvs = expandedProviders;
+          const ipFullScaleMult = (ipFullScaleProvs / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
+          const ipRetValOnly = clinicianRetentionValue;
+          const ipCostRedOnly = costReductionValue;
+          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue;
+          const ipPrimaryNet = ipPrimaryTotal - annualInvestment;
+          const ipFullScaleNetValue = Math.round(ipPrimaryNet * ipFullScaleMult);
+          const ipFullScaleInv = Math.round(annualInvestment * (ipFullScaleProvs / state.numberOfProviders));
+          const ipFullScaleGross = Math.round(ipPrimaryTotal * ipFullScaleMult);
+          const ipFullScaleRoi = ipFullScaleInv > 0 ? parseFloat((ipFullScaleGross / ipFullScaleInv).toFixed(1)) : 0;
+          const ipFullScalePerProv = ipFullScaleProvs > 0 ? Math.round(ipFullScaleNetValue / ipFullScaleProvs) : 0;
+
+          return {
+            ipDirectPatientCarePct: ipDirectPct,
+            ipDocQualityPct: ipDocQPct,
+            ipShiftSustainabilityPct: ipShiftPct,
+            ipRoundingHoursTotal: ipRoundingHrsTotal,
+            ipRoundingHoursPerProvider: ipRoundingHrsPerProv,
+            ipHoursPerProviderPerYear: ipHrsPerProvPerYear,
+            ipHoursPerWeek: ipHrsPerWk,
+            ipMinutesPerDayPerProvider: ipMinPerDay,
+            ipProvidersLeavingPerYear: ipProvLeaving,
+            ipBurnoutDepartures: ipBurnoutDep,
+            ipProvidersRetained: ipProvRetained,
+            ipDrgOpportunityRate: docQualityInputs.ipDrgAtRiskRate,
+            ipAdmissionsWithGaps: ipAdmGaps,
+            ipAbridgeCaptureRate: ipDrgCapRate,
+            ipAdmissionsCaptured: ipAdmCaptured,
+            ipAvgDRGWeightLift: docQualityInputs.ipDrgWeightIncrease,
+            ipBaseDRGPayment: docQualityInputs.ipDrgBasePayment,
+            ipDrgRealizationRate: docQualityInputs.ipDrgRealization,
+            ipDrgValue: ipDrgValue,
+            ipDrgEnabled: docQualityInputs.ipDrgEnabled,
+            ipCdiQueryRate: docQualityInputs.ipCdiQueryRate,
+            ipTotalCDIQueries: ipTotalQueries,
+            ipQueriesAvoidedRate: ipCdiRedRate,
+            ipQueriesAvoided: ipQueriesAvoided,
+            ipCostPerQuery: docQualityInputs.ipCdiCostPerQuery,
+            ipCdiValue: ipCdiValue,
+            ipCdiEnabled: docQualityInputs.ipCdiEnabled,
+            ipCostReductionValue: costReductionValue,
+            ipCostReductionEnabled: timeDriverInputs.costReductionEnabled,
+            ipWellbeingHoursPerWeek: ipHrsPerWk,
+            ipRoundingEnabled: timeDriverInputs.ipRoundingEnabled,
+            ipFullScaleValue: ipFullScaleNetValue,
+            ipFullScaleROI: ipFullScaleRoi,
+            ipFullScalePerProvider: ipFullScalePerProv,
+            sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
+            retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
+            efficiencyValue: timeValue,
+            documentationQualityValue: docValue,
+          };
+        })() : {}),
+
+      ...(state.careSetting === 'ed' ? (() => {
           const edThroughputPct = timeDriverInputs.edAllocThroughputPercent;
           const edDocPct = timeDriverInputs.edAllocDocQualityPercent;
           const edWellPct = timeDriverInputs.edAllocWellbeingPercent;
