@@ -105,9 +105,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     }
   });
 
-  it("3-year total value matches hand calculation within 1% (3-month doc ramp)", () => {
-    expect(summary.termValue).toBeGreaterThan(845000);
-    expect(summary.termValue).toBeLessThan(855000);
+  it("3-year total value matches hand calculation within 2% (1-month doc ramp)", () => {
+    expect(summary.termValue).toBeGreaterThan(860000);
+    expect(summary.termValue).toBeLessThan(890000);
   });
 
   it("3-year total investment = 36 months × $2000 + $25K impl = $97,000", () => {
@@ -166,24 +166,25 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
     expect(cashFlows[0].bySettings["test-outpatient"].providers).toBe(10);
   });
 
-  it("provider count ramps to ~28 by month 12", () => {
+  it("provider count holds at 10 through month 12 (Y1 constant)", () => {
     const providers = cashFlows[11].bySettings["test-outpatient"].providers;
-    expect(providers).toBeGreaterThanOrEqual(26);
-    expect(providers).toBeLessThanOrEqual(30);
+    expect(providers).toBe(10);
   });
 
-  it("provider count reaches 30 by month 13", () => {
-    expect(cashFlows[12].bySettings["test-outpatient"].providers).toBe(30);
+  it("provider count starts ramping at month 13 (first month of Y2)", () => {
+    const providers = cashFlows[12].bySettings["test-outpatient"].providers;
+    expect(providers).toBeGreaterThanOrEqual(11);
+    expect(providers).toBeLessThanOrEqual(13);
   });
 
-  it("provider count reaches 50 by month 25+", () => {
-    expect(cashFlows[24].bySettings["test-outpatient"].providers).toBe(50);
+  it("provider count reaches 30 by end of Y2 and 50 by end of Y3", () => {
+    expect(cashFlows[23].bySettings["test-outpatient"].providers).toBe(30);
     expect(cashFlows[35].bySettings["test-outpatient"].providers).toBe(50);
   });
 
   it("investment scales with provider count (not fixed at pilot)", () => {
     expect(cashFlows[0].investment).toBe(200 * 10);
-    expect(cashFlows[24].investment).toBe(200 * 50);
+    expect(cashFlows[11].investment).toBe(200 * 10);
     expect(cashFlows[35].investment).toBe(200 * 50);
   });
 
@@ -202,9 +203,9 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
     expect(summary.termInvestment).toBeGreaterThan(97000);
   });
 
-  it("3-year total value near $3M (hand-calculated ~$3,004,099)", () => {
-    expect(summary.termValue).toBeGreaterThan(2800000);
-    expect(summary.termValue).toBeLessThan(3200000);
+  it("3-year total value near $2M (Y1 constant at pilot, stepped rollout)", () => {
+    expect(summary.termValue).toBeGreaterThan(1800000);
+    expect(summary.termValue).toBeLessThan(2200000);
   });
 });
 
@@ -223,14 +224,15 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
   const config = makeConfig();
   const cashFlows = buildMonthlyCashFlows(settings, config);
 
-  it("delayed driver produces $0 for months 1-7 (6-month delay + onset at 0)", () => {
-    for (let m = 0; m < 7; m++) {
+  it("delayed driver produces $0 for months 1-3 (3-month delay)", () => {
+    for (let m = 0; m < 3; m++) {
       expect(cashFlows[m].timeValue).toBe(0);
     }
   });
 
-  it("delayed driver starts ramping at month 8 (monthsSinceGoLive=7)", () => {
-    expect(cashFlows[7].timeValue).toBeGreaterThan(0);
+  it("delayed driver starts ramping at month 5 (monthsSinceGoLive=4, after 3-month delay)", () => {
+    expect(cashFlows[3].timeValue).toBe(0);
+    expect(cashFlows[4].timeValue).toBeGreaterThan(0);
   });
 
   it("phased (retention) driver at 20% during year 1 (with onset ramp)", () => {
@@ -239,16 +241,16 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     expect(y1Retention).toBeLessThan(25000);
   });
 
-  it("phased driver at 20% in year 2 (month 13+, after 9-month retention delay)", () => {
+  it("phased driver at 65% in year 2 (month 13+, monthsSinceGoLive in year2 band)", () => {
     const month13Ret = cashFlows[12].retentionValue;
     const fullMonthlyRet = 100000 / 12;
-    expect(month13Ret).toBeCloseTo(fullMonthlyRet * 0.20, -1);
+    expect(month13Ret).toBeCloseTo(fullMonthlyRet * 0.65, -1);
   });
 
-  it("phased driver at 65% in year 3 (month 25+, adjustedMonths in year2 band)", () => {
+  it("phased driver at 100% in year 3 (month 25+, monthsSinceGoLive in year3 band)", () => {
     const month25Ret = cashFlows[24].retentionValue;
     const fullMonthlyRet = 100000 / 12;
-    expect(month25Ret).toBeCloseTo(fullMonthlyRet * 0.65, -1);
+    expect(month25Ret).toBeCloseTo(fullMonthlyRet * 1.00, -1);
   });
 
   it("total value = sum of all three driver categories", () => {
@@ -257,22 +259,22 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     }
   });
 
-  it("year 1 total matches hand calculation (~$178K, faster doc ramp)", () => {
+  it("year 1 total matches hand calculation (~$226K, faster onsets)", () => {
     const y1Total = cashFlows.slice(0, 12).reduce((s, r) => s + r.totalValue, 0);
-    expect(y1Total).toBeGreaterThan(170000);
-    expect(y1Total).toBeLessThan(190000);
+    expect(y1Total).toBeGreaterThan(210000);
+    expect(y1Total).toBeLessThan(250000);
   });
 
-  it("year 2 total matches hand calculation (~$330K, with 9-month retention delay)", () => {
+  it("year 2 total matches hand calculation (~$365K, 65% retention phasing)", () => {
     const y2Total = cashFlows.slice(12, 24).reduce((s, r) => s + r.totalValue, 0);
-    expect(y2Total).toBeGreaterThan(315000);
-    expect(y2Total).toBeLessThan(345000);
+    expect(y2Total).toBeGreaterThan(350000);
+    expect(y2Total).toBeLessThan(380000);
   });
 
-  it("year 3 total matches hand calculation (~$374K, with 9-month retention delay)", () => {
+  it("year 3 total matches hand calculation (~$400K, 100% retention phasing)", () => {
     const y3Total = cashFlows.slice(24, 36).reduce((s, r) => s + r.totalValue, 0);
-    expect(y3Total).toBeGreaterThan(360000);
-    expect(y3Total).toBeLessThan(390000);
+    expect(y3Total).toBeGreaterThan(385000);
+    expect(y3Total).toBeLessThan(415000);
   });
 });
 
@@ -745,11 +747,12 @@ describe("Annual Flat License Pricing", () => {
     expect(cashFlows[0].investment).toBe(expectedMonthly);
   });
 
-  it("encounter-based pricing scales with provider expansion", () => {
+  it("encounter-based pricing scales with encounter expansion", () => {
     const setting = makeSetting({
       pricingModel: "perEncounter",
       costPerEncounter: 10,
       encounters: 30000,
+      yearlyEncounters: { year1: 30000, year2: 60000, year3: 60000 },
       providerCount: 10,
       fullScaleProviders: 20,
       yearlyProviders: { year1: 10, year2: 20, year3: 20 },
