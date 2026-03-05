@@ -847,7 +847,8 @@ export default function ProformaView({
               const encAnnual = (s.costPerEncounter || 0) * s.encounters;
               const baseProv = s.providerCount || 1;
               const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
-              const y1Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year1 : s.costPerUnit * yp.year1 * 12;
+              const y1Months = 13 - s.goLiveMonth;
+              const y1Cost = isFlat ? flatFee * (y1Months / 12) : isEnc ? (s.costPerEncounter || 0) * ye.year1 * (y1Months / 12) : s.costPerUnit * yp.year1 * y1Months;
               const y2Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year2 : s.costPerUnit * yp.year2 * 12;
               const y3Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year3 : s.costPerUnit * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
