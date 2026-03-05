@@ -170,35 +170,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   <span className="text-sm text-[#888888]">%</span>
                 </div>
 
-                <div className="flex items-center justify-center mt-4 gap-3 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => handleUtilChange(INDUSTRY_UTIL)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                      utilSet && utilization === INDUSTRY_UTIL
-                        ? "bg-[#1A1A1A]/10 border-2 border-[#1A1A1A]/30 text-[#1A1A1A] font-semibold"
-                        : "bg-[#F0EFED] border border-[#E5E7EB] text-[#888888] font-medium hover:bg-[#E8E5E0]"
-                    }`}
-                    data-testid="pill-util-industry"
-                  >
-                    <span className="font-bold">~45%</span>
-                    <span>Industry avg</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleUtilChange(ABRIDGE_UTIL)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                      utilSet && utilization === ABRIDGE_UTIL
-                        ? "bg-[#EA2C00]/15 border-2 border-[#EA2C00]/50 text-[#EA2C00] font-semibold"
-                        : "bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold hover:bg-[#EA2C00]/15"
-                    }`}
-                    data-testid="pill-util-abridge"
-                  >
-                    <span className="font-bold">76%</span>
-                    <span>Industry benchmark for ambient AI deployments</span>
-                  </button>
-                </div>
-                <p className="text-[12px] text-[#999] text-center mt-2">Based on aggregated deployment experience.</p>
 
                 <AnimatePresence>
                   {utilInsight && (
@@ -219,7 +190,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 <label className="block text-sm font-medium text-black mb-1">
                   How much time does ambient return per encounter?
                 </label>
-                <p className="text-xs text-[#888888] italic mb-2">Most deployments see 2–3 min. Industry range: 1–3 min.</p>
                 <div className="flex items-center gap-2">
                   <FormattedNumberInput
                     value={inputs.timeSavedPerEncounter || 0}

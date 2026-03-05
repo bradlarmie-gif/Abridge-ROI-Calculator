@@ -303,15 +303,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-3 flex-wrap mb-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#F0EFED] border border-[#E5E7EB] text-[#888888]">
-            <span className="font-bold">1–3 min</span> Industry range
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#EA2C00]/8 border border-[#EA2C00]/25 text-[#EA2C00] font-semibold">
-            <span className="font-bold">2–3 min</span> Abridge observed avg
-          </span>
-        </div>
-        <BenchmarkContext text="Based on published industry data and aggregated deployment experience." />
 
         {showUnmeasuredCheckbox && (
           <>
