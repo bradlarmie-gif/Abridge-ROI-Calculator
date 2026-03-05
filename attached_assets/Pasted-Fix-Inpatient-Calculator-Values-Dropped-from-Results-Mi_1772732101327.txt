@@ -1,0 +1,38 @@
+Fix Inpatient Calculator — Values Dropped from Results + Misleading Allocation Labels
+I've done a line-by-line math audit of the Inpatient calculator. The individual value driver calculations are all correct — great formulas, transparent steps, good benchmarks. But there are two critical data-flow bugs where calculated values silently disappear before reaching the final results, plus misleading labels on the value driver cards.
+BUG 1 (Critical): Obs/IP Status Defense Value ($392,000) Silently Dropped from Final Results
+This is the most severe bug. The Obs/IP Status Defense card calculates correctly on the Documentation Quality page:
+
+
+
+5,600 admissions × 5% denial rate = 280 denied admissions
+280 × $10,000 avg claim × 40% doc contribution = $1,120,000 gross
+$1,120,000 × 35% realization = $392,000 netThis $392,000 appears correctly in the Documentation Quality sidebar. But when you continue to the Investment page and Results page, it completely vanishes. Results page currently shows:
+Clinical Operations: $58K (retention only)
+Documentation Quality: $243K ($222K DRG Accuracy + $21K CDI Query Reduction)
+Total: $300K Results page should show:
+Clinical Operations: $58K
+Documentation Quality: $635K ($222K DRG Accuracy + $392K Obs/IP Defense + $21K CDI Query Reduction)
+
+Total: $693K The Obs/IP Status Defense is the single largest value driver in the entire inpatient model ($392K out of a correct total of $693K) and it's being silently thrown away. 58% of the calculated value is missing from the final output. This flows through to the 3-Year Projection (shows $994K, should be ~$2.3M) and Expansion Opportunity (shows $8.6M full scale, should be significantly higher). The fix: Ensure the Obs/IP Status Defense value is included in the Documentation Quality total that carries forward to the Investment page, Results page breakdown, 3-Year Projection, and Expansion Opportunity. It should appear as its own line item in the Results breakdown alongside DRG Accuracy and CDI Query Reduction.
+BUG 2 (Critical): CDI Capacity Value ($25,500) Silently Dropped from Final Results
+The CDI Capacity Extension calculates correctly on the Value Drivers page:
+
+
+
+5 CDI FTEs × $85,000 salary × 30% time on queries × 20% reduction = $25,500This value shows correctly on the Value Drivers page but never appears in the final results. The Clinical Operations section on the Results page shows only $57,600 (retention), not $83,100 ($57,600 retention + $25,500 CDI Capacity). The fix: Ensure the CDI Capacity value is included in the Clinical Operations / Efficiency total that carries forward to Investment, Results, 3-Year Projection, and Expansion Opportunity. It should appear as its own line item in the Results breakdown.
+BUG 3 (Medium): Time Allocation Percentages Displayed on Cards But Not Used in Any Formula
+The Time Allocation page splits reclaimed time into:
+
+Documentation Quality: 40% (1,120 of 2,800 hours)
+Cost Reduction: 25% (700 hours)
+Clinician Wellbeing: 35% (980 hours) These percentages are displayed as labels on every value driver card (e.g., "Quality allocation from your time split: 40%") but they have zero mathematical effect on any calculation:
+Rounding Efficiency says "Quality allocation: 40%" but shows the FULL 2,800 hours (40% of 2,800 = 1,120, not 2,800)
+Clinician Wellbeing says "Wellbeing allocation: 35%" but shows 2.9 hrs/wk per provider (the full amount — 35% of 2.9 = ~1.0 hrs/wk)
+DRG Accuracy calculates from admissions × CDI opportunity rate × verbal gap — time allocation is not in the formula
+CDI Capacity, Obs/IP Defense, CDI Query Reduction — all use their own independent formulas, no time allocation factor This creates a confusing contradiction: the card displays "40% allocation" right next to hours that clearly represent 100% of the time saved. The fix: Remove the time allocation percentage labels from the value driver cards. They imply a mathematical connection that doesn't exist and are misleading. The value driver cards should stand on their own math without referencing an allocation that isn't applied. Do NOT add the time allocation as a hidden multiplier into the formulas — that creates the exact problem the ED calculator had where displayed math didn't add up. The cleaner fix is removing the misleading labels. Keep the Time Allocation page itself — it's good conceptual framing. Just don't echo those percentages onto cards where they have no mathematical effect.
+IMPORTANT CONSTRAINTS
+
+DO NOT change any underlying calculation formulas or values — the math engines are all correct. These are data-flow and display bugs.
+DO NOT touch Outpatient, Nursing, or ED calculators — they are working correctly.
+After fixes, do an end-to-end verification: every value calculated on the Value Drivers page and Documentation Quality page must flow through correctly to the Investment page total, Results page breakdown, Results page per-provider value, 3-Year Projection, and Expansion Opportunity. | Bug | Severity | What's Happening | Expected Impact of Fix | |---|---|---|---| | Obs/IP Defense $392K dropped | :red_circle: Critical | Value calculated correctly but not carried to results | Total jumps from $300K → $693K | | CDI Capacity $25.5K dropped | :red_circle: Critical | Value calculated correctly but not carried to results | Clinical Ops jumps from $58K → $83K | | Allocation labels misleading | :large_yellow_circle: Medium | "40% allocation" shown next to 100% hours | Remove labels from cards |
