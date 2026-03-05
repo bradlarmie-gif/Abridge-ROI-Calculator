@@ -59,7 +59,7 @@ export interface CalculatedValues {
 // Value Drivers - Time inputs
 export interface TimeDriverInputs {
   patientAccessEnabled: boolean;
-  capacityPercent: number;
+  capacityRealizationPercent: number;
   visitDuration: number;
   revenuePerVisit: number;
   
@@ -321,7 +321,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   // Time value driver inputs
   timeDriverInputs: {
     patientAccessEnabled: false,
-    capacityPercent: 10,
+    capacityRealizationPercent: 75,
     visitDuration: 30,
     revenuePerVisit: 200,
     costReductionEnabled: false,
@@ -682,7 +682,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       // Outpatient: Patient Access and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
         const hoursAllocatedToCapacity = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
-        const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100);
+        const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityRealizationPercent / 100);
         const potentialVisits = hoursConvertedToVisits * (60 / timeDriverInputs.visitDuration);
         total += potentialVisits * timeDriverInputs.revenuePerVisit;
       }

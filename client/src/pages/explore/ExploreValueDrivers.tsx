@@ -40,8 +40,8 @@ export default function ExploreValueDrivers({
     return isOutpatientSetting ? Math.round(totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)) : totalHoursSaved;
   }, [totalHoursSaved, timeDriverInputs.opAllocCapacityPercent, isOutpatientSetting]);
   const hoursTowardCapacity = useMemo(() => {
-    return Math.round(hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100));
-  }, [hoursAllocatedToCapacity, timeDriverInputs.capacityPercent]);
+    return Math.round(hoursAllocatedToCapacity * (timeDriverInputs.capacityRealizationPercent / 100));
+  }, [hoursAllocatedToCapacity, timeDriverInputs.capacityRealizationPercent]);
 
   const potentialVisits = useMemo(() => {
     return Math.round(hoursTowardCapacity * (60 / timeDriverInputs.visitDuration));
@@ -919,23 +919,23 @@ export default function ExploreValueDrivers({
                   )}
 
                   <p className="text-sm text-black mb-4">
-                    What percentage of reclaimed time could realistically become additional patient visits?
+                    Realization rate — what percentage of your allocated capacity time converts to actual patient visits?
                   </p>
 
                   <div className="mb-4">
                     <input
                       type="range"
                       min={0}
-                      max={50}
-                      value={timeDriverInputs.capacityPercent}
-                      onChange={(e) => updateTimeDriverInputs({ capacityPercent: Number(e.target.value) })}
+                      max={100}
+                      value={timeDriverInputs.capacityRealizationPercent}
+                      onChange={(e) => updateTimeDriverInputs({ capacityRealizationPercent: Number(e.target.value) })}
                       className="w-full accent-[#EA2C00] h-2"
-                      data-testid="slider-capacity"
+                      data-testid="slider-capacity-realization"
                     />
                     <div className="flex justify-between text-xs text-[#888888] mt-1">
                       <span>0%</span>
-                      <span className="text-base font-semibold text-black">{timeDriverInputs.capacityPercent}%</span>
-                      <span>50%</span>
+                      <span className="text-base font-semibold text-black">{timeDriverInputs.capacityRealizationPercent}%</span>
+                      <span>100%</span>
                     </div>
                   </div>
 
@@ -965,7 +965,7 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityPercent}% conversion to visits:</p>
+                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityRealizationPercent}% realization of your {timeDriverInputs.opAllocCapacityPercent}% capacity allocation:</p>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666] min-w-0">Hours available for visits:</span>
@@ -983,7 +983,7 @@ export default function ExploreValueDrivers({
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
                       <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-                      <span>Set at {timeDriverInputs.capacityPercent}% — the midpoint of what most organizations see (5–15%). Adjust based on your access capacity and demand.</span>
+                      <span>Defaulted to {timeDriverInputs.capacityRealizationPercent}% — a conservative realization rate. Not all allocated time converts perfectly to scheduled visits due to scheduling gaps, no-shows, and ramp-up.</span>
                     </div>
                   </div>
                 </div>
@@ -2398,7 +2398,7 @@ export default function ExploreValueDrivers({
                         </span>
                       </div>
                       {timeDriverInputs.patientAccessEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.opAllocCapacityPercent}% allocated × {timeDriverInputs.capacityRealizationPercent}% realization)</p>
                       )}
                     </div>
 

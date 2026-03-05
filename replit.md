@@ -36,7 +36,7 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Consolidated Benchmarks**: Single source of truth for key metrics.
 -   **Variable Contract Terms**: Proforma supports 1–6 year contract terms via "2-Year" / "3-Year" / "Custom" selector.
 -   **S-curve Adoption Model**: Projections use a sigmoid adoption curve for realistic modeling.
--   **Time Allocation Page**: All care settings (OP, ED, IP, Nursing) now include a dedicated Time Allocation step (step 4 of 8) between Time Savings and Value Drivers.
+-   **Time Allocation Page**: All care settings (OP, ED, IP, Nursing) now include a dedicated Time Allocation step (step 4 of 8) between Time Savings and Value Drivers. For Outpatient, the allocation % is the primary driver of Patient Access value; a separate realization rate slider (default 75%, range 0–100%) applies a conservative haircut on the allocated time. Math: `totalHoursSaved × allocationPercent × realizationPercent`.
 -   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing.
 -   **Component-Driven UI**: Utilizes reusable components.
 -   **Configuration-driven**: ROI levers and properties are externally managed.

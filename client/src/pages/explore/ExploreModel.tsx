@@ -71,7 +71,7 @@ export default function ExploreModel({
     const hoursAllocatedToCapacity = isOutpatientSetting
       ? totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)
       : totalHoursSaved;
-    const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100);
+    const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityRealizationPercent / 100);
     const potentialVisits = hoursConvertedToVisits * (60 / timeDriverInputs.visitDuration);
     return Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);
   }, [totalHoursSaved, timeDriverInputs, isOutpatientSetting]);
@@ -432,15 +432,15 @@ export default function ExploreModel({
       if (state.careSetting === 'outpatient') {
         if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
           const hoursAllocated = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
-          const hoursConverted = hoursAllocated * (timeDriverInputs.capacityPercent / 100);
+          const hoursConverted = hoursAllocated * (timeDriverInputs.capacityRealizationPercent / 100);
           const potentialVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
           drivers.push({
             id: 'patientAccess', name: 'Patient Access', value: patientAccessValue, category: 'time',
             calcSteps: [
-              `${totalHoursSaved.toLocaleString()} hrs \u00D7 ${timeDriverInputs.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
-              `${Math.round(hoursAllocated).toLocaleString()} hrs \u00D7 ${timeDriverInputs.capacityPercent}% to visits = ${Math.round(hoursConverted).toLocaleString()} hrs`,
-              `${Math.round(hoursConverted).toLocaleString()} hrs \u00D7 (60/${timeDriverInputs.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
-              `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
+              `${totalHoursSaved.toLocaleString()} hrs × ${timeDriverInputs.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
+              `${Math.round(hoursAllocated).toLocaleString()} hrs × ${timeDriverInputs.capacityRealizationPercent}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
+              `${Math.round(hoursConverted).toLocaleString()} hrs × (60/${timeDriverInputs.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
+              `${Math.round(potentialVisits).toLocaleString()} × $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
             ],
           });
         }
@@ -1184,7 +1184,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.opAllocCapacityPercent}% allocated · {timeDriverInputs.capacityPercent}% to visits)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.opAllocCapacityPercent}% allocated × {timeDriverInputs.capacityRealizationPercent}% realization)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
@@ -1893,7 +1893,7 @@ export default function ExploreModel({
                   </p>
                   {timeDriverInputs.patientAccessEnabled && (
                     <p>
-                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.capacityPercent}% of reclaimed time toward capacity × ${timeDriverInputs.revenuePerVisit}/visit × {timeDriverInputs.visitDuration} min visits.
+                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.opAllocCapacityPercent}% of reclaimed time allocated to capacity × {timeDriverInputs.capacityRealizationPercent}% realization rate × ${timeDriverInputs.revenuePerVisit}/visit × {timeDriverInputs.visitDuration} min visits.
                     </p>
                   )}
                   {docQualityInputs.wrvuEnabled && (
