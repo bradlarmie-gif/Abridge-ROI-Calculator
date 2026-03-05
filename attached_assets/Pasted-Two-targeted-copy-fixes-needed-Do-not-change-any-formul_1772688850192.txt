@@ -1,0 +1,45 @@
+Two targeted copy fixes needed. Do not change any formulas, logic, or layout.
+---
+## FIX 1: DOMAIN HEADLINES ARE TOO LONG AND TOO AGGRESSIVE
+The four domain headline strings are at full uppercase display size and read like slogans 
+rather than framing. They're too long and too confrontational. Replace all four:
+CAPACITY — find:
+  "The question isn't whether ambient saves time. It's what your organization does with it."
+  Replace with:
+  "Ambient returns time. The question is what your organization does with it."
+REVENUE — find:
+  "Better documentation produces better coding. Better coding produces better reimbursement. The question is whether your organization is connecting those dots."
+  Replace with:
+  "Better documentation produces more accurate coding. The question is whether your revenue cycle team is part of that conversation."
+WORKFORCE — find:
+  "Provider sustainability is one of the most consequential — and undertracked — dimensions of an ambient deployment."
+  Replace with:
+  "Provider sustainability is one of the most consequential dimensions of an ambient deployment — and one of the least tracked."
+QUALITY — find:
+  "Documentation quality is the foundation. The question is whether your organization is building on it."
+  Replace with:
+  "Documentation quality is the foundation. This domain measures how far that signal has traveled downstream."
+---
+## FIX 2: LEVEL CARD QUESTIONS — IMPROVE VISUAL SEPARATION FROM BODY TEXT
+Inside active level cards, the framing question (e.g. "Has your organization formally 
+quantified total recovered capacity and brought it to leadership with a recommended use?") 
+renders in the same plain body text style as the description paragraph above it. 
+The question needs to read as the primary action item, not as more body copy.
+For every framing question inside an active card (the paragraph immediately before the 
+input fields or radio options), change its className from whatever it currently is to:
+  className:"text-sm font-semibold text-[#1A1A1A] mb-3 mt-1"
+This makes the question clearly the "thing you're answering" — slightly heavier weight, 
+tighter top margin from the description above it.
+Additionally, for every input field label (e.g. "Minutes returned per documented encounter", 
+"Hours per provider per week of after-hours documentation reduced") — these are currently 
+`font-medium` but visually blend into the surrounding text. Change their className to:
+  className:"text-sm font-semibold text-[#1A1A1A] mb-1"
+And for the helper/description text directly under each input label 
+(e.g. "The clinical time per visit that ambient returns to your providers..."), 
+change to:
+  className:"text-xs text-[#888888] mb-3 leading-relaxed"
+This creates a clear three-tier visual hierarchy inside each card:
+  1. Framing question — semibold, this is what you're answering
+  2. Input label — semibold, this is the specific field
+  3. Helper text — small gray, this is the context
+Do not change any other styles, formulas, or logic.
