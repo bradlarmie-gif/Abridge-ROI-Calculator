@@ -769,6 +769,72 @@ export default function ExploreModel({
         annualDenialValue: denialsValue,
 
         costPerProviderPerMonth: state.costPerUnit,
+
+        ...(state.careSetting === 'ed' ? (() => {
+          const edThroughputPct = timeDriverInputs.edAllocThroughputPercent;
+          const edDocPct = timeDriverInputs.edAllocDocQualityPercent;
+          const edWellPct = timeDriverInputs.edAllocWellbeingPercent;
+          const edThroughputHrs = totalHoursSaved * (edThroughputPct / 100);
+          const edDocHrs = totalHoursSaved * (edDocPct / 100);
+          const edWellHrs = totalHoursSaved * (edWellPct / 100);
+          const edHrsPerWkBack = state.numberOfProviders > 0 ? edWellHrs / state.numberOfProviders / 48 : 0;
+          const throughputFactor = (edThroughputPct / 100) * 0.5;
+          const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+          const lwbsPatientsRetained = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+          const lwbsRecovered = lwbsPatientsRetained * throughputFactor;
+          const lwbsGross = lwbsRecovered * timeDriverInputs.edRevenuePerVisit;
+          const lwbsNet = Math.round(lwbsGross * (timeDriverInputs.edLwbsRealization / 100));
+          const admittedPatients = lwbsRecovered * (timeDriverInputs.edAdmissionRate / 100);
+          const admissionGross = admittedPatients * timeDriverInputs.edAdmissionRevenue;
+          const admissionNet = Math.round(admissionGross * (timeDriverInputs.edAdmissionRealization / 100));
+          const edThroughputVal = edLwbsValue + edAdmissionCaptureValue + clinicianRetentionValue;
+
+          return {
+            throughputAllocationPct: edThroughputPct,
+            docQualityAllocationPct: edDocPct,
+            wellbeingAllocationPct: edWellPct,
+            throughputHours: Math.round(edThroughputHrs),
+            docQualityHours: Math.round(edDocHrs),
+            wellbeingHours: Math.round(edWellHrs),
+            hoursPerProviderPerWeekBack: edHrsPerWkBack,
+            sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
+            retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
+            throughputValue: edThroughputVal,
+            efficiencyValue: edThroughputVal,
+            documentationQualityValue: docValue,
+
+            lwbsEnabled: timeDriverInputs.edLwbsEnabled,
+            currentLwbsRatePct: timeDriverInputs.edLwbsRate,
+            expectedLwbsReductionPct: timeDriverInputs.edLwbsReduction,
+            revenuePerEdVisit: timeDriverInputs.edRevenuePerVisit,
+            annualLwbsPatients: Math.round(lwbsPatients),
+            edPatientsRetained: Math.round(lwbsPatientsRetained),
+            throughputAttribution: throughputFactor * 100,
+            patientsRecovered: lwbsRecovered,
+            lwbsGrossValue: Math.round(lwbsGross),
+            lwbsRealizationRate: timeDriverInputs.edLwbsRealization,
+            netLwbsValue: lwbsNet,
+
+            admissionCaptureEnabled: timeDriverInputs.edThroughputEnabled,
+            admissionRate: timeDriverInputs.edAdmissionRate,
+            avgAdmissionRevenue: timeDriverInputs.edAdmissionRevenue,
+            recoveredEdPatients: Math.round(lwbsRecovered),
+            potentialAdmissions: admittedPatients,
+            admissionGrossValue: Math.round(admissionGross),
+            admissionRealizationRate: timeDriverInputs.edAdmissionRealization,
+            annualAdmissionCaptureValue: admissionNet,
+
+            emAccuracyEnabled: docQualityInputs.wrvuEnabled,
+            emScenario: docQualityInputs.wrvuScenario,
+            emImprovementPct: wrvuLiftPctVal,
+            currentAvgWrvuPerVisit: docQualityInputs.currentWrvu,
+            emWrvuLiftPerVisit: wrvuLift,
+            totalAdditionalWrvus: Math.round(totalWrvusVal),
+            emConversionFactor: docQualityInputs.conversionFactor,
+            emRealizationRate: docQualityInputs.wrvuRealization,
+            annualEmValue: wrvuValue,
+          };
+        })() : {}),
       };
 
       await generateExplorePDF(pdfData);
