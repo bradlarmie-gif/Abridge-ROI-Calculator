@@ -277,14 +277,19 @@ export default function ExploreInvestment({
 
               {/* Value Breakdown */}
               <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center gap-3">
-                  <span className="text-sm text-[#888888] min-w-0">{isNursing ? 'Annual Value' : 'Time Savings'}</span>
-                  <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
-                </div>
-                {!isNursing && (
+                {isNursing ? (
+                  <div className="flex justify-between items-center gap-3">
+                    <span className="text-sm text-[#888888] min-w-0">Annual Value</span>
+                    <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
+                  </div>
+                ) : (
                   <>
                     <div className="flex justify-between items-center gap-3">
-                      <span className="text-sm text-[#888888] min-w-0">Doc Quality</span>
+                      <span className="text-sm text-[#888888] min-w-0">Efficiency Value</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
+                    </div>
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-sm text-[#888888] min-w-0">Documentation Quality</span>
                       <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(docValue)}</span>
                     </div>
                     <div className="flex justify-between items-center gap-3">

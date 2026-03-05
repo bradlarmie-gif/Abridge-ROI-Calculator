@@ -346,7 +346,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     </div>
                     <div>
                       <p className="text-[#888888] mb-1">Typical range:</p>
-                      <p className="text-[#666666]">2-7% wRVU lift, with 50% realization rate. We default conservative 
+                      <p className="text-[#666666]">2-7% wRVU lift, with 75% realization rate. We default conservative 
                         because not every coding opportunity converts — compliance review, payer mix, and 
                         specialty norms all affect realization.</p>
                     </div>

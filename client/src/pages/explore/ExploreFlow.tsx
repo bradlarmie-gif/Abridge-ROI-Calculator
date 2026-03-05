@@ -409,7 +409,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   docQualityInputs: {
     wrvuEnabled: false,
     wrvuScenario: 'typical',
-    currentWrvu: 1.5,
+    currentWrvu: 1.8,
     conversionFactor: 33,
     wrvuRealization: 75,
     hccEnabled: false,
