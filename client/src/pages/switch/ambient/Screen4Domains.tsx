@@ -61,7 +61,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
     headline: 'CAPACITY',
-    subheadline: 'The question isn\'t whether ambient saves time. It\'s what your organization does with it.',
+    subheadline: 'Ambient returns time. The question is what your organization does with it.',
     reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
     cards: [
       { level: 1, label: 'Documentation Recovery Established', description: 'You know what you\'re getting back.' },
@@ -83,7 +83,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'Better documentation produces better coding. Better coding produces better reimbursement. The question is whether your organization is connecting those dots.',
+    headline: 'Better documentation produces more accurate coding. The question is whether your revenue cycle team is part of that conversation.',
     reframe: 'Every encounter is coded. The opportunity is in whether it\'s coded at the specificity your documentation now supports — and whether your revenue cycle team is part of that conversation.',
     cards: [
       { level: 1, label: 'Revenue Cycle Hasn\'t Been Brought In Yet.', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
@@ -105,7 +105,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'Provider sustainability is one of the most consequential — and undertracked — dimensions of an ambient deployment.',
+    headline: 'Provider sustainability is one of the most consequential dimensions of an ambient deployment — and one of the least tracked.',
     reframe: 'When documentation burden decreases, providers get time back — inside the visit and after it. Understanding where that relief shows up is what this domain measures.',
     cards: [
       { level: 1, label: 'After-Hours Burden Is Being Reduced.', description: 'Providers are spending less time on documentation outside clinical hours. This level establishes how much.' },
@@ -127,7 +127,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'Documentation quality is the foundation. The question is whether your organization is building on it.',
+    headline: 'Documentation quality is the foundation. This domain measures how far that signal has traveled downstream.',
     reframe: 'When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. This domain measures how far that signal has traveled downstream.',
     cards: [
       { level: 1, label: 'Documentation Quality Has Improved.', description: 'Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected.' },
@@ -285,10 +285,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     const timeSavedSection = (
       <div className="mb-6" key="time-saved">
-        <label className="block text-sm font-medium text-black mb-1">
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
           Minutes returned per documented encounter
         </label>
-        <p className="text-sm text-[#888888] mb-3">The clinical time per visit that ambient returns to your providers — previously spent on typing, clicking, or after-visit dictation.</p>
+        <p className="text-xs text-[#888888] mb-3 leading-relaxed">The clinical time per visit that ambient returns to your providers — previously spent on typing, clicking, or after-visit dictation.</p>
 
         {!(showUnmeasuredCheckbox && unmeasuredTimeChecked) && (
           <div className="flex items-center gap-2 mb-3">
@@ -424,10 +424,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Additional patients seen per provider per month
             </label>
-            <p className="text-sm text-[#888888] mb-3">Appointments added due to scheduling redesign or panel expansion enabled by ambient. Enter what's confirmed or your best estimate.</p>
+            <p className="text-xs text-[#888888] mb-3 leading-relaxed">Appointments added due to scheduling redesign or panel expansion enabled by ambient. Enter what's confirmed or your best estimate.</p>
             <FormattedNumberInput
               value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
               onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
@@ -438,7 +438,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients per provider per month." />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Data confidence
             </label>
             <div className="flex gap-2">
@@ -460,7 +460,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Providers with redesigned schedules
             </label>
             <p className="text-xs text-[#888888] mb-2">Defaults to your total provider count. Override if only a subset has redesigned schedules.</p>
@@ -517,7 +517,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-1">FTEs avoided or deferred</label>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">FTEs avoided or deferred</label>
           <FormattedNumberInput
             value={(currentState.inputs.fteAvoided as number) || 0}
             onChange={(v) => setDomainInput('fteAvoided', Math.max(0, v))}
@@ -528,7 +528,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent in avoided or deferred hires." />
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Fully-loaded annual cost per FTE</label>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Fully-loaded annual cost per FTE</label>
           <p className="text-xs text-[#888888] mb-2">Include salary, benefits, malpractice, and onboarding. AMGA benchmark: $350K–$450K for outpatient physician.</p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -697,7 +697,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               How long has the analysis been in progress?
             </label>
             <div className="flex flex-col gap-2">
@@ -767,7 +767,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <label className="block text-sm font-medium text-black mb-1">
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   Measured wRVU change per encounter
                 </label>
                 <p className="text-xs text-[#888888] mb-2">The average change in wRVU per encounter your coding team attributes to improved documentation specificity.</p>
@@ -789,7 +789,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <label className="block text-sm font-medium text-black mb-1">
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   Measured collections change per encounter since deployment
                 </label>
                 <div className="flex items-center gap-2">
@@ -812,7 +812,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <label className="block text-sm font-medium text-black mb-1">
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   Measured revenue change (%) attributed to documentation
                 </label>
                 <div className="flex items-center gap-2">
@@ -837,7 +837,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 className="flex flex-col gap-4"
               >
                 <div>
-                  <label className="block text-sm font-medium text-black mb-1">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                     Denial rate before ambient deployment
                   </label>
                   <div className="flex items-center gap-2">
@@ -853,7 +853,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-black mb-1">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                     Denial rate after ambient deployment
                   </label>
                   <div className="flex items-center gap-2">
@@ -910,7 +910,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             Revenue formally attributed to documentation quality
           </label>
           <p className="text-xs text-[#888888] mb-2">
@@ -939,7 +939,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       return (
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             Hours per provider per week of after-hours documentation reduced
           </label>
           <div className="flex items-center gap-2">
@@ -976,7 +976,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Minutes saved per provider per day in chart editing, correction, and reconciliation
             </label>
             <div className="flex items-center gap-2">
@@ -994,7 +994,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Have you conducted a clinician survey since deploying ambient documentation?
             </label>
             <div className="flex flex-col gap-2">
@@ -1042,7 +1042,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           {surveyType === 'structured' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-black mb-2">
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   What did your survey show?
                 </label>
                 <div className="flex flex-col gap-2">
@@ -1069,7 +1069,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-black mb-1">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                     Documentation burden score before
                   </label>
                   <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
@@ -1082,7 +1082,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-black mb-1">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                     Documentation burden score after
                   </label>
                   <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
@@ -1111,7 +1111,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Annual physician turnover rate
             </label>
             <div className="flex items-center gap-2">
@@ -1127,7 +1127,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <BenchmarkContext text="National physician turnover averages 6–8% annually (AAMC)." />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Average cost to recruit and onboard a replacement
             </label>
             <div className="flex items-center gap-2">
@@ -1143,7 +1143,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <BenchmarkContext text="Industry estimates for physician replacement range from $250K–$500K (AAMC, Physician Recruitment studies)." />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               What portion of turnover is driven or worsened by documentation burden?
             </label>
             <div className="flex flex-col gap-2">
@@ -1187,7 +1187,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             Monthly reduction in agency or locum spend
           </label>
           <div className="flex items-center gap-2">
@@ -1203,7 +1203,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           <BenchmarkContext text="Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
         </div>
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             How many months has this reduction been sustained?
           </label>
           <FormattedNumberInput
@@ -1242,7 +1242,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
               Has your organization started connecting ambient documentation quality to any downstream workflow or team?
             </label>
             <div className="flex flex-col gap-2">
@@ -1281,7 +1281,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
           {downstreamConnected === 'yes' && (
             <div>
-              <label className="block text-sm font-medium text-black mb-2">
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                 Which area has been engaged first?
               </label>
               <div className="flex flex-col gap-2">
@@ -1387,7 +1387,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 <BenchmarkContext text="Organizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience." />
 
                 <div className="mt-5">
-                  <label className="block text-sm font-medium text-black mb-1">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                     What % of reviewed charts have documentation gaps?
                   </label>
                   <p className="text-xs text-[#888888] mb-2">Optional. Enter if your monitoring has produced a gap rate.</p>
@@ -1496,7 +1496,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-2">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             Is there a named executive owner of documentation quality strategy?
           </label>
           <div className="flex flex-col gap-2">
@@ -1526,7 +1526,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         {executiveOwner === 'yes' && (
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Role</label>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Role</label>
             <div className="flex flex-col gap-2">
               {['CMO / CMIO', 'VP of Quality', 'CIO / CDO', 'VP of Revenue Cycle', 'Other'].map((role) => (
                 <button
@@ -1579,7 +1579,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-black mb-1">
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
             Strategic value formally attributed to documentation quality
           </label>
           <p className="text-xs text-[#888888] mb-2">
@@ -1908,7 +1908,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       </div>
                       <div className="px-5 pb-6 pt-5">
                         {config.framingQuestions?.[card.level] && (
-                          <p className="text-sm text-[#444444] leading-relaxed mb-5">
+                          <p className="text-sm font-semibold text-[#1A1A1A] mb-3 mt-1">
                             {config.framingQuestions[card.level]}
                           </p>
                         )}
