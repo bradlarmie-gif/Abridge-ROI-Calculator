@@ -14,10 +14,10 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Documentation Recovery Established',
-    2: 'Recovery Quantified and Escalated',
-    3: 'Capacity Deployed Into Patient Access',
-    4: 'Workforce Architecture Impact',
+    1: 'Time Is Being Returned.',
+    2: 'Recovery Quantified and Brought to Leadership.',
+    3: 'Recovered Capacity Is Expanding Access.',
+    4: 'Capacity Is Shaping Workforce Strategy.',
   },
   revenue: {
     1: 'Revenue Cycle Has Not Been Asked.',
@@ -111,11 +111,11 @@ export function computeCapacityFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
-      context: `Your ${providers.toLocaleString()} providers, across ${documentedEncounters.toLocaleString()} ambient-documented encounters per year, are recovering an estimated ${recoveredHours.toLocaleString()} hours of clinical time annually — the equivalent of ${fte} FTEs.\n\nThis is the foundation. Every level above this answers one question: where does this time go?`,
+      headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually — ${fte} FTE equivalent.`,
+      context: `Your ${providers.toLocaleString()} providers are returning an estimated ${recoveredHours.toLocaleString()} hours of clinical time annually — the equivalent of ${fte} FTEs.\n\nThis is the foundation every level above builds on. The next question is where this time goes.`,
       formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'Time recovery is the foundation. Value is determined by where this time goes — which is what Levels 2–4 measure.',
-      nextLevelTeaser: 'Level 2 — Is this number in front of your leadership with a plan attached to it?',
+      footnote: 'Dollar value appears at Level 3, when recovered time has a confirmed destination.',
+      nextLevelTeaser: 'Level 2 opens when this number reaches leadership with a plan attached.',
     };
   }
 
@@ -145,11 +145,11 @@ export function computeCapacityFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
-      context: `The number exists. The question is whether it's attached to a plan.\n\nOrganizations that formally commit recovered capacity to an operational use case within 60–90 days of quantifying it capture 3–5× more value in year one than organizations that treat it as a reporting metric.\n\nThe value of this capacity is not in the hours. It's in what the hours fund.`,
+      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified — ${fte} FTE equivalent.`,
+      context: `Your organization has quantified ${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.\n\nOrganizations that bring this number to leadership with a recommended use tend to move to operational deployment within a single quarter. The value of this capacity lives in what it funds next.`,
       formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'Dollar value: $0 — time is quantified but not yet deployed through operational changes.',
-      nextLevelTeaser: 'Level 3 — This becomes a dollar value when the hours have a destination: more patients seen.',
+      footnote: 'A dollar value appears at Level 3, when recovered capacity is directed toward a specific operational outcome.',
+      nextLevelTeaser: 'Level 3 is where recovered time gets a destination — and a dollar value.',
     };
   }
 
@@ -175,10 +175,10 @@ export function computeCapacityFeedback(
       value: accessRevenue,
       hasValue: true,
       headlineMetric: `${formatDollar(accessRevenue)} in access revenue annually`,
-      context: `${formatDollar(accessRevenue)} in new patient revenue annually. This is recovered capacity converting into real access — patients who couldn't get in before, now seen.\n\nAt ${additionalPatients} additional patients per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, that's ${annualAdditionalVisits.toLocaleString()} new encounters per year.`,
+      context: `Recovered time has a destination — and that destination generates revenue.\n\n${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month, across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, is ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
       footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
-      nextLevelTeaser: 'Level 4 — Is ambient changing whether you need to hire at all?',
+      nextLevelTeaser: 'Level 4 is where ambient becomes part of your workforce strategy.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }
@@ -227,7 +227,7 @@ export function computeCapacityFeedback(
     value: capacityValue,
     hasValue: true,
     headlineMetric: `${formatDollar(capacityValue)} in avoided workforce cost`,
-    context: `This is your most durable capacity value — not revenue you might earn, but a cost your organization did not incur. These are line items in your budget that don't exist because ambient made them unnecessary.\n\n${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+    context: `At this level, ambient capacity is part of how your organization thinks about its workforce — not just its workflows.\n\n${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
     formula: `[avoidedWorkforceCost] = ${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} / FTE = ${formatDollar(capacityValue)}`,
     footnote: 'Fully-loaded cost includes salary, benefits, malpractice, and recruitment. AMGA benchmark: $350K–$450K per outpatient physician FTE.',
   };

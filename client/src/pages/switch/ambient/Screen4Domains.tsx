@@ -64,14 +64,14 @@ type DomainConfig = {
 const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
-    headline: 'CAPACITY',
-    subheadline: 'The question isn\'t whether ambient saves time. It\'s what your organization does with it.',
-    reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
+    headline: 'Time is being returned. The strategic question is what your organization does with it.',
+    subheadline: '',
+    reframe: 'Ambient documentation creates recovered capacity. Where that capacity goes — and whether it\'s intentionally directed — is what separates a productivity win from a strategic one.',
     cards: [
-      { level: 1, label: 'Documentation Recovery Established', description: 'You know what you\'re getting back.' },
-      { level: 2, label: 'Recovery Quantified and Escalated', description: 'Leadership knows the number.' },
-      { level: 3, label: 'Capacity Deployed Into Patient Access', description: 'The time has a destination.' },
-      { level: 4, label: 'Workforce Architecture Impact', description: 'Ambient is in your hiring model.' },
+      { level: 1, label: 'Time Is Being Returned.', description: 'Ambient is deployed and time is being returned per encounter. This is the foundation — understanding the magnitude of what\'s being recovered.' },
+      { level: 2, label: 'Recovery Quantified and Brought to Leadership.', description: 'Total recovered capacity has been calculated and presented to operational or executive leadership.' },
+      { level: 3, label: 'Recovered Capacity Is Expanding Access.', description: 'Recovered time has a confirmed destination — additional patients seen through scheduling redesign or panel expansion.' },
+      { level: 4, label: 'Capacity Is Shaping Workforce Strategy.', description: 'Ambient-enabled capacity is formally part of how your organization plans its provider workforce — influencing hiring decisions, growth modeling, and service line development.' },
     ],
     framingQuestions: {
       1: 'Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?',
@@ -1568,11 +1568,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-domain-headline">
           {config.headline}
         </h1>
-        {config.subheadline && (
+        {config.subheadline ? (
           <p className="text-lg text-black/80 font-medium max-w-[560px] mx-auto mb-2" data-testid="text-domain-subheadline">
             {config.subheadline}
           </p>
-        )}
+        ) : null}
         <p className="text-base text-[#888888] max-w-[520px] mx-auto" data-testid="text-domain-reframe">
           {config.reframe}
         </p>
