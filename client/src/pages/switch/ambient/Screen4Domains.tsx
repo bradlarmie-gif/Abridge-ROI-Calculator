@@ -29,16 +29,12 @@ const DOMAIN_CTA: Record<Domain, string> = {
   risk: 'See My Score →',
 };
 
-const OPERATIONAL_CONDITIONS: Record<Domain, string> = {
-  capacity: 'when recovered FTE equivalent enters staffing decisions',
-  revenue: 'when documentation quality becomes a revenue input',
-  workforce: 'when turnover risk is structurally measured',
-  risk: 'when structured data feeds quality reporting',
+const STEP_NODE_LABELS: Record<Domain, Record<number, string>> = {
+  capacity: { 1: 'Measured', 2: 'Quantified', 3: 'Deployed', 4: 'Strategic' },
+  revenue: { 1: 'Engaged', 2: 'Analyzing', 3: 'Measured', 4: 'Integrated' },
+  workforce: { 1: 'After-Hours', 2: 'Measured', 3: 'Retention', 4: 'Labor Cost' },
+  risk: { 1: 'Improved', 2: 'Tracked', 3: 'Downstream', 4: 'Governed' },
 };
-
-const NUMERAL_OPACITIES: Record<number, number> = { 1: 0.15, 2: 0.35, 3: 0.65, 4: 1 };
-const TITLE_COLORS: Record<number, string> = { 1: '#999999', 2: '#666666', 3: '#333333', 4: '#000000' };
-const DESC_COLORS: Record<number, string> = { 1: '#aaaaaa', 2: '#888888', 3: '#555555', 4: '#333333' };
 
 type DomainState = {
   activationLevel: ActivationLevel | null;
@@ -231,28 +227,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit);
     }
   }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
-
-  const nextLevelFeedback = useMemo((): DomainFeedback | null => {
-    if (!currentState.activationLevel || currentState.activationLevel >= 4) return null;
-    const nextLevel = (currentState.activationLevel + 1) as ActivationLevel;
-    const inp = currentState.inputs;
-    switch (activeDomain) {
-      case 'capacity': {
-        const capacityInp = inp.timeSaved ? inp : { ...inp, timeSaved: inputs.timeSavedPerEncounter || 0 };
-        return computeCapacityFeedback(nextLevel, capacityInp, providers, documentedEncounters, revenuePerVisit, providerRate);
-      }
-      case 'revenue': return computeRevenueFeedback(nextLevel, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
-      case 'workforce': return computeWorkforceFeedback(nextLevel, inp, providers, providerRate);
-      case 'risk': return computeRiskFeedback(nextLevel, inp, documentedEncounters, revenuePerVisit);
-    }
-  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
-
-  const incrementalValue = useMemo(() => {
-    if (!feedback || !nextLevelFeedback) return 0;
-    const currentVal = feedback.value || 0;
-    const nextVal = nextLevelFeedback.value || 0;
-    return Math.max(0, nextVal - currentVal);
-  }, [feedback, nextLevelFeedback]);
 
   const handleAdvance = () => {
     if (currentState.activationLevel) {
@@ -1729,50 +1703,56 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex flex-col lg:flex-row gap-10">
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
               {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : activeDomain === 'workforce' ? 'YOUR WORKFORCE MATURITY' : activeDomain === 'risk' ? 'YOUR QUALITY MATURITY' : 'Where is your organization today?'}
             </p>
 
-            {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce' || activeDomain === 'risk') && (
-              <div className="flex items-center justify-center gap-3 mb-4">
-                {[1, 2, 3, 4].map((lvl) => {
-                  const selectedLevel = currentState.activationLevel;
-                  const isActive = selectedLevel === lvl;
-                  const isComplete = selectedLevel !== null && lvl < selectedLevel;
-                  return (
-                    <div key={lvl} className="flex items-center gap-3">
+            <div className="flex items-center w-full mb-6">
+              {[1, 2, 3, 4].map((lvl) => {
+                const selectedLevel = currentState.activationLevel;
+                const isActive = selectedLevel === lvl;
+                const isComplete = selectedLevel !== null && lvl < selectedLevel;
+                const isUpcoming = !isActive && !isComplete;
+                const nodeLabels = STEP_NODE_LABELS[activeDomain];
+                return (
+                  <div key={lvl} className="flex items-center flex-1 last:flex-none">
+                    <div className="flex flex-col items-center">
                       <div
-                        className={`w-3 h-3 rounded-full transition-all ${
-                          isActive ? 'bg-[#EA2C00] scale-125' : isComplete ? 'bg-[#EA2C00]/60' : 'bg-[#D1D5DB]'
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                          isComplete ? 'bg-[#EA2C00]' :
+                          isActive ? 'bg-[#EA2C00] ring-4 ring-[#EA2C00]/20' :
+                          'bg-[#F5F0EB] border-2 border-[#D9D3CB]'
                         }`}
                         data-testid={`${activeDomain}-dot-${lvl}`}
-                      />
-                      {lvl < 4 && <div className="w-6 h-px bg-[#D1D5DB]" />}
+                      >
+                        {isComplete ? (
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        ) : (
+                          <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-[#AAAAAA]'}`}>{lvl}</span>
+                        )}
+                      </div>
+                      <span className={`text-[10px] text-center mt-1 ${isUpcoming ? 'text-[#AAAAAA]' : 'text-[#1A1A1A]'}`}>
+                        {nodeLabels[lvl]}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="h-px bg-[#E5E7EB] mb-6" />
+                    {lvl < 4 && (
+                      <div className={`flex-1 h-0.5 mx-1 ${
+                        selectedLevel !== null && lvl < selectedLevel ? 'bg-[#EA2C00]' : 'bg-[#E5E0D9]'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
             <div className="flex flex-col">
               {config.cards.map((card, cardIdx) => {
                 const selectedLevel = currentState.activationLevel;
                 const isSelected = selectedLevel === card.level;
                 const isClaimed = selectedLevel !== null && card.level < selectedLevel;
-                const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
-                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce' || activeDomain === 'risk';
-                const isFuture = hasStaircase && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
+                const isFuture = selectedLevel !== null && card.level > selectedLevel;
 
-                const leftBorderStyle = isSelected
-                  ? '3px solid #EA2C00'
-                  : isClaimed ? '2px solid rgba(234, 44, 0, 0.3)'
-                  : card.level === 3 && !isClaimed ? '2px solid rgba(234, 44, 0, 0.3)'
-                  : card.level === 4 && !isClaimed ? '2px solid #EA2C00'
-                  : '2px solid transparent';
-
-                const staircaseCompletedSummary = hasStaircase && isClaimed ? (() => {
+                const staircaseCompletedSummary = isClaimed ? (() => {
                   const inp = currentState.inputs;
                   if (activeDomain === 'capacity') {
                     const ts = (inp.timeSaved as number) || 0;
@@ -1857,147 +1837,101 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   return null;
                 })() : null;
 
-                return (
-                  <div key={card.level}>
-                    <motion.button
-                      type="button"
+                if (isClaimed) {
+                  return (
+                    <motion.div
+                      key={card.level}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                      onClick={() => {
-                        if (hasStaircase && isFuture && !isClaimed) return;
-                        setActivation(card.level);
-                      }}
-                      className={`w-full text-left transition-all bg-white ${
-                        hasStaircase && isFuture && !isClaimed
-                          ? 'opacity-40 cursor-not-allowed'
-                          : 'cursor-pointer active:scale-[0.99] hover:bg-[#FAFAF8]'
-                      }`}
-                      style={{
-                        borderLeft: leftBorderStyle,
-                        padding: isClaimed ? '10px 16px' : '16px 16px',
-                      }}
+                      className="group bg-white border border-[#E8E3DC] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 transition-all duration-200"
+                      onClick={() => setActivation(card.level)}
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
                     >
-                      <div className="flex items-start gap-4">
-                        {isClaimed ? (
-                          <Check size={18} className="text-[#EA2C00] mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <span
-                            className="flex-shrink-0 leading-none"
-                            style={{
-                              fontSize: '52px',
-                              fontWeight: 300,
-                              color: `rgba(234, 44, 0, ${isSelected ? 1 : NUMERAL_OPACITIES[card.level]})`,
-                            }}
-                          >
-                            {card.level}
+                      <div className="flex items-center gap-4 px-5 py-4">
+                        <div className="w-8 h-8 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </div>
+                        <span className="text-sm font-semibold text-[#1A1A1A]">{card.label}</span>
+                        <div className="ml-auto flex items-center gap-3">
+                          <span className="text-sm font-semibold text-[#EA2C00]" data-testid={`completed-value-${activeDomain}-${card.level}`}>
+                            {staircaseCompletedSummary || '—'}
                           </span>
-                        )}
-                        <div className={`flex-1 ${isClaimed ? 'pt-0' : 'pt-2'}`}>
-                          <p
-                            className={`text-sm leading-snug ${isSelected || card.level === 4 ? 'font-bold' : 'font-semibold'}`}
-                            style={{ color: isClaimed ? '#999999' : isSelected ? '#000000' : TITLE_COLORS[card.level] }}
-                          >
-                            {card.label}
-                          </p>
-                          {isClaimed && staircaseCompletedSummary && (
-                            <p className="text-xs text-[#888888] mt-0.5">{staircaseCompletedSummary}</p>
-                          )}
-                          {!isClaimed && (
-                            <p
-                              className="text-sm leading-snug mt-1"
-                              style={{ color: isSelected ? '#555555' : DESC_COLORS[card.level] }}
-                            >
-                              {card.description}
-                            </p>
-                          )}
-                          {hasStaircase && isFuture && !isClaimed && config.unlockTeasers?.[card.level] && (
-                            <p className="text-xs text-[#888888] italic mt-1">
-                              {config.unlockTeasers[card.level]}
-                            </p>
-                          )}
+                          <span className="text-xs text-[#AAAAAA] opacity-0 group-hover:opacity-100 transition-opacity duration-200">Edit</span>
                         </div>
                       </div>
-                    </motion.button>
+                    </motion.div>
+                  );
+                }
 
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2, ease: 'easeOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div
-                            className="bg-white px-5 pb-5"
-                            style={{ borderLeft: '3px solid #EA2C00' }}
-                          >
-                            {hasStaircase && config.framingQuestions?.[card.level] && (
-                              <p className="text-[13px] text-[#666666] leading-relaxed mt-1 mb-3 italic">
-                                {config.framingQuestions[card.level]}
-                              </p>
-                            )}
-                            {!hasStaircase && card.level === 1 ? (
-                              <p className="text-[13px] text-[#666666] leading-relaxed mt-1">
-                                This is where most deployments begin. The value emerges as your organization decides what to do with the time recovered.
-                              </p>
-                            ) : !hasStaircase && feedback ? (
-                              <div className="mt-1">
-                                {feedback.headlineMetric ? (
-                                  <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
-                                    {feedback.headlineMetric}
-                                  </p>
-                                ) : feedback.hasValue && feedback.value ? (
-                                  <p className="font-bold text-[28px] text-[#EA2C00] leading-none" data-testid="text-ladder-value">
-                                    {formatDollar(feedback.value)}
-                                  </p>
-                                ) : null}
-                                {feedback.context && (
-                                  <p className="text-[13px] text-[#666666] leading-relaxed mt-2">
-                                    {feedback.context.split('\n').filter(Boolean)[0]}
-                                  </p>
-                                )}
-                              </div>
-                            ) : hasStaircase && feedback ? (
-                              <div className="mt-1">
-                                {feedback.headlineMetric && (
-                                  <p className="font-bold text-xl text-[#EA2C00] leading-none mb-2" data-testid="text-ladder-value">
-                                    {feedback.headlineMetric}
-                                  </p>
-                                )}
-                              </div>
-                            ) : null}
-
-                            <div className="mt-4 pt-4 border-t border-[#E8E4DC]">
-                              {renderDomainInputs()}
-                            </div>
+                if (isSelected) {
+                  return (
+                    <motion.div
+                      key={card.level}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
+                      className="bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_4px_20px_rgba(234,44,0,0.10)] overflow-hidden"
+                      data-testid={`activation-card-${activeDomain}-${card.level}`}
+                    >
+                      <div className="px-5 pt-5 pb-4 border-b border-[#F5F0EB]">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0">
+                            <span className="text-base font-bold text-white font-abridge">{card.level}</span>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {!hasStaircase && isNextAbove && incrementalValue > 0 && (
-                      <div
-                        className="bg-white/60 px-5 py-2"
-                        style={{
-                          borderLeft: card.level === 3 ? '2px solid rgba(234, 44, 0, 0.3)'
-                            : card.level === 4 ? '2px solid #EA2C00'
-                            : '2px solid transparent',
-                        }}
-                      >
-                        <p className="text-[13px] leading-relaxed">
-                          <span className="font-semibold" style={{ color: 'rgba(234, 44, 0, 0.7)' }}>
-                            +{formatDollar(incrementalValue)} at this level
-                          </span>
-                          {' '}<span className="text-[#888888]">— {OPERATIONAL_CONDITIONS[activeDomain]}</span>
-                        </p>
+                          <div className="flex-1 pt-1">
+                            <p className="text-base font-semibold text-[#1A1A1A]">{card.label}</p>
+                            <p className="text-xs text-[#888888] italic mt-0.5">{card.description}</p>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                      <div className="px-5 pb-6 pt-5">
+                        {config.framingQuestions?.[card.level] && (
+                          <p className="text-sm text-[#444444] leading-relaxed mb-5">
+                            {config.framingQuestions[card.level]}
+                          </p>
+                        )}
+                        {feedback && feedback.headlineMetric && (
+                          <p className="font-bold text-xl text-[#EA2C00] leading-none mb-4" data-testid="text-ladder-value">
+                            {feedback.headlineMetric}
+                          </p>
+                        )}
+                        {renderDomainInputs()}
+                      </div>
+                    </motion.div>
+                  );
+                }
 
-                    {cardIdx < 3 && <div className="h-px bg-[#E8E4DC]" />}
-                  </div>
+                const isNextLevel = selectedLevel !== null && card.level === selectedLevel + 1;
+                const canClick = selectedLevel === null || isNextLevel;
+
+                return (
+                  <motion.div
+                    key={card.level}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
+                    className={`bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 ${
+                      canClick ? 'cursor-pointer hover:border-[#D9D3CB] transition-all duration-200' : 'opacity-70'
+                    }`}
+                    onClick={() => {
+                      if (canClick) setActivation(card.level);
+                    }}
+                    data-testid={`activation-card-${activeDomain}-${card.level}`}
+                  >
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      <div className="w-8 h-8 rounded-full bg-[#EAE5DF] flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm text-[#AAAAAA]">{card.level}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-[#AAAAAA]">{card.label}</p>
+                        {isFuture && config.unlockTeasers?.[card.level] && (
+                          <p className="text-xs text-[#BBBBBB] italic mt-0.5">{config.unlockTeasers[card.level]}</p>
+                        )}
+                      </div>
+                      <span className="text-sm text-[#CCCCCC] ml-auto">→</span>
+                    </div>
+                  </motion.div>
                 );
               })}
             </div>

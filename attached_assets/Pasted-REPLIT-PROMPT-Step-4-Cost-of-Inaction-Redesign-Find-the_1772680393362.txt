@@ -1,0 +1,119 @@
+REPLIT PROMPT — Step 4 Cost of Inaction Redesign
+Find the component function G8t in the file src/components/ (or wherever the Cost of Inaction page lives — search for the string "WHAT STANDING STILL IS COSTING YOU" to locate the exact file and component).
+Make the following changes. Do not touch any calculation logic, chart data, formula functions, or routing. Only change copy strings, layout order, and Tailwind class names as specified.
+CHANGE 1 — Page heading and subheading
+FIND:
+"WHAT STANDING STILL IS COSTING YOU."
+REPLACE WITH:
+"YOUR 36-MONTH TRAJECTORY."
+FIND (subheading):
+"The gap between where you are and where strategic action takes you — quantified."
+REPLACE WITH:
+"Based on your current maturity and what becomes possible at the next level across each domain."
+
+CHANGE 2 — Section label: Reality Check
+FIND:
+"REALITY CHECK"
+REPLACE WITH:
+"WHERE YOU STAND TODAY"
+
+CHANGE 3 — Reorder the main left column
+Currently the layout order is:
+
+Heading
+Reality Check table
+Domain accordions ("WHERE THE VALUE LIVES")
+Red "every month" sentence
+36-month graph
+Change the order to:
+Heading
+Reality Check table (WHERE YOU STAND TODAY)
+36-month graph (move up — make it second content block after the table)
+Domain accordions (rename section)
+This means: in the JSX return for G8t, move the 36-month trajectory <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"> block (the one containing the Recharts <LineChart>) to appear immediately after the Reality Check block and before the domain accordion block.
+
+
+CHANGE 4 — 36-month graph section copy
+FIND (graph section sub-label):
+"Cumulative value captured: current trajectory vs. strategic action"
+REPLACE WITH:
+"Value in motion: current path vs. full strategic deployment"
+FIND (gap narrative sentence — the bold one below the chart):
+"Over 36 months, the gap between your current trajectory and strategic action is approximately"
+REPLACE WITH:
+"The difference between your current trajectory and full strategic deployment over 36 months is approximately"
+Keep the $900K value display exactly as-is (dynamically calculated).
+Keep both disclaimer lines exactly as-is:
+
+"Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap."
+"Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary."
+
+
+CHANGE 5 — Remove the red floating "every month" sentence
+Find this element (it's a standalone <p> tag with class text-sm text-[#E8350A] font-semibold text-center mt-6 mb-4):
+"Every month at current maturity levels, your organization forgoes approximately $25K in capturable value."
+Delete this element entirely — remove the <p> tag and its content. Do not replace with anything.
+CHANGE 6 — Domain accordion section label
+FIND:
+"WHERE THE VALUE LIVES"
+REPLACE WITH:
+"WHAT DRIVES THE GAP"
+
+CHANGE 7 — Domain accordion "OPPORTUNITY AHEAD" label
+FIND (appears inside each open accordion panel, label class text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5):
+"OPPORTUNITY AHEAD"
+REPLACE WITH:
+"THE NEXT LEVEL UNLOCKS"
+This label appears once per domain (up to 4 instances). Replace all occurrences.
+CHANGE 8 — Right panel: rename "COST OF WAITING" section
+In the dark sticky right panel (bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24), find the section heading:
+FIND:
+"COST OF WAITING"
+REPLACE WITH:
+"THE TRAJECTORY GAP"
+
+CHANGE 9 — Right panel: rewrite the three cost-of-waiting rows
+FIND:
+"Each month represents"
+REPLACE WITH:
+"Monthly momentum gap"
+FIND:
+"Every 6 months of delay"
+REPLACE WITH:
+"6-month trajectory gap"
+FIND:
+"A year of inaction costs"
+REPLACE WITH:
+"Annual trajectory gap"
+
+CHANGE 10 — Right panel: rewrite the italic explanatory copy
+FIND (italic copy below the $25K line):
+"This is value your deployment is positioned to capture with greater operational intentionality."
+REPLACE WITH:
+"This is value your deployment is positioned to generate as maturity deepens across each domain."
+FIND (italic copy below the 3-row table):
+"Reflects full run-rate value. First 3-6 months of new deployment include ramp period."
+REPLACE WITH:
+"Reflects projected run-rate value at next-level maturity. First 3–6 months include a ramp period."
+
+CHANGE 11 — Nav bar label (if editable)
+The nav bar shows the step label "Cost of Inaction" in the breadcrumb. If this text is editable as a string in the component or router config:
+FIND:
+"Cost of Inaction"
+REPLACE WITH:
+"Your Trajectory"
+
+DO NOT TOUCH:
+
+Any Recharts chart component, data, or rendering logic
+The $900K gap calculation or any formula functions
+The Reality Check table data or benchmark logic
+The domain accordion expand/collapse behavior
+The DOMAIN VALUES section in the right panel
+The "WITH STRATEGIC ACTION" section in the right panel
+The "VALUE AT A GLANCE" section in the right panel
+Any routing, navigation, or state management
+The bg-[#F5F0EB] beige wrappers
+Font classes (font-abridge, font-sans)
+Brand color #EA2C00
+Steps 3 and 5
