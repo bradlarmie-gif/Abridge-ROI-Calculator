@@ -1,0 +1,275 @@
+I need you to rebuild the Capacity domain of the Ambient AI Assessment. 
+This is used in live sessions with CMOs, CFOs, and COOs. Every word and 
+every number has to be defensible. Do not add placeholder logic — if 
+something isn't implemented, leave it as a comment so I can review it.
+The app is a React app using a global state managed by a reducer with 
+UPDATE_INPUT dispatches. The Capacity calculation lives in function Hee(). 
+The domain UI lives in the Four Lenses step. The right panel is the 
+"Estimated Impact" card. Do not touch Revenue, Workforce, or Quality domains.
+---
+## PART 1 — DOMAIN HEADLINE COPY
+Find the capacity domain config object. It currently contains:
+  headline: "You're recovering time. But is anyone deciding what to do with it?"
+  reframe: "The difference between a productivity tool and a strategic asset is 
+            whether recovered time converts to measurable capacity."
+Replace with:
+  headline: "CAPACITY"
+  subheadline: "The question isn't whether ambient saves time. It's what your 
+                organization does with it."
+  reframe: "Most health systems treat recovered time as a productivity footnote. 
+            Leading organizations treat it as deployable capacity — and that 
+            distinction is worth millions annually."
+---
+## PART 2 — UX STRUCTURE (Level Selector)
+Right now all 4 levels render as collapsed rows simultaneously. This feels 
+like a form checklist, not a strategic progression. Rebuild it as follows:
+- Completed levels (levels below the active one): render as a compact 
+  summary card. Show: level number, level name, a checkmark, and the output 
+  value (hours or dollars) in small text. Clicking a completed level re-opens 
+  it so the user can edit.
+- Active level: fully expanded. Shows the level name, the framing question, 
+  the input(s), and benchmark context.
+- Future levels (levels above the active one): render as a dimmed preview 
+  card. Show: level number, level name, and a one-line "unlock" teaser. 
+  Not clickable until prior level is complete.
+The "WHERE IS YOUR ORGANIZATION TODAY?" label should be replaced with:
+  "YOUR CAPACITY MATURITY"
+Add a small progress indicator above the level cards showing which level 
+is active: four dots or steps, with the active one highlighted in the 
+brand red (#EA2C00).
+---
+## PART 3 — LEVEL 1 REBUILD
+Level name: "Documentation Recovery Established"
+Maturity label (small text below level name): "You know what you're getting back."
+Framing question (replaces level description):
+  "Ambient is deployed and time is being returned. How much — and is 
+  that number formally on record anywhere?"
+Input label (replace "Time saved per documented encounter"):
+  "Minutes returned per documented encounter"
+Input sublabel (replace current):
+  "The clinical time per visit that ambient returns to your providers — 
+  previously spent on typing, clicking, or after-visit dictation."
+Keep the two benchmark chips as-is (1–3 min industry range, 2–3 min 
+Abridge observed avg).
+Checkbox label (replace "I haven't measured this precisely"):
+  "I haven't formally measured this — using the Abridge observed 
+  benchmark of 2–3 min"
+RIGHT PANEL — Level 1:
+Remove the "cost of waiting" callout box entirely at Level 1. 
+It fires a dollar value based on hours × rate × 20% redeployment, 
+which is not defensible. Delete it.
+Replace the right panel content with:
+Headline metric:
+  "[X,XXX] hours returned annually"
+  (no dollar value, no "$0 captured" — remove that entirely)
+Body:
+  "Your [N] providers, across [X] ambient-documented encounters per year, 
+  are recovering an estimated [X,XXX] hours of clinical time annually — 
+  the equivalent of [X.X] FTEs.
+  This is the foundation. Every level above this answers one question: 
+  where does this time go?"
+Formula block (keep, update to match):
+  [hours] = [encounters] × [min] / 60 = [total]
+  [FTE equivalent] = [total] / 2,080 = [X.X]
+Remove the line: "[redeployment] = 0% — no decision made"
+Remove the footnote about redeployment entirely.
+Below the formula, add a "Next Level" teaser in small italic text:
+  "Level 2 — Is this number in front of your leadership with a plan 
+  attached to it?"
+In the Hee() function, Level 1 block:
+- Remove: the N and B variables (opportunityLow and costOfWaiting)
+- Remove: the "At $150/hr with even 20% redeployment" sentence from context
+- Remove: costOfWaiting field from the return object
+- headlineMetric should be: `${A.toLocaleString()} hours returned annually`
+- context should be the new body copy above (interpolated)
+- footnote should be: "Time recovery is the foundation. Value is determined 
+  by where this time goes — which is what Levels 2–4 measure."
+---
+## PART 4 — LEVEL 2 REBUILD
+Level name: "Recovery Quantified and Escalated"
+Maturity label: "Leadership knows the number."
+Framing question:
+  "Has your organization formally quantified total recovered capacity 
+  and brought it to leadership with a recommended use?"
+Replace the single existing input ("Have you calculated total recovered 
+capacity across your deployment?") with two sequential questions:
+Question 1 — radio button group, state key: capacityAggregated
+  Label: "Has your organization calculated and reported total recovered 
+  provider capacity?"
+  Options:
+    value: "no"     label: "Not yet — we have per-encounter data 
+                             but haven't aggregated it"
+    value: "informal" label: "Informally — some leaders are aware 
+                               but it's not in formal reporting"
+    value: "yes"    label: "Yes — documented and presented 
+                             to leadership"
+Question 2 — only visible when capacityAggregated === "yes"
+  Radio button group, state key: capacityLeadershipDecision
+  Label: "When leadership reviewed this number, was there a formal 
+  operational decision about where the capacity goes?"
+  Options:
+    value: "no"       label: "No — presented as an FYI"
+    value: "partial"  label: "Partially — discussion underway, 
+                               no formal decision yet"
+    value: "yes"      label: "Yes — there is an active operational 
+                               plan for deploying recovered capacity"
+RIGHT PANEL — Level 2:
+Remove the dollar range ($228K–$399K) entirely from the headline metric. 
+This fires hours × rate × 20%/35% which is the formula we are 
+eliminating. It is not defensible. Delete the N, B (opportunityLow), 
+k (opportunityHigh), z, Q variables from the Level 2 block in Hee().
+Replace right panel with:
+Headline metric (no dollar value):
+  "[X,XXX] hours quantified. Decision [pending/in progress/confirmed]."
+  — "pending" if capacityAggregated is "no" or "informal"
+  — "in progress" if capacityAggregated is "yes" and 
+     capacityLeadershipDecision is "partial"
+  — "confirmed" if capacityAggregated is "yes" and 
+     capacityLeadershipDecision is "yes"
+Body:
+  "The number exists. The question is whether it's attached to a plan.
+  Organizations that formally commit recovered capacity to an operational 
+  use case within 60–90 days of quantifying it capture 3–5× more value 
+  in year one than organizations that treat it as a reporting metric.
+  The value of this capacity is not in the hours. It's in what 
+  the hours fund."
+Remove the "costOfWaiting" field entirely from the Level 2 return in Hee().
+Below the body, add "Next Level" teaser:
+  "Level 3 — This becomes a dollar value when the hours have 
+  a destination: more patients seen."
+Formula block: keep the recoveredHours and FTE lines, remove the 
+opportunityLow and opportunityHigh lines entirely.
+---
+## PART 5 — LEVEL 3 REBUILD
+Level name: "Capacity Deployed Into Patient Access"
+Maturity label: "The time has a destination."
+Framing question:
+  "Has your organization confirmed that recovered time is being used to 
+  expand patient access — through additional appointments, panel growth, 
+  or scheduling redesign?"
+Keep existing inputs but update copy:
+Primary input label (replace "Additional patients seen per provider per month"):
+  "Additional patients seen per provider per month"
+  (keep label, update sublabel)
+Primary input sublabel (replace "Due to scheduling redesign, template 
+changes, or panel expansion"):
+  "Appointments added due to scheduling redesign or panel expansion 
+  enabled by ambient. Enter what's confirmed or your best estimate."
+Benchmark text (replace existing):
+  "Organizations with structured access redesign have reported 
+  3–8 additional patients per provider per month."
+Add a confidence selector below the benchmark, state key: 
+capacityAccessConfidence
+  Label: "How would you characterize this number?"
+  Options (pill-style selector, not a dropdown):
+    value: "measured"     label: "Measured — tracked in our 
+                                   scheduling system"
+    value: "estimated"    label: "Estimated — based on provider 
+                                   feedback"
+    value: "aspirational" label: "Target — not yet confirmed"
+Keep existing "Providers with redesigned schedules" input as-is.
+RIGHT PANEL — Level 3:
+Headline metric: "[Nt(N)] in access revenue annually"
+(this is already correct — additional patients × providers × revenue 
+per visit × 12 — keep this formula, it's the right one)
+If capacityAccessConfidence === "aspirational", add a banner above 
+the formula in amber/warning styling:
+  "Planning scenario — based on your stated target, not confirmed 
+  scheduling data. Treat as a goal, not an actuals figure."
+Update formula block label from "[capacityValue]" to 
+"[accessRevenue]" and use 11 months instead of 12:
+  [annualVisits] = [X] patients/mo × [N] providers × 11 
+                   clinical months = [X]
+  [accessRevenue] = [X] visits × [revenue/visit] = [Nt(N)]
+Add footnote: "Uses 11 clinical months (230 working days ÷ ~21 
+working days/month). Revenue per visit from your baseline inputs."
+Add "Next Level" teaser:
+  "Level 4 — Is ambient changing whether you need to hire at all?"
+---
+## PART 6 — LEVEL 4 REBUILD
+Level name: "Workforce Architecture Impact"
+Maturity label: "Ambient is in your hiring model."
+Framing question:
+  "Has your organization formally attributed workforce planning 
+  decisions to ambient-enabled capacity — FTEs not hired, locums 
+  reduced, or panels rebalanced?"
+The existing multi-select checkboxes (capacityPlanningAreas) are good 
+— keep them. They are:
+  "Avoided or deferred new hires"
+  "Absorbed patient volume growth without adding FTEs"
+  "Redeployed providers to underserved panels or new sites"
+  "Factored into annual FTE / staffing model"
+  "Used in business case for new service lines or locations"
+Keep existing "FTEs avoided or deferred" input as-is.
+Update "Annual cost per FTE" input:
+  Label: "Fully-loaded annual cost per FTE"
+  Sublabel: "Include salary, benefits, malpractice, and onboarding. 
+  AMGA benchmark: $350K–$450K for outpatient physician."
+  Default: 350000 (keep existing)
+RIGHT PANEL — Level 4:
+Keep existing logic — it is correct. FTEs × cost per FTE is a real, 
+auditable transaction.
+Only change: update headline metric copy from:
+  "[Nt(v)] in avoided hiring cost"
+to:
+  "[Nt(v)] in avoided workforce cost"
+Update the context copy to:
+  "This is your most durable capacity value — not revenue you might 
+  earn, but a cost your organization did not incur. These are line 
+  items in your budget that don't exist because ambient made them 
+  unnecessary.
+  [X] FTE × [Nt(f)] fully-loaded cost = [Nt(v)] per year."
+Add footnote: "Fully-loaded cost includes salary, benefits, 
+malpractice, and recruitment. AMGA benchmark: $350K–$450K 
+per outpatient physician FTE."
+---
+## PART 7 — RIGHT PANEL: RUNNING SUMMARY
+At the bottom of the right panel (below the level-specific content), 
+add a persistent "Capacity Summary" section that only appears once 
+at least one value has been entered.
+Show a stacked summary:
+  Time Recovered:     [X,XXX] hrs / yr  ([X.X] FTE equivalent)
+  Access Revenue:     [value or "—"]
+  Avoided Cost:       [value or "—"]
+  ─────────────────────────────────
+  Total Capacity:     [sum of entered values, or "—" if none]
+Use "—" (em dash) for any value not yet entered — never $0.
+Only show "Total Capacity" row if at least one dollar value exists.
+This summary should sit below the domain progress section that 
+already exists in the right panel.
+---
+## PART 8 — SCORING (DO NOT CHANGE)
+The scoring logic in P8t() and the A1e point map {1:6, 2:12, 3:19, 4:25} 
+should not be changed. The Capacity score is set via 
+dispatch(sp.updateInput("capacityScore", value)) — do not change 
+how or when this fires.
+---
+## PART 9 — DO NOT TOUCH
+- Revenue domain (Uee function and all Revenue UI)
+- Workforce domain (Wee function and all Workforce UI)  
+- Quality/Risk domain and all Quality UI
+- Step 1 (Your Deployment) — baseline inputs unchanged
+- Step 3 (The Reveal) — scoring screen unchanged
+- Step 4 (Cost of Inaction) — unchanged
+- Step 5 (Strategic Next Steps) — unchanged
+- The Sh() scoring function — unchanged
+- The overall app routing, navigation, and state management
+---
+## SUMMARY OF FORMULA CHANGES
+REMOVE these formulas from Hee():
+  - Level 1: hours × providerRate × 0.20 (opportunityLow)
+  - Level 1: costOfWaiting (monthly cost banner)
+  - Level 2: hours × providerRate × 0.20 (opportunityLow)
+  - Level 2: hours × providerRate × 0.35 (opportunityHigh)  
+  - Level 2: costOfWaiting
+  - Level 2: /2080 FTE divisor (replace with /1,840 = 230 days × 8 hrs 
+    for clinical FTE, or keep 2080 but label it clearly as administrative 
+    FTE equivalent — your call, just be consistent)
+KEEP these formulas:
+  - Level 1: encounters × minutesSaved / 60 = recoveredHours ✓
+  - Level 3: additionalPatients × providers × revenuePerVisit × 11 ✓
+  - Level 4: fteAvoided × annualCostPerFte ✓
+The only dollar values that should appear in the Capacity domain 
+are at Level 3 and Level 4, and only when the user has entered 
+real organizational data. Levels 1 and 2 show magnitude (hours, FTEs) 
+and strategic narrative only.
