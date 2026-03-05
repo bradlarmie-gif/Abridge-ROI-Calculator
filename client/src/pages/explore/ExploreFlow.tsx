@@ -847,8 +847,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                 timeDriverInputs: {
                   ...td,
                   ipRoundingEnabled: td.ipAllocQualityPercent > 0,
-                  ipCdiCapacityEnabled: td.ipAllocQualityPercent > 0,
-                  costReductionEnabled: td.ipAllocCostPercent > 0,
+                  ipCdiCapacityEnabled: td.ipAllocCostPercent > 0,
+                  costReductionEnabled: td.ipAllocWellbeingPercent > 0,
                   wellbeingEnabled: td.ipAllocWellbeingPercent > 0,
                 },
               });

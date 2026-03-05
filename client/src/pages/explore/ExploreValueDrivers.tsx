@@ -646,7 +646,7 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">Quality allocation (from your time split)</span>
+                      <span className="text-sm text-[#666666]">Direct patient care allocation (from your time split)</span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-black">{timeDriverInputs.ipAllocQualityPercent}%</span>
                         <button
@@ -1346,7 +1346,7 @@ export default function ExploreValueDrivers({
                   {!isNursing && (
                     <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#666666]">Wellbeing allocation (from your time split)</span>
+                        <span className="text-sm text-[#666666]">{isInpatient ? 'Shift sustainability' : 'Wellbeing'} allocation (from your time split)</span>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-black">
                             {isED ? timeDriverInputs.edAllocWellbeingPercent : isInpatient ? timeDriverInputs.ipAllocWellbeingPercent : timeDriverInputs.opAllocWellbeingPercent}%
@@ -1605,9 +1605,9 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
                   <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">Quality allocation (from your time split)</span>
+                      <span className="text-sm text-[#666666]">Documentation quality allocation (from your time split)</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-black">{timeDriverInputs.ipAllocQualityPercent}%</span>
+                        <span className="text-sm font-semibold text-black">{timeDriverInputs.ipAllocCostPercent}%</span>
                         <button
                           onClick={onBack}
                           className="text-xs font-medium text-[#EA2C00] hover:underline"
@@ -1783,10 +1783,10 @@ export default function ExploreValueDrivers({
                     {!isNursing && (
                       <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-[#666666]">Cost reduction allocation (from your time split)</span>
+                          <span className="text-sm text-[#666666]">Shift sustainability allocation (from your time split)</span>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-black">
-                              {timeDriverInputs.ipAllocCostPercent}%
+                              {timeDriverInputs.ipAllocWellbeingPercent}%
                             </span>
                             <button
                               onClick={onBack}

@@ -50,20 +50,20 @@ function getBuckets(careSetting: string): BucketConfig[] {
       return [
         {
           field: 'ipAllocQualityPercent',
-          label: 'Documentation quality',
-          description: 'Better notes mean fewer CDI queries, more accurate DRGs, and stronger clinical records',
+          label: 'Direct Patient Care',
+          description: 'Time returned to rounding, patient interaction, teaching, and bedside presence',
           color: '#EA2C00',
         },
         {
           field: 'ipAllocCostPercent',
-          label: 'Cost reduction',
-          description: 'Operational efficiency gains from reduced documentation overhead',
+          label: 'Documentation Quality',
+          description: 'Better ambient notes mean fewer CDI queries, more accurate DRGs, and stronger clinical records',
           color: '#F07B5F',
         },
         {
           field: 'ipAllocWellbeingPercent',
-          label: 'Clinician wellbeing',
-          description: 'Sustainable workload that protects hospitalist retention and reduces burnout',
+          label: 'Shift Sustainability',
+          description: 'Reduced after-hours charting that protects hospitalist retention and work-life balance',
           color: '#1A1A1A',
         },
       ];
