@@ -100,7 +100,7 @@ export interface TimeDriverInputs {
   
   // Outpatient time allocation
   opAllocCapacityPercent: number;
-  opAllocCostPercent: number;
+  opAllocDocQualityPercent: number;
   opAllocWellbeingPercent: number;
   
   // ED time allocation
@@ -348,9 +348,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
     ipReplacementCost: 300000, // $300,000 replacement cost
     // Outpatient time allocation defaults
-    opAllocCapacityPercent: 40,
-    opAllocCostPercent: 25,
-    opAllocWellbeingPercent: 35,
+    opAllocCapacityPercent: 25,
+    opAllocDocQualityPercent: 15,
+    opAllocWellbeingPercent: 60,
     // ED time allocation defaults
     edAllocThroughputPercent: 45,
     edAllocCostPercent: 20,
@@ -681,14 +681,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         }
       }
     } else {
-      // Outpatient: Patient Access, Cost Reduction, and Wellbeing/Retention
+      // Outpatient: Patient Access and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
-        const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
-        const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
+        const hoursAllocatedToCapacity = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
+        const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100);
+        const potentialVisits = hoursConvertedToVisits * (60 / timeDriverInputs.visitDuration);
         total += potentialVisits * timeDriverInputs.revenuePerVisit;
-      }
-      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
-        total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
@@ -862,7 +860,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                 timeDriverInputs: {
                   ...td,
                   patientAccessEnabled: td.opAllocCapacityPercent > 0,
-                  costReductionEnabled: td.opAllocCostPercent > 0,
                   wellbeingEnabled: td.opAllocWellbeingPercent > 0,
                 },
               });

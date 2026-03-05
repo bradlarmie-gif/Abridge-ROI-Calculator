@@ -34,9 +34,13 @@ export default function ExploreValueDrivers({
   };
 
   // Calculations
+  const isOutpatientSetting = state.careSetting === 'outpatient';
+  const hoursAllocatedToCapacity = useMemo(() => {
+    return isOutpatientSetting ? Math.round(totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)) : totalHoursSaved;
+  }, [totalHoursSaved, timeDriverInputs.opAllocCapacityPercent, isOutpatientSetting]);
   const hoursTowardCapacity = useMemo(() => {
-    return Math.round(totalHoursSaved * (timeDriverInputs.capacityPercent / 100));
-  }, [totalHoursSaved, timeDriverInputs.capacityPercent]);
+    return Math.round(hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100));
+  }, [hoursAllocatedToCapacity, timeDriverInputs.capacityPercent]);
 
   const potentialVisits = useMemo(() => {
     return Math.round(hoursTowardCapacity * (60 / timeDriverInputs.visitDuration));
@@ -47,10 +51,13 @@ export default function ExploreValueDrivers({
   }, [potentialVisits, timeDriverInputs.revenuePerVisit]);
 
   const hoursPerProviderPerWeek = useMemo(() => {
-    return state.numberOfProviders > 0 
-      ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
-      : '0';
-  }, [totalHoursSaved, state.numberOfProviders]);
+    if (state.numberOfProviders <= 0) return '0';
+    if (isOutpatientSetting) {
+      const allocatedHours = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
+      return (allocatedHours / state.numberOfProviders / 52).toFixed(1);
+    }
+    return (totalHoursSaved / state.numberOfProviders / 48).toFixed(1);
+  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, timeDriverInputs.opAllocWellbeingPercent]);
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
@@ -251,10 +258,10 @@ export default function ExploreValueDrivers({
       pageSubtitle: `Your providers could reclaim ${formatNumber(totalHoursSaved)} hours. Different organizations use that time in different ways.`,
       driver1Title: 'Patient Access',
       driver1Subtitle: 'If providers use time to see more patients',
-      driver2Title: 'Cost Reduction',
-      driver2Subtitle: 'If time reduces overtime, locums, or other costs',
-      driver3Title: 'Clinician Wellbeing',
-      driver3Subtitle: 'If time improves work-life balance and retention',
+      driver2Title: 'Clinician Sustainability',
+      driver2Subtitle: 'If time improves work-life balance and retention',
+      driver3Title: '',
+      driver3Subtitle: '',
     },
     ed: {
       pageTitle: 'What Could That Time Be Worth?',
@@ -321,12 +328,9 @@ export default function ExploreValueDrivers({
         total += nursingAgencyCalcs.agencySavings;
       }
     } else {
-      // Outpatient uses Patient Access and Cost Reduction
+      // Outpatient uses Patient Access and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
         total += potentialRevenue;
-      }
-      if (timeDriverInputs.costReductionEnabled) {
-        total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         total += retentionCalcs.retentionValue;
@@ -1286,8 +1290,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">{isInpatient ? config.driver2Title : config.driver3Title}</p>
-                <p className="text-sm text-[#888888]">{isInpatient ? config.driver2Subtitle : config.driver3Subtitle}</p>
+                <p className="font-semibold text-black">{(isInpatient || isOutpatientSetting) ? config.driver2Title : config.driver3Title}</p>
+                <p className="text-sm text-[#888888]">{(isInpatient || isOutpatientSetting) ? config.driver2Subtitle : config.driver3Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.wellbeingEnabled && (
@@ -1698,7 +1702,8 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
-        {/* Optional Section */}
+        {/* Optional Section - Cost Reduction (not shown for outpatient) */}
+        {!isOutpatientSetting && (
         <motion.div
           className="mt-8 mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -1765,7 +1770,7 @@ export default function ExploreValueDrivers({
                           <span className="text-sm text-[#666666]">Cost reduction allocation (from your time split)</span>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-black">
-                              {isED ? timeDriverInputs.edAllocCostPercent : isInpatient ? timeDriverInputs.ipAllocCostPercent : timeDriverInputs.opAllocCostPercent}%
+                              {isED ? timeDriverInputs.edAllocCostPercent : timeDriverInputs.ipAllocCostPercent}%
                             </span>
                             <button
                               onClick={onBack}
@@ -1806,6 +1811,7 @@ export default function ExploreValueDrivers({
             </AnimatePresence>
           </div>
         </motion.div>
+        )}
 
         {/* Agency Cost Avoidance - Nursing Only */}
         {isNursing && (
@@ -1972,6 +1978,74 @@ export default function ExploreValueDrivers({
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+              {/* Time Allocation Breakdown - Outpatient */}
+              {isOutpatientSetting && (
+                <>
+                  {(() => {
+                    const capPct = timeDriverInputs.opAllocCapacityPercent / 100;
+                    const docPct = timeDriverInputs.opAllocDocQualityPercent / 100;
+                    const wellPct = timeDriverInputs.opAllocWellbeingPercent / 100;
+                    const capHours = Math.round(totalHoursSaved * capPct);
+                    const docHours = Math.round(totalHoursSaved * docPct);
+                    const wellHours = Math.round(totalHoursSaved * wellPct);
+                    
+                    return (
+                      <div className="mb-5">
+                        <div className="mb-3">
+                          <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
+                            Time Allocation
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center pb-2 border-b border-[#333333]">
+                            <span className="text-xs text-[#888888]">Total Saved</span>
+                            <span className="text-sm font-semibold text-white">{formatNumber(totalHoursSaved)} hrs</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                              <span className="text-xs text-[#888888]">Patient Capacity</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-white">{formatNumber(capHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocCapacityPercent}%)</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#F07B5F]" />
+                                <span className="text-xs text-[#888888]">Doc Quality Time</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-semibold text-[#888888]">{formatNumber(docHours)} hrs</span>
+                                <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocDocQualityPercent}%)</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-[#666666] ml-4 mt-0.5">Surfaced in Documentation Quality step →</p>
+                          </div>
+                          
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#1A1A1A] border border-[#444444]" />
+                              <span className="text-xs text-[#888888]">Sustainability</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-[#888888]">{formatNumber(wellHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocWellbeingPercent}%)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="h-px bg-[#333333] mb-4" />
+                </>
+              )}
+
               {/* Time Allocation Breakdown - Nursing Only */}
               {isNursing && (
                 <>
@@ -2262,23 +2336,8 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Cost Reduction</span>
-                        </div>
-                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
-                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
-                        </span>
-                      </div>
-                      {!timeDriverInputs.costReductionEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between items-center gap-2">
-                        <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                          <span className="text-sm text-[#888888]">Clinician Sustainability</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
                           {timeDriverInputs.wellbeingEnabled 

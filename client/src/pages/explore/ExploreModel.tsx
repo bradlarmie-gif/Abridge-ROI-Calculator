@@ -64,15 +64,19 @@ export default function ExploreModel({
 
   // Calculate patient access and cost reduction separately
   const { timeDriverInputs, docQualityInputs } = state;
+  const isOutpatientSetting = state.careSetting === 'outpatient';
   
   const patientAccessValue = useMemo(() => {
     if (!timeDriverInputs.patientAccessEnabled) return 0;
-    const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
-    const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
+    const hoursAllocatedToCapacity = isOutpatientSetting
+      ? totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)
+      : totalHoursSaved;
+    const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityPercent / 100);
+    const potentialVisits = hoursConvertedToVisits * (60 / timeDriverInputs.visitDuration);
     return Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);
-  }, [totalHoursSaved, timeDriverInputs]);
+  }, [totalHoursSaved, timeDriverInputs, isOutpatientSetting]);
 
-  const costReductionValue = timeDriverInputs.costReductionEnabled ? timeDriverInputs.estimatedCostReduction : 0;
+  const costReductionValue = (!isOutpatientSetting && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
 
   // ED-specific value calculations
   const edRecoveredPatients = useMemo(() => {
@@ -96,7 +100,6 @@ export default function ExploreModel({
 
   const isED = state.careSetting === 'ed';
   const isNursing = state.careSetting === 'nursing';
-  const isOutpatientSetting = state.careSetting === 'outpatient';
 
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
@@ -174,7 +177,10 @@ export default function ExploreModel({
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
-    ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
+    ? (isOutpatientSetting 
+        ? (totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100) / state.numberOfProviders / 52)
+        : (totalHoursSaved / state.numberOfProviders / 48)
+      ).toFixed(1)
     : '0';
 
   const nursingOtValue = useMemo(() => {
@@ -422,21 +428,17 @@ export default function ExploreModel({
 
       if (state.careSetting === 'outpatient') {
         if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
-          const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
-          const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
+          const hoursAllocated = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
+          const hoursConverted = hoursAllocated * (timeDriverInputs.capacityPercent / 100);
+          const potentialVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
           drivers.push({
             id: 'patientAccess', name: 'Patient Access', value: patientAccessValue, category: 'time',
             calcSteps: [
-              `${totalHoursSaved.toLocaleString()} hrs \u00D7 ${timeDriverInputs.capacityPercent}% toward capacity = ${Math.round(hoursTowardCapacity).toLocaleString()} hrs`,
-              `${Math.round(hoursTowardCapacity).toLocaleString()} hrs \u00D7 (60/${timeDriverInputs.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
+              `${totalHoursSaved.toLocaleString()} hrs \u00D7 ${timeDriverInputs.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
+              `${Math.round(hoursAllocated).toLocaleString()} hrs \u00D7 ${timeDriverInputs.capacityPercent}% to visits = ${Math.round(hoursConverted).toLocaleString()} hrs`,
+              `${Math.round(hoursConverted).toLocaleString()} hrs \u00D7 (60/${timeDriverInputs.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
               `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
             ],
-          });
-        }
-        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
-          drivers.push({
-            id: 'costReduction', name: 'Cost Reduction', value: costReductionValue, category: 'time',
-            calcSteps: [`Estimated annual cost reduction: ${fmtK(costReductionValue)}/year`],
           });
         }
         if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
@@ -690,10 +692,10 @@ export default function ExploreModel({
   const driverLabels = {
     outpatient: {
       timeCardTitle: 'Efficiency Value',
-      timeCardDescription: 'Time saved on documentation is redirected to patient access, cost reduction, and clinician sustainability.',
+      timeCardDescription: 'Time saved on documentation is redirected to patient access and clinician sustainability.',
       driver1: 'Patient Access',
-      driver2: 'Cost Reduction',
-      driver3: 'Clinician Wellbeing',
+      driver2: 'Clinician Sustainability',
+      driver3: '',
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'When documentation is complete and accurate, downstream revenue follows.',
       docDriver1: 'wRVU Improvement',
@@ -1192,14 +1194,10 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.opAllocCapacityPercent}% allocated · {timeDriverInputs.capacityPercent}% to visits)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
-                      <span className="font-semibold text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver3}</span>
                       <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                     </div>
                     {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (

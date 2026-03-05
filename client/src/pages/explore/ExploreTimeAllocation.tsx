@@ -92,20 +92,20 @@ function getBuckets(careSetting: string): BucketConfig[] {
       return [
         {
           field: 'opAllocCapacityPercent',
-          label: 'See more patients',
-          description: 'Time converted to additional patient visits and reduced wait times',
+          label: 'Patient Capacity',
+          description: 'Time converted to additional patient visits and reduced scheduling gaps',
           color: '#EA2C00',
         },
         {
-          field: 'opAllocCostPercent',
-          label: 'Reduce locums & overtime',
-          description: 'Time that offsets premium labor costs and extended hours',
+          field: 'opAllocDocQualityPercent',
+          label: 'Documentation Quality Time',
+          description: 'Time that enables more complete, thorough documentation — the foundation of the revenue drivers in the next step',
           color: '#F07B5F',
         },
         {
           field: 'opAllocWellbeingPercent',
-          label: 'Clinician wellbeing',
-          description: 'Breathing room that reduces burnout, supports work-life balance, and protects retention',
+          label: 'Clinician Sustainability',
+          description: 'Breathing room that reduces documentation burden, supports work-life balance, and protects retention',
           color: '#1A1A1A',
         },
       ];

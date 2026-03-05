@@ -228,7 +228,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerTypePlural: "providers",
     coverSubtitle: (d) => `${fmtNum(d.providers)} providers \u00B7 ${fmtNum(d.encounters)} encounters \u00B7 Outpatient`,
     thesisQuestion: "If we give providers time back, what happens to your practice?",
-    thesisParagraph: "Ambient documentation creates value in two distinct ways: by returning time to providers (which translates to capacity, cost reduction, and retention) and by improving documentation quality (which captures revenue that already exists but isn't being coded).",
+    thesisParagraph: "Ambient documentation creates value in two distinct ways: by returning time to providers (which translates to capacity and clinician sustainability) and by improving documentation quality (which captures revenue that already exists but isn't being coded).",
     source1Label: "TIME RECAPTURED",
     source1Description: "Hours returned to patient care, capacity expansion, and operational efficiency.",
     source1Tagline: "The constraint is time.",
@@ -237,7 +237,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     source2Tagline: "The notes drive the revenue.",
     strategicObservation: (d) => {
       if (d.totalValue === 0 && d.qualitativeDrivers.length > 0) {
-        return `Your assessment focused on qualitative drivers (${d.qualitativeDrivers.join(", ")}). These represent strategic value\u2014clinician experience, retention signal, and practice sustainability\u2014that is meaningful but not easily dollarized. To build a financial investment case, consider enabling quantitative levers like Patient Access or wRVU Improvement.`;
+        return `Your assessment focused on qualitative drivers (${d.qualitativeDrivers.join(", ")}). These represent strategic value\u2014clinician experience, retention signal, and practice sustainability\u2014that is meaningful but not easily dollarized. To build a financial case, consider enabling quantitative levers like Patient Access or wRVU Improvement.`;
       }
       const timePct = d.totalValue > 0 ? Math.round((d.timeValue / d.totalValue) * 100) : 0;
       return timePct > 60
