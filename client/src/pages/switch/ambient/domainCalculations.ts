@@ -32,9 +32,9 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Labor Costs Are Reflecting the Difference.',
   },
   risk: {
-    1: 'Documentation Quality Improved. Exposure Still Invisible.',
-    2: 'Documentation Quality Is Being Monitored.',
-    3: 'Documentation Quality Is Closing Revenue and Compliance Gaps.',
+    1: 'Documentation Quality Has Improved.',
+    2: 'Documentation Quality Is Being Tracked.',
+    3: 'Documentation Quality Is Driving Downstream Improvement.',
     4: 'Documentation Is a Governed Strategic Asset.',
   },
 };
@@ -626,28 +626,28 @@ export function computeWorkforceFeedback(
 }
 
 const QUALITY_ATTRIBUTES = [
-  'Note completeness (all relevant elements captured)',
-  'Diagnostic specificity (ICD-10 precision)',
-  'HCC / risk adjustment alignment',
-  'Quality measure documentation (HEDIS, MIPS gaps)',
-  'Compliance defensibility (audit-readiness)',
+  'Note completeness (history, exam, assessment, plan)',
+  'Diagnostic specificity (ICD-10 code level and accuracy)',
+  'Quality measure documentation (HEDIS, MIPS, Stars gaps)',
+  'Compliance and audit readiness',
+  'HCC and risk adjustment capture (for value-based populations)',
 ];
 
 const DOWNSTREAM_WORKFLOWS = [
-  'CDI query volume reduced (fewer queries because notes are more complete)',
+  'CDI query volume reduced (fewer queries, more complete notes)',
   'Coding accuracy improved (fewer rejections, faster turnaround)',
-  'Quality measure capture improved (HEDIS, MIPS, Stars gap closure)',
-  'Prior authorization documentation streamlined',
+  'Prior authorization approval rate improved',
+  'Quality measure gap closure improved (HEDIS, MIPS, Stars)',
   'Chart abstraction time reduced (registries, research, reporting)',
-  'Risk adjustment / HCC capture improved',
+  'HCC and risk adjustment capture improved (value-based populations)',
 ];
 
 const STRATEGIC_INTEGRATIONS = [
-  'Payer contract negotiations (documentation supports rate/quality arguments)',
-  'Value-based care program design (documentation feeds quality metrics)',
-  'Compliance / audit governance (documentation quality is a governed metric)',
-  'Clinical documentation review (documentation completeness tracked as part of risk oversight)',
-  'Workforce / FTE modeling (documentation efficiency informs staffing)',
+  'Compliance and audit governance (documentation quality is a tracked metric)',
+  'Quality program strategy (documentation completeness feeds quality reporting)',
+  'Clinical documentation review (formal governance structure exists)',
+  'Payer contract negotiations (documentation quality supports rate and quality arguments)',
+  'Value-based care program design (documentation feeds quality and risk metrics)',
 ];
 
 const REVENUE_SIGNALS = [
@@ -688,21 +688,25 @@ export function computeRiskFeedback(
   revenuePerVisit: number = 200,
 ): DomainFeedback {
   if (level === 1) {
-    const vbcPct = (inputs.riskVbcPct as number) ?? 0;
-    const denialExposure = Math.round(documentedEncounters * revenuePerVisit * 0.04);
-    const hccExposure = Math.round(documentedEncounters * (vbcPct / 100) * 200);
-    const qualityExposure = Math.round(documentedEncounters * 0.04 * 100);
-    const totalExposure = denialExposure + hccExposure + qualityExposure;
-    const monthlyExposure = Math.round(totalExposure / 12);
+    const downstreamConnected = inputs.qualityDownstreamConnected as string | undefined;
+    const downstreamAreaStr = inputs.qualityDownstreamArea as string | undefined;
+    const areaCount = downstreamAreaStr ? downstreamAreaStr.split(',').filter(Boolean).length : 0;
+
+    const statusText = downstreamConnected === 'yes'
+      ? (areaCount > 0 ? `${areaCount} downstream area${areaCount !== 1 ? 's' : ''} engaged.` : 'At least one downstream team is formally engaged.')
+      : downstreamConnected === 'informal'
+        ? 'Downstream teams are informally aware.'
+        : 'Downstream connection not yet started.';
+
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${formatDollar(totalExposure)} in combined annual risk exposure — invisible.`,
-      context: `Your documentation quality may have improved — but three risk exposures remain unaddressed downstream.\n\nDenial exposure: ${formatDollar(denialExposure)} annually (${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × 4% avg denial rate).\n\n${vbcPct > 0 ? `HCC / risk adjustment undercapture: ${formatDollar(hccExposure)} (${documentedEncounters.toLocaleString()} encounters × ${vbcPct}% VBC panel × $200/member).\n\n` : ''}Quality measure gaps: ${formatDollar(qualityExposure)} (${documentedEncounters.toLocaleString()} encounters × 4% gap rate × $100/gap).\n\nTotal unaddressed exposure: ${formatDollar(totalExposure)} annually.`,
-      formula: `[denialExposure] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 4% = ${formatDollar(denialExposure)}\n[hccExposure] = ${documentedEncounters.toLocaleString()} × ${vbcPct}% VBC × $200 = ${formatDollar(hccExposure)}\n[qualityExposure] = ${documentedEncounters.toLocaleString()} × 4% × $100 = ${formatDollar(qualityExposure)}`,
-      footnote: 'Denial rate: 4% national average (MGMA). HCC uplift: $200/member conservative estimate. Quality gap impact: $100/encounter. These are exposure estimates, not confirmed losses — the point is that no one is measuring them.',
-      costOfWaiting: `Every month without a documentation quality strategy = ${formatDollar(monthlyExposure)} in unmanaged risk.`,
+      headlineMetric: `${documentedEncounters.toLocaleString()} encounters documented annually with improved clinical specificity.`,
+      context: `Better documentation creates better signal downstream — for coders, quality teams, compliance officers, and care managers. The opportunity at this level is identifying which downstream teams are ready to receive that signal.\n\nThe organizations that move fastest on this tend to start with one team, one workflow, and one measurable outcome — then build from there.`,
+      formula: '',
+      footnote: 'Downstream value appears at Level 3, when a specific workflow shows measurable improvement.',
+      nextLevelTeaser: 'Level 2 — when documentation quality is being formally tracked, the gaps become visible and actionable.',
     };
   }
 
@@ -725,9 +729,10 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Not yet entered',
-        context: 'Documentation quality monitoring hasn\'t started yet. If no one is reviewing documentation attributes — even informally — your organization may be at Level 1 for this domain.\n\nThe single most important next step is establishing any form of documentation quality review.\n\nOrganizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience.',
+        context: 'Formal documentation quality tracking is the step that turns ambient\'s clinical improvement into something your organization can build on.\n\nEven a lightweight review process — spot checks from CDI, periodic coding audits, or a documentation quality dashboard — creates the visibility needed to connect quality to outcomes.',
         formula: '',
         footnote: '',
+        nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
       };
     }
     if (approach === 'spot_checks') {
@@ -736,9 +741,10 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Informal monitoring active',
-        context: 'Your organization is informally reviewing documentation quality through spot checks and anecdotal feedback. This is a meaningful step — but informal processes don\'t scale and can\'t drive organizational strategy.\n\nConsider formalizing a review cadence and measurement framework to move toward Level 3.\n\nOrganizations with formalized monitoring have reported measurable improvements in documentation completeness, coding specificity, and audit readiness. Based on aggregated deployment experience.',
+        context: 'Informal review is a meaningful starting point — it surfaces issues and builds awareness across CDI and coding teams.\n\nThe natural progression is formalizing that review into a cadence with tracked attributes, so patterns become visible over time and improvement can be demonstrated.',
         formula: '',
         footnote: '',
+        nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
       };
     }
     const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
@@ -757,18 +763,18 @@ export function computeRiskFeedback(
     const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
     const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
     const gapRate = inputs.chartGapRate as number | undefined;
-    const trackingMultiplier = approach === 'systematic' ? 1.0 : 0.5;
 
     if (gapRate && gapRate > 0) {
-      const gapRevenue = Math.round(documentedEncounters * (gapRate / 100) * 75 * trackingMultiplier);
+      const chartsWithGaps = Math.round(documentedEncounters * (gapRate / 100));
       return {
         label: 'Estimated Impact',
-        value: gapRevenue,
-        hasValue: true,
-        headlineMetric: `${count} of 5 quality dimensions tracked. ${formatDollar(gapRevenue)} in gap-driven revenue opportunity.`,
-        context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${gapRate}% of reviewed charts have documentation gaps — that's ${formatDollar(gapRevenue)} in recoverable value per year at $75 per gap encounter.${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
-        formula: `[gapRevenue] = ${documentedEncounters.toLocaleString()} × ${gapRate}% × $75 × ${trackingMultiplier} multiplier = ${formatDollar(gapRevenue)}`,
-        footnote: `Tracking multiplier: ${trackingMultiplier} (${approach === 'systematic' ? 'systematic' : 'spot check'}).`,
+        value: null,
+        hasValue: false,
+        headlineMetric: `${count} of 5 quality dimensions tracked. ${chartsWithGaps.toLocaleString()} charts with gaps identified annually.`,
+        context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps identified annually — based on your ${gapRate}% review gap rate.${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
       };
     }
 
@@ -777,9 +783,10 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${count} of 5 quality dimensions tracked`,
-      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter your chart documentation gap rate to calculate the revenue opportunity.`,
+      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter your chart documentation gap rate to see volume of charts with gaps.`,
       formula: '',
       footnote: '',
+      nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
     };
   }
 
@@ -853,26 +860,29 @@ export function computeRiskFeedback(
     const totalValue = workflowValues.reduce((sum, w) => sum + w.value, 0);
 
     if (totalValue === 0) {
+      const checkedNames = checked.map(c => shortLabel(c)).join(', ');
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
         headlineMetric: `${count} downstream workflow${count > 1 ? 's' : ''} connected`,
-        context: `Your documentation infrastructure is driving improvement across ${count} downstream workflow${count > 1 ? 's' : ''}:\n${checkedList}\n\nEnter before/after metrics for each connected workflow to calculate dollar impact.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+        context: `Your documentation infrastructure is connected to ${count} downstream workflow${count > 1 ? 's' : ''}: ${checkedNames}.\n\nEnter before/after metrics for each connected workflow to calculate the impact. Use your organization's actual data — even directional improvements (e.g., CDI queries down 20%) produce a defensible number.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
         formula: '',
         footnote: '',
       };
     }
 
     const formulaLines = workflowValues.map(w => `[${w.name}] = ${w.formula}`).join('\n');
+    const uncheckedNames = unchecked.map(c => shortLabel(c)).join(', ');
     return {
       label: 'Estimated Impact',
       value: totalValue,
       hasValue: true,
-      headlineMetric: `${formatDollar(totalValue)} in measured operational value across ${count} workflow${count > 1 ? 's' : ''}.`,
-      context: `Your documentation infrastructure is driving measurable improvement:\n\n${workflowValues.map(w => `${w.name}: ${formatDollar(w.value)}`).join('\n')}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      headlineMetric: `${formatDollar(totalValue)} in measured downstream improvement across ${count} workflow${count > 1 ? 's' : ''}.`,
+      context: `Your documentation quality improvements are producing measurable results:\n\n${workflowValues.map(w => `${w.name}: ${formatDollar(w.value)}`).join('\n')}${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedNames}` : ''}`,
       formula: formulaLines,
       footnote: '',
+      nextLevelTeaser: 'Level 4 — when documentation quality is formally embedded in strategy, payer relationships, and governance, it becomes a durable organizational asset.',
     };
   }
 
@@ -901,15 +911,14 @@ export function computeRiskFeedback(
   }
 
   if (count > 0 && (!strategicValue || strategicValue <= 0)) {
-    const estimate = Math.round(documentedEncounters * revenuePerVisit * 0.008 * count);
     return {
       label: 'Estimated Impact',
-      value: estimate,
-      hasValue: true,
-      headlineMetric: `${formatDollar(estimate)} estimated strategic value`,
-      context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}${ownerLine}\n\nThis is an estimate based on 0.8% of encounter revenue per strategic integration. Enter your confirmed recognized annual strategic value to replace this estimate.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
-      formula: `[estimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 0.8% × ${count} integration${count > 1 ? 's' : ''} = ${formatDollar(estimate)}`,
-      footnote: 'Estimate based on 0.8% of encounter revenue per governance integration. Replace with your confirmed number for precision.',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} connected`,
+      context: `Documentation quality is embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\nEnter the strategic value your organization attributes to documentation quality to complete this level.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+      formula: '',
+      footnote: '',
     };
   }
 
@@ -918,7 +927,7 @@ export function computeRiskFeedback(
     value: strategicValue || 0,
     hasValue: true,
     headlineMetric: `${formatDollar(strategicValue || 0)} in recognized annual strategic value.`,
-    context: `Your organization treats documentation as a strategic data asset across ${count} governance area${count > 1 ? 's' : ''}:\n${checkedLabels}${ownerLine}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    context: `Documentation quality is embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\n${strategicValue && strategicValue > 0 ? `Your organization formally attributes ${formatDollar(strategicValue)} in strategic value to documentation quality — a number that belongs in your ambient program narrative.` : 'Enter the strategic value your organization attributes to documentation quality to complete this level.'}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
     formula: '',
     footnote: '',
   };

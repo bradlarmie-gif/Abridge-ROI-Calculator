@@ -131,14 +131,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'Your notes are better. But is anything downstream actually changing?',
-    reframe: 'Every AI initiative your organization wants in the next three years runs on one foundation — structured, complete documentation at scale.',
+    headline: 'Documentation quality is the foundation. The question is whether your organization is building on it.',
+    reframe: 'When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. This domain measures how far that signal has traveled downstream.',
     cards: [
-      { level: 1, label: 'Documentation Quality Improved. Exposure Still Invisible.', description: 'Notes are better; no system is translating that into financial or compliance value.' },
-      { level: 2, label: 'Documentation Quality Is Being Monitored.', description: 'Completeness, specificity, and HCC capture are tracked; gaps are visible.' },
-      { level: 3, label: 'Documentation Quality Is Closing Revenue and Compliance Gaps.', description: 'CDI, coding, quality reporting, and prior auth workflows are actively using improved documentation.' },
-      { level: 4, label: 'Documentation Is a Governed Strategic Asset.', description: 'Payer contracts, value-based care programs, compliance governance, and quality strategy are all built on documentation quality as a formal input.' },
+      { level: 1, label: 'Documentation Quality Has Improved.', description: 'Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected.' },
+      { level: 2, label: 'Documentation Quality Is Being Tracked.', description: 'Your organization is actively measuring documentation quality attributes — completeness, specificity, and accuracy — and gaps are visible.' },
+      { level: 3, label: 'Documentation Quality Is Driving Downstream Improvement.', description: 'Improved documentation is producing measurable results in downstream workflows — CDI, coding accuracy, quality measure performance, or prior authorization.' },
+      { level: 4, label: 'Documentation Is a Governed Strategic Asset.', description: 'Documentation quality is formally embedded in your organization\'s strategic operations — from payer relationships and quality programs to compliance governance and clinical governance.' },
     ],
+    framingQuestions: {
+      1: 'Ambient is producing better notes. Has your organization started connecting that improvement to anything downstream — coding, quality reporting, compliance, or care management?',
+      2: 'How is your organization monitoring documentation quality — and which attributes are being tracked?',
+      3: 'Which downstream workflows has improved documentation quality measurably impacted — and what does your data show?',
+      4: 'How is documentation quality formally embedded in your organization\'s strategic operations?',
+    },
+    unlockTeasers: {
+      2: 'Unlock: start tracking documentation quality formally',
+      3: 'Unlock: connect quality to downstream workflows',
+      4: 'Unlock: embed quality in organizational strategy',
+    },
   },
 };
 
@@ -1225,53 +1236,93 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   };
 
   const MONITORING_OPTIONS = [
-    { id: 'not_yet', label: "Not yet — we know notes are better but haven't formalized tracking" },
-    { id: 'spot_checks', label: 'Spot checks — informal review, anecdotal feedback from CDI or coding' },
-    { id: 'systematic', label: 'Systematic tracking — structured audits or dashboards measuring documentation attributes' },
+    { id: 'not_yet', label: "Not yet — we know quality has improved but haven't started formal tracking" },
+    { id: 'spot_checks', label: 'Informally — spot checks and anecdotal feedback from CDI or coding' },
+    { id: 'systematic', label: 'Systematically — structured audits or dashboards tracking documentation attributes' },
   ];
 
   const renderRiskInputs = () => {
     const level = currentState.activationLevel;
     if (!level) return null;
 
+    const QUALITY_DOWNSTREAM_AREAS = [
+      'CDI / coding accuracy',
+      'Quality measure performance (HEDIS, MIPS, Stars)',
+      'Compliance and audit readiness',
+      'Prior authorization',
+      'Care management / population health',
+      'HCC / risk adjustment (if value-based contracts apply)',
+    ];
+
     if (level === 1) {
+      const downstreamConnected = (currentState.inputs.qualityDownstreamConnected as string) || '';
       return (
-        <div>
-          <p className="text-sm text-[#888888] italic mb-4">
-            Documentation quality improved, but nothing downstream has changed. The exposure below is auto-computed from your baseline data.
-          </p>
+        <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              What % of your patient panel is in value-based or risk contracts?
+            <label className="block text-sm font-medium text-black mb-2">
+              Has your organization started connecting ambient documentation quality to any downstream workflow or team?
             </label>
-            <p className="text-xs text-[#888888] mb-2">If unknown or primarily fee-for-service, leave at 0. HCC undercapture only applies to VBC/capitation populations.</p>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.riskVbcPct as number) ?? 0}
-                onChange={(v) => setDomainInput('riskVbcPct', Math.min(100, Math.max(0, v)))}
-                placeholder="0"
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-risk-vbc-pct"
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <div className="flex gap-2 mt-2 flex-wrap">
+            <div className="flex flex-col gap-2">
               {[
-                { label: 'Mostly fee-for-service', value: 8 },
-                { label: 'Mixed payer mix', value: 28 },
-                { label: 'VBC-heavy', value: 52 },
+                { id: 'no', label: 'Not yet — the clinical improvement is visible but hasn\'t reached downstream teams' },
+                { id: 'informal', label: 'Informally — some teams are aware and starting to explore it' },
+                { id: 'yes', label: 'Yes — at least one downstream team is formally engaged' },
               ].map((opt) => (
-                <button
-                  key={opt.label}
-                  type="button"
-                  onClick={() => setDomainInput('riskVbcPct', opt.value)}
-                  className="text-xs px-3 py-1.5 rounded-full border border-[#D1D5DB] text-[#525252] hover:border-[#E8350A] hover:text-[#E8350A] transition-all"
+                <label
+                  key={opt.id}
+                  className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                    downstreamConnected === opt.id
+                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-downstream-${opt.id}`}
                 >
-                  {opt.label} (~{opt.value}%)
-                </button>
+                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    downstreamConnected === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {downstreamConnected === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                  </div>
+                  <span className="text-sm text-black">{opt.label}</span>
+                  <input
+                    type="radio"
+                    name="qualityDownstreamConnected"
+                    value={opt.id}
+                    checked={downstreamConnected === opt.id}
+                    onChange={() => setDomainInput('qualityDownstreamConnected', opt.id)}
+                    className="sr-only"
+                  />
+                </label>
               ))}
             </div>
           </div>
+
+          {downstreamConnected === 'yes' && (
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Which area has been engaged first?
+              </label>
+              <div className="flex flex-col gap-2">
+                {QUALITY_DOWNSTREAM_AREAS.map((area, i) => {
+                  const checked = isChecked('qualityDownstreamArea', i);
+                  return (
+                    <label
+                      key={i}
+                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid={`checkbox-downstream-area-${i}`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleCheckboxItem('qualityDownstreamArea', i)}
+                      />
+                      <span className="text-sm text-black">{area}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -1376,7 +1427,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 3) {
-      const WORKFLOW_DELTA_FIELDS: Record<number, { fields: { key: string; label: string; suffix?: string; step?: number }[] }> = {
+      const WORKFLOW_DELTA_FIELDS: Record<number, { fields: { key: string; label: string; suffix?: string; step?: number; sublabel?: string }[] }> = {
         0: { fields: [
           { key: 'cdiQueriesBefore', label: 'CDI queries/month before', suffix: '/mo' },
           { key: 'cdiQueriesAfter', label: 'CDI queries/month after', suffix: '/mo' },
@@ -1386,11 +1437,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           { key: 'riskDenialAfter', label: 'Denial rate after (%)', suffix: '%', step: 0.1 },
         ] },
         2: { fields: [
-          { key: 'qualityGapsClosed', label: 'Quality gaps closed per month', suffix: '/mo' },
-        ] },
-        3: { fields: [
           { key: 'priorAuthBefore', label: 'Prior auth approval rate before (%)', suffix: '%' },
           { key: 'priorAuthAfter', label: 'Prior auth approval rate after (%)', suffix: '%' },
+        ] },
+        3: { fields: [
+          { key: 'qualityGapsClosed', label: 'Quality gaps closed per month', suffix: '/mo' },
         ] },
         4: { fields: [
           { key: 'abstractionHoursSaved', label: 'Abstraction hours saved per month', suffix: 'hrs/mo' },
@@ -1543,10 +1594,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-medium text-black mb-1">
-            Recognized annual strategic value
+            Strategic value formally attributed to documentation quality
           </label>
           <p className="text-xs text-[#888888] mb-2">
-            The combined value of documentation-driven improvements across payer, quality, compliance, and risk programs.
+            The annual figure your organization formally connects to documentation quality improvements — across quality programs, compliance risk reduction, or contract performance. A number your CMO or Quality Officer has confirmed.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -1679,10 +1730,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
-              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : activeDomain === 'workforce' ? 'YOUR WORKFORCE MATURITY' : 'Where is your organization today?'}
+              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : activeDomain === 'workforce' ? 'YOUR WORKFORCE MATURITY' : activeDomain === 'risk' ? 'YOUR QUALITY MATURITY' : 'Where is your organization today?'}
             </p>
 
-            {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce') && (
+            {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce' || activeDomain === 'risk') && (
               <div className="flex items-center justify-center gap-3 mb-4">
                 {[1, 2, 3, 4].map((lvl) => {
                   const selectedLevel = currentState.activationLevel;
@@ -1711,7 +1762,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 const isSelected = selectedLevel === card.level;
                 const isClaimed = selectedLevel !== null && card.level < selectedLevel;
                 const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
-                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce';
+                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce' || activeDomain === 'risk';
                 const isFuture = hasStaircase && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
 
                 const leftBorderStyle = isSelected
@@ -2018,7 +2069,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <FormulaDisplay formula={feedback.formula} />
 
-                {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce') && feedback.nextLevelTeaser && (
+                {feedback.nextLevelTeaser && (
                   <p className="text-xs text-white/50 italic leading-relaxed mt-3" data-testid="text-next-level-teaser">
                     {feedback.nextLevelTeaser}
                   </p>
