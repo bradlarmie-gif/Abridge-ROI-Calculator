@@ -94,11 +94,9 @@ export default function ExploreValueDrivers({
   // ED-specific calculations
   // Calculate recovered patients first (used by both LWBS and Admission Capture)
   const edRecoveredPatients = useMemo(() => {
-    const annualPatients = state.annualEncounters;
-    const lwbsPatients = annualPatients * (timeDriverInputs.edLwbsRate / 100);
-    const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
-    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
-  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction, timeDriverInputs.edAllocThroughputPercent]);
+    const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
 
   const edLwbsValue = useMemo(() => {
     if (!timeDriverInputs.edLwbsEnabled) return 0;
@@ -536,22 +534,8 @@ export default function ExploreValueDrivers({
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666]">= Patients retained</span>
-                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100) * (timeDriverInputs.edLwbsReduction / 100)))}</span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <div>
-                          <span className="text-[#666666]">× Throughput attribution</span>
-                          <p className="text-xs text-[#888888]">(from your time allocation)</p>
-                        </div>
-                        <span className="font-semibold text-black flex-shrink-0">{(timeDriverInputs.edAllocThroughputPercent * 0.5).toFixed(1)}%</span>
-                      </div>
-                      
-                      <div className="h-px bg-[#E5E5E5] my-2" />
-                      
-                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Patients recovered</span>
-                        <span className="font-semibold text-black flex-shrink-0">{edRecoveredPatients.toFixed(1)}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(edRecoveredPatients))}</span>
                       </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× Revenue per visit</span>

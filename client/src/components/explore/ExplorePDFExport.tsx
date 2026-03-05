@@ -250,8 +250,6 @@ export interface ExplorePDFData {
   expectedLwbsReductionPct?: number;
   revenuePerEdVisit?: number;
   annualLwbsPatients?: number;
-  edPatientsRetained?: number;
-  throughputAttribution?: number;
   patientsRecovered?: number;
   lwbsGrossValue?: number;
   lwbsRealizationRate?: number;
@@ -464,7 +462,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerTypePlural: "ED physicians",
     coverSubtitle: (d) => `${fmtNum(d.providers)} ED physicians \u00B7 ${fmtNum(d.encounters)} encounters \u00B7 Emergency`,
     thesisQuestion: "In the ED, minutes matter. What happens when you give them back?",
-    thesisParagraph: "Emergency documentation creates value through two mechanisms: throughput gains (LWBS reduction, faster disposition, admission capture) and revenue accuracy (E&M level precision, denial prevention). Your throughput allocation determines how much reclaimed time translates to patient recovery — with a 50% conversion factor reflecting real-world ED dynamics.",
+    thesisParagraph: "Emergency documentation creates value through two mechanisms: throughput gains (LWBS reduction, faster disposition, admission capture) and revenue accuracy (E&M level precision, denial prevention). Faster documentation means faster disposition — reducing walkouts and creating capacity for additional admissions.",
     source1Label: "THROUGHPUT UNLOCKED",
     source1Description: "LWBS reduction, faster door-to-doc times, and additional patient capacity.",
     source1Tagline: "Speed saves lives\u2014and revenue.",
@@ -1538,7 +1536,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       You directed {thrPct}% of reclaimed time {"\u2014"} {fmtNum(thrHrs)} hours {"\u2014"} toward patient throughput. Faster documentation reduces door-to-doc time. Shorter wait times mean fewer patients leave without being seen.
                     </Text>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Your current LWBS rate of {safe(data.currentLwbsRatePct)}% generates {fmtNum(safe(data.annualLwbsPatients))} walkouts annually. At a {safe(data.expectedLwbsReductionPct)}% reduction {"\u2014"} the expected impact of faster documentation on wait times {"\u2014"} that{"\u2019"}s {fmtNum(safe(data.edPatientsRetained))} patients retained. Applying your {safe(data.throughputAttribution)?.toFixed(1)}% throughput attribution, {safe(data.patientsRecovered)?.toFixed(1)} of those patients complete visits. At ${safe(data.revenuePerEdVisit)} per visit and a {safe(data.lwbsRealizationRate)}% completion rate, the annual recovery is {fmtCurrency(safe(data.netLwbsValue))}.
+                      Your current LWBS rate of {safe(data.currentLwbsRatePct)}% generates {fmtNum(safe(data.annualLwbsPatients))} walkouts annually. At a {safe(data.expectedLwbsReductionPct)}% reduction {"\u2014"} the expected impact of faster documentation on wait times {"\u2014"} that{"\u2019"}s {fmtNum(safe(data.patientsRecovered))} patients recovered. At ${safe(data.revenuePerEdVisit)} per visit and a {safe(data.lwbsRealizationRate)}% realization rate, the annual recovery is {fmtCurrency(safe(data.netLwbsValue))}.
                     </Text>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                       LWBS is one of the most undercounted losses in emergency medicine. These patients were already in the department. The visit was already scheduled. The only thing missing was time.

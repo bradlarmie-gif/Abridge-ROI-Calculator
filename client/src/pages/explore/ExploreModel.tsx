@@ -82,9 +82,8 @@ export default function ExploreModel({
   // ED-specific value calculations
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-    const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
-    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
-  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction, timeDriverInputs.edAllocThroughputPercent]);
+    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
 
   const edLwbsValue = useMemo(() => {
     if (!timeDriverInputs.edLwbsEnabled) return 0;
@@ -510,11 +509,10 @@ export default function ExploreModel({
       } else if (state.careSetting === 'ed') {
         if (timeDriverInputs.edLwbsEnabled && (edLwbsValue > 0 || edAdmissionCaptureValue > 0)) {
           const combined = edLwbsValue + edAdmissionCaptureValue;
-          const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
           drivers.push({
             id: 'edThroughput', name: 'Patient Throughput (LWBS)', value: combined, category: 'time',
             calcSteps: [
-              `${state.annualEncounters.toLocaleString()} enc \u00D7 ${timeDriverInputs.edLwbsRate}% LWBS \u00D7 ${timeDriverInputs.edLwbsReduction}% reduction \u00D7 ${(throughputFactor * 100).toFixed(1)}% throughput factor`,
+              `${state.annualEncounters.toLocaleString()} enc \u00D7 ${timeDriverInputs.edLwbsRate}% LWBS \u00D7 ${timeDriverInputs.edLwbsReduction}% reduction`,
               `${Math.round(edRecoveredPatients).toLocaleString()} recovered \u00D7 $${timeDriverInputs.edRevenuePerVisit}/visit`,
               `LWBS: ${fmtK(edLwbsValue)} + Admissions: ${fmtK(edAdmissionCaptureValue)} = ${fmtK(combined)}/year`,
             ],
@@ -889,10 +887,8 @@ export default function ExploreModel({
           const edDocHrs = totalHoursSaved * (edDocPct / 100);
           const edWellHrs = totalHoursSaved * (edWellPct / 100);
           const edHrsPerWkBack = state.numberOfProviders > 0 ? edWellHrs / state.numberOfProviders / 48 : 0;
-          const throughputFactor = (edThroughputPct / 100) * 0.5;
           const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-          const lwbsPatientsRetained = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-          const lwbsRecovered = lwbsPatientsRetained * throughputFactor;
+          const lwbsRecovered = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
           const lwbsGross = lwbsRecovered * timeDriverInputs.edRevenuePerVisit;
           const lwbsNet = Math.round(lwbsGross * (timeDriverInputs.edLwbsRealization / 100));
           const admittedPatients = lwbsRecovered * (timeDriverInputs.edAdmissionRate / 100);
@@ -919,9 +915,7 @@ export default function ExploreModel({
             expectedLwbsReductionPct: timeDriverInputs.edLwbsReduction,
             revenuePerEdVisit: timeDriverInputs.edRevenuePerVisit,
             annualLwbsPatients: Math.round(lwbsPatients),
-            edPatientsRetained: Math.round(lwbsPatientsRetained),
-            throughputAttribution: throughputFactor * 100,
-            patientsRecovered: lwbsRecovered,
+            patientsRecovered: Math.round(lwbsRecovered),
             lwbsGrossValue: Math.round(lwbsGross),
             lwbsRealizationRate: timeDriverInputs.edLwbsRealization,
             netLwbsValue: lwbsNet,
@@ -1541,7 +1535,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.edLwbsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAllocThroughputPercent}% allocated · 50% throughput factor)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edLwbsReduction}% LWBS reduction × {timeDriverInputs.edLwbsRealization}% realization)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>

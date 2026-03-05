@@ -617,17 +617,15 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     const isNursing = careSetting === 'nursing';
     
     if (isED) {
-      // ED: LWBS and Throughput (throughput allocation × 50% conversion factor)
-      const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
       if (timeDriverInputs.edLwbsEnabled) {
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
         const grossValue = recoveredPatients * timeDriverInputs.edRevenuePerVisit;
         total += grossValue * (timeDriverInputs.edLwbsRealization / 100);
       }
       if (timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled) {
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
         const admittedPatients = recoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
         const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
