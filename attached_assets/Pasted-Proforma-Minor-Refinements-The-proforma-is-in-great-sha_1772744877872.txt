@@ -1,0 +1,15 @@
+Proforma: Minor Refinements
+The proforma is in great shape — the three-tier value phasing, provider rollout, and financial summary are all working correctly now. Just two small refinements to tighten things up:
+1. Active Providers "Total" Column Should Show Final Count, Not Average
+In the 3-Year Financial Summary table, the "Active Providers" row currently shows 377 in the "Total" column. This is the Y3 average (average of 230→500 ramp). But every other row in the "Total" column shows a sum or cumulative figure. Showing 377 for providers is confusing — it's not a sum and it's not the final state.
+The fix: Change the "Total" column for the Active Providers row to show 500 (the final provider count at full scale). This is the number that corresponds to the "Annual Value at Scale" header metric and answers the natural question: "How many providers will be on the platform?"
+Alternatively, if you want to keep averages visible, show it as 500 with a subtle annotation like "500 (avg 192)" — but the primary number should be the end-state count.
+2. Retention Within-Year Ramp Explanation
+The retention values show an additional within-year ramp: in Y1 with 20% phasing, the quarterly values are $89 → $1K → $5K → $7K (totaling ~$13K), rather than a flat $7.2K per quarter (which would total $28.8K). This is because the model ramps from 0% → 20% during Y1, rather than applying 20% from day one.
+This is actually a GOOD behavior — it's more conservative and realistic. Retention doesn't flip on like a switch. But it's not explained anywhere.
+The fix: Add a short clarifying note to the Retention Benefit Phasing section or the methodology accordion. Something like:
+
+"Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end. Year 1 at 20% means retention builds from 0% to 20% over the course of the year, not 20% from day one. This reflects the reality that retention improvements compound over time as documentation burden decreases and clinician satisfaction improves."
+This preempts the question: "Why is Y1 retention only $13K when 20% of $144K is $29K?" The answer is the within-year ramp, and it should be stated explicitly so it reads as intentionally conservative rather than a math error.
+
+DO NOT change any calculations, chart behavior, or other proforma elements. These two items are the only changes needed.
