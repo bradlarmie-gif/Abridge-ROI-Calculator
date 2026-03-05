@@ -342,10 +342,11 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               </div>
             </div>
             <div className="flex justify-between mt-2">
-              <span className="text-[12px] text-white/40">Early deployment</span>
-              <span className="text-[12px] text-white/40">Measured</span>
-              <span className="text-[12px] text-white/40">Strategically managed</span>
-              <span className="text-[12px] text-white/40">Best in class</span>
+              <span className="text-[12px] text-white/40">Established</span>
+              <span className="text-[12px] text-white/40">Foundation</span>
+              <span className="text-[12px] text-white/40">In motion</span>
+              <span className="text-[12px] text-white/40">Managed</span>
+              <span className="text-[12px] text-white/40">Leading</span>
             </div>
           </div>
 

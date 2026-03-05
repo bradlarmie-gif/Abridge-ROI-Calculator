@@ -128,33 +128,33 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     const insightLevel = Math.min(lowestLevel, 2) as 1 | 2;
     const domainInsight = DOMAIN_INSIGHTS[lowestDomain][insightLevel];
 
-    if (score <= 30) {
+    if (score <= 24) {
       return {
-        headline: 'Early stages. Significant opportunity across all domains.',
-        body: `Early stage across all domains. Your deployment is producing time savings that aren't yet being captured operationally, financially, or strategically.`,
+        headline: 'Deployment established.',
+        body: 'Ambient is live and time is being returned to providers. The strategic opportunity — connecting that time to measurable operational, financial, and clinical outcomes — is ahead of you. This assessment gives you the map.',
       };
     }
-    if (score <= 50) {
+    if (score <= 44) {
       return {
-        headline: 'Emerging awareness. Key domains remain unmeasured.',
-        body: `Emerging in some areas. Your biggest opportunity is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — organizations at Level 2 here typically leave $200K–$800K in annual value unmeasured.`,
+        headline: 'Foundation building.',
+        body: 'Your deployment has established the baseline. Time recovery is understood, leadership is aware, and at least one domain is producing data. The next stage is moving from measurement to deployment — connecting what you\'ve built to operational decisions.',
       };
     }
-    if (score <= 70) {
+    if (score <= 64) {
       return {
-        headline: 'Actively managing in some areas. Significant opportunity remains.',
-        body: `Actively managing in key areas. The gap between your current score and best-in-class represents real, quantifiable value. ${DOMAIN_LABELS[lowestDomain]} is where the most upside lives.`,
+        headline: 'Value in motion.',
+        body: 'Your organization is producing real, measurable outcomes from ambient documentation in at least one domain. The strategic opportunity is in the domains where measurement hasn\'t yet translated to action. That\'s where the next layer of value lives.',
       };
     }
-    if (score <= 85) {
+    if (score <= 79) {
       return {
-        headline: 'Strategically managed. Closing the final gaps.',
-        body: `Strong foundation. You're capturing value most organizations miss. The remaining gap is in ${DOMAIN_LABELS[lowestDomain].toLowerCase()} — closing it typically unlocks $100K–$400K in additional annual value.`,
+        headline: 'Strategically managed.',
+        body: 'Most domains are connected to organizational data and producing measurable value. Documentation quality is becoming a strategic input — not just a clinical tool. The remaining gap is in the domains that haven\'t yet reached that stage.',
       };
     }
     return {
-      headline: 'Best in class across domains.',
-      body: 'Best-in-class documentation infrastructure. Based on aggregated deployment experience, organizations at this stage are capturing strategic value across all domains.',
+      headline: 'Leading practice.',
+      body: 'Ambient documentation is embedded in how your organization plans, measures, and reports value. You\'re operating at the level most organizations are working toward. The opportunity is in sustaining and scaling what you\'ve built.',
     };
   };
 
@@ -171,7 +171,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           Here's where you stand.
         </h1>
         <p className="text-base text-[#888888]">
-          This is how intentionally your organization is converting ambient AI into measurable value.
+          Your score reflects how fully your organization has connected ambient documentation to operational, financial, and clinical outcomes — across four domains.
         </p>
       </motion.div>
 
@@ -418,32 +418,32 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                 />
               </div>
 
-              <div className="absolute -top-0.5" style={{ left: '25%', transform: 'translateX(-50%)' }}>
-                <div className="w-px h-3 bg-white/30" />
-              </div>
-              <div className="absolute -top-0.5" style={{ left: '50%', transform: 'translateX(-50%)' }}>
-                <div className="w-px h-3 bg-white/30" />
-              </div>
-              <div className="absolute -top-0.5" style={{ left: '75%', transform: 'translateX(-50%)' }}>
-                <div className="w-px h-3 bg-white/30" />
-              </div>
+              {[24, 44, 64, 79].map((threshold) => (
+                <div key={threshold} className="absolute -top-0.5" style={{ left: `${threshold}%`, transform: 'translateX(-50%)' }}>
+                  <div className="w-px h-3 bg-white/30" />
+                </div>
+              ))}
             </div>
 
             <div className="space-y-1.5 mb-6">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Early deployment</span>
-                <span className="text-sm font-bold text-white/50">25</span>
+                <span className="text-xs text-white/50">Deployment established</span>
+                <span className="text-sm font-bold text-white/50">24</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Measured</span>
-                <span className="text-sm font-bold text-white/50">50</span>
+                <span className="text-xs text-white/50">Foundation building</span>
+                <span className="text-sm font-bold text-white/50">44</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-white/50">Value in motion</span>
+                <span className="text-sm font-bold text-white/50">64</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-white/50">Strategically managed</span>
-                <span className="text-sm font-bold text-white/70">75</span>
+                <span className="text-sm font-bold text-white/70">79</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Best in class</span>
+                <span className="text-xs text-white/50">Leading practice</span>
                 <span className="text-sm font-bold text-white">100</span>
               </div>
             </div>
