@@ -644,22 +644,6 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">Direct patient care allocation (from your time split)</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-black">{timeDriverInputs.ipAllocQualityPercent}%</span>
-                        <button
-                          onClick={onBack}
-                          className="text-xs font-medium text-[#EA2C00] hover:underline"
-                          data-testid="link-edit-quality-allocation"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     When documentation happens automatically, hospitalists spend less time charting during and after rounds. This time returns to patient care, teaching, or work-life balance.
                   </p>
@@ -1343,13 +1327,13 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  {!isNursing && (
+                  {!isNursing && !isInpatient && (
                     <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#666666]">{isInpatient ? 'Shift sustainability' : 'Wellbeing'} allocation (from your time split)</span>
+                        <span className="text-sm text-[#666666]">Wellbeing allocation (from your time split)</span>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-black">
-                            {isED ? timeDriverInputs.edAllocWellbeingPercent : isInpatient ? timeDriverInputs.ipAllocWellbeingPercent : timeDriverInputs.opAllocWellbeingPercent}%
+                            {isED ? timeDriverInputs.edAllocWellbeingPercent : timeDriverInputs.opAllocWellbeingPercent}%
                           </span>
                           <button
                             onClick={onBack}
@@ -1603,21 +1587,6 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">Documentation quality allocation (from your time split)</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-black">{timeDriverInputs.ipAllocCostPercent}%</span>
-                        <button
-                          onClick={onBack}
-                          className="text-xs font-medium text-[#EA2C00] hover:underline"
-                          data-testid="link-edit-cdi-quality-allocation"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
 
                   <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
                     When Abridge captures clinical conversations with sufficient detail, many CDI queries become unnecessary — freeing your CDI team to focus on complex cases.
@@ -1780,26 +1749,6 @@ export default function ExploreValueDrivers({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5">
-                    {!isNursing && (
-                      <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-[#666666]">Shift sustainability allocation (from your time split)</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-black">
-                              {timeDriverInputs.ipAllocWellbeingPercent}%
-                            </span>
-                            <button
-                              onClick={onBack}
-                              className="text-xs font-medium text-[#EA2C00] hover:underline"
-                              data-testid="link-edit-cost-allocation"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
                     <p className="text-sm text-black mb-3">
                       We can't calculate your cost reduction — every organization is different. 
                       But if you have an estimate, enter it here.

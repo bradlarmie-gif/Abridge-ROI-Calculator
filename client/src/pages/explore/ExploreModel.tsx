@@ -177,6 +177,17 @@ export default function ExploreModel({
     return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery);
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
+  const ipObsDefenseValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipObsDefenseEnabled) return 0;
+    const gross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
+    return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
+  }, [isInpatient, eligibleEncounters, docQualityInputs]);
+
+  const ipCdiCapacityValue = useMemo(() => {
+    if (!isInpatient || !timeDriverInputs.ipCdiCapacityEnabled) return 0;
+    return Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100));
+  }, [isInpatient, timeDriverInputs]);
+
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
         ? (totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100) / state.numberOfProviders / 52)
@@ -298,7 +309,9 @@ export default function ExploreModel({
     if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", onset: "immediate" as const });
     if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", onset: "immediate" as const });
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
+    if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
+    if (ipCdiCapacityValue > 0) drivers.push({ id: "ipCdiCapacity", name: "CDI Capacity Extension", value: ipCdiCapacityValue, category: "time", onset: "delayed" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
@@ -572,6 +585,17 @@ export default function ExploreModel({
             inputs: { realizationRate: docQualityInputs.ipDrgRealization },
           });
         }
+        if (docQualityInputs.ipObsDefenseEnabled && ipObsDefenseValue > 0) {
+          drivers.push({
+            id: 'inpatientObsDefense', name: 'Obs/IP Status Defense', value: ipObsDefenseValue, category: 'documentation',
+            calcSteps: [
+              `${eligibleEncounters.toLocaleString()} admissions \u00D7 ${docQualityInputs.ipObsDefenseDenialRate}% denial rate \u00D7 $${docQualityInputs.ipObsDefenseClaimValue.toLocaleString()} avg claim`,
+              `\u00D7 ${docQualityInputs.ipObsDefenseDocContribution}% doc contribution = ${fmtK(Math.round(eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100)))} gross`,
+              `\u00D7 ${docQualityInputs.ipObsDefenseRealization}% realization = ${fmtK(ipObsDefenseValue)}/year`,
+            ],
+            inputs: { realizationRate: docQualityInputs.ipObsDefenseRealization },
+          });
+        }
         if (docQualityInputs.ipCdiEnabled && ipCdiValue > 0) {
           const reductionRate = docQualityInputs.ipCdiScenario === 'conservative' ? 15 : docQualityInputs.ipCdiScenario === 'typical' ? 25 : 35;
           drivers.push({
@@ -579,6 +603,15 @@ export default function ExploreModel({
             calcSteps: [
               `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
               `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query = ${fmtK(ipCdiValue)}/year`,
+            ],
+          });
+        }
+        if (timeDriverInputs.ipCdiCapacityEnabled && ipCdiCapacityValue > 0) {
+          drivers.push({
+            id: 'inpatientCdiCapacity', name: 'CDI Capacity Extension', value: ipCdiCapacityValue, category: 'time',
+            calcSteps: [
+              `${timeDriverInputs.ipCdiCapacityFtes} CDI FTEs \u00D7 $${timeDriverInputs.ipCdiCapacitySalary.toLocaleString()} salary`,
+              `\u00D7 ${timeDriverInputs.ipCdiCapacityQueryTimePct}% query time \u00D7 ${timeDriverInputs.ipCdiCapacityReductionPct}% reduction = ${fmtK(ipCdiCapacityValue)}/year`,
             ],
           });
         }
@@ -1351,6 +1384,13 @@ export default function ExploreModel({
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                     )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• CDI Capacity Extension</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.ipCdiCapacityEnabled ? formatCurrency(ipCdiCapacityValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.ipCdiCapacityEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.ipCdiCapacityReductionPct}% query time reduction)</p>
+                    )}
                   </>
                 ) : (
                   <>
@@ -1441,6 +1481,13 @@ export default function ExploreModel({
                     </div>
                     {docQualityInputs.ipDrgEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipDrgScenario === 'conservative' ? '15' : docQualityInputs.ipDrgScenario === 'typical' ? '20' : '25'}% protection)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• Obs/IP Status Defense</span>
+                      <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.ipObsDefenseEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipObsDefenseRealization}% realization)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver2}</span>

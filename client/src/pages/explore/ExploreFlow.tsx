@@ -657,6 +657,9 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         const retained = burnoutRelated * impactRate;
         total += retained * timeDriverInputs.replacementCost;
       }
+      if (timeDriverInputs.ipCdiCapacityEnabled) {
+        total += Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100));
+      }
     } else if (isNursing) {
       // Nursing: OT Reduction (time-to-OT conversion from total hours saved)
       if (timeDriverInputs.nursingOtEnabled) {
@@ -757,6 +760,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
       const queriesAvoided = totalQueries * (reductionPercent / 100);
       total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
+    }
+
+    // Inpatient: Obs/IP Status Defense
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
+      const obsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
+      total += obsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
     }
 
     return Math.round(total);

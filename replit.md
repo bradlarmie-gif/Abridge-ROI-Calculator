@@ -42,7 +42,9 @@ The application adheres to Material Design principles, utilizing Inter and JetBr
 -   **Configuration-driven**: ROI levers and properties are externally managed.
 -   **Pure Functions**: Encapsulated ROI calculation logic.
 -   **Qualitative Driver Handling**: Adapts display and PDF exports for qualitative drivers.
--   **Outpatient PDF Narrative Rewrite**: The Outpatient Explore PDF uses a dedicated rendering path with McKinsey-style narrative prose, dynamic conditional blocks (getOutpatientObservation, getOutpatientClosingQuote), and a conditional Documentation Quality page (page 3) that only renders when wRVU/HCC/Denial drivers are enabled (pushing total from 4 to 5 pages). Non-outpatient care settings (ED, Inpatient, Nursing) continue using the config-driven 4-page template. PageFooter accepts a dynamic `totalPages` prop.
+-   **Outpatient PDF Narrative Rewrite**: The Outpatient Explore PDF uses a dedicated rendering path with McKinsey-style narrative prose, dynamic conditional blocks (getOutpatientObservation, getOutpatientClosingQuote), and a conditional Documentation Quality page (page 3) that only renders when wRVU/HCC/Denial drivers are enabled (pushing total from 4 to 5 pages). PageFooter accepts a dynamic `totalPages` prop.
+-   **ED PDF Narrative Rewrite**: The ED Explore PDF uses a dedicated rendering path with ED-specific terminology (physicians/visits, Throughput Value, LWBS Recovery, Admission Capture, Clinician Wellbeing, E&M Level Accuracy). Conditional Documentation Quality page (page 3) when E&M accuracy or denial prevention enabled (4 or 5 pages). Helper functions: getEdObservation (5-way conditional), getEdClosingQuote (5-way conditional).
+-   **Inpatient Value Driver Flow**: All six inpatient value drivers now flow end-to-end: Clinical Operations includes Rounding Efficiency (qualitative), Hospitalist Retention, CDI Capacity Extension, and Cost Reduction; Documentation Quality includes DRG Accuracy, Obs/IP Status Defense, and CDI Query Reduction. Time allocation labels removed from inpatient value driver cards (they implied a mathematical connection that doesn't exist).
 
 ## External Dependencies
 
