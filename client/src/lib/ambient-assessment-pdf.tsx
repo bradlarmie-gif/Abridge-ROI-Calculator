@@ -257,7 +257,6 @@ const pdfStyles = StyleSheet.create({
     fontWeight: 400,
     color: "rgba(255,255,255,0.65)",
     lineHeight: 1.6,
-    fontStyle: "italic",
   },
   coachLabel: {
     fontSize: 8,
@@ -442,7 +441,7 @@ function MaturityPositionPage({ data }: { data: AmbientAssessmentPDFData }) {
                     {score} / 25
                   </Text>
                 </View>
-                <Text style={{ fontSize: 9, fontWeight: 400, color: "#888888", marginBottom: 5, fontStyle: "italic" }}>
+                <Text style={{ fontSize: 9, fontWeight: 400, color: "#888888", marginBottom: 5 }}>
                   {`Level ${level} \u2014 ${label}`}
                 </Text>
                 <View style={{ height: 4, backgroundColor: "#E5E0D9", borderRadius: 2, width: "100%" }}>
@@ -789,7 +788,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
                 <Text style={{ fontSize: 9, fontWeight: 800, color: "#FFFFFF" }}>{level}</Text>
               </View>
               <Text style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{name}</Text>
-              <Text style={{ fontSize: 9, fontWeight: 400, color: "#888888", fontStyle: "italic" }}>
+              <Text style={{ fontSize: 9, fontWeight: 400, color: "#888888" }}>
                 {label}
               </Text>
             </View>
@@ -804,7 +803,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
               </View>
             ) : (
               <View style={{ paddingLeft: 26 }}>
-                <Text style={{ fontSize: 9.5, fontWeight: 400, color: "#888888", lineHeight: 1.55, fontStyle: "italic" }}>
+                <Text style={{ fontSize: 9.5, fontWeight: 400, color: "#888888", lineHeight: 1.55 }}>
                   Leading practice achieved. Focus on governance and sustainability.
                 </Text>
               </View>
