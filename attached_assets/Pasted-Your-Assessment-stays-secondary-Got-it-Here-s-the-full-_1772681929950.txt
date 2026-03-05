@@ -1,0 +1,183 @@
+Your Assessment" stays secondary. Got it.
+Here's the full Replit prompt:
+REPLIT PROMPT — Step 5 Strategic Next Steps Redesign
+Find the component function c4t in the source. Locate it by searching for the string "WHERE TO FOCUS FIRST". This is the Strategic Next Steps page. Make the following changes exactly as specified. Do not touch any scoring logic, routing, state management, right panel data, or the hero score display.
+CHANGE 1 — Hero block: replace the narrative sentence
+The hero is bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-10 md:py-12 mb-10.
+FIND (the narrative <p> with class text-sm text-white/50 leading-relaxed max-w-[500px] mx-auto):
+"Your organization is beginning to measure ambient ROI but significant opportunity remains."
+REPLACE WITH — this copy should be dynamically generated based on domain levels. Add a helper function directly above the return statement in c4t that produces this string:
+jsfunction getHeroNarrative(domainLevels) {
+  const { capacity, workforce, quality, revenue } = domainLevels;
+  const atCeiling = [capacity, workforce, quality, revenue].filter(l => l === 4).length;
+  if (atCeiling === 4) return "You're operating at full maturity across all four domains. The opportunity now is sustaining and deepening.";
+  if (atCeiling >= 2) return "You've reached leading maturity in several domains. The remaining gaps are where your next unlock lives.";
+  if (revenue === 4) return "Your revenue documentation is mature. Capacity, Workforce, and Quality are where the next level of value gets built.";
+  return "Your deployment is established. What follows is the specific path to making it work at full strategic scale.";
+}
+```
+Use this function to render the narrative `<p>` dynamically instead of the hardcoded string.
+**Also:** Remove the maturity band progress bar and band labels (`Early deployment / Measured / Strategically managed / Best in class`) from the hero entirely. The score number and measured value are enough. The band labels were meaningful on Step 3 — here they're clutter. Remove the `<div>` containing the progress bar (`w-full h-2 bg-white/10 rounded-full overflow-hidden relative`) and its label row (`flex justify-between mt-2`).
+---
+**CHANGE 2 — Remove "YOUR ASSESSMENT AT A GLANCE" from the left column**
+Delete the entire `<div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8">` block that contains `"YOUR ASSESSMENT AT A GLANCE"`, `"DOMAIN PERFORMANCE"`, the four domain score rows, the `Total Score / Measured Value` table, and `"BASELINE INPUTS"`.
+This information already lives in the right panel. Removing it from the left column makes the page tighter and lets the roadmap + CTA breathe.
+---
+**CHANGE 3 — Rename and reframe "WHERE TO FOCUS FIRST"**
+FIND section label:
+```
+"WHERE TO FOCUS FIRST"
+```
+REPLACE WITH:
+```
+"YOUR ROADMAP TO FULL SCALE"
+```
+FIND subheading `<p>` with class `text-sm text-[#888888] leading-relaxed mb-6`:
+```
+"Ranked by opportunity. Start with what moves the needle most."
+```
+REPLACE WITH:
+```
+"Each domain has a defined next level. Here's what unlocking it looks like — and what it makes possible."
+
+CHANGE 4 — Redesign domain items into roadmap cards
+Currently each domain is a <div className="py-4"> with three <p> tags (label, headline, description) separated by <div className="h-px bg-[#E5E7EB]/50"> dividers.
+Replace this structure with a new card component for each domain. The cards should use the following design:
+jsx<div className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60">
+  {/* Domain label + level badge */}
+  <div className="flex items-center justify-between mb-3">
+    <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
+      {domainName}
+    </p>
+    <span className="text-[11px] font-medium text-[#888888] bg-[#F5F0EB] rounded-full px-2.5 py-0.5">
+      Level {currentLevel} of 4
+    </span>
+  </div>
+  {/* Current state — one line */}
+  <p className="text-sm font-semibold text-black leading-snug mb-2">
+    {currentStateLabel}
+  </p>
+  {/* Next level unlock block — only if not at Level 4 */}
+  {currentLevel < 4 && (
+    <div className="border-l-2 border-[#EA2C00] pl-3 mt-3">
+      <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1">
+        Next level unlocks
+      </p>
+      <p className="text-sm text-[#444444] leading-relaxed">
+        {nextLevelUnlock}
+      </p>
+    </div>
+  )}
+  {/* Level 4 acknowledgment */}
+  {currentLevel === 4 && (
+    <p className="text-sm text-[#888888] leading-relaxed italic mt-1">
+      Leading practice. Continue deepening integration and governance.
+    </p>
+  )}
+</div>
+```
+**Card content — render domains in this fixed strategic order:** Capacity → Workforce → Quality → Revenue.
+Use the following content for each card. This content is **static copy tied to level** — use a lookup based on the domain's current level:
+**CAPACITY:**
+- Current state label (Level 1): `"Time is being recovered. The total hasn't been quantified yet."`
+- Next level unlocks: `"A full accounting of hours recovered across your deployment — the number that anchors every downstream conversation about what to do with that time."`
+- Current state label (Level 2): `"Recovery is quantified. Leadership hasn't formally decided how to use it."`
+- Next level unlocks: `"A documented redeployment strategy — whether that's access expansion, administrative offload, or revenue-generating visits — that turns recovered hours into a planned organizational outcome."`
+- Current state label (Level 3): `"A redeployment plan is in place. Optimization is the next frontier."`
+- Next level unlocks: `"Continuous monitoring of recovered capacity and redeployment efficiency — so the value stays captured, not just planned."`
+- Current state label (Level 4): `"Capacity recovery is fully operationalized across the deployment."`
+**WORKFORCE:**
+- Current state label (Level 1): `"Providers report feeling less burdened. That signal hasn't been formally measured."`
+- Next level unlocks: `"Structured measurement of in-clinic and after-hours time savings — turning anecdotal relief into an organizational data point that supports retention decisions and provider contracts."`
+- Current state label (Level 2): `"Burden reduction is measured. The data isn't yet integrated into operational decisions."`
+- Next level unlocks: `"Workforce data wired into operational planning — informing scheduling, staffing ratios, and provider engagement in a way that's defensible to leadership and HR."`
+- Current state label (Level 3): `"Burden reduction data is informing operational decisions. Retention linkage is the next step."`
+- Next level unlocks: `"A direct connection between documentation burden reduction and retention outcomes — giving your organization a measurable ROI story on provider experience investment."`
+- Current state label (Level 4): `"Provider experience data is fully integrated into workforce strategy."`
+**QUALITY:**
+- Current state label (Level 1): `"Documentation is being captured. Quality dimensions aren't yet tracked."`
+- Next level unlocks: `"Visibility into documentation completeness, specificity, and accuracy at scale — the foundation that CDI, coding, and compliance workflows all depend on."`
+- Current state label (Level 2): `"Documentation quality is being monitored. It isn't yet connected to the workflows that depend on it."`
+- Next level unlocks: `"Quality data wired into CDI workflows, coding accuracy, and prior auth — so that documentation intelligence becomes an active input to revenue cycle and compliance operations, not just a report."`
+- Current state label (Level 3): `"Documentation quality is actively improving revenue and compliance workflows."`
+- Next level unlocks: `"Documentation infrastructure positioned for value-based care — where quality data supports risk adjustment, population health reporting, and payer negotiations."`
+- Current state label (Level 4): `"Documentation quality is a managed strategic asset across clinical and operational workflows."`
+**REVENUE:**
+- Current state label (Level 1): `"Coding accuracy and specificity aren't yet tracked at the encounter level."`
+- Next level unlocks: `"Visibility into wRVU accuracy and documentation specificity gaps — the starting point for understanding what revenue integrity looks like at your scale."`
+- Current state label (Level 2): `"Revenue gaps are visible. Systematic correction isn't in place yet."`
+- Next level unlocks: `"A closed-loop process that connects documentation quality to coding correction — so that specificity gaps get fixed before they become denials or underpayments."`
+- Current state label (Level 3): `"Revenue cycle operations are receiving documentation quality as a managed input."`
+- Next level unlocks: `"Documentation governance tied to payer strategy — where your coding accuracy data directly informs contract negotiations and prior auth workflows."`
+- Current state label (Level 4): `"Documentation quality is a fully governed revenue cycle input."`
+---
+**CHANGE 5 — Redesign the CTA block**
+FIND section label:
+```
+"NEXT STEP"
+```
+REPLACE WITH:
+```
+"THE CONVERSATION WORTH HAVING"
+```
+FIND headline `<h2>` or `<p>` with class `text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] mb-4`:
+```
+"WOULD YOU LIKE TO EXPLORE WHAT DOCUMENTATION INTELLIGENCE LOOKS LIKE AT YOUR SCALE?"
+```
+REPLACE WITH:
+```
+"LET'S WALK THROUGH YOUR ROADMAP TOGETHER."
+```
+FIND subheading `<p>` with class `text-sm text-[#888888] leading-relaxed mb-6`:
+```
+"This is not a product demonstration. It is a strategic working session where we walk through your organization's specific opportunities across each domain and build a roadmap together."
+```
+REPLACE WITH:
+```
+"Bring this assessment to a working session with Abridge. We'll walk each domain's next level against your operational realities — and map a sequenced plan that fits where you actually are."
+```
+FIND the button text:
+```
+"Explore Value with Abridge"
+```
+REPLACE WITH:
+```
+"Explore Value with Abridge →"
+(Keep the existing button classes and behavior exactly as-is.)
+Change the layout of the two buttons. Currently they are flex flex-col sm:flex-row items-stretch sm:items-center gap-3 — both rendered as equal-weight buttons side by side.
+Change to a stacked vertical layout:
+jsx<div className="flex flex-col items-start gap-3">
+  {/* Primary — keep all existing classes */}
+  <button className="...existing primary classes...">
+    Explore Value with Abridge →
+  </button>
+  {/* Secondary — demote to a text link, not a button */}
+  <button 
+    className="text-sm text-[#888888] underline underline-offset-2 hover:text-black transition-colors bg-transparent border-none cursor-pointer"
+    onClick={...existing download handler...}
+  >
+    Download Your Assessment
+  </button>
+</div>
+```
+---
+**CHANGE 6 — Nav label**
+If the step label "Strategic Next Steps" is editable as a string in the router or component config:
+FIND:
+```
+"Strategic Next Steps"
+```
+REPLACE WITH:
+```
+"Your Roadmap"
+
+DO NOT TOUCH:
+
+The hero score number, /100, and MEASURED VALUE display
+The YOUR SCORE and MEASURED VALUE labels
+The bg-[#1A1A1A] rounded-xl hero container
+The right panel (ASSESSMENT SUMMARY, DOMAIN SCORES, YOUR INPUTS, completion date) — leave it exactly as-is
+Any scoring functions, domain level calculations, or state
+The footer legal disclaimer text
+Routing, navigation, or Back button behavior
+Fonts (font-abridge, font-sans), brand color #EA2C00, beige bg-[#F5F0EB]
