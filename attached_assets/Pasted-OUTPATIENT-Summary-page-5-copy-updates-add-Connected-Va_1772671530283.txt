@@ -1,0 +1,46 @@
+OUTPATIENT — Summary page: 5 copy updates + add Connected Value section
+CHANGE 1: Section title
+Change "Where the Value Comes From" → "How Your Numbers Were Built"
+Change subtitle "Abridge creates value through two mechanisms—each with its own drivers and 
+assumptions." → "Each value driver uses your inputs — not industry averages — to calculate 
+a defensible return."
+CHANGE 2: Left card header + subtitle
+Change card header "TIME BACK" → "EFFICIENCY VALUE"
+Change card subtitle "Documentation consumes 1-2 hours per clinician daily. Abridge eliminates 
+most of this burden." → "Time saved on documentation is redirected to patient access, cost 
+reduction, and clinician sustainability."
+CHANGE 3: Right card (Documentation Quality) — add sub-labels
+Under "HCC Capture" line item, add sub-label:
+"([maPercent]% MA mix · typical recapture rate)"
+where [maPercent] is dynamically pulled from the user's maPercent input (default 20%).
+Under "Denial Prevention" line item, add sub-label:
+"([denialRate]% denial rate · [denialsScenario] prevention)"
+where [denialRate] and [denialsScenario] are dynamically pulled from user inputs.
+Under "wRVU Improvement" line item, the existing sub-label "(5% lift)" is fine — no change needed.
+CHANGE 4: Add disclaimer line at bottom of Documentation Quality card
+Below the three line items, before the card ends, add in italic gray:
+"All documentation quality figures include conservative realization rates."
+CHANGE 5: Add Connected Value section
+Insert this section AFTER the two-card section and BEFORE "The Expansion Opportunity":
+Header icon: chain/link icon (same as nursing Connected Value)
+Header text: "CONNECTED VALUE"
+Subtitle: "Outpatient documentation creates downstream value across the organization"
+Body copy: "Complete outpatient documentation doesn't stop at the visit. What's captured in 
+the encounter ripples forward — into specialist context, risk adjustment programs, and 
+prior authorization efficiency."
+Two side-by-side sub-cards:
+Left card:
+  Title: "Specialist Referrals"
+  Body: "When primary care documentation is complete, specialists receive full clinical 
+  context — fewer repeat tests, faster diagnoses, and better care continuity for shared patients."
+Right card:
+  Title: "Prior Auth Efficiency"  
+  Body: "Complete real-time documentation reduces prior authorization denials and the 
+  back-and-forth that consumes staff time — particularly for complex or high-cost procedures."
+Dark bottom card (same style as nursing no-double-counting card):
+  "HCC value from your MA population is already quantified above. Specialist referral quality 
+  and prior auth efficiency are not double-counted — they require your organization's data to 
+  size precisely."
+Do NOT change any calculation logic, default values, math, or any other care setting.
+Do NOT change the nursing, ED, or inpatient summary pages.
+All dollar figures in the summary must remain fully dynamic.
