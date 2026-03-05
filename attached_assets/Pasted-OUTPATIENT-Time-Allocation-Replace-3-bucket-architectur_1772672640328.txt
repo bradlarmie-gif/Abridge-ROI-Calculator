@@ -1,0 +1,77 @@
+OUTPATIENT — Time Allocation: Replace 3-bucket architecture with new outpatient-specific buckets
+CONTEXT: The current Time Allocation step has three buckets: "See more patients" (40%), 
+"Reduce locums & overtime" (25%), "Clinician wellbeing" (35%). Remove "Reduce locums & 
+overtime" entirely and replace with a new 3-bucket structure as follows.
+─────────────────────────────────────
+CHANGE 1: New bucket structure and defaults
+─────────────────────────────────────
+Replace the three buckets with:
+Bucket 1: "Patient Capacity"     default: 25%   state key: opAllocCapacityPercent
+  Description: "Time converted to additional patient visits and reduced scheduling gaps"
+  Color: red (same as current primary bucket)
+Bucket 2: "Documentation Quality Time"   default: 15%   state key: opAllocDocQualityPercent
+  Description: "Time that enables more complete, thorough documentation — the foundation 
+  of the revenue drivers in the next step"
+  Color: salmon/light red (middle bucket color)
+  NOTE: This bucket produces NO dollar calculation. It is a conceptual bridge only.
+  On the Value Drivers step, this bucket is NOT shown as a toggle/driver — it simply
+  appears in the sidebar time breakdown. Its value is surfaced in the Documentation 
+  Quality step instead.
+Bucket 3: "Clinician Sustainability"   default: 60%   state key: opAllocWellbeingPercent
+  Description: "Breathing room that reduces documentation burden, supports work-life 
+  balance, and protects retention"
+  Color: dark/black (same as current third bucket)
+All three must sum to 100%. The allocation bar and "X% of X%" counter must work correctly.
+The disclaimer at the bottom remains: 
+"Not all reclaimed time creates direct dollar value — some makes practice more sustainable. 
+That's real value too, just harder to count."
+─────────────────────────────────────
+CHANGE 2: Wire Patient Capacity into Patient Access calculation
+─────────────────────────────────────
+The Patient Access calculation currently uses:
+  hoursForVisits = totalHours × capacityPercent (the 0–50% conversion slider)
+Change it to:
+  hoursAllocatedToCapacity = totalHours × (opAllocCapacityPercent / 100)
+  hoursConvertedToVisits = hoursAllocatedToCapacity × (capacityPercent / 100)
+  additionalVisits = (hoursConvertedToVisits × 60) / visitDuration
+  patientAccessRevenue = additionalVisits × revenuePerVisit
+The display row on the Patient Access driver must update to show:
+  "Capacity allocation (from your time split): [opAllocCapacityPercent]%  Edit"
+─────────────────────────────────────
+CHANGE 3: Wire Clinician Sustainability into Wellbeing display
+─────────────────────────────────────
+The "hours per week per provider" display on the Clinician Wellbeing driver currently shows 
+total reclaimed time × 35% / providers / 52. Update to use opAllocWellbeingPercent (60%).
+Formula: (totalHours × (opAllocWellbeingPercent / 100)) / numberOfProviders / 52
+Display as: "X.X hours per week per provider"
+The display row on the Clinician Wellbeing driver must update to show:
+  "Wellbeing allocation (from your time split): [opAllocWellbeingPercent]%  Edit"
+─────────────────────────────────────
+CHANGE 4: Add Documentation Quality Time to sidebar breakdown on Value Drivers step
+─────────────────────────────────────
+On the Value Drivers step sidebar, add a "TIME ALLOCATION" section at the top 
+(same pattern as nursing) showing:
+  Total Saved:              [totalHours] hrs
+  ● Patient Capacity:       [hrs] hrs  ([opAllocCapacityPercent]%)
+  ● Doc Quality Time:       [hrs] hrs  ([opAllocDocQualityPercent]%)
+  ● Sustainability:         [hrs] hrs  ([opAllocWellbeingPercent]%)
+Where each row's hours = totalHours × allocation%.
+The Documentation Quality Time row should have a brief note beneath it:
+  "Surfaced in Documentation Quality step →"
+─────────────────────────────────────
+CHANGE 5: Remove Cost Reduction driver from Value Drivers step
+─────────────────────────────────────
+Remove the "Cost Reduction" toggle/driver from the outpatient Value Drivers step entirely.
+It was tied to the "Reduce locums & overtime" bucket which no longer exists.
+Remove it from the sidebar summary as well.
+If Cost Reduction is referenced anywhere in the outpatient summary page, remove those 
+references. Do NOT affect any other care setting's Cost Reduction drivers.
+─────────────────────────────────────
+DO NOT CHANGE:
+- The capacityPercent conversion slider (0–50%, default 10%) — it still appears 
+  on the Patient Access driver but now applies to the allocated hours, not total hours
+- Any retention/turnover defaults (6% turnover, 40% burnout, $400K replacement, 30% impact)
+- Any docQualityInputs (wRVU, HCC, Denials)
+- Any nursing, ED, or inpatient calculations or defaults
+- The three-bucket structure for nursing (completely separate)
+─────────────────────────────────────
