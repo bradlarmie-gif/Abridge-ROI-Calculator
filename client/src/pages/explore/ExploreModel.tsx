@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -1319,35 +1319,56 @@ export default function ExploreModel({
 
         {/* Outpatient-specific Connected Value section */}
         {isOutpatientSetting && (
-          <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#F5F0EB] flex items-center justify-center">
-                <Link className="w-5 h-5 text-[#EA2C00]" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                <p className="text-sm text-[#888888]">Outpatient documentation creates downstream value across the organization</p>
-              </div>
-            </div>
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+          >
             <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
+                  <Link className="w-5 h-5 text-[#EA2C00]" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
+                  <p className="text-sm text-[#888888] italic">Outpatient documentation creates downstream value across the organization</p>
+                </div>
+              </div>
+              
               <p className="text-sm text-[#666666] mb-5">
-                Complete outpatient documentation doesn't stop at the visit. What's captured in the encounter ripples forward — into specialist context, risk adjustment programs, and prior authorization efficiency.
+                Complete outpatient documentation doesn't stop at the visit. What's captured in the encounter ripples forward — into specialist context, downstream care settings, and organizational revenue.
               </p>
-              <div className="grid md:grid-cols-2 gap-4 mb-5">
+
+              <div className="space-y-3 mb-5">
                 <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <p className="font-semibold text-black mb-1">Specialist Referrals</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Specialist Referrals</span>
+                  </div>
                   <p className="text-sm text-[#666666]">When primary care documentation is complete, specialists receive full clinical context — fewer repeat tests, faster diagnoses, and better care continuity for shared patients.</p>
                 </div>
                 <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <p className="font-semibold text-black mb-1">Prior Auth Efficiency</p>
-                  <p className="text-sm text-[#666666]">Complete real-time documentation reduces prior authorization denials and the back-and-forth that consumes staff time — particularly for complex or high-cost procedures.</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Downstream Impact</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">Additional patient access in outpatient generates downstream revenue across the organization — from follow-up labs and imaging to ED diversion through better-managed chronic conditions and stronger inpatient transitions of care.</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Building2 className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Organizational Revenue</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">Every additional outpatient visit creates referral and ancillary revenue that flows through the health system — supporting ED volumes, inpatient admissions, and procedural throughput.</p>
                 </div>
               </div>
+              
               <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
                 <div className="flex items-start gap-3">
                   <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm opacity-90">HCC value from your MA population is already quantified above. Specialist referral quality and prior auth efficiency are not double-counted — they require your organization's data to size precisely.</p>
+                    <p className="text-sm opacity-90">HCC value from your MA population is already quantified above. Specialist referral quality and downstream organizational impact are not double-counted — they require your organization's data to size precisely.</p>
                   </div>
                 </div>
               </div>
@@ -1413,7 +1434,7 @@ export default function ExploreModel({
                 </div>
               </div>
               
-              <div className="bg-[#5B4FE9] rounded-xl p-4 text-white">
+              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
                 <div className="flex items-start gap-3">
                   <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <div>

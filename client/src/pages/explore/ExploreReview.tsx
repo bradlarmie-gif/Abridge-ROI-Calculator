@@ -394,7 +394,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
               </div>
             </div>
             
-            <div className="bg-[#5B4FE9] rounded-xl p-4 text-white">
+            <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
               <div className="flex items-start gap-3">
                 <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
@@ -453,10 +453,10 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
               </div>
             </div>
             
-            <div className="bg-[#EEF2FF] rounded-xl p-4 border border-[#C7D2FE]">
+            <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
               <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-[#5B4FE9] mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-[#3730A3]">
+                <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <p className="text-sm opacity-90">
                   <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation quality benefits below are amplified — 
                   you're building on a stronger foundation.
                 </p>
