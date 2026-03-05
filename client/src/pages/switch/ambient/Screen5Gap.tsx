@@ -307,11 +307,11 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         </p>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 Where You Stand Today
               </p>
@@ -371,16 +371,16 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
           {(hasMeasuredDomains || annualGap > 0) && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
-              <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-chart">
+              <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   36-Month Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
                   Value in motion: current path vs. full strategic deployment
                 </p>
-                <div className="h-[280px]">
+                <div className="h-[220px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <LineChart data={chartData} margin={{ top: 10, right: 5, left: 5, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                       <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
                       <YAxis
@@ -417,7 +417,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           )}
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-next-level">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-next-level">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 What Drives the Gap
               </p>
@@ -520,7 +520,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
             {hasMeasuredDomains ? (
               <>
-                <p className="font-bold text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
+                <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
                   {formatDollar(totalMeasured)}
                 </p>
                 <p className="text-xs text-white/40 mb-5">measured annually</p>
@@ -536,24 +536,24 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
             {hasMeasuredDomains && (
               <>
-                <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
                   <div>
-                    <p className="text-white font-bold text-lg leading-none" data-testid="value-monthly">
+                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-monthly">
                       ${displayedMonthly.toLocaleString()}
                     </p>
-                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
                   </div>
                   <div>
-                    <p className="text-white font-bold text-lg leading-none" data-testid="value-weekly">
+                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-weekly">
                       ${displayedWeekly.toLocaleString()}
                     </p>
-                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
+                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
                   </div>
                   <div>
-                    <p className="text-white font-bold text-lg leading-none" data-testid="value-daily">
+                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-daily">
                       ${displayedDaily.toLocaleString()}
                     </p>
-                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
                 </div>
               </>
@@ -564,7 +564,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
               With Strategic Action
             </p>
-            <p className="font-bold text-2xl text-white leading-none mb-1" data-testid="panel-strategic-value">
+            <p className="font-bold text-xl sm:text-2xl text-white leading-none mb-1" data-testid="panel-strategic-value">
               {formatDollar(strategicAnnual)}
             </p>
             <p className="text-xs text-white/40 mb-2">projected annually (low-end estimates)</p>

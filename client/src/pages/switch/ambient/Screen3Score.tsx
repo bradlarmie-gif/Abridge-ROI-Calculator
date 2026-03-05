@@ -175,7 +175,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         </p>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
           <motion.div
@@ -183,7 +183,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-buildup">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-buildup">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-buildup-label">
                 Score Breakdown
               </p>
@@ -206,18 +206,18 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                         onClick={onNavigateToDomain}
                         data-testid={`domain-row-${domain}`}
                       >
-                        <div className="w-[35%] text-left">
-                          <p className="font-semibold text-sm text-black leading-tight">
+                        <div className="w-[40%] sm:w-[35%] text-left">
+                          <p className="font-semibold text-xs sm:text-sm text-black leading-tight">
                             {DOMAIN_LABELS[domain]}
                           </p>
-                          <p className="text-xs text-[#888888] italic">
+                          <p className="text-[11px] sm:text-xs text-[#888888] italic">
                             → {ACTIVATION_LABELS[domain][level]}
                           </p>
                         </div>
-                        <div className="w-[45%]">
+                        <div className="hidden sm:block w-[45%]">
                           <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={5} />
                         </div>
-                        <p className="font-bold text-sm text-black w-[20%] text-right" data-testid={`domain-score-${domain}`}>
+                        <p className="font-bold text-sm text-black w-[60%] sm:w-[20%] text-right" data-testid={`domain-score-${domain}`}>
                           {domainScore} / 25
                         </p>
                       </button>
@@ -248,7 +248,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                     <AnimatedBar percent={(totalScore / 100) * 100} delay={1600} height={8} />
                   </div>
 
-                  <p className="font-bold text-2xl text-black min-w-[80px] text-right" data-testid="text-composite-score">
+                  <p className="font-bold text-xl sm:text-2xl text-black min-w-[60px] sm:min-w-[80px] text-right" data-testid="text-composite-score">
                     <AnimatedCounter target={totalScore} duration={800} delay={2000} /> / 100
                   </p>
                 </div>
@@ -261,7 +261,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.4, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-verdict">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-verdict">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 Assessment
               </p>
@@ -298,7 +298,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-[#F5F0EB] rounded-lg p-6 md:p-8 mb-8" data-testid="panel-methodology">
+                  <div className="bg-[#F5F0EB] rounded-lg p-4 sm:p-6 md:p-8 mb-8" data-testid="panel-methodology">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       How Points Are Awarded
                     </p>
@@ -403,7 +403,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             </p>
 
             <div className="text-center mb-2">
-              <span className="text-white font-bold text-[72px] leading-none" data-testid="hero-score">
+              <span className="text-white font-bold text-[52px] sm:text-[72px] leading-none" data-testid="hero-score">
                 <AnimatedCounter target={totalScore} duration={800} delay={2400} />
               </span>
               <p className="text-lg text-white/40 font-normal mt-1">/ 100</p>

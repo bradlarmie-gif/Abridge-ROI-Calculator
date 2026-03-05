@@ -290,7 +290,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
   return (
     <div>
       <motion.div
-        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-10 md:py-12 mb-10"
+        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-8 sm:py-10 md:py-12 mb-8 sm:mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -300,10 +300,10 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             Your Ambient AI Assessment
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-8">
             <div>
               <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
-              <p className="text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
+              <p className="text-[40px] sm:text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
                 {totalScore}
               </p>
               <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
@@ -315,7 +315,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
               {hasMeasuredDomains ? (
                 <>
-                  <p className="text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+                  <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
                     {formatDollar(displayedTotal)}
                   </p>
                   <p className="text-lg text-white/30 font-normal mt-1">annually</p>
@@ -334,7 +334,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         </div>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
           <motion.div
@@ -342,7 +342,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8" data-testid="card-roadmap">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-roadmap">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 Your Roadmap to Full Scale
               </p>
@@ -394,7 +394,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10" data-testid="card-invitation">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 The Conversation Worth Having
               </p>
@@ -446,7 +446,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             </p>
 
             <div className="flex items-end gap-3 mb-1">
-              <span className="text-white font-bold text-[48px] leading-none" data-testid="panel-score">
+              <span className="text-white font-bold text-[36px] sm:text-[48px] leading-none" data-testid="panel-score">
                 {totalScore}
               </span>
               <span className="text-white/30 text-lg mb-1">/ 100</span>
@@ -466,18 +466,18 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 </p>
                 <p className="text-xs text-white/40 mb-4">annually</p>
 
-                <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-5">
                   <div>
-                    <p className="text-white font-bold text-lg leading-none" data-testid="panel-monthly">
+                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="panel-monthly">
                       ${displayedMonthly.toLocaleString()}
                     </p>
-                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
                   </div>
                   <div>
-                    <p className="text-white font-bold text-lg leading-none" data-testid="panel-daily">
+                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="panel-daily">
                       ${displayedDaily.toLocaleString()}
                     </p>
-                    <p className="text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
                 </div>
               </>

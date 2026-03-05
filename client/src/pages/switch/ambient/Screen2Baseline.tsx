@@ -68,7 +68,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   }, [utilSet, utilization]);
 
   return (
-    <div className={`flex flex-col lg:flex-row gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
+    <div className={`flex flex-col lg:flex-row gap-6 lg:gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
       <motion.div
         className="flex-1 max-w-[700px]"
         variants={staggerContainer}
@@ -88,7 +88,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
         </motion.div>
 
         <motion.div variants={staggerItem}>
-          <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10">
+          <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-screen2-label">
               Your Deployment Profile
             </p>

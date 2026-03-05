@@ -103,7 +103,7 @@ export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
             transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <p
-              className="text-lg text-[#525252] leading-relaxed mb-10 max-w-[400px] mx-auto"
+              className="text-base sm:text-lg text-[#525252] leading-relaxed mb-8 sm:mb-10 max-w-[400px] mx-auto"
               data-testid="text-screen1-body"
             >
               Not what you paid for it.<br />
@@ -122,7 +122,7 @@ export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
                   key={pill.id}
                   type="button"
                   onClick={() => handleSelect(pill)}
-                  className={`text-sm px-6 py-3 rounded-full border transition-all cursor-pointer ${
+                  className={`text-sm px-4 sm:px-6 py-3 rounded-full border transition-all cursor-pointer ${
                     selected === pill.id
                       ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
                       : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"

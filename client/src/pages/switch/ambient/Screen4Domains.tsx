@@ -1478,7 +1478,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                               step={f.step}
                             />
                             {f.suffix && f.suffix !== '$' && <span className="text-xs text-[#888888] whitespace-nowrap">{f.suffix}</span>}
-                            <span className="text-xs text-[#888888] whitespace-nowrap min-w-[100px]">{f.label}</span>
+                            <span className="text-xs text-[#888888] whitespace-nowrap min-w-[80px] sm:min-w-[100px]">{f.label}</span>
                           </div>
                         ))}
                       </div>
@@ -1613,7 +1613,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   const renderImpactValue = (fb: DomainFeedback) => {
     if (fb.headlineMetric) {
       return (
-        <p className="font-bold text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
+        <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
           {fb.headlineMetric}
         </p>
       );
@@ -1627,13 +1627,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
     if (fb.value === 0) {
       return (
-        <p className="font-bold text-4xl text-white/50 leading-[1.1] mb-4" data-testid="text-feedback-value">
+        <p className="font-bold text-3xl sm:text-4xl text-white/50 leading-[1.1] mb-4" data-testid="text-feedback-value">
           $0
         </p>
       );
     }
     return (
-      <p className="font-bold text-4xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
+      <p className="font-bold text-3xl sm:text-4xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
         {formatDollar(fb.value || 0)}
       </p>
     );
@@ -1641,17 +1641,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
-      <div className="flex items-center justify-center gap-1.5 sm:gap-3 mb-10">
+      <div className="flex items-center justify-center gap-1 sm:gap-3 mb-8 sm:mb-10">
         {DOMAIN_ORDER.map((d, idx) => {
           const isActive = d === activeDomain;
           const isComplete = idx < activeIdx;
 
           return (
-            <div key={d} className="flex items-center gap-1.5 sm:gap-3">
-              <div className="flex flex-col items-center">
+            <div key={d} className="flex items-center gap-1 sm:gap-3">
+              <div className="flex flex-col items-center min-w-0">
                 <button
                   onClick={() => setActiveDomain(d)}
-                  className={`text-[12px] sm:text-xs font-medium uppercase tracking-[1px] sm:tracking-[1.5px] mb-2 px-1 py-1 ${
+                  className={`text-[10px] sm:text-xs font-medium uppercase tracking-[0.5px] sm:tracking-[1.5px] mb-2 px-0.5 sm:px-1 py-1 whitespace-nowrap ${
                     isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888] cursor-not-allowed'
                   }`}
                   data-testid={`domain-label-${d}`}
@@ -1676,7 +1676,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 )}
               </div>
               {idx < DOMAIN_ORDER.length - 1 && (
-                <div className="w-4 sm:w-8 h-px bg-[#D1D5DB] mt-5" />
+                <div className="w-3 sm:w-8 h-px bg-[#D1D5DB] mt-5" />
               )}
             </div>
           );
@@ -1721,7 +1721,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </span>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
@@ -1752,7 +1752,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                           <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-[#AAAAAA]'}`}>{lvl}</span>
                         )}
                       </div>
-                      <span className={`text-[10px] text-center mt-1 ${isUpcoming ? 'text-[#AAAAAA]' : 'text-[#1A1A1A]'}`}>
+                      <span className={`text-[9px] sm:text-[10px] text-center mt-1 leading-tight ${isUpcoming ? 'text-[#AAAAAA]' : 'text-[#1A1A1A]'}`}>
                         {nodeLabels[lvl]}
                       </span>
                     </div>
