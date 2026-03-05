@@ -22,7 +22,7 @@ const STEP_NAMES = [
   "Four Lenses",
   "The Reveal",
   "Your Trajectory",
-  "Strategic Next Steps",
+  "Your Roadmap",
 ];
 
 export default function AmbientNarrativeFlow({
