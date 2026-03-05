@@ -1166,8 +1166,8 @@ export default function ProformaView({
                     })}
                     <td className="text-right py-2 px-4 text-xs text-neutral-500">
                       {(() => {
-                        const last = yearlyData[yearlyData.length - 1];
-                        return last ? fmtNum(settings.reduce((sum, s) => sum + (last.bySettings[s.id]?.providers || 0), 0)) : "—";
+                        const finalMonth = cashFlows[cashFlows.length - 1];
+                        return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.providers || 0), 0)) : "—";
                       })()}
                     </td>
                   </tr>
@@ -1379,7 +1379,7 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
               <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
-              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}.</p>
+              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end. Year 1 at 20% means retention builds from 0% to 20% over the course of the year, not 20% from day one. This reflects the reality that retention improvements compound over time as documentation burden decreases and clinician satisfaction improves.</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis varying only value realization rate. Conservative models 70% realization (not all drivers materialize fully). Optimistic models 130% realization (better-than-expected outcomes). Subscription cost is held constant across all scenarios — it's contractual. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
