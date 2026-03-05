@@ -96,6 +96,7 @@ export default function ExploreModel({
 
   const isED = state.careSetting === 'ed';
   const isNursing = state.careSetting === 'nursing';
+  const isOutpatientSetting = state.careSetting === 'outpatient';
 
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
@@ -688,8 +689,8 @@ export default function ExploreModel({
   // Care setting-specific driver labels
   const driverLabels = {
     outpatient: {
-      timeCardTitle: 'Time Back',
-      timeCardDescription: 'Documentation consumes 1-2 hours per clinician daily. Abridge eliminates most of this burden.',
+      timeCardTitle: 'Efficiency Value',
+      timeCardDescription: 'Time saved on documentation is redirected to patient access, cost reduction, and clinician sustainability.',
       driver1: 'Patient Access',
       driver2: 'Cost Reduction',
       driver3: 'Clinician Wellbeing',
@@ -1077,9 +1078,9 @@ export default function ExploreModel({
           transition={{ delay: 0.1 }}
         >
           <p className="text-center text-xl font-bold text-black mb-2">
-            {isNursing ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
+            {(isNursing || isOutpatientSetting) ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
           </p>
-          {isNursing ? (
+          {(isNursing || isOutpatientSetting) ? (
             <p className="text-center text-base text-[#888888] mb-6">
               Each value driver uses your inputs — not industry averages — to calculate a defensible return.
             </p>
@@ -1296,21 +1297,75 @@ export default function ExploreModel({
                       <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
                     )}
                     {labels.showHCC && (
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.docDriver2}</span>
-                      <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
-                    </div>
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">• {labels.docDriver2}</span>
+                          <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
+                        </div>
+                        {docQualityInputs.hccEnabled && (
+                          <p className="text-xs text-[#888888] pl-4">({docQualityInputs.maPercent}% MA mix · typical recapture rate)</p>
+                        )}
+                      </>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver3}</span>
                       <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
                     </div>
+                    {docQualityInputs.denialsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.denialRate}% denial rate · {docQualityInputs.denialsScenario} prevention)</p>
+                    )}
+                    {isOutpatientSetting && (
+                      <>
+                        <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
+                        <p className="text-xs text-[#888888] italic">
+                          All documentation quality figures include conservative realization rates.
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
               </div>
             </div>
           </div>
         </motion.div>
+
+        {/* Outpatient-specific Connected Value section */}
+        {isOutpatientSetting && (
+          <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#F5F0EB] flex items-center justify-center">
+                <Link className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
+                <p className="text-sm text-[#888888]">Outpatient documentation creates downstream value across the organization</p>
+              </div>
+            </div>
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
+              <p className="text-sm text-[#666666] mb-5">
+                Complete outpatient documentation doesn't stop at the visit. What's captured in the encounter ripples forward — into specialist context, risk adjustment programs, and prior authorization efficiency.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 mb-5">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <p className="font-semibold text-black mb-1">Specialist Referrals</p>
+                  <p className="text-sm text-[#666666]">When primary care documentation is complete, specialists receive full clinical context — fewer repeat tests, faster diagnoses, and better care continuity for shared patients.</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <p className="font-semibold text-black mb-1">Prior Auth Efficiency</p>
+                  <p className="text-sm text-[#666666]">Complete real-time documentation reduces prior authorization denials and the back-and-forth that consumes staff time — particularly for complex or high-cost procedures.</p>
+                </div>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm opacity-90">HCC value from your MA population is already quantified above. Specialist referral quality and prior auth efficiency are not double-counted — they require your organization's data to size precisely.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* ED-specific Downstream Value narrative section */}
         {state.careSetting === 'ed' && (
