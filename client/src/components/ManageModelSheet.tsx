@@ -169,7 +169,7 @@ const DRIVER_INPUT_CONFIGS: Record<string, DriverInputConfig[]> = {
   edThroughput: [
     { key: "lwbsRate", label: "Current LWBS rate (%)", defaultValue: 4, type: "percent", min: 0, max: 15 },
     { key: "improvementRate", label: "Improvement rate (%)", defaultValue: 25, type: "percent", min: 0, max: 50 },
-    { key: "abridgeAttributionPercent", label: "Abridge attribution (%)", defaultValue: 50, type: "percent", min: 0, max: 100 },
+    { key: "abridgeAttributionPercent", label: "Abridge attribution (%)", defaultValue: 33, type: "percent", min: 0, max: 100 },
     { key: "avgEdVisitRevenue", label: "Avg ED visit revenue ($)", defaultValue: 350, type: "currency", min: 100, max: 800 },
     { key: "includeAdmissions", label: "Include admissions?", defaultValue: true, type: "boolean" },
     { key: "admissionPercent", label: "Admission rate (%)", defaultValue: 20, type: "percent", min: 0, max: 50 },

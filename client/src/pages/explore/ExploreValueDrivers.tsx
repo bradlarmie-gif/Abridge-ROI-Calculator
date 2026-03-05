@@ -536,8 +536,22 @@ export default function ExploreValueDrivers({
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       
                       <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= Patients retained</span>
+                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100) * (timeDriverInputs.edLwbsReduction / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <div>
+                          <span className="text-[#666666]">× Throughput attribution</span>
+                          <p className="text-xs text-[#888888]">(from your time allocation)</p>
+                        </div>
+                        <span className="font-semibold text-black flex-shrink-0">{(timeDriverInputs.edAllocThroughputPercent * 0.5).toFixed(1)}%</span>
+                      </div>
+                      
+                      <div className="h-px bg-[#E5E5E5] my-2" />
+                      
+                      <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Patients recovered</span>
-                        <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(edRecoveredPatients))}</span>
+                        <span className="font-semibold text-black flex-shrink-0">{edRecoveredPatients.toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× Revenue per visit</span>
@@ -1073,7 +1087,7 @@ export default function ExploreValueDrivers({
                           
                           <div className="flex justify-between gap-2">
                             <span className="text-[#666666]">= Potential admissions</span>
-                            <span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100)))}</span>
+                            <span className="font-semibold text-black">{(edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100)).toFixed(1)}</span>
                           </div>
                           
                           <div className="flex justify-between items-center gap-2">

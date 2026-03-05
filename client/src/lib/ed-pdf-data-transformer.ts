@@ -64,7 +64,7 @@ function calculateIntermediateValues(
       const annualEdVisits = (inputs.annualEdVisits as number) || eligibleEncounters;
       const lwbsRate = (inputs.lwbsRate as number) || 4;
       const improvementRate = (inputs.improvementRate as number) || 50;
-      const abridgeAttributionPercent = (inputs.abridgeAttributionPercent as number) || 100;
+      const abridgeAttributionPercent = (inputs.abridgeAttributionPercent as number) || 33;
       const avgEdVisitRevenue = (inputs.avgEdVisitRevenue as number) || (inputs.avgEdRevenue as number) || 350;
       const includeAdmissions = inputs.includeAdmissions as boolean || false;
       const admissionPercent = (inputs.admissionPercent as number) || 15;
