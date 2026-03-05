@@ -46,19 +46,20 @@ export default function ExploreInvestment({
 
   const nursingCareQualityPotential = useMemo(() => {
     if (!isNursing) return 0;
-    const { docQualityInputs } = state;
+    const { docQualityInputs, timeDriverInputs } = state;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const careTimeFactor = timeDriverInputs.nursingCareTimePercent / 100;
     let total = 0;
     if (docQualityInputs.nursingHapiEnabled) {
       const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * careTimeFactor * docQualityInputs.nursingHapiCost;
     }
     if (docQualityInputs.nursingFallsEnabled) {
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
+      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * careTimeFactor * docQualityInputs.nursingFallsCost;
     }
     return Math.round(total);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, state.timeDriverInputs]);
 
   const valuePerBed = state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
   const investmentPerBed = state.nursingStaffedBeds > 0 ? Math.round(annualInvestment / state.nursingStaffedBeds) : 0;
