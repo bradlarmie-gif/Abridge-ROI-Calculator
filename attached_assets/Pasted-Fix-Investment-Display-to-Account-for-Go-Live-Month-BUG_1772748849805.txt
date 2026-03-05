@@ -1,0 +1,27 @@
+Fix Investment Display to Account for Go-Live Month
+BUG (High): Per-Card Annual Investment Display Ignores Go-Live Month
+When a care setting has a Go-Live month other than Month 1, the Annual Investment display on the individual care setting pricing card shows a full 12-month investment for Year 1, even though the deployment doesn't start until later in the year.
+Example — ED with Go-Live Month 6, $200/provider/month, 30 providers:
+
+Card displays Y1: $72,000 (30 × $200 × 12 = full year)
+Financial Summary correctly calculates Y1: $42,000 (30 × $200 × 7 months)
+These don't match — user sees $72K on the card but $166K total in the summary (which uses the prorated $42K)
+Example — Inpatient with Go-Live Month 12, $200/provider/month, 20 providers:
+Card displays Y1: $48,000 (20 × $200 × 12 = full year)
+Financial Summary correctly calculates Y1: $4,000 (20 × $200 × 1 month)
+User sees $48K on card but summary uses $4K
+The problem: The per-card Annual Investment for Y1 does not prorate based on Go-Live month, but the Financial Summary does. Users will try to add up the individual card investments and compare to the Financial Summary total. When they don't match ($240K summed from cards vs $166K in summary), it erodes trust in the model.
+The fix: The per-card Annual Investment Year 1 display should show the prorated amount based on Go-Live month:
+
+Y1_investment = providers × price_per_month × (13 - go_live_month)
+So for ED with Go-Live Month 6: 30 × $200 × (13 - 6) = 30 × $200 × 7 = $42,000
+For Inpatient with Go-Live Month 12: 20 × $200 × (13 - 12) = 20 × $200 × 1 = $4,000
+Year 2 and Year 3 investments are always full-year (12 months × providers × price) since the deployment is active for the entire year. Those are already correct.
+After this fix, verify that:
+
+Per-card Y1 investment sums match the Financial Summary Y1 Investment row
+Per-card Y2 and Y3 investments still show full-year amounts (no change needed)
+IRR, payback, and Value-to-Cost calculations use the prorated amounts (they already do based on the Financial Summary — just make sure the card display matches)
+If Go-Live is Month 1, behavior is unchanged (13 - 1 = 12 months = full year)
+
+DO NOT change the Financial Summary calculations — they are already correctly prorating. Only fix the per-card Annual Investment display to match.
