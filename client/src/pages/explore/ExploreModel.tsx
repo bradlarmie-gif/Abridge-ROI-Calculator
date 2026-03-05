@@ -76,13 +76,15 @@ export default function ExploreModel({
     return Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);
   }, [totalHoursSaved, timeDriverInputs, isOutpatientSetting]);
 
-  const costReductionValue = (!isOutpatientSetting && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
+  const isED = state.careSetting === 'ed';
+  const costReductionValue = (!isOutpatientSetting && !isED && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
 
   // ED-specific value calculations
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
+    const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
+    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
+  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction, timeDriverInputs.edAllocThroughputPercent]);
 
   const edLwbsValue = useMemo(() => {
     if (!timeDriverInputs.edLwbsEnabled) return 0;
@@ -98,7 +100,6 @@ export default function ExploreModel({
     return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
   }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
 
-  const isED = state.careSetting === 'ed';
   const isNursing = state.careSetting === 'nursing';
 
   // Doc value breakdown
@@ -179,7 +180,9 @@ export default function ExploreModel({
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
         ? (totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100) / state.numberOfProviders / 52)
-        : (totalHoursSaved / state.numberOfProviders / 48)
+        : isED
+          ? (totalHoursSaved * (timeDriverInputs.edAllocWellbeingPercent / 100) / state.numberOfProviders / 48)
+          : (totalHoursSaved / state.numberOfProviders / 48)
       ).toFixed(1)
     : '0';
 
@@ -489,20 +492,15 @@ export default function ExploreModel({
       } else if (state.careSetting === 'ed') {
         if (timeDriverInputs.edLwbsEnabled && (edLwbsValue > 0 || edAdmissionCaptureValue > 0)) {
           const combined = edLwbsValue + edAdmissionCaptureValue;
+          const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
           drivers.push({
             id: 'edThroughput', name: 'Patient Throughput (LWBS)', value: combined, category: 'time',
             calcSteps: [
-              `${state.annualEncounters.toLocaleString()} enc \u00D7 ${timeDriverInputs.edLwbsRate}% LWBS \u00D7 ${timeDriverInputs.edLwbsReduction}% reduction`,
+              `${state.annualEncounters.toLocaleString()} enc \u00D7 ${timeDriverInputs.edLwbsRate}% LWBS \u00D7 ${timeDriverInputs.edLwbsReduction}% reduction \u00D7 ${(throughputFactor * 100).toFixed(1)}% throughput factor`,
               `${Math.round(edRecoveredPatients).toLocaleString()} recovered \u00D7 $${timeDriverInputs.edRevenuePerVisit}/visit`,
               `LWBS: ${fmtK(edLwbsValue)} + Admissions: ${fmtK(edAdmissionCaptureValue)} = ${fmtK(combined)}/year`,
             ],
             inputs: { realizationRate: timeDriverInputs.edLwbsRealization },
-          });
-        }
-        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
-          drivers.push({
-            id: 'edCostReduction', name: 'Cost Reduction', value: costReductionValue, category: 'time',
-            calcSteps: [`Estimated annual cost reduction: ${fmtK(costReductionValue)}/year`],
           });
         }
         if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0) {
@@ -704,8 +702,8 @@ export default function ExploreModel({
       showHCC: true,
     },
     ed: {
-      timeCardTitle: 'Time Back',
-      timeCardDescription: 'Faster documentation means shorter door-to-doc times and reduced LWBS rates.',
+      timeCardTitle: 'Throughput Value',
+      timeCardDescription: 'Faster documentation means shorter door-to-doc times, reduced LWBS rates, and shift sustainability.',
       driver1: 'LWBS Recovery',
       driver2: 'Admission Capture',
       driver3: 'Clinician Wellbeing',
@@ -1080,9 +1078,9 @@ export default function ExploreModel({
           transition={{ delay: 0.1 }}
         >
           <p className="text-center text-xl font-bold text-black mb-2">
-            {(isNursing || isOutpatientSetting) ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
+            {(isNursing || isOutpatientSetting || isED) ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
           </p>
-          {(isNursing || isOutpatientSetting) ? (
+          {(isNursing || isOutpatientSetting || isED) ? (
             <p className="text-center text-base text-[#888888] mb-6">
               Each value driver uses your inputs — not industry averages — to calculate a defensible return.
             </p>
@@ -1141,7 +1139,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.edLwbsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edLwbsReduction}% LWBS reduction)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAllocThroughputPercent}% allocated · 50% throughput factor)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
@@ -1149,14 +1147,6 @@ export default function ExploreModel({
                     </div>
                     {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
-                    )}
-                    {timeDriverInputs.costReductionEnabled && costReductionValue > 0 && (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-[#666666]">• Cost Reduction</span>
-                          <span className="font-semibold text-black">{formatCurrency(costReductionValue)}</span>
-                        </div>
-                      </>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver3}</span>

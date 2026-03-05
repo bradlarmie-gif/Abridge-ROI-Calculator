@@ -105,7 +105,7 @@ export interface TimeDriverInputs {
   
   // ED time allocation
   edAllocThroughputPercent: number;
-  edAllocCostPercent: number;
+  edAllocDocQualityPercent: number;
   edAllocWellbeingPercent: number;
   
   // Inpatient time allocation
@@ -353,8 +353,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opAllocWellbeingPercent: 60,
     // ED time allocation defaults
     edAllocThroughputPercent: 45,
-    edAllocCostPercent: 20,
-    edAllocWellbeingPercent: 35,
+    edAllocDocQualityPercent: 15,
+    edAllocWellbeingPercent: 40,
     // Inpatient time allocation defaults
     ipAllocQualityPercent: 40,
     ipAllocCostPercent: 25,
@@ -617,22 +617,20 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     const isNursing = careSetting === 'nursing';
     
     if (isED) {
-      // ED: LWBS and Throughput
+      // ED: LWBS and Throughput (throughput allocation × 50% conversion factor)
+      const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
       if (timeDriverInputs.edLwbsEnabled) {
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
         const grossValue = recoveredPatients * timeDriverInputs.edRevenuePerVisit;
         total += grossValue * (timeDriverInputs.edLwbsRealization / 100);
       }
       if (timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled) {
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
         const admittedPatients = recoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
         const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
-      }
-      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
-        total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
@@ -841,7 +839,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                   ...td,
                   edLwbsEnabled: td.edAllocThroughputPercent > 0,
                   edThroughputEnabled: td.edAllocThroughputPercent > 0,
-                  costReductionEnabled: td.edAllocCostPercent > 0,
                   wellbeingEnabled: td.edAllocWellbeingPercent > 0,
                 },
               });

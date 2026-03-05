@@ -259,7 +259,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerTypePlural: "ED physicians",
     coverSubtitle: (d) => `${fmtNum(d.providers)} ED physicians \u00B7 ${fmtNum(d.encounters)} encounters \u00B7 Emergency`,
     thesisQuestion: "In the ED, minutes matter. What happens when you give them back?",
-    thesisParagraph: "Emergency documentation creates value through two mechanisms: throughput gains (LWBS reduction, faster disposition, admission capture) and revenue accuracy (E&M level precision, denial prevention). Speed and documentation quality are no longer a trade-off.",
+    thesisParagraph: "Emergency documentation creates value through two mechanisms: throughput gains (LWBS reduction, faster disposition, admission capture) and revenue accuracy (E&M level precision, denial prevention). Your throughput allocation determines how much reclaimed time translates to patient recovery — with a 50% conversion factor reflecting real-world ED dynamics.",
     source1Label: "THROUGHPUT UNLOCKED",
     source1Description: "LWBS reduction, faster door-to-doc times, and additional patient capacity.",
     source1Tagline: "Speed saves lives\u2014and revenue.",

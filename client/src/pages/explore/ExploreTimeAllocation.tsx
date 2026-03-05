@@ -34,14 +34,14 @@ function getBuckets(careSetting: string): BucketConfig[] {
           color: '#EA2C00',
         },
         {
-          field: 'edAllocCostPercent',
-          label: 'Reduce premium staffing',
-          description: 'Less reliance on overtime and agency coverage during high-volume shifts',
+          field: 'edAllocDocQualityPercent',
+          label: 'Documentation Quality Time',
+          description: 'Time that enables more complete, thorough documentation — the foundation of E&M accuracy and denial prevention in the next step',
           color: '#F07B5F',
         },
         {
           field: 'edAllocWellbeingPercent',
-          label: 'Clinician wellbeing',
+          label: 'Clinician Wellbeing',
           description: 'Shift sustainability that reduces burnout and supports emergency physician retention',
           color: '#1A1A1A',
         },

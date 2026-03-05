@@ -35,6 +35,7 @@ export default function ExploreValueDrivers({
 
   // Calculations
   const isOutpatientSetting = state.careSetting === 'outpatient';
+  const isED = state.careSetting === 'ed';
   const hoursAllocatedToCapacity = useMemo(() => {
     return isOutpatientSetting ? Math.round(totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)) : totalHoursSaved;
   }, [totalHoursSaved, timeDriverInputs.opAllocCapacityPercent, isOutpatientSetting]);
@@ -56,8 +57,12 @@ export default function ExploreValueDrivers({
       const allocatedHours = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
       return (allocatedHours / state.numberOfProviders / 52).toFixed(1);
     }
+    if (isED) {
+      const allocatedHours = totalHoursSaved * (timeDriverInputs.edAllocWellbeingPercent / 100);
+      return (allocatedHours / state.numberOfProviders / 48).toFixed(1);
+    }
     return (totalHoursSaved / state.numberOfProviders / 48).toFixed(1);
-  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, timeDriverInputs.opAllocWellbeingPercent]);
+  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, isED, timeDriverInputs.opAllocWellbeingPercent, timeDriverInputs.edAllocWellbeingPercent]);
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
@@ -91,8 +96,9 @@ export default function ExploreValueDrivers({
   const edRecoveredPatients = useMemo(() => {
     const annualPatients = state.annualEncounters;
     const lwbsPatients = annualPatients * (timeDriverInputs.edLwbsRate / 100);
-    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
+    const throughputFactor = (timeDriverInputs.edAllocThroughputPercent / 100) * 0.5;
+    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100) * throughputFactor;
+  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction, timeDriverInputs.edAllocThroughputPercent]);
 
   const edLwbsValue = useMemo(() => {
     if (!timeDriverInputs.edLwbsEnabled) return 0;
@@ -248,7 +254,6 @@ export default function ExploreValueDrivers({
   const formatNumber = (n: number) => n.toLocaleString();
 
   // Care setting-specific labels
-  const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
 
@@ -304,9 +309,6 @@ export default function ExploreValueDrivers({
     if (isED) {
       // ED uses LWBS and Admission Capture
       total += edLwbsValue + edAdmissionCaptureValue;
-      if (timeDriverInputs.costReductionEnabled) {
-        total += timeDriverInputs.estimatedCostReduction;
-      }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         total += retentionCalcs.retentionValue;
       }
@@ -1702,8 +1704,8 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
-        {/* Optional Section - Cost Reduction (not shown for outpatient) */}
-        {!isOutpatientSetting && (
+        {/* Optional Section - Cost Reduction (inpatient only) */}
+        {isInpatient && (
         <motion.div
           className="mt-8 mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -1770,7 +1772,7 @@ export default function ExploreValueDrivers({
                           <span className="text-sm text-[#666666]">Cost reduction allocation (from your time split)</span>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-black">
-                              {isED ? timeDriverInputs.edAllocCostPercent : timeDriverInputs.ipAllocCostPercent}%
+                              {timeDriverInputs.ipAllocCostPercent}%
                             </span>
                             <button
                               onClick={onBack}
@@ -2046,6 +2048,74 @@ export default function ExploreValueDrivers({
                 </>
               )}
 
+              {/* Time Allocation Breakdown - ED */}
+              {isED && (
+                <>
+                  {(() => {
+                    const thrPct = timeDriverInputs.edAllocThroughputPercent / 100;
+                    const docPct = timeDriverInputs.edAllocDocQualityPercent / 100;
+                    const wellPct = timeDriverInputs.edAllocWellbeingPercent / 100;
+                    const thrHours = Math.round(totalHoursSaved * thrPct);
+                    const docHours = Math.round(totalHoursSaved * docPct);
+                    const wellHours = Math.round(totalHoursSaved * wellPct);
+                    
+                    return (
+                      <div className="mb-5">
+                        <div className="mb-3">
+                          <p className="text-xs font-medium text-white uppercase tracking-[1.5px]">
+                            Time Allocation
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center pb-2 border-b border-[#333333]">
+                            <span className="text-xs text-[#888888]">Total Saved</span>
+                            <span className="text-sm font-semibold text-white">{formatNumber(totalHoursSaved)} hrs</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                              <span className="text-xs text-[#888888]">Patient Throughput</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-white">{formatNumber(thrHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.edAllocThroughputPercent}%)</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#F07B5F]" />
+                                <span className="text-xs text-[#888888]">Doc Quality Time</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-semibold text-[#888888]">{formatNumber(docHours)} hrs</span>
+                                <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.edAllocDocQualityPercent}%)</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-[#666666] ml-4 mt-0.5">Surfaced in Documentation Quality step →</p>
+                          </div>
+                          
+                          <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#1A1A1A] border border-[#444444]" />
+                              <span className="text-xs text-[#888888]">Wellbeing</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-[#888888]">{formatNumber(wellHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.edAllocWellbeingPercent}%)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="h-px bg-[#333333] mb-4" />
+                </>
+              )}
+
               {/* Time Allocation Breakdown - Nursing Only */}
               {isNursing && (
                 <>
@@ -2164,21 +2234,6 @@ export default function ExploreValueDrivers({
                       </div>
                       {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Cost Reduction</span>
-                        </div>
-                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
-                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
-                        </span>
-                      </div>
-                      {!timeDriverInputs.costReductionEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
                       )}
                     </div>
 
