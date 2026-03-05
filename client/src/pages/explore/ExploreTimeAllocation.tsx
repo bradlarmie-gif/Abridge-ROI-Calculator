@@ -142,6 +142,41 @@ export default function ExploreTimeAllocation({
     });
   };
 
+  const handleBucketChange = (changedField: BucketField, newValue: number) => {
+    const clampedValue = Math.max(0, Math.min(100, newValue));
+    const oldValue = timeDriverInputs[changedField] as number;
+
+    if (state.careSetting === 'nursing' && clampedValue === 0 && oldValue > 0) {
+      const freed = oldValue;
+      const otherBuckets = buckets.filter(b => b.field !== changedField);
+      const other0 = timeDriverInputs[otherBuckets[0].field] as number;
+      const other1 = timeDriverInputs[otherBuckets[1].field] as number;
+
+      let add0: number, add1: number;
+      if (other0 === 0 && other1 === 0) {
+        add0 = Math.floor(freed / 2);
+        add1 = freed - add0;
+      } else if (other0 === 0) {
+        add0 = 0;
+        add1 = freed;
+      } else if (other1 === 0) {
+        add0 = freed;
+        add1 = 0;
+      } else {
+        add0 = Math.floor(freed / 2);
+        add1 = freed - add0;
+      }
+
+      updateTimeDriverInputs({
+        [changedField]: 0,
+        [otherBuckets[0].field]: Math.min(100, other0 + add0),
+        [otherBuckets[1].field]: Math.min(100, other1 + add1),
+      });
+    } else {
+      updateTimeDriverInputs({ [changedField]: clampedValue });
+    }
+  };
+
   const total = useMemo(() => {
     return buckets.reduce((sum, bucket) => sum + (timeDriverInputs[bucket.field] as number), 0);
   }, [buckets, timeDriverInputs]);
@@ -241,9 +276,7 @@ export default function ExploreTimeAllocation({
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <FormattedNumberInput
                       value={timeDriverInputs[bucket.field] as number}
-                      onChange={(v: number) =>
-                        updateTimeDriverInputs({ [bucket.field]: Math.max(0, Math.min(100, v)) })
-                      }
+                      onChange={(v: number) => handleBucketChange(bucket.field, v)}
                       className="h-10 w-20 text-center text-lg font-semibold bg-white border border-[#E5E5E5] rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20"
                       data-testid={`input-allocation-${bucket.field}`}
                     />
