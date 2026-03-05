@@ -1,0 +1,328 @@
+WHAT YOU ARE BUILDING
+You are updating the Download PDF function in the Abridge ROI Calculator (Explore flow, Outpatient care setting). The PDF is generated from wizard state at the end of step 8 ("Your Model"). You are not changing any wizard logic, any calculations, any UI, or any existing state management. You are only modifying the PDF generation output — specifically the copy, narrative structure, and content of pages 1 through 4 (or 5 if documentation quality drivers are activated).
+The cover page is locked and untouched. Do not modify it in any way.
+WHAT NOT TO TOUCH
+
+Any calculation logic anywhere in the app
+Any wizard step UI
+The cover page of the PDF
+Font family (keep existing)
+Color palette: Abridge red #E8321A, near-black #1A1A1A, warm gray #F5F2EE, mid-gray for secondary text — all unchanged
+Section label style: all-caps, letter-spaced, red, small — unchanged
+Card/block layout, column arrangements, borders, spacing — unchanged
+Footer format: ABRIDGE left · [Org Name] · Outpatient Value Assessment center · Page X of Y right — unchanged
+
+
+DATA VARIABLES AVAILABLE FROM WIZARD STATE
+These are the exact values the PDF must read from state. Use the actual variable names from your codebase — map to these logical names:
+Step 2 — Practice:
+
+numProviders — number entered (e.g. 50)
+encountersPerProvider — selected or entered (e.g. 3,000) OR totalPracticeVolume if entered directly
+annualEncounters — computed: numProviders × encountersPerProvider (e.g. 150,000)
+utilizationRate — % selected or custom entered (e.g. 70%)
+eligibleEncounters — computed: annualEncounters × utilizationRate (e.g. 105,000)
+Step 3 — Time Savings:
+minutesSavedPerEncounter — 2, 3, or 4, or custom (e.g. 3)
+timeSavingsScenario — "Conservative", "Typical", or "Optimistic" (or "Custom")
+totalHoursReclaimed — computed: eligibleEncounters × minutesSavedPerEncounter ÷ 60 (e.g. 5,250)
+hoursPerProviderPerYear — computed: totalHoursReclaimed ÷ numProviders (e.g. 105)
+hoursPerProviderPerWeek — computed: hoursPerProviderPerYear ÷ 52 (e.g. 2.0 — display as 2.0, not 2.2)
+dailyImpactMinutes — computed: ~29 min/day per provider (display as shown in wizard)
+Step 4 — Time Allocation:
+capacityAllocationPct — % entered (e.g. 40%)
+docQualityAllocationPct — % entered (e.g. 40%)
+sustainabilityAllocationPct — % entered (e.g. 20%)
+capacityHours — computed: totalHoursReclaimed × capacityAllocationPct (e.g. 2,100)
+docQualityHours — computed: totalHoursReclaimed × docQualityAllocationPct (e.g. 2,100)
+sustainabilityHours — computed: totalHoursReclaimed × sustainabilityAllocationPct (e.g. 1,050)
+Step 5 — Value Drivers (Patient Access):
+patientAccessEnabled — boolean (toggle on/off)
+accessConversionPct — slider value (default 10%, range 0–50%)
+avgVisitDurationMin — entered (default 30 min)
+revenuePerVisit — entered (default $200)
+hoursForVisits — computed: capacityHours × accessConversionPct (e.g. 210)
+projectedAdditionalVisits — computed: hoursForVisits × (60 ÷ avgVisitDurationMin) (e.g. 420)
+patientAccessValue — computed: projectedAdditionalVisits × revenuePerVisit (e.g. $84,000)
+Step 5 — Value Drivers (Clinician Sustainability):
+sustainabilityEnabled — boolean
+hoursPerProviderPerWeekBack — computed: sustainabilityHours ÷ numProviders ÷ 52 (e.g. 0.4 hrs/wk)
+retentionValueEnabled — boolean (checkbox: "Calculate retention value")
+annualTurnoverRate — entered (default 6%)
+burnoutRelatedTurnoverPct — entered (default 40%)
+replacementCostPerProvider — entered (default $400,000)
+abridgeRetentionImpact — selected: Conservative 20%, Typical 30%, Optimistic 40% (default Typical)
+providersLeavingPerYear — computed: numProviders × annualTurnoverRate (e.g. 3.0)
+burnoutDepartures — computed: providersLeavingPerYear × burnoutRelatedTurnoverPct (e.g. 1.20)
+providersRetained — computed: burnoutDepartures × abridgeRetentionImpact (e.g. 0.36)
+retentionValue — computed: providersRetained × replacementCostPerProvider (e.g. $144,000)
+clinicianSustainabilityValue — equals retentionValue if enabled, otherwise displayed as qualitative
+Step 6 — Documentation Quality:
+wRVU Improvement:
+wrvuEnabled — boolean
+wrvuScenario — "Conservative" (2%), "Typical" (5%), "Aggressive" (7%)
+wrvuImprovementPct — selected or custom (e.g. 5%)
+currentAvgWrvuPerVisit — entered (default 1.8 wRVU)
+wrvuLiftPerVisit — computed: currentAvgWrvuPerVisit × wrvuImprovementPct (e.g. 0.090 wRVU)
+totalAdditionalWrvus — computed: eligibleEncounters × wrvuLiftPerVisit (e.g. 9,450)
+wrvuConversionFactor — entered (default $33)
+wrvuRealizationRate — entered (default 75%)
+annualWrvuValue — computed: totalAdditionalWrvus × conversionFactor × realizationRate (e.g. $233,888)
+HCC Capture:
+hccEnabled — boolean
+hccRecaptureScenario — "Conservative" (6%), "Typical" (10%), "Aggressive" (15%)
+panelSizePerProvider — entered (default 1,500 pts)
+totalPatients — computed: numProviders × panelSizePerProvider (e.g. 75,000)
+medicareAdvantagePct — entered (default 20%)
+maPatientPanel — computed: totalPatients × medicareAdvantagePct (e.g. 15,000)
+documentationGapRate — entered (default 12%)
+patientsWithGaps — computed: maPatientPanel × documentationGapRate (e.g. 1,800)
+avgMissedHccsPerPatient — entered (default 0.7)
+totalRecaptureOpportunity — computed: patientsWithGaps × avgMissedHccsPerPatient (e.g. 1,260 HCCs)
+hccRecaptureTarget — selected (e.g. 10%)
+hccsDocumented — computed: totalRecaptureOpportunity × hccRecaptureTarget (e.g. 126 HCCs)
+rafImpactPerHcc — entered (default 0.15)
+annualPaymentPerRaf — entered (default $10,000)
+hccGrossValue — computed (e.g. $189,000)
+hccRealizationRate — entered (default 40%)
+annualHccValue — computed: hccGrossValue × hccRealizationRate (e.g. $75,600)
+Denial Prevention:
+denialEnabled — boolean
+denialPreventionScenario — "Conservative" (25%), "Typical" (50%), "Aggressive" (75%)
+baselineDenialRate — entered (default 8%)
+totalDenials — computed: eligibleEncounters × baselineDenialRate (e.g. 8,400)
+unappealableDenialRate — entered (default 30%)
+unrecoverableDenials — computed: totalDenials × unappealableDenialRate (e.g. 2,520)
+preventionTarget — selected (e.g. 50%)
+denialsPrevented — computed: unrecoverableDenials × preventionTarget (e.g. 1,260)
+avgDeniedClaimValue — entered (default $200)
+denialGrossValue — computed: denialsPrevented × avgDeniedClaimValue (e.g. $252,000)
+denialRealizationRate — entered (default 60%)
+annualDenialValue — computed: denialGrossValue × denialRealizationRate (e.g. $151,200)
+Step 7 — Investment:
+pricingModel — "Per Provider / Month" or "Annual License"
+costPerProviderPerMonth — entered (e.g. $100)
+annualLicenseFee — entered if Annual License selected
+implementationFeeEnabled — boolean
+implementationFee — entered if enabled
+totalAnnualInvestment — computed: costPerProviderPerMonth × numProviders × 12 (e.g. $60,000)
+totalAnnualInvestmentDisplay — formatted (e.g. "$60K/yr")
+Step 8 — Summary outputs:
+efficiencyValue — sum of patient access + sustainability values (e.g. $228K)
+documentationQualityValue — sum of activated doc quality drivers (e.g. $461K)
+totalGrossValue — efficiencyValue + documentationQualityValue (e.g. $689K)
+netAnnualValue — totalGrossValue − totalAnnualInvestment (e.g. $629K)
+roiMultiple — totalGrossValue ÷ totalAnnualInvestment (e.g. 11.5×)
+netValuePerProvider — netAnnualValue ÷ numProviders (e.g. $13K)
+year1Value — equals totalGrossValue (e.g. $689K)
+year2Value — year1Value × 1.10 (e.g. $758K)
+year3Value — year2Value × 1.10 (e.g. $833K)
+threeYearCumulative — year1 + year2 + year3 (e.g. $2.3M)
+year1NetValue — year1Value − totalAnnualInvestment
+year2NetValue — year2Value − totalAnnualInvestment
+year3NetValue — year3Value − totalAnnualInvestment
+year3CumulativeNet — sum of net values years 1–3
+expansionFullScaleProviders — from expansion panel (default: numProviders × 10)
+expansionFullScaleUtil — from expansion panel (default: 80%)
+fullScaleValue — computed (e.g. $7.2M or $274K depending on drivers activated)
+fullScaleRoi — computed (e.g. 13.1×)
+fullScaleNetValuePerProvider — computed (e.g. $549/yr)
+
+
+PAGE STRUCTURE — 4 PAGES (5 IF DOC QUALITY DRIVERS ACTIVATED)
+Page count logic:
+
+If wrvuEnabled OR hccEnabled OR denialEnabled = true → render 5 pages (insert Documentation Quality page as page 3, push Investment Case to page 4, Assessment to page 5)
+If all doc quality drivers = false → 4 pages as currently structured
+
+
+PAGE 1 — THE THESIS
+Layout: keep exactly as-is. Replace copy only.
+[SECTION LABEL — red, all-caps, letter-spaced]
+THE THESIS
+[HERO CARD — warm gray background]
+{numProviders} providers · {annualEncounters formatted} encounters · Outpatient
+PROJECTED NET ANNUAL VALUE (small label, gray)
+{netAnnualValue} (large, red)
+What changes when your providers get time back?
+[4-STAT BAR]
+{numProviders} / providers | {annualEncounters} / encounters | {utilizationRate}% / utilization | {totalAnnualInvestmentDisplay} / investment
+[SECTION LABEL] TWO SOURCES OF VALUE
+Ambient documentation creates value in two distinct ways. The first is time: when providers spend less time on notes, that time can flow back to patients, to breathing room, or to both. The second is documentation quality: when notes fully capture the complexity of what happened in the room, the revenue that was already earned gets properly coded and collected.
+[LEFT CARD — TIME RECAPTURED]
+TIME RECAPTURED
+{efficiencyValue formatted}
+[IF patientAccessEnabled AND retentionValueEnabled:]
+{numProviders} providers reclaim {totalHoursReclaimed} hours annually. You directed {capacityAllocationPct}% toward patient access and {sustainabilityAllocationPct}% toward clinician wellbeing — a deliberate balance between near-term capacity and long-term retention.
+[IF patientAccessEnabled AND NOT retentionValueEnabled:]
+{numProviders} providers reclaim {totalHoursReclaimed} hours annually. You directed {capacityAllocationPct}% of that time toward patient access — the most direct path from documentation savings to revenue.
+[IF NOT patientAccessEnabled AND sustainabilityEnabled:]
+{numProviders} providers reclaim {totalHoursReclaimed} hours annually. You chose to apply this time to clinician wellbeing — a signal that retention and sustainability are the priority right now.
+The constraint is time. This is what changes when documentation gets faster.
+[RIGHT CARD — REVENUE OPTIMIZED]
+REVENUE OPTIMIZED
+[IF at least one doc quality driver enabled:]
+{documentationQualityValue formatted}
+Better notes capture the complexity that's already there. {list activated drivers with values inline: e.g. "wRVU improvement ($234K), denial prevention ($151K)"}. The notes drive the revenue.
+[IF no doc quality drivers enabled:]
+Not Modeled
+No documentation quality drivers were selected for this assessment. wRVU improvement, HCC capture, and denial prevention are available to model — most organizations explore these at their 90-day review once baseline adoption is established.
+[STRATEGIC OBSERVATION BLOCK — left red border, warm gray background]
+WHAT YOUR CHOICES REVEAL
+This block must be generated dynamically based on allocation and driver selections. Use these rules:
+
+If capacityAllocationPct >= 40 AND retentionValueEnabled = false: "Your model is weighted toward capacity — {capacityAllocationPct}% of reclaimed time flows back to patient access. That's the most direct line from documentation efficiency to revenue. The sustainability allocation ({sustainabilityAllocationPct}%) adds a buffer against burnout without making it the headline."
+If sustainabilityAllocationPct >= 30 OR retentionValueEnabled = true: "You put real weight on clinician sustainability — {sustainabilityAllocationPct}% of reclaimed time, plus a quantified retention model. That's a leadership signal: this isn't just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment."
+If docQualityAllocationPct >= 40 AND at least one doc quality driver enabled: "The {docQualityAllocationPct}% you allocated to documentation quality time isn't passive — it's the foundation of the revenue capture on the right. Better notes require attention in the moment. Abridge creates the space for that."
+If all three allocations roughly equal (e.g. 33/33/33): "You spread the allocation evenly — capacity, documentation quality, and clinician sustainability each getting meaningful weight. That reflects an organization trying to solve for all three at once, which is exactly the right instinct. The model reflects that balance."
+If no doc quality drivers enabled: append to whatever observation above: " The documentation quality drivers were not activated in this model. That's not a gap — it's the right starting point. Quantify the efficiency gains first. Then layer in revenue capture with real data."
+
+
+PAGE 2 — HOW YOUR TIME ALLOCATION BECOMES REVENUE
+Layout: keep exactly as-is. Replace copy only.
+[SECTION LABEL] YOUR VALUE DRIVERS
+How Your Time Allocation Becomes Revenue
+{totalHoursReclaimed} hours returned to your {numProviders} providers. Here's what each allocation decision produces.
+[SECTION LABEL] TIME RECAPTURED
+[DRIVER BLOCK — Patient Access] (only render if patientAccessEnabled = true)
+Patient Access · {patientAccessValue formatted} (right-aligned, red)
+You directed {capacityAllocationPct}% of reclaimed time — {capacityHours} hours — toward patient capacity. At a {accessConversionPct}% conversion rate to scheduled visits, that generates {projectedAdditionalVisits} additional encounters per year. At {revenuePerVisit} per visit, the return is {patientAccessValue}.
+The {accessConversionPct}% conversion rate reflects the realistic friction between recovered time and scheduled appointments — scheduling demand, slot availability, and provider willingness to add volume. {IF accessConversionPct == 10: "The 10% default is the midpoint of what Abridge-deployed organizations typically see." ELSE IF accessConversionPct > 10: "You modeled this above the typical starting point — that reflects confidence in your scheduling capacity and demand." ELSE: "You modeled this conservatively, which is the right approach for a first-year model."}
+[DRIVER BLOCK — Clinician Sustainability] (only render if sustainabilityEnabled = true)
+Clinician Sustainability · [IF retentionValueEnabled: {clinicianSustainabilityValue formatted} ELSE: {hoursPerProviderPerWeekBack} hrs/wk per provider] (right-aligned)
+You allocated {sustainabilityAllocationPct}% of reclaimed time — {sustainabilityHours} hours — to clinician wellbeing. That returns {hoursPerProviderPerWeekBack} hours per week to each provider.
+{IF retentionValueEnabled:} You chose to quantify the retention value of that time. Based on a {annualTurnoverRate}% annual turnover rate, {burnoutRelatedTurnoverPct}% burnout attribution, and {replacementCostPerProvider formatted} replacement cost, Abridge's estimated retention impact is {retentionValue formatted} annually. That's {providersRetained} providers retained per year at the {abridgeRetentionImpact} impact scenario.
+{IF NOT retentionValueEnabled:} That's {hoursPerProviderPerWeekBack × 60 formatted as minutes} minutes back at the end of a shift. Not every hour of recovered time translates directly to a dollar figure — but the evidence on documentation burden and physician attrition is clear. This allocation is protecting something that's harder to rebuild once it's gone.
+[TIME RECAPTURED SUBTOTAL ROW]
+TIME RECAPTURED SUBTOTAL · {efficiencyValue formatted}
+[PROJECTED ANNUAL VALUE CARD — bottom of page]
+PROJECTED ANNUAL VALUE
+{netAnnualValue formatted} · Per provider: ~{netValuePerProvider formatted}/year
+{IF documentationQualityValue > 0:} This reflects time value only. Documentation quality adds {documentationQualityValue formatted} — detailed on the next page.
+{IF documentationQualityValue == 0:} This is year one, before documentation quality drivers are measured. The model has room to grow.
+PAGE 3 — DOCUMENTATION QUALITY (only render if at least one doc quality driver enabled)
+Layout: keep exactly as-is. Replace copy only. If no drivers enabled, skip this page entirely — page 3 becomes The Investment Case.
+[SECTION LABEL] DOCUMENTATION QUALITY
+The Notes Were Already Earning This.
+Better documentation doesn't create new revenue. It captures revenue that already exists — for complexity that was delivered but not fully coded, for diagnoses that were discussed but not documented, for claims that were denied because the medical necessity wasn't explicit. Abridge captures it in the room, in the moment.
+[SECTION LABEL] REVENUE DRIVERS
+[WRVU BLOCK] (only render if wrvuEnabled = true)
+wRVU Improvement · {annualWrvuValue formatted}
+When visit notes fully reflect the complexity of what happened in the room, E/M levels code higher. The current average of {currentAvgWrvuPerVisit} wRVU per visit has room to move. At a {wrvuImprovementPct}% documentation improvement — the {wrvuScenario} scenario, where industry data shows a 2–7% lift range — that's {wrvuLiftPerVisit} additional wRVU per visit, {totalAdditionalWrvus} across your {eligibleEncounters} eligible encounters. At a {wrvuConversionFactor} conversion factor and {wrvuRealizationRate}% realization, the annual value is {annualWrvuValue}.
+This is not upcoding. It is accurate coding of complexity that was always there.
+[HCC BLOCK] (only render if hccEnabled = true)
+HCC Capture · {annualHccValue formatted}
+For your Medicare Advantage population, risk adjustment pays based on what's documented — not what's known. Many patients have conditions that are managed and discussed at every visit but never formally captured in the note. Abridge surfaces those moments in real time.
+This model covers only the MA patients touched in Abridge-documented encounters — your estimated {maPatientPanel} MA patients at {medicareAdvantagePct}% of your {totalPatients} total panel. Of those, approximately {patientsWithGaps} have documentation gaps. At the {hccRecaptureScenario} recapture target of {hccRecaptureTarget}%, that's {hccsDocumented} HCCs documented. The annual value — after a {hccRealizationRate}% realization rate — is {annualHccValue}.
+[DENIAL BLOCK] (only render if denialEnabled = true)
+Denial Prevention · {annualDenialValue formatted}
+Documentation gaps are the primary driver of claim denials that cannot be appealed — permanent, unrecoverable revenue loss. Of your estimated {totalDenials} annual denials, {unrecoverableDenials} are unappealable. At the {denialPreventionScenario} prevention target of {preventionTarget}%, Abridge prevents {denialsPrevented} of those claims from being denied in the first place. At {avgDeniedClaimValue} per claim and a {denialRealizationRate}% realization rate, that's {annualDenialValue} annually.
+These are not recoverable through appeals. They either get documented correctly the first time, or they don't get paid.
+[DOCUMENTATION QUALITY SUBTOTAL]
+DOCUMENTATION QUALITY SUBTOTAL · {documentationQualityValue formatted}
+All figures use conservative realization rates based on observed Abridge deployments. The full opportunity is larger — and measurable once baseline data is established.
+[SECTION LABEL — if any drivers NOT enabled] WHAT WASN'T MODELED
+{FOR EACH disabled driver:}
+
+{driver name} — Not modeled in this assessment. {IF wRVU: "Requires baseline wRVU data per provider to size accurately."} {IF HCC: "Requires Medicare Advantage population size and current HCC capture rate."} {IF Denial: "Requires current denial rate and claim value data from your revenue cycle team."}
+These are available to activate in a future model — the inputs are straightforward once baseline data exists.
+
+
+PAGE 3 (or 4 if doc quality page inserted) — THE INVESTMENT CASE
+Layout: keep exactly as-is. Replace copy only.
+[SECTION LABEL] THE INVESTMENT CASE
+Infrastructure, Not Expense.
+The investment is {totalAnnualInvestmentDisplay} annually and does not change as value grows. That asymmetry — fixed cost, compounding return — is what separates infrastructure from a line item.
+[SECTION LABEL] 3-YEAR PROJECTION
+PERIODVALUEINVESTMENTNET VALUECUMULATIVEYear 1{year1Value}{totalAnnualInvestmentDisplay}{year1NetValue}{year1NetValue}Year 2{year2Value}{totalAnnualInvestmentDisplay}{year2NetValue}{year1NetValue + year2NetValue}Year 3{year3Value}{totalAnnualInvestmentDisplay}{year3NetValue}{year3CumulativeNet}Years 2–3 reflect a 10% annual value improvement as provider adoption deepens and documentation patterns mature. The investment stays flat.[CALLOUT BLOCK — left red border]By Year 3, you're generating {year3Value ÷ totalAnnualInvestment formatted as Nx} for every dollar invested — {year3CumulativeNet formatted} cumulative net value against {totalAnnualInvestment × 3 formatted} in total investment. That's not a cost to defend. That's a return to protect.
+
+[SECTION LABEL] AT SCALE
+Per-provider economics hold at scale — and improve slightly as workflow maturity compounds across a larger organization.
+CURRENT MODELAT FULL SCALE{netAnnualValue formatted}/yrexpansion →{fullScaleValue formatted}/yr{numProviders} providers{expansionFullScaleProviders} providers{utilizationRate}% utilization{expansionFullScaleUtil}% utilization~{netValuePerProvider}/provider/yr~{fullScaleNetValuePerProvider}/provider/yrThe per-provider return improves at scale because utilization typically increases as workflows mature and more providers adopt Abridge as their default documentation approach — not because the math changes.
+
+[SECTION LABEL] WHAT TO MEASURE AT 90 DAYS
+These are the signals that confirm the model is working — and the levers that improve it if it isn't.
+
+Documentation time per encounter (target: −50% from baseline)
+Provider satisfaction with documentation burden (target: +15 pts from baseline)
+wRVU per encounter trend (target: +2–5% if wRVU driver is relevant)
+Tracking these at 90 days gives you the data to validate this model with real numbers — and to activate any documentation quality drivers that weren't modeled here.
+
+
+PAGE 4 (or 5) — YOUR ASSESSMENT (always last page)
+Layout: keep exactly as-is. Replace copy only.
+[HERO SUMMARY BLOCK — large typographic treatment]
+YOUR ASSESSMENT
+{numProviders} providers.
+{annualEncounters formatted} encounters.
+{netAnnualValue} projected net value.
+{netValuePerProvider} per provider per year.
+[QUOTE CALLOUT BLOCK — left red border]
+This must be generated dynamically. Use these rules:
+
+IF sustainabilityAllocationPct >= 30 OR retentionValueEnabled = true:
+"Give providers their time back — and the documentation gets better, not worse. That's the counterintuitive truth about ambient documentation. Less time at the keyboard means more attention in the room. Better notes follow naturally — and so does everything that depends on them."
+IF capacityAllocationPct >= 50 AND sustainabilityAllocationPct < 20:
+"The scheduling problem and the documentation problem are the same problem. When providers spend less time writing notes, they have more time to see patients. Abridge doesn't create capacity — it uncovers capacity that was already there, buried in after-hours charting."
+IF wrvuEnabled = true AND annualWrvuValue > 0:
+"The complexity was always there. The provider delivered it. The patient experienced it. The only thing missing was a note that captured it fully. That's what changes."
+IF hccEnabled = true AND denialEnabled = true:
+"Revenue cycle isn't downstream from clinical documentation — it is clinical documentation. What gets captured in the room determines what gets paid. Abridge closes that gap in real time, before the encounter ends."
+DEFAULT (none of the above):
+"Give providers their time back — and the documentation gets better, not worse. That's the counterintuitive truth about ambient documentation. Better notes come from less time documenting."
+
+
+[SECTION LABEL] AT A GLANCE
+[LEFT COLUMN — VALUE SUMMARY]
+VALUE SUMMARY
+TIME RECAPTURED
+· Patient Access · {IF patientAccessEnabled: patientAccessValue ELSE: "Not modeled"}
+· Clinician Wellbeing · {IF retentionValueEnabled: retentionValue ELSE IF sustainabilityEnabled: hoursPerProviderPerWeekBack + " hrs/wk" ELSE: "Not modeled"}
+REVENUE OPTIMIZED
+· wRVU Improvement · {IF wrvuEnabled: annualWrvuValue ELSE: "Not modeled"}
+· HCC Capture · {IF hccEnabled: annualHccValue ELSE: "Not modeled"}
+· Denial Prevention · {IF denialEnabled: annualDenialValue ELSE: "Not modeled"}
+Net Annual Value · {netAnnualValue}
+[RIGHT COLUMN — INVESTMENT SUMMARY]
+INVESTMENT SUMMARY
+Annual Investment · {totalAnnualInvestmentDisplay}
+Per provider · {costPerProviderPerMonth × 12 formatted}
+Year 1 ROI · {roiMultiple}
+Year 3 Cumulative Net · {year3CumulativeNet}
+UTILIZATION
+Projected · {utilizationRate}%
+Hours Returned · {totalHoursReclaimed}
+Per provider/week · {hoursPerProviderPerWeek} hrs
+[SECTION LABEL] METHODOLOGY
+[LEFT — YOUR INPUTS]
+YOUR INPUTS
+{numProviders} providers
+{annualEncounters formatted} encounters
+{utilizationRate}% utilization
+{minutesSavedPerEncounter} min saved per encounter
+{totalAnnualInvestmentDisplay} annual investment
+{totalHoursReclaimed formatted} hrs returned annually
+{IF retentionValueEnabled: annualTurnoverRate + "% annual turnover / " + replacementCostPerProvider + " replacement cost"}
+[RIGHT — HOW WE CALCULATED THIS]
+HOW WE CALCULATED THIS
+All figures are built from your inputs — not industry averages applied generically. Where assumptions were required (conversion rates, realization rates, turnover benchmarks), we used the conservative end of observed Abridge deployment data.
+The goal of this model is to give you a defensible starting point, not a ceiling. The most reliable validation comes after deployment, when you can measure these baselines directly. This document gives you the numbers to track against.
+[LEGAL FOOTER — small gray text, bottom of page]
+This assessment is for planning purposes. Projections are based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, and organizational factors. This does not constitute a guarantee of financial outcomes.
+RENDERING RULES — DO NOT SKIP THESE
+
+Every number that appears must be followed immediately by its meaning — either in the same sentence or the sentence that follows. No number sits alone.
+"Not Modeled" — never a dash, never a zero, never blank. Any driver that was not activated renders as "Not Modeled" in summary tables.
+The Strategic Observation block on Page 1 must be dynamically generated based on the allocation percentages and driver selections. It must never be the same for every output.
+The quote block on the final page must be dynamically selected based on the dominant allocation and activated drivers. Use the selection logic above exactly.
+If documentationQualityValue = 0, do not render a Documentation Quality page. Collapse to 4 pages. The right card on Page 1 reads "Not Modeled" with forward-looking language. Page 3 goes straight to The Investment Case.
+Numbers format: Values ≥ 1Mdisplayas"1M display as "
+1Mdisplayas"X.XM". Values ≥ 1Kdisplayas"1K display as "
+1Kdisplayas"XXK". Values < 1Kdisplayas"1K display as "
+1Kdisplayas"XXX". Percentages display as "X%". Hours display as "X,XXX hrs". ROI multiples display as "X.Xx".
+
+Do not repeat the same dollar figure in the same visual role across multiple pages. Each appearance of a key number must serve a different narrative purpose (introduction → detail → summary).
+The 3-year table net value column must use net values (gross minus investment), not gross values. Year 3 cumulative is cumulative net, not cumulative gross.
+Page count in footer must be accurate — if 4 pages, footer reads "Page X of 4". If 5 pages (doc quality drivers activated), footer reads "Page X of 5".
+No promotional language. Do not use: "revolutionary", "cutting-edge", "industry-leading", "best-in-class", "game-changing", or any equivalent. Do not name competitor products. Do not reference features by product name.
+

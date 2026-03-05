@@ -104,6 +104,35 @@ function getProviderExpansion(
   return Math.round(pilotProviders + (fullScaleProviders - pilotProviders) * progress);
 }
 
+function getEncounterExpansion(
+  month: number,
+  goLiveMonth: number,
+  contractMonths: number,
+  baseEncounters: number,
+  yearlyEncounters?: { year1: number; year2: number; year3: number }
+): number {
+  const monthsSinceGoLive = month - goLiveMonth;
+  if (monthsSinceGoLive < 0) return 0;
+
+  if (yearlyEncounters) {
+    const y1 = yearlyEncounters.year1;
+    const y2 = yearlyEncounters.year2;
+    const y3 = contractMonths >= 36 ? yearlyEncounters.year3 : y2;
+
+    if (monthsSinceGoLive < 12) {
+      const progress = monthsSinceGoLive / 12;
+      return Math.round(y1 + (y2 - y1) * progress);
+    } else if (monthsSinceGoLive < 24) {
+      const progress = (monthsSinceGoLive - 12) / 12;
+      return Math.round(y2 + (y3 - y2) * progress);
+    } else {
+      return y3;
+    }
+  }
+
+  return baseEncounters;
+}
+
 function getUtilizationRamp(
   month: number,
   goLiveMonth: number,
@@ -195,7 +224,11 @@ export function buildMonthlyCashFlows(
       if (setting.pricingModel === "annualFlat") {
         monthlyInvestment = (setting.annualLicenseFee || 0) / 12;
       } else if (setting.pricingModel === "perEncounter") {
-        const monthlyEncounters = (setting.encounters / 12) * (currentProviders / (setting.providerCount || 1));
+        const currentEncounters = getEncounterExpansion(
+          m, setting.goLiveMonth, months,
+          setting.encounters, setting.yearlyEncounters
+        );
+        const monthlyEncounters = currentEncounters / 12;
         monthlyInvestment = (setting.costPerEncounter || 0) * monthlyEncounters;
       } else {
         monthlyInvestment = setting.costPerUnit * currentProviders;
@@ -673,7 +706,7 @@ export function calculateProformaSummary(
   const totalSystemValue = settings.reduce((s, v) => s + v.annualValue, 0);
   const totalInvestment = settings.reduce((s, v) => {
     if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0);
-    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * v.encounters;
+    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * (v.yearlyEncounters?.year1 ?? v.encounters);
     return s + v.costPerUnit * v.providerCount * 12;
   }, 0);
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);

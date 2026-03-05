@@ -40,6 +40,7 @@ export interface ProformaSettingSnapshot {
   color: string;
   fullExploreState: ExploreState;
   yearlyProviders?: YearlyProviders;
+  yearlyEncounters?: { year1: number; year2: number; year3: number };
 }
 
 export interface RetentionPhasing {

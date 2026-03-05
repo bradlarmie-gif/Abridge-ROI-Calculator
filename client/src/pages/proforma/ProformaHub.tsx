@@ -212,6 +212,8 @@ export default function ProformaHub({
               const isEditing = editingId === setting.id;
               const unitLabel = SETTING_UNIT_LABELS[setting.careSetting];
               const yp = setting.yearlyProviders;
+              const isEncPricing = setting.pricingModel === "perEncounter";
+              const ye = setting.yearlyEncounters ?? { year1: setting.encounters, year2: setting.encounters, year3: setting.encounters };
               return (
                 <motion.div
                   key={setting.id}
@@ -322,65 +324,112 @@ export default function ProformaHub({
                           >
                             <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
                               <div>
-                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
-                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                                  <div>
-                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
-                                    <FormattedNumberInput
-                                      value={yp?.year1 ?? setting.providerCount}
-                                      onChange={(v) => {
-                                        const val = Math.max(v, 1);
-                                        onUpdateSetting(setting.id, {
-                                          yearlyProviders: {
-                                            year1: val,
-                                            year2: yp?.year2 ?? setting.fullScaleProviders,
-                                            year3: yp?.year3 ?? setting.fullScaleProviders,
-                                          },
-                                          providerCount: val,
-                                        });
-                                      }}
-                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                      data-testid={`input-y1-${setting.careSetting}`}
-                                    />
+                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{isEncPricing ? "Encounters" : unitLabel} by Year</p>
+                                {isEncPricing ? (
+                                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
+                                      <FormattedNumberInput
+                                        value={ye.year1}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyEncounters: { ...ye, year1: val },
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y1-enc-${setting.careSetting}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
+                                      <FormattedNumberInput
+                                        value={ye.year2}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyEncounters: { ...ye, year2: val },
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y2-enc-${setting.careSetting}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
+                                      <FormattedNumberInput
+                                        value={ye.year3}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyEncounters: { ...ye, year3: val },
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y3-enc-${setting.careSetting}`}
+                                      />
+                                    </div>
                                   </div>
-                                  <div>
-                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
-                                    <FormattedNumberInput
-                                      value={yp?.year2 ?? setting.fullScaleProviders}
-                                      onChange={(v) => {
-                                        const val = Math.max(v, 1);
-                                        onUpdateSetting(setting.id, {
-                                          yearlyProviders: {
-                                            year1: yp?.year1 ?? setting.providerCount,
-                                            year2: val,
-                                            year3: yp?.year3 ?? setting.fullScaleProviders,
-                                          },
-                                        });
-                                      }}
-                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                      data-testid={`input-y2-${setting.careSetting}`}
-                                    />
+                                ) : (
+                                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
+                                      <FormattedNumberInput
+                                        value={yp?.year1 ?? setting.providerCount}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyProviders: {
+                                              year1: val,
+                                              year2: yp?.year2 ?? setting.fullScaleProviders,
+                                              year3: yp?.year3 ?? setting.fullScaleProviders,
+                                            },
+                                            providerCount: val,
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y1-${setting.careSetting}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
+                                      <FormattedNumberInput
+                                        value={yp?.year2 ?? setting.fullScaleProviders}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyProviders: {
+                                              year1: yp?.year1 ?? setting.providerCount,
+                                              year2: val,
+                                              year3: yp?.year3 ?? setting.fullScaleProviders,
+                                            },
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y2-${setting.careSetting}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
+                                      <FormattedNumberInput
+                                        value={yp?.year3 ?? setting.fullScaleProviders}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, {
+                                            yearlyProviders: {
+                                              year1: yp?.year1 ?? setting.providerCount,
+                                              year2: yp?.year2 ?? setting.fullScaleProviders,
+                                              year3: val,
+                                            },
+                                            fullScaleProviders: val,
+                                          });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y3-${setting.careSetting}`}
+                                      />
+                                    </div>
                                   </div>
-                                  <div>
-                                    <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
-                                    <FormattedNumberInput
-                                      value={yp?.year3 ?? setting.fullScaleProviders}
-                                      onChange={(v) => {
-                                        const val = Math.max(v, 1);
-                                        onUpdateSetting(setting.id, {
-                                          yearlyProviders: {
-                                            year1: yp?.year1 ?? setting.providerCount,
-                                            year2: yp?.year2 ?? setting.fullScaleProviders,
-                                            year3: val,
-                                          },
-                                          fullScaleProviders: val,
-                                        });
-                                      }}
-                                      className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                      data-testid={`input-y3-${setting.careSetting}`}
-                                    />
-                                  </div>
-                                </div>
+                                )}
                               </div>
 
                               <div className="grid grid-cols-3 gap-3">

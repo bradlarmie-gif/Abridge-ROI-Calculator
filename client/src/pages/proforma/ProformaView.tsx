@@ -846,9 +846,10 @@ export default function ProformaView({
               const flatFee = s.annualLicenseFee || 0;
               const encAnnual = (s.costPerEncounter || 0) * s.encounters;
               const baseProv = s.providerCount || 1;
-              const y1Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year1 / baseProv) : s.costPerUnit * yp.year1 * 12;
-              const y2Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year2 / baseProv) : s.costPerUnit * yp.year2 * 12;
-              const y3Cost = isFlat ? flatFee : isEnc ? encAnnual * (yp.year3 / baseProv) : s.costPerUnit * yp.year3 * 12;
+              const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+              const y1Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year1 : s.costPerUnit * yp.year1 * 12;
+              const y2Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year2 : s.costPerUnit * yp.year2 * 12;
+              const y3Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year3 : s.costPerUnit * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
               const contractYears = Math.ceil(config.contractTermMonths / 12);
               const showY2 = contractYears >= 2;
@@ -874,39 +875,75 @@ export default function ProformaView({
 
                       <div className="mb-4">
                         <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
-                        <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                          <div>
-                            <label className="block text-[12px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
-                            <FormattedNumberInput
-                              value={yp.year1}
-                              onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
-                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                              data-testid={`input-y1-${s.careSetting}`}
-                            />
+                        {isEnc ? (
+                          <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                            <div>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 encounters</label>
+                              <FormattedNumberInput
+                                value={ye.year1}
+                                onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year1: Math.max(v, 1) } })}
+                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                data-testid={`input-y1-enc-${s.careSetting}`}
+                              />
+                            </div>
+                            {showY2 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 encounters</label>
+                                <FormattedNumberInput
+                                  value={ye.year2}
+                                  onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year2: Math.max(v, 1) } })}
+                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                  data-testid={`input-y2-enc-${s.careSetting}`}
+                                />
+                              </div>
+                            )}
+                            {showY3 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} encounters</label>
+                                <FormattedNumberInput
+                                  value={ye.year3}
+                                  onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year3: Math.max(v, 1) } })}
+                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                  data-testid={`input-y3-enc-${s.careSetting}`}
+                                />
+                              </div>
+                            )}
                           </div>
-                          {showY2 && (
+                        ) : (
+                          <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                             <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
                               <FormattedNumberInput
-                                value={yp.year2}
-                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                                value={yp.year1}
+                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
                                 className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-y2-${s.careSetting}`}
+                                data-testid={`input-y1-${s.careSetting}`}
                               />
                             </div>
-                          )}
-                          {showY3 && (
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} {unitLabel}</label>
-                              <FormattedNumberInput
-                                value={yp.year3}
-                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-y3-${s.careSetting}`}
-                              />
-                            </div>
-                          )}
-                        </div>
+                            {showY2 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
+                                <FormattedNumberInput
+                                  value={yp.year2}
+                                  onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
+                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                  data-testid={`input-y2-${s.careSetting}`}
+                                />
+                              </div>
+                            )}
+                            {showY3 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} {unitLabel}</label>
+                                <FormattedNumberInput
+                                  value={yp.year3}
+                                  onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
+                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                  data-testid={`input-y3-${s.careSetting}`}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="mb-4">

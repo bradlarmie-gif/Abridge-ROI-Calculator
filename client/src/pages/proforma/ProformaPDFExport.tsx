@@ -743,7 +743,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
   const totalMonthlyCost = settings.reduce((s, v) => {
     if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0) / 12;
-    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * (v.encounters / 12);
+    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * ((v.yearlyEncounters?.year1 ?? v.encounters) / 12);
     return s + v.costPerUnit * v.providerCount;
   }, 0);
 
@@ -1366,7 +1366,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting)}</Text>
                 )}
                 <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.annualValue)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.pricingModel === "perEncounter" ? (s.costPerEncounter || 0) * (s.encounters / 12) : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
+                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.pricingModel === "perEncounter" ? (s.costPerEncounter || 0) * ((s.yearlyEncounters?.year1 ?? s.encounters) / 12) : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
               </View>
             ))}
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />

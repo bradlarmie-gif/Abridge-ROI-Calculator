@@ -338,6 +338,11 @@ export default function ExploreModel({
       goLiveMonth: 1,
       color: SETTING_COLORS[cs] || "#EA2C00",
       fullExploreState: { ...state },
+      yearlyEncounters: {
+        year1: state.annualEncounters,
+        year2: state.annualEncounters,
+        year3: state.annualEncounters,
+      },
     };
 
     onAddToProforma(snapshot);
