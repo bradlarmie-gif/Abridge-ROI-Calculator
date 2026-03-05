@@ -1,0 +1,84 @@
+I need you to update the maturity score bands and benchmark 
+labels on the score reveal screen (Step 3 — "The Reveal").
+---
+## SCORE BAND THRESHOLDS AND COPY
+Find the score interpretation function that currently uses:
+  m <= 30  → "Early stages..."
+  m <= 50  → "Emerging awareness..."
+  m <= 70  → "Actively managing..."
+  m <= 85  → "Strategically managed..."
+  else     → "Best in class..."
+Replace with:
+  m <= 24:
+    headline: "Deployment established."
+    body: "Ambient is live and time is being returned 
+    to providers. The strategic opportunity — connecting 
+    that time to measurable operational, financial, and 
+    clinical outcomes — is ahead of you. This assessment 
+    gives you the map."
+  m <= 44:
+    headline: "Foundation building."
+    body: "Your deployment has established the baseline. 
+    Time recovery is understood, leadership is aware, 
+    and at least one domain is producing data. The next 
+    stage is moving from measurement to deployment — 
+    connecting what you've built to operational decisions."
+  m <= 64:
+    headline: "Value in motion."
+    body: "Your organization is producing real, measurable 
+    outcomes from ambient documentation in at least one 
+    domain. The strategic opportunity is in the domains 
+    where measurement hasn't yet translated to action. 
+    That's where the next layer of value lives."
+  m <= 79:
+    headline: "Strategically managed."
+    body: "Most domains are connected to organizational 
+    data and producing measurable value. Documentation 
+    quality is becoming a strategic input — not just a 
+    clinical tool. The remaining gap is in the domains 
+    that haven't yet reached that stage."
+  else (80–100):
+    headline: "Leading practice."
+    body: "Ambient documentation is embedded in how 
+    your organization plans, measures, and reports 
+    value. You're operating at the level most 
+    organizations are working toward. The opportunity 
+    is in sustaining and scaling what you've built."
+---
+## RIGHT PANEL BENCHMARK LABELS
+Find the four benchmark markers in the right panel 
+score card that currently show:
+  "Early deployment"  → 25
+  "Measured"          → 50
+  "Strategically managed" → 75
+  "Best in class"     → 100
+Replace labels and threshold values with:
+  "Deployment established"  → 24
+  "Foundation building"     → 44
+  "Value in motion"         → 64
+  "Strategically managed"   → 79
+  "Leading practice"        → 100
+The score bar should visually mark these thresholds 
+as tick marks or zone separators, not just label them 
+as fixed points. Keep the existing bar design but 
+update the label text.
+---
+## SCORE SCREEN HEADLINE AND SUBHEAD
+Find:
+  headline: "Here's where you stand."
+  subhead: "This is how intentionally your organization 
+            is converting ambient AI into measurable value."
+Replace subhead with:
+  "Your score reflects how fully your organization 
+  has connected ambient documentation to operational, 
+  financial, and clinical outcomes — across four domains."
+---
+## DO NOT CHANGE
+- The point map A1e = {1:6, 2:12, 3:19, 4:25}
+- The Sh() scoring function
+- The P8t() scoring adjustment function
+- The score breakdown table (domain rows with bars)
+- The animated score counter
+- The domain-level labels in TA object
+- The H8t gap narrative object
+- Any calculation or formula logic

@@ -26,10 +26,10 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Documentation Quality Is Built Into Revenue Cycle Operations.',
   },
   workforce: {
-    1: 'Providers Report Less After-Hours Work. Not Measured Yet.',
-    2: 'Burden Reduction Measured and Validated.',
-    3: 'Retention Risk Calculated Against Burden Reduction.',
-    4: 'Labor Spend Is Structurally Declining.',
+    1: 'After-Hours Burden Is Being Reduced.',
+    2: 'Burden Reduction Is Measured.',
+    3: 'Retention Impact Is Being Tracked.',
+    4: 'Labor Costs Are Reflecting the Difference.',
   },
   risk: {
     1: 'Documentation Quality Improved. Exposure Still Invisible.',
@@ -494,19 +494,15 @@ export function computeWorkforceFeedback(
       };
     }
     const burdenHours = Math.round(afterHoursReduction * providers * 52);
-    const burdenValue = Math.round(burdenHours * providerRate);
-    const replacementCost = 350000;
-    const turnoverProxyPct = Math.min(afterHoursReduction * 15, 50);
-    const atRiskProviders = Math.round(providers * turnoverProxyPct / 100 * 10) / 10;
-    const retentionExposure = Math.round(atRiskProviders * replacementCost);
     return {
       label: 'Estimated Impact',
-      value: burdenValue,
-      hasValue: true,
-      headlineMetric: `${afterHoursReduction} hrs/wk × ${providers} providers = ${formatDollar(burdenValue)} in physician time returned annually.`,
-      context: `${burdenHours.toLocaleString()} hours of after-hours documentation burden eliminated annually.\n\nProviders averaging ${afterHoursReduction}+ hrs of after-hours charting per week are ${turnoverProxyPct}% more likely to report burnout symptoms associated with near-term departure intent. At ${formatDollar(replacementCost)} replacement cost, that's ${formatDollar(retentionExposure)} in retention exposure this reduction is starting to protect.`,
-      formula: `[burdenHours] = ${afterHoursReduction} × ${providers} × 52 = ${burdenHours.toLocaleString()}\n[burdenValue] = ${burdenHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(burdenValue)}\n[turnoverProxy] = ${afterHoursReduction} hrs × 15% risk/hr = ${turnoverProxyPct}% elevated risk\nAssumption: $350K physician replacement cost (AMGA benchmark).`,
-      footnote: 'Turnover risk proxy based on AAMC data: documentation burden is a top-3 driver of physician burnout.',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${burdenHours.toLocaleString()} hours returned to providers annually — outside clinical hours.`,
+      context: `Across ${providers} providers, ambient is returning an estimated ${burdenHours.toLocaleString()} hours of after-hours documentation time annually — time that was previously spent charting outside of clinical hours.\n\nFor providers, this is one of the most immediate and personal impacts of ambient. It shows up at home, on evenings, on weekends. Tracking it is the first step to understanding what it means for sustainability and retention.`,
+      formula: `[burdenHours] = ${afterHoursReduction} × ${providers} × 52 = ${burdenHours.toLocaleString()}`,
+      footnote: 'Uses 52 weeks. For clinical weeks only, adjust to 46–48.',
+      nextLevelTeaser: 'Level 2 — when in-clinic burden is measured alongside after-hours, the full picture of provider relief comes into focus.',
     };
   }
 
@@ -531,16 +527,10 @@ export function computeWorkforceFeedback(
     }
 
     const clinicSavedHours = Math.round(minutesSaved * providers * 230 / 60);
-    const clinicValue = Math.round(clinicSavedHours * providerRate);
 
-    const afterHoursValue = confirmedAfterHours && confirmedAfterHours > 0
-      ? Math.round(confirmedAfterHours * providers * 52 * providerRate)
-      : 0;
     const afterHoursHours = confirmedAfterHours && confirmedAfterHours > 0
       ? Math.round(confirmedAfterHours * providers * 52)
       : 0;
-
-    const totalValue = clinicValue + afterHoursValue;
 
     const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
     const surveyNarrative = hasSurveyData
@@ -552,21 +542,25 @@ export function computeWorkforceFeedback(
     const burdenScoreBefore = inputs.burdenScoreBefore as number | undefined;
     const burdenScoreAfter = inputs.burdenScoreAfter as number | undefined;
     const burnoutNarrative = burdenScoreBefore && burdenScoreAfter && burdenScoreBefore > burdenScoreAfter
-      ? `\n\nDocumentation burden score improved from ${burdenScoreBefore}/10 to ${burdenScoreAfter}/10. Each 1-point improvement correlates with ~8% reduction in near-term departure intent.`
+      ? `\n\nDocumentation burden score improved from ${burdenScoreBefore}/10 to ${burdenScoreAfter}/10.`
       : '';
 
-    const afterHoursLine = afterHoursValue > 0
-      ? `After-hours: ${confirmedAfterHours} hrs/wk × ${providers} × 52 = ${afterHoursHours.toLocaleString()} hours (${formatDollar(afterHoursValue)})\n`
-      : '';
+    const totalHours = clinicSavedHours + afterHoursHours;
+    const fteEquiv = Math.round(totalHours / 2080 * 10) / 10;
+
+    const headlineMetric = afterHoursHours > 0
+      ? `${clinicSavedHours.toLocaleString()} in-clinic hours + ${afterHoursHours.toLocaleString()} after-hours hours recovered annually — ${fteEquiv} FTE equivalent of provider time.`
+      : `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`;
 
     return {
       label: 'Estimated Impact',
-      value: totalValue,
-      hasValue: true,
-      headlineMetric: `${formatDollar(totalValue)} in total measured workforce value${afterHoursValue > 0 ? ' — after-hours and in-clinic combined' : ''}.`,
-      context: `This is no longer anecdote — it's data. Your providers are getting measurable time back every day.\n\n${afterHoursValue > 0 ? `After-hours: ${formatDollar(afterHoursValue)}\n` : ''}In-clinic editing: ${formatDollar(clinicValue)}${surveyNarrative}${burnoutNarrative}`,
-      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 230 working days / 60 = ${clinicSavedHours.toLocaleString()}\n[clinicValue] = ${clinicSavedHours.toLocaleString()} × ${formatDollar(providerRate)} = ${formatDollar(clinicValue)}${afterHoursValue > 0 ? `\n[afterHoursValue] = ${confirmedAfterHours} × ${providers} × 52 × ${formatDollar(providerRate)} = ${formatDollar(afterHoursValue)}` : ''}\n[total] = ${formatDollar(totalValue)}`,
-      footnote: '',
+      value: null,
+      hasValue: false,
+      headlineMetric,
+      context: `Your providers are getting measurable time back — inside the visit and after it.\n\nIn-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}${burnoutNarrative}`,
+      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 230 / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × 52 = ${afterHoursHours.toLocaleString()}` : ''}`,
+      footnote: '230 clinical working days. Time returned is shown in hours — dollar value appears at Level 3 when turnover data is entered.',
+      nextLevelTeaser: 'Level 3 — when turnover data is in the picture, burden reduction connects to a retention value your CHRO can work with.',
     };
   }
 
@@ -588,25 +582,21 @@ export function computeWorkforceFeedback(
     const totalCost = Math.round(totalTurnover * replacementCost);
     const docDrivenCost = docBurdenShare > 0 ? Math.round(totalCost * (docBurdenShare / 100)) : 0;
 
-    const afterHoursReduced = (inputs.afterHoursReduction as number) || (inputs.confirmedAfterHoursReduction as number) || 0;
-    const riskReductionRate = afterHoursReduced > 0 ? Math.min(afterHoursReduced * 0.075, 0.30) : 0;
-    const protectedValue = docDrivenCost > 0 ? Math.round(docDrivenCost * riskReductionRate) : 0;
+    const hasDocShare = docBurdenShare > 0 && docDrivenCost > 0;
 
-    const docShareLine = docBurdenShare > 0
-      ? `\n\nDocumentation burden drives an estimated ${formatDollar(docDrivenCost)} of that.`
-      : '\n\nEnter the portion of turnover driven by documentation burden to see the attributable exposure.';
-    const protectedLine = protectedValue > 0
-      ? `\n\nAmbient AI's burden reduction is protecting an estimated ${formatDollar(protectedValue)} of that exposure annually — and growing as utilization increases.`
-      : '';
+    const headlineMetric = hasDocShare
+      ? `${formatDollar(docDrivenCost)} in documentation-attributable turnover exposure.`
+      : `${totalTurnover.toFixed(1)} projected departure${totalTurnover !== 1 ? 's' : ''} per year. Enter documentation burden share to see attributable exposure.`;
 
     return {
       label: 'Estimated Impact',
-      value: totalCost,
-      hasValue: true,
-      headlineMetric: `${formatDollar(totalCost)} in annual physician turnover cost.`,
-      context: `At ${turnoverRate}% turnover across ${providers} providers, your organization expects approximately ${totalTurnover.toFixed(1)} departure(s) per year. At ${formatDollar(replacementCost)} per replacement, total annual turnover cost is ${formatDollar(totalCost)}.${docShareLine}${protectedLine}`,
-      formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${docBurdenShare > 0 ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}${protectedValue > 0 ? `\n[protected] = ${formatDollar(docDrivenCost)} × ${(riskReductionRate * 100).toFixed(0)}% = ${formatDollar(protectedValue)}` : ''}`,
-      footnote: 'Based on your inputs, AAMC turnover data, and burden-reduction correlation estimates.',
+      value: hasDocShare ? docDrivenCost : null,
+      hasValue: hasDocShare,
+      headlineMetric,
+      context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nAt ${formatDollar(replacementCost)} replacement cost per provider, total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion ambient retention improvement works directly against.` : 'Enter the share of turnover you attribute to documentation burden to see the portion ambient can influence.'}`,
+      formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,
+      footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',
+      nextLevelTeaser: 'Level 4 — when agency and locum spend start to reflect the difference, it shows up directly in the P&L.',
     };
   }
 
@@ -624,15 +614,12 @@ export function computeWorkforceFeedback(
   const monthsSustained = (inputs.monthsSustained as number) || 0;
   const annualSavings = Math.round(agencyReduction * 12);
   const cumulativeSavings = monthsSustained > 0 ? Math.round(agencyReduction * monthsSustained) : 0;
-  const cumulativeLine = cumulativeSavings > 0
-    ? `\n\nYou've already avoided ${formatDollar(cumulativeSavings)} in agency spend over ${monthsSustained} month${monthsSustained !== 1 ? 's' : ''}. On current trajectory, that's ${formatDollar(annualSavings)} annually.`
-    : '';
   return {
     label: 'Estimated Impact',
     value: annualSavings,
     hasValue: true,
     headlineMetric: `${formatDollar(annualSavings)} in annual labor spend reduction.${cumulativeSavings > 0 ? ` ${formatDollar(cumulativeSavings)} already realized.` : ''}`,
-    context: `This is the level where ambient AI shows up in the CFO's P&L — not as a cost line, but as a cost reduction. Agency and locum dependency is structurally lower. That compounds.${cumulativeLine}`,
+    context: `Agency and locum spend is one of the most visible labor cost lines in a health system. When it decreases — and the decrease is attributable to improved provider retention — that's ambient showing up directly in your P&L.\n\n${cumulativeSavings > 0 ? `Your organization has already avoided ${formatDollar(cumulativeSavings)} in agency spend over ${monthsSustained} month${monthsSustained !== 1 ? 's' : ''}. At this rate, that's ${formatDollar(annualSavings)} annually.` : ''}`,
     formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}${cumulativeSavings > 0 ? `\n[cumulative] = ${formatDollar(agencyReduction)} × ${monthsSustained} months = ${formatDollar(cumulativeSavings)}` : ''}`,
     footnote: '',
   };

@@ -109,14 +109,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'Documentation burden is a leading driver of physician burnout and turnover risk.',
-    reframe: 'At $100K–$1M per physician departure, documentation burden isn\'t a satisfaction issue — it\'s a financial exposure.',
+    headline: 'Provider sustainability is one of the most consequential — and undertracked — dimensions of an ambient deployment.',
+    reframe: 'When documentation burden decreases, providers get time back — inside the visit and after it. Understanding where that relief shows up is what this domain measures.',
     cards: [
-      { level: 1, label: 'Providers Report Less After-Hours Work. Not Measured Yet.', description: 'After-hours documentation burden exists, but no formal measurement of its impact on provider experience or retention has been done.' },
-      { level: 2, label: 'Burden Reduction Measured and Validated.', description: 'In-clinic and after-hours time formally quantified; survey data captured.' },
-      { level: 3, label: 'Retention Risk Calculated Against Burden Reduction.', description: 'Turnover exposure modeled; documentation burden is a named variable in retention strategy.' },
-      { level: 4, label: 'Labor Spend Is Structurally Declining.', description: 'Agency and locum costs measurably reduced; workforce economics improving.' },
+      { level: 1, label: 'After-Hours Burden Is Being Reduced.', description: 'Providers are spending less time on documentation outside clinical hours. This level establishes how much.' },
+      { level: 2, label: 'Burden Reduction Is Measured.', description: 'In-clinic and after-hours documentation time has been formally quantified, with provider experience data to support it.' },
+      { level: 3, label: 'Retention Impact Is Being Tracked.', description: 'Your organization has modeled turnover exposure and identified documentation burden as a measurable variable in provider retention.' },
+      { level: 4, label: 'Labor Costs Are Reflecting the Difference.', description: 'Reduced documentation burden is showing up in your labor cost structure — through lower agency spend, fewer locum engagements, or both.' },
     ],
+    framingQuestions: {
+      1: 'How much after-hours documentation time has ambient returned to your providers per week?',
+      2: 'How much in-clinic documentation time has ambient returned per provider per day — and what are providers saying about it?',
+      3: 'What does your organization\'s turnover data look like — and what share of it do you attribute to documentation burden?',
+      4: 'Has ambient-enabled retention improvement reduced your organization\'s dependence on agency or locum providers — and by how much?',
+    },
+    unlockTeasers: {
+      2: 'Unlock: measure in-clinic burden alongside after-hours',
+      3: 'Unlock: connect burden reduction to retention data',
+      4: 'Unlock: quantify agency/locum cost reduction',
+    },
   },
   risk: {
     label: 'QUALITY',
@@ -934,11 +945,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       return (
         <div>
-          <p className="text-sm text-[#888888] italic mb-4">
-            Documentation burden affects provider retention and labor costs. The estimate below is auto-computed from your baseline data.
-          </p>
           <label className="block text-sm font-medium text-black mb-1">
-            Estimated hours per provider per week of after-hours documentation reduced
+            Hours per provider per week of after-hours documentation reduced
           </label>
           <div className="flex items-center gap-2">
             <FormattedNumberInput
@@ -950,7 +958,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
           </div>
-          <BenchmarkContext text="Organizations using ambient documentation have reported 1–3 hrs/week reduction in after-hours documentation." />
+          <BenchmarkContext text="Organizations using ambient documentation have reported 1–3 hrs/week reduction in after-hours documentation. Based on aggregated deployment experience." />
         </div>
       );
     }
@@ -1671,10 +1679,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
-              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : 'Where is your organization today?'}
+              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : activeDomain === 'workforce' ? 'YOUR WORKFORCE MATURITY' : 'Where is your organization today?'}
             </p>
 
-            {(activeDomain === 'capacity' || activeDomain === 'revenue') && (
+            {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce') && (
               <div className="flex items-center justify-center gap-3 mb-4">
                 {[1, 2, 3, 4].map((lvl) => {
                   const selectedLevel = currentState.activationLevel;
@@ -1703,7 +1711,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 const isSelected = selectedLevel === card.level;
                 const isClaimed = selectedLevel !== null && card.level < selectedLevel;
                 const isNextAbove = selectedLevel !== null && card.level === selectedLevel + 1 && selectedLevel < 4;
-                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue';
+                const hasStaircase = activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce';
                 const isFuture = hasStaircase && selectedLevel !== null && card.level > selectedLevel && !isNextAbove;
 
                 const leftBorderStyle = isSelected
@@ -1735,6 +1743,39 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       if (pts > 0) {
                         const val = Math.round(pts * rp * 11 * revenuePerVisit);
                         return formatDollar(val);
+                      }
+                    }
+                  }
+                  if (activeDomain === 'workforce') {
+                    if (card.level === 1) {
+                      const ahr = (inp.afterHoursReduction as number) || 0;
+                      if (ahr > 0) {
+                        const hrs = Math.round(ahr * providers * 52);
+                        return `${hrs.toLocaleString()} hrs/yr`;
+                      }
+                    }
+                    if (card.level === 2) {
+                      const mins = (inp.editTimeSaved as number) || 0;
+                      if (mins > 0) {
+                        const clinicHrs = Math.round(mins * providers * 230 / 60);
+                        const cAfterHours = (inp.confirmedAfterHoursReduction as number) || (inp.afterHoursReduction as number) || 0;
+                        const ahHrs = cAfterHours > 0 ? Math.round(cAfterHours * providers * 52) : 0;
+                        const totalHrs = clinicHrs + ahHrs;
+                        return `${totalHrs.toLocaleString()} hrs/yr`;
+                      }
+                    }
+                    if (card.level === 3) {
+                      const dbs = (inp.docBurdenShare as number) || 0;
+                      const tr = (inp.turnoverRate as number) || 0;
+                      const rc = (inp.replacementCost as number) || 0;
+                      if (dbs > 0 && tr > 0 && rc > 0) {
+                        const totalCost = Math.round(providers * (tr / 100) * rc);
+                        const docDriven = Math.round(totalCost * (dbs / 100));
+                        return formatDollar(docDriven);
+                      }
+                      if (tr > 0 && rc > 0) {
+                        const departures = (providers * (tr / 100)).toFixed(1);
+                        return `${departures} departures/yr`;
                       }
                     }
                   }
@@ -1940,7 +1981,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   <p className="text-xs text-white/50 italic leading-relaxed mb-3">
                     {activeDomain === 'capacity' ? `Recoverable capacity value — based on your ${documentedEncounters.toLocaleString()} encounters and industry time estimates.` :
                      activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
-                     activeDomain === 'workforce' ? `Turnover exposure — based on your ${providers.toLocaleString()} providers and AAMC replacement cost benchmarks.` :
+                     activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
                      ''}
                   </p>
                 )}
@@ -1961,7 +2002,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </div>
                 )}
 
-                {feedback.costOfWaiting && activeDomain !== 'capacity' && activeDomain !== 'revenue' && (
+                {feedback.costOfWaiting && activeDomain !== 'capacity' && activeDomain !== 'revenue' && activeDomain !== 'workforce' && (
                   <div className="bg-[#EA2C00]/10 border border-[#EA2C00]/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-cost-of-waiting">
                     <p className="text-sm text-[#EA2C00] font-medium leading-relaxed">
                       {feedback.costOfWaiting}
@@ -1977,7 +2018,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 <FormulaDisplay formula={feedback.formula} />
 
-                {(activeDomain === 'capacity' || activeDomain === 'revenue') && feedback.nextLevelTeaser && (
+                {(activeDomain === 'capacity' || activeDomain === 'revenue' || activeDomain === 'workforce') && feedback.nextLevelTeaser && (
                   <p className="text-xs text-white/50 italic leading-relaxed mt-3" data-testid="text-next-level-teaser">
                     {feedback.nextLevelTeaser}
                   </p>
@@ -2025,6 +2066,77 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 );
               })}
             </div>
+
+            {activeDomain === 'workforce' && currentState.activationLevel && (() => {
+              const inp = currentState.inputs;
+              const ahr = (inp.afterHoursReduction as number) || 0;
+              const afterHoursHrs = ahr > 0 ? Math.round(ahr * providers * 52) : 0;
+
+              const mins = (inp.editTimeSaved as number) || 0;
+              const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
+
+              const tr = (inp.turnoverRate as number) || 0;
+              const rc = (inp.replacementCost as number) || 0;
+              const dbs = (inp.docBurdenShare as number) || 0;
+              const retentionExposure = (tr > 0 && rc > 0 && dbs > 0)
+                ? Math.round(providers * (tr / 100) * rc * (dbs / 100))
+                : null;
+
+              const ar = (inp.agencyReduction as number) || 0;
+              const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
+
+              const hasAnyValue = afterHoursHrs > 0 || clinicHrs > 0 || retentionExposure !== null || agencyAnnual !== null;
+              if (!hasAnyValue) return null;
+
+              const totalDollar = (retentionExposure || 0) + (agencyAnnual || 0);
+              const hasDollarValue = retentionExposure !== null || agencyAnnual !== null;
+
+              return (
+                <>
+                  <div className="h-px bg-white/10 my-5" />
+                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-workforce-summary-label">
+                    Workforce Summary
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">After-Hours Returned</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-afterhours">
+                        {afterHoursHrs > 0 ? `${afterHoursHrs.toLocaleString()} hrs/yr` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">In-Clinic Returned</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
+                        {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Retention Exposure</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
+                        {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Agency Reduction</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-agency">
+                        {agencyAnnual !== null ? formatDollar(agencyAnnual) : '—'}
+                      </span>
+                    </div>
+                    {hasDollarValue && (
+                      <>
+                        <div className="h-px bg-white/10 my-2" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">Total Workforce Value</span>
+                          <span className="text-[#EA2C00] font-bold" data-testid="text-workforce-summary-total">
+                            {formatDollar(totalDollar)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
 
             {activeDomain === 'capacity' && currentState.activationLevel && (() => {
               const inp = currentState.inputs;
