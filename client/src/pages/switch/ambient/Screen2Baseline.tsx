@@ -19,7 +19,7 @@ const INDUSTRY_UTIL = 45;
 
 export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }: Screen2Props) {
   const [showEstimator, setShowEstimator] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
 
   const hasBothInputs = inputs.providers > 0 && inputs.annualEncounters > 0;
@@ -80,10 +80,10 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight"
             data-testid="text-screen2-headline"
           >
-            Before we can show you what's possible — we need to understand what's real.
+            Let's build your deployment profile.
           </h1>
           <p className="text-base text-[#888888]">
-            Three inputs establish the foundation. Everything that follows is built on what you tell us here.
+            Three inputs. Everything that follows is built on what you tell us here.
           </p>
         </motion.div>
 

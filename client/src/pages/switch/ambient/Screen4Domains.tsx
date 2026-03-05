@@ -76,9 +76,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       4: 'Has your organization formally attributed workforce planning decisions to ambient-enabled capacity — FTEs not hired, locums reduced, or panels rebalanced?',
     },
     unlockTeasers: {
-      2: 'Unlock: quantify and escalate to leadership',
-      3: 'Unlock: deploy time into patient access',
-      4: 'Unlock: connect to workforce planning',
+      2: 'Next: quantify and escalate to leadership',
+      3: 'Next: deploy time into patient access',
+      4: 'Next: connect to workforce planning',
     },
   },
   revenue: {
@@ -98,9 +98,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       4: 'How is documentation quality formally integrated into your revenue cycle operations — and what has your organization attributed to it?',
     },
     unlockTeasers: {
-      2: 'Unlock: begin revenue cycle analysis',
-      3: 'Unlock: measure before/after impact',
-      4: 'Unlock: integrate into operations',
+      2: 'Next: begin revenue cycle analysis',
+      3: 'Next: measure before/after impact',
+      4: 'Next: integrate into operations',
     },
   },
   workforce: {
@@ -120,9 +120,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       4: 'Has ambient-enabled retention improvement reduced your organization\'s dependence on agency or locum providers — and by how much?',
     },
     unlockTeasers: {
-      2: 'Unlock: measure in-clinic burden alongside after-hours',
-      3: 'Unlock: connect burden reduction to retention data',
-      4: 'Unlock: quantify agency/locum cost reduction',
+      2: 'Next: measure in-clinic burden alongside after-hours',
+      3: 'Next: connect burden reduction to retention data',
+      4: 'Next: quantify agency/locum cost reduction',
     },
   },
   risk: {
@@ -142,9 +142,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       4: 'How is documentation quality formally embedded in your organization\'s strategic operations?',
     },
     unlockTeasers: {
-      2: 'Unlock: start tracking documentation quality formally',
-      3: 'Unlock: connect quality to downstream workflows',
-      4: 'Unlock: embed quality in organizational strategy',
+      2: 'Next: start tracking documentation quality formally',
+      3: 'Next: connect quality to downstream workflows',
+      4: 'Next: embed quality in organizational strategy',
     },
   },
 };
@@ -365,7 +365,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   }`}
                   data-testid={`radio-aggregated-${opt.id}`}
                 >
-                  {opt.label}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${capacityAggregated === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -400,7 +403,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         }`}
                         data-testid={`radio-leadership-decision-${opt.id}`}
                       >
-                        {opt.label}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${capacityLeadershipDecision === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                          <span>{opt.label}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -583,7 +589,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   }`}
                   data-testid={`radio-revenue-engaged-${opt.id}`}
                 >
-                  {opt.label}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${revenueCycleEngaged === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -618,7 +627,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         }`}
                         data-testid={`radio-revenue-status-${opt.id}`}
                       >
-                        {opt.label}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${revenueCycleStatus === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                          <span>{opt.label}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -705,7 +717,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   }`}
                   data-testid={`radio-investigation-duration-${opt.id}`}
                 >
-                  {opt.label}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${duration === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -735,7 +750,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   }`}
                   data-testid={`radio-metric-${opt.id}`}
                 >
-                  {opt.label}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${metricType === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -1497,7 +1515,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 }`}
                 data-testid={`radio-executive-owner-${opt.id}`}
               >
-                {opt.label}
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${executiveOwner === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                  <span>{opt.label}</span>
+                </div>
               </button>
             ))}
           </div>
@@ -1599,8 +1620,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
     if (!fb.hasValue && fb.value === null) {
       return (
-        <p className="font-bold text-2xl text-white/40 leading-[1.1] mb-4" data-testid="text-feedback-value">
-          Not yet measured
+        <p className="text-sm text-white/60 leading-relaxed italic mb-4" data-testid="text-feedback-value">
+          {fb.context || "Enter the inputs above to see your estimated impact."}
         </p>
       );
     }
@@ -1638,12 +1659,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 >
                   {DOMAIN_LABELS[d]}
                 </button>
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    isActive ? 'bg-[#EA2C00]' : isComplete ? 'bg-black' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid={`domain-dot-${d}`}
-                />
+                {isComplete && domainStates[d].activationLevel !== null ? (
+                  <div
+                    className="flex items-center justify-center w-5 h-5 rounded-full bg-[#EA2C00] text-white text-[9px] font-bold font-abridge"
+                    data-testid={`domain-dot-${d}`}
+                  >
+                    {domainStates[d].activationLevel}
+                  </div>
+                ) : (
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isActive ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid={`domain-dot-${d}`}
+                  />
+                )}
               </div>
               {idx < DOMAIN_ORDER.length - 1 && (
                 <div className="w-4 sm:w-8 h-px bg-[#D1D5DB] mt-5" />
@@ -1835,11 +1865,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                      className="group bg-white border border-[#E8E3DC] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 transition-all duration-200"
+                      className="group bg-[#FAFAF9] border border-[#E8E3DC] rounded-xl mb-2 cursor-pointer hover:border-[#EA2C00]/30 transition-all duration-200 opacity-85"
                       onClick={() => setActivation(card.level)}
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
                     >
-                      <div className="flex items-center gap-4 px-5 py-4">
+                      <div className="flex items-center gap-4 px-4 py-3">
                         <div className="w-8 h-8 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0">
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </div>
@@ -1862,7 +1892,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                      className="bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_4px_20px_rgba(234,44,0,0.10)] overflow-hidden"
+                      className="bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_6px_28px_rgba(234,44,0,0.14)] overflow-hidden ring-1 ring-[#EA2C00]/10"
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
                     >
                       <div className="px-5 pt-5 pb-4 border-b border-[#F5F0EB]">
@@ -1902,9 +1932,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                    className={`bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 ${
-                      canClick ? 'cursor-pointer hover:border-[#D9D3CB] transition-all duration-200' : 'opacity-70'
-                    }`}
+                    className={canClick
+                      ? 'bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200'
+                      : 'bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 opacity-40 pointer-events-none'
+                    }
                     onClick={() => {
                       if (canClick) setActivation(card.level);
                     }}
@@ -1917,7 +1948,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#AAAAAA]">{card.label}</p>
                         {isFuture && config.unlockTeasers?.[card.level] && (
-                          <p className="text-xs text-[#BBBBBB] italic mt-0.5">{config.unlockTeasers[card.level]}</p>
+                          <p className="text-xs text-[#999999] mt-0.5">{config.unlockTeasers[card.level]}</p>
                         )}
                       </div>
                       <span className="text-sm text-[#CCCCCC] ml-auto">→</span>
@@ -1995,7 +2026,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 <FormulaDisplay formula={feedback.formula} />
 
                 {feedback.nextLevelTeaser && (
-                  <p className="text-xs text-white/50 italic leading-relaxed mt-3" data-testid="text-next-level-teaser">
+                  <p className="text-xs text-white/70 italic leading-relaxed mt-3 pl-3 border-l border-[#EA2C00]/40" data-testid="text-next-level-teaser">
                     {feedback.nextLevelTeaser}
                   </p>
                 )}
@@ -2116,7 +2147,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
             {activeDomain === 'capacity' && currentState.activationLevel && (() => {
               const inp = currentState.inputs;
-              const ts = (inp.timeSaved as number) || 0;
+              const ts = (inp.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
               const recoveredHours = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
               const fte = ts > 0 ? (recoveredHours / 2080).toFixed(1) : null;
 
