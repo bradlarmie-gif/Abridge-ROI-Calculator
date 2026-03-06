@@ -70,15 +70,15 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 4, label: 'Hiring Plans Have Changed', description: 'Ambient is in your hiring model.' },
     ],
     framingQuestions: {
-      1: 'Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?',
-      2: 'Has your organization formally quantified total recovered capacity and brought it to leadership with a recommended use?',
-      3: 'Has your organization confirmed that recovered time is being used to expand patient access — through additional appointments, panel growth, or scheduling redesign?',
-      4: 'Has your organization formally attributed workforce planning decisions to ambient-enabled capacity — FTEs not hired, locums reduced, or panels rebalanced?',
+      1: undefined as any,
+      2: 'The hours are real. Has leadership seen them?',
+      3: 'Recovered time is being used for more patients. How many?',
+      4: 'Capacity is showing up in the hiring model. What changed?',
     },
     unlockTeasers: {
-      2: 'Next: quantify and escalate to leadership',
-      3: 'Next: deploy time into patient access',
-      4: 'Next: connect to workforce planning',
+      2: 'The number matters when someone sees it.',
+      3: 'Hours become revenue when they have a destination.',
+      4: 'Hiring plans change last. That\'s how you know it\'s real.',
     },
   },
   revenue: {
@@ -86,21 +86,21 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Every encounter you document with ambient is a coding opportunity. Most organizations aren\'t looking.',
     reframe: 'Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends entirely on whether your revenue cycle team is part of the conversation — most aren\'t yet.',
     cards: [
-      { level: 1, label: 'No One Is Connecting the Dots', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
-      { level: 2, label: 'Revenue Cycle Is in the Conversation', description: 'Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes.' },
-      { level: 3, label: 'The Impact Has Been Measured', description: 'Your organization has before/after data that connects ambient documentation to a specific revenue outcome — a number leadership can work with.' },
-      { level: 4, label: 'It\'s Now a Managed System', description: 'Documentation quality and revenue cycle operate as a connected system — monitored, attributed, and factored into operational planning.' },
+      { level: 1, label: 'No One Is Connecting the Dots', description: 'Revenue cycle hasn\'t entered the room yet.' },
+      { level: 2, label: 'Revenue Cycle Is in the Conversation', description: 'Someone is looking. What are they seeing?' },
+      { level: 3, label: 'The Impact Has Been Measured', description: 'There\'s a number. Leadership can work with it.' },
+      { level: 4, label: 'It\'s Now a Managed System', description: 'The loop is closed. It runs on its own now.' },
     ],
     framingQuestions: {
-      1: 'Has your revenue cycle team been formally engaged on what ambient documentation means for coding accuracy or reimbursement?',
-      2: 'What is your revenue cycle team analyzing — and how far along is the investigation?',
-      3: 'What did your organization measure — and what does your data show?',
-      4: 'How is documentation quality formally integrated into your revenue cycle operations — and what has your organization attributed to it?',
+      1: '{encounterCount} encounters. Has anyone from revenue cycle looked at what that means for coding?',
+      2: 'What\'s being analyzed?',
+      3: 'What did you measure?',
+      4: 'How is this built in?',
     },
     unlockTeasers: {
-      2: 'Next: begin revenue cycle analysis',
-      3: 'Next: measure before/after impact',
-      4: 'Next: integrate into operations',
+      2: 'Someone needs to start looking.',
+      3: 'A number changes everything.',
+      4: 'The loop closes when it\'s built into how you operate.',
     },
   },
   workforce: {
@@ -108,21 +108,21 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Provider sustainability is one of the most consequential dimensions of an ambient deployment — and one of the least tracked.',
     reframe: 'When documentation burden decreases, providers get time back — inside the visit and after it. Understanding where that relief shows up is what this domain measures.',
     cards: [
-      { level: 1, label: 'Providers Are Getting Time Back', description: 'Providers are spending less time on documentation outside clinical hours. This level establishes how much.' },
-      { level: 2, label: 'The Relief Is on Record', description: 'In-clinic and after-hours documentation time has been formally quantified, with provider experience data to support it.' },
-      { level: 3, label: 'Retention Is Part of the Story', description: 'Your organization has modeled turnover exposure and identified documentation burden as a measurable variable in provider retention.' },
-      { level: 4, label: 'The Savings Are Showing Up', description: 'Reduced documentation burden is showing up in your labor cost structure — through lower agency spend, fewer locum engagements, or both.' },
+      { level: 1, label: 'Providers Are Getting Time Back', description: 'The after-hours load is lighter. How much lighter?' },
+      { level: 2, label: 'Effort Reduction Is Measured', description: 'In-clinic time is tracked. Providers have been asked.' },
+      { level: 3, label: 'Retention Is Part of the Story', description: 'Turnover is being modeled. Burden is part of it.' },
+      { level: 4, label: 'The Savings Are Showing Up', description: 'It\'s in the labor line now.' },
     ],
     framingQuestions: {
-      1: 'How much after-hours documentation time has ambient returned to your providers per week?',
-      2: 'How much in-clinic documentation time has ambient returned per provider per day — and what are providers saying about it?',
-      3: 'What does your organization\'s turnover data look like — and what share of it do you attribute to documentation burden?',
-      4: 'Has ambient-enabled retention improvement reduced your organization\'s dependence on agency or locum providers — and by how much?',
+      1: undefined as any,
+      2: undefined as any,
+      3: undefined as any,
+      4: 'What\'s the monthly reduction in agency or locum spend?',
     },
     unlockTeasers: {
-      2: 'Next: measure in-clinic burden alongside after-hours',
-      3: 'Next: connect burden reduction to retention data',
-      4: 'Next: quantify agency/locum cost reduction',
+      2: 'After-hours is only part of the story.',
+      3: 'Burden reduction becomes a retention story.',
+      4: 'The savings show up in the labor line.',
     },
   },
   risk: {
@@ -130,21 +130,21 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Documentation quality is the foundation. This domain measures how far that signal has traveled downstream.',
     reframe: 'When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. This domain measures how far that signal has traveled downstream.',
     cards: [
-      { level: 1, label: 'The Notes Are Better. No One\'s Connecting It Yet.', description: 'Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected.' },
-      { level: 2, label: 'Quality Is Being Monitored', description: 'Your organization is actively measuring documentation quality attributes — completeness, specificity, and accuracy — and gaps are visible.' },
-      { level: 3, label: 'The Signal Is Reaching Downstream Teams', description: 'Improved documentation is producing measurable results in downstream workflows — CDI, coding accuracy, quality measure performance, or prior authorization.' },
-      { level: 4, label: 'It\'s Built Into How We Run', description: 'Documentation quality is formally embedded in your organization\'s strategic operations — from payer relationships and quality programs to compliance governance and clinical governance.' },
+      { level: 1, label: 'The Notes Are Better. No One\'s Connecting It Yet.', description: 'Better notes. No one downstream knows it yet.' },
+      { level: 2, label: 'Quality Is Being Monitored', description: 'Quality is being watched. Gaps are showing up.' },
+      { level: 3, label: 'The Signal Is Reaching Downstream Teams', description: 'At least one downstream team is seeing a measurable difference.' },
+      { level: 4, label: 'It\'s Built Into How We Run', description: 'This isn\'t a project anymore. It\'s how the organization runs.' },
     ],
     framingQuestions: {
-      1: 'Ambient is producing better notes. Has your organization started connecting that improvement to anything downstream — coding, quality reporting, compliance, or care management?',
-      2: 'How is your organization monitoring documentation quality — and which attributes are being tracked?',
-      3: 'Which downstream workflows has improved documentation quality measurably impacted — and what does your data show?',
-      4: 'How is documentation quality formally embedded in your organization\'s strategic operations?',
+      1: 'Has any downstream team been brought into the conversation?',
+      2: 'How is quality being tracked?',
+      3: 'Which workflows have measurably shifted?',
+      4: 'Where is it embedded?',
     },
     unlockTeasers: {
-      2: 'Next: start tracking documentation quality formally',
-      3: 'Next: connect quality to downstream workflows',
-      4: 'Next: embed quality in organizational strategy',
+      2: 'Tracking it makes the gaps visible.',
+      3: 'When a downstream team sees it, something changes.',
+      4: 'Built in is different from bolted on.',
     },
   },
 };
@@ -286,12 +286,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const timeSavedSection = (
       <div className="mb-6" key="time-saved">
         <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-          Minutes returned per documented encounter
+          Minutes returned per encounter
         </label>
-        <p className="text-xs text-[#888888] mb-3 leading-relaxed">The clinical time per visit that ambient returns to your providers — previously spent on typing, clicking, or after-visit dictation.</p>
 
         {!(showUnmeasuredCheckbox && unmeasuredTimeChecked) && (
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-1">
             <FormattedNumberInput
               value={timeSavedValue}
               onChange={(v) => setDomainInput('timeSaved', Math.min(8, Math.max(0, v)))}
@@ -302,6 +301,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <span className="text-sm text-[#888888]">min</span>
           </div>
         )}
+        <BenchmarkContext text="Abridge observed benchmark: 2–3 min" />
 
 
         {showUnmeasuredCheckbox && (
@@ -320,7 +320,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="checkbox-unmeasured-time"
               />
               <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
-                I haven't formally measured this — using the Abridge observed benchmark of 2–3 min
+                Use benchmark (2–3 min)
               </label>
             </div>
 
@@ -346,13 +346,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           {timeSavedSection}
           <div className="mb-5">
             <label className="block text-sm font-medium text-black mb-3">
-              Has your organization aggregated total recovered hours across providers?
+              Where does this stand?
             </label>
             <div className="flex flex-col gap-2.5">
               {[
-                { id: 'no', label: "No — time savings are known per encounter but not aggregated across the deployment" },
-                { id: 'informal', label: "Informally — we have estimates but no formal reporting" },
-                { id: 'yes', label: 'Yes — total recovered hours are formally quantified and reported' },
+                { id: 'no', label: "Not aggregated yet" },
+                { id: 'informal', label: "Estimated, not reported" },
+                { id: 'yes', label: 'Formally quantified' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -388,9 +388,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </label>
                   <div className="flex flex-col gap-2.5">
                     {[
-                      { id: 'no', label: "No — the number has been presented but no decision has been made" },
-                      { id: 'partial', label: "In progress — leadership is evaluating options" },
-                      { id: 'yes', label: 'Yes — there is a formal plan for deploying recovered capacity' },
+                      { id: 'no', label: "Presented, no decision yet" },
+                      { id: 'partial', label: "Evaluating options" },
+                      { id: 'yes', label: 'Formal plan in place' },
                     ].map((opt) => (
                       <button
                         key={opt.id}
@@ -425,9 +425,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Additional patients seen per provider per month
+              Additional patients per provider per month
             </label>
-            <p className="text-xs text-[#888888] mb-3 leading-relaxed">Appointments added due to scheduling redesign or panel expansion enabled by ambient. Enter what's confirmed or your best estimate.</p>
             <FormattedNumberInput
               value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
               onChange={(v) => setDomainInput('additionalPatientsPerMonth', v)}
@@ -435,7 +434,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-additional-patients"
             />
-            <BenchmarkContext text="Organizations with structured access redesign have reported 3–8 additional patients per provider per month." />
+            <BenchmarkContext text="Structured access redesign: 3–8 patients/provider/month" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -461,9 +460,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Providers with redesigned schedules
+              Providers included
             </label>
-            <p className="text-xs text-[#888888] mb-2">Defaults to your total provider count. Override if only a subset has redesigned schedules.</p>
             <FormattedNumberInput
               value={(currentState.inputs.redesignedProviders as number) || 0}
               onChange={(v) => setDomainInput('redesignedProviders', Math.max(0, v))}
@@ -478,17 +476,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     const CAPACITY_PLANNING_OPTIONS = [
       'Avoided or deferred new hires',
-      'Absorbed patient volume growth without adding FTEs',
-      'Redeployed providers to underserved panels or new sites',
-      'Factored into annual FTE / staffing model',
-      'Used in business case for new service lines or locations',
+      'Absorbed volume without adding FTEs',
+      'Redeployed providers',
+      'In the annual staffing model',
+      'In a service line business case',
     ];
 
     return (
       <div className="flex flex-col gap-5">
         <div>
           <label className="block text-sm font-medium text-black mb-3">
-            How is recovered capacity being used in planning?
+            What's changed in planning?
           </label>
           <div className="flex flex-col gap-2.5">
             {CAPACITY_PLANNING_OPTIONS.map((item, i) => {
@@ -525,11 +523,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-fte-avoided"
           />
-          <BenchmarkContext text="Organizations at this maturity level have reported 1–2 FTE equivalent in avoided or deferred hires." />
+          <BenchmarkContext text="Organizations at this level report 1–2 FTE equivalent." />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Fully-loaded annual cost per FTE</label>
-          <p className="text-xs text-[#888888] mb-2">Include salary, benefits, malpractice, and onboarding. AMGA benchmark: $350K–$450K for outpatient physician.</p>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Fully-loaded cost per FTE</label>
+          <BenchmarkContext text="AMGA benchmark: $350K–$450K" />
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -546,17 +544,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   };
 
   const REVENUE_METRIC_OPTIONS = [
-    { id: 'wrvu', label: 'wRVU change per encounter (coding specificity improved)' },
-    { id: 'collections', label: 'Collections change per encounter (dollars collected per visit)' },
-    { id: 'revenue_pct', label: 'Overall revenue change (%) attributed to documentation' },
-    { id: 'denial_rate', label: 'Denial rate reduction (documentation-related claims)' },
+    { id: 'wrvu', label: 'wRVU per encounter' },
+    { id: 'collections', label: 'Collections per encounter' },
+    { id: 'revenue_pct', label: 'Overall revenue change' },
+    { id: 'denial_rate', label: 'Denial rate reduction' },
   ];
 
   const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
-    wrvu: 'Organizations measuring wRVU impact have reported 0.05\u20130.15 wRVU increase per encounter.',
-    collections: 'Organizations measuring collections impact have reported $3\u2013$10 increase per encounter.',
-    revenue_pct: 'Organizations measuring overall revenue impact have reported 1\u20134% improvement.',
-    denial_rate: 'Organizations measuring denial rates have reported 5\u201315% reduction in documentation-related denials.',
+    wrvu: 'Abridge benchmark: 0.05\u20130.15 wRVU per encounter',
+    collections: 'Abridge benchmark: $3\u2013$10 per encounter',
+    revenue_pct: 'Abridge benchmark: 1\u20134% improvement',
+    denial_rate: 'Abridge benchmark: 5\u201315% denial rate reduction',
   };
 
   const renderRevenueInputs = () => {
@@ -570,13 +568,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-3">
-              Has your revenue cycle team been formally engaged?
+              Where does this stand?
             </label>
             <div className="flex flex-col gap-2.5">
               {[
-                { id: 'no', label: 'Not yet — ambient and revenue cycle are operating independently' },
-                { id: 'informal', label: 'Some awareness — conversations have started informally' },
-                { id: 'yes', label: 'Yes — formally engaged and involved' },
+                { id: 'no', label: 'Not yet' },
+                { id: 'informal', label: 'Conversations have started' },
+                { id: 'yes', label: 'Formally engaged' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -612,9 +610,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </label>
                   <div className="flex flex-col gap-2.5">
                     {[
-                      { id: 'aware', label: 'Aware but no formal analysis yet' },
-                      { id: 'analyzing', label: 'Active analysis in progress → Level 2' },
-                      { id: 'measured', label: 'We have before/after data → Level 3' },
+                      { id: 'aware', label: 'Aware, no analysis yet' },
+                      { id: 'analyzing', label: 'Analysis in progress' },
+                      { id: 'measured', label: 'Before/after data exists' },
                     ].map((opt) => (
                       <button
                         key={opt.id}
@@ -656,17 +654,17 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 2) {
       const INVESTIGATION_AREAS = [
         'wRVU per encounter trends',
-        'ICD-10 coding specificity and code level distribution',
-        'Claim denial rates related to documentation quality',
-        'Collections per encounter before vs. after ambient',
-        'CDI query volume before vs. after',
-        'Coder productivity and turnaround time',
+        'Coding specificity / ICD-10 distribution',
+        'Denial rates tied to documentation',
+        'Collections before vs. after',
+        'CDI query volume',
+        'Coder productivity',
       ];
       const duration = currentState.inputs.investigationDuration as string || '';
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3">
+            <label className="block text-sm font-medium text-black mb-3 sr-only">
               What is your revenue cycle team analyzing?
             </label>
             <div className="flex flex-col gap-2.5">
@@ -698,13 +696,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              How long has the analysis been in progress?
+              How far along?
             </label>
             <div className="flex flex-col gap-2">
               {[
-                { id: 'under30', label: 'Less than 30 days' },
+                { id: 'under30', label: 'Early — under 30 days' },
                 { id: '30to90', label: '30–90 days' },
-                { id: '90plus', label: '90+ days — findings are maturing' },
+                { id: '90plus', label: '90+ days' },
               ].map((opt) => (
                 <button
                   key={opt.id}
@@ -770,7 +768,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   Measured wRVU change per encounter
                 </label>
-                <p className="text-xs text-[#888888] mb-2">The average change in wRVU per encounter your coding team attributes to improved documentation specificity.</p>
                 <FormattedNumberInput
                   value={(currentState.inputs.measuredWrvuDelta as number) || 0}
                   onChange={(v) => setDomainInput('measuredWrvuDelta', Math.max(0, v))}
@@ -779,7 +776,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   data-testid="input-wrvu-delta"
                   step={0.01}
                 />
-                <BenchmarkContext text="For context: ambient deployments with active CDI review have reported 0.05–0.15 wRVU improvement per encounter. Enter your measured value." />
+                <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter" />
               </motion.div>
             )}
             {metricType === 'collections' && (
@@ -879,7 +876,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-3">
+          <label className="block text-sm font-medium text-black mb-3 sr-only">
             How is documentation quality integrated into revenue cycle?
           </label>
           <div className="flex flex-col gap-2.5">
@@ -911,11 +908,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Revenue formally attributed to documentation quality
+            Annual revenue attributed
           </label>
-          <p className="text-xs text-[#888888] mb-2">
-            The annual figure your organization attributes to ambient-enabled documentation improvements — a number your CFO or VP of Revenue Cycle has confirmed.
-          </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -924,9 +918,27 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               placeholder=""
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-recognized-revenue"
+              disabled={currentState.inputs.noConfirmedRevenue === 'true'}
             />
           </div>
-          <BenchmarkContext text="Organizations with revenue cycle integration have reported $200K–$1M+ in attributed revenue." />
+          <div className="flex items-center gap-2.5 mt-3">
+            <Checkbox
+              id="no-confirmed-revenue"
+              checked={currentState.inputs.noConfirmedRevenue === 'true'}
+              onCheckedChange={(checked) => {
+                setDomainInput('noConfirmedRevenue', checked ? 'true' : 'false');
+              }}
+              data-testid="checkbox-no-confirmed-revenue"
+            />
+            <label htmlFor="no-confirmed-revenue" className="text-sm text-[#525252] cursor-pointer select-none">
+              Don't have a confirmed number yet
+            </label>
+          </div>
+          {currentState.inputs.noConfirmedRevenue === 'true' && (
+            <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+              At {documentedEncounters.toLocaleString()} encounters, organizations at this integration level typically attribute $200K–$600K annually. This can serve as a working estimate.
+            </p>
+          )}
         </div>
       </div>
     );
@@ -940,11 +952,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Hours per provider per week of after-hours documentation reduced
+            After-hours time returned
           </label>
           <div className="flex items-center gap-2">
             <FormattedNumberInput
-              value={(currentState.inputs.afterHoursReduction as number) || 0}
+              value={(currentState.inputs.afterHoursReduction as number) || 2.0}
               onChange={(v) => setDomainInput('afterHoursReduction', Math.max(0, v))}
               placeholder=""
               className="w-full h-12 bg-white border-[#E5E7EB]"
@@ -952,15 +964,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
           </div>
-          <BenchmarkContext text="Organizations using ambient documentation have reported 1–3 hrs/week reduction in after-hours documentation. Based on aggregated deployment experience." />
+          <BenchmarkContext text="Abridge benchmark: 1–3 hrs/week" />
         </div>
       );
     }
 
     const SURVEY_OPTIONS = [
       { id: 'not_yet', label: 'Not yet' },
-      { id: 'informal', label: 'Yes — informal pulse survey' },
-      { id: 'structured', label: 'Yes — structured survey (e.g., burnout, satisfaction, documentation burden)' },
+      { id: 'informal', label: 'Informal pulse survey' },
+      { id: 'structured', label: 'Structured survey' },
     ];
 
     const SURVEY_FINDINGS = [
@@ -977,7 +989,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Minutes saved per provider per day in chart editing, correction, and reconciliation
+              In-clinic time returned per provider per day
             </label>
             <div className="flex items-center gap-2">
               <FormattedNumberInput
@@ -989,13 +1001,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               />
               <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
             </div>
-            <BenchmarkContext text="Organizations at this stage have reported 10–20 min/day reduction in chart editing and review. Based on aggregated deployment experience." />
+            <BenchmarkContext text="Abridge benchmark: 10–20 min/day" />
           </div>
 
 
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Have you conducted a clinician survey since deploying ambient documentation?
+              Have providers been surveyed?
             </label>
             <div className="flex flex-col gap-2">
               {SURVEY_OPTIONS.map((opt) => (
@@ -1103,10 +1115,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 3) {
       const docBurdenOptions = [
-        { value: 10, label: '~10% — a contributing factor' },
-        { value: 20, label: '~20% — a significant factor' },
-        { value: 30, label: '~30% — a primary driver' },
-        { value: 40, label: '40%+ — the dominant driver' },
+        { value: 10, label: '~10%' },
+        { value: 20, label: '~20%' },
+        { value: 30, label: '~30%' },
+        { value: 40, label: '40%+' },
       ];
       return (
         <div className="flex flex-col gap-5">
@@ -1124,11 +1136,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               />
               <span className="text-sm text-[#888888]">%</span>
             </div>
-            <BenchmarkContext text="National physician turnover averages 6–8% annually (AAMC)." />
+            <BenchmarkContext text="National average: 6–8% annually (AAMC)" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Average cost to recruit and onboard a replacement
+              Replacement cost per physician
             </label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-[#888888]">$</span>
@@ -1140,11 +1152,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="input-replacement-cost"
               />
             </div>
-            <BenchmarkContext text="Industry estimates for physician replacement range from $250K–$500K (AAMC, Physician Recruitment studies)." />
+            <BenchmarkContext text="Industry range: $250K–$500K (AAMC)" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              What portion of turnover is driven or worsened by documentation burden?
+              How much of turnover is burden-related?
             </label>
             <div className="flex flex-col gap-2">
               {docBurdenOptions.map((opt) => (
@@ -1174,11 +1186,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   onClick={() => setDomainInput('docBurdenShare', opt.value)}
                   className="text-xs px-3 py-1.5 rounded-full border border-[#D1D5DB] text-[#525252] hover:border-[#E8350A] hover:text-[#E8350A] transition-all"
                 >
-                  {opt.label} ({opt.value}%)
+                  {opt.label}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-[#888888] mt-2">Research benchmark: Documentation burden is a top-3 driver of physician burnout (Shanafelt et al.). Organizations report 20–40% of voluntary turnover attributed to workload and documentation fatigue.</p>
+            <p className="text-xs text-[#888888] mt-2">Shanafelt et al.: documentation burden is a top-3 driver of voluntary turnover.</p>
           </div>
         </div>
       );
@@ -1200,7 +1212,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-agency-reduction"
             />
           </div>
-          <BenchmarkContext text="Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
+          <BenchmarkContext text="Abridge benchmark: $5K–$30K/month" />
         </div>
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -1219,9 +1231,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   };
 
   const MONITORING_OPTIONS = [
-    { id: 'not_yet', label: "Not yet — we know quality has improved but haven't started formal tracking" },
-    { id: 'spot_checks', label: 'Informally — spot checks and anecdotal feedback from CDI or coding' },
-    { id: 'systematic', label: 'Systematically — structured audits or dashboards tracking documentation attributes' },
+    { id: 'not_yet', label: "Not tracking formally yet" },
+    { id: 'spot_checks', label: 'Spot checks and anecdotal' },
+    { id: 'systematic', label: 'Structured audits or dashboards' },
   ];
 
   const renderRiskInputs = () => {
@@ -1242,14 +1254,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1 sr-only">
               Has your organization started connecting ambient documentation quality to any downstream workflow or team?
             </label>
             <div className="flex flex-col gap-2">
               {[
-                { id: 'no', label: 'Not yet — the clinical improvement is visible but hasn\'t reached downstream teams' },
-                { id: 'informal', label: 'Informally — some teams are aware and starting to explore it' },
-                { id: 'yes', label: 'Yes — at least one downstream team is formally engaged' },
+                { id: 'no', label: 'Not yet' },
+                { id: 'informal', label: 'Starting informally' },
+                { id: 'yes', label: 'One team is formally in' },
               ].map((opt) => (
                 <label
                   key={opt.id}
@@ -1315,7 +1327,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3">
+            <label className="block text-sm font-medium text-black mb-3 sr-only">
               How is your organization monitoring documentation quality?
             </label>
             <div className="flex flex-col gap-2.5">
@@ -1384,7 +1396,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     );
                   })}
                 </div>
-                <BenchmarkContext text="Organizations that begin systematic monitoring have reported 15–30% improvement in documentation completeness and specificity. Based on aggregated deployment experience." />
+                <BenchmarkContext text="Abridge benchmark: 15–30% improvement in completeness and specificity" />
 
                 <div className="mt-5">
                   <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -1439,7 +1451,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3">
+            <label className="block text-sm font-medium text-black mb-3 sr-only">
               Which downstream workflows have been impacted by improved documentation?
             </label>
             <div className="flex flex-col gap-2.5">
@@ -1497,7 +1509,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex flex-col gap-5">
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Is there a named executive owner of documentation quality strategy?
+            Is there a named executive owner?
           </label>
           <div className="flex flex-col gap-2">
             {[
@@ -1549,7 +1561,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-medium text-black mb-3">
-            Where does documentation quality factor into organizational strategy?
+            Where does it factor in?
           </label>
           <div className="flex flex-col gap-2.5">
             {STRATEGIC_INTEGRATIONS.map((item, i) => {
@@ -1580,11 +1592,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Strategic value formally attributed to documentation quality
+            Annual strategic value attributed
           </label>
-          <p className="text-xs text-[#888888] mb-2">
-            The annual figure your organization formally connects to documentation quality improvements — across quality programs, compliance risk reduction, or contract performance. A number your CMO or Quality Officer has confirmed.
-          </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -1593,9 +1602,27 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               placeholder=""
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-strategic-value"
+              disabled={currentState.inputs.noConfirmedStrategicValue === 'true'}
             />
           </div>
-          <BenchmarkContext text="Organizations at this level have reported $200K–$1M+ in attributed strategic value." />
+          <div className="flex items-center gap-2.5 mt-3">
+            <Checkbox
+              id="no-confirmed-strategic-value"
+              checked={currentState.inputs.noConfirmedStrategicValue === 'true'}
+              onCheckedChange={(checked) => {
+                setDomainInput('noConfirmedStrategicValue', checked ? 'true' : 'false');
+              }}
+              data-testid="checkbox-no-confirmed-strategic-value"
+            />
+            <label htmlFor="no-confirmed-strategic-value" className="text-sm text-[#525252] cursor-pointer select-none">
+              Don't have a confirmed number yet
+            </label>
+          </div>
+          {currentState.inputs.noConfirmedStrategicValue === 'true' && (
+            <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+              At {documentedEncounters.toLocaleString()} encounters, organizations at this level typically attribute $200K–$1M+ in strategic value. This can serve as a working estimate.
+            </p>
+          )}
         </div>
       </div>
     );
@@ -1909,7 +1936,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       <div className="px-5 pb-6 pt-5">
                         {config.framingQuestions?.[card.level] && (
                           <p className="text-sm font-semibold text-[#1A1A1A] mb-3 mt-1">
-                            {config.framingQuestions[card.level]}
+                            {config.framingQuestions[card.level].replace('{encounterCount}', documentedEncounters.toLocaleString())}
                           </p>
                         )}
                         {feedback && feedback.headlineMetric && (

@@ -27,7 +27,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
   },
   workforce: {
     1: 'Providers Are Getting Time Back',
-    2: 'The Relief Is on Record',
+    2: 'Effort Reduction Is Measured',
     3: 'Retention Is Part of the Story',
     4: 'The Savings Are Showing Up',
   },
@@ -114,8 +114,8 @@ export function computeCapacityFeedback(
       headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
       context: `Your ${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that's ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.\n\nThis is the raw material. Whether it becomes revenue, avoided cost, or clinician sustainability depends on what your organization decides to do with it.`,
       formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'Time recovery is the foundation. Value is determined by where this time goes — which is what Levels 2–4 measure.',
-      nextLevelTeaser: 'Level 2 — Is this number in front of your leadership with a plan attached to it?',
+      footnote: 'This is the raw material. What your organization does with it determines whether it becomes revenue, capacity, or nothing.',
+      nextLevelTeaser: 'Level 2 — The number needs a name.',
     };
   }
 
@@ -146,10 +146,10 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
-      context: `Your organization has quantified ${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.\n\nThe operational question is timing: organizations that bring this number to leadership with a recommended use tend to move from quantification to deployment within a single quarter.`,
+      context: `Your organization has quantified ${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.\n\nOrganizations that bring this number to leadership with a plan attached move to deployment within a quarter.`,
       formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'A dollar value appears at Level 3, when recovered capacity is directed toward a specific operational outcome.',
-      nextLevelTeaser: 'Level 3 — This becomes a dollar value when the hours have a destination: more patients seen.',
+      footnote: 'It becomes money when the hours have a destination.',
+      nextLevelTeaser: 'Level 3 — Time needs somewhere to go.',
     };
   }
 
@@ -178,17 +178,17 @@ export function computeCapacityFeedback(
       context: `Recovered time has a destination — and that destination generates revenue.\n\n${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month, across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, is ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
       footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
-      nextLevelTeaser: 'Level 4 — Is ambient changing whether you need to hire at all?',
+      nextLevelTeaser: 'Level 4 — When hiring plans change, it\'s a different conversation.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }
 
   const CAPACITY_PLANNING_LABELS = [
     'Avoided or deferred new hires',
-    'Absorbed patient volume growth without adding FTEs',
-    'Redeployed providers to underserved panels or new sites',
-    'Factored into annual FTE / staffing model',
-    'Used in business case for new service lines or locations',
+    'Absorbed volume without adding FTEs',
+    'Redeployed providers',
+    'In the annual staffing model',
+    'In a service line business case',
   ];
   const planningCsv = inputs.capacityPlanningAreas as string | undefined;
   const fteAvoided = inputs.fteAvoided as number | undefined;
@@ -245,22 +245,22 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${documentedEncounters.toLocaleString()} encounters documented annually. The revenue cycle impact is not yet measured.`,
-      context: `When ambient and revenue cycle aren't connected, any improvement in coding accuracy or reimbursement goes unmeasured — not because it isn't happening, but because no one is looking.\n\nBringing revenue cycle into the ambient conversation is the first step. Organizations that do this tend to have a quantified impact figure before their first contract renewal.`,
+      headlineMetric: `${documentedEncounters.toLocaleString()} encounters documented annually.`,
+      context: `The revenue is likely already there. It's just not being looked for.\n\nOrganizations that bring revenue cycle in early have a number before their first contract renewal.`,
       formula: '',
-      footnote: 'Revenue impact is measured at Level 3, when your organization has before/after data to work with.',
-      nextLevelTeaser: 'Level 2 opens when your revenue cycle team is actively analyzing the connection.',
+      footnote: '',
+      nextLevelTeaser: 'Level 2 — Someone needs to start looking.',
     };
   }
 
   if (level === 2) {
     const INVESTIGATION_AREAS = [
       'wRVU per encounter trends',
-      'ICD-10 coding specificity and code level distribution',
-      'Claim denial rates related to documentation quality',
-      'Collections per encounter before vs. after ambient',
-      'CDI query volume before vs. after',
-      'Coder productivity and turnaround time',
+      'Coding specificity / ICD-10 distribution',
+      'Denial rates tied to documentation',
+      'Collections before vs. after',
+      'CDI query volume',
+      'Coder productivity',
     ];
     const { checked } = parseCheckedItems(inputs.investigationAreas as string, INVESTIGATION_AREAS);
     const count = checked.length;
@@ -270,8 +270,8 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Select what\'s being analyzed.',
-        context: 'Select what your revenue cycle team is analyzing to see your assessment.',
+        headlineMetric: '',
+        context: `At ${documentedEncounters.toLocaleString()} encounters annually, even a 0.1 wRVU improvement per encounter is worth looking at. Select what's being tracked to see the range.`,
         formula: '',
         footnote: '',
       };
@@ -483,13 +483,18 @@ export function computeWorkforceFeedback(
 ): DomainFeedback {
   if (level === 1) {
     const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
+    const defaultHrs = 2.0;
+    const displayHrs = (afterHoursReduction && afterHoursReduction > 0) ? afterHoursReduction : defaultHrs;
     if (!afterHoursReduction || afterHoursReduction <= 0) {
+      const estHours = Math.round(defaultHrs * providers * 52);
+      const estFte = (estHours / 2080).toFixed(1);
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        context: 'Enter estimated after-hours documentation reduction to calculate workforce impact.',
-        formula: '',
+        headlineMetric: `${estHours.toLocaleString()} hours returned annually`,
+        context: `At ${providers} providers and ${defaultHrs} hrs/week, that's ${estHours.toLocaleString()} hours annually — the equivalent of ${estFte} FTEs of after-hours time returned.`,
+        formula: `[burdenHours] = ${defaultHrs} × ${providers} × 52 = ${estHours.toLocaleString()}`,
         footnote: '',
       };
     }
@@ -634,20 +639,20 @@ const QUALITY_ATTRIBUTES = [
 ];
 
 const DOWNSTREAM_WORKFLOWS = [
-  'CDI query volume reduced (fewer queries, more complete notes)',
-  'Coding accuracy improved (fewer rejections, faster turnaround)',
-  'Prior authorization approval rate improved',
-  'Quality measure gap closure improved (HEDIS, MIPS, Stars)',
-  'Chart abstraction time reduced (registries, research, reporting)',
-  'HCC and risk adjustment capture improved (value-based populations)',
+  'CDI query volume reduced',
+  'Coding accuracy improved',
+  'Prior auth approvals improved',
+  'Quality measure performance',
+  'Chart abstraction faster',
+  'HCC / risk adjustment capture',
 ];
 
 const STRATEGIC_INTEGRATIONS = [
-  'Compliance and audit governance (documentation quality is a tracked metric)',
-  'Quality program strategy (documentation completeness feeds quality reporting)',
-  'Clinical documentation review (formal governance structure exists)',
-  'Payer contract negotiations (documentation quality supports rate and quality arguments)',
-  'Value-based care program design (documentation feeds quality and risk metrics)',
+  'Compliance and audit governance',
+  'Quality program strategy',
+  'Clinical documentation review',
+  'Payer contract negotiations',
+  'Value-based care design',
 ];
 
 const REVENUE_SIGNALS = [
@@ -703,10 +708,10 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${documentedEncounters.toLocaleString()} encounters documented annually with improved clinical specificity.`,
-      context: `Better documentation creates better signal downstream — for coders, quality teams, compliance officers, and care managers. The opportunity at this level is identifying which downstream teams are ready to receive that signal.\n\nThe organizations that move fastest on this tend to start with one team, one workflow, and one measurable outcome — then build from there.`,
+      context: `${documentedEncounters.toLocaleString()} encounters with better notes. The signal exists — no one is routing it yet.\n\nThe organizations that move fastest pick one team and one workflow first.`,
       formula: '',
-      footnote: 'Downstream value appears at Level 3, when a specific workflow shows measurable improvement.',
-      nextLevelTeaser: 'Level 2 — when documentation quality is being formally tracked, the gaps become visible and actionable.',
+      footnote: '',
+      nextLevelTeaser: 'Level 2 — Tracking it makes the gaps visible.',
     };
   }
 

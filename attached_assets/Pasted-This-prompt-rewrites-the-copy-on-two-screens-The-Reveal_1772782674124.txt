@@ -1,0 +1,177 @@
+This prompt rewrites the copy on two screens: "The Reveal" (maturity score) and "Your Trajectory" (cost-of-inaction / 36-month gap). It does not touch any math, scoring logic, chart calculations, domain score formulas, point thresholds, or layout structure. Only copy changes.
+CONSTRAINTS:
+- DO NOT change scoring logic, point values, or tier thresholds (24 / 44 / 64 / 79 / 100)
+- DO NOT change the chart, trajectory projections, or any calculated dollar figures
+- DO NOT change colors, layout, card backgrounds, or Abridge branding
+- DO NOT change the disclaimer text at the bottom of either screen
+- Tone: same voice as the 16 level names — plain, declarative, human, no corporate jargon
+- Workforce Level 2 name must read "Effort Reduction Is Measured" everywhere on these screens (currently shows "The Relief Is on Record" in score breakdown — fix it)
+---
+SCREEN 1: "THE REVEAL" — MATURITY SCORE PAGE
+CURRENT page headline: "HERE'S WHERE YOU STAND."
+→ KEEP — it's clean and direct
+CURRENT page subtitle:
+"Your score reflects how fully your organization has connected ambient documentation to operational, financial, and clinical outcomes — across four domains."
+→ REPLACE WITH:
+"Four domains. One score. Here's where your organization actually is."
+---
+SCORE BREAKDOWN SECTION
+CURRENT section label: "SCORE BREAKDOWN"
+→ KEEP
+Domain rows — the level name shown under each domain name must update to match confirmed names:
+- Capacity: currently shows "→ Time Is Coming Back" ✓ KEEP
+- Revenue: currently shows "→ It's Now a Managed System" ✓ KEEP  
+- Workforce: currently shows "→ The Relief Is on Record" → CHANGE TO "→ Effort Reduction Is Measured"
+- Quality: currently shows "→ The Notes Are Better. No One's Connecting It Yet." ✓ KEEP
+---
+ASSESSMENT CARD — SCORE TIER COPY
+This card shows a label ("ASSESSMENT"), a bold headline, and a 2-sentence description. It changes based on the score tier. Rewrite all five tiers:
+TIER 1 — Score 0–24 ("Deployment established")
+CURRENT headline: [need to check — likely something like "Getting started"]
+→ HEADLINE: "The deployment is live. The value isn't captured yet."
+→ BODY: "Ambient is running, but the organization hasn't started measuring what it's returning. The gap between running and capturing is where most organizations stay longest — and it's the most expensive place to be."
+TIER 2 — Score 25–44 ("Foundation building")
+CURRENT headline: [likely "Building momentum" or similar]
+→ HEADLINE: "Something is being measured. Not enough is acting on it."
+→ BODY: "At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct — that's where the next layer of value is sitting unmeasured."
+TIER 3 — Score 45–64 ("Value in motion") — THIS IS THE CURRENT STATE AT 52
+CURRENT headline: "Value in motion."
+CURRENT body: "Your organization is producing real, measurable outcomes from ambient documentation in at least one domain. The strategic opportunity is in the domains where measurement hasn't yet translated to action. That's where the next layer of value lives."
+→ HEADLINE: "Value is moving. Not all of it has a destination yet."
+→ BODY: "At least one domain is producing a real number. The others haven't caught up. That gap — between where you are and where the tool could take you — is the strategic opportunity."
+TIER 4 — Score 65–79 ("Strategically managed")
+CURRENT headline: [likely "Strong performance" or similar]
+→ HEADLINE: "Most of the value is captured. The last piece is the hardest."
+→ BODY: "Your organization is operating at a level most ambient deployments never reach. What's left tends to be the domain that requires the most organizational will — but it carries some of the highest returns."
+TIER 5 — Score 80–100 ("Leading practice")
+CURRENT headline: [likely "Leading practice" or similar]
+→ HEADLINE: "You're running ambient the way it was meant to be run."
+→ BODY: "All four domains are connected. Value is being captured, measured, and managed. This is what full ambient maturity looks like — and most organizations are years away from it."
+---
+"HOW POINTS ARE AWARDED" LINK / MODAL
+CURRENT link text: "How points are awarded →"
+→ KEEP (it's clean)
+If there is modal/tooltip copy when clicked — rewrite to:
+TITLE: "How the score works"
+BODY: "Each of the four domains — Capacity, Revenue, Workforce, and Quality — is worth 25 points. Points reflect how far your organization has moved from awareness to managed outcomes within each domain. Level 1 = awareness. Level 4 = a managed, measured system. The score is not a performance grade. It's a map of where value is being captured and where it isn't."
+---
+MATURITY SCORE EXPLAINER (dark panel at bottom of Reveal screen)
+CURRENT label: "YOUR MATURITY SCORE"
+→ KEEP
+CURRENT description: "Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Quality."
+→ REPLACE WITH: "Measures how far your organization has moved from running ambient to capturing what it returns — across four domains."
+CURRENT tier labels on the progress bar (keep the threshold numbers, change labels):
+- "Deployment established" (24) → "Awareness" 
+- "Foundation building" (44) → "Measuring"
+- "Value in motion" (64) → "Acting"
+- "Strategically managed" (79) → "Managing"
+- "Leading practice" (100) → "Full capture"
+CURRENT "DOMAIN SCORES" section label → KEEP
+---
+SCREEN 2: "YOUR TRAJECTORY" — 36-MONTH COST-OF-INACTION PAGE
+CURRENT page headline: "YOUR 36-MONTH TRAJECTORY."
+→ REPLACE WITH: "WHAT STAYING HERE COSTS YOU."
+CURRENT page subtitle:
+"Based on your current maturity and what becomes possible at the next level across each domain."
+→ REPLACE WITH:
+"The gap between your current trajectory and full deployment — modeled across 36 months."
+---
+"WHERE YOU STAND TODAY" COMPARISON TABLE
+CURRENT section label: "WHERE YOU STAND TODAY"
+→ KEEP
+CURRENT column headers: "YOU" / "ABRIDGE-OBSERVED"
+→ REPLACE "ABRIDGE-OBSERVED" WITH: "PEER BENCHMARK"
+CURRENT footer note:
+"Benchmarks reflect top-performing deployment averages. Based on aggregated deployment data."
+→ REPLACE WITH: "Peer benchmark reflects top-performing Abridge deployments."
+---
+36-MONTH TRAJECTORY CHART
+CURRENT section label: "36-MONTH TRAJECTORY"
+→ KEEP
+CURRENT chart subtitle: "Value in motion: current path vs. full strategic deployment"
+→ REPLACE WITH: "Your current path vs. what full maturity unlocks."
+CURRENT chart legend labels:
+- "With strategic action" → KEEP
+- "Status quo (current path)" → KEEP
+CURRENT gap summary line:
+"The difference between your current trajectory and full strategic deployment over 36 months is approximately $4.01M."
+→ REPLACE WITH: "The 36-month gap between your current path and full maturity: approximately $4.01M."
+[Keep dynamic — this number should remain calculated]
+CURRENT methodology note:
+"Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap."
+→ REPLACE WITH: "Year 1 includes a 90-day ramp. Years 2–3 project at maintained optimization."
+---
+"WHAT DRIVES THE GAP" SECTION
+CURRENT section label: "What Drives the Gap"
+→ KEEP
+This section shows one card per domain that isn't at Level 4. Each card has:
+- Domain + current level header
+- "Next level:" sub-label
+- A description paragraph
+- "The Next Level Unlocks" sub-section with math
+Rewrite each domain card copy:
+---
+CAPACITY card (currently Level 1, next level: "The Number Is Known"):
+CURRENT description:
+"Time is being recovered but the total hasn't been formally quantified. That number — hours recovered across your full deployment — is the foundation for every downstream conversation about what to do with it."
+→ REPLACE WITH:
+"The time is coming back. The number isn't in front of anyone yet. That's the gap — not the hours, but what happens to them without a name attached."
+CURRENT "The Next Level Unlocks" copy:
+"3 min × 75,000 encounters ÷ 60 = 3,750 hrs recovered. At $150/hr with 20–35% redeployment = $113K–$197K annually. Quantifying recovered time is the first step to capturing it."
+→ REPLACE WITH:
+"When the total hours are quantified and in front of leadership, organizations typically move from awareness to deployment within one quarter — unlocking $113K–$197K annually at your scale."
+[Keep the formula math display as-is — only change the prose description]
+---
+REVENUE card (currently Level 4 — at maximum):
+CURRENT description:
+"You're at the highest maturity level. Continue deepening integration and expanding documentation quality governance across revenue cycle operations."
+→ REPLACE WITH:
+"Revenue cycle is fully connected. The work here is deepening it — documentation quality governance, payer negotiations, and the financial story that comes with it."
+---
+WORKFORCE card (currently Level 2, next level: "Retention Is Part of the Story"):
+CURRENT description:
+"You've measured hours of burden reduction. The question your organization hasn't answered is what turnover is costing you — and how much of that cost is connected to documentation burden. At industry-average turnover (6-8%) and replacement costs ($250K-$500K), the annual exposure at your scale is significant."
+→ REPLACE WITH:
+"Effort reduction is measured. What hasn't been asked yet is what turnover is costing — and how much of it traces back to documentation burden. At industry-average rates, that exposure is significant at your scale."
+CURRENT math display:
+"50 providers × 7% × $350K = $1.23M in total annual turnover cost (industry midpoints)."
+→ REPLACE WITH:
+"At 50 providers, industry midpoints put total annual turnover cost at $1.23M. Burden-driven attribution of 20–30% puts the ambient-connected exposure at $245K–$370K."
+[Keep dynamic — provider count should use the user's actual input]
+---
+QUALITY card (currently Level 1, next level: "Quality Is Being Monitored"):
+CURRENT description:
+"Documentation is better — but no one is measuring it. Without a quality baseline, the downstream value to coding, CDI, and compliance stays invisible. Any form of monitoring unlocks what follows."
+→ REPLACE WITH:
+"The notes are better. No one downstream knows what to do with that yet. Without a quality baseline, the signal going to coding, CDI, and compliance is invisible — not absent."
+CURRENT "The Next Level Unlocks" copy:
+"Documentation gaps create measurable financial exposure. Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. Without monitoring, this value remains invisible."
+→ REPLACE WITH:
+"Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. At {encounterCount} encounters, that range is ${low}–${high} annually — currently going uncaptured."
+[Calculate low = encounterCount × 150, high = encounterCount × 400. At 52,500: low = $7.9M, high = $21M. These are very large — consider displaying as "even at conservative rates, $X–$Y annually"]
+---
+"VALUE AT A GLANCE" PANEL (bottom dark section)
+CURRENT headline: "Value at a Glance"
+→ KEEP
+CURRENT description: "Based on your inputs and maturity levels across all four domains:"
+→ KEEP
+CURRENT "Not yet measured" state label: "complete domain inputs to see value"
+→ REPLACE WITH: "complete all four domains to see full picture"
+CURRENT "With Strategic Action" label → KEEP
+CURRENT "Gap: +$X.XXM / year" label → KEEP
+CURRENT "The Trajectory Gap" section label → KEEP
+CURRENT "Monthly momentum gap" label → KEEP
+CURRENT "6-month trajectory gap" label → KEEP
+CURRENT "Annual trajectory gap" label → KEEP
+CURRENT explanation: "This is value your deployment is positioned to generate as maturity deepens across each domain."
+→ REPLACE WITH: "Value your deployment is positioned to capture as each domain matures."
+CURRENT footer: "Reflects projected run-rate value at next-level maturity. First 3–6 months include a ramp period."
+→ KEEP
+---
+FINAL VERIFICATION CHECKLIST:
+1. Workforce Level 2 shows "Effort Reduction Is Measured" everywhere on both screens
+2. Score tier copy updates correctly as score changes (test at different score levels if possible)
+3. "What Drives the Gap" cards show for all domains not at Level 4 — and show the correct "at maximum" copy for domains at Level 4
+4. All dynamic variables ({providerCount}, {encounterCount}) still calculate correctly after copy changes
+5. No corporate jargon in any rewritten copy — read it out loud, it should sound like something a smart person says to another smart person in a room, not a SaaS marketing page
+6. Page titles in breadcrumb ("The Reveal", "Your Trajectory") — keep as-is
