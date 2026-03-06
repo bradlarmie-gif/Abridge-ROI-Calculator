@@ -714,33 +714,39 @@ export default function ProformaView({
                   name="Investment"
                 />
 
-                <Area
-                  type="monotone"
-                  dataKey="docValue"
-                  stackId="value"
-                  fill="url(#grad-doc)"
-                  stroke={CHART_COLORS.doc}
-                  strokeWidth={isMobile ? 1.5 : 2.5}
-                  name="Doc Quality"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="timeValue"
-                  stackId="value"
-                  fill="url(#grad-time)"
-                  stroke={CHART_COLORS.time}
-                  strokeWidth={isMobile ? 1.5 : 2.5}
-                  name="Capacity & Efficiency"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="retentionValue"
-                  stackId="value"
-                  fill="url(#grad-retention)"
-                  stroke={CHART_COLORS.retention}
-                  strokeWidth={isMobile ? 1.5 : 2.5}
-                  name="Retention"
-                />
+                {legendTotals.doc > 0 && (
+                  <Area
+                    type="monotone"
+                    dataKey="docValue"
+                    stackId="value"
+                    fill="url(#grad-doc)"
+                    stroke={CHART_COLORS.doc}
+                    strokeWidth={isMobile ? 1.5 : 2.5}
+                    name="Doc Quality"
+                  />
+                )}
+                {legendTotals.time > 0 && (
+                  <Area
+                    type="monotone"
+                    dataKey="timeValue"
+                    stackId="value"
+                    fill="url(#grad-time)"
+                    stroke={CHART_COLORS.time}
+                    strokeWidth={isMobile ? 1.5 : 2.5}
+                    name="Capacity & Efficiency"
+                  />
+                )}
+                {legendTotals.retention > 0 && (
+                  <Area
+                    type="monotone"
+                    dataKey="retentionValue"
+                    stackId="value"
+                    fill="url(#grad-retention)"
+                    stroke={CHART_COLORS.retention}
+                    strokeWidth={isMobile ? 1.5 : 2.5}
+                    name="Retention"
+                  />
+                )}
 
                 {!isMobile && lastChartPoint && lastChartPoint.totalValue > 0 && (
                   <ReferenceDot
@@ -776,27 +782,27 @@ export default function ProformaView({
             </ResponsiveContainer>
 
             <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-xs sm:text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
-                <span className="text-neutral-600">Doc Quality</span>
-                {legendTotals.doc > 0 && (
+              {legendTotals.doc > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
+                  <span className="text-neutral-600">Doc Quality</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
-                )}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.time }} />
-                <span className="text-neutral-600">Capacity & Efficiency</span>
-                {legendTotals.time > 0 && (
+                </span>
+              )}
+              {legendTotals.time > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.time }} />
+                  <span className="text-neutral-600">Capacity & Efficiency</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
-                )}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.retention }} />
-                <span className="text-neutral-600">Retention</span>
-                {legendTotals.retention > 0 && (
+                </span>
+              )}
+              {legendTotals.retention > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.retention }} />
+                  <span className="text-neutral-600">Retention</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.retention)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.retention / legendTotals.total) * 100)}%)` : ""}</span>
-                )}
-              </span>
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px dashed ${CHART_COLORS.investment}` }} />
                 <span className="text-neutral-600">Investment</span>

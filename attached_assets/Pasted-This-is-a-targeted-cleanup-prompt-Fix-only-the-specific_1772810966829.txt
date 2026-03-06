@@ -1,0 +1,81 @@
+This is a targeted cleanup prompt. Fix only the specific issues listed below. Do not change anything else — no math, no layout, no colors, no branding, no level names, no scoring logic.
+---
+FIX 1: QUALITY — REMOVE DUPLICATE QUESTION LABELS (all 4 levels)
+Each Quality level has two questions rendered — a short framing line followed by a redundant longer version above the radio/checkbox group. Remove only the redundant radio/checkbox group label in each case. Keep the short framing line. Keep all answer options exactly as-is.
+QUALITY LEVEL 1:
+REMOVE this line entirely (it appears above the radio buttons):
+"Has your organization started connecting ambient documentation quality to any downstream workflow or team?"
+KEEP: "Has any downstream team been brought into the conversation?"
+KEEP: All three radio options (Not yet / Starting informally / One team is formally in)
+QUALITY LEVEL 2:
+REMOVE this line entirely (it appears above the radio buttons):
+"How is your organization monitoring documentation quality?"
+KEEP: "How is quality being tracked?"
+KEEP: All three radio options (Not tracking formally yet / Spot checks and anecdotal / Structured audits or dashboards)
+QUALITY LEVEL 3:
+REMOVE this line entirely (it appears above the checkboxes):
+"Which downstream workflows have been impacted by improved documentation?"
+KEEP: "Which workflows have measurably shifted?"
+KEEP: All six checkbox options as-is
+QUALITY LEVEL 4:
+REMOVE this line entirely (it appears above the checkboxes):
+"Where does it factor in?"
+KEEP: "Where is it embedded?"
+KEEP: All five checkbox options as-is (Compliance and audit governance / Quality program strategy / Clinical documentation review / Payer contract negotiations / Value-based care design)
+---
+FIX 2: CAPACITY LEVEL 2 — REMOVE DUPLICATE BRIDGE LINE IN ESTIMATED IMPACT PANEL
+The Estimated Impact panel for Capacity Level 2 currently shows this line TWICE:
+"It becomes money at Level 3 — when the hours have somewhere to go."
+Remove one instance. Keep exactly one. It should appear once, at the bottom of the panel body, above the disclaimer.
+---
+FIX 3: REVENUE LEVEL 4 — SHORTEN CHECKBOX OPTION LABELS
+Find the checkbox group inside Revenue Level 4 ("It's Now a Managed System"). Replace the following option labels:
+FIND: "CDI workflow incorporates ambient documentation review"
+REPLACE WITH: "CDI workflow includes ambient review"
+FIND: "Denial management tracks documentation-related root causes"
+REPLACE WITH: "Denial management tracks documentation"
+FIND: "Revenue cycle dashboards include documentation quality metrics"
+REPLACE WITH: "Dashboards include documentation metrics"
+FIND: "Payer negotiations reference documentation-driven outcomes"
+REPLACE WITH: "Payer negotiations reference it"
+DO NOT change: "Ongoing wRVU or collections monitoring linked to documentation" — leave as-is.
+---
+FIX 4: TRAJECTORY SCREEN — CAPACITY LEVEL 4 "WHAT DRIVES THE GAP" COPY
+On the Trajectory / "What staying here costs you" screen, find the Capacity card that appears when Capacity is at Level 4.
+CURRENT copy:
+"You're at the highest maturity level. Continue deepening measurement and expanding across the organization."
+REPLACE WITH:
+"Capacity is fully connected to operational decisions. The work here is deepening it — expanding the number of providers in the model, tightening the link between recovered time and financial outcomes, and keeping hiring plans informed by ambient data."
+---
+FIX 5: WORKFORCE LEVEL 2 — ESTIMATED IMPACT PANEL HEADLINE (EMPTY STATE)
+Find the Estimated Impact panel headline for Workforce Level 2 ("Effort Reduction Is Measured") that shows before any input is entered.
+CURRENT headline (red, large text):
+"In-clinic time is quantified. Surveys are in."
+REPLACE WITH:
+"In-clinic burden reduction, quantified."
+The body copy below it stays exactly as-is.
+---
+FIX 6: REVENUE LEVEL 1 — ESTIMATED IMPACT PANEL BODY REDUNDANCY
+Find the Estimated Impact panel for Revenue Level 1 ("No One Is Connecting the Dots").
+The body text currently opens with:
+"At this encounter volume, ambient is producing better documentation on every visit."
+REPLACE that opening sentence only with:
+"Ambient is producing better documentation on every visit."
+Remove "At this encounter volume," from the start — the encounter count is already in the headline above. Everything else in the body stays as-is.
+---
+FIX 7: CAPACITY LEVEL 4 — ESTIMATED IMPACT PANEL LAST LINE
+Find the Estimated Impact panel for Capacity Level 4 ("Hiring Plans Have Changed").
+CURRENT last line (before the disclaimer):
+"That's the financial signature of ambient at maturity."
+REPLACE WITH:
+"That's what ambient looks like when it's actually changed how the organization operates."
+---
+VERIFICATION CHECKLIST after all changes:
+1. Open Quality L1, L2, L3, L4 — each should show exactly ONE question above the answer options, not two
+2. Open Capacity L2 Estimated Impact panel — the bridge line "It becomes money at Level 3 — when the hours have somewhere to go." appears exactly once
+3. Open Revenue L4 — all four checkbox labels are now short (under 7 words each)
+4. Walk through to the Trajectory screen with Capacity at Level 4 — the Capacity card shows the new copy
+5. Open Workforce L2 Estimated Impact panel with no input entered — headline reads "In-clinic burden reduction, quantified."
+6. Open Revenue L1 Estimated Impact panel — body opens with "Ambient is producing better documentation on every visit." (no "At this encounter volume," prefix)
+7. Open Capacity L4 Estimated Impact panel — last line before disclaimer reads "That's what ambient looks like when it's actually changed how the organization operates."
+8. Confirm nothing else changed — level names, scoring, math, colors, layout all identical to before
