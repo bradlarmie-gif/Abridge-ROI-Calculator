@@ -399,20 +399,35 @@ export default function ProformaHub({
                                     ? config.nursingYearlyUtilization
                                     : config.yearlyUtilization;
                                   const qUtil = setting.quarterlyUtilization || annualToQuarterlyUtilization(settingYearlyUtil);
-                                  const qKeys: (keyof QuarterlyProviders)[][] = [
-                                    ["q1","q2","q3","q4"],
-                                    ["q5","q6","q7","q8"],
-                                    ["q9","q10","q11","q12"],
-                                  ];
+                                  const pricingModel = setting.pricingModel || "perUnit";
+                                  const defaultPrice = pricingModel === "annualFlat" ? (setting.annualLicenseFee || 0)
+                                    : pricingModel === "perEncounter" ? (setting.costPerEncounter || 0)
+                                    : setting.costPerUnit;
+                                  const yPricingQ = setting.yearlyPricing || { year1: defaultPrice, year2: defaultPrice, year3: defaultPrice };
+                                  const qPricing = setting.quarterlyPricing || annualToQuarterlyPricing(yPricingQ);
+                                  const allQKeys: (keyof QuarterlyProviders)[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
+                                  const startYear = new Date().getFullYear();
+                                  const qLabels = allQKeys.map((_, i) => {
+                                    const yearOffset = Math.floor(i / 4);
+                                    const qNum = (i % 4) + 1;
+                                    return `Q${qNum}'${String(startYear + yearOffset).slice(-2)}`;
+                                  });
                                   return (
-                                    <div className="space-y-2">
-                                      {qKeys.map((row, yi) => (
-                                        <div key={yi}>
-                                          <p className="text-[10px] text-[#A39888] mb-1">Year {yi + 1}</p>
-                                          <div className="grid grid-cols-4 gap-1.5">
-                                            {row.map((qk, qi) => (
-                                              <div key={qk}>
-                                                <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Q{yi * 4 + qi + 1}</label>
+                                    <div className="overflow-x-auto -mx-2 px-2">
+                                      <table className="w-full text-[11px] border-collapse min-w-[700px]" data-testid={`quarterly-table-${setting.careSetting}`}>
+                                        <thead>
+                                          <tr>
+                                            <th className="text-left text-[10px] text-[#8C7E6E] font-medium py-1 pr-2 w-[72px] sticky left-0 bg-[#F9F6F2] z-10"></th>
+                                            {qLabels.map((label, i) => (
+                                              <th key={i} className="text-center text-[10px] text-[#8C7E6E] font-medium py-1 px-0.5">{label}</th>
+                                            ))}
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td className="text-[10px] text-[#8C7E6E] font-medium py-1 pr-2 sticky left-0 bg-[#F9F6F2] z-10">{unitLabel}</td>
+                                            {allQKeys.map((qk, i) => (
+                                              <td key={qk} className="py-0.5 px-0.5">
                                                 <FormattedNumberInput
                                                   value={qp[qk]}
                                                   onChange={(v) => {
@@ -426,17 +441,16 @@ export default function ProformaHub({
                                                       fullScaleProviders: annual.year3,
                                                     });
                                                   }}
-                                                  className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded-lg px-1.5"
+                                                  className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded px-1"
                                                   data-testid={`input-${qk}-prov-${setting.careSetting}`}
                                                 />
-                                              </div>
+                                              </td>
                                             ))}
-                                          </div>
-                                          <div className="grid grid-cols-4 gap-1.5 mt-1">
-                                            {row.map((qk, qi) => (
-                                              <div key={`util-${qk}`}>
-                                                {qi === 0 && <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Util %</label>}
-                                                {qi > 0 && <label className="block text-[10px] text-[#8C7E6E] mb-0.5">&nbsp;</label>}
+                                          </tr>
+                                          <tr>
+                                            <td className="text-[10px] text-[#8C7E6E] font-medium py-1 pr-2 sticky left-0 bg-[#F9F6F2] z-10">Util %</td>
+                                            {allQKeys.map((qk) => (
+                                              <td key={`util-${qk}`} className="py-0.5 px-0.5">
                                                 <div className="relative">
                                                   <FormattedNumberInput
                                                     value={qUtil[qk as keyof QuarterlyUtilization]}
@@ -449,16 +463,59 @@ export default function ProformaHub({
                                                         utilizationPercent: annualUtil.year1,
                                                       });
                                                     }}
-                                                    className="w-full text-right text-[11px] h-7 bg-[#F9F7F4] border border-neutral-200 rounded-lg px-1.5 pr-4 text-[#8C7E6E]"
+                                                    className="w-full text-right text-[11px] h-7 bg-[#F9F7F4] border border-neutral-200 rounded px-1 pr-3.5 text-[#8C7E6E]"
                                                     data-testid={`input-${qk}-util-${setting.careSetting}`}
                                                   />
-                                                  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-[#A39888] pointer-events-none">%</span>
+                                                  <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[9px] text-[#A39888] pointer-events-none">%</span>
                                                 </div>
-                                              </div>
+                                              </td>
                                             ))}
-                                          </div>
-                                        </div>
-                                      ))}
+                                          </tr>
+                                          <tr>
+                                            <td className="text-[10px] text-[#8C7E6E] font-medium py-1 pr-2 sticky left-0 bg-[#F9F6F2] z-10">$/Mo</td>
+                                            {allQKeys.map((qk) => (
+                                              <td key={`price-${qk}`} className="py-0.5 px-0.5">
+                                                <FormattedNumberInput
+                                                  value={qPricing[qk as keyof QuarterlyPricing]}
+                                                  onChange={(v) => {
+                                                    const val = Math.max(v, 0);
+                                                    const updated = { ...qPricing, [qk]: val } as QuarterlyPricing;
+                                                    const annualP = quarterlyToAnnualPricing(updated);
+                                                    const legacyUpdate: Partial<typeof setting> = { quarterlyPricing: updated, yearlyPricing: annualP };
+                                                    if (pricingModel === "annualFlat") legacyUpdate.annualLicenseFee = annualP.year1;
+                                                    else if (pricingModel === "perEncounter") legacyUpdate.costPerEncounter = annualP.year1;
+                                                    else legacyUpdate.costPerUnit = annualP.year1;
+                                                    onUpdateSetting(setting.id, legacyUpdate);
+                                                  }}
+                                                  prefix="$"
+                                                  className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded px-1"
+                                                  data-testid={`input-price-${qk}-${setting.careSetting}`}
+                                                />
+                                              </td>
+                                            ))}
+                                          </tr>
+                                          <tr>
+                                            <td className="text-[10px] text-[#A39888] font-medium py-1 pr-2 sticky left-0 bg-[#F9F6F2] z-10">Qtr Cost</td>
+                                            {allQKeys.map((qk) => {
+                                              const provCount = qp[qk];
+                                              const price = qPricing[qk as keyof QuarterlyPricing];
+                                              const util = qUtil[qk as keyof QuarterlyUtilization];
+                                              const encountersPerProv = setting.encounters && setting.providerCount
+                                                ? setting.encounters / setting.providerCount : 3000;
+                                              const quarterBill = pricingModel === "perUnit" ? provCount * price * 3
+                                                : pricingModel === "annualFlat" ? price / 4
+                                                : price * provCount * encountersPerProv * (util / 100) / 4;
+                                              return (
+                                                <td key={`cost-${qk}`} className="py-0.5 px-0.5">
+                                                  <div className="w-full text-right text-[10px] h-7 bg-[#F5F0EB] border border-neutral-200 rounded px-1 flex items-center justify-end text-[#8C7E6E] font-medium" data-testid={`display-cost-${qk}-${setting.careSetting}`}>
+                                                    {fmt(quarterBill)}
+                                                  </div>
+                                                </td>
+                                              );
+                                            })}
+                                          </tr>
+                                        </tbody>
+                                      </table>
                                     </div>
                                   );
                                 })() : (
@@ -526,7 +583,8 @@ export default function ProformaHub({
                                 )}
                               </div>
 
-                              <div className="grid grid-cols-2 gap-3">
+                              <div className={`grid ${config.granularity === "quarterly" ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
+                                {config.granularity !== "quarterly" && (
                                 <div>
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput
@@ -536,6 +594,7 @@ export default function ProformaHub({
                                     data-testid={`input-util-${setting.careSetting}`}
                                   />
                                 </div>
+                                )}
                                 <div>
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Implementation Fee</label>
                                   <FormattedNumberInput
@@ -569,58 +628,7 @@ export default function ProformaHub({
                                 };
 
                                 if (config.granularity === "quarterly") {
-                                  const qPricing = setting.quarterlyPricing || annualToQuarterlyPricing(yPricing);
-                                  const qProviders = setting.quarterlyProviders || annualToQuarterlyProviders(yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders });
-                                  const qKeys: (keyof QuarterlyPricing)[][] = [
-                                    ["q1","q2","q3","q4"],
-                                    ["q5","q6","q7","q8"],
-                                    ["q9","q10","q11","q12"],
-                                  ];
-                                  return (
-                                    <div>
-                                      <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{priceLabel} by Quarter</p>
-                                      <div className="space-y-2">
-                                        {qKeys.map((row, yi) => (
-                                          <div key={yi}>
-                                            <p className="text-[10px] text-[#A39888] mb-1">Year {yi + 1}</p>
-                                            <div className="grid grid-cols-4 gap-1.5">
-                                              {row.map((qk, qi) => {
-                                                const qIdx = yi * 4 + qi;
-                                                const provKey = `q${qIdx + 1}` as keyof QuarterlyProviders;
-                                                const provCount = qProviders[provKey];
-                                                const price = qPricing[qk];
-                                                const quarterBill = pricingModel === "perUnit" ? provCount * price * 3
-                                                  : pricingModel === "annualFlat" ? price / 4
-                                                  : price * provCount * 3;
-                                                return (
-                                                  <div key={qk}>
-                                                    <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Q{qIdx + 1}</label>
-                                                    <FormattedNumberInput
-                                                      value={price}
-                                                      onChange={(v) => {
-                                                        const val = Math.max(v, 0);
-                                                        const updated = { ...qPricing, [qk]: val };
-                                                        const annual = quarterlyToAnnualPricing(updated);
-                                                        const legacyUpdate: Partial<typeof setting> = { quarterlyPricing: updated, yearlyPricing: annual };
-                                                        if (pricingModel === "annualFlat") legacyUpdate.annualLicenseFee = annual.year1;
-                                                        else if (pricingModel === "perEncounter") legacyUpdate.costPerEncounter = annual.year1;
-                                                        else legacyUpdate.costPerUnit = annual.year1;
-                                                        onUpdateSetting(setting.id, legacyUpdate);
-                                                      }}
-                                                      prefix="$"
-                                                      className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded-lg px-1.5"
-                                                      data-testid={`input-price-${qk}-${setting.careSetting}`}
-                                                    />
-                                                    <p className="text-[9px] text-[#A39888] mt-0.5 text-right">{fmt(quarterBill)}/qtr</p>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
+                                  return null;
                                 }
 
                                 return (

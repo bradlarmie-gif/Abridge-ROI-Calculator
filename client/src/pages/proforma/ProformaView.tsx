@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -245,17 +245,12 @@ export default function ProformaView({
         }
       }
 
-      const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
-      const totalCost = totalImplFees + totalSubscription;
-      const contractYears = Math.ceil(config.contractTermMonths / 12);
-      const yearlyGross: number[] = [];
-      for (let y = 0; y < contractYears; y++) {
-        const yearRows = cashFlows.filter(r => r.period >= y * 12 + 1 && r.period <= (y + 1) * 12);
-        yearlyGross.push(yearRows.reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) * factor, 0));
-      }
-      const scaledIRR = totalCost > 0
-        ? calculateAnnualIRR([-totalCost, ...yearlyGross])
-        : { annualizedRate: 0, method: "irr" as const, isValid: false };
+      const month0 = totalImplFees > 0 ? -totalImplFees : 0;
+      const scaledIRRFlows = [month0, ...cashFlows.map(r => {
+        const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
+        return (isFinite(gross) ? gross : 0) - r.investment;
+      })];
+      const scaledIRR = calculateIRR(scaledIRRFlows);
 
       return {
         annualValue: scaledAnnual,
@@ -737,15 +732,15 @@ export default function ProformaView({
                   name="Investment"
                 />
 
-                {legendTotals.doc > 0 && (
+                {legendTotals.retention > 0 && (
                   <Area
                     type="monotone"
-                    dataKey="docValue"
+                    dataKey="retentionValue"
                     stackId="value"
-                    fill="url(#grad-doc)"
-                    stroke={CHART_COLORS.doc}
+                    fill="url(#grad-retention)"
+                    stroke={CHART_COLORS.retention}
                     strokeWidth={isMobile ? 1.5 : 2.5}
-                    name="Doc Quality"
+                    name="Retention"
                   />
                 )}
                 {legendTotals.time > 0 && (
@@ -759,15 +754,15 @@ export default function ProformaView({
                     name="Capacity & Efficiency"
                   />
                 )}
-                {legendTotals.retention > 0 && (
+                {legendTotals.doc > 0 && (
                   <Area
                     type="monotone"
-                    dataKey="retentionValue"
+                    dataKey="docValue"
                     stackId="value"
-                    fill="url(#grad-retention)"
-                    stroke={CHART_COLORS.retention}
+                    fill="url(#grad-doc)"
+                    stroke={CHART_COLORS.doc}
                     strokeWidth={isMobile ? 1.5 : 2.5}
-                    name="Retention"
+                    name="Doc Quality"
                   />
                 )}
 
@@ -842,84 +837,11 @@ export default function ProformaView({
             )}
           </div>
 
-          <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6 mt-4" data-testid="chart-cumulative">
-            <p className="text-[11px] sm:text-xs text-neutral-500 mb-3 sm:mb-4 font-medium uppercase tracking-wider">
-              Cumulative Value vs. Investment
+          {summary.paybackMonth && (
+            <p className="text-center text-sm text-neutral-600 mt-3" data-testid="text-payback-insight">
+              At your planned rollout pace, you reach payback in <strong className="text-neutral-900">Month {summary.paybackMonth}</strong>.
             </p>
-            <ResponsiveContainer width="100%" height={isMobile ? 240 : 320}>
-              <ComposedChart data={chartData} margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 20 } : { top: 20, right: 60, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  interval={config.viewMode === "quarterly" ? (isMobile ? 2 : 1) : 0}
-                  axisLine={{ stroke: "#D5D0CB" }}
-                  height={30}
-                />
-                <YAxis
-                  tickFormatter={(v: number) => fmt(v)}
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  width={isMobile ? 55 : 80}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  formatter={(v: number, name: string) => [fmt(v), name]}
-                  contentStyle={{ borderRadius: 10, border: "1px solid #E5E0DB", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="cumulativeValue"
-                  fill="rgba(234,44,0,0.06)"
-                  stroke="#EA2C00"
-                  strokeWidth={2.5}
-                  name="Cumulative Value"
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="cumulativeInvestment"
-                  stroke="#78716c"
-                  strokeWidth={2}
-                  strokeDasharray="8 4"
-                  dot={false}
-                  name="Cumulative Investment"
-                />
-                {paybackLabel && (
-                  <ReferenceLine
-                    x={paybackLabel}
-                    stroke="#EA2C00"
-                    strokeDasharray="4 4"
-                    strokeOpacity={0.7}
-                    strokeWidth={1.5}
-                    label={isMobile ? undefined : {
-                      value: `Payback: ${paybackLabel}`,
-                      position: "insideTopRight",
-                      fontSize: 11,
-                      fill: "#EA2C00",
-                      fontWeight: 600,
-                      dy: 8,
-                    }}
-                  />
-                )}
-              </ComposedChart>
-            </ResponsiveContainer>
-            <div className="flex items-center justify-center gap-6 mt-3 text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ backgroundColor: "#EA2C00" }} />
-                <span className="text-neutral-600">Cumulative Value</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: "2px dashed #78716c" }} />
-                <span className="text-neutral-600">Cumulative Investment</span>
-              </span>
-            </div>
-            {summary.paybackMonth && (
-              <p className="text-center text-sm text-neutral-600 mt-3" data-testid="text-payback-insight">
-                At your planned rollout pace, you reach payback in <strong className="text-neutral-900">Month {summary.paybackMonth}</strong>.
-              </p>
-            )}
-          </div>
+          )}
         </motion.div>
 
         {/* PRICING & CONFIG */}

@@ -416,14 +416,13 @@ describe("IRR Cross-Validation", () => {
     expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.001);
   });
 
-  it("annual cash flow period 0 = negative total cost (impl + subscription)", () => {
+  it("annual cash flow period 0 = negative implementation fees only", () => {
     const settings = [makeSetting({ implementationFee: 50000 })];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
-    const totalSub = cashFlows.reduce((s, r) => s + r.investment, 0);
-    expect(annualCF[0]).toBe(-(50000 + totalSub));
+    expect(annualCF[0]).toBeCloseTo(-50000, 0);
   });
 
   it("annual cash flows have 4 entries (period 0 + 3 years)", () => {
@@ -435,14 +434,14 @@ describe("IRR Cross-Validation", () => {
     expect(annualCF.length).toBe(4);
   });
 
-  it("year 1 return = year 1 gross value (subscription already in Period 0)", () => {
+  it("year 1 return = year 1 net value (gross value minus subscription)", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
 
-    const y1Gross = cashFlows.slice(0, 12).reduce((s, r) => s + r.docValue + r.timeValue + r.retentionValue, 0);
-    expect(annualCF[1]).toBeCloseTo(y1Gross, 0);
+    const y1Net = cashFlows.slice(0, 12).reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) - r.investment, 0);
+    expect(annualCF[1]).toBeCloseTo(y1Net, 0);
   });
 });
 
@@ -694,8 +693,7 @@ describe("Annual Flat License Pricing", () => {
     expect(irrResult.isValid).toBe(true);
     expect(irrResult.annualizedRate).toBeGreaterThan(0);
 
-    const totalCost = flatSetting.implementationFee + cashFlows.reduce((s, r) => s + r.investment, 0);
-    expect(annualCF[0]).toBeCloseTo(-totalCost, 0);
+    expect(annualCF[0]).toBeCloseTo(-flatSetting.implementationFee, 0);
   });
 
   it("mixed scenario: one perUnit + one annualFlat", () => {

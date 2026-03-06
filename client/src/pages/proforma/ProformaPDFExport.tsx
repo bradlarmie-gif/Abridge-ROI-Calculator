@@ -24,7 +24,7 @@ import {
   groupByQuarter,
   calculateProformaSummary,
   getYearlySummary,
-  calculateAnnualIRR,
+  calculateIRR,
   getContractStartDate,
 } from "@/lib/proformaCalculations";
 
@@ -272,21 +272,21 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
 
             {data.map((bar, i) => {
               const x = i * groupW + barGap;
-              const docH = (bar.docValue / niceMax) * svgH;
-              const timeH = (bar.timeValue / niceMax) * svgH;
               const retH = (bar.retentionValue / niceMax) * svgH;
-              const docY = scaleY(bar.docValue);
-              const timeY = scaleY(bar.docValue + bar.timeValue);
-              const retY = scaleY(bar.docValue + bar.timeValue + bar.retentionValue);
+              const timeH = (bar.timeValue / niceMax) * svgH;
+              const docH = (bar.docValue / niceMax) * svgH;
+              const retY = scaleY(bar.retentionValue);
+              const timeY = scaleY(bar.retentionValue + bar.timeValue);
+              const docY = scaleY(bar.retentionValue + bar.timeValue + bar.docValue);
               const invH = (bar.investment / niceMax) * svgH;
               const invY = scaleY(bar.investment);
               const invBarW = Math.max(barW * 0.18, 3);
 
               return (
                 <G key={`bar-${i}`}>
-                  {docH > 0.5 && <Rect x={x} y={docY} width={barW} height={docH} fill={colors.docBlue} fillOpacity={0.8} rx={1} />}
-                  {timeH > 0.5 && <Rect x={x} y={timeY} width={barW} height={timeH} fill={colors.timeRed} fillOpacity={0.75} />}
                   {retH > 0.5 && <Rect x={x} y={retY} width={barW} height={retH} fill={colors.retentionAmber} fillOpacity={0.75} rx={1} />}
+                  {timeH > 0.5 && <Rect x={x} y={timeY} width={barW} height={timeH} fill={colors.timeRed} fillOpacity={0.75} />}
+                  {docH > 0.5 && <Rect x={x} y={docY} width={barW} height={docH} fill={colors.docBlue} fillOpacity={0.8} rx={1} />}
                   {invH > 0.5 && <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#78716C" fillOpacity={0.12} rx={1} />}
                   {invH > 0.5 && <SvgLine x1={x + barW + 2} y1={invY} x2={x + barW + 2 + invBarW} y2={invY} stroke="#78716C" strokeWidth={0.8} />}
                 </G>
@@ -865,7 +865,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR uses Total Cost of Ownership methodology: Period 0 = implementation fees + total subscription over the contract term; Years 1–N = gross annual value.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
+                Value-to-Cost: total value / total cost. IRR solved on monthly net cash flows (value minus subscription). Month 0 = implementation fee only. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
               </Text>
             </View>
           </View>
@@ -950,16 +950,12 @@ export async function generateProformaPDF(
 
   const buildScaledIRR = (factor: number) => {
     const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-    const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
-    const totalCost = totalImplFees + totalSubscription;
-    if (totalCost <= 0) return { annualizedRate: 0, method: "irr" as const, isValid: false };
-    const contractYears = Math.ceil(config.contractTermMonths / 12);
-    const yearlyGross: number[] = [];
-    for (let y = 0; y < contractYears; y++) {
-      const yearRows = cashFlows.filter(r => r.period >= y * 12 + 1 && r.period <= (y + 1) * 12);
-      yearlyGross.push(yearRows.reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) * factor, 0));
-    }
-    return calculateAnnualIRR([-totalCost, ...yearlyGross]);
+    const month0 = totalImplFees > 0 ? -totalImplFees : 0;
+    const scaledFlows = [month0, ...cashFlows.map(r => {
+      const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
+      return (isFinite(gross) ? gross : 0) - r.investment;
+    })];
+    return calculateIRR(scaledFlows);
   };
   const consResult = buildScaledIRR(0.7);
   const optResult = buildScaledIRR(1.3);
