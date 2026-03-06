@@ -1,0 +1,116 @@
+You are editing the Abridge Outpatient ROI Calculator — a React/TypeScript app (Vite build). 
+The assessment has four domain lenses: Capacity, Revenue, Workforce, and Quality. 
+Each domain has four maturity levels rendered as expandable cards.
+Make ONLY the four specific changes described below. Do not restructure, rename, or refactor 
+any component, file, or data shape. Do not change any calculation logic, routing, or styling. 
+Only modify the display text/labels/UI fields described.
+---
+CHANGE 1 — CAPACITY, LEVEL 2: Remove duplicate "Minutes returned per encounter" input field
+CONTEXT:
+Level 1 (titled "Time Is Coming Back") already asks the user for "Minutes returned per encounter" 
+as a numeric input with an "Abridge observed benchmark: 2–3 min" note and a "Use benchmark (2–3 min)" 
+checkbox. That input drives the 4,000 hrs/year calculation.
+Level 2 (titled "The Number Is Known", subtitle "Leadership knows the number.") currently 
+ALSO renders a "Minutes returned per encounter" numeric input field with the same benchmark 
+note. This is a duplicate — the value is already captured at Level 1 and Level 2 should 
+not re-ask it.
+THE FIX:
+In the Level 2 card ("The Number Is Known"), remove the "Minutes returned per encounter" 
+numeric input field AND its associated benchmark text ("Abridge observed benchmark: 2–3 min"). 
+Do NOT remove the "Use benchmark (2–3 min)" checkbox if it appears here — only remove the 
+labeled text input for minutes and the benchmark italic/subtext line beneath it.
+The Level 2 card should retain its existing radio button question ("Where does this stand?") 
+with options: "Not aggregated yet", "Estimated, not reported", "Formally quantified".
+That radio group is the correct and only input for Level 2.
+The calculated value (e.g. "4,000 hours quantified. Decision pending.") should continue 
+to display correctly — it should still reference the minutes value from Level 1's input.
+Do not break that calculation or its display.
+---
+CHANGE 2 — REVENUE, LEVEL 3: Remove duplicate "What did you measure?" label
+CONTEXT:
+Level 3 of Revenue is titled "The Impact Has Been Measured" with subtitle 
+"There's a number. Leadership can work with it."
+The card currently renders like this:
+  - A question sentence: "What did you measure?"
+  - A red headline (the calculated display): "You have a number. Most don't."
+  - A second label: "What did you measure?" (above the radio buttons)
+  - Radio options: "wRVU per encounter", "Collections per encounter", 
+    "Overall revenue change", "Denial rate reduction"
+The phrase "What did you measure?" appears TWICE — once as a standalone sentence/prompt 
+above the red headline, and again as the label directly above the radio buttons.
+THE FIX:
+Remove the FIRST instance of "What did you measure?" — the one that appears as a 
+standalone sentence ABOVE the red calculated headline ("You have a number. Most don't.").
+Keep ONLY the second instance — the label that sits immediately above the radio button 
+group. The card flow should read:
+  [Red headline: "You have a number. Most don't."]
+  "What did you measure?"
+  [Radio options]
+Do not change the radio options, the red headline text, or any calculation logic.
+---
+CHANGE 3 — WORKFORCE, LEVEL 4: Replace open-ended duration input with a simple radio
+CONTEXT:
+Level 4 of Workforce is titled "The Savings Are Showing Up" with subtitle 
+"It's in the labor line now."
+The card currently has:
+  - Question: "What's the monthly reduction in agency or locum spend?"
+  - Red headline: "The labor line is shifting."
+  - Input: "Monthly reduction in agency or locum spend" (dollar input, 
+    benchmark: "$5K–$30K/month")
+  - Input: "How many months has this reduction been sustained?" (open numeric input, no unit label)
+The second input ("How many months has this reduction been sustained?") is too operational 
+for a C-suite presentation and stalls the conversation.
+THE FIX:
+Replace the "How many months has this reduction been sustained?" open numeric input 
+with a radio button group. The new question label should read:
+  "Is this showing up in the labor line on a sustained basis?"
+With three radio options:
+  - "Yes — it's in the numbers"
+  - "We're tracking it"
+  - "Not yet confirmed"
+The dollar input for "Monthly reduction in agency or locum spend" should remain 
+exactly as-is. Only the duration input below it is being replaced.
+Update any TypeScript types or state shapes that stored the old numeric 
+"months sustained" field to instead store the new radio selection as a string. 
+Ensure the estimated impact panel still renders correctly — if it referenced the 
+"months sustained" value in any calculation or display string, replace that 
+reference with a neutral display that does not depend on the removed field. 
+If no calculation used the months value, simply remove it from state.
+---
+CHANGE 4 — QUALITY, LEVEL 1: Realign the question to match the level's premise
+CONTEXT:
+Level 1 of Quality is titled "The Notes Are Better. No One's Connecting It Yet." 
+with subtitle "Better notes. No one downstream knows it yet."
+The current question inside the card reads:
+  "Has any downstream team been brought into the conversation?"
+This question wording implies active outreach, which contradicts the level's 
+premise that no one has connected the dots yet. The question and level name 
+are in tension.
+THE FIX:
+Change the question text from:
+  "Has any downstream team been brought into the conversation?"
+To:
+  "Documentation is improving. Has anyone downstream noticed yet?"
+The red calculated headline below it ("80,000 encounters with better notes." or 
+equivalent dynamic text) should remain unchanged.
+The three radio options below should remain unchanged:
+  - "Not yet"
+  - "Starting informally"  
+  - "One team is formally in"
+Only the question sentence itself is changing.
+---
+VERIFICATION CHECKLIST (confirm each before finishing):
+1. Capacity L2 card no longer shows a "Minutes returned per encounter" text input 
+   or benchmark subtext. The "Where does this stand?" radio group is still present.
+2. The hours calculation displayed in the Capacity L2 card still reflects the 
+   minutes value entered in L1 (e.g. still says "4,000 hours quantified" if 
+   3 min × 80,000 encounters × 80% = that figure).
+3. Revenue L3 card shows "What did you measure?" exactly once — only above 
+   the radio buttons, not above the red headline.
+4. Workforce L4 card no longer has an open number input for months. 
+   It has a new radio group with the three options listed above.
+5. Quality L1 card question reads "Documentation is improving. Has anyone 
+   downstream noticed yet?" — not the old wording.
+6. No other cards, levels, or domains have been modified.
+7. The app builds without TypeScript errors.
+8. All four domain progress bars and estimated impact panels still render correctly.
