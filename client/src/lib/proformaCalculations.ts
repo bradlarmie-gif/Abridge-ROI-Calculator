@@ -678,10 +678,12 @@ export function buildAnnualIRRCashFlows(
 
   if (totalCost <= 0) return [0];
 
-  return [
-    -totalCost,
-    ...yearBuckets.map(yb => yb.grossValue),
-  ];
+  const netFlows = yearBuckets.map(yb => yb.grossValue - yb.subscription);
+
+  if (totalImplFees > 0) {
+    return [-totalImplFees, ...netFlows];
+  }
+  return netFlows;
 }
 
 export function calculateAnnualIRR(annualCashFlows: number[]): IRRResult {

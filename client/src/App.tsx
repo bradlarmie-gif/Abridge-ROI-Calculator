@@ -176,6 +176,7 @@ export default function App() {
   const [proformaSettings, setProformaSettings] = useState<ProformaSettingSnapshot[]>([]);
   const [proformaScenarios, setProformaScenarios] = useState<ProformaScenario[]>([]);
   const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
+  const [proformaEditExploreState, setProformaEditExploreState] = useState<ExploreState | undefined>(undefined);
 
   const handleAddToProforma = useCallback((snapshot: ProformaSettingSnapshot) => {
     setProformaSettings(prev => {
@@ -187,6 +188,8 @@ export default function App() {
       }
       return [...prev, snapshot];
     });
+    setProformaEditExploreState(undefined);
+    setProformaAddCareSetting(undefined);
     navigateTo("proforma-hub");
   }, [navigateTo]);
 
@@ -521,6 +524,7 @@ export default function App() {
                   setModelResults(null);
                   setExploreInitialSettings({});
                   setProformaAddCareSetting(undefined);
+                  setProformaEditExploreState(undefined);
                   navigateTo("explore");
                 }}
                 onSelectExpand={() => navigateTo("measure")}
@@ -540,6 +544,7 @@ export default function App() {
                 onContinueToInvestment={handleExploreComplete}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
+                initialExploreState={proformaEditExploreState}
                 onAddToProforma={handleAddToProforma}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
               />
@@ -630,6 +635,7 @@ export default function App() {
                 scenarios={proformaScenarios}
                 onAddSetting={(careSetting) => {
                   setProformaAddCareSetting(careSetting as ExploreCareSetting);
+                  setProformaEditExploreState(undefined);
                   setExploreInitialSettings({});
                   navigateTo("explore");
                 }}
@@ -637,6 +643,7 @@ export default function App() {
                   const setting = proformaSettings.find(s => s.id === id);
                   if (setting) {
                     setProformaAddCareSetting(setting.careSetting as ExploreCareSetting);
+                    setProformaEditExploreState(setting.fullExploreState);
                     setExploreInitialSettings({});
                     navigateTo("explore");
                   }

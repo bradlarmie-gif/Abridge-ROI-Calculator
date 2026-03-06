@@ -188,8 +188,8 @@ export default function ProformaView({
     return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
   }, [settings]);
 
-  const totalProviders = useMemo(() => {
-    return settings.reduce((s, v) => s + v.providerCount, 0);
+  const totalFullScaleProviders = useMemo(() => {
+    return settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
   }, [settings]);
 
   const fteEquivalent = useMemo(() => {
@@ -197,8 +197,12 @@ export default function ProformaView({
   }, [summary.totalHours]);
 
   const perProviderValue = useMemo(() => {
-    return totalProviders > 0 ? summary.runRateValue / totalProviders : 0;
-  }, [summary.runRateValue, totalProviders]);
+    return totalFullScaleProviders > 0 ? summary.runRateValue / totalFullScaleProviders : 0;
+  }, [summary.runRateValue, totalFullScaleProviders]);
+
+  const hoursPerProvider = useMemo(() => {
+    return totalFullScaleProviders > 0 ? Math.round(summary.totalHours / totalFullScaleProviders) : 0;
+  }, [summary.totalHours, totalFullScaleProviders]);
 
   const sensitivityAnalysis = useMemo(() => {
     const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number) => ({
@@ -457,8 +461,8 @@ export default function ProformaView({
             <div className="mb-4">
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.runRateValue)}</p>
-              {totalProviders > 0 && (
-                <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider: {fmt(perProviderValue)}</p>
+              {totalFullScaleProviders > 0 && (
+                <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider at scale: {fmt(perProviderValue)}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -488,10 +492,12 @@ export default function ProformaView({
                 </p>
               </div>
               <div>
-                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Hours Returned (Annual)</p>
                 <p className="text-xl font-bold" data-testid="text-hours">{fmtNum(summary.totalHours)}</p>
                 {summary.totalHours > 0 && (
-                  <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-fte-mobile">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+                  <>
+                    <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-fte-mobile">≈ {fteEquivalent.toFixed(1)} FTEs · {fmtNum(hoursPerProvider)} hrs/provider/yr</p>
+                  </>
                 )}
               </div>
             </div>
@@ -502,8 +508,8 @@ export default function ProformaView({
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
-              {totalProviders > 0 && (
-                <p className="text-[12px] text-white/50 mt-1" data-testid="text-per-provider">per provider: {fmt(perProviderValue)}</p>
+              {totalFullScaleProviders > 0 && (
+                <p className="text-[12px] text-white/50 mt-1" data-testid="text-per-provider">per provider at scale: {fmt(perProviderValue)}</p>
               )}
             </div>
             <div>
@@ -532,10 +538,10 @@ export default function ProformaView({
               </p>
             </div>
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned</p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned (Annual)</p>
               <p className="text-2xl font-bold">{fmtNum(summary.totalHours)}</p>
               {summary.totalHours > 0 && (
-                <p className="text-[12px] text-white/50 mt-1" data-testid="text-fte">≈ {fteEquivalent.toFixed(1)} FTEs</p>
+                <p className="text-[12px] text-white/50 mt-1" data-testid="text-fte">≈ {fteEquivalent.toFixed(1)} FTEs · {fmtNum(hoursPerProvider)} hrs/provider/yr</p>
               )}
             </div>
           </div>

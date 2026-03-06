@@ -499,16 +499,22 @@ interface ExploreFlowProps {
   onContinueToInvestment?: (state: ExploreState) => void;
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
+  initialExploreState?: ExploreState;
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
-  const [phase, setPhase] = useState<ExplorePhase>(initialPhase || 'careSetting');
-  const [state, setState] = useState<ExploreState>(() => ({
-    ...DEFAULT_EXPLORE_STATE,
-    careSetting: initialCareSetting || null,
-  }));
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
+  const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));
+  const [state, setState] = useState<ExploreState>(() => {
+    if (initialExploreState) {
+      return { ...initialExploreState };
+    }
+    return {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: initialCareSetting || null,
+    };
+  });
 
   const updateState = useCallback((updates: Partial<ExploreState>) => {
     setState(prev => ({ ...prev, ...updates }));
