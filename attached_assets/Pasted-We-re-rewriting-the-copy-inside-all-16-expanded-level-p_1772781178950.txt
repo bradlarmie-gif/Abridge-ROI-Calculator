@@ -1,0 +1,357 @@
+We're rewriting the copy inside all 16 expanded level panels across the four assessment domains (Capacity, Revenue, Workforce, Quality). The goal is a premium, human, direct experience — no corporate jargon, no repeated questions, no over-explained labels. Every word should feel like it belongs in the same voice as the level names the user sees.
+DO NOT change: colors, layout structure, card backgrounds, fonts, Estimated Impact panel math, domain header headlines, the black progress bar, any calculations or formulas, the CTA buttons, or the Abridge logo/branding.
+DO NOT change the level names themselves — they are already correct.
+RULES FOR ALL COPY:
+- Never ask the same question twice in one level panel
+- Framing text above the input/radio group should be ONE short sentence (under 18 words) — declarative, not interrogative
+- Radio/checkbox option labels: short. 2–5 words max. No em dashes with explanations. No parentheticals.
+- Input field labels: the label only. No explanatory paragraph under it.
+- Benchmark hints under inputs stay — they're useful — but trim to one line
+- "Next:" sub-labels on collapsed levels: rewrite as forward-pull statements, not task instructions
+- Workforce Level 2 name must be changed from "The Relief Is on Record" to "Effort Reduction Is Measured"
+---
+CAPACITY — LEVEL 1: "Time Is Coming Back"
+CURRENT sub-label (italic under level name):
+"You know what you're getting back."
+→ KEEP AS-IS
+CURRENT framing paragraph (bold, above red stat):
+"Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?"
+CURRENT second question (above radio buttons):
+"Has your organization formally measured this — using the Abridge observed benchmark of 2–3 min"
+[radio text below the checkbox: "I haven't formally measured this — using the Abridge observed benchmark of 2–3 min"]
+REWRITE:
+- Remove the bold framing paragraph entirely
+- Input field label: "Minutes returned per encounter"
+- Benchmark hint (keep, trim to): "Abridge observed benchmark: 2–3 min"
+- Checkbox label: "Use benchmark (2–3 min)"
+- Cost-of-inaction line in Estimated Impact panel (currently: "Time recovery is the foundation. Value is determined by where this time goes — which is what Levels 2–4 measure."):
+→ REPLACE WITH: "This is the raw material. What your organization does with it determines whether it becomes revenue, capacity, or nothing."
+CURRENT "Next:" label on Level 2 collapsed row:
+"Next: quantify and escalate to leadership"
+→ REPLACE WITH: "The number needs a name."
+---
+CAPACITY — LEVEL 2: "The Number Is Known"
+CURRENT sub-label: "Leadership knows the number."
+→ KEEP AS-IS
+CURRENT framing paragraph:
+"Has your organization formally quantified total recovered capacity and brought it to leadership with a recommended use?"
+REWRITE:
+- Replace framing paragraph with: "The hours are real. Has leadership seen them?"
+- Radio group label: "Where does this stand?"
+- Radio option 1 (currently: "No — time savings are known per encounter but not aggregated across the deployment"):
+→ REPLACE WITH: "Not aggregated yet"
+- Radio option 2 (currently: "Informally — we have estimates but no formal reporting"):
+→ REPLACE WITH: "Estimated, not reported"
+- Radio option 3 (currently: "Yes — total recovered hours are formally quantified and reported"):
+→ REPLACE WITH: "Formally quantified"
+CURRENT cost-of-inaction line in Estimated Impact:
+"The operational question is timing: organizations that bring this number to leadership with a recommended use tend to move from quantification to deployment within a single quarter."
+→ REPLACE WITH: "Organizations that bring this number to leadership with a plan attached move to deployment within a quarter."
+CURRENT Level 3 bridge line:
+"A dollar value appears at Level 3, when recovered capacity is directed toward a specific operational outcome."
+→ REPLACE WITH: "It becomes money when the hours have a destination."
+CURRENT "Next:" label on Level 3 collapsed row:
+"Next: deploy time into patient access"
+→ REPLACE WITH: "Time needs somewhere to go."
+---
+CAPACITY — LEVEL 3: "Time Has a Destination"
+CURRENT sub-label: "The time has a destination."
+→ KEEP AS-IS
+CURRENT framing paragraph:
+"Has your organization confirmed that recovered time is being used to expand patient access — through additional appointments, panel growth, or scheduling redesign?"
+REWRITE:
+- Replace framing paragraph with: "Recovered time is being used for more patients. How many?"
+- Input label: "Additional patients per provider per month"
+- Benchmark hint (keep, trim to): "Structured access redesign: 3–8 patients/provider/month"
+- Data confidence label: "How confident is this number?"
+- Data confidence options — keep "Measured / Estimated / Aspirational" as-is (they're clean)
+- "Providers with redesigned schedules" label → REPLACE WITH: "Providers included"
+CURRENT "Next:" label on Level 4 collapsed row:
+"Next: connect to workforce planning"
+→ REPLACE WITH: "When hiring plans change, it's a different conversation."
+---
+CAPACITY — LEVEL 4: "Hiring Plans Have Changed"
+CURRENT sub-label: "Ambient is in your hiring model."
+→ KEEP AS-IS
+CURRENT framing paragraph:
+"Has your organization formally attributed workforce planning decisions to ambient-enabled capacity — FTEs not hired, locums reduced, or panels rebalanced?"
+→ REPLACE WITH: "Capacity is showing up in the hiring model. What changed?"
+CURRENT checkbox group label: "How is recovered capacity being used in planning?"
+→ REPLACE WITH: "What's changed in planning?"
+CURRENT checkbox options — REPLACE WITH shorter versions:
+- "Avoided or deferred new hires" → KEEP (already clean)
+- "Absorbed patient volume growth without adding FTEs" → "Absorbed volume without adding FTEs"
+- "Redeployed providers to underserved panels or new sites" → "Redeployed providers"
+- "Factored into annual FTE / staffing model" → "In the annual staffing model"
+- "Used in business case for new service lines or locations" → "In a service line business case"
+CURRENT "FTEs avoided or deferred" input label + explanation:
+"Organizations at this maturity level have reported 1–2 FTE equivalent in avoided or deferred hires."
+→ Label: "FTEs avoided or deferred"
+→ Benchmark hint: "Organizations at this level report 1–2 FTE equivalent."
+CURRENT "Fully-loaded annual cost per FTE" label + explanation:
+"Include salary, benefits, malpractice, and onboarding. AMGA benchmark: $350K–$450K for outpatient physician."
+→ Label: "Fully-loaded cost per FTE"
+→ Benchmark hint: "AMGA benchmark: $350K–$450K"
+---
+REVENUE — LEVEL 1: "No One Is Connecting the Dots"
+CURRENT sub-label:
+"Ambient is deployed, but the revenue cycle team hasn't been formally engaged on what it means for coding accuracy or reimbursement."
+→ REPLACE WITH: "Revenue cycle hasn't entered the room yet."
+CURRENT framing paragraph:
+"Has your revenue cycle team been formally engaged on what ambient documentation means for coding accuracy or reimbursement?"
+→ REPLACE WITH: "52,500 encounters. Has anyone from revenue cycle looked at what that means for coding?"
+[NOTE: Replace the hardcoded 52,500 with the dynamic encounter variable so it reflects user input]
+CURRENT radio group label: "Has your revenue cycle team been formally engaged?"
+→ REPLACE WITH: "Where does this stand?"
+CURRENT radio options — REPLACE WITH:
+- "Not yet — ambient and revenue cycle are operating independently" → "Not yet"
+- "Some awareness — conversations have started informally" → "Conversations have started"
+- "Yes — formally engaged and involved" → "Formally engaged"
+CURRENT Estimated Impact cost-of-inaction:
+"When ambient and revenue cycle aren't connected, any improvement in coding accuracy or reimbursement goes unmeasured — not because it isn't happening, but because no one is looking. Bringing revenue cycle into the ambient conversation is the first step. Organizations that do this tend to have a quantified impact figure before their first contract renewal. Revenue impact is measured at Level 3, when your organization has before/after data to work with. Level 2 opens when your revenue cycle team is actively analyzing the connection."
+→ REPLACE WITH two lines:
+Line 1: "The revenue is likely already there. It's just not being looked for."
+Line 2: "Organizations that bring revenue cycle in early have a number before their first contract renewal."
+CURRENT "Next:" label on Level 2 collapsed row:
+"Next: begin revenue cycle analysis"
+→ REPLACE WITH: "Someone needs to start looking."
+---
+REVENUE — LEVEL 2: "Revenue Cycle Is in the Conversation"
+CURRENT sub-label:
+"Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes."
+→ REPLACE WITH: "Someone is looking. What are they seeing?"
+CURRENT framing paragraph:
+"What is your revenue cycle team analyzing — and how far along is the investigation?"
+→ REPLACE WITH: "What's being analyzed?"
+CURRENT checkbox group label: "What is your revenue cycle team analyzing?"
+→ REMOVE (it's redundant with the framing line above)
+CURRENT checkbox options — REPLACE WITH shorter versions:
+- "wRVU per encounter trends" → KEEP
+- "ICD-10 coding specificity and code level distribution" → "Coding specificity / ICD-10 distribution"
+- "Claim denial rates related to documentation quality" → "Denial rates tied to documentation"
+- "Collections per encounter before vs. after ambient" → "Collections before vs. after"
+- "CDI query volume before vs. after" → "CDI query volume"
+- "Coder productivity and turnaround time" → "Coder productivity"
+CURRENT duration question: "How long has the analysis been in progress?"
+→ REPLACE WITH: "How far along?"
+Duration options:
+- "Less than 30 days" → "Early — under 30 days"
+- "30–90 days" → "30–90 days"
+- "90+ days — findings are maturing" → "90+ days"
+CURRENT Estimated Impact panel (blank/empty state):
+"Select what's being analyzed to see your assessment."
+→ REPLACE WITH: "At {encounterCount} encounters annually, even a 0.1 wRVU improvement per encounter is worth looking at. Select what's being tracked to see the range."
+CURRENT "Next:" label on Level 3 collapsed row:
+"Next: measure before/after impact"
+→ REPLACE WITH: "A number changes everything."
+---
+REVENUE — LEVEL 3: "The Impact Has Been Measured"
+CURRENT sub-label:
+"Your organization has before/after data that connects ambient documentation to a specific revenue outcome — a number leadership can work with."
+→ REPLACE WITH: "There's a number. Leadership can work with it."
+CURRENT framing paragraph:
+"What did your organization measure — and what does your data show?"
+→ REPLACE WITH: "What did you measure?"
+CURRENT measurement options — REPLACE WITH:
+- "wRVU change per encounter (coding specificity improved)" → "wRVU per encounter"
+- "Collections change per encounter (dollars collected per visit)" → "Collections per encounter"
+- "Overall revenue change (%) attributed to documentation" → "Overall revenue change"
+- "Denial rate reduction (documentation-related claims)" → "Denial rate reduction"
+CURRENT "Next:" label on Level 4 collapsed row:
+"Next: integrate into operations"
+→ REPLACE WITH: "The loop closes when it's built into how you operate."
+---
+REVENUE — LEVEL 4: "It's Now a Managed System"
+CURRENT sub-label:
+"Documentation quality and revenue cycle operate as a connected system — monitored, attributed, and factored into operational planning."
+→ REPLACE WITH: "The loop is closed. It runs on its own now."
+CURRENT framing paragraph:
+"How is documentation quality formally integrated into your revenue cycle operations — and what has your organization attributed to it?"
+→ REPLACE WITH: "How is this built in?"
+CURRENT checkbox group label: "How is documentation quality integrated into revenue cycle?"
+→ REMOVE (redundant with framing line)
+CURRENT checkbox options — REPLACE WITH shorter versions:
+- "Ongoing wRVU or collections monitoring linked to documentation" → "Ongoing wRVU / collections monitoring"
+- "CDI workflow incorporates ambient documentation review" → "CDI workflow includes ambient review"
+- "Denial management tracks documentation-related root causes" → "Denial management tracks documentation"
+- "Revenue cycle dashboards include documentation quality metrics" → "Dashboards include documentation metrics"
+- "Payer negotiations reference documentation-driven outcomes" → "Payer negotiations reference it"
+CURRENT "Revenue formally attributed to documentation quality" input label + explanation:
+"The annual figure your organization attributes to ambient-enabled documentation improvements — a number your CFO or VP of Revenue Cycle has confirmed."
+→ Label: "Annual revenue attributed"
+→ Add secondary option below the input: "Don't have a confirmed number yet" (checkbox) — when checked, show: "At {encounterCount} encounters, organizations at this integration level typically attribute $200K–$600K annually. This can serve as a working estimate."
+---
+WORKFORCE — LEVEL 1: "Providers Are Getting Time Back"
+CURRENT sub-label:
+"Providers are spending less time on documentation outside clinical hours. This level establishes how much."
+→ REPLACE WITH: "The after-hours load is lighter. How much lighter?"
+CURRENT framing paragraph:
+"How much after-hours documentation time has ambient returned to your providers per week?"
+→ REMOVE (the input label makes it clear)
+CURRENT input label: "Hours per provider per week of after-hours documentation reduced"
+→ REPLACE WITH: "After-hours time returned"
+CURRENT benchmark hint:
+"Organizations using ambient documentation have reported 1–3 hrs/week reduction in after-hours documentation. Based on aggregated deployment experience."
+→ REPLACE WITH: "Abridge benchmark: 1–3 hrs/week"
+PRE-POPULATE default value: 2.0 (editable). The field should not be blank on load.
+CURRENT Estimated Impact empty state:
+"Enter estimated after-hours documentation reduction to calculate workforce impact."
+→ REPLACE WITH: "At 50 providers and 2 hrs/week, that's 5,200 hours annually — the equivalent of 2.5 FTEs of after-hours time returned."
+[NOTE: Make this dynamic using provider count and the pre-populated or entered value]
+CURRENT "Next:" label on Level 2 collapsed row:
+"Next: measure in-clinic burden alongside after-hours"
+→ REPLACE WITH: "After-hours is only part of the story."
+WORKFORCE — LEVEL 2: "Effort Reduction Is Measured"
+[NAME CHANGE: Change "The Relief Is on Record" to "Effort Reduction Is Measured" everywhere it appears]
+CURRENT sub-label:
+"In-clinic and after-hours documentation time has been formally quantified, with provider experience data to support it."
+→ REPLACE WITH: "In-clinic time is tracked. Providers have been asked."
+CURRENT framing paragraph:
+"How much in-clinic documentation time has ambient returned per provider per day — and what are providers saying about it?"
+→ REMOVE framing paragraph. Input label makes it clear.
+CURRENT input label: "Minutes saved per provider per day in chart editing, correction, and reconciliation"
+→ REPLACE WITH: "In-clinic time returned per provider per day"
+CURRENT benchmark hint:
+"Organizations at this stage have reported 10–20 min/day reduction in chart editing and review. Based on aggregated deployment experience."
+→ REPLACE WITH: "Abridge benchmark: 10–20 min/day"
+CURRENT survey question: "Have you conducted a clinician survey since deploying ambient documentation?"
+→ REPLACE WITH: "Have providers been surveyed?"
+Survey options:
+- "Not yet" → KEEP
+- "Yes — informal pulse survey" → "Informal pulse survey"
+- "Yes — structured survey (e.g., burnout, satisfaction, documentation burden)" → "Structured survey"
+CURRENT "Next:" label on Level 3 collapsed row:
+"Next: connect burden reduction to retention data"
+→ REPLACE WITH: "Burden reduction becomes a retention story."
+---
+WORKFORCE — LEVEL 3: "Retention Is Part of the Story"
+CURRENT sub-label:
+"Your organization has modeled turnover exposure and identified documentation burden as a measurable variable in provider retention."
+→ REPLACE WITH: "Turnover is being modeled. Burden is part of it."
+CURRENT framing paragraph (remove entirely — inputs are self-explanatory)
+CURRENT input labels — REPLACE WITH:
+- "Annual physician turnover rate" → KEEP
+- "Average cost to recruit and onboard a replacement" → "Replacement cost per physician"
+CURRENT benchmark hints — TRIM TO:
+- "National average: 6–8% annually (AAMC)"
+- "Industry range: $250K–$500K (AAMC)"
+CURRENT attribution question: "What portion of turnover is driven or worsened by documentation burden?"
+→ REPLACE WITH: "How much of turnover is burden-related?"
+Attribution options — REPLACE WITH:
+- "~10% — a contributing factor" → "~10%"
+- "~20% — a significant factor" → "~20%"
+- "~30% — a primary driver" → "~30%"
+- "40%+ — the dominant driver" → "40%+"
+CURRENT toggle label: "Conservative (40%) / Research benchmark (60%)"
+→ REPLACE WITH: "Conservative / Research benchmark"
+CURRENT research note:
+"Research benchmark: Documentation burden is a top-3 driver of physician burnout (Shanafelt et al.). Organizations report 20–40% of voluntary turnover attributed to workload and documentation fatigue."
+→ REPLACE WITH: "Shanafelt et al.: documentation burden is a top-3 driver of voluntary turnover."
+CURRENT "Next:" label on Level 4 collapsed row:
+"Next: quantify agency/locum cost reduction"
+→ REPLACE WITH: "The savings show up in the labor line."
+---
+WORKFORCE — LEVEL 4: "The Savings Are Showing Up"
+CURRENT sub-label:
+"Reduced documentation burden is showing up in your labor cost structure — through lower agency spend, fewer locum engagements, or both."
+→ REPLACE WITH: "It's in the labor line now."
+CURRENT framing paragraph:
+"Has ambient-enabled retention improvement reduced your organization's dependence on agency or locum providers — and by how much?"
+→ REPLACE WITH: "What's the monthly reduction in agency or locum spend?"
+CURRENT input label: "Monthly reduction in agency or locum spend"
+→ KEEP (already clean)
+CURRENT benchmark hint:
+"Organizations at the highest maturity level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience."
+→ REPLACE WITH: "Abridge benchmark: $5K–$30K/month"
+CURRENT duration question: "How many months has this reduction been sustained?"
+→ KEEP (it's clean and necessary)
+---
+QUALITY — LEVEL 1: "The Notes Are Better. No One's Connecting It Yet."
+CURRENT sub-label:
+"Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected."
+→ REPLACE WITH: "Better notes. No one downstream knows it yet."
+CURRENT framing paragraph (bold, appears TWICE — remove first instance entirely):
+"Ambient is producing better notes. Has your organization started connecting that improvement to anything downstream — coding, quality reporting, compliance, or care management?"
+→ REMOVE the first instance. Keep only the question directly above the radio buttons, shortened to:
+"Has any downstream team been brought into the conversation?"
+CURRENT radio group label: "Has your organization started connecting ambient documentation quality to any downstream workflow or team?"
+→ REMOVE (same as question above, redundant)
+CURRENT radio options — REPLACE WITH:
+- "Not yet — the clinical improvement is visible but hasn't reached downstream teams" → "Not yet"
+- "Informally — some teams are aware and starting to explore it" → "Starting informally"
+- "Yes — at least one downstream team is formally engaged" → "One team is formally in"
+CURRENT Estimated Impact cost-of-inaction:
+"Better documentation creates better signal downstream — for coders, quality teams, compliance officers, and care managers. The opportunity at this level is identifying which downstream teams are ready to receive that signal. The organizations that move fastest on this tend to start with one team, one workflow, and one measurable outcome — then build from there. Downstream value appears at Level 3, when a specific workflow shows measurable improvement. Level 2 — when documentation quality is being formally tracked, the gaps become visible and actionable."
+→ REPLACE WITH:
+Line 1: "{encounterCount} encounters with better notes. The signal exists — no one is routing it yet."
+Line 2: "The organizations that move fastest pick one team and one workflow first."
+CURRENT "Next:" label on Level 2 collapsed row:
+"Next: start tracking documentation quality formally"
+→ REPLACE WITH: "Tracking it makes the gaps visible."
+---
+QUALITY — LEVEL 2: "Quality Is Being Monitored"
+CURRENT sub-label:
+"Your organization is actively measuring documentation quality attributes — completeness, specificity, and accuracy — and gaps are visible."
+→ REPLACE WITH: "Quality is being watched. Gaps are showing up."
+CURRENT framing paragraph:
+"How is your organization monitoring documentation quality — and which attributes are being tracked?"
+→ REPLACE WITH: "How is quality being tracked?"
+CURRENT radio group label: "How is your organization monitoring documentation quality?"
+→ REMOVE (redundant with framing line)
+CURRENT radio options — REPLACE WITH:
+- "Not yet — we know quality has improved but haven't started formal tracking" → "Not tracking formally yet"
+- "Informally — spot checks and anecdotal feedback from CDI or coding" → "Spot checks and anecdotal"
+- "Systematically — structured audits or dashboards tracking documentation attributes" → "Structured audits or dashboards"
+CURRENT "Next:" label on Level 3 collapsed row:
+"Next: connect quality to downstream workflows"
+→ REPLACE WITH: "When a downstream team sees it, something changes."
+---
+QUALITY — LEVEL 3: "The Signal Is Reaching Downstream Teams"
+CURRENT sub-label:
+"Improved documentation is producing measurable results in downstream workflows — CDI, coding accuracy, quality measure performance, or prior authorization."
+→ REPLACE WITH: "At least one downstream team is seeing a measurable difference."
+CURRENT framing paragraph:
+"Which downstream workflows has improved documentation quality measurably impacted — and what does your data show?"
+→ REPLACE WITH: "Which workflows have measurably shifted?"
+CURRENT checkbox group label: "Which downstream workflows have been impacted by improved documentation?"
+→ REMOVE (redundant)
+CURRENT checkbox options — REPLACE WITH:
+- "CDI query volume reduced (fewer queries, more complete notes)" → "CDI query volume reduced"
+- "Coding accuracy improved (fewer rejections, faster turnaround)" → "Coding accuracy improved"
+- "Prior authorization approval rate improved" → "Prior auth approvals improved"
+- "Quality measure gap closure improved (HEDIS, MIPS, Stars)" → "Quality measure performance"
+- "Chart abstraction time reduced (registries, research, reporting)" → "Chart abstraction faster"
+- "HCC and risk adjustment capture improved (value-based populations)" → "HCC / risk adjustment capture"
+CURRENT "Next:" label on Level 4 collapsed row:
+"Next: embed quality in organizational strategy"
+→ REPLACE WITH: "Built in is different from bolted on."
+---
+QUALITY — LEVEL 4: "It's Built Into How We Run"
+CURRENT sub-label:
+"Documentation quality is formally embedded in your organization's strategic operations — from payer relationships and quality programs to compliance governance and clinical governance."
+→ REPLACE WITH: "This isn't a project anymore. It's how the organization runs."
+CURRENT framing paragraph:
+"How is documentation quality formally embedded in your organization's strategic operations?"
+→ REPLACE WITH: "Where is it embedded?"
+CURRENT executive owner question: "Is there a named executive owner of documentation quality strategy?"
+→ REPLACE WITH: "Is there a named executive owner?"
+CURRENT "Where does documentation quality factor into organizational strategy?" label
+→ REPLACE WITH: "Where does it factor in?"
+CURRENT checkbox options — REPLACE WITH:
+- "Compliance and audit governance (documentation quality is a tracked metric)" → "Compliance and audit governance"
+- "Quality program strategy (documentation completeness feeds quality reporting)" → "Quality program strategy"
+- "Clinical documentation review (formal governance structure exists)" → "Clinical documentation review"
+- "Payer contract negotiations (documentation quality supports rate and quality arguments)" → "Payer contract negotiations"
+- "Value-based care program design (documentation feeds quality and risk metrics)" → "Value-based care design"
+CURRENT "Strategic value formally attributed to documentation quality" input label + explanation:
+"The annual figure your organization formally connects to documentation quality improvements — across quality programs, compliance risk reduction, or contract performance. A number your CMO or Quality Officer has confirmed."
+→ Label: "Annual strategic value attributed"
+→ Add secondary option below input: "Don't have a confirmed number yet" (checkbox) — when checked, show: "At {encounterCount} encounters, organizations at this level typically attribute $200K–$1M+ in strategic value across quality, compliance, and contract performance."
+---
+After making all changes, verify:
+1. No question appears twice within a single expanded level panel
+2. All radio/checkbox option labels are 5 words or fewer
+3. All input field explanatory paragraphs are removed — only label + one-line benchmark hint remains
+4. Workforce Level 2 name reads "Effort Reduction Is Measured" everywhere (level list, expanded header, progress tracker)
+5. The pre-populated default of 2.0 hrs/week is set for Workforce Level 1 input on load
+6. The "Don't have a confirmed number yet" escape option exists on Revenue L4 and Quality L4
