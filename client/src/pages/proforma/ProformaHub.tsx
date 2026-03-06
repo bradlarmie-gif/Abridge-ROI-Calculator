@@ -410,7 +410,7 @@ export default function ProformaHub({
                                   </div>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-3">
+                              <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput
@@ -419,42 +419,6 @@ export default function ProformaHub({
                                     className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
                                     data-testid={`input-util-${setting.careSetting}`}
                                   />
-                                </div>
-                                <div>
-                                  {setting.pricingModel === "annualFlat" ? (
-                                    <>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Annual License Fee</label>
-                                      <FormattedNumberInput
-                                        value={setting.annualLicenseFee || 0}
-                                        onChange={(v) => onUpdateSetting(setting.id, { annualLicenseFee: Math.max(v, 0) })}
-                                        prefix="$"
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-annual-fee-hub-${setting.careSetting}`}
-                                      />
-                                    </>
-                                  ) : setting.pricingModel === "perEncounter" ? (
-                                    <>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">$ / Encounter</label>
-                                      <FormattedNumberInput
-                                        value={setting.costPerEncounter || 0}
-                                        onChange={(v) => onUpdateSetting(setting.id, { costPerEncounter: Math.max(v, 0) })}
-                                        prefix="$"
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-cost-encounter-hub-${setting.careSetting}`}
-                                      />
-                                    </>
-                                  ) : (
-                                    <>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">$ / {unitLabel.replace(/s$/, '')} / Month</label>
-                                      <FormattedNumberInput
-                                        value={setting.costPerUnit}
-                                        onChange={(v) => onUpdateSetting(setting.id, { costPerUnit: Math.max(v, 0) })}
-                                        prefix="$"
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-cost-${setting.careSetting}`}
-                                      />
-                                    </>
-                                  )}
                                 </div>
                                 <div>
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Implementation Fee</label>
@@ -467,6 +431,47 @@ export default function ProformaHub({
                                   />
                                 </div>
                               </div>
+
+                              {(() => {
+                                const pricingModel = setting.pricingModel || "perUnit";
+                                const priceLabel = pricingModel === "annualFlat" ? "Annual Fee"
+                                  : pricingModel === "perEncounter" ? "$ / Encounter"
+                                  : `$ / ${unitLabel.replace(/s$/, '')} / Mo`;
+                                const defaultPrice = pricingModel === "annualFlat" ? (setting.annualLicenseFee || 0)
+                                  : pricingModel === "perEncounter" ? (setting.costPerEncounter || 0)
+                                  : setting.costPerUnit;
+                                const yPricing = setting.yearlyPricing || { year1: defaultPrice, year2: defaultPrice, year3: defaultPrice };
+
+                                const updateYearPrice = (yearKey: "year1" | "year2" | "year3", v: number) => {
+                                  const val = Math.max(v, 0);
+                                  const updated = { ...yPricing, [yearKey]: val };
+                                  const legacyUpdate: Partial<typeof setting> = { yearlyPricing: updated };
+                                  if (pricingModel === "annualFlat") legacyUpdate.annualLicenseFee = updated.year1;
+                                  else if (pricingModel === "perEncounter") legacyUpdate.costPerEncounter = updated.year1;
+                                  else legacyUpdate.costPerUnit = updated.year1;
+                                  onUpdateSetting(setting.id, legacyUpdate);
+                                };
+
+                                return (
+                                  <div>
+                                    <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{priceLabel} by Year</p>
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                      {(["year1", "year2", "year3"] as const).map((yk, i) => (
+                                        <div key={yk}>
+                                          <label className="block text-[12px] text-[#8C7E6E] mb-1">Y{i + 1} ({2026 + i})</label>
+                                          <FormattedNumberInput
+                                            value={yPricing[yk]}
+                                            onChange={(v) => updateYearPrice(yk, v)}
+                                            prefix="$"
+                                            className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                            data-testid={`input-price-y${i + 1}-${setting.careSetting}`}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
 
                               {comparePricingId !== setting.id && (
                                 <button
@@ -503,29 +508,30 @@ export default function ProformaHub({
                                   const y2Prov = yp?.year2 ?? setting.fullScaleProviders;
                                   const y3Prov = yp?.year3 ?? setting.fullScaleProviders;
 
-                                  const computeYearlyInvestment = (model: string, price: number) => {
+                                  const computeYearlyInvestmentWithPrices = (model: string, prices: { year1: number; year2: number; year3: number }) => {
                                     if (model === "perUnit") {
                                       return {
-                                        year1: y1Prov * price * 12,
-                                        year2: y2Prov * price * 12,
-                                        year3: y3Prov * price * 12,
+                                        year1: y1Prov * prices.year1 * 12,
+                                        year2: y2Prov * prices.year2 * 12,
+                                        year3: y3Prov * prices.year3 * 12,
                                       };
                                     } else if (model === "perEncounter") {
                                       return {
-                                        year1: yearlyEnc.year1 * price,
-                                        year2: yearlyEnc.year2 * price,
-                                        year3: yearlyEnc.year3 * price,
+                                        year1: yearlyEnc.year1 * prices.year1,
+                                        year2: yearlyEnc.year2 * prices.year2,
+                                        year3: yearlyEnc.year3 * prices.year3,
                                       };
                                     } else {
-                                      return { year1: price, year2: price, year3: price };
+                                      return { year1: prices.year1, year2: prices.year2, year3: prices.year3 };
                                     }
                                   };
 
-                                  const currentPrice = currentModel === "perUnit" ? setting.costPerUnit
+                                  const currentDefaultPrice = currentModel === "perUnit" ? setting.costPerUnit
                                     : currentModel === "perEncounter" ? (setting.costPerEncounter || 0)
                                     : (setting.annualLicenseFee || 0);
-                                  const currentInv = computeYearlyInvestment(currentModel, currentPrice);
-                                  const altInv = computeYearlyInvestment(altModel, altPrice);
+                                  const currentYearlyPrices = setting.yearlyPricing || { year1: currentDefaultPrice, year2: currentDefaultPrice, year3: currentDefaultPrice };
+                                  const currentInv = computeYearlyInvestmentWithPrices(currentModel, currentYearlyPrices);
+                                  const altInv = computeYearlyInvestmentWithPrices(altModel, { year1: altPrice, year2: altPrice, year3: altPrice });
                                   const currentTotal = currentInv.year1 + currentInv.year2 + currentInv.year3;
                                   const altTotal = altInv.year1 + altInv.year2 + altInv.year3;
                                   const annualValue = setting.annualValue;
@@ -569,9 +575,13 @@ export default function ProformaHub({
                                               <span className="text-[11px] font-semibold text-[#2C2420]">Current: {currentModelLabel}</span>
                                             </div>
                                             <div className="text-[11px] text-[#8C7E6E] font-medium">
-                                              {currentModel === "perUnit" && `$${currentPrice}/mo`}
-                                              {currentModel === "perEncounter" && `$${currentPrice}/enc`}
-                                              {currentModel === "annualFlat" && fmt(currentPrice) + "/yr"}
+                                              {(() => {
+                                                const yp = currentYearlyPrices;
+                                                const varied = yp.year1 !== yp.year2 || yp.year2 !== yp.year3;
+                                                const suffix = currentModel === "perUnit" ? "/mo" : currentModel === "perEncounter" ? "/enc" : "/yr";
+                                                if (varied) return `$${yp.year1} → $${yp.year2} → $${yp.year3}${suffix}`;
+                                                return `$${yp.year1}${suffix}`;
+                                              })()}
                                             </div>
                                             <div className="space-y-1 text-[11px]">
                                               <div className="flex justify-between"><span className="text-[#8C7E6E]">Y1 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year1)}</span></div>
@@ -612,10 +622,11 @@ export default function ProformaHub({
                                             </div>
                                             <button
                                               onClick={() => {
+                                                const uniformPricing = { year1: altPrice, year2: altPrice, year3: altPrice };
                                                 if (altModel === "perUnit") {
-                                                  onUpdateSetting(setting.id, { pricingModel: "perUnit", costPerUnit: altPrice });
+                                                  onUpdateSetting(setting.id, { pricingModel: "perUnit", costPerUnit: altPrice, yearlyPricing: uniformPricing });
                                                 } else {
-                                                  onUpdateSetting(setting.id, { pricingModel: "perEncounter", costPerEncounter: altPrice });
+                                                  onUpdateSetting(setting.id, { pricingModel: "perEncounter", costPerEncounter: altPrice, yearlyPricing: uniformPricing });
                                                 }
                                                 setComparePricingId(null);
                                               }}

@@ -259,17 +259,25 @@ export function buildMonthlyCashFlows(
         setting.yearlyProviders
       );
 
+      const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
+      const yearlyPrice = setting.yearlyPricing
+        ? [setting.yearlyPricing.year1, setting.yearlyPricing.year2, setting.yearlyPricing.year3][yearIndex]
+        : undefined;
+
       let monthlyInvestment: number;
       if (setting.pricingModel === "annualFlat") {
-        monthlyInvestment = (setting.annualLicenseFee || 0) / 12;
+        const price = yearlyPrice ?? (setting.annualLicenseFee || 0);
+        monthlyInvestment = price / 12;
       } else if (setting.pricingModel === "perEncounter") {
+        const price = yearlyPrice ?? (setting.costPerEncounter || 0);
         const encountersPerProvider = setting.providerCount > 0
           ? setting.encounters / setting.providerCount
           : 0;
         const monthlyEncounters = licensedProviders * encountersPerProvider * (currentUtil / 100) / 12;
-        monthlyInvestment = (setting.costPerEncounter || 0) * monthlyEncounters;
+        monthlyInvestment = price * monthlyEncounters;
       } else {
-        monthlyInvestment = setting.costPerUnit * licensedProviders;
+        const price = yearlyPrice ?? setting.costPerUnit;
+        monthlyInvestment = price * licensedProviders;
       }
 
       totalDocValue += settingDocValue;

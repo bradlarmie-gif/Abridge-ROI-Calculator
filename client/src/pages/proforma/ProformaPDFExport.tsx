@@ -833,7 +833,17 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
                   <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 1 }}>{s.label}</Text>
                   <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
                     {s.yearlyProviders ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}` : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)}{"\n"}
-                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/enc` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}
+                    {(() => {
+                      const yp = s.yearlyPricing;
+                      const hasVaried = yp && (yp.year1 !== yp.year2 || yp.year2 !== yp.year3);
+                      if (s.pricingModel === "annualFlat") {
+                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/yr` : `${fmt(yp?.year1 ?? s.annualLicenseFee ?? 0)}/yr flat`;
+                      } else if (s.pricingModel === "perEncounter") {
+                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/enc` : `${fmt(yp?.year1 ?? s.costPerEncounter ?? 0)}/enc`;
+                      } else {
+                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/${unitLabel(s.careSetting, false)}/mo` : `${fmt(yp?.year1 ?? s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`;
+                      }
+                    })()}
                     {s.implementationFee > 0 ? ` \u00B7 ${fmt(s.implementationFee)} impl` : ""}
                   </Text>
                   {inputs.length > 0 && (

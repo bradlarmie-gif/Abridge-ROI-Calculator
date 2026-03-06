@@ -16,6 +16,12 @@ export interface YearlyProviders {
   year3: number;
 }
 
+export interface YearlyPricing {
+  year1: number;
+  year2: number;
+  year3: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -35,6 +41,7 @@ export interface ProformaSettingSnapshot {
   pricingModel?: "perUnit" | "annualFlat" | "perEncounter";
   annualLicenseFee?: number;
   costPerEncounter?: number;
+  yearlyPricing?: YearlyPricing;
   implementationFee: number;
   goLiveMonth: number;
   color: string;

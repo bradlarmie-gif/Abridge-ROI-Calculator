@@ -346,6 +346,7 @@ export default function ExploreModel({
       totalHoursSaved,
       drivers,
       costPerUnit: state.costPerProvider,
+      yearlyPricing: { year1: state.costPerProvider, year2: state.costPerProvider, year3: state.costPerProvider },
       implementationFee: state.includeImplementation ? state.implementationFee : 0,
       goLiveMonth: 1,
       color: SETTING_COLORS[cs] || "#EA2C00",

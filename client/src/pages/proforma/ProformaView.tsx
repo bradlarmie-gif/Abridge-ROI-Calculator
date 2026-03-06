@@ -70,9 +70,18 @@ function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
   if (settings.length === 0) return "—";
   const parts = settings.map(s => {
     const pm = s.pricingModel || "perUnit";
-    if (pm === "annualFlat") return `Enterprise @ ${fmt(s.annualLicenseFee || 0)}/yr`;
-    if (pm === "perEncounter") return `Per Encounter @ ${fmt(s.costPerEncounter || 0)}`;
-    return `Per Provider @ ${fmt(s.costPerUnit)}/mo`;
+    const yp = s.yearlyPricing;
+    const varied = yp && (yp.year1 !== yp.year2 || yp.year2 !== yp.year3);
+    if (pm === "annualFlat") {
+      const p = yp?.year1 ?? (s.annualLicenseFee || 0);
+      return varied ? `Enterprise @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}/yr` : `Enterprise @ ${fmt(p)}/yr`;
+    }
+    if (pm === "perEncounter") {
+      const p = yp?.year1 ?? (s.costPerEncounter || 0);
+      return varied ? `Per Encounter @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}` : `Per Encounter @ ${fmt(p)}`;
+    }
+    const p = yp?.year1 ?? s.costPerUnit;
+    return varied ? `Per Provider @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}/mo` : `Per Provider @ ${fmt(p)}/mo`;
   });
   const unique = [...new Set(parts)];
   return unique.join("; ");
@@ -879,10 +888,15 @@ export default function ProformaView({
               const encAnnual = (s.costPerEncounter || 0) * s.encounters;
               const baseProv = s.providerCount || 1;
               const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+              const yPr = s.yearlyPricing || {
+                year1: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
+                year2: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
+                year3: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
+              };
               const y1Months = 13 - s.goLiveMonth;
-              const y1Cost = isFlat ? flatFee * (y1Months / 12) : isEnc ? (s.costPerEncounter || 0) * ye.year1 * (y1Months / 12) : s.costPerUnit * yp.year1 * y1Months;
-              const y2Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year2 : s.costPerUnit * yp.year2 * 12;
-              const y3Cost = isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) * ye.year3 : s.costPerUnit * yp.year3 * 12;
+              const y1Cost = isFlat ? yPr.year1 * (y1Months / 12) : isEnc ? yPr.year1 * ye.year1 * (y1Months / 12) : yPr.year1 * yp.year1 * y1Months;
+              const y2Cost = isFlat ? yPr.year2 : isEnc ? yPr.year2 * ye.year2 : yPr.year2 * yp.year2 * 12;
+              const y3Cost = isFlat ? yPr.year3 : isEnc ? yPr.year3 * ye.year3 : yPr.year3 * yp.year3 * 12;
               const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
               const contractYears = Math.ceil(config.contractTermMonths / 12);
               const showY2 = contractYears >= 2;
@@ -985,7 +999,15 @@ export default function ProformaView({
                           {(["perUnit", "annualFlat", "perEncounter"] as const).map(pm => (
                             <button
                               key={pm}
-                              onClick={() => onUpdateSetting(s.id, { pricingModel: pm })}
+                              onClick={() => {
+                                const defaultPrice = pm === "perUnit" ? s.costPerUnit
+                                  : pm === "perEncounter" ? (s.costPerEncounter || 0)
+                                  : (s.annualLicenseFee || 0);
+                                onUpdateSetting(s.id, {
+                                  pricingModel: pm,
+                                  yearlyPricing: { year1: defaultPrice, year2: defaultPrice, year3: defaultPrice },
+                                });
+                              }}
                               className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors ${(pm === "perUnit" && !s.pricingModel) || s.pricingModel === pm ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
                               data-testid={`toggle-${pm}-${s.careSetting}`}
                             >
@@ -993,41 +1015,42 @@ export default function ProformaView({
                             </button>
                           ))}
                         </div>
+                        {(() => {
+                          const pm = s.pricingModel || "perUnit";
+                          const priceLabel = pm === "annualFlat" ? "Annual Fee"
+                            : pm === "perEncounter" ? "$/Encounter"
+                            : `$/${SETTING_UNIT_LABELS[s.careSetting]?.replace(/s$/, '') || "Unit"}/Mo`;
+                          const defPrice = pm === "annualFlat" ? (s.annualLicenseFee || 0)
+                            : pm === "perEncounter" ? (s.costPerEncounter || 0)
+                            : s.costPerUnit;
+                          const yp2 = s.yearlyPricing || { year1: defPrice, year2: defPrice, year3: defPrice };
+                          const updateYP = (yearKey: "year1" | "year2" | "year3", v: number) => {
+                            const val = Math.max(v, 0);
+                            const updated = { ...yp2, [yearKey]: val };
+                            const lu: Partial<typeof s> = { yearlyPricing: updated };
+                            if (pm === "annualFlat") lu.annualLicenseFee = updated.year1;
+                            else if (pm === "perEncounter") lu.costPerEncounter = updated.year1;
+                            else lu.costPerUnit = updated.year1;
+                            onUpdateSetting(s.id, lu);
+                          };
+                          return (
+                            <div className="grid grid-cols-3 gap-3 mb-3">
+                              {(["year1", "year2", "year3"] as const).map((yk, i) => (
+                                <div key={yk}>
+                                  <label className="block text-[12px] text-neutral-500 mb-1">Y{i + 1} {priceLabel}</label>
+                                  <FormattedNumberInput
+                                    value={yp2[yk]}
+                                    onChange={(v) => updateYP(yk, v)}
+                                    prefix="$"
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                                    data-testid={`input-price-y${i + 1}-view-${s.careSetting}`}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         <div className="grid grid-cols-3 gap-3">
-                          {s.pricingModel === "annualFlat" ? (
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Annual Fee</label>
-                              <FormattedNumberInput
-                                value={s.annualLicenseFee || 0}
-                                onChange={(v) => onUpdateSetting(s.id, { annualLicenseFee: Math.max(v, 0) })}
-                                prefix="$"
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-annual-fee-${s.careSetting}`}
-                              />
-                            </div>
-                          ) : s.pricingModel === "perEncounter" ? (
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">$/Encounter</label>
-                              <FormattedNumberInput
-                                value={s.costPerEncounter || 0}
-                                onChange={(v) => onUpdateSetting(s.id, { costPerEncounter: Math.max(v, 0) })}
-                                prefix="$"
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-cost-encounter-${s.careSetting}`}
-                              />
-                            </div>
-                          ) : (
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">$/Unit/Mo</label>
-                              <FormattedNumberInput
-                                value={s.costPerUnit}
-                                onChange={(v) => onUpdateSetting(s.id, { costPerUnit: v })}
-                                prefix="$"
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-cost-${s.careSetting}`}
-                              />
-                            </div>
-                          )}
                           <div>
                             <label className="block text-[12px] text-neutral-500 mb-1">Go-Live</label>
                             <select
