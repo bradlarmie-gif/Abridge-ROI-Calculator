@@ -59,7 +59,7 @@ export interface DomainFeedback {
   warningBanner?: string;
 }
 
-export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 6, 2: 12, 3: 19, 4: 25 };
+export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
 
 export function computeDomainScore(domain: Domain, level: ActivationLevel, inputs: Record<string, number | string>): number {
   const base = SCORE_MAP[level] || 0;
@@ -1036,6 +1036,6 @@ export function scoreToActivationLevel(_domain: Domain, score: number): Activati
   if (score >= 25) return 4;
   if (score >= 19) return 3;
   if (score >= 12) return 2;
-  if (score >= 6) return 1;
+  if (score >= 4) return 1;
   return 1;
 }

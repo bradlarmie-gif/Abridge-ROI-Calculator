@@ -128,19 +128,19 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     const insightLevel = Math.min(lowestLevel, 2) as 1 | 2;
     const domainInsight = DOMAIN_INSIGHTS[lowestDomain][insightLevel];
 
-    if (score <= 24) {
+    if (score <= 16) {
       return {
         headline: 'The deployment is live. The value isn\'t captured yet.',
         body: 'Ambient is running, but the organization hasn\'t started measuring what it\'s returning. The gap between running and capturing is where most organizations stay longest — and it\'s the most expensive place to be.',
       };
     }
-    if (score <= 44) {
+    if (score <= 38) {
       return {
         headline: 'Something is being measured. Not enough is acting on it.',
         body: 'At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct — that\'s where the next layer of value is sitting unmeasured.',
       };
     }
-    if (score <= 64) {
+    if (score <= 60) {
       return {
         headline: 'Value is moving. Not all of it has a destination yet.',
         body: 'At least one domain is producing a real number. The others haven\'t caught up. That gap — between where you are and where the tool could take you — is the strategic opportunity.',
@@ -422,7 +422,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                 />
               </div>
 
-              {[24, 44, 64, 79].map((threshold) => (
+              {[16, 38, 60, 79].map((threshold) => (
                 <div key={threshold} className="absolute -top-0.5" style={{ left: `${threshold}%`, transform: 'translateX(-50%)' }}>
                   <div className="w-px h-3 bg-white/30" />
                 </div>
@@ -431,23 +431,23 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
 
             <div className="space-y-1.5 mb-6">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Awareness</span>
-                <span className="text-sm font-bold text-white/50">24</span>
+                <span className="text-xs text-white/50">Quantifying</span>
+                <span className="text-sm font-bold text-white/50">16</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-white/50">Measuring</span>
-                <span className="text-sm font-bold text-white/50">44</span>
+                <span className="text-sm font-bold text-white/50">38</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-white/50">Acting</span>
-                <span className="text-sm font-bold text-white/50">64</span>
+                <span className="text-sm font-bold text-white/50">60</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-white/50">Managing</span>
                 <span className="text-sm font-bold text-white/70">79</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Full capture</span>
+                <span className="text-xs text-white/50">Full Capture</span>
                 <span className="text-sm font-bold text-white">100</span>
               </div>
             </div>

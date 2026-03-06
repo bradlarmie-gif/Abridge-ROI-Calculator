@@ -160,9 +160,12 @@ function getNextLevelContent(
     }
   } else if (domain === 'risk') {
     if (level === 1) {
-      const riskL1Low = Math.round(documentedEncounters * 150 / 1000) * 1000;
-      const riskL1High = Math.round(documentedEncounters * 400 / 1000) * 1000;
-      base.narrative = `The notes are better. No one downstream knows what to do with that yet. Without a quality baseline, the signal going to coding, CDI, and compliance is invisible — not absent.\n\nOPPORTUNITY AHEAD: Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. At ${documentedEncounters.toLocaleString()} encounters, even at conservative rates, that range is ${formatDollar(riskL1Low)}–${formatDollar(riskL1High)} annually — currently going uncaptured.`;
+      const riskL1Low = Math.round(documentedEncounters * revenuePerVisit * 0.02 / 1000);
+      const riskL1High = Math.round(documentedEncounters * revenuePerVisit * 0.05 / 1000);
+      base.narrative = `Documentation quality is improving across every encounter. Without systematic monitoring, that signal never reaches coding, CDI, or quality teams — and the risk-adjusted revenue it represents stays invisible. Year 1 of quality monitoring typically surfaces the highest-impact gaps first.\n\nTHE NEXT LEVEL UNLOCKS: Organizations that move from informal to structured quality monitoring in Year 1 typically capture an initial 2–5% improvement in coding accuracy across ambient-documented encounters. At your scale, that translates to $${riskL1Low.toLocaleString()}K–$${riskL1High.toLocaleString()}K in Year 1 uplift — before deepening downstream integration.`;
+      base.formula = `${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 2% = $${riskL1Low.toLocaleString()}K (low)\n${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 5% = $${riskL1High.toLocaleString()}K (high)\nFirst-year capture rate: 2–5% of documentation-driven revenue uplift`;
+      base.lowEstimate = riskL1Low * 1000;
+      base.highEstimate = riskL1High * 1000;
     } else if (level === 2) {
       const riskLow = Math.round(documentedEncounters * 0.15 * 75 / 1000) * 1000;
       const riskHigh = Math.round(documentedEncounters * 0.15 * 200 / 1000) * 1000;
@@ -234,6 +237,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   }, [domainGaps, domainHasValue]);
 
   const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
+  const allAtLevel4 = DOMAIN_ORDER.every(d => domainLevels[d] === 4);
 
   const nextLevelContents = useMemo(() => {
     const result: Record<Domain, NextLevelContent> = {} as any;
@@ -248,6 +252,19 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     }
     return result;
   }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh, annualEncounters]);
+
+  const estimatedTotal = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainLevels[d] >= 4) continue;
+      if (domainHasValue[d]) {
+        sum += domainGaps[d];
+      } else {
+        sum += nextLevelContents[d].lowEstimate ?? 0;
+      }
+    }
+    return sum;
+  }, [domainLevels, domainHasValue, domainGaps, nextLevelContents]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
@@ -522,40 +539,35 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               Based on your inputs and maturity levels across all four domains:
             </p>
 
-            {hasMeasuredDomains ? (
+            {allAtLevel4 ? (
               <>
-                <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
-                  {formatDollar(totalMeasured)}
+                <p className="font-bold text-xl text-white leading-none mb-1" data-testid="panel-hero-value">
+                  Full value captured
                 </p>
-                <p className="text-xs text-white/40 mb-5">measured annually</p>
+                <p className="text-xs text-white/40 mb-5">Your deployment is at strategic maturity across all four domains.</p>
               </>
             ) : (
               <>
-                <p className="font-bold text-xl text-white/30 leading-none mb-1" data-testid="panel-hero-value">
-                  Not yet measured
+                <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
+                  {formatDollar(estimatedTotal)}
                 </p>
-                <p className="text-xs text-white/40 mb-5">complete all four domains to see full picture</p>
-              </>
-            )}
-
-            {hasMeasuredDomains && (
-              <>
+                <p className="text-xs text-white/40 mb-5">estimated annually (benchmark low-end)</p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
                   <div>
                     <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-monthly">
-                      ${displayedMonthly.toLocaleString()}
+                      ${Math.round(estimatedTotal / 12).toLocaleString()}
                     </p>
                     <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
                   </div>
                   <div>
                     <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-weekly">
-                      ${displayedWeekly.toLocaleString()}
+                      ${Math.round(estimatedTotal / 52).toLocaleString()}
                     </p>
                     <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
                   </div>
                   <div>
                     <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-daily">
-                      ${displayedDaily.toLocaleString()}
+                      ${Math.round(estimatedTotal / 365).toLocaleString()}
                     </p>
                     <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
                   </div>
@@ -572,9 +584,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               {formatDollar(strategicAnnual)}
             </p>
             <p className="text-xs text-white/40 mb-2">projected annually (low-end estimates)</p>
-            {annualGap > 0 && (
+            {estimatedTotal > 0 && (
               <p className="text-sm text-[#EA2C00] font-bold" data-testid="panel-gap-amount">
-                Gap: +{formatDollar(annualGap)} / year
+                Gap: +{formatDollar(estimatedTotal)} / year
               </p>
             )}
 
@@ -616,15 +628,26 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               Domain Values
             </p>
             <div className="space-y-2">
-              {DOMAIN_ORDER.map((domain) => (
-                <div key={domain} className="flex items-center justify-between text-sm">
-                  <span className="text-white/70">{DOMAIN_LABELS[domain]}</span>
-                  <span className={domainHasValue[domain] ? "text-white font-semibold" : "text-white/30 text-xs"} data-testid={`sidebar-domain-${domain}`}>
-                    {domainHasValue[domain] ? formatDollar(domainGaps[domain]) : '—'}
-                  </span>
-                </div>
-              ))}
+              {DOMAIN_ORDER.map((domain) => {
+                const isAtL4 = domainLevels[domain] >= 4;
+                const hasConfirmed = domainHasValue[domain];
+                const displayValue = hasConfirmed
+                  ? domainGaps[domain]
+                  : (isAtL4 ? 0 : (nextLevelContents[domain].lowEstimate ?? 0));
+                return (
+                  <div key={domain} className="flex items-center justify-between text-sm">
+                    <span className="text-white/70">{DOMAIN_LABELS[domain]}</span>
+                    <span className={hasConfirmed ? "text-white font-semibold" : "text-white/50 text-xs"} data-testid={`sidebar-domain-${domain}`}>
+                      {isAtL4 ? 'Captured' : formatDollar(displayValue)}
+                      {!hasConfirmed && !isAtL4 && displayValue > 0 ? ' *' : ''}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
+            {DOMAIN_ORDER.some(d => !domainHasValue[d] && domainLevels[d] < 4) && (
+              <p className="text-[10px] text-white/30 mt-2">* benchmark low-end estimate</p>
+            )}
 
             <div className="h-px bg-white/10 my-5" />
 
