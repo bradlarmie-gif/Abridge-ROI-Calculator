@@ -598,20 +598,6 @@ export default function ProformaView({
           })}
         </div>
 
-        {/* EXECUTIVE SUMMARY */}
-        <motion.div
-          className="mb-8 sm:mb-10 bg-[#F9F6F2] rounded-xl p-5 sm:p-6 border-l-4 border-[#EA2C00]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
-          data-testid="panel-executive-summary"
-        >
-          <h2 className="text-sm sm:text-base font-bold text-neutral-900 mb-2">Executive Summary</h2>
-          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
-            Over a {contractTermLabel(config.contractTermMonths).toLowerCase()} partnership, the estimated investment of {fmtFull(summary.termInvestment)} across {fmtNum(settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0))} {settings.length > 1 ? "providers" : SETTING_UNIT_LABELS[settings[0]?.careSetting]} is projected to return {fmt(summary.termNet)} in net organizational value — a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Following a {config.implementationRampMonths}-month implementation ramp, documentation quality improvements begin immediately, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
-          </p>
-        </motion.div>
-
         {/* CHART */}
         <motion.div
           className="mb-8 sm:mb-10"
