@@ -85,7 +85,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             </h2>
             
             <p className="text-[13px] text-[#666666] mb-4">
-              Currently using an AI documentation solution
+              You've deployed. Find out how much value you're actually capturing — and what it's costing you not to go further.
             </p>
             
             <div className="space-y-2 mb-5">
@@ -99,19 +99,19 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
                 <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <TrendingUp className="w-3 h-3 text-blue-500" />
                 </div>
-                <span>How your implementation compares</span>
+                <span>Where your deployment stands across four strategic domains</span>
               </div>
               <div className="flex items-start gap-2 text-xs text-[#333333]">
                 <div className="w-5 h-5 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Search className="w-3 h-3 text-purple-500" />
                 </div>
-                <span>Where the gaps are and what's driving them</span>
+                <span>The gaps between current maturity and full value capture</span>
               </div>
               <div className="flex items-start gap-2 text-xs text-[#333333]">
                 <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <DollarSign className="w-3 h-3 text-emerald-500" />
                 </div>
-                <span>The annual value opportunity ahead</span>
+                <span>A 36-month trajectory — and what it takes to close it</span>
               </div>
             </div>
 

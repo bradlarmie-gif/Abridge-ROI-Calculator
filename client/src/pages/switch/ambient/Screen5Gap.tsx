@@ -91,7 +91,7 @@ function getNextLevelContent(
       const hoursFromUserInput = Math.round((netTimeSaved * annualEncounters) / 60);
       const bmkValueLow = Math.round(hoursFromUserInput * providerRate * 0.20);
       const bmkValueHigh = Math.round(hoursFromUserInput * providerRate * 0.35);
-      base.narrative = `Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters ÷ 60 = ${hoursFromUserInput.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      base.narrative = `Time is being recovered but the total hasn't been formally quantified. That number — hours recovered across your full deployment — is the foundation for every downstream conversation about what to do with it.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters ÷ 60 = ${hoursFromUserInput.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
       if (annualEncounters > 0) {
         base.formula = `${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters / 60 = ${hoursFromUserInput.toLocaleString()} hrs\nLow: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
@@ -127,7 +127,7 @@ function getNextLevelContent(
     }
   } else if (domain === 'revenue') {
     if (level === 1) {
-      base.narrative = "Your revenue cycle hasn't engaged with the documentation change yet. The first step is simply asking whether coding, CDI, or billing teams have noticed anything different. Most organizations are surprised by what surfaces when they ask.";
+      base.narrative = "Your revenue cycle team hasn't engaged with the documentation change yet. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
     } else if (level === 2) {
       const low = Math.round(documentedEncounters * revenuePerVisit * 0.02);
       const high = Math.round(documentedEncounters * revenuePerVisit * 0.07);
@@ -142,7 +142,7 @@ function getNextLevelContent(
     }
   } else if (domain === 'workforce') {
     if (level === 1) {
-      base.narrative = "Your providers report less after-hours work. The next step is understanding the full picture — in-clinic burden reduction and provider sentiment. A structured clinician survey combined with operational measurement turns anecdotal relief into an organizational data point.";
+      base.narrative = "Providers report less after-hours work. The next step is quantifying it — in-clinic time plus a structured provider survey turns that anecdotal relief into a retention-relevant data point.";
     } else if (level === 2) {
       const midpoint = Math.round(providers * 0.07 * 350000);
       base.narrative = `You've measured hours of burden reduction. The question your organization hasn't answered is what turnover is costing you — and how much of that cost is connected to documentation burden. At industry-average turnover (6-8%) and replacement costs ($250K-$500K), the annual exposure at your scale is significant.`;
@@ -158,7 +158,7 @@ function getNextLevelContent(
     }
   } else if (domain === 'risk') {
     if (level === 1) {
-      base.narrative = "Your documentation is better — but no one is measuring how or why. Without quality monitoring, you have no baseline for what improved documentation is actually worth downstream. Establishing any form of measurement is the foundation for everything that follows.\n\nOPPORTUNITY AHEAD: Documentation gaps create measurable financial exposure. Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. Without monitoring, this value remains invisible.";
+      base.narrative = "Documentation is better — but no one is measuring it. Without a quality baseline, the downstream value to coding, CDI, and compliance stays invisible. Any form of monitoring unlocks what follows.\n\nOPPORTUNITY AHEAD: Documentation gaps create measurable financial exposure. Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. Without monitoring, this value remains invisible.";
     } else if (level === 2) {
       const riskLow = Math.round(documentedEncounters * 0.15 * 75 / 1000) * 1000;
       const riskHigh = Math.round(documentedEncounters * 0.15 * 200 / 1000) * 1000;

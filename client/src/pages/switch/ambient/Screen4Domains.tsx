@@ -83,8 +83,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'Better documentation produces more accurate coding. The question is whether your revenue cycle team is part of that conversation.',
-    reframe: 'Every encounter is coded. The opportunity is in whether it\'s coded at the specificity your documentation now supports — and whether your revenue cycle team is part of that conversation.',
+    headline: 'Every encounter you document with ambient is a coding opportunity. Most organizations aren\'t looking.',
+    reframe: 'Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends entirely on whether your revenue cycle team is part of the conversation — most aren\'t yet.',
     cards: [
       { level: 1, label: 'Revenue Cycle Hasn\'t Been Brought In Yet.', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
       { level: 2, label: 'The Analysis Is Underway.', description: 'Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes.' },
@@ -2041,15 +2041,26 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   Estimates based on your inputs. Individual results vary.
                 </p>
               </>
-            ) : (
-              <>
-                <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">—</p>
-                <div className="h-px bg-white/10 my-4" />
-                <p className="text-sm text-white/50 leading-relaxed">
-                  Select your organization's maturity level to see estimated impact.
-                </p>
-              </>
-            )}
+            ) : (() => {
+              const timeSaved = (inputs.timeSavedPerEncounter as number) || 0;
+              const hoursRecovered = Math.round(documentedEncounters * timeSaved / 60);
+              const domainProvocations: Record<string, string> = {
+                capacity: `Your inputs suggest ${hoursRecovered.toLocaleString()} hours recovered annually. Which of these best describes where your organization is with that number?`,
+                revenue: `${documentedEncounters.toLocaleString()} encounters documented annually — each one an opportunity for more accurate coding. Has your revenue cycle team been brought into that conversation?`,
+                workforce: `${providers} providers. ${hoursRecovered.toLocaleString()} hours of documentation time returned. Where does your organization stand on measuring what that relief is worth?`,
+                risk: `${documentedEncounters.toLocaleString()} encounters documented with improved specificity. How far has that signal traveled downstream — to coding, quality teams, or compliance?`,
+              };
+              const provocation = domainProvocations[activeDomain] || "Select your organization's maturity level to see estimated impact.";
+              return (
+                <>
+                  <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">—</p>
+                  <div className="h-px bg-white/10 my-4" />
+                  <p className="text-sm text-white/60 leading-relaxed">
+                    {provocation}
+                  </p>
+                </>
+              );
+            })()}
 
             <div className="h-px bg-white/10 my-5" />
 
