@@ -476,9 +476,9 @@ export default function SummaryCommandCenter({
     // Determine retention lift based on hours per provider
     const eligibleEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
     const hoursReturned = (eligibleEncounters * 3) / 60; // 3 min saved per encounter
-    const wellbeingAllocation = 25; // Default 25% to wellbeing
-    const hoursToWellbeing = hoursReturned * (wellbeingAllocation / 100);
-    const hoursPerProviderAnnual = hoursToWellbeing / Math.max(1, pilotUnits);
+    const burdenReliefAllocation = 75; // Doc quality + wellbeing (excludes only patient capacity)
+    const hoursToBurdenRelief = hoursReturned * (burdenReliefAllocation / 100);
+    const hoursPerProviderAnnual = hoursToBurdenRelief / Math.max(1, pilotUnits);
     
     let retentionLift = 4; // MINIMAL (3-5%)
     if (hoursPerProviderAnnual >= 200) retentionLift = 27.5; // MAXIMUM

@@ -951,8 +951,10 @@ function getDriverSteps(driver: DriverCalculation, data: EDPDFData): Calculation
     case "edRetention":
     case "overtime":
     case "workforce": {
-      const wellbeingPct = (inputs.wellbeingPct as number) || 30;
-      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const wellbeingPct = (inputs.wellbeingPct as number) ?? 30;
+      const docQualityPct = (inputs.docQualityPct as number) ?? 30;
+      const burdenReliefPct = docQualityPct + wellbeingPct;
+      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (burdenReliefPct / 100));
       const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(wellbeingHours / data.providers);
       const weeklyMinutes = Math.round(hoursPerProvider * 60 / 52);
       const tier = hoursPerProvider < 50 ? "MINIMAL (3-5%)" 
@@ -963,14 +965,14 @@ function getDriverSteps(driver: DriverCalculation, data: EDPDFData): Calculation
       return [
         {
           label: "Step 1",
-          question: "How much time is allocated to reducing burnout?",
+          question: "How much time is returned to providers?",
           inputs: [
             { value: formatNumber(data.hoursReturned), label: "total hours" },
-            { value: `${wellbeingPct}%`, label: "to wellbeing" },
+            { value: `${burdenReliefPct}%`, label: "burden relief" },
           ],
           operators: ["×"],
           result: `${formatNumber(wellbeingHours)} hours`,
-          note: `That's ${hoursPerProvider} hours/physician/year (~${weeklyMinutes} min/week back).`,
+          note: `That's ${hoursPerProvider} hours/physician/year (~${weeklyMinutes} min/week back). Includes doc quality and sustainability time — excludes only throughput hours.`,
         },
         {
           label: "Step 2",

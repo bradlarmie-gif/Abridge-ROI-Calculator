@@ -1129,7 +1129,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       </Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      You allocated {susPct}% of reclaimed time {"\u2014"} {fmtNum(susHrs)} hours {"\u2014"} to clinician wellbeing. That returns {hrsPerWkBack.toFixed(1)} hours per week to each provider.
+                      {docPct + susPct}% of reclaimed time goes back to your providers {"\u2014"} through documentation quality ({docPct}%) and sustainability ({susPct}%). That returns {hrsPerWkBack.toFixed(1)} hours per week to each provider. Only the {capPct}% directed to patient capacity is reinvested into additional visits.
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
@@ -1560,6 +1560,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   if (isED) {
     const thrPct = safe(data.throughputAllocationPct);
     const wellPct = safe(data.wellbeingAllocationPct);
+    const docQualPct = safe(data.docQualityAllocationPct);
+    const burdenReliefPct = docQualPct + wellPct;
     const thrHrs = safe(data.throughputHours);
     const wellHrs = safe(data.wellbeingHours);
     const hrsPerWkBack = safe(data.hoursPerProviderPerWeekBack);
@@ -1577,7 +1579,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
         return base + ` The remaining allocations address documentation quality and physician wellbeing \u2014 including a quantified retention case built from your turnover data.`;
       }
       if (data.sustainabilityEnabled) {
-        return base + ` The ${wellPct}% directed to wellbeing returns ${hrsPerWkBack.toFixed(1)} hours per week per physician \u2014 shift sustainability that compounds over time.`;
+        return base + ` The remaining ${burdenReliefPct}% returns ${hrsPerWkBack.toFixed(1)} hours per week per physician through documentation quality and shift sustainability \u2014 burden relief that compounds over time.`;
       }
       return base;
     })();
@@ -1869,7 +1871,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       </Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      You allocated {wellPct}% of reclaimed time {"\u2014"} {fmtNum(wellHrs)} hours {"\u2014"} to physician wellbeing. That returns {hrsPerWkBack.toFixed(1)} hours per week to each emergency physician.
+                      {burdenReliefPct}% of reclaimed time goes back to your physicians {"\u2014"} through documentation quality ({docQualPct}%) and wellbeing ({wellPct}%). That returns {hrsPerWkBack.toFixed(1)} hours per week to each emergency physician. Only throughput time is reinvested into patient flow.
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
@@ -3214,7 +3216,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(retVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. The {sustainPct}% of reclaimed time absorbed into shift sustainability is the primary mechanism: it{"\u2019"}s what makes documentation burden relief feel real to nurses on the unit, not just in a pilot survey. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
+                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. The {sustainPct + directCarePct}% of reclaimed time going to shift sustainability and direct patient care is the primary mechanism {"\u2014"} only overtime reduction time is excluded because it{"\u2019"}s reinvested into staffing efficiency. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
                     </Text>
                   </View>
                 </View>

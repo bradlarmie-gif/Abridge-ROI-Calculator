@@ -54,15 +54,17 @@ export default function ExploreValueDrivers({
   const hoursPerProviderPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return '0';
     if (isOutpatientSetting) {
-      const allocatedHours = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
+      const burdenReliefPct = (timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent) / 100;
+      const allocatedHours = totalHoursSaved * burdenReliefPct;
       return (allocatedHours / state.numberOfProviders / 52).toFixed(1);
     }
     if (isED) {
-      const allocatedHours = totalHoursSaved * (timeDriverInputs.edAllocWellbeingPercent / 100);
+      const burdenReliefPct = (timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100;
+      const allocatedHours = totalHoursSaved * burdenReliefPct;
       return (allocatedHours / state.numberOfProviders / 48).toFixed(1);
     }
     return (totalHoursSaved / state.numberOfProviders / 48).toFixed(1);
-  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, isED, timeDriverInputs.opAllocWellbeingPercent, timeDriverInputs.edAllocWellbeingPercent]);
+  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, isED, timeDriverInputs.opAllocDocQualityPercent, timeDriverInputs.opAllocWellbeingPercent, timeDriverInputs.edAllocDocQualityPercent, timeDriverInputs.edAllocWellbeingPercent]);
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
@@ -1165,7 +1167,7 @@ export default function ExploreValueDrivers({
                     Of nurses who leave, roughly 40% cite burnout-related reasons. Reducing charting time directly addresses this driver.
                   </p>
                   <p className="text-sm text-[#666666] mb-6">
-                    The {timeDriverInputs.nursingShiftSustainabilityPercent}% of reclaimed time absorbed into shift sustainability is the primary mechanism behind burnout reduction — it's what makes documentation burden relief feel real to nurses.
+                    The {timeDriverInputs.nursingShiftSustainabilityPercent + timeDriverInputs.nursingCareTimePercent}% of reclaimed time going to shift sustainability and direct patient care is the primary mechanism behind burnout reduction — only overtime reduction time is excluded because it's reinvested into staffing efficiency.
                   </p>
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
@@ -1314,10 +1316,10 @@ export default function ExploreValueDrivers({
                   {!isNursing && !isInpatient && (
                     <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#666666]">Wellbeing allocation (from your time split)</span>
+                        <span className="text-sm text-[#666666]">Time back to providers (from your time split)</span>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-black">
-                            {isED ? timeDriverInputs.edAllocWellbeingPercent : timeDriverInputs.opAllocWellbeingPercent}%
+                            {isED ? (timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) : (timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent)}%
                           </span>
                           <button
                             onClick={onBack}
@@ -1328,6 +1330,9 @@ export default function ExploreValueDrivers({
                           </button>
                         </div>
                       </div>
+                      <p className="text-xs text-[#888888] mt-2">
+                        Includes documentation quality and sustainability time — only {isED ? 'throughput' : 'patient capacity'} time is excluded because it's reinvested into seeing more patients.
+                      </p>
                     </div>
                   )}
 

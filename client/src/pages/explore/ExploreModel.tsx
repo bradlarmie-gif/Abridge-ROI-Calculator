@@ -189,9 +189,9 @@ export default function ExploreModel({
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
-        ? (totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100) / state.numberOfProviders / 52)
+        ? (totalHoursSaved * ((timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent) / 100) / state.numberOfProviders / 52)
         : isED
-          ? (totalHoursSaved * (timeDriverInputs.edAllocWellbeingPercent / 100) / state.numberOfProviders / 48)
+          ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
           : (totalHoursSaved / state.numberOfProviders / 48)
       ).toFixed(1)
     : '0';
@@ -699,7 +699,8 @@ export default function ExploreModel({
       const capHrs = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
       const docQualHrs = totalHoursSaved * (timeDriverInputs.opAllocDocQualityPercent / 100);
       const susHrs = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
-      const hrsPerWkBack = state.numberOfProviders > 0 ? susHrs / state.numberOfProviders / 52 : 0;
+      const burdenReliefHrs = docQualHrs + susHrs;
+      const hrsPerWkBack = state.numberOfProviders > 0 ? burdenReliefHrs / state.numberOfProviders / 52 : 0;
 
       const hoursConverted = capHrs * (timeDriverInputs.capacityRealizationPercent / 100);
       const projVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
@@ -888,7 +889,8 @@ export default function ExploreModel({
           const edThroughputHrs = totalHoursSaved * (edThroughputPct / 100);
           const edDocHrs = totalHoursSaved * (edDocPct / 100);
           const edWellHrs = totalHoursSaved * (edWellPct / 100);
-          const edHrsPerWkBack = state.numberOfProviders > 0 ? edWellHrs / state.numberOfProviders / 48 : 0;
+          const edBurdenReliefHrs = edDocHrs + edWellHrs;
+          const edHrsPerWkBack = state.numberOfProviders > 0 ? edBurdenReliefHrs / state.numberOfProviders / 48 : 0;
           const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
           const lwbsRecovered = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
           const lwbsGross = lwbsRecovered * timeDriverInputs.edRevenuePerVisit;

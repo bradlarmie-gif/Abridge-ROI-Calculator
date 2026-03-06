@@ -318,8 +318,10 @@ export default function App() {
     }
     
     // Clinician Retention: Calculate intermediate values matching PDF expected fields
+    const docQualityPctVal = state.timeAllocation.patientExperience || 0;
     if (state.timeAllocation.clinicianWellbeing > 0 && retentionValue > 0) {
-      const wellbeingHours = totalHoursSaved * wellbeingPct;
+      const burdenReliefPctVal = (docQualityPctVal + state.timeAllocation.clinicianWellbeing) / 100;
+      const wellbeingHours = totalHoursSaved * burdenReliefPctVal;
       const hoursPerProvider = wellbeingHours / Math.max(1, state.numberOfProviders);
       const turnoverRate = 8; // 8% baseline turnover
       const burnoutAttribution = 50; // 50% of departures are burnout-related
@@ -339,6 +341,7 @@ export default function App() {
         value: retentionValue,
         inputs: { 
           wellbeingPct: state.timeAllocation.clinicianWellbeing,
+          docQualityPct: docQualityPctVal,
           wellbeingHours,
           hoursPerProvider: Math.round(hoursPerProvider),
           providers: state.numberOfProviders,

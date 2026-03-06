@@ -44,6 +44,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Variable Contract Terms**: Proforma supports 1–6 year contract terms.
 -   **S-curve Adoption Model**: Projections use a sigmoid adoption curve.
 -   **Time Allocation Page**: A dedicated Time Allocation step is included for all care settings, with a realization rate slider for Outpatient.
+-   **Burden Relief Model**: Retention/wellbeing calculations use all non-capacity time as "burden relief" — doc quality + sustainability time both count toward provider hours returned. Only patient capacity (outpatient), throughput (ED), or OT reduction (nursing) is excluded. This applies across ExploreValueDrivers, ExploreModel, all PDF generators, and ExplorePDFExport.
 -   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing.
 -   **Component-Driven UI**: Utilizes reusable components.
 -   **Configuration-driven**: ROI levers and properties are externally managed.

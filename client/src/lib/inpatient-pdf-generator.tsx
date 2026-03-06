@@ -902,8 +902,10 @@ function getDriverLogic(driver: DriverCalculation, data: InpatientPDFData): Driv
     case "inpatientRetention":
     case "physicianEfficiency": {
       // Get wellbeing allocation from inputs
-      const wellbeingPct = (inputs.wellbeingPct as number) || 30;
-      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const wellbeingPct = (inputs.wellbeingPct as number) ?? 30;
+      const docQualityPct = (inputs.docQualityPct as number) ?? 30;
+      const burdenReliefPct = docQualityPct + wellbeingPct;
+      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (burdenReliefPct / 100));
       const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(wellbeingHours / data.providers);
       const turnoverRate = (inputs.turnoverRate as number) || 10;
       const burnoutAttribution = (inputs.burnoutAttribution as number) || (inputs.burnoutPct as number) || 60;
@@ -923,9 +925,9 @@ function getDriverLogic(driver: DriverCalculation, data: InpatientPDFData): Driv
         theory: `Hospitalist turnover is epidemic—and expensive. Recruiting, credentialing, onboarding, lost productivity. The full replacement cost often exceeds $350K.\n\nThe root cause is frequently burnout. The root cause of burnout is frequently documentation burden. The math is direct: reduce documentation time → reduce after-hours charting → reduce burnout → reduce turnover → avoid replacement costs.`,
         steps: [
           {
-            label: "STEP 1: TIME ALLOCATED TO WELLBEING",
-            formula: `${formatNumber(data.hoursReturned)} total hours × ${wellbeingPct}% to wellbeing = ${formatNumber(wellbeingHours)} hours`,
-            explanation: `Per hospitalist: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This time goes directly to reducing pajama-time charting.`,
+            label: "STEP 1: TIME RETURNED TO HOSPITALISTS",
+            formula: `${formatNumber(data.hoursReturned)} total hours × ${burdenReliefPct}% burden relief = ${formatNumber(wellbeingHours)} hours`,
+            explanation: `Per hospitalist: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This includes documentation quality and sustainability time — all time that reduces pajama-time charting burden.`,
           },
           {
             label: "STEP 2: IMPACT THRESHOLD",
@@ -943,7 +945,7 @@ function getDriverLogic(driver: DriverCalculation, data: InpatientPDFData): Driv
             explanation: `${departuresAvoided.toFixed(2)} departures avoided annually. Hospitalist replacement costs include recruiting, signing bonus, credentialing, onboarding, and lost revenue during ramp-up.`,
           },
         ],
-        calibration: `Your allocation (${wellbeingPct}% to wellbeing, ${hoursPerProvider} hrs/hospitalist) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations prioritizing retention often allocate 40-50% to wellbeing." : "You're investing meaningfully in workforce sustainability."}`,
+        calibration: `Your allocation (${burdenReliefPct}% to burden relief, ${hoursPerProvider} hrs/hospitalist) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations that allocate more time away from patient capacity see stronger retention effects." : "You're investing meaningfully in workforce sustainability."}`,
       };
     }
 

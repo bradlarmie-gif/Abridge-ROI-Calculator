@@ -911,8 +911,10 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
     case "clinicianWellbeing":
     case "workforce": {
       // Get wellbeing allocation - try from inputs first (wellbeingPct), then from timeAllocation
-      const wellbeingPct = (inputs.wellbeingPct as number) || allocation.clinicianWellbeing || 30;
-      const hoursAllocated = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const wellbeingPct = (inputs.wellbeingPct as number) ?? allocation.clinicianWellbeing ?? 30;
+      const docQualityPct = (inputs.docQualityPct as number) ?? allocation.documentationQuality ?? 30;
+      const burdenReliefPct = docQualityPct + wellbeingPct;
+      const hoursAllocated = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (burdenReliefPct / 100));
       const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(hoursAllocated / data.providers);
       const turnoverRate = (inputs.turnoverRate as number) || 8;
       const burnoutAttribution = (inputs.burnoutAttribution as number) || 50;
@@ -933,9 +935,9 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
         theory: `Documentation burden is the number one driver of physician burnout. Burnout drives turnover. Turnover is expensive—$250K to $500K per physician when you factor recruiting, onboarding, ramp time, and lost revenue.\n\nThe math is straightforward: reduce burden → reduce burnout → reduce turnover → avoid replacement costs.\n\nThe challenge is attribution. We can't claim that every hour saved prevents a departure. So we use a threshold model that acknowledges diminishing returns and realistic impact windows.`,
         steps: [
           {
-            label: "STEP 1: TIME ALLOCATED TO WELLBEING",
-            formula: `${formatNumber(data.hoursReturned)} total hours × ${wellbeingPct}% to wellbeing = ${formatNumber(hoursAllocated)} hours`,
-            explanation: `Per provider: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This is time that goes directly to reducing after-hours charting burden.`,
+            label: "STEP 1: TIME RETURNED TO PROVIDERS",
+            formula: `${formatNumber(data.hoursReturned)} total hours × ${burdenReliefPct}% burden relief = ${formatNumber(hoursAllocated)} hours`,
+            explanation: `Per provider: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This includes documentation quality and sustainability time — all time that reduces burden, excluding only patient capacity hours reinvested into additional visits.`,
           },
           {
             label: "STEP 2: IMPACT THRESHOLD",
@@ -953,7 +955,7 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
             explanation: `${departuresAvoided.toFixed(2)} departures avoided annually. Replacement costs include recruiting ($30-50K), signing bonus ($20-50K), onboarding (3-6 months reduced productivity), and revenue loss during vacancy.`,
           },
         ],
-        calibration: `Your allocation (${wellbeingPct}% to wellbeing, ${hoursPerProvider} hrs/provider) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations prioritizing retention often allocate 40-50% to wellbeing." : "You're investing meaningfully in workforce sustainability—this compounds year over year."}`,
+        calibration: `Your allocation (${burdenReliefPct}% to burden relief, ${hoursPerProvider} hrs/provider) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations that allocate more time away from patient capacity see stronger retention effects." : "You're investing meaningfully in workforce sustainability—this compounds year over year."}`,
       };
     }
 
