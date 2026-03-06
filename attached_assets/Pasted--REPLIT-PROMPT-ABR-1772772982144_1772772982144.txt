@@ -1,0 +1,603 @@
+════════════════════════════════════════════════════════════════════════════════
+REPLIT PROMPT — ABRIDGE ROI CALCULATOR PDF GENERATOR
+NEW PAGE: "THE WORKFORCE BEHIND THE NUMBERS"
+Bundle reference: index-Bx9_LPX5.js
+Verify bundle name on each deploy — it updates with every build.
+════════════════════════════════════════════════════════════════════════════════
+OVERVIEW
+────────
+Add one new page — Page 2 of 5 — to the PDF output for all four care
+settings. This page is called "THE WORKFORCE BEHIND THE NUMBERS."
+New page order:
+  Page 1: The Thesis            (existing — untouched)
+  Page 2: The Workforce Behind  (NEW — this prompt)
+  Page 3: Your Value Drivers    (existing — was Page 2)
+  Page 4: The Investment Case   (existing — was Page 3)
+  Page 5: Your Assessment       (existing — was Page 4)
+All existing pages shift +1. Update every footer page reference.
+Change all instances of "Page X of 4" → "Page X of 5".
+Change totalPages constant from 4 → 5 everywhere it appears.
+Search for hardcoded "of 4" strings across the entire PDF generator
+and replace with "of 5".
+DO NOT change any existing page content, layout, copy, colors, fonts,
+spacing, or component structure. This prompt only adds one new page.
+The cover page (Page 1) is completely locked — zero changes.
+════════════════════════════════════════════════════════════════════════════════
+SECTION 1 — VISUAL SPEC
+Read and follow completely before writing any code.
+The new page must be visually indistinguishable from existing pages.
+Do not invent new styles. Reuse everything that already exists.
+════════════════════════════════════════════════════════════════════════════════
+FONTS
+─────
+Display / section labels / headlines / large numbers:
+  font-family: "Abridge", Inter, sans-serif
+  Source: /assets/abridge-CvGp1Hlr.otf (already loaded — do not reload)
+  Used for: section labels, page headlines, large stat numbers
+Body / descriptions / running copy / sub-labels / source lines:
+  font-family: "Manrope", Inter, sans-serif
+  Used for: all body text, card descriptions, helper text, footer,
+            sub-headlines, citation lines, allocation row descriptions
+Do not load any additional fonts. Both are already in the app.
+COLORS
+──────
+Abridge red:    #E8321A  — section labels, left border accents,
+                           "ABRIDGE" in footer
+Near-black:     #1A1A1A  — headlines, large stat numbers, primary body
+Warm gray:      #F5F2EE  — all card backgrounds
+Medium gray:    #888888  — sub-headlines, descriptions, helper text,
+                           source lines, footer text, stat chip labels
+Divider:        #E8E0D8  — all horizontal rules and column dividers
+                           (confirmed from CSS: rgb(232 224 216))
+White:          #FFFFFF  — page background
+TYPOGRAPHY SCALE
+────────────────
+Section label ("THE THESIS", "YOUR VALUE DRIVERS", etc.):
+  font-family: "Abridge"
+  font-size: 9pt
+  color: #E8321A
+  letter-spacing: 0.08em
+  text-transform: uppercase
+  margin-bottom: 8pt
+Page headline ("How Time Becomes Value", "Infrastructure, Not Expense"):
+  font-family: "Abridge"
+  font-size: 26pt
+  color: #1A1A1A
+  line-height: 1.15
+  margin-bottom: 4pt
+Page sub-headline:
+  font-family: "Manrope"
+  font-size: 10pt
+  color: #888888
+  line-height: 1.4
+  margin-bottom: 16pt
+Card body text:
+  font-family: "Manrope"
+  font-size: 10pt
+  color: #1A1A1A
+  line-height: 1.5
+Large stat number (in three-stat row):
+  font-family: "Abridge"
+  font-size: 20pt
+  color: #1A1A1A
+Stat chip label (below number):
+  font-family: "Manrope"
+  font-size: 8pt
+  color: #888888
+Stat chip description (below label):
+  font-family: "Manrope"
+  font-size: 8pt
+  color: #888888
+  margin-top: 4pt
+Allocation row label (e.g. "40% → More patients seen"):
+  font-family: "Manrope"
+  font-size: 10pt
+  font-weight: 600
+  color: #1A1A1A
+Allocation row description:
+  font-family: "Manrope"
+  font-size: 9pt
+  color: #888888
+  margin-top: 3pt
+Section sub-label ("YOUR NUMBERS AT HUMAN SCALE",
+"WHERE YOUR TIME GOES"):
+  font-family: "Manrope"
+  font-size: 8pt
+  font-weight: 500
+  color: #888888
+  letter-spacing: 0.06em
+  text-transform: uppercase
+  margin-bottom: 8pt
+Source / citation line:
+  font-family: "Manrope"
+  font-size: 8pt
+  color: #888888
+  font-style: italic
+  border-top: 0.5pt solid #E8E0D8
+  padding-top: 6pt
+  margin-top: 8pt
+Bridge line (italic closing sentence):
+  font-family: "Manrope"
+  font-size: 10pt
+  font-style: italic
+  color: #1A1A1A
+  text-align: center
+  margin-top: 16pt
+  margin-bottom: 16pt
+Footer:
+  font-family: "Manrope"
+  font-size: 8pt
+  color: #888888
+  "ABRIDGE" word only: color #E8321A
+SPACING AND LAYOUT
+──────────────────
+Page margins (all sides): 40pt
+Content width: page width minus 80pt total horizontal margin
+Horizontal rule (between every section):
+  border-top: 0.5pt solid #E8E0D8
+  margin-top: 16pt
+  margin-bottom: 16pt
+  width: 100%
+Card (standard warm gray block):
+  background: #F5F2EE
+  border-radius: 4pt
+  padding: 16pt
+  width: 100%
+Card with left red accent (Point of View card —
+matches Strategic Observation card style on Page 1):
+  background: #F5F2EE
+  border-radius: 4pt
+  padding: 16pt
+  border-left: 3pt solid #E8321A
+  width: 100%
+Three-column stat row (matches chip row on Page 1 thesis card):
+  Outer container: #F5F2EE card, border-radius 4pt, no extra padding
+  Three equal columns separated by 0.5pt solid #E8E0D8 vertical dividers
+  Each column: padding 12pt
+  Column content: large number → label → description (top to bottom)
+Allocation intent block (new — single card, three stacked rows):
+  Outer container: #F5F2EE card, border-radius 4pt, padding 0
+  Each row: padding 10pt top and bottom, padding 16pt left and right
+  Rows separated by 0.5pt solid #E8E0D8 horizontal dividers
+  Row content: label (bold, dark) → description below (gray)
+  Zero % rows: label and description both in #AAAAAA,
+               description replaced with "Not allocated."
+EXISTING COMPONENTS TO REUSE — do not recreate
+───────────────────────────────────────────────
+SectionLabel       → already used on every page. Use as-is.
+PageHeadline       → already used for page titles. Use as-is.
+PageSubHeadline    → already used for page sub-titles. Use as-is.
+PageDivider        → horizontal rule between sections. Use as-is.
+StatChipRow        → three-column chip row on Page 1. Use as-is.
+StrategicObsCard   → red left-border card on Page 1. Use for POV card.
+PDFFooter          → standard footer. Use as-is. Update page number only.
+One new component required:
+AllocationIntentBlock — three-row stacked card. Style using existing
+card background, existing divider, existing Manrope typography only.
+No new visual patterns. It is a new arrangement of existing parts.
+STRICT RULES FOR THIS PAGE
+───────────────────────────
+1. Zero dollar figures on this page. No $, no formatted currency,
+   no ROI multiples. Time and workforce only.
+2. Zero allocation percentages shown as raw numbers in isolation.
+   Percentages appear only baked into the row label
+   (e.g. "40% → More patients seen") — never as standalone stats.
+3. If any allocation bucket is 0%: render that row in #AAAAAA,
+   replace description with "Not allocated." Never hide the row.
+4. Numbers ≥ 1,000: format with comma (5,250 not 5250).
+5. Decimal values: round to 1 decimal place.
+6. This page must not overflow to a sixth page. If content is too
+   long: reduce POV card body from 10pt to 9pt first, then reduce
+   allocation row descriptions from 9pt to 8pt. Do not cut content.
+7. Cover page (Page 1) is completely untouched by this prompt.
+════════════════════════════════════════════════════════════════════════════════
+SECTION 2 — DERIVED VALUE CALCULATIONS
+Add these to the PDF data preparation layer, not inside components.
+════════════════════════════════════════════════════════════════════════════════
+OUTPATIENT + INPATIENT:
+  hoursPerWeek   = (totalHoursReturned / providerCount / 52).toFixed(1)
+  workingDays    = (totalHoursReturned / providerCount / 8).toFixed(1)
+EMERGENCY:
+  shiftsEquiv    = (totalHoursReturned / providerCount / 8).toFixed(1)
+  minsPerShift   = minutesSavedPerEncounter  [direct passthrough]
+NURSING:
+  activeNurses       = nurseFTEs × adoptionRate
+  hoursPerActiveNurse = Math.round(totalHoursReturned / activeNurses)
+  minsPerShift        = minutesSavedPerShift  [direct passthrough]
+  NOTE: divide by active (Abridge-using) nurses only, not total FTEs.
+  If adoptionRate = 0.5 and nurseFTEs = 300, activeNurses = 150.
+════════════════════════════════════════════════════════════════════════════════
+SECTION 3 — PAGE CONTENT, ALL FOUR SETTINGS
+════════════════════════════════════════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SETTING 1 — OUTPATIENT
+PDF: Abridge_Outpatient_Analysis_[OrgName].pdf · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VARIABLES:
+  providerCount              Step 2
+  totalHoursReturned         Step 3 output
+  minutesSavedPerEncounter   Step 3 selection
+  capacityPct                Step 4
+  docQualityPct              Step 4
+  sustainabilityPct          Step 4
+  hoursPerWeek               derived
+  workingDays                derived
+────────────────────────────────────────────────────────────────────────────
+[SectionLabel]
+THE WORKFORCE BEHIND THE NUMBERS
+[PageHeadline — "Abridge" font, 26pt, #1A1A1A]
+5 hours in the EHR.
+For every 8 hours with patients.
+[PageSubHeadline — Manrope, 10pt, #888888]
+That's not a documentation problem.
+That's a workforce problem — and it's why time is
+the most strategic asset in this model.
+[PageDivider]
+[StrategicObsCard — #F5F2EE bg, 3pt left border #E8321A, padding 16pt]
+Healthcare spent the last two decades optimizing for throughput,
+revenue capture, and compliance. The clinician's time was the variable
+that absorbed everything else. The result is a physician workforce where
+43% report burnout symptoms — not because medicine got harder, but because
+the administrative layer around medicine got heavier. Ambient documentation
+doesn't fix healthcare. But it removes the single most modifiable variable
+driving documentation burden. That's not a small claim. It's a precise one.
+[citation line — Manrope 8pt italic #888888, border-top #E8E0D8]
+Source: AMA National Physician Burnout Survey, 2024. EHR documentation
+time: Arndt et al., JAMIA, as cited by the American Medical Association,
+October 2024.
+[PageDivider]
+[SectionSubLabel]
+YOUR NUMBERS AT HUMAN SCALE
+[StatChipRow — three equal columns, #F5F2EE card, #E8E0D8 dividers]
+  Column 1:
+    Number:      {totalHoursReturned} hours/year
+    Label:       Returned to your {providerCount} providers.
+    Description: Built from your inputs. Your scale.
+  Column 2:
+    Number:      {hoursPerWeek} hrs/week
+    Label:       Per provider, every week.
+    Description: Not a rounding error. A measurable
+                 shift in how your providers experience
+                 their job.
+  Column 3:
+    Number:      {workingDays} days/year
+    Label:       Per provider, not at a keyboard.
+    Description: Returned to the schedule, the patient,
+                 or the evening. Your providers decide.
+[PageDivider]
+[SectionSubLabel]
+WHERE YOUR TIME GOES
+[AllocationIntentBlock — #F5F2EE card, three rows, #E8E0D8 row dividers]
+  Row 1:
+    Label:       {capacityPct}% → More patients seen
+    Description: Time converted to additional visits and scheduling
+                 capacity. This is the throughput story. It produces
+                 the dollar figures on the next page.
+  Row 2:
+    Label:       {docQualityPct}% → Better documentation
+    Description: Time redirected toward more complete, accurate notes —
+                 the foundation of the revenue optimization drivers
+                 that follow. This is the revenue integrity story.
+  Row 3:
+    Label:       {sustainabilityPct}% → Given back to your providers
+    Description: Time returned as genuine breathing room. Less
+                 after-hours charting, less documentation burden, more
+                 sustainable practice. This is the retention story.
+                 It doesn't have a dollar on this page.
+                 It has a dollar when a provider stays.
+[PageDivider]
+[BridgeLine — Manrope 10pt italic #1A1A1A centered]
+"The pages that follow show what the first two produce financially.
+This page is about what the third one means."
+[PDFFooter]
+ABRIDGE · {orgName} · Outpatient Value Assessment · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SETTING 2 — EMERGENCY DEPARTMENT
+PDF: Abridge_Emergency_Analysis_[OrgName].pdf · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VARIABLES:
+  providerCount              Step 2
+  totalHoursReturned         Step 3 output
+  minutesSavedPerEncounter   Step 3 selection
+  throughputPct              Step 4
+  docQualityPct              Step 4
+  wellbeingPct               Step 4
+  shiftsEquiv                derived
+  minsPerShift               derived (= minutesSavedPerEncounter)
+────────────────────────────────────────────────────────────────────────────
+[SectionLabel]
+THE WORKFORCE BEHIND THE NUMBERS
+[PageHeadline]
+Every minute at a terminal
+is a minute away from a patient.
+[PageSubHeadline]
+In an emergency department, documentation speed
+isn't a convenience. It's a flow variable.
+[PageDivider]
+[StrategicObsCard]
+Emergency medicine has one of the highest burnout rates in medicine —
+not because the clinical work is unsustainable, but because the
+documentation load that follows it is. The same AMA data that shows
+office-based physicians spending more than 5 hours in the EHR for every
+8 patient hours applies with equal force in the ED — where the pace is
+faster, the documentation windows are shorter, and the cost of a slow
+note can be a patient who left without being seen. Time reclaimed from
+documentation in an ED doesn't stay abstract. It moves through the
+department in real time.
+[citation line]
+Source: AMA National Physician Burnout Survey, 2024. EHR documentation
+time: Arndt et al., JAMIA, as cited by the American Medical Association,
+October 2024.
+[PageDivider]
+[SectionSubLabel]
+YOUR NUMBERS AT HUMAN SCALE
+[StatChipRow]
+  Column 1:
+    Number:      {totalHoursReturned} hours/year
+    Label:       Returned to your {providerCount} ED physicians.
+    Description: Across every Abridge-enabled encounter,
+                 every shift.
+  Column 2:
+    Number:      {minsPerShift} min/shift
+    Label:       Per physician, every shift.
+    Description: The documentation window that closes
+                 before the next patient opens.
+  Column 3:
+    Number:      {shiftsEquiv} shifts/year
+    Label:       Per physician, returned.
+    Description: Full shifts of documentation time
+                 given back — per physician, per year.
+[PageDivider]
+[SectionSubLabel]
+WHERE YOUR TIME GOES
+[AllocationIntentBlock]
+  Row 1:
+    Label:       {throughputPct}% → Faster patient disposition
+    Description: Less time documenting means faster chart closure,
+                 faster disposition decisions, fewer patients who
+                 leave without being seen. This is the throughput
+                 story. It produces the dollar figures on the next page.
+  Row 2:
+    Label:       {docQualityPct}% → More complete documentation
+    Description: Time redirected toward E&M accuracy and denial
+                 prevention. Every note complete at close of encounter
+                 is a note that doesn't come back as a query or a
+                 denial. This is the revenue integrity story.
+  Row 3:
+    Label:       {wellbeingPct}% → Returned to your physicians
+    Description: Shift sustainability. Less cognitive load at hour 8.
+                 A department that doesn't cycle through its physicians
+                 every three years. This is the retention story.
+                 It doesn't have a dollar on this page.
+                 It has a dollar when a physician renews.
+[PageDivider]
+[BridgeLine]
+"The pages that follow show what the first two produce financially.
+This page is about what the third one means."
+[PDFFooter]
+ABRIDGE · {orgName} · Emergency Value Assessment · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SETTING 3 — INPATIENT
+PDF: Abridge_Inpatient_Analysis_[OrgName].pdf · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VARIABLES:
+  hospitalistCount           Step 2
+  totalHoursReturned         Step 3 output
+  minutesSavedPerAdmission   Step 3 selection
+  directCarePct              Step 4
+  docQualityPct              Step 4
+  sustainabilityPct          Step 4
+  hoursPerWeek               derived
+  workingDays                derived
+────────────────────────────────────────────────────────────────────────────
+[SectionLabel]
+THE WORKFORCE BEHIND THE NUMBERS
+[PageHeadline]
+The hospitalist carries a documentation load
+disproportionate to their billable output.
+[PageSubHeadline]
+Every admission generates a history, a plan, an attestation, orders.
+Most of it happens after the patient interaction is over.
+Often after hours.
+[PageDivider]
+[StrategicObsCard]
+Hospital medicine is one of the most demanding documentation
+environments in the building — and one of the hardest specialties
+to retain. KLAS data on ambient speech implementations documents
+consistent reductions in after-hours charting time and measurable
+improvements in provider satisfaction scores across health systems.
+The time this model returns to your hospitalists isn't a benefit in
+the traditional ROI sense. It's a workforce protection strategy — one
+that also happens to drive capacity, DRG accuracy, and downstream
+revenue. The two are not mutually exclusive.
+[citation line]
+Source: AMA National Physician Burnout Survey, 2024.
+KLAS Ambient Speech Outcomes, 2025.
+[PageDivider]
+[SectionSubLabel]
+YOUR NUMBERS AT HUMAN SCALE
+[StatChipRow]
+  Column 1:
+    Number:      {totalHoursReturned} hours/year
+    Label:       Returned to your {hospitalistCount} hospitalists.
+    Description: Built from your admission volume,
+                 your utilization, your time savings scenario.
+  Column 2:
+    Number:      {hoursPerWeek} hrs/week
+    Label:       Per hospitalist, every week.
+    Description: Including the hours they were finishing
+                 notes at home. Especially those.
+  Column 3:
+    Number:      {workingDays} days/year
+    Label:       Per hospitalist, not at a keyboard.
+    Description: Returned to the rounding list, the patient
+                 family, or the end of a shift that actually ends.
+[PageDivider]
+[SectionSubLabel]
+WHERE YOUR TIME GOES
+[AllocationIntentBlock]
+  Row 1:
+    Label:       {directCarePct}% → Back to the bedside
+    Description: More rounding time. More patient and family presence.
+                 More capacity — without adding FTEs. This is the
+                 capacity story. The CAPACITY UNLOCKED figure on the
+                 next page flows from this choice.
+  Row 2:
+    Label:       {docQualityPct}% → Better clinical records
+    Description: More complete notes mean more accurate DRGs, fewer
+                 CDI queries, and stronger revenue integrity. This is
+                 the documentation quality story. Its dollar figures
+                 are on the next page.
+  Row 3:
+    Label:       {sustainabilityPct}% → Returned to your hospitalists
+    Description: Less after-hours charting. Less documentation burden
+                 at the end of a 12-hour shift. A program that can
+                 retain the people who built it and recruit the people
+                 who will grow it. This is the retention story.
+                 It doesn't have a dollar on this page.
+                 It has a dollar when a hospitalist re-signs.
+[PageDivider]
+[BridgeLine]
+"The pages that follow show what the first two produce financially.
+This page is about what the third one means."
+[PDFFooter]
+ABRIDGE · {orgName} · Inpatient Value Assessment · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SETTING 4 — NURSING
+PDF: Abridge_Nursing_Analysis_[OrgName].pdf · Page 2 of 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STRUCTURAL DIFFERENCES FROM PROVIDER SETTINGS:
+  - Unit is shifts, not encounters or admissions
+  - Never use "providers" — use "nurses" or "nursing staff"
+  - Three-stat row uses shift-based metrics, not hours/week per provider
+  - Allocation rows use nursing bucket names and value type badges
+  - Bridge line is different — acknowledges three distinct value types
+  - Investment pricing (per bed) does not appear on this page
+VARIABLES:
+  nurseFTEs                  Step 2
+  staffedBeds                Step 2
+  abridgeEnabledShifts       Step 2 output
+  totalHoursReturned         Step 3 output
+  minutesSavedPerShift       Step 3 selection
+  otReductionPct             Step 4
+  sustainabilityPct          Step 4
+  directPatientCarePct       Step 4
+  activeNurses               derived
+  hoursPerActiveNurse        derived
+VALUE TYPE BADGES — nursing allocation rows only:
+  Three small inline badges appear after each row label.
+  Style them to match the POTENTIAL badge already used on
+  care quality driver cards in Page 3 (now Page 4 after renumber).
+  Badge styles:
+    HARD VALUE:      small caps, #E8321A, same pill border style as
+                     existing badges
+    QUALITATIVE:     small caps, #888888, same pill border
+    POTENTIAL VALUE: small caps, #888888, dotted pill border —
+                     matching existing POTENTIAL badge exactly
+────────────────────────────────────────────────────────────────────────────
+[SectionLabel]
+THE WORKFORCE BEHIND THE NUMBERS
+[PageHeadline]
+Nursing turnover costs between $40,000
+and $60,000 per nurse replaced.
+[PageSubHeadline]
+Documentation burden is consistently cited among the top
+reasons nurses leave. This model addresses the variable
+most directly in your control.
+[PageDivider]
+[StrategicObsCard]
+The nursing workforce crisis is not a pipeline problem alone — it's
+a retention problem. And retention is shaped by something that rarely
+shows up cleanly in exit surveys: the cumulative weight of documentation
+that follows every shift. Charting that runs past shift end. Flowsheet
+entries completed from memory rather than presence. The 20 minutes that
+turns a 12-hour shift into 12 hours and 20 minutes, every day,
+indefinitely. KLAS data consistently documents that ambient documentation
+— when implemented in nursing — reduces end-of-shift burden and improves
+shift satisfaction scores. That matters to the budget.
+It matters more to the bedside.
+[citation line]
+Source: NSI Nursing Solutions National Health Care Retention & RN
+Staffing Report, 2024. KLAS Ambient Speech Outcomes, 2025.
+[PageDivider]
+[SectionSubLabel]
+YOUR NUMBERS AT HUMAN SCALE
+[StatChipRow]
+  Column 1:
+    Number:      {totalHoursReturned} hours/year
+    Label:       Returned to your nursing staff.
+    Description: Across {abridgeEnabledShifts} Abridge-enabled
+                 shifts annually.
+  Column 2:
+    Number:      {minutesSavedPerShift} min/shift
+    Label:       Per nurse, every shift.
+    Description: The documentation window at end of shift
+                 that closes before overtime begins.
+  Column 3:
+    Number:      {hoursPerActiveNurse} hrs/year
+    Label:       Per nurse using Abridge.
+    Description: Returned to the patient, the team,
+                 or the clock-out. Every nurse. Every shift.
+[PageDivider]
+[SectionSubLabel]
+WHERE YOUR TIME GOES
+[AllocationIntentBlock — nursing version with value type badges]
+  Row 1:
+    Label:       {otReductionPct}% → Overtime reduction
+    Badge:       HARD VALUE  [#E8321A pill]
+    Description: Time that directly eliminates end-of-shift overtime.
+                 The most immediate, measurable labor cost savings in
+                 nursing. This is the hard savings story. Its dollar
+                 figures are on the next page.
+  Row 2:
+    Label:       {sustainabilityPct}% → Shift breathing room
+    Badge:       QUALITATIVE  [#888888 pill]
+    Description: Time absorbed as genuine recovery — less stress, less
+                 documentation pressure at the end of a long shift. The
+                 single most cited driver of nurse satisfaction when
+                 documentation burden improves. This is the retention
+                 story. It doesn't have a dollar on this page.
+                 It has a dollar when a nurse stays.
+  Row 3:
+    Label:       {directPatientCarePct}% → Back to the bedside
+    Badge:       POTENTIAL VALUE  [#888888 dotted pill]
+    Description: Time returned to assessments, interventions, and the
+                 presence that documentation too often displaces. More
+                 time present means earlier recognition of deterioration,
+                 more complete flowsheet entries, and better care quality
+                 data. This connects to the potential value drivers
+                 on the following page.
+[PageDivider]
+[BridgeLine — nursing-specific, acknowledges all three value types]
+"The pages that follow show what these three produce — in hard labor
+savings, in care quality potential, and in the retention economics
+your workforce strategy depends on."
+[PDFFooter]
+ABRIDGE · {orgName} · Nursing Value Assessment · Page 2 of 5
+════════════════════════════════════════════════════════════════════════════════
+SECTION 4 — IMPLEMENTATION CHECKLIST
+Run through this before marking complete.
+════════════════════════════════════════════════════════════════════════════════
+□ New WorkforceStoryPage component created
+□ Component accepts careSettingConfig (strings) + data (computed values)
+□ Component uses only existing PDF component primitives
+□ AllocationIntentBlock styled using only existing card/divider/text styles
+□ Nursing badge styles match existing POTENTIAL badge on driver cards
+□ All four care setting configs implemented with correct copy and variables
+□ Derived values (hoursPerWeek, workingDays, shiftsEquiv,
+  hoursPerActiveNurse) computed in PDF data prep layer, not in component
+□ Nursing activeNurses = nurseFTEs × adoptionRate (not total FTEs)
+□ Zero-percent allocation rows render in #AAAAAA with "Not allocated."
+□ Zero dollar figures appear anywhere on this page
+□ totalPages updated from 4 → 5 in all locations
+□ All existing footer "Page X of 4" references updated to "Page X of 5"
+□ Existing page content on Pages 1, 3, 4, 5 is completely unchanged
+□ Page 1 (cover) is completely unchanged
+□ New page renders within single page — no sixth page created
+□ Overflow fallback applied if needed (reduce font sizes per spec above)
+□ PDF tested for all four care settings with representative inputs
+□ Nursing PDF tested with 0% otReductionPct to confirm zero-% handling
+□ Outpatient PDF tested with 100% sustainabilityPct to confirm handling
+════════════════════════════════════════════════════════════════════════════════
+END OF PROMPT
+════════════════════════════════════════════════════════════════════════════════
