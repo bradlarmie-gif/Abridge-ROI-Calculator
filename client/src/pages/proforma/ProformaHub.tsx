@@ -219,6 +219,8 @@ export default function ProformaHub({
               const yp = setting.yearlyProviders;
               const isEncPricing = setting.pricingModel === "perEncounter";
               const ye = isEncPricing ? computeYearlyEncounters(setting, config) : { year1: 0, year2: 0, year3: 0 };
+              const contractYears = Math.ceil(config.contractTermMonths / 12);
+              const yearColsClass = contractYears >= 3 ? "grid-cols-3" : contractYears === 2 ? "grid-cols-2" : "grid-cols-1";
               return (
                 <motion.div
                   key={setting.id}
@@ -331,21 +333,25 @@ export default function ProformaHub({
                               {isEncPricing && (
                                 <div>
                                   <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Encounters by Year</p>
-                                  <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-2">
+                                  <div className={`grid ${yearColsClass} gap-2 sm:gap-3 mb-2`}>
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y1 Encounters</label>
                                       <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y1-enc-${setting.careSetting}`}>{fmtNum(ye.year1)}</div>
                                     </div>
+                                    {contractYears >= 2 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y2 Encounters</label>
                                       <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y2-enc-${setting.careSetting}`}>{fmtNum(ye.year2)}</div>
                                     </div>
+                                    )}
+                                    {contractYears >= 3 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y3 Encounters</label>
                                       <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y3-enc-${setting.careSetting}`}>{fmtNum(ye.year3)}</div>
                                     </div>
+                                    )}
                                   </div>
-                                  <p className="text-[10px] text-[#A39888]">Auto-calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()} × utilization</p>
+                                  <p className="text-[10px] text-[#A39888]">Auto-calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()}</p>
                                 </div>
                               )}
                               <div>
@@ -405,7 +411,8 @@ export default function ProformaHub({
                                     : setting.costPerUnit;
                                   const yPricingQ = setting.yearlyPricing || { year1: defaultPrice, year2: defaultPrice, year3: defaultPrice };
                                   const qPricing = setting.quarterlyPricing || annualToQuarterlyPricing(yPricingQ);
-                                  const allQKeys: (keyof QuarterlyProviders)[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
+                                  const allQKeysAll: (keyof QuarterlyProviders)[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
+                                  const allQKeys = allQKeysAll.slice(0, Math.min(contractYears, 3) * 4);
                                   const startYear = new Date().getFullYear();
                                   const qLabels = allQKeys.map((_, i) => {
                                     const yearOffset = Math.floor(i / 4);
@@ -504,7 +511,7 @@ export default function ProformaHub({
                                                 ? setting.encounters / setting.providerCount : 3000;
                                               const quarterBill = pricingModel === "perUnit" ? provCount * price * 3
                                                 : pricingModel === "annualFlat" ? price / 4
-                                                : price * provCount * encountersPerProv * (util / 100) / 4;
+                                                : price * provCount * encountersPerProv / 4;
                                               return (
                                                 <td key={`cost-${qk}`} className="py-0.5 px-0.5">
                                                   <div className="w-full text-right text-[10px] h-7 bg-[#F5F0EB] border border-neutral-200 rounded px-1 flex items-center justify-end text-[#8C7E6E] font-medium" data-testid={`display-cost-${qk}-${setting.careSetting}`}>
@@ -519,7 +526,7 @@ export default function ProformaHub({
                                     </div>
                                   );
                                 })() : (
-                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                <div className={`grid ${yearColsClass} gap-2 sm:gap-3`}>
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
                                       <FormattedNumberInput
@@ -540,6 +547,7 @@ export default function ProformaHub({
                                         data-testid={`input-y1-${setting.careSetting}`}
                                       />
                                     </div>
+                                    {contractYears >= 2 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
                                       <FormattedNumberInput
@@ -559,6 +567,8 @@ export default function ProformaHub({
                                         data-testid={`input-y2-${setting.careSetting}`}
                                       />
                                     </div>
+                                    )}
+                                    {contractYears >= 3 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
                                       <FormattedNumberInput
@@ -579,6 +589,7 @@ export default function ProformaHub({
                                         data-testid={`input-y3-${setting.careSetting}`}
                                       />
                                     </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -634,8 +645,8 @@ export default function ProformaHub({
                                 return (
                                   <div>
                                     <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{priceLabel} by Year</p>
-                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                                      {(["year1", "year2", "year3"] as const).map((yk, i) => (
+                                    <div className={`grid ${yearColsClass} gap-2 sm:gap-3`}>
+                                      {(["year1", "year2", "year3"] as const).slice(0, Math.min(contractYears, 3)).map((yk, i) => (
                                         <div key={yk}>
                                           <label className="block text-[12px] text-[#8C7E6E] mb-1">Y{i + 1} ({2026 + i})</label>
                                           <FormattedNumberInput
@@ -711,14 +722,17 @@ export default function ProformaHub({
                                   const currentYearlyPrices = setting.yearlyPricing || { year1: currentDefaultPrice, year2: currentDefaultPrice, year3: currentDefaultPrice };
                                   const currentInv = computeYearlyInvestmentWithPrices(currentModel, currentYearlyPrices);
                                   const altInv = computeYearlyInvestmentWithPrices(altModel, { year1: altPrice, year2: altPrice, year3: altPrice });
-                                  const currentTotal = currentInv.year1 + currentInv.year2 + currentInv.year3;
-                                  const altTotal = altInv.year1 + altInv.year2 + altInv.year3;
+                                  const invYears = [currentInv.year1, currentInv.year2, currentInv.year3].slice(0, Math.min(contractYears, 3));
+                                  const altInvYears = [altInv.year1, altInv.year2, altInv.year3].slice(0, Math.min(contractYears, 3));
+                                  const currentTotal = invYears.reduce((s, v) => s + v, 0);
+                                  const altTotal = altInvYears.reduce((s, v) => s + v, 0);
                                   const annualValue = setting.annualValue;
-                                  const totalValue3Y = annualValue * 3;
-                                  const currentROI = currentTotal > 0 ? ((totalValue3Y - currentTotal) / currentTotal * 100) : 0;
-                                  const altROI = altTotal > 0 ? ((totalValue3Y - altTotal) / altTotal * 100) : 0;
-                                  const currentNet = totalValue3Y - currentTotal;
-                                  const altNet = totalValue3Y - altTotal;
+                                  const termYears = Math.min(contractYears, 3);
+                                  const totalValueNY = annualValue * termYears;
+                                  const currentROI = currentTotal > 0 ? ((totalValueNY - currentTotal) / currentTotal * 100) : 0;
+                                  const altROI = altTotal > 0 ? ((totalValueNY - altTotal) / altTotal * 100) : 0;
+                                  const currentNet = totalValueNY - currentTotal;
+                                  const altNet = totalValueNY - altTotal;
 
                                   const fmt = (v: number) => {
                                     if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -756,18 +770,19 @@ export default function ProformaHub({
                                             <div className="text-[11px] text-[#8C7E6E] font-medium">
                                               {(() => {
                                                 const yp = currentYearlyPrices;
-                                                const varied = yp.year1 !== yp.year2 || yp.year2 !== yp.year3;
+                                                const prices = [yp.year1, yp.year2, yp.year3].slice(0, Math.min(contractYears, 3));
+                                                const varied = prices.some(p => p !== prices[0]);
                                                 const suffix = currentModel === "perUnit" ? "/mo" : currentModel === "perEncounter" ? "/enc" : "/yr";
-                                                if (varied) return `$${yp.year1} → $${yp.year2} → $${yp.year3}${suffix}`;
-                                                return `$${yp.year1}${suffix}`;
+                                                if (varied) return prices.map(p => `$${p}`).join(" → ") + suffix;
+                                                return `$${prices[0]}${suffix}`;
                                               })()}
                                             </div>
                                             <div className="space-y-1 text-[11px]">
                                               <div className="flex justify-between"><span className="text-[#8C7E6E]">Y1 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year1)}</span></div>
-                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year2)}</span></div>
-                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year3)}</span></div>
+                                              {contractYears >= 2 && <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year2)}</span></div>}
+                                              {contractYears >= 3 && <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year3)}</span></div>}
                                               <div className="border-t border-[#E8E0D8] pt-1 mt-1">
-                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">3-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(currentTotal)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">{termYears}-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(currentTotal)}</span></div>
                                                 <div className="flex justify-between"><span className="text-[#8C7E6E]">Net Value</span><span className="font-semibold text-[#2C2420]">{fmt(currentNet)}</span></div>
                                                 <div className="flex justify-between"><span className="text-[#8C7E6E]">ROI</span><span className="font-semibold text-[#2C2420]">{currentROI.toFixed(0)}%</span></div>
                                               </div>
@@ -791,10 +806,10 @@ export default function ProformaHub({
                                             </div>
                                             <div className="space-y-1 text-[11px]">
                                               <div className="flex justify-between"><span className="text-[#8C7E6E]">Y1 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year1)}</span></div>
-                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year2)}</span></div>
-                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year3)}</span></div>
+                                              {contractYears >= 2 && <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year2)}</span></div>}
+                                              {contractYears >= 3 && <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year3)}</span></div>}
                                               <div className="border-t border-[#E8E0D8] pt-1 mt-1">
-                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">3-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(altTotal)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">{termYears}-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(altTotal)}</span></div>
                                                 <div className="flex justify-between"><span className="text-[#8C7E6E]">Net Value</span><span className="font-semibold text-[#2C2420]">{fmt(altNet)}</span></div>
                                                 <div className="flex justify-between"><span className="text-[#8C7E6E]">ROI</span><span className="font-semibold text-[#2C2420]">{altROI.toFixed(0)}%</span></div>
                                               </div>

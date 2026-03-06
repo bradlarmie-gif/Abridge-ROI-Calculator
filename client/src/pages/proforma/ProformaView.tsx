@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -92,13 +92,6 @@ function fmtPct(n: number) {
   return `${val}%`;
 }
 
-function fmtIRR(irr: number, valid: boolean, method: "irr" | "mirr") {
-  if (!valid) return "N/A";
-  const pct = Math.round(irr * 100);
-  const label = method === "mirr" ? "MIRR" : "IRR";
-  if (pct > 500) return { display: ">500%", label };
-  return { display: `${pct}%`, label };
-}
 
 function contractTermLabel(months: number): string {
   return `${months / 12}-Year`;
@@ -245,19 +238,9 @@ export default function ProformaView({
         }
       }
 
-      const month0 = totalImplFees > 0 ? -totalImplFees : 0;
-      const scaledIRRFlows = [month0, ...cashFlows.map(r => {
-        const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
-        return (isFinite(gross) ? gross : 0) - r.investment;
-      })];
-      const scaledIRR = calculateIRR(scaledIRRFlows);
-
       return {
         annualValue: scaledAnnual,
         valueToCost: scaledVTC,
-        irr: scaledIRR.isValid ? scaledIRR.annualizedRate : 0,
-        irrValid: scaledIRR.isValid,
-        irrMethod: scaledIRR.method,
         paybackMonth: scaledPayback,
         termNet: scaledNet,
         simpleROI: scaledROI,
@@ -269,9 +252,6 @@ export default function ProformaView({
       base: {
         annualValue: summary.runRateValue,
         valueToCost: summary.valueToCost,
-        irr: summary.irr,
-        irrValid: summary.irrValid,
-        irrMethod: summary.irrMethod,
         paybackMonth: summary.paybackMonth,
         termNet: summary.termNet,
         simpleROI: summary.simpleROI,
@@ -1379,7 +1359,7 @@ export default function ProformaView({
 
         {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
         <motion.div
-          className="grid grid-cols-2 min-[820px]:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-10"
+          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -1396,19 +1376,6 @@ export default function ProformaView({
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
             <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">(net value / investment)</p>
           </div>
-          {(() => {
-            const irrResult = fmtIRR(summary.irr, summary.irrValid, summary.irrMethod);
-            const irrDisplay = typeof irrResult === "string" ? irrResult : irrResult.display;
-            const irrLabel = typeof irrResult === "string" ? "" : irrResult.label;
-            return (
-              <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-irr">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
-                <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{irrLabel || "IRR"}</p>
-                <p className="text-2xl sm:text-3xl font-bold text-neutral-900" data-testid="text-irr-panel">{hasInvestment ? irrDisplay : "N/A"}</p>
-                <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment && summary.irrValid ? "annualized return" : ""}</p>
-              </div>
-            );
-          })()}
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
@@ -1482,15 +1449,6 @@ export default function ProformaView({
                         <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
                         <p className={`text-sm sm:text-lg font-bold ${data.termNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
                           {fmt(data.termNet)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">{data.irrValid ? (data.irrMethod === "mirr" ? "MIRR" : "IRR") : "IRR"}</p>
-                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-irr-${scenario.key}`}>
-                          {(() => {
-                            const r = fmtIRR(data.irr, data.irrValid, data.irrMethod);
-                            return typeof r === "string" ? r : r.display;
-                          })()}
                         </p>
                       </div>
                     </div>
@@ -1607,7 +1565,7 @@ export default function ProformaView({
           >
             <span className="flex items-center gap-2 text-neutral-600">
               <Info className="w-4 h-4 flex-shrink-0" />
-              <span>{isMobile ? "Methodology" : "How we calculated this — onset timing, IRR methodology & retention phasing"}</span>
+              <span>{isMobile ? "Methodology" : "How we calculated this — onset timing, value methodology & retention phasing"}</span>
             </span>
             {showMethodology ? <ChevronUp className="w-4 h-4 text-neutral-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-neutral-400 flex-shrink-0" />}
           </button>
@@ -1618,11 +1576,10 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Solved on monthly net cash flows (monthly value minus monthly subscription cost) over the contract term. Month 0 includes only the implementation fee (if any). Accounts for implementation ramp, utilization growth, and provider expansion timing. Annualized from the monthly rate as (1 + r)^12 − 1. Newton-Raphson with bisection fallback; non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
-              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided linear analysis scaling total value realization by 70% (conservative) and 130% (optimistic). Investment is held constant. Derived metrics (VTC, ROI, payback, IRR) are recalculated from the scaled values. This brackets the range of likely financial outcomes.</p>
+              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided linear analysis scaling total value realization by 70% (conservative) and 130% (optimistic). Investment is held constant. Derived metrics (VTC, ROI, payback) are recalculated from the scaled values. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
         </motion.div>
@@ -1691,7 +1648,6 @@ export default function ProformaView({
                       { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
                       { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
                       { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
-                      { label: "IRR", current: (() => { const r = fmtIRR(summary.irr, summary.irrValid, summary.irrMethod); return typeof r === "string" ? r : r.display; })(), values: scenarioSummaries.map(s => { const r = fmtIRR(s.summary.irr, s.summary.irrValid, s.summary.irrMethod); return typeof r === "string" ? r : r.display; }) },
                       { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
                       { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
                     ].map((row, ri) => (

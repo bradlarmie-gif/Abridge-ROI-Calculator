@@ -369,7 +369,7 @@ export function buildMonthlyCashFlows(
         const encountersPerProvider = setting.providerCount > 0
           ? setting.encounters / setting.providerCount
           : 0;
-        const monthlyEncounters = licensedProviders * encountersPerProvider * (currentUtil / 100) / 12;
+        const monthlyEncounters = licensedProviders * encountersPerProvider / 12;
         monthlyInvestment = price * monthlyEncounters;
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;
@@ -940,9 +940,9 @@ export function computeYearlyEncounters(
   const licensedY3 = setting.yearlyProviders?.year3 ?? setting.fullScaleProviders;
 
   return {
-    year1: Math.round(licensedY1 * encountersPerProvider * (utilTargets.year1 / 100)),
-    year2: Math.round(licensedY2 * encountersPerProvider * (utilTargets.year2 / 100)),
-    year3: Math.round(licensedY3 * encountersPerProvider * (utilTargets.year3 / 100)),
+    year1: Math.round(licensedY1 * encountersPerProvider),
+    year2: Math.round(licensedY2 * encountersPerProvider),
+    year3: Math.round(licensedY3 * encountersPerProvider),
   };
 }
 

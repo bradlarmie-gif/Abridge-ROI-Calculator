@@ -24,7 +24,6 @@ import {
   groupByQuarter,
   calculateProformaSummary,
   getYearlySummary,
-  calculateIRR,
   getContractStartDate,
 } from "@/lib/proformaCalculations";
 
@@ -413,16 +412,12 @@ interface ProformaPDFProps {
   config: ProformaConfig;
   summary: ProformaSummary;
   yearlyData: ReturnType<typeof getYearlySummary>;
-  sensitivityIRR: { conservative: number; optimistic: number; consValid: boolean; optValid: boolean };
   organizationName?: string;
   preparedBy?: string;
 }
 
-function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivityIRR, chartData, paybackQuarter, organizationName, preparedBy }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null; organizationName?: string; preparedBy?: string }) {
+function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData, paybackQuarter, organizationName, preparedBy }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null; organizationName?: string; preparedBy?: string }) {
   const termLabel = contractTermLabel(config.contractTermMonths);
-  const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
-  const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
-  const irrDisplay = hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A";
   const settingInputSummaries = settings.map(s => ({ setting: s, inputs: getSettingInputSummary(s) }));
 
   const totalDocValue = yearlyData.reduce((s, y) => s + y.docValue, 0);
@@ -750,32 +745,23 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>70% REALIZATION</Text>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>
-                  {sensitivityIRR.consValid ? fmtPct(sensitivityIRR.conservative) : "N/A"}
+                  {hasInvestment ? `${(summary.termValue * 0.7 / summary.termInvestment).toFixed(1)}x` : "N/A"}
                 </Text>
-                <Text style={{ fontSize: 7, color: colors.tertiary, marginTop: 2 }}>Conservative</Text>
+                <Text style={{ fontSize: 7, color: colors.tertiary, marginTop: 2 }}>Conservative VTC</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
                 <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 2 }}>YOUR ASSUMPTIONS</Text>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{irrDisplay}</Text>
-                <Text style={{ fontSize: 7, color: colors.primary, marginTop: 2 }}>Base Case</Text>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
+                <Text style={{ fontSize: 7, color: colors.primary, marginTop: 2 }}>Base Case VTC</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>130% REALIZATION</Text>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.positive }}>
-                  {sensitivityIRR.optValid ? fmtPct(sensitivityIRR.optimistic) : "N/A"}
+                  {hasInvestment ? `${(summary.termValue * 1.3 / summary.termInvestment).toFixed(1)}x` : "N/A"}
                 </Text>
-                <Text style={{ fontSize: 7, color: colors.positive, marginTop: 2 }}>Optimistic</Text>
+                <Text style={{ fontSize: 7, color: colors.positive, marginTop: 2 }}>Optimistic VTC</Text>
               </View>
             </View>
-            {sensitivityIRR.consValid && sensitivityIRR.optValid && (
-              <View style={{ marginTop: 8, alignItems: "center" }}>
-                <PDFSensitivityBars
-                  conservative={sensitivityIRR.conservative}
-                  base={summary.irrValid ? summary.irr : 0}
-                  optimistic={sensitivityIRR.optimistic}
-                />
-              </View>
-            )}
           </View>
 
           <View style={styles.thickDivider} />
@@ -865,7 +851,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR solved on monthly net cash flows (value minus subscription). Month 0 = implementation fee only. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
+                Value-to-Cost: total value / total cost. Simple ROI: net value / total cost. Payback: month cumulative net value turns positive.
               </Text>
             </View>
           </View>
@@ -948,31 +934,12 @@ export async function generateProformaPDF(
     paybackQuarter = `Q${q} '${yr}`;
   }
 
-  const buildScaledIRR = (factor: number) => {
-    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-    const month0 = totalImplFees > 0 ? -totalImplFees : 0;
-    const scaledFlows = [month0, ...cashFlows.map(r => {
-      const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
-      return (isFinite(gross) ? gross : 0) - r.investment;
-    })];
-    return calculateIRR(scaledFlows);
-  };
-  const consResult = buildScaledIRR(0.7);
-  const optResult = buildScaledIRR(1.3);
-  const sensitivityIRR = {
-    conservative: consResult.isValid ? consResult.annualizedRate : 0,
-    optimistic: optResult.isValid ? optResult.annualizedRate : 0,
-    consValid: consResult.isValid,
-    optValid: optResult.isValid,
-  };
-
   const blob = await pdf(
     <ProformaPDFDocument
       settings={settings}
       config={config}
       summary={summary}
       yearlyData={yearlyData}
-      sensitivityIRR={sensitivityIRR}
       chartData={chartData}
       paybackQuarter={paybackQuarter}
       organizationName={organizationName}

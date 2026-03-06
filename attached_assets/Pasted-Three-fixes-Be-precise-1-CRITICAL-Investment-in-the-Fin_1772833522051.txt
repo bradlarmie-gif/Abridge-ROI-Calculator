@@ -1,0 +1,36 @@
+Three fixes. Be precise.
+1. 🔴 CRITICAL: Investment in the Financial Summary is being reduced by utilization/ramp — it should NOT be.
+The Annual Investment section correctly shows Y1: $1,250,000 and Y2: $2,250,000 (total $3,500,000). But the 3-Year Financial Summary table shows Y1 investment as ~$613K — roughly half. This means utilization or the provider ramp is being applied to the cost side.
+The rule is simple:
+
+VALUE side = reduced by utilization, ramp, and onset delays (this is correct)
+COST side = the full contracted amount, period. No ramp, no utilization reduction.
+For Per Encounter pricing: Annual Investment = contracted encounters × price per encounter. Not actual encounters used × price. The customer is contracted for 500,000 encounters at $2.50 — they pay $1,250,000 regardless of how many they actually use.
+For Per Unit/Mo pricing: Annual Investment = licensed providers × price × 12. Not actively documenting providers × price × 12.
+For Annual License: Annual Investment = the annual fee. No adjustment.
+Fix every place where investment is calculated — the monthly cash flows, the proforma table, and the payback/IRR calculations must all use the FULL contracted investment, not a utilization-adjusted number.
+This is why payback shows 1 month — the investment is artificially halved, so cumulative value exceeds cumulative investment almost immediately. Once investment is correct ($1.25M in Y1), payback will move to a realistic month.
+2. Remove IRR from the display entirely.
+The IRR calculation has been consistently broken across multiple attempts. Rather than show a wrong number or "N/A," just remove it. Remove the IRR metric card, remove IRR from the methodology section, remove IRR from scenario comparisons. Clean removal — don't leave empty space or "N/A" placeholders.
+The remaining metrics (Simple ROI, Value-to-Cost, Payback, 3-Year Net Value) are sufficient and more intuitive for the audience.
+3. Hide Year 3 pricing fields on a 2-Year contract.
+When the user selects "2-Year" contract, the Y3 $/Encounter field (and Y3 providers, Y3 price fields for all pricing models) should not be visible. Only show fields for the years in the selected contract length. Same logic: 3-Year shows Y1-Y3, Custom shows however many years are configured.
+
+
+After fixing, verify with this exact scenario:
+
+2-Year contract, Per Encounter pricing
+Y1: 500,000 encounters at $2.50 = $1,250,000 investment
+Y2: 1,000,000 encounters at $2.25 = $2,250,000 investment
+Total investment should be $3,500,000
+The Financial Summary investment row must show $1.25M / $2.25M / $3.5M total
+Payback should be several months (not 1 month)
+Simple ROI and Value-to-Cost will be LOWER than what's currently shown because investment is now higher
+Expected corrected metrics (rough):
+Total Value: ~$5.6M (unchanged — value side is fine)
+Total Investment: $3.5M (up from the broken $3.1M)
+Net Value: ~$2.1M
+Simple ROI: ~60% ($2.1M / $3.5M)
+Value-to-Cost: ~1.6x ($5.6M / $3.5M)
+Payback: probably month 8-14 range
+
