@@ -395,7 +395,39 @@ const ProgressBar = ({ percent, width = 400 }: { percent: number; width?: number
   );
 };
 
-const PageFooter = ({ pageNum, orgName, settingLabel, totalPages = 4 }: { pageNum: number; orgName: string; settingLabel: string; totalPages?: number }) => (
+interface AllocationRow {
+  pct: number;
+  label: string;
+  description: string;
+  badge?: { text: string; color: string; dotted?: boolean };
+}
+
+const AllocationIntentBlock = ({ rows }: { rows: AllocationRow[] }) => (
+  <View style={{ backgroundColor: colors.cards, borderRadius: 4 }}>
+    {rows.map((row, i) => {
+      const isZero = row.pct === 0;
+      const textColor = isZero ? "#AAAAAA" : colors.primaryText;
+      const descColor = isZero ? "#AAAAAA" : "#888888";
+      return (
+        <View key={i} style={{ paddingVertical: 10, paddingHorizontal: 16, borderBottomWidth: i < rows.length - 1 ? 0.5 : 0, borderBottomColor: colors.border }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text style={{ fontSize: 10, fontWeight: "bold", color: textColor }}>{row.pct}% {"\u2192"} {row.label}</Text>
+            {row.badge && (
+              <View style={{ borderWidth: 1, borderColor: row.badge.color, borderStyle: row.badge.dotted ? "dotted" : "solid", borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1 }}>
+                <Text style={{ fontSize: 6.5, color: row.badge.color, textTransform: "uppercase", letterSpacing: 0.5 }}>{row.badge.text}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ fontSize: 9, color: descColor, marginTop: 3, lineHeight: 1.5 }}>
+            {isZero ? "Not allocated." : row.description}
+          </Text>
+        </View>
+      );
+    })}
+  </View>
+);
+
+const PageFooter = ({ pageNum, orgName, settingLabel, totalPages = 5 }: { pageNum: number; orgName: string; settingLabel: string; totalPages?: number }) => (
   <View style={styles.footer}>
     <Text style={styles.footerLeft}>ABRIDGE</Text>
     <Text style={styles.footerCenter}>{orgName} {"\u00B7"} {settingLabel} Value Assessment</Text>
@@ -810,7 +842,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     }));
 
   const opHasDocQuality = isOutpatient && !!(data.wrvuEnabled || data.hccEnabled || data.denialEnabled);
-  const totalPages = isOutpatient ? (opHasDocQuality ? 5 : 4) : 4;
+  const totalPages = isOutpatient ? (opHasDocQuality ? 6 : 5) : 5;
 
   const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
 
@@ -843,8 +875,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     if (data.hccEnabled && safe(data.annualHccValue) > 0) activatedDocDriversList.push(`HCC capture (${fmtCurrency(safe(data.annualHccValue))})`);
     if (data.denialEnabled && safe(data.annualDenialValue) > 0) activatedDocDriversList.push(`denial prevention (${fmtCurrency(safe(data.annualDenialValue))})`);
 
-    let investmentPageNum = opHasDocQuality ? 4 : 3;
-    let assessmentPageNum = opHasDocQuality ? 5 : 4;
+    let investmentPageNum = opHasDocQuality ? 5 : 4;
+    let assessmentPageNum = opHasDocQuality ? 6 : 5;
 
     return (
       <Document>
@@ -955,7 +987,75 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* OUTPATIENT PAGE 2: HOW YOUR TIME ALLOCATION BECOMES REVENUE */}
+        {/* OUTPATIENT PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
+            <Text style={{ fontSize: 26, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.15, marginBottom: 4 }}>
+              5 hours in the EHR.{"\n"}For every 8 hours with patients.
+            </Text>
+            <Text style={{ fontSize: 10, color: "#888888", lineHeight: 1.4, marginBottom: 16 }}>
+              That{"\u2019"}s not a documentation problem.{"\n"}That{"\u2019"}s a workforce problem {"\u2014"} and it{"\u2019"}s why time is{"\n"}the most strategic asset in this model.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.calloutBox, { marginBottom: 0 }]}>
+              <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
+                Healthcare spent the last two decades optimizing for throughput, revenue capture, and compliance. The clinician{"\u2019"}s time was the variable that absorbed everything else. The result is a physician workforce where 43% report burnout symptoms {"\u2014"} not because medicine got harder, but because the administrative layer around medicine got heavier. Ambient documentation doesn{"\u2019"}t fix healthcare. But it removes the single most modifiable variable driving documentation burden. That{"\u2019"}s not a small claim. It{"\u2019"}s a precise one.
+              </Text>
+              <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
+                <Text style={{ fontSize: 8, color: "#888888" }}>
+                  Source: AMA National Physician Burnout Survey, 2024. EHR documentation time: Arndt et al., JAMIA, as cited by the American Medical Association, October 2024.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
+
+            <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hours/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to your {fmtNum(data.providers)} providers.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Built from your inputs. Your scale.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 52).toFixed(1) : "0"} hrs/week</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per provider, every week.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Not a rounding error. A measurable shift in how your providers experience their job.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 8).toFixed(1) : "0"} days/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per provider, not at a keyboard.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to the schedule, the patient, or the evening. Your providers decide.</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+
+            <AllocationIntentBlock rows={[
+              { pct: capPct, label: "More patients seen", description: "Time converted to additional visits and scheduling capacity. This is the throughput story. It produces the dollar figures on the next page." },
+              { pct: docPct, label: "Better documentation", description: "Time redirected toward more complete, accurate notes \u2014 the foundation of the revenue optimization drivers that follow. This is the revenue integrity story." },
+              { pct: susPct, label: "Given back to your providers", description: "Time returned as genuine breathing room. Less after-hours charting, less documentation burden, more sustainable practice. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a provider stays." },
+            ]} />
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
+              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+            </Text>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* OUTPATIENT PAGE 3: HOW YOUR TIME ALLOCATION BECOMES REVENUE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
@@ -1072,11 +1172,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             </View>
 
-            <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+            <PageFooter pageNum={3} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
           </View>
         </Page>
 
-        {/* OUTPATIENT PAGE 3 (conditional): DOCUMENTATION QUALITY */}
+        {/* OUTPATIENT PAGE 4 (conditional): DOCUMENTATION QUALITY */}
         {opHasDocQuality && (
           <Page size="LETTER" style={styles.page} wrap={false}>
             <View style={styles.pageWrapper}>
@@ -1183,7 +1283,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </View>
               )}
 
-              <PageFooter pageNum={3} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+              <PageFooter pageNum={4} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
             </View>
           </Page>
         )}
@@ -1466,9 +1566,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const thrVal = safe(data.throughputValue);
     const docQualVal = safe(data.documentationQualityValue);
     const edHasDocQuality = !!(data.emAccuracyEnabled || data.denialEnabled);
-    const edTotalPages = edHasDocQuality ? 5 : 4;
-    const investmentPageNum = edHasDocQuality ? 4 : 3;
-    const assessmentPageNum = edHasDocQuality ? 5 : 4;
+    const edTotalPages = edHasDocQuality ? 6 : 5;
+    const investmentPageNum = edHasDocQuality ? 5 : 4;
+    const assessmentPageNum = edHasDocQuality ? 6 : 5;
     const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
 
     const thrCopy = (() => {
@@ -1604,7 +1704,75 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* ED PAGE 2: HOW YOUR TIME ALLOCATION DRIVES ED REVENUE */}
+        {/* ED PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
+            <Text style={{ fontSize: 26, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.15, marginBottom: 4 }}>
+              Every minute at a terminal{"\n"}is a minute away from a patient.
+            </Text>
+            <Text style={{ fontSize: 10, color: "#888888", lineHeight: 1.4, marginBottom: 16 }}>
+              In an emergency department, documentation speed{"\n"}isn{"\u2019"}t a convenience. It{"\u2019"}s a flow variable.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.calloutBox, { marginBottom: 0 }]}>
+              <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
+                Emergency medicine has one of the highest burnout rates in medicine {"\u2014"} not because the clinical work is unsustainable, but because the documentation load that follows it is. The same AMA data that shows office-based physicians spending more than 5 hours in the EHR for every 8 patient hours applies with equal force in the ED {"\u2014"} where the pace is faster, the documentation windows are shorter, and the cost of a slow note can be a patient who left without being seen. Time reclaimed from documentation in an ED doesn{"\u2019"}t stay abstract. It moves through the department in real time.
+              </Text>
+              <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
+                <Text style={{ fontSize: 8, color: "#888888" }}>
+                  Source: AMA National Physician Burnout Survey, 2024. EHR documentation time: Arndt et al., JAMIA, as cited by the American Medical Association, October 2024.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
+
+            <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hours/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to your {fmtNum(data.providers)} ED physicians.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Across every Abridge-enabled encounter, every shift.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.minutesSavedPerEncounter} min/shift</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per physician, every shift.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>The documentation window that closes before the next patient opens.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 8).toFixed(1) : "0"} shifts/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per physician, returned.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Full shifts of documentation time given back {"\u2014"} per physician, per year.</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+
+            <AllocationIntentBlock rows={[
+              { pct: thrPct, label: "Faster patient disposition", description: "Less time documenting means faster chart closure, faster disposition decisions, fewer patients who leave without being seen. This is the throughput story. It produces the dollar figures on the next page." },
+              { pct: 100 - thrPct - wellPct, label: "More complete documentation", description: "Time redirected toward E&M accuracy and denial prevention. Every note complete at close of encounter is a note that doesn\u2019t come back as a query or a denial. This is the revenue integrity story." },
+              { pct: wellPct, label: "Returned to your physicians", description: "Shift sustainability. Less cognitive load at hour 8. A department that doesn\u2019t cycle through its physicians every three years. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a physician renews." },
+            ]} />
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
+              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+            </Text>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
+          </View>
+        </Page>
+
+        {/* ED PAGE 3: HOW YOUR TIME ALLOCATION DRIVES ED REVENUE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
@@ -1744,11 +1912,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             </View>
 
-            <PageFooter pageNum={2} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
+            <PageFooter pageNum={3} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
           </View>
         </Page>
 
-        {/* ED PAGE 3 (conditional): DOCUMENTATION QUALITY */}
+        {/* ED PAGE 4 (conditional): DOCUMENTATION QUALITY */}
         {edHasDocQuality && (
           <Page size="LETTER" style={styles.page} wrap={false}>
             <View style={styles.pageWrapper}>
@@ -1827,7 +1995,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </View>
               )}
 
-              <PageFooter pageNum={3} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
+              <PageFooter pageNum={4} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
             </View>
           </Page>
         )}
@@ -2105,10 +2273,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const cdiQueryVal = safe(data.ipCdiValue);
     const revenueTotal = drgVal + cdiQueryVal;
     const ipHasDocQuality = !!(data.ipDrgEnabled || data.ipCdiEnabled);
-    const ipTotalPages = ipHasDocQuality ? 5 : 4;
-    const investmentPageNum = 3;
-    const connectedPageNum = 4;
-    const assessmentPageNum = ipHasDocQuality ? 5 : 4;
+    const ipTotalPages = ipHasDocQuality ? 6 : 5;
+    const investmentPageNum = 4;
+    const connectedPageNum = 5;
+    const assessmentPageNum = ipHasDocQuality ? 6 : 5;
     const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
     const hrsPerWk = safe(data.ipHoursPerWeek);
     const roundingHrsTotal = safe(data.ipRoundingHoursTotal);
@@ -2210,7 +2378,75 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* INPATIENT PAGE 2: YOUR VALUE DRIVERS */}
+        {/* INPATIENT PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
+            <Text style={{ fontSize: 26, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.15, marginBottom: 4 }}>
+              The hospitalist carries a documentation load{"\n"}disproportionate to their billable output.
+            </Text>
+            <Text style={{ fontSize: 10, color: "#888888", lineHeight: 1.4, marginBottom: 16 }}>
+              Every admission generates a history, a plan, an attestation, orders.{"\n"}Most of it happens after the patient interaction is over.{"\n"}Often after hours.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.calloutBox, { marginBottom: 0 }]}>
+              <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
+                Hospital medicine is one of the most demanding documentation environments in the building {"\u2014"} and one of the hardest specialties to retain. KLAS data on ambient speech implementations documents consistent reductions in after-hours charting time and measurable improvements in provider satisfaction scores across health systems. The time this model returns to your hospitalists isn{"\u2019"}t a benefit in the traditional ROI sense. It{"\u2019"}s a workforce protection strategy {"\u2014"} one that also happens to drive capacity, DRG accuracy, and downstream revenue. The two are not mutually exclusive.
+              </Text>
+              <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
+                <Text style={{ fontSize: 8, color: "#888888" }}>
+                  Source: AMA National Physician Burnout Survey, 2024. KLAS Ambient Speech Outcomes, 2025.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
+
+            <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hours/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to your {fmtNum(data.providers)} hospitalists.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Built from your admission volume, your utilization, your time savings scenario.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 52).toFixed(1) : "0"} hrs/week</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per hospitalist, every week.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Including the hours they were finishing notes at home. Especially those.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 8).toFixed(1) : "0"} days/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per hospitalist, not at a keyboard.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to the rounding list, the patient family, or the end of a shift that actually ends.</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+
+            <AllocationIntentBlock rows={[
+              { pct: directPct, label: "Back to the bedside", description: "More rounding time. More patient and family presence. More capacity \u2014 without adding FTEs. This is the capacity story. The CAPACITY UNLOCKED figure on the next page flows from this choice." },
+              { pct: docQPct, label: "Better clinical records", description: "More complete notes mean more accurate DRGs, fewer CDI queries, and stronger revenue integrity. This is the documentation quality story. Its dollar figures are on the next page." },
+              { pct: shiftPct, label: "Returned to your hospitalists", description: "Less after-hours charting. Less documentation burden at the end of a 12-hour shift. A program that can retain the people who built it and recruit the people who will grow it. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a hospitalist re-signs." },
+            ]} />
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
+              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+            </Text>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
+          </View>
+        </Page>
+
+        {/* INPATIENT PAGE 3: YOUR VALUE DRIVERS */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
@@ -2376,11 +2612,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             </View>
 
-            <PageFooter pageNum={2} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
+            <PageFooter pageNum={3} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
           </View>
         </Page>
 
-        {/* INPATIENT PAGE 3: THE INVESTMENT CASE */}
+        {/* INPATIENT PAGE 4: THE INVESTMENT CASE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
@@ -2521,7 +2757,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </Text>
               </View>
 
-              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Inpatient" totalPages={5} />
+              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Inpatient" totalPages={6} />
             </View>
           </Page>
         )}
@@ -2711,10 +2947,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
       (data.nursingFallsEnabled && fallsVal > 0) ||
       (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0)
     );
-    const nursingTotalPages = nursingHasCareQuality ? 5 : 4;
-    const investmentPageNum = 3;
-    const connectedPageNum = 4;
-    const assessmentPageNum = nursingHasCareQuality ? 5 : 4;
+    const nursingTotalPages = nursingHasCareQuality ? 6 : 5;
+    const investmentPageNum = 4;
+    const connectedPageNum = 5;
+    const assessmentPageNum = nursingHasCareQuality ? 6 : 5;
     const costPerBedMo = beds > 0 ? Math.round(data.annualInvestment / beds / 12) : 0;
     const hardNetValue = staffingTotal - data.annualInvestment;
     const hardRoi = data.annualInvestment > 0 ? parseFloat((staffingTotal / data.annualInvestment).toFixed(1)) : 0;
@@ -2825,7 +3061,83 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* NURSING PAGE 2: YOUR VALUE DRIVERS */}
+        {/* NURSING PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
+            <Text style={{ fontSize: 26, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.15, marginBottom: 4 }}>
+              Nursing turnover costs between $40,000{"\n"}and $60,000 per nurse replaced.
+            </Text>
+            <Text style={{ fontSize: 10, color: "#888888", lineHeight: 1.4, marginBottom: 16 }}>
+              Documentation burden is consistently cited among the top{"\n"}reasons nurses leave. This model addresses the variable{"\n"}most directly in your control.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.calloutBox, { marginBottom: 0 }]}>
+              <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
+                The nursing workforce crisis is not a pipeline problem alone {"\u2014"} it{"\u2019"}s a retention problem. And retention is shaped by something that rarely shows up cleanly in exit surveys: the cumulative weight of documentation that follows every shift. Charting that runs past shift end. Flowsheet entries completed from memory rather than presence. The 20 minutes that turns a 12-hour shift into 12 hours and 20 minutes, every day, indefinitely. KLAS data consistently documents that ambient documentation {"\u2014"} when implemented in nursing {"\u2014"} reduces end-of-shift burden and improves shift satisfaction scores. That matters to the budget. It matters more to the bedside.
+              </Text>
+              <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
+                <Text style={{ fontSize: 8, color: "#888888" }}>
+                  Source: NSI Nursing Solutions National Health Care Retention & RN Staffing Report, 2024. KLAS Ambient Speech Outcomes, 2025.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
+
+            {(() => {
+              const activeNurses = ftes * (safe(data.nursingAdoptionRate) / 100);
+              const hoursPerActiveNurse = activeNurses > 0 ? Math.round(data.hoursReturned / activeNurses) : 0;
+              const enabledShifts = safe(data.nursingEnabledShifts);
+              const minsPerShift = safe(data.nursingMinutesPerShift);
+              return (
+                <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
+                  <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hours/year</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to your nursing staff.</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Across {fmtNum(enabledShifts)} Abridge-enabled shifts annually.</Text>
+                  </View>
+                  <View style={{ width: 0.5, backgroundColor: colors.border }} />
+                  <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{minsPerShift} min/shift</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per nurse, every shift.</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>The documentation window at end of shift that closes before overtime begins.</Text>
+                  </View>
+                  <View style={{ width: 0.5, backgroundColor: colors.border }} />
+                  <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(hoursPerActiveNurse)} hrs/year</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per nurse using Abridge.</Text>
+                    <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to the patient, the team, or the clock-out. Every nurse. Every shift.</Text>
+                  </View>
+                </View>
+              );
+            })()}
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+
+            <AllocationIntentBlock rows={[
+              { pct: otPct, label: "Overtime reduction", description: "Time that directly eliminates end-of-shift overtime. The most immediate, measurable labor cost savings in nursing. This is the hard savings story. Its dollar figures are on the next page.", badge: { text: "HARD VALUE", color: colors.primary } },
+              { pct: sustainPct, label: "Shift breathing room", description: "Time absorbed as genuine recovery \u2014 less stress, less documentation pressure at the end of a long shift. The single most cited driver of nurse satisfaction when documentation burden improves. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a nurse stays.", badge: { text: "QUALITATIVE", color: "#888888" } },
+              { pct: directCarePct, label: "Back to the bedside", description: "Time returned to assessments, interventions, and the presence that documentation too often displaces. More time present means earlier recognition of deterioration, more complete flowsheet entries, and better care quality data. This connects to the potential value drivers on the following page.", badge: { text: "POTENTIAL VALUE", color: "#888888", dotted: true } },
+            ]} />
+
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
+              {"\u201C"}The pages that follow show what these three produce {"\u2014"} in hard labor{"\n"}savings, in care quality potential, and in the retention economics{"\n"}your workforce strategy depends on.{"\u201D"}
+            </Text>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
+          </View>
+        </Page>
+
+        {/* NURSING PAGE 3: YOUR VALUE DRIVERS */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
@@ -3047,11 +3359,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             </View>
 
-            <PageFooter pageNum={2} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
+            <PageFooter pageNum={3} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
           </View>
         </Page>
 
-        {/* NURSING PAGE 3: THE INVESTMENT CASE */}
+        {/* NURSING PAGE 4: THE INVESTMENT CASE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
@@ -3179,7 +3491,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </Text>
               </View>
 
-              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={5} />
+              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={6} />
             </View>
           </Page>
         )}
