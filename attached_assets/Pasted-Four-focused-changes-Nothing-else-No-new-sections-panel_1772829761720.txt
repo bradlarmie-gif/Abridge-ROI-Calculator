@@ -1,0 +1,56 @@
+Four focused changes. Nothing else. No new sections, panels, or pages.
+1. Fix IRR — currently shows >500% which is not credible
+The IRR calculation is broken. With Year 1 returning only 14.7% net ($1.6M value on $1.4M cost), an annualized IRR of >500% is mathematically impossible.
+Implement exactly this:
+javascriptlet cashFlows = [];
+// Month 0: implementation fee only (one-time). If none, this is 0.
+cashFlows.push(-implementationFee || 0);
+// Months 1-36: subscription is paid monthly, not upfront
+for (let month = 1; month <= 36; month++) {
+  let monthlyCost = getLicensedProviders(month) * getMonthlyPrice(month);
+  let monthlyValue = getMonthlyValue(month); // accounts for ramp, utilization, value driver delays
+  cashFlows.push(monthlyValue - monthlyCost);
+}
+let monthlyIRR = solveForIRR(cashFlows); // Newton-Raphson + bisection fallback
+let annualIRR = Math.pow(1 + monthlyIRR, 12) - 1;
+The bug is almost certainly: all subscription cost is being lumped into Period 0 alongside the impl fee, making the initial outflow tiny relative to later inflows. Subscription costs must be spread across months 1-36.
+Expected result: IRR should be roughly 100-250% for this deal, not >500%. Display the actual percentage. Only show ">500%" if the math genuinely produces that after the fix.
+2. Remove the Cumulative Value vs. Investment chart — consolidate to ONE chart
+Delete the bottom "Cumulative Value vs. Investment" chart entirely. It's redundant.
+On the remaining Value Growth Trajectory chart:
+
+Keep the stacked area (value drivers) and dashed investment line as-is
+Add a vertical dashed line at the payback month with label "Payback: Month X"
+Stack Doc Quality on TOP (immediate, largest driver — should be most visible) and Retention on BOTTOM (phased, smaller — thinner area at the base)
+In early quarters, Doc Quality should be visually dominant since it starts immediately. Retention should be very thin in Q1-Q2'26 and grow gradually per the phasing schedule (20% Y1 → 65% Y2 → 100% Y3)
+Payback calculation correctly starts from go-live date, not January 1. Do not change that.
+
+
+3. Add Quarterly Configuration Toggle — this is the SINGLE SOURCE OF TRUTH for the entire proforma
+Add a toggle in the Pricing & Configuration section above the rollout table:
+"Annual" | "Quarterly" — default: Annual
+When toggled to Quarterly, expand the table to 12 columns (Q1-Q4 per year):
+Q1'26Q2'26Q3'26Q4'26Q1'27...Q4'28Providers2505007501,0001,100...2,000Utilization30%40%48%55%60%...85%Price $/mo115115115115115...115Qtr Cost$86K$173K$259K$345K$380K...$690K
+
+Providers, Utilization, Price rows are editable
+Quarterly Cost row is read-only/calculated (gray): providers × price × 3
+Auto-populate by linearly interpolating annual values across quarters when toggling on
+Use Q4 values when toggling back to Annual
+CRITICAL: The quarterly inputs are the single source of truth that drives EVERYTHING:
+
+
+The chart updates in real-time as quarterly values change. Each quarter on the x-axis uses that quarter's providers × utilization to calculate actively documenting providers, applies value driver onset delays, and plots the stacked value area. The investment dashed line uses that quarter's cost.
+Monthly cash flows for IRR and Payback are derived from quarterly inputs — each quarter's values apply to its 3 months. If Q1'26 has 250 providers at 30% utilization and $115/mo, then months 1-3 each have: cost = 250 × $115 = $28,750, value = 250 × 30% × per-provider monthly value with applicable delays.
+The 3-Year Financial Summary table stays annual — it sums Q1-Q4 for each year. The quarterly data feeds monthly calcs that roll up.
+All metrics recalculate (ROI, Value-to-Cost, IRR, Payback) based on the quarterly schedule.
+The payback marker on the chart moves dynamically — if the user models a faster rollout (more providers in early quarters, higher utilization), payback moves earlier. Slower rollout pushes it later. This is the "time to value" story: the user sees in real-time how their rollout speed affects when they break even.
+When in Annual mode, behavior is exactly as it is today — nothing changes. The quarterly toggle is purely additive.
+
+
+4. Fix chart stacking order for visual accuracy
+Currently the stacking makes Retention (orange) appear larger than Doc Quality (blue) in early quarters, which is misleading since Doc Quality is 73% of total value and has immediate onset.
+
+Stack Doc Quality on top (largest, immediate — most visible)
+Stack Retention on bottom (smaller, phased — thinner base layer)
+If Capacity & Efficiency is allocated, stack it in the middle (3-month delay)
+The visual thickness of each layer should accurately reflect its quarterly value

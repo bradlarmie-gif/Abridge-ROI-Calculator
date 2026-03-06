@@ -24,7 +24,7 @@ import {
   groupByQuarter,
   calculateProformaSummary,
   getYearlySummary,
-  calculateIRR,
+  calculateAnnualIRR,
   getContractStartDate,
 } from "@/lib/proformaCalculations";
 
@@ -865,7 +865,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR solved on monthly net cash flows (value minus subscription). Month 0 = implementation fee only. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
+                Value-to-Cost: total value / total cost. IRR uses Total Cost of Ownership methodology: Period 0 = implementation fees + total subscription over the contract term; Years 1–N = gross annual value.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
               </Text>
             </View>
           </View>
@@ -953,11 +953,13 @@ export async function generateProformaPDF(
     const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
     const totalCost = totalImplFees + totalSubscription;
     if (totalCost <= 0) return { annualizedRate: 0, method: "irr" as const, isValid: false };
-    const scaledFlows = [-totalCost, ...cashFlows.map(r => {
-      const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
-      return isFinite(gross) ? gross : 0;
-    })];
-    return calculateIRR(scaledFlows);
+    const contractYears = Math.ceil(config.contractTermMonths / 12);
+    const yearlyGross: number[] = [];
+    for (let y = 0; y < contractYears; y++) {
+      const yearRows = cashFlows.filter(r => r.period >= y * 12 + 1 && r.period <= (y + 1) * 12);
+      yearlyGross.push(yearRows.reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) * factor, 0));
+    }
+    return calculateAnnualIRR([-totalCost, ...yearlyGross]);
   };
   const consResult = buildScaledIRR(0.7);
   const optResult = buildScaledIRR(1.3);

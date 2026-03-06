@@ -792,9 +792,7 @@ export function buildAnnualIRRCashFlows(
 
   if (totalCost <= 0) return [0];
 
-  const netFlows = yearBuckets.map(yb => yb.grossValue - yb.subscription);
-
-  return [-totalImplFees, ...netFlows];
+  return [-(totalImplFees + totalSubscription), ...yearBuckets.map(yb => yb.grossValue)];
 }
 
 export function calculateAnnualIRR(annualCashFlows: number[]): IRRResult {
@@ -891,8 +889,8 @@ export function calculateProformaSummary(
     }
   }
 
-  const monthlyIrrCF = buildIRRCashFlows(settings, config, cashFlows);
-  const irrResult = calculateIRR(monthlyIrrCF);
+  const annualIrrCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
+  const irrResult = calculateAnnualIRR(annualIrrCF);
 
   const termValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);

@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -247,14 +247,15 @@ export default function ProformaView({
 
       const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
       const totalCost = totalImplFees + totalSubscription;
-      const month0 = totalImplFees > 0 ? -totalImplFees : 0;
-      const scaledIRRFlows = totalCost > 0
-        ? [month0, ...cashFlows.map(r => {
-            const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
-            return (isFinite(gross) ? gross : 0) - r.investment;
-          })]
-        : [0];
-      const scaledIRR = calculateIRR(scaledIRRFlows);
+      const contractYears = Math.ceil(config.contractTermMonths / 12);
+      const yearlyGross: number[] = [];
+      for (let y = 0; y < contractYears; y++) {
+        const yearRows = cashFlows.filter(r => r.period >= y * 12 + 1 && r.period <= (y + 1) * 12);
+        yearlyGross.push(yearRows.reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) * factor, 0));
+      }
+      const scaledIRR = totalCost > 0
+        ? calculateAnnualIRR([-totalCost, ...yearlyGross])
+        : { annualizedRate: 0, method: "irr" as const, isValid: false };
 
       return {
         annualValue: scaledAnnual,

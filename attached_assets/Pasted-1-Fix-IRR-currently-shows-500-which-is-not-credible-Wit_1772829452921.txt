@@ -1,0 +1,50 @@
+1. Fix IRR — currently shows >500% which is not credible
+With this deal:
+
+Year 1: $1.6M value, $1.4M cost → $206K net (14.7% return)
+Year 2: $6.1M value, $1.9M cost → $4.1M net
+Year 3: $11.9M value, $2.8M cost → $9.2M net
+An annualized IRR of >500% is mathematically impossible when Year 1 only returns 14.7% on investment. The calculation is broken.
+Correct implementation — follow this exactly:
+
+javascript// Step 1: Build 37-element cash flow array (month 0 + months 1-36)
+let cashFlows = [];
+// Month 0: implementation fee only (one-time). If no impl fee, this is 0.
+cashFlows.push(-implementationFee || 0);
+// Months 1-36: each month has BOTH a cost outflow and a value inflow
+for (let month = 1; month <= 36; month++) {
+  // Cost: licensed providers that month × price per provider per month
+  // (you pay for ALL licensed seats, not just active ones)
+  let monthlyCost = getLicensedProviders(month) * getMonthlyPrice(month);
+  // Value: based on actively documenting providers, utilization, 
+  // value driver onset delays, and ramp
+  let monthlyValue = getMonthlyValue(month);
+  // NET cash flow for this month
+  cashFlows.push(monthlyValue - monthlyCost);
+}
+// Step 2: Solve for monthly rate r where NPV = 0
+// NPV = sum of cashFlows[t] / (1 + r)^t for t = 0..36
+let monthlyIRR = solveForIRR(cashFlows); // Newton-Raphson with bisection fallback
+// Step 3: Annualize
+let annualIRR = Math.pow(1 + monthlyIRR, 12) - 1;
+What's likely wrong right now: The current code probably puts the ENTIRE multi-year investment in Period 0 (like a capital expenditure), then shows only value inflows in subsequent periods. That makes the denominator tiny and IRR absurdly high. Abridge is a subscription — costs must be spread monthly.
+Sanity check the output: With Year 1 barely breaking even (14.7% net return) and Years 2-3 highly profitable due to expansion, the annualized IRR should be roughly 100-250% for this deal size. If you're still getting >500%, log the cashFlows array to console — something is wrong with how costs or values are being assigned to months.
+Display: Show the actual IRR percentage (e.g., "185%"). Only show ">500%" if the solved IRR genuinely exceeds 500% after the fix.
+2. Add Quarterly Configuration Toggle
+In the Pricing & Configuration section (where the provider rollout table and pricing inputs are), add a toggle:
+Toggle label: "Annual" | "Quarterly"
+Default: Annual (current behavior, nothing changes)
+When toggled to Quarterly, expand the existing rollout and pricing table from 3 columns (Y1/Y2/Y3) to 12 columns (Q1-Q4 per year):
+Q1'26Q2'26Q3'26Q4'26Q1'27Q2'27Q3'27Q4'27Q1'28Q2'28Q3'28Q4'28Providers2505007501,0001,1001,2001,3001,4001,5501,7001,8502,000Utilization30%40%48%55%60%65%70%75%78%80%83%85%Price $/mo115115115115115115115115115115115115Qtr Cost$86K$173K$259K$345K$380K$414K$449K$483K$535K$587K$639K$690K
+
+Providers, Utilization, Price — all editable inputs
+Quarterly Cost — read-only, calculated: providers × price × 3, visually distinct (gray or lighter)
+When switching from Annual → Quarterly: auto-populate by linearly interpolating annual values across 4 quarters (e.g., Y1=1000 providers → Q1=250, Q2=500, Q3=750, Q4=1000)
+When switching Quarterly → Annual: use Q4 value of each year
+Make the table horizontally scrollable on smaller screens
+All downstream calculations (monthly value, IRR, payback, ROI) should use the quarterly inputs to build monthly cash flows when in quarterly mode
+The 3-Year Financial Summary table stays annual — quarterly data feeds monthly calcs that roll up to annual
+Do NOT add any new sections, panels, or pages. This is just expanding the existing pricing table with a toggle.
+
+
+That's it. Two changes. Fix the IRR math, add the quarterly toggle. Nothing else.
