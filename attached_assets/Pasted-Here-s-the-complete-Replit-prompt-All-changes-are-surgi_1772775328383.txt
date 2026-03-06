@@ -1,0 +1,102 @@
+Here's the complete Replit prompt. All changes are surgical — exact find/replace strings, no layout or structure touched.
+ABRIDGE ROI CALCULATOR — ASSESS PATH: AMBIENT AI COPY + UX IMPROVEMENTS
+Bundle: /assets/index-Ca__T3aH.js
+Make the following targeted copy and UX changes to the Assess → Ambient AI path. Do not touch any other path (Human Scribes, Nursing), do not change any layout, colors, fonts, or structural components. All changes are copy and logic only.
+────────────────────────────────────────────────────────────
+CHANGE 1 — AMBIENT AI CARD COPY (Choose Your Assessment screen)
+────────────────────────────────────────────────────────────
+FIND (exact string):
+"Currently using an AI documentation solution"
+REPLACE WITH:
+"You've deployed. Find out how much value you're actually capturing — and what it's costing you not to go further."
+FIND (exact string — three WHAT YOU'LL DISCOVER bullets):
+"How your implementation compares"
+"Where the gaps are and what's driving them"
+"The annual value opportunity ahead"
+REPLACE WITH:
+"Where your deployment stands across four strategic domains"
+"The gaps between current maturity and full value capture"
+"A 36-month trajectory — and what it takes to close it"
+────────────────────────────────────────────────────────────
+CHANGE 2 — REVENUE LENS HEADLINE + REFRAME (Four Lenses step)
+────────────────────────────────────────────────────────────
+FIND (exact string in the _8t config object, revenue.headline):
+"Better documentation produces more accurate coding. The question is whether your revenue cycle team is part of that conversation."
+REPLACE WITH:
+"Every encounter you document with ambient is a coding opportunity. Most organizations aren't looking."
+FIND (exact string in the _8t config object, revenue.reframe):
+"Every encounter is coded. The opportunity is in whether it's coded at the specificity your documentation now supports — and whether your revenue cycle team is part of that conversation."
+REPLACE WITH:
+"Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends entirely on whether your revenue cycle team is part of the conversation — most aren't yet."
+────────────────────────────────────────────────────────────
+CHANGE 3 — ESTIMATED IMPACT PANEL: DOMAIN-AWARE DEFAULT STATE
+────────────────────────────────────────────────────────────
+Context: The Estimated Impact sidebar panel currently renders this empty state when no maturity level has been selected for the active domain:
+CURRENT empty state JSX (exact):
+  r.jsx("p", {className: "font-bold text-2xl text-white/30 leading-[1.1] mb-4", children: "—"}),
+  r.jsx("div", {className: "h-px bg-white/10 my-4"}),
+  r.jsx("p", {className: "text-sm text-white/50 leading-relaxed", children: "Select your organization's maturity level to see estimated impact."})
+REPLACE with a domain-aware default state. The panel already receives the active domain key (capacity / revenue / workforce / risk) and the user's deployment inputs (providers count `n`, documented encounters `i`, time saved per encounter `E`, hours recovered `w`).
+Replace the empty state fragment with the following logic:
+```jsx
+// Domain-aware default provocation (shown before a maturity level is selected)
+const domainProvocations = {
+  capacity: `Your inputs suggest ${w.toLocaleString()} hours recovered annually. Which of these best describes where your organization is with that number?`,
+  revenue: `${i.toLocaleString()} encounters documented annually — each one an opportunity for more accurate coding. Has your revenue cycle team been brought into that conversation?`,
+  workforce: `${n} providers. ${w.toLocaleString()} hours of documentation time returned. Where does your organization stand on measuring what that relief is worth?`,
+  risk: `${i.toLocaleString()} encounters documented with improved specificity. How far has that signal traveled downstream — to coding, quality teams, or compliance?`
+};
+const provocation = domainProvocations[s] || "Select your organization's maturity level to see estimated impact.";
+```
+Then render the default state as:
+```jsx
+r.jsxs(r.Fragment, {children: [
+  r.jsx("p", {className: "font-bold text-2xl text-white/30 leading-[1.1] mb-4", children: "—"}),
+  r.jsx("div", {className: "h-px bg-white/10 my-4"}),
+  r.jsx("p", {className: "text-sm text-white/60 leading-relaxed", children: provocation})
+]})
+```
+Variable reference (use whatever variable names are already in scope in this function):
+- `s` = active domain key string ("capacity" | "revenue" | "workforce" | "risk")
+- `n` = providers count from deployment profile inputs
+- `i` = documented encounters (encounters × utilization rate)
+- `w` = total hours recovered annually
+- `E` = minutes saved per encounter
+If any of these variable names differ in the actual function scope, map to the correct names as used in the surrounding code. Do not introduce new state or props — all values are already computed and in scope at the point where this empty state renders.
+────────────────────────────────────────────────────────────
+CHANGE 4 — COMPRESS TRAJECTORY GAP DOMAIN EXPLANATIONS (Your Trajectory screen)
+────────────────────────────────────────────────────────────
+In the "WHAT DRIVES THE GAP" section, each domain card has an explanation paragraph. Tighten each to 2 sentences max. Keep the math formula block unchanged.
+CAPACITY — FIND:
+"Your organization is recovering time but hasn't quantified the total. Aggregating time savings across your deployment gives you a recovered capacity number that becomes the foundation for every strategic conversation about what to do with it."
+REPLACE WITH:
+"Time is being recovered but the total hasn't been formally quantified. That number — hours recovered across your full deployment — is the foundation for every downstream conversation about what to do with it."
+REVENUE — FIND:
+"Your revenue cycle hasn't engaged with the documentation change yet. The first step is simply asking whether coding, CDI, or billing teams have noticed anything different. Most organizations are surprised by what surfaces when they ask."
+REPLACE WITH:
+"Your revenue cycle team hasn't engaged with the documentation change yet. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces."
+WORKFORCE — FIND:
+"Your providers report less after-hours work. The next step is understanding the full picture — in-clinic burden reduction and provider sentiment. A structured clinician survey combined with operational measurement turns anecdotal relief into an organizational data point."
+REPLACE WITH:
+"Providers report less after-hours work. The next step is quantifying it — in-clinic time plus a structured provider survey turns that anecdotal relief into a retention-relevant data point."
+QUALITY — FIND:
+"Your documentation is better — but no one is measuring how or why. Without quality monitoring, you have no baseline for what improved documentation is actually worth downstream. Establishing any form of measurement is the foundation for everything that follows."
+REPLACE WITH:
+"Documentation is better — but no one is measuring it. Without a quality baseline, the downstream value to coding, CDI, and compliance stays invisible. Any form of monitoring unlocks what follows."
+────────────────────────────────────────────────────────────
+IMPLEMENTATION NOTES
+────────────────────────────────────────────────────────────
+1. All four changes are independent. Make them in order.
+2. Change 1 (card copy): The three bullet strings appear inside JSX children of <span> tags within the Ambient AI assessment card component. Update only the Ambient AI card — do not touch Human Scribes or Nursing card bullets.
+3. Change 2 (revenue lens): The headline and reframe strings live in the _8t config object (or equivalent constant that holds the four lens configurations). The revenue.headline value is what renders as the large bold display headline at the top of the Revenue lens screen. The revenue.reframe is the smaller subheadline paragraph beneath it.
+4. Change 3 (empty state): The empty state condition is the else branch of a ternary or conditional that checks whether a level has been selected for the current domain and whether a calculated value (c) is greater than 0. Insert the domainProvocations lookup before the return/render of that else branch. All input variables (providers, encounters, hours, etc.) are already computed earlier in the same component scope.
+5. Change 4 (gap copy): These strings appear in the AmbientTrajectory or similar component that renders the "What Drives the Gap" expandable cards. Each domain card has a text paragraph. Replace only the paragraph text — leave the "Next level:" label, the "THE NEXT LEVEL UNLOCKS" subhead, and the monospaced formula code block completely unchanged.
+6. After all changes: run the app, navigate to Assess → Ambient AI, and verify:
+   - Card reads new subtitle on the Choose Your Assessment screen
+   - Three bullet items updated
+   - Revenue lens headline is the new version
+   - Estimated Impact panel shows provocation text (not "—" / "Select your...") when landing on each domain before selecting a level, and the text references the correct numbers from the user's inputs
+   - Trajectory gap domain explanations are tightened to 2 sentences
+   - No other screens, paths, or copy have changed
+
+That's the full prompt — paste it directly into Replit. The only two things I intentionally left alone: the Capacity/Workforce/Quality lens headlines (those were already the strongest copy in the tool), and the CTA on the final screen per your direction. Everything else in those 4 changes should tighten the whole experience meaningfully.
