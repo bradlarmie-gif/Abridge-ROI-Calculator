@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
@@ -54,16 +54,16 @@ function useInpatientResults(state: MeasureState) {
     const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
     const hourlyRate = metrics.vm_hourlyRate ?? state.calibration.otHourlyRate ?? 175;
 
-    const totalDischarges = deployment.totalEncounters;
+    const adoptedDischarges = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
-    const drgValueLow = cmiDelta * totalDischarges * cmiPointValue * 0.70 * annualFactor;
-    const drgValueHigh = cmiDelta * totalDischarges * cmiPointValue * 0.85 * annualFactor;
+    const drgValueLow = cmiDelta * adoptedDischarges * cmiPointValue * 0.50 * annualFactor;
+    const drgValueHigh = cmiDelta * adoptedDischarges * cmiPointValue * 0.75 * annualFactor;
 
-    const fewerDenials = (denialsDelta / 100) * totalDischarges;
+    const fewerDenials = (denialsDelta / 100) * adoptedDischarges;
     const denialValue = fewerDenials * denialCostPerCase * annualFactor;
 
-    const fewerQueries = (cdiDelta / 100) * totalDischarges;
+    const fewerQueries = (cdiDelta / 100) * adoptedDischarges;
     const fteCapacityReclaimed = casesPerCdiFte > 0 ? fewerQueries / casesPerCdiFte : 0;
     const cdiValue = fteCapacityReclaimed * cdiFteCost * annualFactor;
 
@@ -71,7 +71,7 @@ function useInpatientResults(state: MeasureState) {
     const docValueHigh = drgValueHigh + denialValue + cdiValue;
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const totalHoursSaved = (timeSavedPerNote * totalDischarges) / 60;
+    const totalHoursSaved = (timeSavedPerNote * adoptedDischarges) / 60;
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
     const savingsValue = savingsHours * hourlyRate * annualFactor;
@@ -118,7 +118,8 @@ function useGenericResults(state: MeasureState) {
     const docQuality = state.documentationQuality;
 
     const timeSavedPerNote = timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith;
-    const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+    const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const capacityHours = totalHoursSaved * (capacityPercent / 100);
@@ -136,10 +137,9 @@ function useGenericResults(state: MeasureState) {
     const timeValueSubtotal = capacityValue + savingsValue;
 
     const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
-    const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-    const additionalWRVUs = wrvuLift * documentedEncounters;
-    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.70 * annualFactor;
-    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.85 * annualFactor;
+    const additionalWRVUs = wrvuLift * adoptedEncounters;
+    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.50 * annualFactor;
+    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.75 * annualFactor;
 
     const totalValueLow = timeValueSubtotal + docValueLow;
     const totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -160,7 +160,7 @@ function useGenericResults(state: MeasureState) {
       wellbeingPercent,
       timeValueSubtotal,
       wrvuLift,
-      documentedEncounters,
+      adoptedEncounters,
       additionalWRVUs,
       docValueLow,
       docValueHigh,
@@ -195,25 +195,12 @@ export default function MeasureAllocate({
 
 type AllocateComponentProps = { state: MeasureState; updateState: (updates: Partial<MeasureState>) => void; onNext: () => void; onBack: () => void; onHome: () => void };
 
-function PotentialValueToggle({ enabled, onToggle }: { enabled: boolean; onToggle: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Switch
-        checked={enabled}
-        onCheckedChange={onToggle}
-        data-testid="toggle-potential-value"
-      />
-      <span className="text-[12px] text-[#999999]">{enabled ? "Included" : "Excluded"}</span>
-    </div>
-  );
-}
 
 function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useInpatientResults(state);
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : 0;
-  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
-  const adjustedTotalHigh = r.totalValueHigh - (pvEnabled ? 0 : r.savingsValue);
+  const adjustedTimeValue = r.timeValueSubtotal - r.savingsValue;
+  const adjustedTotalLow = r.totalValueLow - r.savingsValue;
+  const adjustedTotalHigh = r.totalValueHigh - r.savingsValue;
   const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
@@ -341,7 +328,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
-            <p className="text-[12px] text-[#999999]"><sup>1</sup> Attribution range: 70-85% accounts for factors beyond documentation</p>
+            <p className="text-[12px] text-[#999999]"><sup>1</sup> Attribution range: 50-75% accounts for factors beyond documentation</p>
             <p className="text-[12px] text-[#999999]"><sup>2</sup> Based on denial cost of ${formatNumber(r.denialCostPerCase)} per case</p>
             <p className="text-[12px] text-[#999999]"><sup>3</sup> Based on CDI FTE cost of ${formatNumber(85000)}/year at {formatNumber(2500)} cases/FTE</p>
           </div>
@@ -362,20 +349,20 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           </p>
 
           <div className="space-y-0">
-            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0] bg-[#FAFAF8] -mx-6 px-6">
               <div className="flex items-start gap-3">
-                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
+                <div className="w-1 h-10 bg-[#999999] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
-                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
-                  </div>
+                  <p className="font-semibold text-[#1A1A1A]">Time Returned to Providers</p>
                   <p className="text-xs text-[#666666] mt-1">
-                    {formatNumber(Math.round(r.savingsHours))} hours {'\u00D7'} ${r.hourlyRate}/hr
+                    [{r.savingsPercent}% of time saved]
+                  </p>
+                  <p className="text-[12px] text-[#999999] mt-2 max-w-sm leading-relaxed">
+                    How your organization redeploys this time is up to you{'\u2014'}whether that's more patients, shorter days, or better care.
                   </p>
                 </div>
               </div>
-              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatNumber(Math.round(r.savingsHours))} hours</p>
             </div>
 
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
@@ -427,7 +414,7 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
         </motion.div>
 
         <motion.div 
-          className="max-w-[480px] mx-auto"
+          className="max-w-[480px] mx-auto relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -458,7 +445,8 @@ function useEDResults(state: MeasureState) {
     const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 20;
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+    const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const throughputHours = totalHoursSaved * (throughputPercent / 100);
@@ -482,14 +470,13 @@ function useEDResults(state: MeasureState) {
     const lwbsBefore = timeEfficiency.sameDayClosureWithout;
     const lwbsAfter = timeEfficiency.sameDayClosureWith;
     const lwbsReduction = Math.max(0, lwbsBefore - lwbsAfter);
-    const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
+    const patientsRetained = Math.round((lwbsReduction / 100) * adoptedEncounters);
     const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
 
     const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
-    const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-    const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-    const docValueLow = emLevelValue * 0.70 * annualFactor;
-    const docValueHigh = emLevelValue * 0.85 * annualFactor;
+    const emLevelValue = emLevelLift * adoptedEncounters * calibration.conversionFactor;
+    const docValueLow = emLevelValue * 0.50 * annualFactor;
+    const docValueHigh = emLevelValue * 0.75 * annualFactor;
 
     const totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
     const totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -504,7 +491,7 @@ function useEDResults(state: MeasureState) {
       timeValueSubtotal,
       doorToDocBefore, doorToDocAfter, doorToDocSaved,
       lwbsBefore, lwbsAfter, lwbsReduction, patientsRetained, lwbsValue,
-      emLevelLift, documentedEncounters, docValueLow, docValueHigh,
+      emLevelLift, adoptedEncounters, docValueLow, docValueHigh,
       totalValueLow, totalValueHigh,
       expansion,
     };
@@ -523,7 +510,8 @@ function useNursingResults(state: MeasureState) {
     const capacityPercent = state.allocation.capacityPercent ?? 20;
 
     const timeSavedPerShift = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const totalHoursSaved = (timeSavedPerShift * deployment.totalEncounters) / 60;
+    const adoptedShifts = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+    const totalHoursSaved = (timeSavedPerShift * adoptedShifts) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
@@ -580,10 +568,9 @@ function useNursingResults(state: MeasureState) {
 
 function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useEDResults(state);
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : (r.timeValueSubtotal - r.savingsValue);
-  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
-  const adjustedTotalHigh = r.totalValueHigh - (pvEnabled ? 0 : r.savingsValue);
+  const adjustedTimeValue = r.timeValueSubtotal - r.savingsValue;
+  const adjustedTotalLow = r.totalValueLow - r.savingsValue;
+  const adjustedTotalHigh = r.totalValueHigh - r.savingsValue;
   const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
@@ -636,18 +623,18 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
               </div>
               <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.throughputValue)}</p>
             </div>
-            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0] bg-[#FAFAF8] -mx-6 px-6">
               <div className="flex items-start gap-3">
-                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
+                <div className="w-1 h-10 bg-[#999999] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
-                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
-                  </div>
-                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
+                  <p className="font-semibold text-[#1A1A1A]">Time Returned to Providers</p>
+                  <p className="text-xs text-[#666666] mt-1">[{r.savingsPercent}% of time saved]</p>
+                  <p className="text-[12px] text-[#999999] mt-2 max-w-sm leading-relaxed">
+                    How your organization redeploys this time is up to you{'\u2014'}whether that's more patients, shorter days, or better care.
+                  </p>
                 </div>
               </div>
-              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatNumber(Math.round(r.savingsHours))} hours</p>
             </div>
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
@@ -692,7 +679,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
-                  <p className="text-xs text-[#666666] mt-1">+{r.emLevelLift.toFixed(2)} E/M level improvement across {formatNumber(Math.round(r.documentedEncounters))} encounters at 70-85% attribution</p>
+                  <p className="text-xs text-[#666666] mt-1">+{r.emLevelLift.toFixed(2)} E/M level improvement across {formatNumber(Math.round(r.adoptedEncounters))} encounters at 50-75% attribution</p>
                 </div>
               </div>
               <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(r.docValueLow, r.docValueHigh)}</p>
@@ -714,7 +701,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
           </div>
         </motion.div>
 
-        <motion.div className="max-w-[480px] mx-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+        <motion.div className="max-w-[480px] mx-auto relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
           <Button onClick={onNext} className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2" data-testid="button-whats-ahead">
             See What's Ahead
             <ArrowRight className="w-4 h-4" />
@@ -727,9 +714,8 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
 
 function NursingAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const r = useNursingResults(state);
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? r.timeValueSubtotal : (r.timeValueSubtotal - r.savingsValue);
-  const adjustedTotalLow = r.totalValueLow - (pvEnabled ? 0 : r.savingsValue);
+  const adjustedTimeValue = r.timeValueSubtotal - r.savingsValue;
+  const adjustedTotalLow = r.totalValueLow - r.savingsValue;
   const heroValue = formatCurrency(adjustedTotalLow);
 
   return (
@@ -772,18 +758,18 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Time Value</p>
           <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed from charting.</p>
           <div className="space-y-0">
-            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0] bg-[#FAFAF8] -mx-6 px-6">
               <div className="flex items-start gap-3">
-                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
+                <div className="w-1 h-10 bg-[#999999] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value ({r.savingsPercent}%)</p>
-                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
-                  </div>
-                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
+                  <p className="font-semibold text-[#1A1A1A]">Time Returned to Nurses</p>
+                  <p className="text-xs text-[#666666] mt-1">[{r.savingsPercent}% of time saved]</p>
+                  <p className="text-[12px] text-[#999999] mt-2 max-w-sm leading-relaxed">
+                    How your organization redeploys this time is up to you{'\u2014'}whether that's more patients, shorter days, or better care.
+                  </p>
                 </div>
               </div>
-              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(r.savingsValue)}</p>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatNumber(Math.round(r.savingsHours))} hours</p>
             </div>
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
@@ -799,7 +785,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
               <div className="flex items-start gap-3">
                 <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Provider Wellbeing ({r.wellbeingPercent}%)</p>
+                  <p className="font-semibold text-[#1A1A1A]">Nurse Wellbeing ({r.wellbeingPercent}%)</p>
                   <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.wellbeingHours))} hours returned to nurses</p>
                 </div>
               </div>
@@ -886,7 +872,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           </div>
         </motion.div>
 
-        <motion.div className="max-w-[480px] mx-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+        <motion.div className="max-w-[480px] mx-auto relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
           <Button onClick={onNext} className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2" data-testid="button-whats-ahead">
             See What's Ahead
             <ArrowRight className="w-4 h-4" />
@@ -905,10 +891,9 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
 
 function GenericAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComponentProps) {
   const results = useGenericResults(state);
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? results.timeValueSubtotal : (results.timeValueSubtotal - results.savingsValue);
-  const adjustedTotalLow = results.totalValueLow - (pvEnabled ? 0 : results.savingsValue);
-  const adjustedTotalHigh = results.totalValueHigh - (pvEnabled ? 0 : results.savingsValue);
+  const adjustedTimeValue = results.timeValueSubtotal - results.savingsValue;
+  const adjustedTotalLow = results.totalValueLow - results.savingsValue;
+  const adjustedTotalHigh = results.totalValueHigh - results.savingsValue;
   const heroValue = formatSmartRange(adjustedTotalLow, adjustedTotalHigh);
 
   return (
@@ -986,35 +971,34 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           </p>
 
           <div className="space-y-0">
-            <div className={`flex items-start justify-between py-4 border-b border-[#F0F0F0] transition-opacity ${pvEnabled ? '' : 'opacity-40'}`}>
-              <div className="flex items-start gap-3">
-                <div className={`w-1 h-10 rounded-full mt-0.5 flex-shrink-0 ${pvEnabled ? 'bg-[#EA2C00]' : 'bg-[#CCCCCC]'}`} />
-                <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className={`font-semibold ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>Potential Value</p>
-                    <PotentialValueToggle enabled={pvEnabled} onToggle={(v) => updateState({ potentialValueEnabled: v })} />
-                  </div>
-                  <p className="text-xs text-[#666666] mt-1">
-                    {formatNumber(Math.round(results.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr<sup>1</sup>
-                  </p>
-                  <p className="text-[12px] text-[#999999] mt-0.5">[{results.savingsPercent}% of time saved]</p>
-                </div>
-              </div>
-              <p className={`text-lg font-bold flex-shrink-0 ml-4 ${pvEnabled ? 'text-[#1A1A1A]' : 'text-[#999999] line-through'}`}>{formatCurrency(results.savingsValue)}</p>
-            </div>
-
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
               <div className="flex items-start gap-3">
                 <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-[#1A1A1A]">Patient Capacity</p>
                   <p className="text-xs text-[#666666] mt-1">
-                    {formatNumber(Math.round(results.capacityHours))} hours {'\u2192'} {formatNumber(Math.round(results.additionalVisits))} additional visits possible<sup>2</sup>
+                    {formatNumber(Math.round(results.capacityHours))} hours {'\u2192'} {formatNumber(Math.round(results.additionalVisits))} additional visits possible<sup>1</sup>
                   </p>
                   <p className="text-[12px] text-[#999999] mt-0.5">[{results.capacityPercent}% of time saved]</p>
                 </div>
               </div>
               <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.capacityValue)}</p>
+            </div>
+
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0] bg-[#FAFAF8] -mx-6 px-6">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#999999] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Time Returned to Providers</p>
+                  <p className="text-xs text-[#666666] mt-1">
+                    [{results.savingsPercent}% of time saved]
+                  </p>
+                  <p className="text-[12px] text-[#999999] mt-2 max-w-sm leading-relaxed">
+                    How your organization redeploys this time is up to you{'\u2014'}whether that's more patients, shorter days, or better care.
+                  </p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatNumber(Math.round(results.savingsHours))} hours</p>
             </div>
 
             <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
@@ -1043,8 +1027,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
-            <p className="text-[12px] text-[#999999]"><sup>1</sup> Based on your value model: ${state.calibration.otHourlyRate}/hr provider cost</p>
-            <p className="text-[12px] text-[#999999]"><sup>2</sup> {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</p>
+            <p className="text-[12px] text-[#999999]"><sup>1</sup> {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</p>
           </div>
         </motion.div>
 
@@ -1068,7 +1051,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
               <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">wRVU lift</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.documentedEncounters))}</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.adoptedEncounters))}</p>
               <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">encounters analyzed</p>
             </div>
             <div>
@@ -1082,7 +1065,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
               <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
-                <p className="text-xs text-[#666666] mt-1">at 70-85% attribution<sup>3</sup></p>
+                <p className="text-xs text-[#666666] mt-1">at 50-75% attribution<sup>3</sup></p>
               </div>
             </div>
             <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
@@ -1117,7 +1100,7 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <motion.div 
-          className="max-w-[480px] mx-auto"
+          className="max-w-[480px] mx-auto relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

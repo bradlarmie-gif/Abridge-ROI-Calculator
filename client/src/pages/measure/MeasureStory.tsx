@@ -48,7 +48,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     const docQuality = state.documentationQuality;
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+    const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
     let capacityValue = 0;
@@ -83,12 +84,12 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       const cdiFteCost = metrics.vm_cdiFteCost ?? 85000;
       const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
 
-      docValueLow = (cmiDelta * deployment.totalEncounters * cmiPointValue * 0.70
-        + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
-      docValueHigh = (cmiDelta * deployment.totalEncounters * cmiPointValue * 0.85
-        + (denialsDelta / 100) * deployment.totalEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * deployment.totalEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
+      docValueLow = (cmiDelta * adoptedEncounters * cmiPointValue * 0.50
+        + (denialsDelta / 100) * adoptedEncounters * denialCostPerCase
+        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * adoptedEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
+      docValueHigh = (cmiDelta * adoptedEncounters * cmiPointValue * 0.75
+        + (denialsDelta / 100) * adoptedEncounters * denialCostPerCase
+        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * adoptedEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
 
       totalValueLow = docValueLow + timeValueSubtotal;
       totalValueHigh = docValueHigh + timeValueSubtotal;
@@ -107,14 +108,13 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       timeValueSubtotal = capacityValue + savingsValue;
 
       const lwbsReduction = Math.max(0, timeEfficiency.sameDayClosureWithout - timeEfficiency.sameDayClosureWith);
-      const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
+      const patientsRetained = Math.round((lwbsReduction / 100) * adoptedEncounters);
       const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
 
       const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
-      const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
-      docValueLow = emLevelValue * 0.70 * annualFactor;
-      docValueHigh = emLevelValue * 0.85 * annualFactor;
+      const emLevelValue = emLevelLift * adoptedEncounters * calibration.conversionFactor;
+      docValueLow = emLevelValue * 0.50 * annualFactor;
+      docValueHigh = emLevelValue * 0.75 * annualFactor;
 
       totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
       totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
@@ -152,9 +152,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       timeValueSubtotal = capacityValue + savingsValue;
 
       wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
-      const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
-      docValueLow = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.70 * annualFactor;
-      docValueHigh = wrvuLift * documentedEncounters * calibration.conversionFactor * 0.85 * annualFactor;
+      docValueLow = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.50 * annualFactor;
+      docValueHigh = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.75 * annualFactor;
 
       totalValueLow = timeValueSubtotal + docValueLow;
       totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -183,10 +182,12 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     };
   }, [state, capacityPercent, savingsPercent, wellbeingPercent, careSetting]);
 
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? results.timeValueSubtotal : (results.timeValueSubtotal - results.savingsValue);
-  const adjustedTotalLow = results.totalValueLow - (pvEnabled ? 0 : results.savingsValue);
-  const adjustedTotalHigh = results.totalValueHigh - (pvEnabled ? 0 : results.savingsValue);
+  const adjustedTimeValue = results.timeValueSubtotal - results.savingsValue;
+  const adjustedTotalLow = results.totalValueLow - results.savingsValue;
+  const adjustedTotalHigh = results.totalValueHigh - results.savingsValue;
+  const savingsHours = results.savingsValue > 0
+    ? Math.round(results.totalHoursSaved * (savingsPercent / 100))
+    : 0;
   const hoursPerProvider = Math.round(results.expansion.hoursPerProvider);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
@@ -288,9 +289,9 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</span>
             </div>
             <div className="pl-4 space-y-1">
-              <div className={`flex items-center justify-between ${pvEnabled ? '' : 'opacity-40 line-through'}`}>
-                <span className="text-xs text-[#666666]">Potential Value ({savingsPercent}%)</span>
-                <span className="text-xs text-[#666666]">{formatCurrency(results.savingsValue)}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#666666]">Time Returned ({savingsPercent}%)</span>
+                <span className="text-xs text-[#666666]">{formatNumber(savingsHours)} hours</span>
               </div>
               {!isInpatient && !isNursing && (
                 <div className="flex items-center justify-between">
@@ -390,7 +391,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4">
               <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Deepen</p>
-              <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} {state.expansionTargets?.targetAdoption ?? 85}% adoption</p>
+              <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} {state.expansionTargets?.targetAdoption ?? 80}% adoption</p>
               <p className="text-lg font-bold text-[#EA2C00]">+{formatCurrency(results.expansion.deepenAdditionalValue)} / year</p>
               <p className="text-[12px] text-[#999999] mt-1">No additional cost</p>
             </div>
@@ -467,19 +468,19 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               >
                 <div className="p-5 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
                   <p>
-                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} x {formatNumber(state.deployment.totalEncounters)} total {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
+                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} × {formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} Abridge-documented {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {savingsPercent}% potential value at ${state.calibration.otHourlyRate}/hr{pvEnabled ? "" : " (excluded from totals)"}{!isInpatient && !isNursing ? `, ${capacityPercent}% ${isED ? "throughput" : "capacity"} at $${state.calibration.revenuePerVisit}/${isED ? "patient" : "visit"}` : ""}, {wellbeingPercent}% wellbeing.
+                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {!isInpatient && !isNursing ? `Patient ${isED ? "throughput" : "capacity"} calculated at ${capacityPercent}% time allocation, ${state.calibration.minutesPerVisit} min per ${isED ? "patient" : "visit"}, $${state.calibration.revenuePerVisit}/${isED ? "patient" : "visit"}. ` : ""}{savingsPercent}% time returned to {isNursing ? "nurses" : "providers"} shown as hours, not dollarized. {wellbeingPercent}% wellbeing.
                   </p>
                   {!isNursing && (
                     <p>
                       <strong className="text-[#1A1A1A]">{isInpatient ? "Documentation & Coding:" : isED ? "E/M & Throughput:" : "Documentation value:"}</strong>{" "}
                       {isInpatient
-                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 70-85% attribution for DRG accuracy."
+                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 50-75% attribution for DRG accuracy."
                         : isED
-                        ? "E/M level accuracy and LWBS recovery value."
-                        : `+${results.wrvuLift.toFixed(2)} wRVU/encounter x $${state.calibration.conversionFactor} conversion factor. Range reflects 70-85% attribution.`
+                        ? "E/M level accuracy and LWBS recovery value. Range reflects 50-75% attribution."
+                        : `+${results.wrvuLift.toFixed(2)} wRVU/encounter × $${state.calibration.conversionFactor} conversion × ${formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} encounters. Range reflects 50-75% attribution (matching Model Assumptions).`
                       }
                     </p>
                   )}
@@ -491,7 +492,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     </p>
                   )}
                   <p>
-                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 85}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
                   </p>
                 </div>
               </motion.div>

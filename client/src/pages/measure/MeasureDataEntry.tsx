@@ -982,7 +982,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
       <div className="h-px bg-[#E5E5E5] my-6" />
 
       <motion.div
-        className="max-w-[480px] mx-auto text-center"
+        className="max-w-[480px] mx-auto text-center relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}

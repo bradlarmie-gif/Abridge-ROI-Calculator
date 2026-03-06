@@ -128,11 +128,10 @@ export default function MeasureTransformation({
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
   const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
 
-  const totalHoursSaved = (timeReclaimed * state.deployment.totalEncounters) / 60;
-  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
-
   const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
   const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
+  const totalHoursSaved = (timeReclaimed * adoptedEncounters) / 60;
+  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -526,14 +525,14 @@ export default function MeasureTransformation({
         </motion.div>
 
         <motion.div 
-          className="flex justify-center"
+          className="flex justify-center relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
+            className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-see-value"
           >
             See the Value

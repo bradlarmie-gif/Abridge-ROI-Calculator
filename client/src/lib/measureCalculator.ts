@@ -92,7 +92,6 @@ export interface MeasureState {
     targetAdoption: number;
     targetProviders: number;
   };
-  potentialValueEnabled?: boolean;
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -211,7 +210,8 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const workOutsideDelta = timeEfficiency.workOutsideWithout - timeEfficiency.workOutsideWith;
   const workOutsideDeltaPercent = (workOutsideDelta / timeEfficiency.workOutsideWithout) * 100;
   
-  const totalHoursSaved = (timeInNotesDelta * deployment.totalEncounters) / 60;
+  const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+  const totalHoursSaved = (timeInNotesDelta * adoptedEncounters) / 60;
   
   const hardSavingsHours = totalHoursSaved * (allocation.hardSavingsPercent / 100);
   const hardSavingsValue = hardSavingsHours * calibration.otHourlyRate;
@@ -223,12 +223,12 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const qualityHours = totalHoursSaved * (allocation.qualityOfLifePercent / 100);
   const qualityHoursPerWeek = deployment.providers > 0 ? qualityHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
   
-  // Attribution range is 70-85%; calculator uses conservative floor (0.70).
-  // Display pages show the full 0.70–0.85 range for transparency.
-  const wrvuValue = wrvuDelta * deployment.totalEncounters * calibration.conversionFactor * 0.70;
+  // Attribution range is 50-75%; calculator uses conservative floor (0.50).
+  // Display pages show the full 0.50–0.75 range for transparency.
+  const wrvuValue = wrvuDelta * adoptedEncounters * calibration.conversionFactor * 0.50;
   
   const emValuePerLevel = 15;
-  const emValue = emLevelDelta * deployment.totalEncounters * emValuePerLevel * 0.70;
+  const emValue = emLevelDelta * adoptedEncounters * emValuePerLevel * 0.50;
   
   const documentationQualityTotal = wrvuValue + emValue;
   const timeReallocatedTotal = hardSavingsValue + capacityValue;
@@ -395,7 +395,7 @@ export function calculateExpansionResults(
 ): ExpansionResults {
   const { deployment } = state;
   const currentRate = Math.max(deployment.utilizationRate, 1) / 100;
-  const deepenRate = (targetAdoption ?? 85) / 100;
+  const deepenRate = (targetAdoption ?? 80) / 100;
 
   const currentAdoptedEncounters = Math.round(deployment.totalEncounters * currentRate);
   const currentNonAdoptedEncounters = deployment.totalEncounters - currentAdoptedEncounters;

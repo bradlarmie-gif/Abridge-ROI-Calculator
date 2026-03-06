@@ -190,8 +190,8 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     ? (wrvuDelta / state.documentationQuality.wrvuWithout) * 100
     : 0;
   const additionalWRVUs = wrvuDelta * documentedEncounters;
-  const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.70;
-  const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.85;
+  const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.50;
+  const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.75;
 
   const totalValueLow = timeValueSubtotal + docValueLow;
   const totalValueHigh = timeValueSubtotal + docValueHigh;
@@ -208,10 +208,9 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     state.expansionTargets?.targetAdoption,
     state.expansionTargets?.targetProviders
   );
-  const pvEnabled = state.potentialValueEnabled !== false;
-  const adjustedTimeValue = pvEnabled ? timeValueSubtotal : (timeValueSubtotal - savingsValue);
-  const adjustedTotalLow = totalValueLow - (pvEnabled ? 0 : savingsValue);
-  const adjustedTotalHigh = totalValueHigh - (pvEnabled ? 0 : savingsValue);
+  const adjustedTimeValue = timeValueSubtotal - savingsValue;
+  const adjustedTotalLow = totalValueLow - savingsValue;
+  const adjustedTotalHigh = totalValueHigh - savingsValue;
 
   const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
   const hoursPerWeekReturned = state.deployment.providers > 0
@@ -401,19 +400,16 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           {/* TIME VALUE section */}
           <Text style={styles.sectionLabelGray}>TIME VALUE</Text>
           <View style={{ marginBottom: 10 }}>
-            {/* Potential Value */}
-            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8, opacity: pvEnabled ? 1 : 0.4 }}>
-              <View style={{ width: 3, height: 36, backgroundColor: pvEnabled ? colors.primary : "#CCCCCC", marginRight: 10, borderRadius: 1 }} />
+            {/* Time Returned */}
+            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8, backgroundColor: "#FAFAF8", padding: 8, borderRadius: 4 }}>
+              <View style={{ width: 3, height: 36, backgroundColor: "#999999", marginRight: 10, borderRadius: 1 }} />
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: pvEnabled ? colors.primaryText : "#999999" }}>Potential Value{pvEnabled ? "" : " (excluded)"}</Text>
-                  <View style={{ flexDirection: "row", gap: 20 }}>
-                    <Text style={{ fontSize: 10, color: colors.secondary }}>{savingsPercent}%</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: pvEnabled ? colors.primaryText : "#999999" }}>{formatCurrency(savingsValue)}</Text>
-                  </View>
+                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Time Returned to Providers</Text>
+                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(savingsHours))} hours</Text>
                 </View>
                 <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  {formatNumber(Math.round(savingsHours))} hours {"\u00D7"} ${state.calibration.otHourlyRate}/hr{"\u00B9"}
+                  [{savingsPercent}% of time saved]
                 </Text>
               </View>
             </View>
@@ -539,7 +535,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           <View>
             <Text style={styles.caption}>{"\u00B9"} ${state.calibration.otHourlyRate}/hr provider cost</Text>
             <Text style={styles.caption}>{"\u00B2"} {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</Text>
-            <Text style={styles.caption}>{"\u00B3"} 70-85% attribution range</Text>
+            <Text style={styles.caption}>{"\u00B3"} 50-75% attribution range</Text>
           </View>
 
           <PageFooter pageNum={2} orgName={orgName} />
@@ -702,9 +698,9 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Hours Reclaimed</Text>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(totalHoursSaved))} hrs   ({hoursPerProvider}/provider)</Text>
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, opacity: pvEnabled ? 1 : 0.4 }}>
-              <Text style={{ fontSize: 10, color: pvEnabled ? colors.primaryText : "#999999" }}>Potential Value ({savingsPercent}%){pvEnabled ? "" : " — excluded"}</Text>
-              <Text style={{ fontSize: 10, color: pvEnabled ? colors.primaryText : "#999999" }}>{formatCurrency(savingsValue)}</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>Time Returned ({savingsPercent}%)</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(savingsHours))} hours</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Patient Capacity ({capacityPercent}%)</Text>
@@ -752,7 +748,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
                 Visit duration: {state.calibration.minutesPerVisit} min{"\n"}
                 Revenue/visit: ${state.calibration.revenuePerVisit}{"\n"}
                 wRVU value: ${state.calibration.conversionFactor}{"\n"}
-                Attribution: 70-85%{"\n"}
+                Attribution: 50-75%{"\n"}
                 Allocation: {savingsPercent}/{capacityPercent}/{wellbeingPercent}
               </Text>
             </View>
@@ -772,7 +768,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
           <View style={styles.divider} />
 
           <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-            This analysis is for planning purposes. Documentation value uses a 70-85% attribution range. Projections assume current patterns continue. Consult your finance team before making investment decisions based on these estimates.
+            This analysis is for planning purposes. Documentation value uses a 50-75% attribution range. Projections assume current patterns continue. Consult your finance team before making investment decisions based on these estimates.
           </Text>
 
           <PageFooter pageNum={4} orgName={orgName} />
