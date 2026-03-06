@@ -528,8 +528,8 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     source1Label: "LABOR ECONOMICS",
     source1Description: "Overtime reduction, nurse retention savings, and agency cost avoidance.",
     source1Tagline: "The budget impact is real.",
-    source2Label: "CARE QUALITY",
-    source2Description: "HAPI risk reduction, fall risk visibility, and patient experience improvement.",
+    source2Label: "CARE QUALITY ENABLEMENT",
+    source2Description: "Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect \u2014 documentation supports care, it doesn\u2019t replace it.",
     source2Tagline: "Better care starts with better information.",
     strategicObservation: (d) => {
       if (d.totalValue === 0 && d.qualitativeDrivers.length > 0) {
@@ -677,20 +677,19 @@ const getNursingObservation = (data: ExplorePDFData): string => {
     return `Your assessment focused on qualitative drivers (${driverList}). These represent strategic value for your nursing program \u2014 patient experience, bedside presence, and care quality \u2014 that is meaningful but not easily dollarized. To build a financial case, consider enabling OT Reduction or Retention Savings.`;
   }
 
-  if (sustainPct >= 35 && retVal > 0) {
-    return `You put real weight on clinician sustainability \u2014 ${sustainPct}% of reclaimed time, plus a quantified retention model. That\u2019s an organization trying to solve for all three at once \u2014 OT, retention, and bedside time \u2014 which is exactly the right instinct. The model reflects that balance.`;
-  }
-
-  if (laborPct > 50 && agencyOn) {
-    return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT, retention, and agency costs. Overtime and agency costs dominate. This is typical for organizations with high turnover or significant agency dependence.`;
-  }
-
   if (laborPct > 50) {
+    if (agencyOn) {
+      return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT, retention, and agency costs. Overtime and agency costs dominate. This is typical for organizations with high turnover or significant agency dependence.`;
+    }
     return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
   }
 
-  if (directCarePct >= 40) {
+  if (laborPct <= 50 && directCarePct >= 40) {
     return `Your model balances labor economics (${laborPct}%) with care quality (${100 - laborPct}%). This profile suggests both staffing and patient outcomes can improve simultaneously.`;
+  }
+
+  if (sustainPct >= 35 && retVal > 0) {
+    return `You put real weight on clinician sustainability \u2014 ${sustainPct}% of reclaimed time, plus a quantified retention model. That\u2019s an organization trying to solve for all three at once \u2014 OT, retention, and bedside time \u2014 which is exactly the right instinct. The model reflects that balance.`;
   }
 
   return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
@@ -2775,6 +2774,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                       Your program generates roughly {safe(data.nursingHapiPerYear)?.toFixed(1)} hospital-acquired pressure injuries per year across {fmtNum(patientDays)} patient days {"\u2014"} consistent with a national rate of {safe(data.nursingHapiRatePer1000)}/1,000 patient days. Real-time documentation of skin assessments, Braden scores, and turning schedules creates the clinical visibility that enables earlier intervention. Abridge{"\u2019"}s attributable share is modeled at {safe(data.nursingHapiPreventionRate)}% {"\u2014"} exactly half the 13% reduction observed in Dowding et al. (JAMIA 2012) {"\u2014"} to reflect that documentation is one input in a broader care system. Applied to your direct care allocation ({directCarePct}%), the potential value is {fmtCurrency(hapiVal)}.
                     </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Source: Dowding J et al., JAMIA 2012. Prevention rate halved (6.5% vs 13% observed) to reflect documentation as one input in a broader prevention system.
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -2791,6 +2793,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                       Your hospital experiences roughly {safe(data.nursingFallsPerYear)?.toFixed(1)} patient falls per year. Real-time Morse score and mobility documentation ensures fall risk status reflects the patient{"\u2019"}s current condition {"\u2014"} not end-of-shift catch-up charting. This is not a prevention claim {"\u2014"} it is a documentation timeliness gap claim. At a {safe(data.nursingFallsDocGapRate)}% documentation gap rate (Joint Commission sentinel event data), with {directCarePct}% care allocation and {fmtCurrency(safe(data.nursingFallsCostPer))} cost per fall, the potential value is {fmtCurrency(fallsVal)}.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Source: Joint Commission Sentinel Event data. Gap rate reflects documentation-timing-related falls only.
                     </Text>
                   </View>
                 </View>
