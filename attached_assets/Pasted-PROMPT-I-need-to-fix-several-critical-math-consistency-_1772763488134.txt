@@ -1,0 +1,83 @@
+PROMPT:
+I need to fix several critical math, consistency, and UX issues in the Measure path of this ROI calculator. This is a tool for healthcare leaders who are skeptical about AI ROI — credibility is everything. Here are all the changes:
+1. CRITICAL: Fix Encounter Base Math (4× Overstatement)
+Currently, time savings are calculated as:
+8 min saved × 15,000 TOTAL encounters / 60 = 2,000 hours
+This is wrong. At 25% adoption, only 3,750 encounters actually use Abridge. The correct calculation is:
+8 min saved × 3,750 ADOPTED encounters / 60 = 500 hours
+Find everywhere that time savings hours are calculated and use ADOPTED encounters (providers on Abridge / total providers × total encounters), NOT total encounters. This will cascade through:
+
+Hours Reclaimed (should be 500, not 2,000)
+Per Provider hours (should be 10, not 40)
+Time Value dollars (all three buckets: Potential Value, Patient Capacity, Wellbeing)
+The hero statement on "Your Story" page
+The "What's Ahead" / opportunity projections (Deepen and Combined)
+The Methodology & Assumptions text
+Per-provider and per-encounter unit economics
+Test with: 50 Abridge providers, 200 total, 15,000 encounters, 12 months, 8 min saved per note. Adopted encounters = 3,750. Hours saved = 500.
+
+
+2. MAJOR: Kill "Potential Value" Dollar Calculation
+The "Potential Value" bucket currently takes 50% of time saved hours × $150/hr and shows a dollar figure (e.g., $150K). This is fake — no one writes a check for theoretical hourly value of freed-up doctor time. It kills credibility with exactly the skeptical audience we're targeting.
+Replace the Potential Value bucket with a qualitative time-returned metric. Instead of showing "$150K" show something like:
+
+Label: "Time Returned to Providers"
+Value: Show the hours (e.g., "250 hours") instead of dollars
+Subtitle: "How your organization redeploys this time is up to you — whether that's more patients, shorter days, or better care."
+Do NOT dollarize this bucket. Remove it from the total dollar calculation. The Estimated Annual Value should now only sum Patient Capacity revenue + Documentation Quality revenue. The time returned hours should be displayed separately as a non-dollar metric, similar to how Provider Wellbeing shows "0.2 hrs/wk back" instead of dollars.
+Update the Time Value section to have two parts:
+
+
+Patient Capacity (the real revenue number — additional visits × revenue per visit) — KEEP this dollarized
+Time Returned (non-dollarized hours metric with the qualitative framing above)
+And keep Provider Wellbeing as the emotional/qualitative metric it already is (hrs/wk back).
+The "Estimated Annual Value" total should now be: Patient Capacity $ + Documentation Quality $. Show Time Returned hours and Wellbeing hrs/wk as separate non-dollar impact metrics alongside the dollar total.
+
+
+3. Fix Attribution Range Inconsistency
+The Model Assumptions input section shows attribution range as 50-75% but the Documentation Quality results page uses 70-85% attribution. These must match.
+Use the values from Model Assumptions as the single source of truth. Whatever the user sees/sets in Model Assumptions (default 50-75%) should be the exact range used in the Documentation Quality calculation and displayed in results. Update:
+
+The wRVU revenue range calculation on the results page
+The Methodology & Assumptions footnote text
+Any tooltips or labels referencing attribution
+
+
+4. Fix Adoption Target Inconsistency (80% vs 85%)
+The "See What's Ahead" page (Opportunity Ahead / Deepen layer) says the target is 80% adoption. The "Your Story" final summary page says Deepen assumes 85% utilization.
+Pick 80% and use it consistently everywhere. Update:
+
+The Deepen section on "See What's Ahead"
+The Deepen callout on "Your Story"
+The Methodology & Assumptions text
+The Combined Opportunity calculation (should use 80%, not 85%)
+
+
+5. UX: Fix Form Input Behavior
+When clicking into a number input field that already has a value, typing APPENDS to the existing value instead of replacing it. For example, clicking a field showing "200" and typing "15000" results in "20015000".
+Make all number input fields select their contents on focus so that typing immediately replaces the old value. Add an onFocus handler that selects all text: e.target.select() on every numeric input field in the data entry form.
+6. UX: Fix Button Click Targets
+The "See What Changed", "See the Value", and "See What's Ahead" transition buttons sometimes require multiple clicks to register. Ensure these buttons have proper click event handlers, adequate padding/hit areas (minimum 48px height), and no overlapping elements that might intercept clicks. Check for any z-index issues or invisible overlays.
+7. Update Methodology & Assumptions Text
+After all the above fixes, update the Methodology & Assumptions section to accurately reflect the new calculations:
+
+Time savings: "Based on [X] min saved per encounter × [adopted encounters] Abridge-documented encounters"
+Time value: "Patient capacity calculated at [X]% time allocation, [visit duration] min per visit, $[X]/visit. Time returned to providers shown as hours, not dollarized."
+Documentation value: "+[X] wRVU/encounter × $[X] conversion × [adopted encounters] encounters. Range reflects [X-Y]% attribution (matching Model Assumptions)."
+Expansion: "Deepen assumes 80% utilization. Expand based on per-provider economics applied to [total providers] providers."
+
+
+IMPORTANT: After making these changes, test the full Measure flow end-to-end with these inputs:
+
+Organization: Test Health System
+Providers on Abridge: 50
+Total Providers: 200
+Months on Abridge: 12
+Total Encounters: 15,000
+Time in Notes: Before 15 min, After 7 min
+Same-Day Closure: Before 40%, After 75%
+Days to Close: Before 3, After 1
+After-Hours: Before 2 hrs, After 0.5 hrs
+wRVU: Before 1.80, After 2.10
+E/M Level: Before 3, After 4
+Verify that adopted encounters = 3,750, hours saved = 500, and all downstream calculations are consistent through every page of the flow.
