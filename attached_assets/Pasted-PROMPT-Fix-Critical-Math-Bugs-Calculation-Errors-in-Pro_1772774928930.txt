@@ -1,0 +1,174 @@
+PROMPT: Fix Critical Math Bugs & Calculation Errors in Project Path Pro Forma
+This is a follow-up to the previous prompt. The design and narrative changes are in progress — this prompt focuses ONLY on math bugs, calculation errors, and data integrity issues that make the pro forma indefensible. These must be fixed before anything else.
+BUG 1 (CRITICAL): Investment Calculated on Active/Adopted Providers Instead of Licensed Providers
+Current behavior: The 3-Year Financial Summary table calculates investment cost using licensed providers × adoption rate × price × 12. This means:
+
+Year 1: 50 × 20% × $120 × 12 = $14,400 — but shows $72K (uses full 50) ✓
+Year 2: 230 × 65% × $120 × 12 = $215,280 — shows $212K ✓ (BUG — using adopted count)
+Year 3: 500 × 100% × $120 × 12 = $720,000 — shows $542K (BUG — using adopted count ~377)
+Total shown: $827K
+Correct behavior: Investment = licensed/contracted providers × price × 12. You pay for licenses whether providers adopt or not. Adoption affects VALUE, never COST. CFOs know their contract cost — if the model shows less than what they're paying, they'll immediately distrust everything else.
+Correct calculation:
+Year 1: 50 × $120 × 12 = $72,000
+Year 2: 230 × $120 × 12 = $331,200
+Year 3: 500 × $120 × 12 = $720,000
+Total: $1,123,200
+Find the investment calculation function and change it to use the licensed provider count for each year (the rollout numbers: 50, 230, 500), NOT the active/adopted provider count. Do NOT multiply by adoption/utilization rate when calculating cost.
+This will cascade into these KPIs which must also update:
+Value-to-Cost ratio: was 6.6x → should become ~4.8x
+Simple ROI: was 557% → should become ~382%
+Net Value: was $4.6M → should become ~$4.28M
+Payback Period: will increase (which is MORE credible)
+IRR: will change
+Sensitivity analysis: all three scenarios' ROI and payback will shift
+Also fix for all pricing modes:
+Per Unit/Month: investment = licensed providers × price × 12 (NOT adopted)
+Annual License: investment = annual fee (fixed, no change needed)
+Per Encounter: investment = total encounters × price per encounter (here adoption DOES correctly affect cost since you only pay per encounter used — this mode is fine)
+
+
+BUG 2 (CRITICAL): Per-Provider Value Uses Pilot Count, Not Scale Count
+Current behavior: The KPI card shows "Annual Value at Scale: $3.8M" with "per provider: $75K". The $75K is calculated as $3.8M / 50 (Year 1 pilot providers).
+Problem: This is massively misleading. A reader sees "$75K per provider" and thinks each of their 500 providers generates $75K. The real number at full scale is $3.8M / 500 = $7,600 per provider.
+Fix: The "per provider" metric should use the FULL SCALE provider count (the Year 3 / max rollout number), not the Year 1 pilot count. Display:
+
+"Per provider at scale: $7.6K/year"
+If you want to also show the pilot economics, add it as a secondary line:
+"Per pilot provider (Year 1): $75K/year"
+But the PRIMARY per-provider number must use the scale count. This is what a CFO will use to evaluate the deal.
+
+
+BUG 3 (CRITICAL): Retention Value = $0 Across All Years
+Current behavior: The Retention (phased) row shows $0 for Year 1, Year 2, and Year 3. The phasing configuration exists (20% → 65% → 100%), the methodology describes it, the chart legend includes it, but the output is zero.
+Root cause: There is likely no default value for either:
+
+Annual retention improvement rate (e.g., what % of providers are retained who would have otherwise left)
+Replacement cost per provider
+Fix — Option A (preferred): Add default retention inputs and wire up the calculation:
+Default annual retention improvement: 1% of active providers retained who would have otherwise left
+Default replacement cost: $400,000 per provider (industry midpoint of $300K-$500K range)
+Apply phasing: Year 1 value × 20%, Year 2 value × 65%, Year 3 value × 100%
+Make these editable in settings/benchmarks
+Example calculation at full scale (Year 3):
+500 providers × 1% = 5 providers retained
+5 × $400K = $2,000,000 × 100% phasing = $2,000,000
+This is huge — so you might want an even more conservative default like 0.5% or frame it as "providers retained" with a slider
+Fix — Option B (if calculation can't be wired up quickly):
+Remove Retention entirely from:
+The 3-Year Financial Summary table (delete the row)
+The chart legend
+The chart stacked area layers
+The sensitivity analysis
+The methodology text
+Do NOT show a $0 row. It looks broken and raises questions. Better to exclude it and add it properly later than to show a broken line item in a QBR document.
+
+
+BUG 4 (HIGH): IRR Front-Loads All Costs Into Period 0
+Current behavior: The methodology states "Period 0 is the total cost basis (implementation fees plus full contract subscription)." This means ALL 3 years of cost ($1.12M corrected) is loaded into Year 0, with value flowing in Years 1-3.
+Problem: This is not how real cash flows work. You pay Year 1 costs in Year 1, Year 2 costs in Year 2, etc. Front-loading all costs into Period 0 artificially inflates IRR because it treats the investment as a single upfront spend with all returns coming later.
+Fix: Use proper year-by-year net cash flows for IRR:
+
+Period 0 (or Year 0): Implementation fees only (if any). If no implementation fee, Period 0 = $0 or start from Year 1.
+Year 1: Value Year 1 - Cost Year 1 = $266K - $72K = $194K
+Year 2: Value Year 2 - Cost Year 2 = $1.4M - $331K = $1.07M
+Year 3: Value Year 3 - Cost Year 3 = $3.8M - $720K = $3.08M
+If there IS an implementation fee, that goes in Period 0 as the initial outlay, and Years 1-3 are net cash flows (value minus subscription cost).
+The IRR will still be strong with proper cash flows — but it will be a real, defensible number.
+
+
+BUG 5 (HIGH): Hours Returned Denominator Is Unclear
+Current behavior: Shows "Hours Returned: 1,633 | ≈ 0.8 FTEs"
+Problem: 1,633 hours across WHICH providers over WHAT time period?
+
+If 500 providers: 1,633 / 500 = 3.3 hrs/provider/year (almost nothing)
+If 50 Year 1 providers: 1,633 / 50 = 32.7 hrs/provider/year (meaningful)
+FTE calc: 1,633 / 2,080 = 0.79 ≈ 0.8 FTEs ✓
+Fix: Add context to the Hours Returned metric:
+Show "1,633 hours returned across [X] providers"
+Show "≈ [X] hrs/provider/year"
+Show the FTE equivalent
+Clarify the time period (Year 1 only? Cumulative 3-year? At scale?)
+Also — show how this is calculated. Is it based on time saved per encounter × encounters? What's the time-per-encounter assumption for ED? This isn't visible anywhere in the benchmark inputs.
+
+
+BUG 6 (HIGH): "Full Edit (change drivers)" Routes to Care Setting Selection
+Current behavior: Clicking "Full Edit (change drivers)" on the Emergency Department card navigates to the "Add a care setting" screen instead of opening a benchmark editor for the Emergency Department's value driver assumptions.
+Problem: Users cannot see or modify the underlying benchmark assumptions (LWBS rate, admission rate, wRVU per encounter, time saved per note, etc.) that drive the $106K, $181K, and $152K value calculations. This means:
+
+Users can't customize the model to their actual data
+There's no transparency into what drives the numbers
+The tool feels like a black box — terrible for skeptical audiences
+Fix: "Full Edit (change drivers)" should open an inline editor or modal showing the ED-specific benchmark assumptions:
+
+
+LWBS Recovery: Current LWBS rate (%), Expected reduction with Abridge (%), Average LWBS revenue opportunity ($), Annual ED encounters
+Admission Capture: Current admission rate (%), Expected improvement (%), Average admission revenue ($)
+wRVU Uplift: Current wRVU/encounter, Expected wRVU/encounter with Abridge, wRVU dollar conversion rate ($)
+Time Savings: Minutes per note before, Minutes per note after, Provider hourly rate
+Each field should have a sensible default (your current hardcoded values) but be editable. Show the resulting value update in real-time as inputs change. This transforms the tool from a black box into a credible, customizable model.
+
+
+BUG 7 (MEDIUM): "Step of" Broken Breadcrumb
+Current behavior: Header shows "Step of" with no step numbers.
+Fix: Show "Step 2 of 3" on the Deal Structure page, "Step 3 of 3" or "Results" on the results page. Or remove the breadcrumb entirely and just show the page title. Cannot say "Step of" with nothing after it.
+BUG 8 (MEDIUM): Active Provider Ramp Numbers Don't Match Inputs
+Current behavior: Table shows Active Providers: 50 → 148 → 377 → 500
+Expected based on inputs:
+
+Licensed: 50 → 230 → 500
+Adoption: 20% → 65% → 100%
+Active = Licensed × Adoption: 10 → 150 → 500
+But table shows 50, 148, 377. These don't match either licensed OR adopted counts:
+148 is close to 230 × 65% = 149.5 ✓ (close enough, rounding)
+377 is close to 500 × 75.4%... but adoption Year 3 = 100%, so active should be 500 🚨
+50 in Year 1 with 20% adoption should be 10, not 50 🚨
+It appears the "Active Providers" calculation is using an AVERAGE of the adoption ramp within each year (e.g., Year 1 starts at 0% and ends at 20%, so average might be ~10%, but then result should be 5, not 50). Or the adoption % is being applied differently than described.
+Fix: Clarify and correct the Active Provider calculation:
+Show Licensed Providers row: 50, 230, 500 (what you're paying for)
+Show Active Providers row: Licensed × Adoption % = 10, 150, 500 (what's generating value)
+OR if the ramp is gradual within the year, show the average active and explain: "Average active providers during the year, accounting for gradual adoption ramp"
+Either way, the numbers must be mathematically traceable from the inputs
+
+
+VALIDATION TEST
+After fixing all bugs, test with these inputs:
+
+Organization: ABC Hospital
+Care Setting: Emergency Department
+Providers: 50 → 230 → 500
+Utilization: 70%
+Pricing: $120/physician/month
+No implementation fee
+Go-Live: Month 1
+Adoption: 20% → 65% → 100%
+Verify each of these:
+
+
+✅ Investment Year 1 = 50 × $120 × 12 = $72,000
+✅ Investment Year 2 = 230 × $120 × 12 = $331,200
+✅ Investment Year 3 = 500 × $120 × 12 = $720,000
+✅ Total Investment = $1,123,200
+✅ Value-to-Cost = Total Value / $1,123,200 (should be ~4.8x, NOT 6.6x)
+✅ Simple ROI = Net Value / $1,123,200 (should be ~382%, NOT 557%)
+✅ Payback period recalculated and > 2 months (with context)
+✅ IRR uses year-by-year cash flows, not front-loaded costs
+✅ Per provider at scale = Annual Value / 500 (NOT / 50)
+✅ Retention is either non-zero and sensible, OR completely removed from all UI
+✅ Active Providers match Licensed × Adoption % for each year
+✅ Licensed Providers row added to table
+✅ "Step of" breadcrumb fixed
+✅ "Full Edit" opens benchmark editor, not care setting selection
+✅ Hours Returned shows clear denominator and per-provider breakdown
+✅ All changes cascade correctly into Sensitivity Analysis (all 3 scenarios)
+✅ All changes cascade correctly into PDF export
+✅ Methodology text updated to reflect corrected calculations
+Also test with Per Encounter pricing to confirm:
+
+
+Investment = encounters × price per encounter (adoption correctly affects cost here)
+Value calculations remain consistent
+ROI metrics update properly
+The story still holds (it should — value per encounter vs cost per encounter is clean)
+
+
+That prompt covers every math and bug issue. The earlier prompt handles design, narrative, and PDF structure — this one makes sure the numbers are right. Both need to be applied.

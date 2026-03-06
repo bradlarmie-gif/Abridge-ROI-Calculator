@@ -355,6 +355,8 @@ export default function ExploreModel({
         year2: state.annualEncounters,
         year3: state.annualEncounters,
       },
+      retentionRate: retentionValue > 0 ? 0 : 0.5,
+      replacementCost: 400000,
     };
 
     onAddToProforma(snapshot);

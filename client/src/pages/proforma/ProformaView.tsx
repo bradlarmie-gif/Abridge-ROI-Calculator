@@ -87,10 +87,10 @@ function contractTermLabel(months: number): string {
 }
 
 const CHART_COLORS = {
-  doc: "#1A1A1A",
+  doc: "#1E3A5F",
   time: "#EA2C00",
-  retention: "#B45309",
-  investment: "#78716C",
+  retention: "#D4930A",
+  investment: "#6B7280",
 };
 
 const SCENARIO_COLORS = ["#EA2C00", "#78716C", "#1A1A1A"];
@@ -338,7 +338,14 @@ export default function ProformaView({
 
   return (
     <div className="min-h-screen bg-white">
-      <UnifiedHeader onHome={onHome} />
+      <UnifiedHeader 
+        pathType="explore" 
+        currentStep={1} 
+        totalSteps={1} 
+        stepName="Financial Proforma" 
+        onHome={onHome}
+        showBack={false}
+      />
       <UnifiedHeaderSpacer />
 
       {/* HERO */}
@@ -568,6 +575,20 @@ export default function ProformaView({
           })}
         </div>
 
+        {/* EXECUTIVE SUMMARY */}
+        <motion.div
+          className="mb-8 sm:mb-10 bg-[#F9F6F2] rounded-xl p-5 sm:p-6 border-l-4 border-[#EA2C00]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          data-testid="panel-executive-summary"
+        >
+          <h2 className="text-sm sm:text-base font-bold text-neutral-900 mb-2">Executive Summary</h2>
+          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+            Over a {contractTermLabel(config.contractTermMonths).toLowerCase()} partnership, the estimated investment of {fmtFull(summary.termInvestment)} across {fmtNum(settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0))} {settings.length > 1 ? "providers" : SETTING_UNIT_LABELS[settings[0]?.careSetting]} is projected to return {fmt(summary.termNet)} in net organizational value — a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Documentation quality improvements begin from day one, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+          </p>
+        </motion.div>
+
         {/* CHART */}
         <motion.div
           className="mb-8 sm:mb-10"
@@ -674,13 +695,13 @@ export default function ProformaView({
                   />
                 )}
 
-                <Area
+                <Line
                   type="monotone"
                   dataKey="investment"
-                  stackId="inv"
-                  fill="url(#grad-investment)"
                   stroke={CHART_COLORS.investment}
-                  strokeWidth={isMobile ? 1 : 1.5}
+                  strokeWidth={isMobile ? 1.5 : 2}
+                  strokeDasharray="8 4"
+                  dot={{ r: 3, fill: CHART_COLORS.investment, stroke: "#fff", strokeWidth: 1.5 }}
                   name="Investment"
                 />
 
@@ -768,7 +789,7 @@ export default function ProformaView({
                 )}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px solid ${CHART_COLORS.investment}` }} />
+                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px dashed ${CHART_COLORS.investment}` }} />
                 <span className="text-neutral-600">Investment</span>
                 {legendTotals.inv > 0 && (
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.inv)}</span>
@@ -1048,10 +1069,64 @@ export default function ProformaView({
             })}
           </div>
 
-          {/* Retention phasing */}
+          {/* Retention calculation */}
           <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-neutral-200">
-            <p className="text-sm font-bold text-neutral-700 mb-1">Retention Benefit Phasing</p>
-            <p className="text-xs text-neutral-500 mb-1">When do retention benefits materialize?</p>
+            <p className="text-sm font-bold text-neutral-700 mb-1">Retention Value Model</p>
+            <p className="text-xs text-neutral-500 mb-1">Estimate avoided turnover costs from reduced documentation burden</p>
+            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">Retention value = full-scale providers × retention improvement rate × replacement cost per provider, phased over years.</p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
+              {settings.map(s => {
+                const rate = s.retentionRate ?? 0.5;
+                const cost = s.replacementCost ?? 400000;
+                const fullScale = s.fullScaleProviders || s.providerCount;
+                const annualVal = fullScale * (rate / 100) * cost;
+                const hasExploreRet = s.drivers.some(d => d.id === "retention" && d.value > 0);
+                return (
+                  <div key={s.id} className="bg-white rounded-lg border border-neutral-200 p-3" data-testid={`retention-config-${s.careSetting}`}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-xs font-medium text-neutral-700 truncate">{s.label}</span>
+                    </div>
+                    {hasExploreRet ? (
+                      <p className="text-[11px] text-neutral-500">Using Explore-configured retention value ({fmt(s.drivers.find(d => d.id === "retention")?.value || 0)}/yr)</p>
+                    ) : (
+                      <>
+                        <div className="mb-2">
+                          <label className="block text-[11px] text-neutral-500 mb-0.5">Retention improvement %</label>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="range"
+                              min={0}
+                              max={3}
+                              step={0.1}
+                              value={rate}
+                              onChange={(e) => onUpdateSetting(s.id, { retentionRate: parseFloat(e.target.value) })}
+                              className="flex-1 accent-[#D4930A]"
+                              data-testid={`slider-ret-rate-${s.careSetting}`}
+                            />
+                            <span className="text-[11px] font-bold text-neutral-800 w-10 text-right">{rate.toFixed(1)}%</span>
+                          </div>
+                        </div>
+                        <div className="mb-2">
+                          <label className="block text-[11px] text-neutral-500 mb-0.5">Replacement cost</label>
+                          <FormattedNumberInput
+                            value={cost}
+                            onChange={(v) => onUpdateSetting(s.id, { replacementCost: Math.max(v, 0) })}
+                            prefix="$"
+                            className="w-full text-right text-[11px] h-7 bg-white border border-neutral-300 rounded px-1.5"
+                            data-testid={`input-ret-cost-${s.careSetting}`}
+                          />
+                        </div>
+                        <p className="text-[11px] font-medium text-[#D4930A]">= {fmt(annualVal)}/yr at full scale</p>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs font-bold text-neutral-600 mb-2">Retention Benefit Phasing</p>
             <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the 3-month clinical onset delay already built into capacity & efficiency cash flows.</p>
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
@@ -1157,21 +1232,38 @@ export default function ProformaView({
                   </>
                 )}
                 {!isMobile && (
-                  <tr className="border-b border-neutral-100">
-                    <td className="py-2 pl-4 text-neutral-500 text-xs">Active Providers</td>
-                    {yearlyData.map(y => {
-                      const totalProviders = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
-                      return (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalProviders)}</td>
-                      );
-                    })}
-                    <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                      {(() => {
-                        const finalMonth = cashFlows[cashFlows.length - 1];
-                        return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.providers || 0), 0)) : "—";
-                      })()}
-                    </td>
-                  </tr>
+                  <>
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-2 pl-4 text-neutral-500 text-xs">Licensed Providers</td>
+                      {yearlyData.map(y => {
+                        const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+                        return (
+                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalLicensed)}</td>
+                        );
+                      })}
+                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
+                        {(() => {
+                          const finalMonth = cashFlows[cashFlows.length - 1];
+                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.licensedProviders || 0), 0)) : "—";
+                        })()}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-neutral-100">
+                      <td className="py-2 pl-4 text-neutral-500 text-xs">Actively Documenting</td>
+                      {yearlyData.map(y => {
+                        const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
+                        return (
+                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalActive)}</td>
+                        );
+                      })}
+                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
+                        {(() => {
+                          const finalMonth = cashFlows[cashFlows.length - 1];
+                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.providers || 0), 0)) : "—";
+                        })()}
+                      </td>
+                    </tr>
+                  </>
                 )}
                 <tr className="border-b border-neutral-200">
                   <td className="py-2 sm:py-2.5 font-medium text-red-600">Investment</td>
@@ -1217,11 +1309,16 @@ export default function ProformaView({
               <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-1.5">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {fmtPct(summary.irr)}</p>
             )}
           </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-payback">
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{summary.paybackMonth ?? "—"}</p>
             <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
+            {summary.paybackMonth && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-800 text-white text-[10px] rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 leading-relaxed" data-testid="tooltip-payback-context">
+                Payback assumes value begins accruing from go-live. Actual time to value may vary based on training, workflow integration, and adoption speed.
+              </div>
+            )}
           </div>
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
@@ -1352,6 +1449,96 @@ export default function ProformaView({
                 Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.termInvestment)}.
               </p>
             </div>
+          </div>
+        </motion.div>
+
+        {/* YEAR-BY-YEAR NARRATIVE */}
+        <motion.div
+          className="mb-8 sm:mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          data-testid="panel-year-narratives"
+        >
+          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">Year-by-Year Outlook</h2>
+          <p className="text-xs sm:text-sm text-neutral-500 mb-4">How the deployment is projected to unfold</p>
+
+          <div className="space-y-4">
+            {yearlyData.map((y, idx) => {
+              const yearNum = idx + 1;
+              const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+              const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
+              const adoptionPct = totalLicensed > 0 ? Math.round((totalActive / totalLicensed) * 100) : 0;
+              const headlines = [
+                { title: "Establish the Evidence", desc: "Initial deployment builds the evidence base. Documentation quality value begins immediately while capacity gains start after the 3-month operational ramp." },
+                { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
+                { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories — documentation, capacity, and retention — are contributing at or near full scale." },
+              ];
+              const h = headlines[Math.min(idx, 2)];
+              return (
+                <div key={y.label} className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-5" data-testid={`year-narrative-${yearNum}`}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-[#EA2C00] uppercase tracking-wide">Year {yearNum}</span>
+                        <span className="text-xs text-neutral-400">({y.label})</span>
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold text-neutral-900">{h.title}</h3>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-4">
+                      <p className="text-lg sm:text-xl font-bold text-neutral-900">{fmt(y.totalValue)}</p>
+                      <p className="text-[10px] text-neutral-400">projected value</p>
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm text-neutral-500 mb-3">{h.desc}</p>
+                  <div className="flex flex-wrap gap-3 sm:gap-4 text-[11px] sm:text-xs text-neutral-600">
+                    <span><strong>{fmtNum(totalLicensed)}</strong> licensed</span>
+                    <span><strong>{fmtNum(totalActive)}</strong> actively documenting</span>
+                    <span><strong>{adoptionPct}%</strong> avg adoption</span>
+                    <span>Investment: <strong>{fmt(y.investment)}</strong></span>
+                    <span>Net: <strong className={y.netValue >= 0 ? "text-[#EA2C00]" : "text-red-600"}>{fmt(y.netValue)}</strong></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* COST OF WAITING */}
+        <motion.div
+          className="mb-8 sm:mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.29 }}
+          data-testid="panel-cost-of-waiting"
+        >
+          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">Cost of Waiting</h2>
+          <p className="text-xs sm:text-sm text-neutral-500 mb-4">What the data suggests about delayed implementation</p>
+
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
+                  {fmtNum(Math.round(settings.reduce((s, v) => s + v.totalHoursSaved, 0) / 12))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">hours/month on manual documentation</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
+                  {fmt(Math.round(summary.runRateValue / 12))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated monthly value foregone</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
+                  {fmt(Math.round(summary.runRateValue / 12 * 6))}
+                </p>
+                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated 6-month opportunity cost</p>
+              </div>
+            </div>
+            <p className="text-[11px] sm:text-xs text-neutral-500 leading-relaxed">
+              According to the AMA{"\u2019"}s 2023 Physician Burnout Survey, physicians spend an average of 2 hours on documentation for every hour of patient care. Each month of delayed implementation represents continued documentation burden, potential clinician dissatisfaction, and revenue leakage from incomplete coding. These estimates are derived from the same assumptions used throughout this model and are subject to the same limitations.
+            </p>
           </div>
         </motion.div>
 

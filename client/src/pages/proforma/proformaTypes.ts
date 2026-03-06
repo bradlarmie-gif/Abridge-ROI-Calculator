@@ -41,6 +41,8 @@ export interface ProformaSettingSnapshot {
   fullExploreState: ExploreState;
   yearlyProviders?: YearlyProviders;
   yearlyEncounters?: { year1: number; year2: number; year3: number };
+  retentionRate?: number;
+  replacementCost?: number;
 }
 
 export interface RetentionPhasing {
@@ -69,7 +71,7 @@ export interface ProformaCashFlowRow {
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }>;
+  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }>;
 }
 
 export interface ProformaSummary {

@@ -103,6 +103,28 @@ function getProviderExpansion(
   return Math.round(pilotProviders + (fullScaleProviders - pilotProviders) * progress);
 }
 
+export function getLicensedProviders(
+  month: number,
+  goLiveMonth: number,
+  contractMonths: number,
+  pilotProviders: number,
+  fullScaleProviders: number,
+  yearlyProviders?: { year1: number; year2: number; year3: number }
+): number {
+  const monthsSinceGoLive = month - goLiveMonth;
+  if (monthsSinceGoLive < 0) return 0;
+
+  if (yearlyProviders) {
+    const y3 = contractMonths >= 36 ? yearlyProviders.year3 : yearlyProviders.year2;
+    if (monthsSinceGoLive < 12) return yearlyProviders.year1;
+    if (monthsSinceGoLive < 24) return yearlyProviders.year2;
+    return y3;
+  }
+
+  if (monthsSinceGoLive < 12) return pilotProviders;
+  return fullScaleProviders;
+}
+
 function getEncounterExpansion(
   month: number,
   goLiveMonth: number,
@@ -171,7 +193,7 @@ export function buildMonthlyCashFlows(
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
         continue;
       }
 
@@ -196,7 +218,24 @@ export function buildMonthlyCashFlows(
       let settingTimeValue = 0;
       let settingRetentionValue = 0;
 
-      for (const driver of setting.drivers) {
+      const retentionRate = setting.retentionRate ?? 0;
+      const replacementCost = setting.replacementCost ?? 400000;
+      const hasExploreRetention = setting.drivers.some(d => d.id === "retention" && d.value > 0);
+      const proformaRetentionAnnual = !hasExploreRetention && retentionRate > 0
+        ? fullScale * (retentionRate / 100) * replacementCost
+        : 0;
+
+      const effectiveDrivers = [...setting.drivers];
+      if (proformaRetentionAnnual > 0) {
+        const existingIdx = effectiveDrivers.findIndex(d => d.id === "retention");
+        if (existingIdx >= 0) {
+          effectiveDrivers[existingIdx] = { ...effectiveDrivers[existingIdx], value: proformaRetentionAnnual };
+        } else {
+          effectiveDrivers.push({ id: "retention", name: "Retention", value: proformaRetentionAnnual, category: "time", onset: "phased" });
+        }
+      }
+
+      for (const driver of effectiveDrivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
         const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 1 : 12;
         const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, rampMonths);
@@ -221,6 +260,12 @@ export function buildMonthlyCashFlows(
         settingDocValue += (nonDriverValue / 12) * nonDriverRamp * expansionMultiplier;
       }
 
+      const licensedProviders = getLicensedProviders(
+        m, setting.goLiveMonth, months,
+        setting.providerCount, fullScale,
+        setting.yearlyProviders
+      );
+
       let monthlyInvestment: number;
       if (setting.pricingModel === "annualFlat") {
         monthlyInvestment = (setting.annualLicenseFee || 0) / 12;
@@ -232,7 +277,7 @@ export function buildMonthlyCashFlows(
         const monthlyEncounters = currentEncounters / 12;
         monthlyInvestment = (setting.costPerEncounter || 0) * monthlyEncounters;
       } else {
-        monthlyInvestment = setting.costPerUnit * currentProviders;
+        monthlyInvestment = setting.costPerUnit * licensedProviders;
       }
 
       totalDocValue += settingDocValue;
@@ -244,6 +289,7 @@ export function buildMonthlyCashFlows(
         value: settingDocValue + settingTimeValue + settingRetentionValue,
         investment: monthlyInvestment,
         providers: currentProviders,
+        licensedProviders,
         docValue: settingDocValue,
         timeValue: settingTimeValue,
         retentionValue: settingRetentionValue,
@@ -295,15 +341,19 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
+        : 0;
+      const endLicensed = chunk.length > 0
+        ? chunk[chunk.length - 1]?.bySettings[id]?.licensedProviders || 0
         : 0;
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
         providers: avgProviders,
+        licensedProviders: endLicensed,
         docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
         timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
         retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
@@ -337,15 +387,19 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
+        : 0;
+      const endLicensed = chunk.length > 0
+        ? chunk[chunk.length - 1]?.bySettings[id]?.licensedProviders || 0
         : 0;
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
         providers: avgProviders,
+        licensedProviders: endLicensed,
         docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
         timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
         retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
@@ -771,16 +825,20 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   return years
     .filter(y => y.rows.length > 0)
     .map((y, idx) => {
-      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number }> = {};
+      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number; licensedProviders: number }> = {};
       settings.forEach(s => {
         const avgProviders = y.rows.length > 0
           ? Math.round(y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.providers || 0), 0) / y.rows.length)
+          : 0;
+        const licensedProviders = y.rows.length > 0
+          ? y.rows[y.rows.length - 1]?.bySettings[s.id]?.licensedProviders || 0
           : 0;
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
           retention: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.retentionValue || 0), 0),
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
           providers: avgProviders,
+          licensedProviders,
         };
       });
 

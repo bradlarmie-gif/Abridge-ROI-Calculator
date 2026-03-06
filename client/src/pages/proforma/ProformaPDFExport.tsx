@@ -49,9 +49,9 @@ const colors = {
   border: "#E0E0E0",
   positive: "#059669",
   negative: "#DC2626",
-  docBlue: "#1A1A1A",
+  docBlue: "#1E3A5F",
   timeRed: "#EA2C00",
-  retentionAmber: "#B45309",
+  retentionAmber: "#D4930A",
   warningBg: "#FEF3C7",
   warningBorder: "#F59E0B",
   warningText: "#92400E",
@@ -173,253 +173,6 @@ function unitLabel(careSetting: string, plural = true): string {
   return plural ? label : label.replace(/s$/, "");
 }
 
-interface EnrichedDriver {
-  id: string;
-  name: string;
-  value: number;
-  category: "time" | "documentation";
-  onset: string;
-  calcSteps: string[];
-  calibrationNote?: string;
-}
-
-const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
-const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
-const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
-const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
-
-function buildDriverCalcSteps(snapshot: ProformaSettingSnapshot): EnrichedDriver[] {
-  const s = snapshot.fullExploreState;
-  const t = s.timeDriverInputs;
-  const d = s.docQualityInputs;
-  const cs = snapshot.careSetting;
-  const fmtK = (n: number) => Math.abs(n) >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`;
-  const eligibleEncounters = s.annualEncounters * (s.utilizationPercent / 100);
-  const totalHoursSaved = snapshot.totalHoursSaved;
-  const result: EnrichedDriver[] = [];
-
-  if (cs === "outpatient") {
-    const paDriver = snapshot.drivers.find(dd => dd.id === "patientAccess");
-    if (paDriver && paDriver.value > 0) {
-      const hasAllocation = (t as any).opAllocCapacityPercent != null;
-      const allocPct = hasAllocation ? (t as any).opAllocCapacityPercent : 100;
-      const realizationPct = t.capacityRealizationPercent ?? (t as any).capacityPercent ?? 75;
-      const hoursAllocated = totalHoursSaved * (allocPct / 100);
-      const hoursTowardCapacity = hoursAllocated * (realizationPct / 100);
-      const potentialVisits = hoursTowardCapacity * (60 / t.visitDuration);
-      const calcSteps = hasAllocation
-        ? [
-            `${totalHoursSaved.toLocaleString()} hrs × ${allocPct}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
-            `${Math.round(hoursAllocated).toLocaleString()} hrs × ${realizationPct}% realization = ${Math.round(hoursTowardCapacity).toLocaleString()} hrs`,
-            `${Math.round(hoursTowardCapacity).toLocaleString()} hrs × (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
-            `${Math.round(potentialVisits).toLocaleString()} × $${t.revenuePerVisit}/visit = ${fmtK(paDriver.value)}/year`,
-          ]
-        : [
-            `${totalHoursSaved.toLocaleString()} hrs × ${realizationPct}% toward capacity = ${Math.round(hoursTowardCapacity).toLocaleString()} hrs`,
-            `${Math.round(hoursTowardCapacity).toLocaleString()} hrs × (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
-            `${Math.round(potentialVisits).toLocaleString()} × $${t.revenuePerVisit}/visit = ${fmtK(paDriver.value)}/year`,
-          ];
-      result.push({ ...paDriver, calcSteps });
-    }
-    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
-    if (crDriver && crDriver.value > 0) {
-      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
-    }
-    const wrvuDriver = snapshot.drivers.find(dd => dd.id === "wrvu");
-    if (wrvuDriver && wrvuDriver.value > 0) {
-      const wrvuLiftPct = wrvuScenarios[d.wrvuScenario] || 5;
-      result.push({
-        ...wrvuDriver, calcSteps: [
-          `${d.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
-          `\u00D7 $${d.conversionFactor}/wRVU \u00D7 ${d.wrvuRealization}% realization`,
-          `= ${fmtK(wrvuDriver.value)}/year`,
-        ],
-      });
-    }
-    const hccDriver = snapshot.drivers.find(dd => dd.id === "hcc");
-    if (hccDriver && hccDriver.value > 0) {
-      const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
-      const recapturePct = hccScenarios[d.hccScenario] || 10;
-      const maPatients = s.numberOfProviders * d.panelSize * (d.maPercent / 100);
-      const gapPatients = maPatients * (d.gapRate / 100);
-      result.push({
-        ...hccDriver, calcSteps: [
-          `${s.numberOfProviders} providers \u00D7 ${d.panelSize} panel \u00D7 ${d.maPercent}% MA = ${Math.round(maPatients).toLocaleString()} MA patients`,
-          `${Math.round(maPatients).toLocaleString()} \u00D7 ${d.gapRate}% gap \u00D7 ${recapturePct}% recaptured \u00D7 ${d.avgHccs} avg HCCs`,
-          `\u00D7 ${d.rafImpact} RAF \u00D7 $${d.annualPayment.toLocaleString()} \u00D7 ${d.hccRealization}% realization = ${fmtK(hccDriver.value)}/year`,
-        ],
-      });
-    }
-    const denDriver = snapshot.drivers.find(dd => dd.id === "denials");
-    if (denDriver && denDriver.value > 0) {
-      result.push({
-        ...denDriver, calcSteps: [
-          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
-          `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
-          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim \u00D7 ${d.denialsRealization}% realization = ${fmtK(denDriver.value)}/year`,
-        ],
-      });
-    }
-    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
-    if (retDriver && retDriver.value > 0) {
-      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
-      result.push({
-        ...retDriver, calcSteps: [
-          `${s.numberOfProviders} providers \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
-          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
-          `= ${fmtK(retDriver.value)}/year`,
-        ],
-      });
-    }
-  } else if (cs === "ed") {
-    const lwbsDriver = snapshot.drivers.find(dd => dd.id === "edLwbs");
-    const admDriver = snapshot.drivers.find(dd => dd.id === "edAdmission");
-    const edRecoveredPatients = s.annualEncounters * (t.edLwbsRate / 100) * (t.edLwbsReduction / 100);
-    if (lwbsDriver && lwbsDriver.value > 0) {
-      result.push({
-        ...lwbsDriver, calcSteps: [
-          `${s.annualEncounters.toLocaleString()} enc \u00D7 ${t.edLwbsRate}% LWBS \u00D7 ${t.edLwbsReduction}% reduction = ${Math.round(edRecoveredPatients).toLocaleString()} recovered`,
-          `${Math.round(edRecoveredPatients).toLocaleString()} \u00D7 $${t.edRevenuePerVisit}/visit \u00D7 ${t.edLwbsRealization}% realization`,
-          `= ${fmtK(lwbsDriver.value)}/year`,
-        ],
-      });
-    }
-    if (admDriver && admDriver.value > 0) {
-      const admittedPatients = Math.round(edRecoveredPatients * (t.edAdmissionRate / 100));
-      result.push({
-        ...admDriver, calcSteps: [
-          `${Math.round(edRecoveredPatients).toLocaleString()} recovered \u00D7 ${t.edAdmissionRate}% admission rate = ${admittedPatients.toLocaleString()} admitted`,
-          `${admittedPatients.toLocaleString()} \u00D7 $${t.edAdmissionRevenue.toLocaleString()} \u00D7 ${t.edAdmissionRealization}% realization`,
-          `= ${fmtK(admDriver.value)}/year`,
-        ],
-      });
-    }
-    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
-    if (crDriver && crDriver.value > 0) {
-      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
-    }
-    const wrvuDriver = snapshot.drivers.find(dd => dd.id === "wrvu");
-    if (wrvuDriver && wrvuDriver.value > 0) {
-      const wrvuLiftPct = wrvuScenarios[d.wrvuScenario] || 5;
-      result.push({
-        ...wrvuDriver, calcSteps: [
-          `${d.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
-          `\u00D7 $${d.conversionFactor}/wRVU \u00D7 ${d.wrvuRealization}% realization`,
-          `= ${fmtK(wrvuDriver.value)}/year`,
-        ],
-      });
-    }
-    const denDriver = snapshot.drivers.find(dd => dd.id === "denials");
-    if (denDriver && denDriver.value > 0) {
-      result.push({
-        ...denDriver, calcSteps: [
-          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
-          `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${denialsScenarios[d.denialsScenario] || 50}% prevented`,
-          `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim \u00D7 ${d.denialsRealization}% realization = ${fmtK(denDriver.value)}/year`,
-        ],
-      });
-    }
-    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
-    if (retDriver && retDriver.value > 0) {
-      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
-      result.push({
-        ...retDriver, calcSteps: [
-          `${s.numberOfProviders} physicians \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
-          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
-          `= ${fmtK(retDriver.value)}/year`,
-        ],
-      });
-    }
-  } else if (cs === "inpatient") {
-    const crDriver = snapshot.drivers.find(dd => dd.id === "costReduction");
-    if (crDriver && crDriver.value > 0) {
-      result.push({ ...crDriver, calcSteps: [`Estimated annual cost reduction: ${fmtK(crDriver.value)}/year`] });
-    }
-    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
-    if (retDriver && retDriver.value > 0) {
-      const impactPct = retentionScenarios[t.retentionImpactScenario] || 30;
-      result.push({
-        ...retDriver, calcSteps: [
-          `${s.numberOfProviders} hospitalists \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
-          `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
-          `= ${fmtK(retDriver.value)}/year`,
-        ],
-      });
-    }
-    const drgDriver = snapshot.drivers.find(dd => dd.id === "ipDrg");
-    if (drgDriver && drgDriver.value > 0) {
-      const captureRate = d.ipDrgScenario === "conservative" ? 15 : d.ipDrgScenario === "typical" ? 20 : 25;
-      result.push({
-        ...drgDriver, calcSteps: [
-          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.ipDrgAtRiskRate}% at-risk \u00D7 ${captureRate}% captured`,
-          `\u00D7 ${d.ipDrgWeightIncrease} wt increase \u00D7 $${d.ipDrgBasePayment.toLocaleString()} base`,
-          `\u00D7 ${d.ipDrgRealization}% realization = ${fmtK(drgDriver.value)}/year`,
-        ],
-      });
-    }
-    const cdiDriver = snapshot.drivers.find(dd => dd.id === "ipCdi");
-    if (cdiDriver && cdiDriver.value > 0) {
-      const reductionRate = d.ipCdiScenario === "conservative" ? 15 : d.ipCdiScenario === "typical" ? 25 : 35;
-      result.push({
-        ...cdiDriver, calcSteps: [
-          `${eligibleEncounters.toLocaleString()} enc \u00D7 ${d.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
-          `\u00D7 $${d.ipCdiCostPerQuery}/query = ${fmtK(cdiDriver.value)}/year`,
-        ],
-      });
-    }
-  } else if (cs === "nursing") {
-    const otDriver = snapshot.drivers.find(dd => dd.id === "nursingOt");
-    if (otDriver && otDriver.value > 0) {
-      const otHours = Math.round(totalHoursSaved * (t.nursingOtReductionPercent / 100));
-      result.push({
-        ...otDriver, calcSteps: [
-          `${totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${t.nursingOtReductionPercent}% OT conversion = ${otHours.toLocaleString()} OT hrs`,
-          `${otHours.toLocaleString()} \u00D7 $${t.nursingOtHourlyRate}/hr = ${fmtK(otDriver.value)}/year`,
-        ],
-      });
-    }
-    const retDriver = snapshot.drivers.find(dd => dd.id === "retention");
-    if (retDriver && retDriver.value > 0) {
-      const impactRate = nursingRetentionImpactRates[t.retentionImpactScenario] || 15;
-      result.push({
-        ...retDriver, calcSteps: [
-          `${s.numberOfProviders} FTEs \u00D7 ${t.nursingTurnoverRate}% turnover \u00D7 40% burnout-related`,
-          `\u00D7 ${impactRate}% impact \u00D7 $${t.nursingReplacementCost.toLocaleString()} replacement`,
-          `= ${fmtK(retDriver.value)}/year`,
-        ],
-      });
-    }
-    const hapiDriver = snapshot.drivers.find(dd => dd.id === "nursingHapi");
-    if (hapiDriver && hapiDriver.value > 0) {
-      result.push({
-        ...hapiDriver, calcSteps: [
-          `Patient days \u00D7 HAPI rate \u00D7 ${d.nursingHapiPreventionRate}% prevention \u00D7 $${d.nursingHapiCost.toLocaleString()}/event`,
-          `= ${fmtK(hapiDriver.value)}/year`,
-        ],
-        calibrationNote: "Potential value based on adverse event prevention rates.",
-      });
-    }
-    const fallsDriver = snapshot.drivers.find(dd => dd.id === "nursingFalls");
-    if (fallsDriver && fallsDriver.value > 0) {
-      result.push({
-        ...fallsDriver, calcSteps: [
-          `Patient days \u00D7 falls rate \u00D7 ${d.nursingFallsPreventionRate}% prevention \u00D7 $${d.nursingFallsCost.toLocaleString()}/event`,
-          `= ${fmtK(fallsDriver.value)}/year`,
-        ],
-        calibrationNote: "Potential value based on adverse event prevention rates.",
-      });
-    }
-  }
-
-  for (const driver of snapshot.drivers) {
-    if (!result.find(r => r.id === driver.id)) {
-      result.push({ ...driver, calcSteps: [`Annual value: ${fmtK(driver.value)}/year`] });
-    }
-  }
-
-  return result;
-}
-
 function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   const s = snapshot.fullExploreState;
   const t = s.timeDriverInputs;
@@ -467,11 +220,6 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   return lines;
 }
 
-function getMathPageCount(settings: ProformaSettingSnapshot[]): number {
-  const totalDrivers = settings.reduce((sum, s) => sum + s.drivers.length, 0);
-  if (totalDrivers > 10 || settings.length > 3) return 2;
-  return 1;
-}
 
 function fmtAxis(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -632,54 +380,6 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
   );
 }
 
-function PDFOnsetTimeline() {
-  const w = 458;
-  const svgH = 22;
-  const lineY = 11;
-
-  const points = [
-    { pct: 0.03, label: "Month 1", sublabel: "Doc Quality", color: colors.docBlue },
-    { pct: 0.12, label: "Month 4", sublabel: "Capacity & Efficiency", color: colors.timeRed },
-    { pct: 0.4, label: "Year 2", sublabel: "Retention 50%", color: colors.retentionAmber },
-    { pct: 0.97, label: "Year 3", sublabel: "Full Retention", color: colors.retentionAmber },
-  ];
-
-  return (
-    <View>
-      <Svg width={w} height={svgH} viewBox={`0 0 ${w} ${svgH}`}>
-        <SvgLine x1={8} y1={lineY} x2={w - 8} y2={lineY} stroke="#E5E0DB" strokeWidth={2} />
-        <SvgLine x1={(w - 16) * points[2].pct + 8} y1={lineY - 1} x2={(w - 16) * points[3].pct + 8} y2={lineY - 1} stroke={colors.retentionAmber} strokeWidth={4} strokeOpacity={0.18} />
-        {points.map((pt, i) => {
-          const cx = (w - 16) * pt.pct + 8;
-          return (
-            <G key={`op-${i}`}>
-              <Circle cx={cx} cy={lineY} r={5} fill={pt.color} />
-              <Circle cx={cx} cy={lineY} r={2.5} fill="#FFFFFF" />
-            </G>
-          );
-        })}
-      </Svg>
-      <View style={{ flexDirection: "row", marginTop: 3, justifyContent: "space-between" }}>
-        <View style={{ alignItems: "flex-start" }}>
-          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Month 1</Text>
-          <Text style={{ fontSize: 5.5, color: colors.docBlue }}>Doc Quality</Text>
-        </View>
-        <View style={{ alignItems: "center", marginLeft: -20 }}>
-          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Month 4</Text>
-          <Text style={{ fontSize: 5.5, color: colors.timeRed }}>Capacity & Efficiency</Text>
-        </View>
-        <View style={{ alignItems: "center" }}>
-          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 2</Text>
-          <Text style={{ fontSize: 5.5, color: colors.retentionAmber }}>Retention 50%</Text>
-        </View>
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#1A1A1A" }}>Year 3</Text>
-          <Text style={{ fontSize: 5.5, color: colors.retentionAmber }}>Full Retention</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
 
 function PDFSensitivityBars({ conservative, base, optimistic }: { conservative: number; base: number; optimistic: number }) {
   const w = 120;
@@ -700,12 +400,12 @@ function PDFSensitivityBars({ conservative, base, optimistic }: { conservative: 
   );
 }
 
-const BASE_PAGES = 8;
+const TOTAL_PDF_PAGES = 7;
 
 const PageFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
   <View style={styles.footer}>
     <Text style={styles.footerLeft}>ABRIDGE</Text>
-    <Text style={styles.footerCenter}>Organization Proforma</Text>
+    <Text style={styles.footerCenter}>Confidential</Text>
     <Text style={styles.footerRight}>Page {pageNum} of {totalPages}</Text>
   </View>
 );
@@ -725,9 +425,6 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const hasInvestment = settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
   const irrLabel = summary.irrMethod === "mirr" ? "MIRR" : "IRR";
   const irrDisplay = hasInvestment && summary.irrValid ? fmtPct(summary.irr) : "N/A";
-  const mathPages = getMathPageCount(settings);
-  const TOTAL_PAGES = BASE_PAGES + mathPages;
-  const enrichedBySettings = settings.map(s => ({ setting: s, drivers: buildDriverCalcSteps(s) }));
   const settingInputSummaries = settings.map(s => ({ setting: s, inputs: getSettingInputSummary(s) }));
 
   const totalDocValue = yearlyData.reduce((s, y) => s + y.docValue, 0);
@@ -738,27 +435,23 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const timePct = totalAllValue > 0 ? Math.round((totalTimeValue / totalAllValue) * 100) : 0;
   const retPct = totalAllValue > 0 ? Math.round((totalRetentionValue / totalAllValue) * 100) : 0;
 
-  const totalProviders = settings.reduce((s, v) => s + v.providerCount, 0);
   const totalFullScale = settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
-  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const totalMonthlyCost = settings.reduce((s, v) => {
-    if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0) / 12;
-    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * ((v.yearlyEncounters?.year1 ?? v.encounters) / 12);
-    return s + v.costPerUnit * v.providerCount;
-  }, 0);
+  const totalHoursSaved = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
 
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
-  const strategicObservation = (() => {
-    if (settings.length === 1) {
-      return `This model focuses on ${settingNames}. A single-setting deployment provides a focused proof of value. Once baselines are established and outcomes measured, this model can be extended to additional care settings to compound organizational impact.`;
-    }
-    const dominant = docPct > timePct ? "documentation quality" : "capacity & efficiency";
-    return `Across ${settings.length} care setting${settings.length > 1 ? "s" : ""} (${settingNames}), this model is ${dominant}-weighted: ${docPct}% documentation quality, ${timePct}% capacity and efficiency, ${retPct}% retention. Each setting is modeled independently with its own onset timing and adoption curve. The ${termLabel.toLowerCase()} horizon allows retention value — the slowest-building driver — to reach meaningful scale. Payback is projected at month ${summary.paybackMonth ?? "N/A"}.`;
-  })();
+  const yearNarratives = [
+    { title: "Establish the Evidence", desc: "Initial deployment builds the evidence base. Documentation quality value begins immediately while capacity gains start after the 3-month operational ramp." },
+    { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
+    { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories are contributing at or near full scale." },
+  ];
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return (
     <Document>
+      {/* PAGE 1: COVER */}
       <PDFCoverPage
         reportLabel="ORGANIZATION PROFORMA"
         title={organizationName || "Organization"}
@@ -767,414 +460,104 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
         disclaimerText="This model reflects conservative estimates derived from user inputs and aggregated deployment experience. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
       />
 
-      {/* PAGE 1: THE THESIS */}
+      {/* PAGE 2: EXECUTIVE SUMMARY */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE THESIS</Text>
-          <Text style={styles.sectionHeadline}>The case for ambient documentation at scale.</Text>
-          <Text style={styles.body}>
-            This model projects the financial impact of ambient documentation across {settings.length} care setting{settings.length > 1 ? "s" : ""} over a {termLabel.toLowerCase()} term. Value is modeled in two streams — time efficiency and documentation quality — each with independent onset timing, adoption ramps, and conservative attribution. The output is a defensible, auditable investment case.
-          </Text>
+          <Text style={styles.sectionLabel}>EXECUTIVE SUMMARY</Text>
+          <Text style={styles.sectionHeadline}>The Investment Case at a Glance</Text>
 
-          <View style={[styles.cardBg, { paddingVertical: 16, paddingHorizontal: 18, marginBottom: 10 }]}>
-            <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                  PROJECTED {termLabel.toUpperCase()} NET VALUE
-                </Text>
-                <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primary }}>
-                  {fmt(summary.termNet)}
-                </Text>
-              </View>
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
+            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.positive }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Value-to-Cost</Text>
             </View>
+            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText }}>{Math.round(summary.simpleROI * 100)}%</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Simple ROI</Text>
+            </View>
+            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText }}>{summary.paybackMonth ? `${summary.paybackMonth} mo` : "\u2014"}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Payback</Text>
+            </View>
+            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primary }}>{fmt(summary.termNet)}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>{termLabel} Net Value</Text>
+            </View>
+          </View>
 
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.positive }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Value-to-Cost</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{summary.paybackMonth ? `${summary.paybackMonth} mo` : "\u2014"}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Payback</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{Math.round(summary.simpleROI * 100)}%</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Simple ROI</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(summary.totalHours)}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>Hours Returned</Text>
-              </View>
-            </View>
+          <View style={styles.calloutBox}>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()} across {fmtNum(totalFullScale)} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Documentation quality improvements begin from day one, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+            </Text>
           </View>
 
           <View style={styles.thickDivider} />
 
-          <Text style={styles.sectionLabel}>TWO SOURCES OF VALUE</Text>
-          <Text style={styles.body}>
-            Time returned to clinicians converts to capacity, reduced overtime, and lower turnover. Documentation quality captures revenue already present in the clinical encounter — but lost to incomplete coding, missed complexity, and claim errors. Together, across your settings, these two streams project {fmt(summary.termValue)} in total term value.
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                TIME RECAPTURED
-              </Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                {totalTimeValue > 0 ? fmt(totalTimeValue) : "\u2014"}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                {timePct}% of projected value. Reclaimed hours modeled across access capacity, overtime reduction, and retention — using conservative conversion rates and phased onset.
-              </Text>
-            </View>
-
-            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                REVENUE OPTIMIZED
-              </Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
-                {totalDocValue > 0 ? fmt(totalDocValue) : "\u2014"}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                {docPct}% of projected value. Documentation quality improvements applied to wRVU accuracy, E&M level capture, HCC recapture, and denial prevention — modeled at 75% attribution to account for non-Abridge factors.
-              </Text>
-            </View>
-          </View>
-
-          {totalRetentionValue > 0 && (
-            <View style={[styles.cardBg, { marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}>
-              <View>
-                <Text style={{ fontSize: 9, color: colors.retentionAmber, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-                  RETENTION & WELLBEING
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  {retPct}% of projected value. Retention impact modeled from Month 8 (nursing) and Month 11 (physician/APP) — aligned with peer-reviewed burnout reduction timelines (Shanafelt et al., NEJM Catalyst 2022; AMA Physician Burnout Survey 2023). Turnover avoidance savings use conservative replacement cost estimates ($50K–$250K per provider by role) and apply only after demonstrated adoption thresholds are met.
-                </Text>
-              </View>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.retentionAmber }}>{fmt(totalRetentionValue)}</Text>
-            </View>
-          )}
-
-          {totalAllValue > 0 && (
-            <PDFProportionBar docPct={docPct} timePct={timePct} retPct={retPct} />
-          )}
-
-          <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-              STRATEGIC OBSERVATION
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {strategicObservation}
-            </Text>
-          </View>
-
-          <PageFooter pageNum={1} totalPages={TOTAL_PAGES} />
-        </View>
-      </Page>
-
-      {/* PAGE 2: YOUR CARE SETTINGS */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>YOUR CARE SETTINGS</Text>
-          <Text style={styles.sectionHeadline}>{settings.length} Setting{settings.length > 1 ? "s" : ""}, One Integrated Model</Text>
-          <Text style={styles.body}>
-            Each care setting has unique value drivers, onset timing, and scaling characteristics. This model accounts for staggered go-live dates, per-setting utilization rates, and provider expansion trajectories to project realistic organizational impact.
-          </Text>
-
-          {settings.map(s => {
-            const settingColor = s.color || colors.primary;
-            return (
-              <View key={s.id} style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: settingColor, marginBottom: 8 }]}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+          <Text style={styles.sectionLabelGray}>KEY INPUTS</Text>
+          <View style={[styles.cardBg, { padding: 12 }]}>
+            {settings.map(s => {
+              const settingColor = s.color || colors.primary;
+              return (
+                <View key={s.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6, borderLeftWidth: 3, borderLeftColor: settingColor, paddingLeft: 8 }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, fontWeight: "bold", marginBottom: 3 }}>{s.label}</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{s.label}</Text>
+                    <Text style={{ fontSize: 8, color: colors.secondary }}>
                       {s.yearlyProviders
                         ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}`
-                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization {"\u00B7"} Go-live Month {s.goLiveMonth}
+                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization
                     </Text>
                   </View>
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text style={{ fontSize: 18, fontWeight: "bold", color: settingColor }}>{fmt(s.annualValue)}</Text>
-                    <Text style={{ fontSize: 7, color: colors.secondary }}>{fmtNum(s.totalHoursSaved)} hrs/yr</Text>
-                  </View>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: settingColor }}>{fmt(s.annualValue)}</Text>
                 </View>
+              );
+            })}
 
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
-                  {s.drivers.map(d => {
-                    const onsetColor = d.onset === "immediate" ? colors.docBlue :
-                      d.onset === "delayed" ? colors.timeRed : colors.retentionAmber;
-                    return (
-                      <View key={d.id} style={{ backgroundColor: colors.background, borderRadius: 3, paddingHorizontal: 7, paddingVertical: 3, borderLeftWidth: 2, borderLeftColor: onsetColor }}>
-                        <Text style={{ fontSize: 7 }}>{d.name}: {fmt(d.value)}</Text>
-                        <Text style={{ fontSize: 5.5, color: colors.tertiary }}>{ONSET_LABELS[d.onset]}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-
-                <View style={{ flexDirection: "row", gap: 12 }}>
-                  <Text style={{ fontSize: 8, color: colors.secondary }}>Investment: {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/encounter` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary }}>Impl: {s.implementationFee > 0 ? fmt(s.implementationFee) : "\u2014"}</Text>
-                </View>
-              </View>
-            );
-          })}
-
-          <View style={[styles.cardBg, { marginTop: 4 }]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", marginBottom: 4 }}>Onset Timing Legend</Text>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 6 }} />
             <View style={{ flexDirection: "row", gap: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.docBlue }} />
-                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Immediate {"\u2014"} Doc quality from day one</Text>
+                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Immediate {"\u2014"} Doc quality</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.timeRed }} />
-                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Delayed (3mo) {"\u2014"} Operational change needed</Text>
+                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Delayed (3mo) {"\u2014"} Capacity</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.retentionAmber }} />
-                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Phased {"\u2014"} Retention over Y1/Y2/Y3</Text>
+                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Phased {"\u2014"} Retention</Text>
               </View>
             </View>
           </View>
 
-          <PageFooter pageNum={2} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={2} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 3: THE VALUE TRAJECTORY */}
+      {/* PAGE 3: 3-YEAR PROJECTION */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE VALUE TRAJECTORY</Text>
+          <Text style={styles.sectionLabel}>{termLabel.toUpperCase()} PROJECTION</Text>
           <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
           <Text style={styles.body}>
-            This chart shows how value accumulates quarter by quarter across your deployment. Documentation quality value (dark) appears first, capacity & efficiency gains (red) join after a 3-month operational lag, and retention value (amber) phases in over years. The thin bars represent your subscription investment for comparison.
+            Value is phased by driver onset timing with per-year provider allocation and adoption ramp. Documentation quality (navy) appears immediately, capacity & efficiency (red) follows after a 3-month lag, and retention (gold) phases in over years.
           </Text>
 
           <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
             <PDFValueChart data={chartData} paybackQuarter={paybackQuarter} />
           </View>
 
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>FINAL QUARTER RUN-RATE</Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{chartData.length > 0 ? fmt(chartData[chartData.length - 1].total) : "\u2014"}</Text>
-              <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>per quarter at full scale</Text>
-            </View>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{termLabel.toUpperCase()} TOTAL VALUE</Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmt(summary.termValue)}</Text>
-              <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>cumulative across all quarters</Text>
-            </View>
-            {summary.paybackMonth && (
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>PAYBACK POINT</Text>
-                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.positive }}>Month {summary.paybackMonth}</Text>
-                <Text style={{ fontSize: 8, color: colors.secondary, marginTop: 2 }}>cumulative value exceeds cost</Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-              READING THIS CHART
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              The stacked bars show how each value category contributes to total quarterly value. Notice how dark (doc quality) dominates early quarters, then red (capacity & efficiency) joins and grows, and amber (retention) gradually phases in. This onset sequencing is why Month 12 looks very different from Month 1 {"\u2014"} and why patience with the deployment timeline pays off.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={3} totalPages={TOTAL_PAGES} />
-        </View>
-      </Page>
-
-      {/* PAGE 4 (and optionally 5): SHOWING OUR MATH */}
-      {(() => {
-        const mathPageStartNum = 4;
-        const settingsPerPage = mathPages === 1 ? enrichedBySettings.length : Math.ceil(enrichedBySettings.length / 2);
-        const chunks: typeof enrichedBySettings[] = [];
-        for (let i = 0; i < enrichedBySettings.length; i += settingsPerPage) {
-          chunks.push(enrichedBySettings.slice(i, i + settingsPerPage));
-        }
-        return chunks.map((chunk, pageIdx) => (
-          <Page key={`math-${pageIdx}`} size="LETTER" style={styles.page} wrap={false}>
-            <View style={styles.pageWrapper}>
-              {pageIdx === 0 && (
-                <>
-                  <Text style={styles.sectionLabel}>SHOWING OUR MATH</Text>
-                  <Text style={styles.sectionHeadline}>Every Number Has a Formula</Text>
-                  <Text style={styles.body}>
-                    Transparency builds trust. Below is the calculation behind every driver in this model {"\u2014"} the inputs you provided, the formula applied, and the result. Nothing is hidden.
-                  </Text>
-                </>
-              )}
-              {pageIdx > 0 && (
-                <>
-                  <Text style={styles.sectionLabel}>SHOWING OUR MATH (CONTINUED)</Text>
-                  <View style={{ marginBottom: 8 }} />
-                </>
-              )}
-
-              {chunk.map(({ setting, drivers }) => {
-                const settingColor = setting.color || colors.primary;
-                const timeDrivers = drivers.filter(dd => dd.category === "time");
-                const docDrivers = drivers.filter(dd => dd.category === "documentation");
-                const timeTotal = timeDrivers.reduce((sum, dd) => sum + dd.value, 0);
-                const docTotal = docDrivers.reduce((sum, dd) => sum + dd.value, 0);
-
-                const renderDriverGroup = (groupDrivers: EnrichedDriver[]) =>
-                  groupDrivers.map((driver, i) => (
-                    <View key={driver.id}>
-                      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                        <View style={{ width: 3, backgroundColor: settingColor, marginRight: 10, borderRadius: 1, minHeight: 36 }} />
-                        <View style={{ flex: 1 }}>
-                          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                            <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>{driver.name}</Text>
-                            <Text style={{ fontSize: 9.5, fontWeight: "bold", color: settingColor }}>{fmt(driver.value)}</Text>
-                          </View>
-                          {driver.calcSteps.map((step, si) => (
-                            <Text key={si} style={{
-                              fontSize: 8.5,
-                              color: si === driver.calcSteps.length - 1 ? settingColor : colors.secondary,
-                              lineHeight: 1.5,
-                              fontWeight: si === driver.calcSteps.length - 1 ? "bold" : "normal",
-                            }}>
-                              {step}
-                            </Text>
-                          ))}
-                          {driver.calibrationNote && (
-                            <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>
-                              {driver.calibrationNote}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                      {i < groupDrivers.length - 1 && (
-                        <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-                      )}
-                    </View>
-                  ));
-
-                return (
-                  <View key={setting.id} style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: settingColor, marginBottom: 10, padding: 12 }]}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-                      <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{setting.label}</Text>
-                      <Text style={{ fontSize: 11, fontWeight: "bold", color: settingColor }}>{fmt(setting.annualValue)}/yr</Text>
-                    </View>
-
-                    {timeDrivers.length > 0 && (
-                      <View style={{ marginBottom: 6 }}>
-                        <Text style={{ fontSize: 8, color: colors.timeRed, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>TIME RECAPTURED</Text>
-                        {renderDriverGroup(timeDrivers)}
-                        <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 5 }} />
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Time Subtotal</Text>
-                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>{fmt(timeTotal)}</Text>
-                        </View>
-                      </View>
-                    )}
-
-                    {docDrivers.length > 0 && (
-                      <View>
-                        {timeDrivers.length > 0 && <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />}
-                        <Text style={{ fontSize: 8, color: colors.docBlue, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>DOCUMENTATION QUALITY</Text>
-                        {renderDriverGroup(docDrivers)}
-                        <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 5 }} />
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Documentation Subtotal</Text>
-                          <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>{fmt(docTotal)}</Text>
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-
-              <PageFooter pageNum={mathPageStartNum + pageIdx} totalPages={TOTAL_PAGES} />
-            </View>
-          </Page>
-        ));
-      })()}
-
-      {/* PAGE after math: HOW VALUE MATERIALIZES */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>HOW VALUE MATERIALIZES</Text>
-          <Text style={styles.sectionHeadline}>Not All Value Shows Up on Day One</Text>
-          <Text style={styles.body}>
-            One of the most important aspects of this model is honesty about timing. Different value drivers materialize at different speeds, and this proforma accounts for that reality rather than assuming everything starts immediately.
-          </Text>
-
-          <View style={[styles.cardBg, { padding: 14, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>ONSET TIMELINE</Text>
-            <PDFOnsetTimeline />
-          </View>
-
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.docBlue, marginBottom: 8 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginBottom: 3 }}>Layer 1: Documentation Quality (Immediate)</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
-              wRVU, HCC recapture, denial prevention, DRG accuracy, CDI efficiency. These activate from day one {"\u2014"} better, more complete notes are inherent to the technology with a brief one-month learning curve.
-            </Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.docBlue }}>
-              {termLabel} contribution: {fmt(totalDocValue)} ({docPct}% of total)
-            </Text>
-          </View>
-
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.timeRed, marginBottom: 8 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginBottom: 3 }}>Layer 2: Capacity & Efficiency (3-Month Delay)</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
-              Patient access, throughput, LWBS reduction, cost reduction, overtime. Freed-up capacity is realized immediately, but translating it into economic value requires operational change {"\u2014"} scheduling, templates, staffing. We model a 3-month lag with gradual ramp.
-            </Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.timeRed }}>
-              {termLabel} contribution: {fmt(totalTimeValue)} ({timePct}% of total)
-            </Text>
-          </View>
-
-          <View style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.retentionAmber, marginBottom: 8 }]}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber, marginBottom: 3 }}>Layer 3: Retention & Wellbeing (Phased Over Years)</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
-              Clinician and nurse retention, wellbeing improvements. Phased conservatively: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3 {"\u2014"} deliberately understating early-period retention value.
-            </Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.retentionAmber }}>
-              {termLabel} contribution: {fmt(totalRetentionValue)} ({retPct}% of total)
-            </Text>
-          </View>
-
-          <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-              WHY THIS MATTERS
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Many ROI models assume all value starts on day one. This model does not. The onset timing creates a realistic cash flow profile where Month 1 looks very different from Month 12. If you{"\u2019"}re evaluating this against competing proposals that show immediate full-value, ask how they account for operational adoption and organizational change management.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={4 + mathPages} totalPages={TOTAL_PAGES} />
-        </View>
-      </Page>
-
-      {/* THE FINANCIAL PROJECTION */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE FINANCIAL PROJECTION</Text>
-          <Text style={styles.sectionHeadline}>{termLabel} Outlook</Text>
-          <Text style={styles.body}>
-            Value is phased by driver onset timing with per-year provider allocation and adoption ramp applied. Investment scales with provider count as the deployment expands across Y1, Y2, and Y3.
-          </Text>
-
-          <View style={[styles.cardBg, { marginBottom: 10, padding: 16 }]}>
-            <View style={{ flexDirection: "row", marginBottom: 8 }}>
+          <View style={[styles.cardBg, { marginBottom: 10, padding: 14 }]}>
+            <View style={{ flexDirection: "row", marginBottom: 6 }}>
               <Text style={{ flex: 2, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase" }}></Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>{y.label}</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.primary, textTransform: "uppercase", textAlign: "right" }}>{termLabel} Total</Text>
+              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.primary, textTransform: "uppercase", textAlign: "right" }}>Total</Text>
             </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 6 }} />
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 4 }} />
 
-            {settings.map(s => (
-              <View key={s.id} style={{ flexDirection: "row", marginBottom: 3 }}>
+            {settings.map((s, si) => (
+              <View key={s.id} style={{ flexDirection: "row", marginBottom: 2, backgroundColor: si % 2 === 0 ? "#FAFAF9" : "transparent", paddingVertical: 2 }}>
                 <Text style={{ flex: 2, fontSize: 9, color: colors.primaryText }}>{s.label}</Text>
                 {yearlyData.map(y => (
                   <Text key={y.label} style={{ flex: 1, fontSize: 9, color: colors.secondary, textAlign: "right" }}>{fmt(y.bySettings[s.id]?.value || 0)}</Text>
@@ -1185,9 +568,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </View>
             ))}
 
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 6 }} />
-
-            <View style={{ flexDirection: "row", marginBottom: 3 }}>
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 4 }} />
+            <View style={{ flexDirection: "row", marginBottom: 2 }}>
               <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Total Value</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{fmt(y.totalValue)}</Text>
@@ -1196,43 +578,50 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             </View>
 
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.docBlue }}>Doc Quality (immediate)</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.docBlue }}>Doc Quality (immediate)</Text>
               {yearlyData.map(y => (
-                <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.docValue)}</Text>
+                <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(y.docValue)}</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalDocValue)}</Text>
+              <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(totalDocValue)}</Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.timeRed }}>Capacity & Efficiency (3mo delay)</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.timeRed }}>Capacity & Efficiency (3mo delay)</Text>
               {yearlyData.map(y => (
-                <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.timeValue)}</Text>
+                <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(y.timeValue)}</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalTimeValue)}</Text>
+              <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(totalTimeValue)}</Text>
             </View>
-            <View style={{ flexDirection: "row", marginBottom: 3, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.retentionAmber }}>Retention (phased)</Text>
+            <View style={{ flexDirection: "row", marginBottom: 2, paddingLeft: 8 }}>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.retentionAmber }}>Retention (phased)</Text>
               {yearlyData.map(y => (
-                <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(y.retentionValue)}</Text>
+                <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(y.retentionValue)}</Text>
               ))}
-              <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmt(totalRetentionValue)}</Text>
+              <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(totalRetentionValue)}</Text>
             </View>
 
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 8, color: colors.tertiary }}>Active Providers</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>Licensed Providers</Text>
+              {yearlyData.map(y => {
+                const total = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+                return <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>;
+              })}
+              <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>
+                {fmtNum(settings.reduce((sum, s) => sum + (yearlyData[yearlyData.length - 1]?.bySettings[s.id]?.licensedProviders || 0), 0))}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", marginBottom: 2, paddingLeft: 8 }}>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>Actively Documenting</Text>
               {yearlyData.map(y => {
                 const total = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
-                return (
-                  <Text key={y.label} style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>
-                );
+                return <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>;
               })}
-              <Text style={{ flex: 1, fontSize: 8, color: colors.tertiary, textAlign: "right" }}>
-                {(() => { const last = yearlyData[yearlyData.length - 1]; return last ? fmtNum(settings.reduce((sum, s) => sum + (last.bySettings[s.id]?.providers || 0), 0)) : "\u2014"; })()}
+              <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>
+                {fmtNum(settings.reduce((sum, s) => sum + (yearlyData[yearlyData.length - 1]?.bySettings[s.id]?.providers || 0), 0))}
               </Text>
             </View>
 
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-
-            <View style={{ flexDirection: "row", marginBottom: 3 }}>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 3 }} />
+            <View style={{ flexDirection: "row", marginBottom: 2 }}>
               <Text style={{ flex: 2, fontSize: 9, color: colors.negative }}>Investment</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 9, color: colors.negative, textAlign: "right" }}>({fmt(y.investment)})</Text>
@@ -1240,8 +629,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ flex: 1, fontSize: 9, color: colors.negative, fontWeight: "bold", textAlign: "right" }}>({fmt(summary.termInvestment)})</Text>
             </View>
 
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 4 }} />
-
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 3 }} />
             <View style={{ flexDirection: "row" }}>
               <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Net Value</Text>
               {yearlyData.map(y => (
@@ -1256,36 +644,129 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
           </View>
 
           {summary.paybackMonth && (
-            <View style={[styles.calloutBox, { marginBottom: 8 }]}>
-              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-                The investment reaches payback at Month {summary.paybackMonth}. After that point, every dollar of value generated is net positive. By the end of the contract, the organization has generated {fmt(summary.termNet)} above its total investment of {fmt(summary.termInvestment)}.
-              </Text>
-            </View>
+            <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>
+              Payback period assumes value begins accruing from go-live month. Actual time to value may vary based on training completion, workflow integration, and provider adoption speed.
+            </Text>
           )}
 
-          <View style={styles.divider} />
+          <PageFooter pageNum={3} totalPages={TOTAL_PDF_PAGES} />
+        </View>
+      </Page>
+
+      {/* PAGE 4: YEAR-BY-YEAR NARRATIVE */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>YEAR-BY-YEAR OUTLOOK</Text>
+          <Text style={styles.sectionHeadline}>How the Deployment Unfolds</Text>
+          <Text style={styles.body}>
+            Each year of the partnership has a distinct character. Value compounds as provider adoption deepens, retention effects materialize, and the organization operationalizes freed-up capacity.
+          </Text>
+
+          {yearlyData.map((y, idx) => {
+            const yearNum = idx + 1;
+            const h = yearNarratives[Math.min(idx, 2)];
+            const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+            const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
+            const adoptionPct = totalLicensed > 0 ? Math.round((totalActive / totalLicensed) * 100) : 0;
+
+            return (
+              <View key={y.label} style={[styles.cardBg, { borderLeftWidth: 3, borderLeftColor: colors.primary, marginBottom: 8, padding: 12 }]}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                  <View>
+                    <Text style={{ fontSize: 8, color: colors.primary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold" }}>YEAR {yearNum} ({y.label})</Text>
+                    <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginTop: 2 }}>{h.title}</Text>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmt(y.totalValue)}</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary }}>projected value</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>{h.desc}</Text>
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <View>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Licensed</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmtNum(totalLicensed)}</Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Active</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmtNum(totalActive)}</Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Adoption</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold" }}>{adoptionPct}%</Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Investment</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmt(y.investment)}</Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Net</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: y.netValue >= 0 ? colors.positive : colors.negative }}>
+                      {y.netValue >= 0 ? fmt(y.netValue) : `(${fmt(Math.abs(y.netValue))})`}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+
+          {totalAllValue > 0 && (
+            <>
+              <View style={styles.divider} />
+              <Text style={styles.sectionLabelGray}>VALUE COMPOSITION</Text>
+              <PDFProportionBar docPct={docPct} timePct={timePct} retPct={retPct} />
+            </>
+          )}
+
+          <View style={styles.calloutBox}>
+            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
+              STRATEGIC OBSERVATION
+            </Text>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+              {settings.length === 1
+                ? `This model focuses on ${settingNames}. A single-setting deployment provides a focused proof of value. Once baselines are established and outcomes measured, this model can be extended to additional care settings.`
+                : `Across ${settings.length} care settings (${settingNames}), this model is ${docPct > timePct ? "documentation quality" : "capacity & efficiency"}-weighted: ${docPct}% doc quality, ${timePct}% capacity, ${retPct}% retention. The ${termLabel.toLowerCase()} horizon allows retention value to reach meaningful scale.`
+              }
+            </Text>
+          </View>
+
+          <PageFooter pageNum={4} totalPages={TOTAL_PDF_PAGES} />
+        </View>
+      </Page>
+
+      {/* PAGE 5: SENSITIVITY & RISK */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>SENSITIVITY & RISK</Text>
+          <Text style={styles.sectionHeadline}>What If Assumptions Are Wrong?</Text>
+          <Text style={styles.body}>
+            No model is perfect. This section brackets the range of likely outcomes and identifies what the organization foregoes by deferring implementation.
+          </Text>
 
           <Text style={styles.sectionLabelGray}>SENSITIVITY ANALYSIS</Text>
-          <View style={[styles.cardBg, { padding: 12 }]}>
+          <View style={[styles.cardBg, { padding: 12, marginBottom: 10 }]}>
             <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
               Scenarios vary only value realization rate (70%{"\u2013"}130%). Subscription cost is held constant {"\u2014"} it{"\u2019"}s contractual.
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>70% REALIZATION</Text>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>
                   {sensitivityIRR.consValid ? fmtPct(sensitivityIRR.conservative) : "N/A"}
                 </Text>
+                <Text style={{ fontSize: 7, color: colors.tertiary, marginTop: 2 }}>Conservative</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
                 <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 2 }}>YOUR ASSUMPTIONS</Text>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{irrDisplay}</Text>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{irrDisplay}</Text>
+                <Text style={{ fontSize: 7, color: colors.primary, marginTop: 2 }}>Base Case</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>130% REALIZATION</Text>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.positive }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.positive }}>
                   {sensitivityIRR.optValid ? fmtPct(sensitivityIRR.optimistic) : "N/A"}
                 </Text>
+                <Text style={{ fontSize: 7, color: colors.positive, marginTop: 2 }}>Optimistic</Text>
               </View>
             </View>
             {sensitivityIRR.consValid && sensitivityIRR.optValid && (
@@ -1299,252 +780,136 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
             )}
           </View>
 
-          <PageFooter pageNum={5 + mathPages} totalPages={TOTAL_PAGES} />
-        </View>
-      </Page>
+          <View style={styles.thickDivider} />
 
-      {/* THE INVESTMENT CASE */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
-          <Text style={styles.sectionHeadline}>Infrastructure, Not Expense</Text>
-          <Text style={styles.body}>
-            Investment stays flat per provider while value grows with scale, adoption, and time. This is the signature of infrastructure {"\u2014"} fixed cost per unit, compounding returns. The question isn{"\u2019"}t whether this investment pays back. It{"\u2019"}s how quickly, and by how much.
-          </Text>
-
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionLabelGray}>WHAT THE NUMBERS MEAN</Text>
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>VALUE-TO-COST</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.positive, marginBottom: 4 }}>
-                {hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                {hasInvestment
-                  ? `Total contract value divided by total contract cost. A ${summary.valueToCost.toFixed(1)}x ratio means the organization receives $${summary.valueToCost.toFixed(2)} in value for every $1 invested over the ${termLabel.toLowerCase()} term.`
-                  : "No cost entered. Value-to-Cost requires an investment to calculate."}
-              </Text>
+          <Text style={styles.sectionLabelGray}>COST OF INACTION</Text>
+          <View style={[styles.cardBg, { padding: 12, marginBottom: 10 }]}>
+            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
+              Each month of delayed implementation represents continued documentation burden and foregone value.
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved / 12))}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/month on manual documentation</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmt(Math.round(summary.runRateValue / 12))}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated monthly value foregone</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{fmt(Math.round(summary.runRateValue / 12 * 6))}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated 6-month opportunity cost</Text>
+              </View>
             </View>
-
-            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primaryText }}>
-              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>SIMPLE ROI</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                {Math.round(summary.simpleROI * 100)}%
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                Total net value divided by total cost. {Math.round(summary.simpleROI * 100)}% means ${(1 + summary.simpleROI).toFixed(2)} back for every $1 invested.
-                {hasInvestment && summary.irrValid ? ` Annual ${irrLabel}: ${irrDisplay}.` : ""}
-              </Text>
-            </View>
+            <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.5, marginTop: 6 }}>
+              Source: AMA 2023 Physician Burnout Survey. Estimates derived from the same assumptions used throughout this model and subject to the same limitations.
+            </Text>
           </View>
 
           <View style={styles.thickDivider} />
 
-          <Text style={styles.sectionLabel}>ECONOMICS BY SETTING</Text>
-
-          <View style={[styles.cardBg, { marginBottom: 8, padding: 14 }]}>
-            <View style={{ flexDirection: "row", marginBottom: 6 }}>
-              <Text style={{ flex: 2, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase" }}>Setting</Text>
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y1</Text>
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y2</Text>
-              {config.contractTermMonths >= 36 && (
-                <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Y3{config.contractTermMonths > 36 ? "+" : ""}</Text>
-              )}
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Annual Value</Text>
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.tertiary, textTransform: "uppercase", textAlign: "right" }}>Monthly Cost</Text>
+          <Text style={styles.sectionLabelGray}>MODEL CONFIDENCE</Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>STRONGEST</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+                {"\u2022"} Capacity & efficiency{"\n"}{"\u2022"} Documentation quality{"\n"}{"\u2022"} Adoption ramp{"\n"}{"\u2022"} Cost structure
+              </Text>
             </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 6 }} />
-            {settings.map(s => (
-              <View key={s.id} style={{ flexDirection: "row", marginBottom: 3 }}>
-                <Text style={{ flex: 2, fontSize: 9 }}>{s.label}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year1 || s.providerCount)} {unitLabel(s.careSetting)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year2 || s.providerCount)} {unitLabel(s.careSetting)}</Text>
-                {config.contractTermMonths >= 36 && (
-                  <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{(s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting)}</Text>
-                )}
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.annualValue)}</Text>
-                <Text style={{ flex: 1, fontSize: 9, textAlign: "right" }}>{fmt(s.pricingModel === "annualFlat" ? (s.annualLicenseFee || 0) / 12 : s.pricingModel === "perEncounter" ? (s.costPerEncounter || 0) * ((s.yearlyEncounters?.year1 ?? s.encounters) / 12) : s.costPerUnit * (s.yearlyProviders?.year1 || s.providerCount))}</Text>
-              </View>
-            ))}
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-            <View style={{ flexDirection: "row" }}>
-              <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Total</Text>
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{totalProviders}</Text>
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{settings.reduce((s, v) => s + (v.yearlyProviders?.year2 || v.providerCount), 0)}</Text>
-              {config.contractTermMonths >= 36 && (
-                <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{settings.reduce((s, v) => s + (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount), 0)}</Text>
-              )}
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{fmt(summary.runRateValue)}</Text>
-              <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", textAlign: "right" }}>{fmt(totalMonthlyCost)}</Text>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 9, color: colors.negative, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WEAKEST</Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+                {"\u2022"} Retention isolation{"\n"}{"\u2022"} Revenue realization{"\n"}{"\u2022"} Operational change{"\n"}{"\u2022"} Provider ramp smoothness
+              </Text>
             </View>
           </View>
 
-          <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Providers expand according to per-year allocation (Y1 {"\u2192"} Y2 {"\u2192"} Y3{config.contractTermMonths > 36 ? " steady state" : ""}). Within each year, providers ramp linearly between targets. This models a realistic organizational rollout {"\u2014"} not a theoretical day-one deployment. Investment cost scales proportionally with provider count.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={6 + mathPages} totalPages={TOTAL_PAGES} />
+          <PageFooter pageNum={5} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* ASSUMPTIONS & METHODOLOGY */}
+      {/* PAGE 6: METHODOLOGY & ASSUMPTIONS */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>ASSUMPTIONS & METHODOLOGY</Text>
+          <Text style={styles.sectionLabel}>METHODOLOGY & ASSUMPTIONS</Text>
           <Text style={styles.sectionHeadline}>How We Built This Model</Text>
-          <Text style={styles.body}>
-            Every assumption in this model is designed to be verifiable. Below is a complete accounting of inputs, calculation methodology, and the conservative design choices that underpin these projections.
-          </Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                YOUR INPUTS
-              </Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>YOUR INPUTS</Text>
               {settingInputSummaries.map(({ setting: s, inputs }) => (
-                <View key={s.id} style={{ marginBottom: 6 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 2 }}>{s.label}</Text>
-                  <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-                    Y1: {s.yearlyProviders?.year1 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
-                    Y2: {s.yearlyProviders?.year2 || s.providerCount} {unitLabel(s.careSetting)}{"\n"}
-                    {config.contractTermMonths >= 36 ? `Y3${config.contractTermMonths > 36 ? "+" : ""}: ${s.yearlyProviders?.year3 || s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}\n` : ""}
-                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat license` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/encounter` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}{"\n"}
-                    {s.implementationFee > 0 ? `${fmt(s.implementationFee)} implementation` : "No implementation fee"}
+                <View key={s.id} style={{ marginBottom: 5 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 1 }}>{s.label}</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
+                    {s.yearlyProviders ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}` : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)}{"\n"}
+                    {s.pricingModel === "annualFlat" ? `${fmt(s.annualLicenseFee || 0)}/yr flat` : s.pricingModel === "perEncounter" ? `${fmt(s.costPerEncounter || 0)}/enc` : `${fmt(s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`}
+                    {s.implementationFee > 0 ? ` \u00B7 ${fmt(s.implementationFee)} impl` : ""}
                   </Text>
                   {inputs.length > 0 && (
-                    <Text style={{ fontSize: 7.5, color: colors.tertiary, lineHeight: 1.5, marginTop: 2 }}>
-                      {inputs.join("\n")}
-                    </Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, lineHeight: 1.4, marginTop: 1 }}>{inputs.join(" \u00B7 ")}</Text>
                   )}
                 </View>
               ))}
             </View>
 
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                HOW WE CALCULATED
-              </Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>CALCULATION METHOD</Text>
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
                 Adoption ramp: S-curve over 12 months{"\n"}
-                Provider expansion: Per-year allocation (Y1/Y2/Y3{config.contractTermMonths > 36 ? "+" : ""}){"\n"}
-                Utilization ramp: S-curve to full utilization
+                Provider expansion: Per-year allocation{"\n"}
+                Onset timing: Immediate / 3mo delay / phased{"\n"}
+                Retention phasing: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3
               </Text>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, marginTop: 4 }}>
-                RETENTION PHASING
-              </Text>
-              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-                Year 1: {config.retentionPhasing.year1Pct}%{"\n"}
-                Year 2: {config.retentionPhasing.year2Pct}%{"\n"}
-                Year 3{config.contractTermMonths > 36 ? "+" : ""}: {config.retentionPhasing.year3Pct}%
+              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
+                Value-to-Cost: total value / total cost. IRR on annual periods {"\u2014"} Period 0 = total cost basis ({fmt(summary.termInvestment)}), subsequent = annual value.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""} Capped at 200%.
               </Text>
             </View>
           </View>
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionLabelGray}>RETURN METHODOLOGY</Text>
-          <View style={[styles.cardBg, { marginBottom: 8 }]}>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              Value-to-Cost is the primary metric: total contract value divided by total contract cost. IRR is calculated on annual cash flow periods {"\u2014"} Period 0 is the total cost basis (implementation fees plus full contract subscription: {fmt(summary.termInvestment)}). Subsequent periods are annual gross value realized. This total-cost-basis approach answers: {"\u201C"}What is my annualized return on total spend?{"\u201D"}
-              {summary.irrMethod === "mirr" ? " This model used Modified IRR (MIRR) because the cash flows have multiple sign changes." : ""}
-            </Text>
-          </View>
-
           <Text style={styles.sectionLabelGray}>DATA SOURCES</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-              {"\u2022"} Capacity & efficiency benchmarks: Based on validated data from Abridge implementations across 200+ health systems.{"\n"}
-              {"\u2022"} Industry benchmarks: Revenue, cost, and utilization parameters from MGMA, CMS, and proprietary health system datasets.{"\n"}
-              {"\u2022"} Conservative by design: Where uncertainty exists, calculations use conservative assumptions to avoid overstating projected benefits.{"\n"}
-              {"\u2022"} Retention projections use delayed-onset modeling. No retention savings are credited before Month 8 post-go-live for nursing or Month 11 for physician/APP populations.
+            <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+              {"\u2022"} Capacity & efficiency: Validated across 200+ Abridge health system deployments{"\n"}
+              {"\u2022"} Industry benchmarks: MGMA, CMS, proprietary health system datasets{"\n"}
+              {"\u2022"} Conservative design: Where uncertainty exists, conservative assumptions applied{"\n"}
+              {"\u2022"} Retention: Delayed-onset (Month 8 nursing, Month 11 physician/APP)
             </Text>
           </View>
 
-          <PageFooter pageNum={7 + mathPages} totalPages={TOTAL_PAGES} />
+          <Text style={styles.sectionLabelGray}>LIMITATIONS</Text>
+          <View style={[styles.cardBg, { marginBottom: 8 }]}>
+            <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+              This proforma is for financial planning purposes only. Projections are modeled estimates based on user-provided inputs and published benchmarks. Actual results will depend on implementation quality, organizational adoption, and operational factors unique to your environment. These projections do not constitute a guarantee of financial outcomes. We encourage validation of every assumption against organization-specific data.
+            </Text>
+          </View>
+
+          <PageFooter pageNum={6} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* HONEST LIMITS & NEXT STEPS */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>WHAT THIS MODEL DOES {"\u2014"} AND DOESN{"\u2019"}T {"\u2014"} TELL YOU</Text>
-          <Text style={styles.sectionHeadline}>An Honest Assessment</Text>
-          <Text style={styles.body}>
-            No model is perfect. This proforma is designed to be directionally accurate and conservatively calibrated, but it has limitations that you should understand before making investment decisions.
+      {/* PAGE 7: BACK COVER */}
+      <Page size="LETTER" style={[styles.page, { padding: 0 }]} wrap={false}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
+          <Text style={{ fontSize: 32, fontWeight: "bold", color: colors.primary, marginBottom: 24 }}>ABRIDGE</Text>
+
+          <View style={{ borderTopWidth: 2, borderTopColor: colors.primary, width: 80, marginBottom: 24 }} />
+
+          <Text style={{ fontSize: 14, color: colors.secondary, marginBottom: 6 }}>Prepared for</Text>
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 24 }}>{organizationName || "Organization"}</Text>
+
+          <Text style={{ fontSize: 10, color: colors.tertiary, marginBottom: 4 }}>{dateStr}</Text>
+          {preparedBy && <Text style={{ fontSize: 10, color: colors.tertiary, marginBottom: 4 }}>Prepared by {preparedBy}</Text>}
+          <Text style={{ fontSize: 10, color: colors.tertiary, marginBottom: 36 }}>{termLabel} Financial Proforma {"\u00B7"} {settings.length} Care Setting{settings.length > 1 ? "s" : ""}</Text>
+
+          <View style={{ borderTopWidth: 1, borderTopColor: colors.border, width: "100%", marginBottom: 16 }} />
+
+          <Text style={{ fontSize: 8, color: colors.tertiary, textAlign: "center", lineHeight: 1.6, maxWidth: 380 }}>
+            This document contains confidential information prepared exclusively for the intended recipient. Projections are modeled estimates and do not constitute a guarantee of financial outcomes. {"\u00A9"} {today.getFullYear()} Abridge AI, Inc. All rights reserved.
           </Text>
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                WHERE THE MODEL IS STRONGEST
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} Capacity & efficiency {"\u2014"} well-validated across 200+ deployments{"\n"}
-                {"\u2022"} Documentation quality {"\u2014"} directly measurable from note output{"\n"}
-                {"\u2022"} Adoption ramp {"\u2014"} based on observed S-curve patterns{"\n"}
-                {"\u2022"} Cost structure {"\u2014"} per-unit pricing is known and fixed
-              </Text>
-            </View>
-
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.negative, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                WHERE ESTIMATES ARE WEAKEST
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} Retention {"\u2014"} hardest to isolate from other factors{"\n"}
-                {"\u2022"} Revenue realization {"\u2014"} depends on payer mix and coding practices{"\n"}
-                {"\u2022"} Operational change {"\u2014"} capacity gains translation varies by organization{"\n"}
-                {"\u2022"} Provider expansion {"\u2014"} per-year targets assume smooth ramp within each year
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-              THE HONEST TAKE
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              This model is designed to help you think about the investment, not to sell you on it. The sensitivity range ({sensitivityIRR.consValid ? fmtPct(sensitivityIRR.conservative) : "N/A"} to {sensitivityIRR.optValid ? fmtPct(sensitivityIRR.optimistic) : "N/A"} {irrLabel}) brackets the likely outcomes. Your actual results will depend on implementation quality, organizational adoption, and operational factors unique to your environment. We encourage you to validate every assumption against your own data.
-            </Text>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          <Text style={styles.sectionLabelGray}>KEY METRICS TO TRACK POST-DEPLOYMENT</Text>
-          <View style={[styles.cardBg, { marginBottom: 10 }]}>
-            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.7 }}>
-              1. Documentation time per encounter (target: -50%){"\n"}
-              2. Provider/nurse satisfaction score (target: +15 pts){"\n"}
-              3. Utilization rate across deployed settings{"\n"}
-              4. Revenue per encounter or per admission trend{"\n"}
-              5. Turnover rate in deployed vs. non-deployed departments
-            </Text>
-          </View>
-
-          <Text style={styles.sectionLabelGray}>RECOMMENDED NEXT STEPS</Text>
-          <View style={[styles.cardBg, { marginBottom: 10 }]}>
-            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.7 }}>
-              1. Validate assumptions with your finance and operations teams.{"\n"}
-              2. Identify pilot departments for initial deployment.{"\n"}
-              3. Establish baseline metrics for time, documentation quality, and workforce satisfaction.{"\n"}
-              4. Schedule a conversation with your Abridge team to refine this model with organization-specific data.
-            </Text>
-          </View>
-
-          <View style={{ backgroundColor: colors.warningBg, borderRadius: 4, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: colors.warningBorder }}>
-            <Text style={{ fontSize: 9, color: colors.warningText, fontWeight: "bold", marginBottom: 3 }}>Important Disclaimer</Text>
-            <Text style={{ fontSize: 8.5, color: colors.warningText, lineHeight: 1.5 }}>
-              This proforma is for financial planning purposes only. Projections are modeled estimates based on user-provided inputs and published benchmarks. Actual results will depend on implementation quality, organizational adoption, and operational factors unique to your environment. These projections do not constitute a guarantee of financial outcomes.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={8 + mathPages} totalPages={TOTAL_PAGES} />
         </View>
       </Page>
     </Document>
