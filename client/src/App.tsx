@@ -39,7 +39,8 @@ import MeasureFlow from "@/pages/measure/MeasureFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import ProformaView from "@/pages/proforma/ProformaView";
-import type { ProformaSettingSnapshot, ProformaScenario } from "@/pages/proforma/proformaTypes";
+import type { ProformaSettingSnapshot, ProformaScenario, ProformaConfig } from "@/pages/proforma/proformaTypes";
+import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
@@ -175,6 +176,7 @@ export default function App() {
   const [exploreState, setExploreState] = useState<ExploreState | null>(null);
   const [proformaSettings, setProformaSettings] = useState<ProformaSettingSnapshot[]>([]);
   const [proformaScenarios, setProformaScenarios] = useState<ProformaScenario[]>([]);
+  const [proformaConfig, setProformaConfig] = useState<ProformaConfig>(() => ({ ...DEFAULT_PROFORMA_CONFIG }));
   const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
   const [proformaEditExploreState, setProformaEditExploreState] = useState<ExploreState | undefined>(undefined);
 
@@ -226,6 +228,7 @@ export default function App() {
     setExploreState(null);
     setProformaSettings([]);
     setProformaScenarios([]);
+    setProformaConfig({ ...DEFAULT_PROFORMA_CONFIG });
     setProformaAddCareSetting(undefined);
     setCurrentView("splash");
   }, []);
@@ -633,6 +636,8 @@ export default function App() {
               <ProformaHub
                 settings={proformaSettings}
                 scenarios={proformaScenarios}
+                config={proformaConfig}
+                onConfigChange={setProformaConfig}
                 onAddSetting={(careSetting) => {
                   setProformaAddCareSetting(careSetting as ExploreCareSetting);
                   setProformaEditExploreState(undefined);
@@ -658,6 +663,8 @@ export default function App() {
             {currentView === "proforma-view" && proformaSettings.length > 0 && (
               <ProformaView
                 settings={proformaSettings}
+                config={proformaConfig}
+                onConfigChange={setProformaConfig}
                 onUpdateSetting={handleUpdateProformaSetting}
                 onBack={() => navigateTo("proforma-hub")}
                 onHome={() => navigateTo("journey")}

@@ -1,0 +1,205 @@
+PROMPT: Build a Premium Scenario Comparison Experience
+The Financial Proforma results page has Save as Scenario and Compare buttons, but they barely work. The Compare view either doesn't exist or doesn't function. This needs to become a genuinely premium feature — scenario comparison is THE power move for a CSM sitting with a CFO saying "well what if we did it this way instead?" Here's the full spec:
+THE VISION
+A user builds a proforma (e.g., 3 care settings, Per Provider pricing at $120/mo). They save it as "Scenario A." Then they go back, change pricing to Per Encounter at $5/encounter, and save as "Scenario B." Then they click Compare and see both scenarios side by side — every KPI, every value driver, every year — with differences highlighted. The CFO looks at this and says "okay, show me what happens at $4/encounter" and 60 seconds later there's a third scenario on screen.
+This is how deals get closed.
+PART 1: SAVE AS SCENARIO — Fix & Polish
+Current state: Modal appears, saves name, shows dark bar with scenario name. Basically works but needs polish.
+Fixes needed:
+
+What gets saved: Save EVERYTHING — all care settings, all provider counts, all rollout plans, all pricing (type + amount), all utilization rates, all value driver toggles and their inputs (realization rates, DRG weight, LWBS rate, wRVU lift, etc.), all time allocations, all retention settings. The saved scenario must be a complete snapshot that can be loaded back into the editor.
+Scenario metadata: When saving, auto-capture and display:
+
+Pricing model (Per Provider / Per Encounter / Annual License)
+Total investment over 3 years
+Number of care settings included
+Date/time saved
+
+
+Saved scenario bar improvements:
+
+Show: "SAVED: 🔴 Scenario 1 · Per Provider · $3.9M investment · 3 settings"
+Add a "Duplicate & Edit" button — this is the fastest way to create a comparison scenario. User duplicates, changes one variable (pricing, utilization, care settings), saves as new scenario.
+Add a "Load" button — loads this scenario back into the editor so you can modify inputs
+Keep edit (rename) and trash (delete) icons
+
+
+Multiple scenarios bar: When 2+ scenarios are saved, show them as tabs or pills in the dark bar:
+
+🔴 Scenario 1 · Per Provider (active)
+⚪ Scenario 2 · Per Encounter
+⚪ Scenario 3 · Aggressive Ramp
+Clicking a pill loads that scenario's results
+Max 4 scenarios (more gets cluttered)
+
+
+Auto-prompt to save: If the user changes any input after loading a scenario, show a subtle prompt: "You've modified Scenario 1. Save as new scenario?" This prevents losing work.
+
+
+PART 2: COMPARE VIEW — Build From Scratch
+This is the hero feature. When the user clicks Compare with 2+ saved scenarios, transition to a dedicated comparison view.
+Layout: Side-by-side columns
+Each scenario gets a column. 2 scenarios = 2 columns (50/50 split). 3 scenarios = 3 columns (33/33/33). Max 4 columns.
+Header row (sticky):
+Scenario 1Scenario 2Scenario 3NameConservativeAggressivePer EncounterPricingPer Provider · $120/moPer Provider · $120/moPer Encounter · $5Care SettingsOP + ED + IPOP + ED + IPOP + ED + IPProviders375 → 1,500375 → 1,500375 → 1,500KPI Comparison Cards (row 1):Show the 4 key KPIs side by side with visual indicators for which scenario wins:KPIScenario 1Scenario 2Scenario 3------------3-Year Net Value$42.9M$38.2M$44.1M ★Value-to-Cost12.0x8.5x14.8x ★Payback11 mo9 mo ★13 moSimple ROI1104%752%1382% ★
+
+★ = best value in that row, highlighted in cadmium red
+Differences from the first scenario shown as deltas: "+$1.2M" or "-2.3 months" in green/red
+3-Year Financial Comparison (row 2):
+Condensed version of the financial table for each scenario:
+| | Scenario 1 | Scenario 2 | Scenario 3 |
+|---|---|---|---|
+| Year 1 Value | $3.6M | $4.8M | $3.2M |
+| Year 2 Value | $12.8M | $14.1M | $11.9M |
+| Year 3 Value | $30.4M | $28.2M | $32.1M |
+| Total Value | $46.8M | $47.1M | $47.2M |
+| Total Investment | $3.9M | $5.5M | $3.2M |
+| Net Value | $42.9M | $41.6M | $44.0M |
+Value Driver Comparison (row 3):
+Show how each value driver differs:
+| Driver | Scenario 1 | Scenario 2 | Scenario 3 |
+|---|---|---|---|
+| Doc Quality | $14.1M (30%) | $14.1M (30%) | $14.1M (30%) |
+| Capacity | $16.0M (34%) | $18.2M (39%) | $16.0M (34%) |
+| Retention | $16.7M (36%) | $14.8M (31%) | $17.1M (36%) |
+Identical values across scenarios shown in gray (not interesting)
+Different values highlighted with the delta shown — this is what matters
+Chart Overlay (row 4):
+A single chart showing all scenarios as overlapping lines/areas:
+Scenario 1: solid cadmium red line
+Scenario 2: dashed dark navy line
+Scenario 3: dotted warm gold line
+Investment lines for each (thinner, matching color, dashed)
+Legend at bottom
+Hovering on chart shows tooltip for all scenarios at that time point
+This is the "wow" visual — seeing 3 growth curves overlaid instantly communicates which scenario scales faster.
+Recommendation Bar (bottom):
+Based on the comparison, surface a smart recommendation:
+"Scenario 3 (Per Encounter) delivers the highest 3-year net value ($44.0M) with the lowest total investment ($3.2M). However, Scenario 1 (Per Provider) offers the fastest payback (11 months) and more predictable costs."
+Or keep it simpler:
+"Highest ROI: Scenario 3 (14.8x) · Fastest Payback: Scenario 2 (9 mo) · Highest Net Value: Scenario 3 ($44.0M)"
+Keep this factual — no recommendation of which to choose, just highlight the tradeoffs. Let the CFO decide.
+
+
+PART 3: COMPARE VIEW ACTIONS
+Top of Compare view:
+
+← Back to [Active Scenario Name] — return to full proforma view
+Export Comparison PDF — generates a 2-3 page PDF with the comparison tables and chart overlay
+Add Scenario — quick-add another scenario (opens a mini-wizard or duplicates an existing scenario)
+Per-scenario actions (in each column header):
+Edit — load this scenario back into the proforma editor
+Duplicate — create a copy with a new name, ready to modify
+Remove from comparison — hide this column (don't delete the scenario)
+Export Comparison PDF structure:
+Page 1: Cover page — "Scenario Comparison · [Organization Name] · [Date]"
+Page 2: Side-by-side KPI and financial comparison table (everything from the Compare view condensed to one page)
+Page 3: Chart overlay + recommendation bar + key differences callout
+
+
+PART 4: SUGGESTED SCENARIOS — Smart Prompts
+When a user saves their first scenario, suggest common comparisons:
+"Want to explore alternatives?"
+
+💰 "What if pricing changes?" — Duplicate your scenario and switch from Per Provider to Per Encounter (or vice versa)
+📈 "What if you expand faster?" — Duplicate and change the rollout plan to a more aggressive ramp
+🏥 "What if you add another care setting?" — Duplicate and add Nursing or another department
+📉 "What's the conservative case?" — Duplicate and reduce all realization rates by 30%
+Each suggestion is a one-click action that duplicates the current scenario, makes the described change, and saves it as a new scenario. The user can then click Compare immediately.
+This is the "magic moment" — the user realizes they can model any what-if in seconds.
+
+
+PART 5: EMPTY STATES & EDGE CASES
+Compare with 1 scenario:
+Show the current scenario in a single column on the LEFT side. The RIGHT side shows an empty state card:
+"Add a scenario to compare
+Duplicate your current scenario and change one variable — pricing model, rollout speed, or care settings — to see the impact side by side."
+[Duplicate & Edit] button in cadmium red
+Compare with 0 scenarios:
+Should not be reachable — Compare button should be disabled/hidden until at least 1 scenario is saved. If somehow reached:
+"No scenarios saved yet
+Build your proforma and save it as a scenario to start comparing approaches."
+Deleting a scenario while in Compare view:
+If user deletes a scenario from Compare, the column disappears with a smooth animation. If only 1 remains, show the empty state card for the second column.
+Maximum scenarios:
+Cap at 4 scenarios. If user tries to save a 5th:
+"Maximum 4 scenarios
+Delete an existing scenario to save a new one, or duplicate and modify an existing scenario."
+PART 6: PERSISTENCE
+
+Scenarios should persist in localStorage so they survive page refreshes
+Include a "Clear All Scenarios" option in settings or a small "Reset" link
+When the user returns to the tool, show a subtle banner: "Welcome back — you have [X] saved scenarios. [View Scenarios]"
+Scenarios are tied to the browser — they don't sync across devices (that would require auth)
+
+
+PART 7: TRANSITIONS & ANIMATIONS
+Make the Compare view feel premium:
+
+Entering Compare: Slide transition from the proforma results page — the current scenario slides left and the comparison columns slide in from the right
+Adding a scenario column: New column slides in from the right with a subtle fade
+Removing a column: Column fades out and remaining columns smoothly resize
+Chart overlay: Lines draw in sequentially (Scenario 1 first, then 2, then 3) with a subtle animation — creates a moment of "reveal"
+KPI cards: Numbers count up when the Compare view loads (like the existing KPI animations on the proforma)
+★ best value indicators: Subtle pulse animation when they appear
+All transitions: 300ms ease-in-out. Nothing jarring. Everything smooth.
+
+
+PART 8: MOBILE/RESPONSIVE
+On smaller screens (tablet):
+
+Compare view switches to a swipeable card layout — swipe left/right between scenario columns
+Show scenario name pills at top as navigation dots
+KPI comparison becomes a vertical list with scenario values stacked
+On phone (if applicable):
+Compare isn't practical — show a simplified "Scenario Summary" list with key KPIs per scenario
+Tap a scenario to see its full detail
+
+
+COLOR & DESIGN
+
+Scenario 1: Cadmium red (#EA2C00) — primary brand
+Scenario 2: Dark navy (#1E3A5F) — trust, authority
+Scenario 3: Warm gold (#D4930A) — optimistic, warm
+Scenario 4: Slate teal (#2D7377) — clinical, calm
+★ indicators: Cadmium red with subtle glow
+Delta values: Green (#16A34A) for improvements, muted red (#DC2626) for declines
+Column backgrounds: Alternating very subtle gray (#FAFAFA) and white for readability
+Sticky header: White with subtle bottom shadow on scroll
+Compare view background: Clean white, generous padding between columns
+
+
+TEST SCENARIOS
+After building the Compare feature, test with these 3 scenarios:
+Scenario 1: "Per Provider Standard"
+
+3 care settings (OP 200, ED 100, IP 75 providers)
+Per Provider pricing: $120/mo
+Standard rollout (3-year)
+Scenario 2: "Per Encounter Lean"
+Same 3 care settings
+Per Encounter pricing: $5/encounter
+Same rollout
+Scenario 3: "Aggressive Expansion"
+Same 3 care settings
+Per Provider pricing: $120/mo
+Faster rollout (all providers by Year 2)
+Higher utilization targets
+Verify:
+
+
+✅ All 3 scenarios save correctly with full input snapshots
+✅ Compare view shows 3 columns with correct data
+✅ ★ indicators correctly identify best values per row
+✅ Delta values calculated correctly
+✅ Chart overlay shows 3 distinct lines
+✅ Duplicate & Edit creates an exact copy and opens editor
+✅ Load restores all inputs to the editor
+✅ Export Comparison PDF generates correctly
+✅ Deleting a scenario removes the column smoothly
+✅ Suggested scenarios generate correct one-click duplicates
+✅ localStorage persistence works across page refreshes
+✅ 4-scenario maximum enforced with clear message
+✅ Empty states display correctly
+✅ Animations are smooth, 300ms, not jarring
+✅ Back button returns to the active scenario's full proforma

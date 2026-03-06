@@ -54,11 +54,20 @@ export interface RetentionPhasing {
   year6Pct?: number;
 }
 
+export interface YearlyUtilization {
+  year1: number;
+  year2: number;
+  year3: number;
+}
+
 export interface ProformaConfig {
   contractTermMonths: number;
   viewMode: "quarterly" | "yearly";
   retentionPhasing: RetentionPhasing;
   nursingRetentionPhasing?: RetentionPhasing;
+  implementationRampMonths: number;
+  yearlyUtilization: YearlyUtilization;
+  nursingYearlyUtilization?: YearlyUtilization;
 }
 
 export interface ProformaCashFlowRow {
@@ -113,9 +122,26 @@ export const SETTING_UNIT_LABELS: Record<string, string> = {
   nursing: "beds",
 };
 
+export const DEFAULT_YEARLY_UTILIZATION: YearlyUtilization = {
+  year1: 55,
+  year2: 75,
+  year3: 85,
+};
+
+export const NURSING_YEARLY_UTILIZATION: YearlyUtilization = {
+  year1: 45,
+  year2: 65,
+  year3: 80,
+};
+
+export const MAX_UTILIZATION = 85;
+
 export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   contractTermMonths: 36,
   viewMode: "quarterly",
+  implementationRampMonths: 6,
+  yearlyUtilization: { ...DEFAULT_YEARLY_UTILIZATION },
+  nursingYearlyUtilization: { ...NURSING_YEARLY_UTILIZATION },
   retentionPhasing: {
     year1Pct: 20,
     year2Pct: 65,

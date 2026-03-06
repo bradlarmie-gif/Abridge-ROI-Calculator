@@ -161,15 +161,34 @@ function getUtilizationRamp(
   goLiveMonth: number,
   contractMonths: number,
   pilotUtil: number,
-  fullScaleUtil: number
+  fullScaleUtil: number,
+  yearlyUtilization?: { year1: number; year2: number; year3: number }
 ): number {
   const monthsSinceGoLive = month - goLiveMonth;
-  if (monthsSinceGoLive < 0) return pilotUtil;
+  if (monthsSinceGoLive < 0) return 0;
+
+  if (yearlyUtilization) {
+    const y1 = yearlyUtilization.year1;
+    const y2 = yearlyUtilization.year2;
+    const y3 = yearlyUtilization.year3;
+
+    if (monthsSinceGoLive < 12) {
+      const progress = monthsSinceGoLive / 12;
+      return y1 * sigmoidRamp(progress);
+    } else if (monthsSinceGoLive < 24) {
+      const progress = (monthsSinceGoLive - 12) / 12;
+      return y1 + (y2 - y1) * sigmoidRamp(progress);
+    } else if (monthsSinceGoLive < 36) {
+      const progress = (monthsSinceGoLive - 24) / 12;
+      return y2 + (y3 - y2) * sigmoidRamp(progress);
+    } else {
+      return y3;
+    }
+  }
 
   const rampMonths = Math.max(contractMonths - goLiveMonth, 12);
   const progress = Math.min(monthsSinceGoLive / rampMonths, 1);
-  const utilizationProgress = sigmoidRamp(progress);
-  return pilotUtil + (fullScaleUtil - pilotUtil) * utilizationProgress;
+  return pilotUtil + (fullScaleUtil - pilotUtil) * sigmoidRamp(progress);
 }
 
 export function buildMonthlyCashFlows(
@@ -205,9 +224,13 @@ export function buildMonthlyCashFlows(
         setting.providerCount, fullScale,
         setting.yearlyProviders
       );
+      const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
+        ? config.nursingYearlyUtilization
+        : config.yearlyUtilization;
       const currentUtil = getUtilizationRamp(
         m, setting.goLiveMonth, months,
-        setting.utilizationPercent, fullScaleUtil
+        setting.utilizationPercent, fullScaleUtil,
+        settingYearlyUtil
       );
 
       const providerScale = currentProviders / setting.providerCount;
@@ -294,6 +317,20 @@ export function buildMonthlyCashFlows(
         timeValue: settingTimeValue,
         retentionValue: settingRetentionValue,
       };
+    }
+
+    const implRamp = config.implementationRampMonths || 0;
+    if (m <= implRamp) {
+      totalDocValue = 0;
+      totalTimeValue = 0;
+      totalRetentionValue = 0;
+      for (const key of Object.keys(bySettings)) {
+        bySettings[key].value = 0;
+        bySettings[key].docValue = 0;
+        bySettings[key].timeValue = 0;
+        bySettings[key].retentionValue = 0;
+        bySettings[key].providers = 0;
+      }
     }
 
     const totalValue = totalDocValue + totalTimeValue + totalRetentionValue;

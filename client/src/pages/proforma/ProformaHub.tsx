@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
-import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
+import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
 import { buildMonthlyCashFlows, calculateProformaSummary } from "@/lib/proformaCalculations";
 
 interface ProformaHubProps {
   settings: ProformaSettingSnapshot[];
   scenarios?: ProformaScenario[];
+  config: ProformaConfig;
+  onConfigChange: (config: ProformaConfig) => void;
   onAddSetting: (careSetting?: string) => void;
   onEditSetting: (id: string) => void;
   onRemoveSetting: (id: string) => void;
@@ -108,6 +110,8 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
 export default function ProformaHub({
   settings,
   scenarios = [],
+  config,
+  onConfigChange,
   onAddSetting,
   onEditSetting,
   onRemoveSetting,
@@ -118,9 +122,8 @@ export default function ProformaHub({
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const addedSettings = settings.map(s => s.careSetting);
+  const hasNursing = settings.some(s => s.careSetting === "nursing");
   const availableSettings = ALL_SETTINGS.filter(s => !addedSettings.includes(s));
-
-  const config: ProformaConfig = DEFAULT_PROFORMA_CONFIG;
 
   const summary = useMemo(() => {
     if (settings.length === 0) return null;
@@ -563,6 +566,95 @@ export default function ProformaHub({
                   </button>
                 );
               })}
+            </div>
+          </motion.div>
+        )}
+
+        {settings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8 bg-white rounded-xl border border-[#E8E2DA] shadow-sm p-5"
+            data-testid="deal-config-panel"
+          >
+            <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-4">Deal Configuration</p>
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-neutral-700">Implementation Ramp</label>
+                  <span className="text-sm font-bold text-neutral-900" data-testid="text-impl-ramp-value">{config.implementationRampMonths} months</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={12}
+                  step={1}
+                  value={config.implementationRampMonths}
+                  onChange={(e) => onConfigChange({ ...config, implementationRampMonths: parseInt(e.target.value) })}
+                  className="w-full h-1.5 bg-[#E8E2DA] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                  data-testid="input-impl-ramp"
+                />
+                <p className="text-[11px] text-[#A39888] mt-1.5">Period before value begins accruing. Covers training, EHR integration, and workflow adjustment.</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-neutral-700 block mb-2">
+                  Utilization Targets{hasNursing ? " (Clinical)" : ""}
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(["year1", "year2", "year3"] as const).map((key, idx) => (
+                    <div key={key}>
+                      <label className="block text-[11px] text-[#A39888] mb-1">Year {idx + 1}</label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="range"
+                          min={20}
+                          max={95}
+                          step={5}
+                          value={config.yearlyUtilization[key]}
+                          onChange={(e) => onConfigChange({
+                            ...config,
+                            yearlyUtilization: { ...config.yearlyUtilization, [key]: parseInt(e.target.value) }
+                          })}
+                          className="flex-1 h-1.5 bg-[#E8E2DA] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                          data-testid={`input-util-${key}`}
+                        />
+                        <span className="text-xs font-bold text-neutral-900 w-8 text-right">{config.yearlyUtilization[key]}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#A39888] mt-1.5">Target adoption rate by contract year. Affects "Actively Documenting" count and value realization.</p>
+              </div>
+              {hasNursing && config.nursingYearlyUtilization && (
+                <div className="mt-3">
+                  <label className="text-sm font-medium text-neutral-700 block mb-2">Utilization Targets (Nursing)</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {(["year1", "year2", "year3"] as const).map((key, idx) => (
+                      <div key={key}>
+                        <label className="block text-[11px] text-[#A39888] mb-1">Year {idx + 1}</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="range"
+                            min={20}
+                            max={85}
+                            step={5}
+                            value={config.nursingYearlyUtilization[key]}
+                            onChange={(e) => onConfigChange({
+                              ...config,
+                              nursingYearlyUtilization: { ...config.nursingYearlyUtilization!, [key]: parseInt(e.target.value) }
+                            })}
+                            className="flex-1 h-1.5 bg-[#E8E2DA] rounded-full appearance-none cursor-pointer accent-[#B45309]"
+                            data-testid={`input-nursing-util-${key}`}
+                          />
+                          <span className="text-xs font-bold text-neutral-900 w-8 text-right">{config.nursingYearlyUtilization[key]}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-[#A39888] mt-1.5">Nursing-specific adoption targets (lower than clinical due to workflow differences).</p>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

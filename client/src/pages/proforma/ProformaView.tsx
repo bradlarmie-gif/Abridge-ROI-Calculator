@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ProformaViewProps {
   settings: ProformaSettingSnapshot[];
+  config: ProformaConfig;
+  onConfigChange: (config: ProformaConfig) => void;
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onBack: () => void;
   onHome: () => void;
@@ -98,6 +100,8 @@ const SCENARIO_DASHES = ["", "8 4", "4 4"];
 
 export default function ProformaView({
   settings,
+  config,
+  onConfigChange,
   onUpdateSetting,
   onBack,
   onHome,
@@ -106,9 +110,13 @@ export default function ProformaView({
   onDeleteScenario,
 }: ProformaViewProps) {
   const isMobile = useIsMobile();
-  const [config, setConfig] = useState<ProformaConfig>(() => ({
-    ...DEFAULT_PROFORMA_CONFIG,
-  }));
+  const setConfig = (updater: ProformaConfig | ((prev: ProformaConfig) => ProformaConfig)) => {
+    if (typeof updater === "function") {
+      onConfigChange(updater(config));
+    } else {
+      onConfigChange(updater);
+    }
+  };
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -205,31 +213,52 @@ export default function ProformaView({
   }, [summary.totalHours, totalFullScaleProviders]);
 
   const sensitivityAnalysis = useMemo(() => {
-    const scaleSettings = (s: ProformaSettingSnapshot, valueFactor: number) => ({
-      ...s,
-      annualValue: s.annualValue * valueFactor,
-      retentionValue: s.retentionValue * valueFactor,
-      drivers: s.drivers.map(d => ({ ...d, value: d.value * valueFactor })),
-    });
-    const conservativeSettings = settings.map(s => scaleSettings(s, 0.7));
-    const optimisticSettings = settings.map(s => scaleSettings(s, 1.3));
-    const consCF = buildMonthlyCashFlows(conservativeSettings, config);
-    const optCF = buildMonthlyCashFlows(optimisticSettings, config);
-    const consSummary = calculateProformaSummary(conservativeSettings, config, consCF);
-    const optSummary = calculateProformaSummary(optimisticSettings, config, optCF);
-    const consIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(conservativeSettings, config, consCF));
-    const optIRR = calculateAnnualIRR(buildAnnualIRRCashFlows(optimisticSettings, config, optCF));
+    const buildScaled = (factor: number) => {
+      const scaledValue = summary.termValue * factor;
+      const scaledNet = scaledValue - summary.termInvestment;
+      const scaledVTC = summary.termInvestment > 0 ? scaledValue / summary.termInvestment : 0;
+      const scaledROI = summary.termInvestment > 0 ? scaledNet / summary.termInvestment : 0;
+      const scaledAnnual = summary.runRateValue * factor;
+
+      const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+
+      let scaledPayback: number | null = null;
+      let cumValue = -totalImplFees;
+      for (const row of cashFlows) {
+        const scaledMonthValue = row.totalValue * factor;
+        cumValue += scaledMonthValue - row.investment;
+        if (cumValue >= 0 && scaledPayback === null) {
+          scaledPayback = row.period;
+        }
+      }
+
+      const contractYears = Math.ceil(config.contractTermMonths / 12);
+      const yearBuckets: number[] = [];
+      for (let y = 0; y < contractYears; y++) {
+        const startM = y * 12 + 1;
+        const endM = (y + 1) * 12;
+        const yearRows = cashFlows.filter(r => r.period >= startM && r.period <= endM);
+        const yearGrossValue = yearRows.reduce((s, r) => s + r.totalValue, 0);
+        const yearSubscription = yearRows.reduce((s, r) => s + r.investment, 0);
+        yearBuckets.push(yearGrossValue * factor - yearSubscription);
+      }
+      const scaledIRRFlows = totalImplFees > 0 ? [-totalImplFees, ...yearBuckets] : yearBuckets;
+      const scaledIRR = calculateAnnualIRR(scaledIRRFlows);
+
+      return {
+        annualValue: scaledAnnual,
+        valueToCost: scaledVTC,
+        irr: scaledIRR.isValid ? scaledIRR.annualizedRate : 0,
+        irrValid: scaledIRR.isValid,
+        irrMethod: scaledIRR.method,
+        paybackMonth: scaledPayback,
+        termNet: scaledNet,
+        simpleROI: scaledROI,
+      };
+    };
+
     return {
-      conservative: {
-        annualValue: consSummary.runRateValue,
-        valueToCost: consSummary.valueToCost,
-        irr: consIRR.isValid ? consIRR.annualizedRate : 0,
-        irrValid: consIRR.isValid,
-        irrMethod: consIRR.method,
-        paybackMonth: consSummary.paybackMonth,
-        termNet: consSummary.termNet,
-        simpleROI: consSummary.simpleROI,
-      },
+      conservative: buildScaled(0.7),
       base: {
         annualValue: summary.runRateValue,
         valueToCost: summary.valueToCost,
@@ -240,18 +269,9 @@ export default function ProformaView({
         termNet: summary.termNet,
         simpleROI: summary.simpleROI,
       },
-      optimistic: {
-        annualValue: optSummary.runRateValue,
-        valueToCost: optSummary.valueToCost,
-        irr: optIRR.isValid ? optIRR.annualizedRate : 0,
-        irrValid: optIRR.isValid,
-        irrMethod: optIRR.method,
-        paybackMonth: optSummary.paybackMonth,
-        termNet: optSummary.termNet,
-        simpleROI: optSummary.simpleROI,
-      },
+      optimistic: buildScaled(1.3),
     };
-  }, [settings, config, summary]);
+  }, [settings, config, summary, cashFlows]);
 
   const chartData = useMemo(() => {
     return displayData.map(row => {
@@ -591,7 +611,7 @@ export default function ProformaView({
         >
           <h2 className="text-sm sm:text-base font-bold text-neutral-900 mb-2">Executive Summary</h2>
           <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
-            Over a {contractTermLabel(config.contractTermMonths).toLowerCase()} partnership, the estimated investment of {fmtFull(summary.termInvestment)} across {fmtNum(settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0))} {settings.length > 1 ? "providers" : SETTING_UNIT_LABELS[settings[0]?.careSetting]} is projected to return {fmt(summary.termNet)} in net organizational value — a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Documentation quality improvements begin from day one, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+            Over a {contractTermLabel(config.contractTermMonths).toLowerCase()} partnership, the estimated investment of {fmtFull(summary.termInvestment)} across {fmtNum(settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0))} {settings.length > 1 ? "providers" : SETTING_UNIT_LABELS[settings[0]?.careSetting]} is projected to return {fmt(summary.termNet)} in net organizational value — a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Following a {config.implementationRampMonths}-month implementation ramp, documentation quality improvements begin immediately, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
           </p>
         </motion.div>
 
@@ -1458,58 +1478,6 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* YEAR-BY-YEAR NARRATIVE */}
-        <motion.div
-          className="mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28 }}
-          data-testid="panel-year-narratives"
-        >
-          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">Year-by-Year Outlook</h2>
-          <p className="text-xs sm:text-sm text-neutral-500 mb-4">How the deployment is projected to unfold</p>
-
-          <div className="space-y-4">
-            {yearlyData.map((y, idx) => {
-              const yearNum = idx + 1;
-              const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
-              const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
-              const adoptionPct = totalLicensed > 0 ? Math.round((totalActive / totalLicensed) * 100) : 0;
-              const headlines = [
-                { title: "Establish the Evidence", desc: "Initial deployment builds the evidence base. Documentation quality value begins immediately while capacity gains start after the 3-month operational ramp." },
-                { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
-                { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories — documentation, capacity, and retention — are contributing at or near full scale." },
-              ];
-              const h = headlines[Math.min(idx, 2)];
-              return (
-                <div key={y.label} className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-5" data-testid={`year-narrative-${yearNum}`}>
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-[#EA2C00] uppercase tracking-wide">Year {yearNum}</span>
-                        <span className="text-xs text-neutral-400">({y.label})</span>
-                      </div>
-                      <h3 className="text-sm sm:text-base font-bold text-neutral-900">{h.title}</h3>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <p className="text-lg sm:text-xl font-bold text-neutral-900">{fmt(y.totalValue)}</p>
-                      <p className="text-[10px] text-neutral-400">projected value</p>
-                    </div>
-                  </div>
-                  <p className="text-xs sm:text-sm text-neutral-500 mb-3">{h.desc}</p>
-                  <div className="flex flex-wrap gap-3 sm:gap-4 text-[11px] sm:text-xs text-neutral-600">
-                    <span><strong>{fmtNum(totalLicensed)}</strong> licensed</span>
-                    <span><strong>{fmtNum(totalActive)}</strong> actively documenting</span>
-                    <span><strong>{adoptionPct}%</strong> avg adoption</span>
-                    <span>Investment: <strong>{fmt(y.investment)}</strong></span>
-                    <span>Net: <strong className={y.netValue >= 0 ? "text-[#EA2C00]" : "text-red-600"}>{fmt(y.netValue)}</strong></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-
         {/* COST OF WAITING */}
         <motion.div
           className="mb-8 sm:mb-10"
@@ -1522,7 +1490,7 @@ export default function ProformaView({
           <p className="text-xs sm:text-sm text-neutral-500 mb-4">What the data suggests about delayed implementation</p>
 
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-3">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-bold text-neutral-900">
                   {fmtNum(Math.round(settings.reduce((s, v) => s + v.totalHoursSaved, 0) / 12))}
@@ -1533,17 +1501,11 @@ export default function ProformaView({
                 <p className="text-xl sm:text-2xl font-bold text-neutral-900">
                   {fmt(Math.round(summary.runRateValue / 12))}
                 </p>
-                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated monthly value foregone</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
-                  {fmt(Math.round(summary.runRateValue / 12 * 6))}
-                </p>
-                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated 6-month opportunity cost</p>
+                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated monthly value deferred</p>
               </div>
             </div>
             <p className="text-[11px] sm:text-xs text-neutral-500 leading-relaxed">
-              According to the AMA{"\u2019"}s 2023 Physician Burnout Survey, physicians spend an average of 2 hours on documentation for every hour of patient care. Each month of delayed implementation represents continued documentation burden, potential clinician dissatisfaction, and revenue leakage from incomplete coding. These estimates are derived from the same assumptions used throughout this model and are subject to the same limitations.
+              Each month of delayed implementation defers this estimated value while documentation costs continue.
             </p>
           </div>
         </motion.div>
@@ -1568,13 +1530,16 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) kick in immediately — the AI produces better notes from day one. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
-              <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested. This is the most intuitive metric for evaluating subscription technology commitments.</p>
+              <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month implementation ramp is applied before value begins accruing. During this period, subscription costs are incurred but no operational value is projected. This accounts for training, EHR integration, and workflow adjustment.</p>
+              <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual cash flow periods — Period 0 is the total cost basis (implementation fees plus full contract subscription), and subsequent periods are annual gross value realized. This total-cost-basis approach answers the natural question: "What is my annualized return on total spend?" Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual net cash flows — each period represents gross value minus subscription cost for that year. Period 0 includes implementation fees only (when applicable). Year 1 includes the implementation ramp during which no value accrues. Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
+              <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
-              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end. Year 1 at 20% means retention builds from 0% to 20% over the course of the year, not 20% from day one. This reflects the reality that retention improvements compound over time as documentation burden decreases and clinician satisfaction improves.</p>
-              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided analysis varying only value realization rate. Conservative models 70% realization (not all drivers materialize fully). Optimistic models 130% realization (better-than-expected outcomes). Subscription cost is held constant across all scenarios — it's contractual. This brackets the range of likely financial outcomes.</p>
+              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
+              <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided linear analysis scaling total value realization by 70% (conservative) and 130% (optimistic). Investment is held constant. Derived metrics (VTC, ROI, payback, IRR) are recalculated from the scaled values. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
         </motion.div>

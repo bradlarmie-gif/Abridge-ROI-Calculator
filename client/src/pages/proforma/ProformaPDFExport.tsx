@@ -441,7 +441,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
   const yearNarratives = [
-    { title: "Establish the Evidence", desc: "Initial deployment builds the evidence base. Documentation quality value begins immediately while capacity gains start after the 3-month operational ramp." },
+    { title: "Establish the Evidence", desc: `Initial deployment builds the evidence base during the ${config.implementationRampMonths}-month implementation ramp. Documentation quality value begins post-implementation while capacity gains follow after an additional 3-month operational ramp.` },
     { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
     { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories are contributing at or near full scale." },
   ];
@@ -487,7 +487,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()} across {fmtNum(totalFullScale)} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. Documentation quality improvements begin from day one, capacity and efficiency gains follow after a 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()} across {fmtNum(totalFullScale)} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes value realization. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
             </Text>
           </View>
 
@@ -645,7 +645,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           {summary.paybackMonth && (
             <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>
-              Payback period assumes value begins accruing from go-live month. Actual time to value may vary based on training completion, workflow integration, and provider adoption speed.
+              Payback period reflects the month in which cumulative net value turns positive, accounting for the {config.implementationRampMonths}-month implementation ramp and subscription costs from day one. Actual time to value may vary based on training completion, workflow integration, and provider adoption speed.
             </Text>
           )}
 
@@ -784,25 +784,18 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
 
           <Text style={styles.sectionLabelGray}>COST OF INACTION</Text>
           <View style={[styles.cardBg, { padding: 12, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
-              Each month of delayed implementation represents continued documentation burden and foregone value.
-            </Text>
-            <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved / 12))}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/month on manual documentation</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmt(Math.round(summary.runRateValue / 12))}</Text>
-                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated monthly value foregone</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{fmt(Math.round(summary.runRateValue / 12 * 6))}</Text>
-                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated 6-month opportunity cost</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated monthly value deferred</Text>
               </View>
             </View>
-            <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.5, marginTop: 6 }}>
-              Source: AMA 2023 Physician Burnout Survey. Estimates derived from the same assumptions used throughout this model and subject to the same limitations.
+            <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.5 }}>
+              Each month of delayed implementation defers this estimated value while documentation costs continue.
             </Text>
           </View>
 
@@ -856,14 +849,15 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>CALCULATION METHOD</Text>
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
-                Adoption ramp: S-curve over 12 months{"\n"}
+                Implementation ramp: {config.implementationRampMonths} months (no value){"\n"}
+                Utilization targets: {config.yearlyUtilization.year1}% Y1, {config.yearlyUtilization.year2}% Y2, {config.yearlyUtilization.year3}% Y3{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` (Nursing: ${config.nursingYearlyUtilization.year1}/${config.nursingYearlyUtilization.year2}/${config.nursingYearlyUtilization.year3}%)` : ""}{"\n"}
                 Provider expansion: Per-year allocation{"\n"}
                 Onset timing: Immediate / 3mo delay / phased{"\n"}
                 Retention phasing: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR on annual periods {"\u2014"} Period 0 = total cost basis ({fmt(summary.termInvestment)}), subsequent = annual value.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""} Capped at 200%.
+                Value-to-Cost: total value / total cost. IRR on annual net cash flows {"\u2014"} Period 0 = implementation fees, subsequent = annual value minus subscription.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""} Capped at 200%.
               </Text>
             </View>
           </View>
@@ -946,18 +940,23 @@ export async function generateProformaPDF(
     paybackQuarter = `Q${q} '${yr}`;
   }
 
-  const scaleSettings = (s: ProformaSettingSnapshot, vf: number) => ({
-    ...s,
-    annualValue: s.annualValue * vf,
-    retentionValue: s.retentionValue * vf,
-    drivers: s.drivers.map(d => ({ ...d, value: d.value * vf })),
-  });
-  const conservative = settings.map(s => scaleSettings(s, 0.7));
-  const optimistic = settings.map(s => scaleSettings(s, 1.3));
-  const consCF = buildMonthlyCashFlows(conservative, config);
-  const optCF = buildMonthlyCashFlows(optimistic, config);
-  const consResult = calculateAnnualIRR(buildAnnualIRRCashFlows(conservative, config, consCF));
-  const optResult = calculateAnnualIRR(buildAnnualIRRCashFlows(optimistic, config, optCF));
+  const buildScaledIRR = (factor: number) => {
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    const contractYears = Math.ceil(config.contractTermMonths / 12);
+    const yearBuckets: number[] = [];
+    for (let y = 0; y < contractYears; y++) {
+      const startM = y * 12 + 1;
+      const endM = (y + 1) * 12;
+      const yearRows = cashFlows.filter(r => r.period >= startM && r.period <= endM);
+      const yearGrossValue = yearRows.reduce((s, r) => s + r.totalValue, 0);
+      const yearSubscription = yearRows.reduce((s, r) => s + r.investment, 0);
+      yearBuckets.push(yearGrossValue * factor - yearSubscription);
+    }
+    const scaledFlows = totalImplFees > 0 ? [-totalImplFees, ...yearBuckets] : yearBuckets;
+    return calculateAnnualIRR(scaledFlows);
+  };
+  const consResult = buildScaledIRR(0.7);
+  const optResult = buildScaledIRR(1.3);
   const sensitivityIRR = {
     conservative: consResult.isValid ? consResult.annualizedRate : 0,
     optimistic: optResult.isValid ? optResult.annualizedRate : 0,
