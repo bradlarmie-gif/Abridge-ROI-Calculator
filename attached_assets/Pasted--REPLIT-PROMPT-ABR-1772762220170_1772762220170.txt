@@ -1,0 +1,387 @@
+════════════════════════════════════════════════════════════════════════════════
+REPLIT PROMPT — ABRIDGE ROI CALCULATOR
+TIME ALLOCATION EXPLAINER BLOCK — ALL FOUR CARE SETTINGS
+Target file: the PDF generator for each care setting
+Purpose: Add an explanatory framing block on Page 2 of each PDF that teaches
+         the reader why their specific allocation produces the dollar figures
+         they see — so the model feels earned, not arbitrary.
+════════════════════════════════════════════════════════════════════════════════
+CONTEXT
+───────
+The ROI calculator's Page 2 currently shows driver cards with dollar values
+but does not explain why certain time buckets produce dollars while others
+produce "Qualitative" or nothing. Users are confused when a large hours number
+(e.g. 5,250 hrs/year) produces a modest dollar figure — because they don't
+understand that only the capacity/throughput allocation is monetized directly.
+This prompt adds one new block to Page 2 of each care setting's PDF: a
+3-column allocation explainer that appears immediately ABOVE the first section
+label (TIME RECAPTURED / THROUGHPUT VALUE / CLINICAL OPERATIONS / STAFFING
+EFFICIENCY). It tells the reader what their allocation choices mean and why the
+resulting numbers look the way they do.
+GLOBAL RULES FOR ALL FOUR SETTINGS
+────────────────────────────────────
+1. DO NOT change the cover page (Page 1 hero card, thesis question, framework
+   cards, or strategic observation block). Those are locked.
+2. DO NOT change colors, fonts, layout structure, card widths, or column grids.
+3. This block sits BETWEEN the Page 2 section headline and the first section
+   label. It does not replace anything — it inserts above.
+4. The block renders as a single warm-gray (#F5F2EE) container with:
+     - A small all-caps red (#E8321A) label at top: "YOUR TIME ALLOCATION"
+     - Three equal-width columns inside, each showing:
+         · Bucket label (all-caps, small, near-black #1A1A1A)
+         · Percentage (large, bold, near-black)
+         · One-line description (small, gray, from the exact wizard copy below)
+     - One interpretive sentence below the columns (dynamic, per logic below)
+5. All percentages always render, even if 0%. A 0% bucket is displayed as "0%"
+   in muted gray — never hidden, never omitted.
+6. The interpretive sentence never appears if all three percentages are 0
+   (edge case: model not yet configured — should not reach PDF generation).
+7. Sustainability / Wellbeing / Shift Sustainability buckets NEVER display a
+   dollar value anywhere in the PDF. They display "Qualitative" or the phrase
+   "supports retention and wellbeing — not directly modeled" inline where a
+   dollar figure would otherwise appear.
+8. The footer note from the wizard ("Not all reclaimed time creates direct
+   dollar value — some makes shifts more sustainable. That's real value too,
+   just harder to count.") should appear in small italic gray text at the
+   bottom of this block, verbatim.
+════════════════════════════════════════════════════════════════════════════════
+SETTING 1 — OUTPATIENT
+PDF file: Abridge_Outpatient_Analysis_[OrgName].pdf
+Insert location: Page 2, between sub-headline and "TIME RECAPTURED" label
+════════════════════════════════════════════════════════════════════════════════
+VARIABLES NEEDED (already in wizard state):
+  totalHoursReturned       — total hours saved annually (all providers)
+  providerCount            — number of providers
+  hoursPerProviderPerWeek  — hours saved per provider per week
+  capacityPct              — % allocated to Patient Capacity
+  docQualityPct            — % allocated to Documentation Quality Time
+  sustainabilityPct        — % allocated to Clinician Sustainability
+BLOCK LABEL (all-caps red):
+  YOUR TIME ALLOCATION
+THREE COLUMNS — use these exact descriptions (sourced from wizard Step 4):
+  Column 1: PATIENT CAPACITY
+  Value: {capacityPct}%
+  Description: "Time converted to additional patient visits and reduced
+                scheduling gaps."
+  Column 2: DOCUMENTATION QUALITY
+  Value: {docQualityPct}%
+  Description: "Time that enables more complete, thorough documentation —
+                the foundation of the revenue drivers below."
+  Column 3: CLINICIAN SUSTAINABILITY
+  Value: {sustainabilityPct}%
+  Description: "Breathing room that reduces documentation burden, supports
+                work-life balance, and protects retention."
+INTERPRETIVE SENTENCE — render exactly one, chosen by this logic:
+  IF capacityPct >= 50:
+    "Your model is capacity-driven. The majority of reclaimed time converts
+     directly into patient visits — that's what produces the TIME RECAPTURED
+     dollar figure below. {sustainabilityPct}% is returned to your providers
+     as genuine breathing room. That value is real — it just doesn't move
+     through revenue."
+  ELSE IF docQualityPct >= 50:
+    "Your model is documentation-quality-driven. The majority of reclaimed
+     time goes toward better notes — that's the foundation of the revenue
+     optimization drivers below. {capacityPct}% converts to capacity,
+     {sustainabilityPct}% returns to your providers as time."
+  ELSE IF sustainabilityPct >= 50:
+    "Your model prioritizes provider sustainability — {sustainabilityPct}%
+     of reclaimed time is returned directly to your providers. That doesn't
+     appear as a dollar figure here, but it shows up in retention, burnout
+     reduction, and clinical presence. {capacityPct}% converts to capacity
+     and is modeled below."
+  ELSE IF capacityPct === 0 AND docQualityPct === 0:
+    "100% of reclaimed time is allocated to clinician sustainability. No
+     revenue or capacity drivers are active in this model. The value is
+     real — it lives in retention, wellbeing, and clinical presence."
+  ELSE:
+    "Your time is split: {capacityPct}% into patient capacity,
+     {docQualityPct}% into documentation quality, and {sustainabilityPct}%
+     back to your providers. Each allocation drives a different kind of
+     value — modeled separately below."
+FOOTER NOTE (small italic gray, verbatim from wizard):
+  "Not all reclaimed time creates direct dollar value — some makes shifts
+   more sustainable. That's real value too, just harder to count."
+ADDITIONAL RENDERING RULES — OUTPATIENT SPECIFIC:
+  - If sustainabilityPct > 0, the AT A GLANCE table on Page 4 must show
+    "Clinician Sustainability" as its own row under VALUE SUMMARY, with the
+    value "Qualitative" in gray (not red, not a dollar figure).
+  - If capacityPct === 0: the TIME RECAPTURED section shows "Not Modeled"
+    (never $0, never a dash).
+  - If docQualityPct === 0: the REVENUE OPTIMIZED section shows "Not Modeled".
+  - Per-provider impact line under the projected value card reads:
+    "Per provider: ~{netAnnualValue / providerCount formatted}/year from
+     {capacityPct}% of reclaimed time. {sustainabilityPct > 0 ? 
+     sustainabilityPct + '% returned to providers as time.' : ''}"
+════════════════════════════════════════════════════════════════════════════════
+SETTING 2 — EMERGENCY DEPARTMENT
+PDF file: Abridge_Emergency_Analysis_[OrgName].pdf
+Insert location: Page 2, between sub-headline and "THROUGHPUT VALUE" label
+════════════════════════════════════════════════════════════════════════════════
+VARIABLES NEEDED:
+  totalHoursReturned    — total hours saved annually (all ED physicians)
+  providerCount         — number of ED physicians
+  throughputPct         — % allocated to Patient Throughput
+  docQualityPct         — % allocated to Documentation Quality Time
+  wellbeingPct          — % allocated to Clinician Wellbeing
+BLOCK LABEL (all-caps red):
+  YOUR TIME ALLOCATION
+THREE COLUMNS — exact descriptions from wizard Step 4:
+  Column 1: PATIENT THROUGHPUT
+  Value: {throughputPct}%
+  Description: "Faster documentation means faster disposition — fewer
+                walkouts, more capacity."
+  Column 2: DOCUMENTATION QUALITY
+  Value: {docQualityPct}%
+  Description: "Time that enables more complete, thorough documentation —
+                the foundation of E&M accuracy and denial prevention below."
+  Column 3: CLINICIAN WELLBEING
+  Value: {wellbeingPct}%
+  Description: "Shift sustainability that reduces burnout and supports
+                emergency physician retention."
+INTERPRETIVE SENTENCE:
+  IF throughputPct >= 50:
+    "Your model is throughput-driven. Faster documentation translates
+     directly into faster patient disposition — fewer walkouts, more
+     capacity within the same physical department. {wellbeingPct}% is
+     returned to your ED physicians as genuine shift breathing room.
+     That value is real — it doesn't move through revenue."
+  ELSE IF docQualityPct >= 50:
+    "Your model is documentation-quality-driven. The majority of reclaimed
+     time goes toward more complete notes — that's what drives E&M accuracy
+     and denial prevention below. {throughputPct}% converts to throughput,
+     {wellbeingPct}% returns to your physicians as time."
+  ELSE IF wellbeingPct >= 50:
+    "Your model prioritizes physician wellbeing — {wellbeingPct}% of
+     reclaimed time is returned directly to your ED physicians. That
+     doesn't appear as a dollar figure here, but it shows up in burnout
+     scores, retention, and shift sustainability. {throughputPct}%
+     converts to throughput and is modeled below."
+  ELSE IF throughputPct === 0 AND docQualityPct === 0:
+    "100% of reclaimed time is allocated to clinician wellbeing. No
+     throughput or documentation quality drivers are active in this model.
+     The value is real — it lives in retention, shift sustainability,
+     and physician presence."
+  ELSE:
+    "Your time is split: {throughputPct}% into patient throughput,
+     {docQualityPct}% into documentation quality, and {wellbeingPct}%
+     back to your physicians as time. Each allocation drives a different
+     kind of value — modeled separately below."
+FOOTER NOTE (verbatim):
+  "Not all reclaimed time creates direct dollar value — some makes shifts
+   more sustainable. That's real value too, just harder to count."
+ADDITIONAL RENDERING RULES — ED SPECIFIC:
+  - If wellbeingPct > 0: AT A GLANCE table shows "Clinician Wellbeing" row
+    under VALUE SUMMARY with value "Qualitative".
+  - If throughputPct === 0: THROUGHPUT VALUE section shows "Not Modeled".
+  - If docQualityPct === 0: E&M / DOCUMENTATION QUALITY section shows
+    "Not Modeled".
+  - Per-physician impact line reads:
+    "Per physician: ~{netAnnualValue / providerCount formatted}/year
+     from {throughputPct}% of reclaimed time.
+     {wellbeingPct > 0 ? wellbeingPct + '% returned to physicians as time.' : ''}"
+════════════════════════════════════════════════════════════════════════════════
+SETTING 3 — INPATIENT
+PDF file: Abridge_Inpatient_Analysis_[OrgName].pdf
+Insert location: Page 2, between sub-headline and "CLINICAL OPERATIONS" label
+════════════════════════════════════════════════════════════════════════════════
+VARIABLES NEEDED:
+  totalHoursReturned    — total hours saved annually (all hospitalists)
+  hospitalistCount      — number of hospitalists
+  directCarePct         — % allocated to Direct Patient Care
+  docQualityPct         — % allocated to Documentation Quality
+  sustainabilityPct     — % allocated to Shift Sustainability
+BLOCK LABEL (all-caps red):
+  YOUR TIME ALLOCATION
+THREE COLUMNS — exact descriptions from wizard Step 4:
+  Column 1: DIRECT PATIENT CARE
+  Value: {directCarePct}%
+  Description: "Time returned to rounding, patient interaction, teaching,
+                and bedside presence."
+  Column 2: DOCUMENTATION QUALITY
+  Value: {docQualityPct}%
+  Description: "Better ambient notes mean fewer CDI queries, more accurate
+                DRGs, and stronger clinical records."
+  Column 3: SHIFT SUSTAINABILITY
+  Value: {sustainabilityPct}%
+  Description: "Reduced after-hours charting that protects hospitalist
+                retention and work-life balance."
+INTERPRETIVE SENTENCE:
+  IF directCarePct >= 50:
+    "Your model is capacity-driven. The majority of reclaimed time flows
+     back to the bedside — more time rounding, less time at the keyboard.
+     That's what drives the CAPACITY UNLOCKED figure: more admissions
+     handled, fewer bottlenecks, a program that scales. {sustainabilityPct}%
+     is returned to your hospitalists as time — real value that shows up in
+     retention, not revenue."
+  ELSE IF docQualityPct >= 50:
+    "Your model is documentation-quality-driven. The majority of reclaimed
+     time goes toward better notes — that's where DRG accuracy, CC/MCC
+     capture, and CDI efficiency live. The revenue optimization below flows
+     directly from this choice. {directCarePct}% converts to capacity,
+     {sustainabilityPct}% returns to your hospitalists as time."
+  ELSE IF sustainabilityPct >= 50:
+    "Your model prioritizes hospitalist sustainability — {sustainabilityPct}%
+     of reclaimed time is returned directly to your physicians. That doesn't
+     appear as a revenue line here, but it shows up in after-hours charting
+     load, retention, and the long-term sustainability of your program.
+     {directCarePct}% converts to capacity and is modeled below."
+  ELSE IF directCarePct === 0 AND docQualityPct === 0:
+    "100% of reclaimed time is allocated to shift sustainability. No
+     capacity or documentation quality drivers are active in this model.
+     The value is real — it lives in after-hours charting reduction,
+     retention, and hospitalist wellbeing."
+  ELSE:
+    "Your time is split: {directCarePct}% to direct patient care,
+     {docQualityPct}% to documentation quality, and {sustainabilityPct}%
+     to shift sustainability. Each allocation drives a different kind
+     of value — modeled separately below."
+FOOTER NOTE (verbatim):
+  "Not all reclaimed time creates direct dollar value — some makes shifts
+   more sustainable. That's real value too, just harder to count."
+ADDITIONAL RENDERING RULES — INPATIENT SPECIFIC:
+  - If directCarePct === 0: Page 1 CAPACITY UNLOCKED card shows "Not Modeled".
+  - If docQualityPct === 0: Page 1 DOCUMENTATION QUALITY card shows
+    "Not Modeled". Page 2 DOCUMENTATION QUALITY section also shows
+    "Not Modeled" for all three drivers (DRG, Obs/IP, CDI Query).
+  - If sustainabilityPct > 0: AT A GLANCE shows "Shift Sustainability" row
+    under VALUE SUMMARY with value "Qualitative".
+  - If sustainabilityPct === 100: both Page 1 cards show "Not Modeled" and
+    a single note renders: "Value is allocated entirely to shift
+    sustainability. No revenue or capacity drivers are active in this model."
+  - Per-hospitalist impact line reads:
+    "Per hospitalist: ~{netAnnualValue / hospitalistCount formatted}/year
+     from {directCarePct}% of reclaimed time.
+     {sustainabilityPct > 0 ? sustainabilityPct + '% returned as time.' : ''}"
+════════════════════════════════════════════════════════════════════════════════
+SETTING 4 — NURSING
+PDF file: Abridge_Nursing_Analysis_[OrgName].pdf
+Insert location: Page 2, between sub-headline and "STAFFING EFFICIENCY" label
+════════════════════════════════════════════════════════════════════════════════
+IMPORTANT: Nursing is structurally different from the three provider settings.
+  - The unit is SHIFTS, not encounters or admissions.
+  - The unit of investment is per BED per month, not per provider.
+  - There is NO single "hours returned" number that directly converts to a
+    dollar figure. Each of the three buckets monetizes differently:
+      · Overtime Reduction    → direct labor savings (hard dollar)
+      · Shift Sustainability  → retention and wellbeing (qualitative)
+      · Direct Patient Care   → care quality drivers (potential dollar,
+                                always badged POTENTIAL)
+  - This means the explainer for nursing must teach a DIFFERENT lesson:
+    not "why is my hours number small" but "why do these three buckets
+    produce different kinds of value."
+VARIABLES NEEDED:
+  totalHoursReturned   — total hours returned across all Abridge-enabled shifts
+  nurseFTEs            — number of Nurse FTEs in scope
+  staffedBeds          — number of staffed beds
+  otReductionPct       — % allocated to Overtime Reduction
+  sustainabilityPct    — % allocated to Shift Sustainability
+  directPatientCarePct — % allocated to Direct Patient Care
+BLOCK LABEL (all-caps red):
+  YOUR TIME ALLOCATION
+THREE COLUMNS — exact descriptions from wizard Step 4:
+  Column 1: OVERTIME REDUCTION
+  Value: {otReductionPct}%
+  Description: "Time that directly reduces end-of-shift overtime."
+  Value type indicator (small, below description): HARD VALUE
+  Column 2: SHIFT SUSTAINABILITY
+  Value: {sustainabilityPct}%
+  Description: "Time absorbed into shift breathing room; reduces
+                documentation stress and supports retention."
+  Value type indicator: QUALITATIVE
+  Column 3: DIRECT PATIENT CARE
+  Value: {directPatientCarePct}%
+  Description: "Time returned to the bedside for assessments,
+                interventions, and presence."
+  Value type indicator: POTENTIAL VALUE
+IMPORTANT RENDERING NOTE ON VALUE TYPE INDICATORS:
+  These small labels under each column description are new. Style them as:
+  - HARD VALUE: small all-caps in Abridge red (#E8321A)
+  - QUALITATIVE: small all-caps in medium gray (#888888)
+  - POTENTIAL VALUE: small all-caps in medium gray (#888888) with a
+    small dotted border pill — matching the POTENTIAL badge used on
+    care quality driver cards in Page 2
+INTERPRETIVE SENTENCE — nursing version:
+  IF otReductionPct >= 50:
+    "Overtime reduction is your primary driver — {otReductionPct}% of
+     reclaimed shift time converts directly into reduced end-of-shift
+     overtime. That's the most direct labor cost savings in nursing:
+     fewer hours on the clock past shift end. {directPatientCarePct}%
+     flows to the bedside and connects to care quality outcomes below."
+  ELSE IF directPatientCarePct >= 50:
+    "Bedside presence is your primary driver — {directPatientCarePct}%
+     of reclaimed shift time returns to direct patient care. That's
+     where the care quality value lives: more time for assessments,
+     interventions, and documentation that's current rather than
+     reconstructed. The potential value drivers below flow from
+     this choice. {otReductionPct}% reduces overtime directly."
+  ELSE IF sustainabilityPct >= 50:
+    "Shift sustainability is your primary focus — {sustainabilityPct}%
+     of reclaimed time is absorbed as genuine breathing room for your
+     nurses. That doesn't model as a dollar figure, but it matters:
+     reduced documentation stress, better retention, and a nursing
+     workforce that isn't running on empty. {otReductionPct}% reduces
+     overtime, {directPatientCarePct}% returns to the bedside."
+  ELSE IF otReductionPct === 0 AND directPatientCarePct === 0:
+    "100% of reclaimed shift time is allocated to sustainability.
+     No hard-value or potential-value drivers are active in this model.
+     The value is real — it lives in nurse retention, shift satisfaction,
+     and reduced documentation burden."
+  ELSE:
+    "Your time is split: {otReductionPct}% reduces overtime directly,
+     {sustainabilityPct}% supports shift sustainability, and
+     {directPatientCarePct}% returns to direct patient care. Each
+     allocation drives a different kind of value — hard, qualitative,
+     and potential — modeled separately below."
+FOOTER NOTE (verbatim from wizard):
+  "Not all reclaimed time creates direct dollar value — some makes shifts
+   more sustainable. That's real value too, just harder to count."
+ADDITIONAL RENDERING RULES — NURSING SPECIFIC:
+  - If otReductionPct === 0: OT Reduction driver card shows "Not Modeled"
+    (not $0, not a dash).
+  - If directPatientCarePct === 0: all Care Quality driver cards show
+    "Not Modeled" and the CARE QUALITY section header note reads:
+    "Care quality drivers require a Direct Patient Care allocation to model."
+  - If sustainabilityPct > 0: AT A GLANCE shows "Shift Sustainability" row
+    under VALUE SUMMARY with value "Qualitative".
+  - The HARD VALUE / QUALITATIVE / POTENTIAL VALUE indicators from the
+    column chips must match the badges used on the driver cards in Page 2 —
+    they are the same conceptual system and should look visually consistent.
+  - Investment pricing note: this explainer block must NOT reference
+    "per provider" — pricing is per BED per month. Any per-unit line reads:
+    "Per bed: ~{annualInvestment / staffedBeds formatted}/year"
+  - The Agency Reduction and Retention Savings drivers (Step 5) are part of
+    STAFFING EFFICIENCY but are NOT directly tied to the time allocation
+    percentages — they are modeled from separate labor inputs. Do not imply
+    that they flow from the allocation buckets. They sit alongside OT Reduction
+    as Staffing Efficiency drivers, but are triggered independently.
+  - Do NOT combine hard value (Staffing Efficiency total) and potential value
+    (Care Quality total) into a single net value in this block or anywhere
+    in the body copy. They remain separate until the AT A GLANCE summary.
+════════════════════════════════════════════════════════════════════════════════
+SHARED IMPLEMENTATION NOTES FOR REPLIT
+════════════════════════════════════════════════════════════════════════════════
+1. This block is a NEW component — do not modify existing driver card
+   components to accommodate it. Create a new AllocationExplainer component
+   that accepts the care-setting-specific props listed above and renders
+   the appropriate columns and interpretive sentence.
+2. The component should be purely presentational — all calculations are
+   already done in wizard state. It only needs the percentage values and
+   the derived totalHoursReturned / providerCount / staffedBeds values
+   that are already computed.
+3. The interpretive sentence logic should live in a helper function, not
+   inline in JSX, to keep the component readable.
+4. The component must be responsive to 0% values — the column always
+   renders, just with muted gray percentage text when value is 0%.
+5. The footer note is identical across all four settings and can be a
+   shared constant string.
+6. Do not add this block to the cover page (Page 1). It is Page 2 only.
+7. The total character count of any interpretive sentence must not exceed
+   ~200 characters to fit within the PDF column width without overflow.
+   Test all conditional branches at the longest expected string length.
+8. Page count is unaffected — this block is compact and fits within the
+   existing Page 2 layout. It should not push content to a new page.
+   If content overflow is detected, reduce font size of description text
+   to 8pt before considering any layout changes.
+════════════════════════════════════════════════════════════════════════════════
+END OF PROMPT
+════════════════════════════════════════════════════════════════════════════════
