@@ -663,16 +663,14 @@ export function computeWorkforceFeedback(
       nextLevelTeaser: 'This is the financial proof that ambient changed the workforce model, not just the documentation.',
     };
   }
-  const monthsSustained = (inputs.monthsSustained as number) || 0;
   const annualSavings = Math.round(agencyReduction * 12);
-  const cumulativeSavings = monthsSustained > 0 ? Math.round(agencyReduction * monthsSustained) : 0;
   return {
     label: 'Estimated Impact',
     value: annualSavings,
     hasValue: true,
-    headlineMetric: `${formatDollar(annualSavings)} in annual labor spend reduction.${cumulativeSavings > 0 ? ` ${formatDollar(cumulativeSavings)} already realized.` : ''}`,
-    context: `Agency and locum spend is one of the most visible labor cost lines in a health system. When it decreases — and the decrease is attributable to improved provider retention — that's ambient showing up directly in your P&L.\n\n${cumulativeSavings > 0 ? `Your organization has already avoided ${formatDollar(cumulativeSavings)} in agency spend over ${monthsSustained} month${monthsSustained !== 1 ? 's' : ''}. At this rate, that's ${formatDollar(annualSavings)} annually.` : ''}`,
-    formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}${cumulativeSavings > 0 ? `\n[cumulative] = ${formatDollar(agencyReduction)} × ${monthsSustained} months = ${formatDollar(cumulativeSavings)}` : ''}`,
+    headlineMetric: `${formatDollar(annualSavings)} in annual labor spend reduction.`,
+    context: `Agency and locum spend is one of the most visible labor cost lines in a health system. When it decreases — and the decrease is attributable to improved provider retention — that's ambient showing up directly in your P&L.`,
+    formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}`,
     footnote: '',
   };
 }

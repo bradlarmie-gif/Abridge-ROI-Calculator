@@ -94,7 +94,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     framingQuestions: {
       1: '{encounterCount} encounters. Has anyone from revenue cycle looked at what that means for coding?',
       2: 'What\'s being analyzed?',
-      3: 'What did you measure?',
+      3: undefined as any,
       4: 'How is this built in?',
     },
     unlockTeasers: {
@@ -136,7 +136,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 4, label: 'It\'s Built Into How We Run', description: 'This isn\'t a project anymore. It\'s how the organization runs.' },
     ],
     framingQuestions: {
-      1: 'Has any downstream team been brought into the conversation?',
+      1: 'Documentation is improving. Has anyone downstream noticed yet?',
       2: 'How is quality being tracked?',
       3: 'Which workflows have measurably shifted?',
       4: 'Where is it embedded?',
@@ -343,7 +343,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       const capacityLeadershipDecision = currentState.inputs.capacityLeadershipDecision as string | undefined;
       return (
         <>
-          {timeSavedSection}
           <div className="mb-5">
             <label className="block text-sm font-medium text-black mb-3">
               Where does this stand?
@@ -1216,15 +1215,35 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            How many months has this reduction been sustained?
+            Is this showing up in the labor line on a sustained basis?
           </label>
-          <FormattedNumberInput
-            value={(currentState.inputs.monthsSustained as number) || 0}
-            onChange={(v) => setDomainInput('monthsSustained', Math.max(0, v))}
-            placeholder=""
-            className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-months-sustained"
-          />
+          <div className="flex flex-col gap-2.5">
+            {[
+              { id: 'yes', label: "Yes — it's in the numbers" },
+              { id: 'tracking', label: "We're tracking it" },
+              { id: 'not_yet', label: 'Not yet confirmed' },
+            ].map((opt) => {
+              const laborLineSustained = currentState.inputs.laborLineSustained as string | undefined;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('laborLineSustained', opt.id)}
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    laborLineSustained === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-labor-line-${opt.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${laborLineSustained === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
