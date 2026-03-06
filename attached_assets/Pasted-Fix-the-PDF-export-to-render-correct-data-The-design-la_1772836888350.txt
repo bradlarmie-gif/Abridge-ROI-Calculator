@@ -1,0 +1,48 @@
+Fix the PDF export to render correct data. The design/layout is good — keep the Abridge font, styling, and page structure. Only fix the DATA issues.
+1. 🔴 Investment numbers are WRONG throughout the PDF
+The PDF shows Y1 Investment as $613K when it should be $1,250,000 (500K encounters × $2.50). This is the same bug as in the calculator — utilization/ramp is being applied to the cost side. The PDF pulls from the same calculation, so once the calculator investment bug is fixed (see prior prompt), the PDF should automatically show correct numbers.
+Verify these render correctly in the PDF:
+
+Executive Summary investment total
+Financial Summary table Investment row
+Year-by-Year cards Investment fields
+Net Value calculations (which depend on correct investment)
+All metrics (ROI, Value-to-Cost, Payback) which depend on correct investment
+2. 🔴 Payback shows "1 mo" — will be fixed when investment bug is fixed
+Once investment is correct, payback will move to a realistic month. Make sure the PDF payback updates everywhere:
+Executive Summary metric card
+Executive Summary narrative paragraph ("payback estimated at month 1")
+The chart payback marker
+3. 🔴 Sensitivity Analysis is broken — Base Case and Optimistic show "N/A"
+The three scenario cards should show:
+Conservative (70% realization): ROI at 70% of base value
+Base Case (Your Assumptions): The actual ROI from the proforma — this should NEVER be N/A
+Optimistic (130% realization): ROI at 130% of base value
+Fix the data pipeline so all three scenarios render actual numbers. The base case must always have a value — it's the user's own inputs.
+4. 🔴 Model Confidence lists wrong drivers
+"Strongest: Capacity & efficiency" — but Capacity & Efficiency was not allocated in this scenario ($0 value). The Model Confidence section should only list value drivers that were actually used in the model. If C&E wasn't allocated, don't list it as "strongest."
+Dynamic logic:
+Only show value drivers that have non-zero allocation in "Strongest"
+"Weakest" items should reflect actual model dependencies, not generic placeholders
+5. 🔴 Executive Summary says "across 3,000 providers"
+It should say something like "scaling from 1,000 to 1,800 providers over 2 years" — reflecting the actual rollout plan, not just the max number as if they're all there from day one.
+6. 🔴 Executive Summary says "1-month implementation ramp"
+Verify this matches the actual ramp setting in the calculator. If the ramp is set to 3 months, the PDF should say "3-month implementation ramp."
+7. 🔴 Adoption percentages on Year-by-Year cards seem inverted
+Year 1 shows 92% adoption, Year 2 shows 80%. This is backwards — adoption should be LOWER in Year 1 (ramping up) and HIGHER in Year 2 (mature). Check how "adoption" is being calculated. It might be confusing "adoption" with "utilization" or calculating it incorrectly.
+If adoption = actively documenting / licensed providers:
+Y1: 917 / 1,000 = 92% — this could be correct if the 3-month ramp means they're at full adoption for 9 of 12 months averaged. But it's misleading because it implies 92% are using it, when really it's an average that includes months at <100%.
+Y2: 1,433 / 1,800 = 80% — lower because new providers are added mid-year and haven't fully ramped.
+This math might be technically correct but it tells the wrong story. A customer reads "92% adoption in Year 1, 80% in Year 2" and thinks adoption is declining.
+Better approach: Show end-of-year utilization instead of yearly average. Or label it clearly as "Avg. Annual Utilization" not "Adoption."
+8. 🟡 Y3 appears in Key Inputs but this is a 2-year deal
+Key Inputs shows "Y1: 1000 → Y2: 1800 → Y3: 3000." If contract is 2 years, don't show Y3 in the rollout plan. Only show years included in the contract.
+9. Keep everything else as-is:
+Page structure and layout ✓
+Abridge font and branding ✓
+Chart styling ✓
+Color scheme ✓
+"Confidential" footer ✓
+Page numbering ✓
+Cost of Inaction section ✓
+Value Composition bar ✓
