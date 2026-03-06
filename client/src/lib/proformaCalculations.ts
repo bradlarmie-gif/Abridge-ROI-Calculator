@@ -125,36 +125,6 @@ export function getLicensedProviders(
   return fullScaleProviders;
 }
 
-function getEncounterExpansion(
-  month: number,
-  goLiveMonth: number,
-  contractMonths: number,
-  baseEncounters: number,
-  yearlyEncounters?: { year1: number; year2: number; year3: number }
-): number {
-  const monthsSinceGoLive = month - goLiveMonth;
-  if (monthsSinceGoLive < 0) return 0;
-
-  if (yearlyEncounters) {
-    const y1 = yearlyEncounters.year1;
-    const y2 = yearlyEncounters.year2;
-    const y3 = contractMonths >= 36 ? yearlyEncounters.year3 : y2;
-
-    if (monthsSinceGoLive < 12) {
-      return y1;
-    } else if (monthsSinceGoLive < 24) {
-      const progress = Math.min((monthsSinceGoLive - 12 + 1) / 12, 1);
-      return Math.round(y1 + (y2 - y1) * progress);
-    } else if (monthsSinceGoLive < 36) {
-      const progress = Math.min((monthsSinceGoLive - 24 + 1) / 12, 1);
-      return Math.round(y2 + (y3 - y2) * progress);
-    } else {
-      return y3;
-    }
-  }
-
-  return baseEncounters;
-}
 
 function getUtilizationRamp(
   month: number,
@@ -207,7 +177,7 @@ export function buildMonthlyCashFlows(
     let totalDocValue = 0;
     let totalTimeValue = 0;
     let totalRetentionValue = 0;
-    const bySettings: Record<string, { value: number; investment: number; providers: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
@@ -293,11 +263,10 @@ export function buildMonthlyCashFlows(
       if (setting.pricingModel === "annualFlat") {
         monthlyInvestment = (setting.annualLicenseFee || 0) / 12;
       } else if (setting.pricingModel === "perEncounter") {
-        const currentEncounters = getEncounterExpansion(
-          m, setting.goLiveMonth, months,
-          setting.encounters, setting.yearlyEncounters
-        );
-        const monthlyEncounters = currentEncounters / 12;
+        const encountersPerProvider = setting.providerCount > 0
+          ? setting.encounters / setting.providerCount
+          : 0;
+        const monthlyEncounters = licensedProviders * encountersPerProvider * (currentUtil / 100) / 12;
         monthlyInvestment = (setting.costPerEncounter || 0) * monthlyEncounters;
       } else {
         monthlyInvestment = setting.costPerUnit * licensedProviders;
@@ -848,6 +817,29 @@ export function calculateProformaSummary(
     termInvestment,
     runRateValue,
     runRateInvestment,
+  };
+}
+
+export function computeYearlyEncounters(
+  setting: ProformaSettingSnapshot,
+  config: ProformaConfig
+): { year1: number; year2: number; year3: number } {
+  const encountersPerProvider = setting.providerCount > 0
+    ? setting.encounters / setting.providerCount
+    : 0;
+
+  const utilTargets = setting.careSetting === "nursing" && config.nursingYearlyUtilization
+    ? config.nursingYearlyUtilization
+    : config.yearlyUtilization;
+
+  const licensedY1 = setting.yearlyProviders?.year1 ?? setting.providerCount;
+  const licensedY2 = setting.yearlyProviders?.year2 ?? setting.fullScaleProviders;
+  const licensedY3 = setting.yearlyProviders?.year3 ?? setting.fullScaleProviders;
+
+  return {
+    year1: Math.round(licensedY1 * encountersPerProvider * (utilTargets.year1 / 100)),
+    year2: Math.round(licensedY2 * encountersPerProvider * (utilTargets.year2 / 100)),
+    year3: Math.round(licensedY3 * encountersPerProvider * (utilTargets.year3 / 100)),
   };
 }
 

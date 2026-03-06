@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, BedDouble, ChevronLeft, Layers, ChevronDown, ChevronUp, ExternalLink, TrendingUp, Clock, DollarSign, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, BedDouble, ChevronLeft, Layers, ChevronDown, ChevronUp, ExternalLink, TrendingUp, Clock, DollarSign, BarChart3, X, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
-import { buildMonthlyCashFlows, calculateProformaSummary } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters } from "@/lib/proformaCalculations";
 
 interface ProformaHubProps {
   settings: ProformaSettingSnapshot[];
@@ -121,6 +121,8 @@ export default function ProformaHub({
 }: ProformaHubProps) {
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [comparePricingId, setComparePricingId] = useState<string | null>(null);
+  const [altPrice, setAltPrice] = useState<number>(0);
   const addedSettings = settings.map(s => s.careSetting);
   const hasNursing = settings.some(s => s.careSetting === "nursing");
   const availableSettings = ALL_SETTINGS.filter(s => !addedSettings.includes(s));
@@ -216,7 +218,7 @@ export default function ProformaHub({
               const unitLabel = SETTING_UNIT_LABELS[setting.careSetting];
               const yp = setting.yearlyProviders;
               const isEncPricing = setting.pricingModel === "perEncounter";
-              const ye = setting.yearlyEncounters ?? { year1: setting.encounters, year2: setting.encounters, year3: setting.encounters };
+              const ye = isEncPricing ? computeYearlyEncounters(setting, config) : { year1: 0, year2: 0, year3: 0 };
               return (
                 <motion.div
                   key={setting.id}
@@ -326,55 +328,29 @@ export default function ProformaHub({
                             className="overflow-hidden"
                           >
                             <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
-                              <div>
-                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{isEncPricing ? "Encounters" : unitLabel} by Year</p>
-                                {isEncPricing ? (
-                                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                              {isEncPricing && (
+                                <div>
+                                  <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Encounters by Year</p>
+                                  <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-2">
                                     <div>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
-                                      <FormattedNumberInput
-                                        value={ye.year1}
-                                        onChange={(v) => {
-                                          const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
-                                            yearlyEncounters: { ...ye, year1: val },
-                                          });
-                                        }}
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-y1-enc-${setting.careSetting}`}
-                                      />
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Y1 Encounters</label>
+                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y1-enc-${setting.careSetting}`}>{fmtNum(ye.year1)}</div>
                                     </div>
                                     <div>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 2</label>
-                                      <FormattedNumberInput
-                                        value={ye.year2}
-                                        onChange={(v) => {
-                                          const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
-                                            yearlyEncounters: { ...ye, year2: val },
-                                          });
-                                        }}
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-y2-enc-${setting.careSetting}`}
-                                      />
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Y2 Encounters</label>
+                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y2-enc-${setting.careSetting}`}>{fmtNum(ye.year2)}</div>
                                     </div>
                                     <div>
-                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 3</label>
-                                      <FormattedNumberInput
-                                        value={ye.year3}
-                                        onChange={(v) => {
-                                          const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
-                                            yearlyEncounters: { ...ye, year3: val },
-                                          });
-                                        }}
-                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
-                                        data-testid={`input-y3-enc-${setting.careSetting}`}
-                                      />
+                                      <label className="block text-[12px] text-[#8C7E6E] mb-1">Y3 Encounters</label>
+                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y3-enc-${setting.careSetting}`}>{fmtNum(ye.year3)}</div>
                                     </div>
                                   </div>
-                                ) : (
-                                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                  <p className="text-[10px] text-[#A39888]">Auto-calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()} × utilization</p>
+                                </div>
+                              )}
+                              <div>
+                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
+                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
                                       <FormattedNumberInput
@@ -432,7 +408,6 @@ export default function ProformaHub({
                                       />
                                     </div>
                                   </div>
-                                )}
                               </div>
 
                               <div className="grid grid-cols-3 gap-3">
@@ -492,6 +467,170 @@ export default function ProformaHub({
                                   />
                                 </div>
                               </div>
+
+                              {comparePricingId !== setting.id && (
+                                <button
+                                  onClick={() => {
+                                    setComparePricingId(setting.id);
+                                    const currentModel = setting.pricingModel || "perUnit";
+                                    if (currentModel === "perUnit") {
+                                      const encPerProv = setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0;
+                                      setAltPrice(encPerProv > 0 ? Math.round((setting.costPerUnit * 12) / (encPerProv * (setting.utilizationPercent / 100)) * 100) / 100 : 5);
+                                    } else if (currentModel === "perEncounter") {
+                                      setAltPrice(Math.round(((setting.costPerEncounter || 0) * (setting.encounters * (setting.utilizationPercent / 100))) / (setting.providerCount || 1) / 12));
+                                    } else {
+                                      setAltPrice(setting.costPerUnit || 200);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 text-xs text-[#6B5E4F] hover:text-[#4A3F35] font-medium transition-colors py-1"
+                                  data-testid={`button-compare-pricing-${setting.careSetting}`}
+                                >
+                                  <ArrowLeftRight className="w-3 h-3" />
+                                  Compare Pricing Models
+                                </button>
+                              )}
+
+                              <AnimatePresence>
+                                {comparePricingId === setting.id && (() => {
+                                  const currentModel = setting.pricingModel || "perUnit";
+                                  const altModel = currentModel === "perUnit" ? "perEncounter" : currentModel === "perEncounter" ? "perUnit" : "perUnit";
+                                  const altModelLabel = altModel === "perUnit" ? `Per ${unitLabel.replace(/s$/, '')} / Month` : "Per Encounter";
+                                  const currentModelLabel = currentModel === "perUnit" ? `Per ${unitLabel.replace(/s$/, '')} / Month` : currentModel === "perEncounter" ? "Per Encounter" : "Annual Flat";
+
+                                  const yearlyEnc = computeYearlyEncounters(setting, config);
+                                  const yp = setting.yearlyProviders;
+                                  const y1Prov = yp?.year1 ?? setting.providerCount;
+                                  const y2Prov = yp?.year2 ?? setting.fullScaleProviders;
+                                  const y3Prov = yp?.year3 ?? setting.fullScaleProviders;
+
+                                  const computeYearlyInvestment = (model: string, price: number) => {
+                                    if (model === "perUnit") {
+                                      return {
+                                        year1: y1Prov * price * 12,
+                                        year2: y2Prov * price * 12,
+                                        year3: y3Prov * price * 12,
+                                      };
+                                    } else if (model === "perEncounter") {
+                                      return {
+                                        year1: yearlyEnc.year1 * price,
+                                        year2: yearlyEnc.year2 * price,
+                                        year3: yearlyEnc.year3 * price,
+                                      };
+                                    } else {
+                                      return { year1: price, year2: price, year3: price };
+                                    }
+                                  };
+
+                                  const currentPrice = currentModel === "perUnit" ? setting.costPerUnit
+                                    : currentModel === "perEncounter" ? (setting.costPerEncounter || 0)
+                                    : (setting.annualLicenseFee || 0);
+                                  const currentInv = computeYearlyInvestment(currentModel, currentPrice);
+                                  const altInv = computeYearlyInvestment(altModel, altPrice);
+                                  const currentTotal = currentInv.year1 + currentInv.year2 + currentInv.year3;
+                                  const altTotal = altInv.year1 + altInv.year2 + altInv.year3;
+                                  const annualValue = setting.annualValue;
+                                  const totalValue3Y = annualValue * 3;
+                                  const currentROI = currentTotal > 0 ? ((totalValue3Y - currentTotal) / currentTotal * 100) : 0;
+                                  const altROI = altTotal > 0 ? ((totalValue3Y - altTotal) / altTotal * 100) : 0;
+                                  const currentNet = totalValue3Y - currentTotal;
+                                  const altNet = totalValue3Y - altTotal;
+
+                                  const fmt = (v: number) => {
+                                    if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+                                    if (Math.abs(v) >= 1_000) return `$${Math.round(v / 1_000)}K`;
+                                    return `$${Math.round(v)}`;
+                                  };
+
+                                  return (
+                                    <motion.div
+                                      key="compare-panel"
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: "auto" }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="bg-[#FBF9F7] border border-[#E8E0D8] rounded-lg p-3 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs font-semibold text-[#2C2420] tracking-wide uppercase">Compare Pricing Models</span>
+                                          <button
+                                            onClick={() => setComparePricingId(null)}
+                                            className="text-[#8C7E6E] hover:text-[#6B5E4F]"
+                                            data-testid={`button-close-compare-${setting.careSetting}`}
+                                          >
+                                            <X className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                        <p className="text-[11px] text-[#8C7E6E]">Your value projections stay the same — only the investment structure changes.</p>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div className="bg-white border border-[#E8E0D8] rounded-lg p-2.5 space-y-2">
+                                            <div className="flex items-center gap-1.5">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+                                              <span className="text-[11px] font-semibold text-[#2C2420]">Current: {currentModelLabel}</span>
+                                            </div>
+                                            <div className="text-[11px] text-[#8C7E6E] font-medium">
+                                              {currentModel === "perUnit" && `$${currentPrice}/mo`}
+                                              {currentModel === "perEncounter" && `$${currentPrice}/enc`}
+                                              {currentModel === "annualFlat" && fmt(currentPrice) + "/yr"}
+                                            </div>
+                                            <div className="space-y-1 text-[11px]">
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y1 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year1)}</span></div>
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year2)}</span></div>
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(currentInv.year3)}</span></div>
+                                              <div className="border-t border-[#E8E0D8] pt-1 mt-1">
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">3-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(currentTotal)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">Net Value</span><span className="font-semibold text-[#2C2420]">{fmt(currentNet)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">ROI</span><span className="font-semibold text-[#2C2420]">{currentROI.toFixed(0)}%</span></div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div className="bg-white border border-[#E8E0D8] rounded-lg p-2.5 space-y-2">
+                                            <div className="flex items-center gap-1.5">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-[#6B5E4F]" />
+                                              <span className="text-[11px] font-semibold text-[#2C2420]">Alternative: {altModelLabel}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-[11px] text-[#8C7E6E]">$</span>
+                                              <FormattedNumberInput
+                                                value={altPrice}
+                                                onChange={(v) => setAltPrice(Math.max(v, 0))}
+                                                className="w-20 text-right text-[11px] h-6 bg-white border border-neutral-200 rounded px-1"
+                                                data-testid={`input-alt-price-${setting.careSetting}`}
+                                              />
+                                              <span className="text-[11px] text-[#8C7E6E]">{altModel === "perUnit" ? "/mo" : "/enc"}</span>
+                                            </div>
+                                            <div className="space-y-1 text-[11px]">
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y1 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year1)}</span></div>
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y2 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year2)}</span></div>
+                                              <div className="flex justify-between"><span className="text-[#8C7E6E]">Y3 Investment</span><span className="font-medium text-[#2C2420]">{fmt(altInv.year3)}</span></div>
+                                              <div className="border-t border-[#E8E0D8] pt-1 mt-1">
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">3-Year Total</span><span className="font-semibold text-[#2C2420]">{fmt(altTotal)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">Net Value</span><span className="font-semibold text-[#2C2420]">{fmt(altNet)}</span></div>
+                                                <div className="flex justify-between"><span className="text-[#8C7E6E]">ROI</span><span className="font-semibold text-[#2C2420]">{altROI.toFixed(0)}%</span></div>
+                                              </div>
+                                            </div>
+                                            <button
+                                              onClick={() => {
+                                                if (altModel === "perUnit") {
+                                                  onUpdateSetting(setting.id, { pricingModel: "perUnit", costPerUnit: altPrice });
+                                                } else {
+                                                  onUpdateSetting(setting.id, { pricingModel: "perEncounter", costPerEncounter: altPrice });
+                                                }
+                                                setComparePricingId(null);
+                                              }}
+                                              className="w-full text-center text-[11px] font-semibold text-white bg-[#EA2C00] hover:bg-[#D42800] rounded py-1.5 transition-colors"
+                                              data-testid={`button-use-alt-${setting.careSetting}`}
+                                            >
+                                              Use {altModelLabel.split(' /')[0]}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  );
+                                })()}
+                              </AnimatePresence>
 
                               <div className="flex items-center justify-between pt-1">
                                 <button

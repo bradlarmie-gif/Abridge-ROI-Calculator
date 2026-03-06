@@ -1,0 +1,213 @@
+Here is Prompt 2. This is the Estimated Impact layer — fixing every blank/empty panel state so that no executive ever stares at nothing. Paste this directly into Replit Agent after Prompt 1 is verified live:
+This prompt fixes the Estimated Impact panels across all four domains. The goal is simple: no panel should ever be blank or show a dash. Every level, at every state, should show the executive something — either a calculated number, a directional benchmark, or a provocation that makes the cost of inaction land.
+DO NOT change: any math, any formulas, any calculation logic, colors, layout, card structure, or domain headline copy. Only change the descriptive text content inside the Estimated Impact panel.
+RULES FOR ESTIMATED IMPACT PANELS:
+- Tone matches the level names: plain, declarative, human. No corporate language.
+- Empty states (no user input yet) must show a directional benchmark — never a dash or silence
+- Benchmark ranges must be clearly labeled as estimates, not guarantees
+- The "what's at stake if you don't move" thread must be present in every panel
+- Dynamic variables like {providerCount}, {encounterCount}, {hoursReturned} should already exist in the codebase — use them. If they don't, use the values from the current session (50 providers, 52,500 encounters, 2,625 hours).
+- One-line disclaimer stays at bottom of every panel: "Estimates based on your inputs. Individual results vary."
+---
+CAPACITY — LEVEL 1: "Time Is Coming Back"
+CURRENT Estimated Impact headline (red, large):
+"2,625 hours returned annually"
+→ KEEP (it calculates correctly from input)
+CURRENT body copy:
+"Your 50 providers document 52,500 encounters annually. At 3 minutes returned per encounter, that's 2,625 hours — 1.3 FTE equivalent."
+→ KEEP (dynamic and working)
+CURRENT cost-of-inaction line (italic, gray):
+"Time recovery is the foundation. Value is determined by where this time goes — which is what Levels 2–4 measure."
+→ REPLACE WITH (per Prompt 1 change):
+"This is the raw material. What your organization does with it determines whether it becomes revenue, capacity, or nothing."
+CURRENT Level 2 bridge line (red, italic):
+"Level 2 — Is this number in front of your leadership with a plan attached to it?"
+→ REPLACE WITH:
+"Level 2 — Is this number in front of leadership yet?"
+NO CHANGES NEEDED TO FORMULA BLOCK. Keep as-is.
+---
+CAPACITY — LEVEL 2: "The Number Is Known"
+CURRENT Estimated Impact headline:
+"2,625 hours quantified. Decision pending."
+→ KEEP
+CURRENT body copy:
+"Your organization has quantified 2,625 hours of recovered capacity annually — 1.3 FTE equivalent."
+→ KEEP
+CURRENT cost-of-inaction copy:
+"The operational question is timing: organizations that bring this number to leadership with a recommended use tend to move from quantification to deployment within a single quarter."
+→ REPLACE WITH:
+"Organizations that bring this number to leadership with a plan attached move to deployment within a quarter. Without a destination, the hours stay invisible."
+CURRENT bridge line:
+"A dollar value appears at Level 3, when recovered capacity is directed toward a specific operational outcome."
+→ REPLACE WITH:
+"It becomes money at Level 3 — when the hours have somewhere to go."
+---
+CAPACITY — LEVEL 3: "Time Has a Destination"
+CURRENT Estimated Impact empty state (shown when no input entered):
+"Enter additional patients seen per provider per month to calculate capacity impact."
+→ REPLACE WITH:
+"Organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At {providerCount} providers, that's {low}–{high} additional patients annually — and the revenue that comes with them."
+[Calculate {low} using providerCount × 3 × 12 and {high} using providerCount × 8 × 12. If providerCount is 50: low = 1,800, high = 4,800]
+CURRENT bridge line when empty:
+[None — add one]
+→ ADD: "Level 4 — when this changes who you hire, the number gets bigger."
+---
+CAPACITY — LEVEL 4: "Hiring Plans Have Changed"
+CURRENT Estimated Impact empty state:
+"Select how recovered capacity is being used in planning to see your assessment."
+→ REPLACE WITH:
+"At {providerCount} providers, 1–2 avoided FTEs represents {low}–{high} in avoided annual cost — fully loaded. That's the financial signature of ambient at maturity."
+[Calculate {low} using providerCount-scaled avoided FTEs × $350K and {high} using × $450K. At 50 providers: benchmark is 1–2 FTEs avoided, so low = $350K, high = $900K]
+ADD bridge line:
+"This is the level where ambient stops being a tool and starts being infrastructure."
+---
+REVENUE — LEVEL 1: "No One Is Connecting the Dots"
+CURRENT Estimated Impact headline (red):
+[Dash or blank — no headline shown]
+CURRENT body/empty state:
+"When ambient and revenue cycle aren't connected, any improvement in coding accuracy or reimbursement goes unmeasured — not because it isn't happening, but because no one is looking. Bringing revenue cycle into the ambient conversation is the first step. Organizations that do this tend to have a quantified impact figure before their first contract renewal. Revenue impact is measured at Level 3, when your organization has before/after data to work with. Level 2 opens when your revenue cycle team is actively analyzing the connection."
+→ REPLACE ENTIRE PANEL CONTENT WITH:
+Headline (red): "{encounterCount} encounters. The revenue cycle hasn't looked."
+Body (two short lines):
+"At this encounter volume, ambient is producing better documentation on every visit. Whether that translates to reimbursement depends entirely on whether anyone is looking.
+Organizations that bring revenue cycle into the ambient conversation typically have a quantified number before their first contract renewal."
+Bridge line (italic):
+"The revenue is likely already there. No one's measuring it yet."
+---
+REVENUE — LEVEL 2: "Revenue Cycle Is in the Conversation"
+CURRENT Estimated Impact empty state:
+"Select what's being analyzed to see your assessment."
+→ REPLACE WITH:
+Headline (red): "The analysis is running. No number yet."
+Body:
+"At {encounterCount} encounters annually, a 0.1 wRVU improvement per encounter is worth ~${wRVUValue} at standard conversion rates. That's the size of what's being looked for."
+[Calculate wRVUValue as: encounterCount × 0.1 × 33 (CMS conversion factor). At 52,500 encounters: 52,500 × 0.1 × 33 = $173,250. Round to nearest $1K for display.]
+Bridge line (italic):
+"A number changes the conversation. Level 3 is where you get one."
+---
+REVENUE — LEVEL 3: "The Impact Has Been Measured"
+CURRENT Estimated Impact empty state:
+"Select what you measured to see your revenue impact calculation."
+→ KEEP the trigger for calculation on selection — but add a pre-selection state:
+Headline (red): "You have a number. Most don't."
+Body:
+"Select what you measured to calculate the impact. Organizations with before/after data at this encounter volume typically report $150K–$500K in annual revenue attributed to documentation improvement."
+Bridge line (italic):
+"Level 4 is when this stops being a finding and starts being a managed line."
+---
+REVENUE — LEVEL 4: "It's Now a Managed System"
+CURRENT Estimated Impact empty state:
+"Select how documentation quality is integrated into revenue cycle operations to see your assessment."
+→ REPLACE WITH:
+Pre-selection state headline (red): "The loop is closed. What's the annual number?"
+Body:
+"Organizations with full revenue cycle integration at {encounterCount} encounters report $200K–$600K in annually attributed revenue. Enter your confirmed figure, or use the benchmark as a working estimate."
+[This pairs with the "Don't have a confirmed number yet" checkbox added in Prompt 1]
+When "Don't have a confirmed number yet" is checked:
+Show in panel: "Working estimate: at {encounterCount} encounters with revenue cycle integration, the typical range is $200K–$600K annually. This is a planning figure — not a guarantee."
+---
+WORKFORCE — LEVEL 1: "Providers Are Getting Time Back"
+CURRENT Estimated Impact empty state:
+"Enter estimated after-hours documentation reduction to calculate workforce impact."
+→ REPLACE WITH pre-populated state (since default 2.0 hrs is now pre-filled per Prompt 1):
+Headline (red): "{totalHoursReturned} hours of after-hours time returned annually"
+[Calculate as: providerCount × defaultHoursPerWeek × 52. At 50 providers × 2.0 hrs × 52 = 5,200 hrs]
+Body:
+"At {providerCount} providers and 2 hrs/week, that's {totalHoursReturned} hours annually — time providers aren't spending at home finishing charts. That's the starting point.
+The financial value of that time depends on what happens at Levels 2–4."
+Bridge line (italic):
+"After-hours is only part of the picture. Level 2 adds the in-clinic side."
+NOTE: The headline and body should update live as the user edits the hours input. The 2.0 default is the pre-fill; the calculation reflects whatever value is in the field.
+---
+WORKFORCE — LEVEL 2: "Effort Reduction Is Measured"
+CURRENT Estimated Impact empty state:
+"Enter minutes saved per provider per day to calculate in-clinic burden reduction."
+→ REPLACE WITH:
+Headline (red): "In-clinic time is quantified. Surveys are in."
+Pre-input state body:
+"Organizations at this stage report 10–20 minutes per provider per day of in-clinic burden reduction. At {providerCount} providers, that's {low}–{high} hours annually reclaimed inside the visit itself."
+[Calculate: low = providerCount × 10 min × 250 workdays / 60. High = providerCount × 20 min × 250 / 60. At 50 providers: low ≈ 2,083 hrs, high ≈ 4,167 hrs]
+Bridge line (italic):
+"When this shows up in retention data, it stops being a satisfaction metric and becomes a financial one."
+---
+WORKFORCE — LEVEL 3: "Retention Is Part of the Story"
+CURRENT Estimated Impact empty state:
+"Enter annual turnover rate and replacement cost to calculate retention exposure."
+"Enter turnover rate and replacement cost to complete your score"
+→ REPLACE WITH:
+Headline (red): "Turnover exposure is being modeled."
+Pre-input state body:
+"National physician turnover averages 6–8% annually. At {providerCount} providers, that's {low}–{high} departures per year. If documentation burden drives even 20% of that, and replacement costs $350K per physician — that's {exposureLow}–{exposureHigh} in annual exposure."
+[Calculate:
+low departures = providerCount × 0.06
+high departures = providerCount × 0.08
+exposureLow = low departures × 0.20 × 350000
+exposureHigh = high departures × 0.20 × 350000
+At 50 providers: 3–4 departures/yr, 20% attribution = 0.6–0.8 physicians × $350K = $210K–$280K exposure]
+Bridge line (italic):
+"At Level 4, this stops being exposure and starts showing up as savings."
+---
+WORKFORCE — LEVEL 4: "The Savings Are Showing Up"
+CURRENT Estimated Impact empty state:
+"Enter monthly agency or locum spend reduction to calculate labor cost impact."
+"Enter agency/locum spend to complete your score"
+→ REPLACE WITH:
+Headline (red): "The labor line is shifting."
+Pre-input state body:
+"Organizations at this maturity level report $5K–$30K per month in agency and locum spend reduction. At {providerCount} providers, that's $60K–$360K annually in recovered labor cost — savings that finance can see."
+Bridge line (italic):
+"This is the financial proof that ambient changed the workforce model, not just the documentation."
+---
+QUALITY — LEVEL 1: "The Notes Are Better. No One's Connecting It Yet."
+CURRENT Estimated Impact content (currently shows body text but no headline number):
+"Better documentation creates better signal downstream — for coders, quality teams, compliance officers, and care managers. The opportunity at this level is identifying which downstream teams are ready to receive that signal. The organizations that move fastest on this tend to start with one team, one workflow, and one measurable outcome — then build from there. Downstream value appears at Level 3, when a specific workflow shows measurable improvement. Level 2 — when documentation quality is being formally tracked, the gaps become visible and actionable."
+→ REPLACE ENTIRE PANEL WITH:
+Headline (red): "{encounterCount} encounters with better notes."
+Body:
+"Every one of those visits produced a more complete clinical record. Whether that reaches coding, quality reporting, or care management depends on whether anyone connects it.
+Organizations that route this signal to one downstream team first move fastest."
+Bridge line (italic):
+"The signal exists. Level 2 is when someone starts watching it."
+---
+QUALITY — LEVEL 2: "Quality Is Being Monitored"
+CURRENT Estimated Impact content:
+"Not yet entered"
+"Select how your organization is monitoring documentation quality to see your assessment."
+→ REPLACE WITH:
+Headline (red): "Gaps are becoming visible."
+Body:
+"At {encounterCount} encounters annually, even a 5% improvement in coding specificity can shift reimbursement meaningfully. Formal monitoring is what makes that measurable — and defensible.
+Select how quality is being tracked to see what the data suggests."
+Bridge line (italic):
+"Level 3 is when a downstream team sees a number change."
+---
+QUALITY — LEVEL 3: "The Signal Is Reaching Downstream Teams"
+CURRENT Estimated Impact empty state:
+"Select which downstream workflows have been impacted to see your assessment."
+→ REPLACE WITH:
+Pre-selection headline (red): "At least one team is seeing it."
+Body:
+"Select the workflows that have shifted. Organizations that reach this level at {encounterCount} encounters typically identify $100K–$400K in downstream value — across coding accuracy, prior auth, and quality measure performance."
+Bridge line (italic):
+"Level 4 is when this becomes part of how the organization runs — not a project."
+---
+QUALITY — LEVEL 4: "It's Built Into How We Run"
+CURRENT Estimated Impact empty state:
+"Select where documentation quality factors into organizational strategy to see your assessment."
+→ REPLACE WITH:
+Pre-selection headline (red): "Documentation quality is a strategic asset."
+Body:
+"Organizations at this level — with full integration across quality programs, compliance, and payer relationships — report $200K–$1M+ in annual strategic value at scale.
+Enter your confirmed figure, or use the benchmark range as your working estimate."
+[Pairs with the "Don't have a confirmed number yet" checkbox from Prompt 1]
+When "Don't have a confirmed number yet" is checked:
+Show in panel: "Working estimate: at {encounterCount} encounters with full quality integration, the typical range is $200K–$1M+ annually — across quality programs, compliance risk reduction, and contract performance."
+---
+FINAL VERIFICATION CHECKLIST after all changes:
+1. No Estimated Impact panel shows a dash, blank, or silence at any level in any domain
+2. Every pre-input empty state shows a directional benchmark derived from providerCount and encounterCount
+3. Every panel has exactly one bridge line pointing toward the next level (italic, bottom of panel)
+4. Dynamic variables update live as user changes inputs — verify Workforce L1 updates when hrs/week input changes
+5. Revenue L4 and Quality L4 "Don't have a confirmed number yet" checkbox shows benchmark copy when checked
+6. Disclaimer line "Estimates based on your inputs. Individual results vary." remains at bottom of every panel
+7. Tone throughout: plain, declarative, no corporate language, no fear-based framing
