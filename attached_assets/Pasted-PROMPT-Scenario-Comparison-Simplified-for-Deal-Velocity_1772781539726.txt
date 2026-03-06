@@ -1,0 +1,110 @@
+PROMPT: Scenario Comparison — Simplified for Deal Velocity
+Remove the Pricing Sensitivity auto-calculation from the PDF entirely. The default PDF should ONLY show the scenario the user built. No alternative pricing suggestions, no "what if" tables. Clean, focused, one story.
+However, if a user wants to compare Per Provider vs Per Encounter pricing, give them a simple way to do it.
+1. REMOVE: Auto-Generated Pricing Alternatives
+Do NOT auto-calculate or show alternative pricing models anywhere in the PDF. The PDF shows exactly what the user built — nothing more. No "For discussion purposes" table, no "Alternative: Per Encounter" column. This creates confusion and slows the deal.
+2. ADD: "Compare Pricing Model" Button on Deal Structure Page
+On the Pricing & Configuration section of the Deal Structure page, add a button next to the pricing model toggle (Per Unit/Mo | Annual License | Per Encounter):
+Button: "Compare Pricing Models" — small, secondary style (not cadmium red, use outline/ghost button so it doesn't compete with the primary flow)
+What it does: Opens a lightweight inline comparison below the pricing section. It takes the user's CURRENT proforma inputs (care settings, providers, rollout, value drivers, everything) and shows side-by-side what the investment and ROI look like under Per Provider vs Per Encounter pricing.
+Layout — inline expansion (NOT a modal, NOT a new page):
+┌─────────────────────────────────────────────────────────┐
+│  PRICING COMPARISON                              [Close]│
+│                                                         │
+│  Your value projections stay the same — only the        │
+│  investment structure changes.                          │
+│                                                         │
+│  ┌──────────────────┐    ┌──────────────────┐          │
+│  │ PER PROVIDER      │    │ PER ENCOUNTER     │          │
+│  │ $120/mo           │    │ $___/encounter     │          │
+│  │                    │    │  (enter price)     │          │
+│  │ Y1: $540K         │    │ Y1: $___           │          │
+│  │ Y2: $1.2M         │    │ Y2: $___           │          │
+│  │ Y3: $2.2M         │    │ Y3: $___           │          │
+│  │ Total: $3.9M      │    │ Total: $___        │          │
+│  │                    │    │                    │          │
+│  │ ROI: 5.2x         │    │ ROI: ___x          │          │
+│  │ Payback: 11 mo    │    │ Payback: ___ mo    │          │
+│  │ Net Value: $42.9M │    │ Net Value: $___    │          │
+│  └──────────────────┘    └──────────────────┘          │
+│                                                         │
+│  Value is identical in both models. The difference is   │
+│  how you pay — fixed monthly vs. usage-based.           │
+│                                                         │
+│  [Use Per Provider]  [Use Per Encounter]                │
+└─────────────────────────────────────────────────────────┘
+Key rules:
+
+The LEFT card is always pre-filled with the user's current pricing model and numbers
+The RIGHT card is the alternative — user enters the per-encounter price (or per-provider price if they started with per-encounter) and it auto-calculates
+Value projections (top line) are IDENTICAL in both cards — only investment changes. Make this crystal clear: "Your value projections stay the same — only the investment structure changes."
+ROI, Payback, and Net Value update in real-time as the user types the alternative price
+The user clicks "Use Per Provider" or "Use Per Encounter" to select one and it updates the proforma. Or they click Close and keep what they had.
+Per Encounter encounters must scale with the rollout plan — fix the current bug where encounters stay flat at 30,000/year across all 3 years. Encounters should auto-populate from: providers for that year × encounters per provider × utilization rate. E.g., Year 1: 75 × 400 × 55% = 16,500. Year 2: 245 × 400 × 75% = 73,500. Year 3: 500 × 400 × 85% = 170,000.
+This keeps it simple:
+No separate scenario saving
+No multi-page comparison views
+No extra PDF pages
+Just a quick inline tool to gut-check "what does this deal look like at $5/encounter vs $120/mo?"
+User picks one, moves on, exports a clean single-scenario PDF
+
+
+3. FIX: Per Encounter Rollout Plan Auto-Population
+Current bug: When switching to Per Encounter pricing, encounters default to a flat number (e.g., 90,000) across all 3 years regardless of provider rollout.
+Fix: Auto-populate encounter volumes from the care setting inputs:
+Year X encounters = Year X licensed providers × encounters per provider × Year X utilization rate
+For the current ED example (50 → 500 physicians, 1,800 encounters/provider):
+
+Year 1: 50 × 1,800 × 55% = 49,500 (after 6-month ramp, roughly half = ~24,750 billable)
+Year 2: 260 × 1,800 × 75% = 351,000
+Year 3: 500 × 1,800 × 85% = 765,000
+These should auto-fill but remain editable if the user wants to override.
+For multi-care-setting proformas, show encounters per care setting:
+Inpatient: Y1: X | Y2: X | Y3: X
+Outpatient: Y1: X | Y2: X | Y3: X
+ED: Y1: X | Y2: X | Y3: X
+Total: Y1: X | Y2: X | Y3: X
+
+
+4. PDF — No Changes to Structure
+The PDF stays exactly as previously defined:
+
+Same cover page layout, fonts, colors (Abridge branding, cadmium red #EA2C00)
+Same page structure (Cover → Executive Summary → 3-Year Projection → Sensitivity → Methodology → Back Cover)
+Shows ONLY the pricing model the user selected — no alternatives, no comparison
+If the user used the Compare Pricing Models tool and switched from Per Provider to Per Encounter, the PDF simply reflects Per Encounter. No trace of the comparison.
+Identical styling, fonts (match existing PDF exactly), color palette, margins, spacing
+The only scenario-related PDF addition: If the user has saved 2+ full scenarios (via Save as Scenario on the results page), append ONE comparison page at the end. This is the 10% case. Same styling as the rest of the PDF — same fonts, same colors, same margins. Just a clean comparison table showing the key KPIs per scenario. No charts, no narrative. One table.
+
+
+5. COMPARISON PDF — Match Existing Style Exactly
+If a user exports from the Compare view, the Comparison PDF must be IDENTICAL in style to the normal Proforma PDF:
+
+Same cover page layout — just change title from "Financial Proforma" to "Scenario Comparison"
+Same fonts — whatever the proforma uses (likely Inter, system fonts, or whatever's currently implemented)
+Same cadmium red (#EA2C00) for accents, headers, key values
+Same page margins, spacing, header/footer treatment
+Same "Confidential — Prepared for [Org Name]" footer
+Same Abridge logo placement
+Same table styling (alternating row shading, border treatment)
+The comparison PDF should look like it came from the same tool — because it did. A CFO receiving both documents should see visual consistency.
+
+
+TEST
+
+✅ "Compare Pricing Models" button appears on Deal Structure page (secondary/outline style, not primary)
+✅ Clicking it opens inline comparison below pricing section
+✅ Left card shows current pricing model with real numbers
+✅ Right card lets user enter alternative price and auto-calculates investment, ROI, payback
+✅ Value projections are identical in both cards
+✅ "Use [Model]" buttons switch the proforma to that pricing model and close the comparison
+✅ Close button dismisses without changes
+✅ Per Encounter encounters auto-populate from providers × encounters/provider × utilization
+✅ Per Encounter encounters SCALE with rollout (not flat across years)
+✅ PDF shows ONLY the selected pricing model — no alternatives
+✅ PDF styling matches exactly (fonts, colors, margins, cover page layout)
+✅ Comparison PDF (if exported from Compare view) matches same style
+✅ No auto-generated pricing alternatives anywhere in any PDF
+
+
+This keeps deals moving fast — one proforma, one pricing model, one clean PDF. But if someone asks "what about per encounter?" you pull up the inline tool, show them in 10 seconds, and move on.

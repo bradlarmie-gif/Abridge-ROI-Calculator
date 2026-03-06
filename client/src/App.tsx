@@ -211,7 +211,7 @@ export default function App() {
         updated[existing] = scenario;
         return updated;
       }
-      return [...prev, scenario].slice(0, 3);
+      return [...prev, scenario].slice(0, 4);
     });
   }, []);
 

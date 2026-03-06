@@ -174,7 +174,13 @@ export interface ProformaScenario {
   settings: ProformaSettingSnapshot[];
   config: ProformaConfig;
   createdAt: number;
+  pricingLabel?: string;
+  settingCount?: number;
 }
+
+export const SCENARIO_COLORS = ["#EA2C00", "#1E3A5F", "#D4930A", "#2D7377"];
+export const SCENARIO_DASHES = ["", "8 4", "4 4", "8 2 2 2"];
+export const MAX_SCENARIOS = 4;
 
 export const ONSET_LABELS: Record<DriverOnset, string> = {
   immediate: "Immediate",

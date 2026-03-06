@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
-import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG } from "./proformaTypes";
+import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
@@ -94,9 +94,6 @@ const CHART_COLORS = {
   retention: "#D4930A",
   investment: "#6B7280",
 };
-
-const SCENARIO_COLORS = ["#EA2C00", "#78716C", "#1A1A1A"];
-const SCENARIO_DASHES = ["", "8 4", "4 4"];
 
 export default function ProformaView({
   settings,
@@ -408,8 +405,8 @@ export default function ProformaView({
               )}
               <button
                 onClick={() => {
-                  if (scenarios.length >= 3) {
-                    toast({ title: "Maximum 3 scenarios", description: "Delete one to save a new scenario", variant: "destructive" });
+                  if (scenarios.length >= MAX_SCENARIOS) {
+                    toast({ title: `Maximum ${MAX_SCENARIOS} scenarios`, description: "Delete one to save a new scenario", variant: "destructive" });
                     return;
                   }
                   setScenarioName(`Scenario ${scenarios.length + 1}`);
@@ -448,7 +445,7 @@ export default function ProformaView({
                     </div>
                   ) : (
                     <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % 3] }} />
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
                       <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
                       <button
                         onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
@@ -1592,7 +1589,7 @@ export default function ProformaView({
                       {scenarioSummaries.map((sc, idx) => (
                         <th key={sc.id} className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
                           <div className="flex items-center justify-end gap-1.5">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % 3] }} />
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
                             <span className="truncate max-w-[80px]">{sc.name}</span>
                           </div>
                         </th>
@@ -1615,7 +1612,7 @@ export default function ProformaView({
                         <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
                         <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-xs" : "text-neutral-700"}`}>{row.current}</td>
                         {row.values.map((v, i) => (
-                          <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % 3] : undefined }}>{v}</td>
+                          <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % SCENARIO_COLORS.length] : undefined }}>{v}</td>
                         ))}
                       </tr>
                     ))}
@@ -1658,9 +1655,9 @@ export default function ProformaView({
                       data={sc.chartData}
                       type="monotone"
                       dataKey="total"
-                      stroke={SCENARIO_COLORS[idx % 3]}
+                      stroke={SCENARIO_COLORS[idx % SCENARIO_COLORS.length]}
                       strokeWidth={2}
-                      strokeDasharray={SCENARIO_DASHES[idx % 3]}
+                      strokeDasharray={SCENARIO_DASHES[idx % SCENARIO_DASHES.length]}
                       dot={false}
                       name={sc.name}
                     />
@@ -1674,7 +1671,7 @@ export default function ProformaView({
                 </span>
                 {scenarioSummaries.map((sc, idx) => (
                   <span key={sc.id} className="flex items-center gap-1.5">
-                    <span className="w-4 h-0.5 inline-block rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % 3], borderTop: SCENARIO_DASHES[idx % 3] ? "2px dashed" : undefined }} />
+                    <span className="w-4 h-0.5 inline-block rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length], borderTop: SCENARIO_DASHES[idx % SCENARIO_DASHES.length] ? "2px dashed" : undefined }} />
                     <span className="text-neutral-600">{sc.name}</span>
                   </span>
                 ))}
@@ -1741,7 +1738,7 @@ export default function ProformaView({
                 </Button>
               </div>
               <p className="text-[12px] text-neutral-400 mt-3 text-center">
-                {scenarios.length}/3 scenarios used
+                {scenarios.length}/{MAX_SCENARIOS} scenarios used
               </p>
             </motion.div>
           </motion.div>
