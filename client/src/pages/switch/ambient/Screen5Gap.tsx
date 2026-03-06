@@ -91,7 +91,7 @@ function getNextLevelContent(
       const hoursFromUserInput = Math.round((netTimeSaved * annualEncounters) / 60);
       const bmkValueLow = Math.round(hoursFromUserInput * providerRate * 0.20);
       const bmkValueHigh = Math.round(hoursFromUserInput * providerRate * 0.35);
-      base.narrative = `Time is being recovered but the total hasn't been formally quantified. That number — hours recovered across your full deployment — is the foundation for every downstream conversation about what to do with it.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: ${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters ÷ 60 = ${hoursFromUserInput.toLocaleString()} hrs recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. Quantifying recovered time is the first step to capturing it.` : ''}`;
+      base.narrative = `The time is coming back. The number isn't in front of anyone yet. That's the gap — not the hours, but what happens to them without a name attached.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: When the total hours are quantified and in front of leadership, organizations typically move from awareness to deployment within one quarter — unlocking ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually at your scale.` : ''}`;
       if (annualEncounters > 0) {
         base.formula = `${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters / 60 = ${hoursFromUserInput.toLocaleString()} hrs\nLow: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
@@ -138,15 +138,17 @@ function getNextLevelContent(
     } else if (level === 3) {
       base.narrative = `You've measured ${hasValue ? formatDollar(currentValue) : 'documentation-driven revenue impact'}. The next level of maturity is making documentation quality an ongoing, governed input to revenue cycle operations — not a one-time study. Organizations at this level treat documentation quality the way they treat charge capture: continuously monitored and optimized.`;
     } else {
-      base.narrative = "You're at the highest maturity level. Continue deepening integration and expanding documentation quality governance across revenue cycle operations.";
+      base.narrative = "Revenue cycle is fully connected. The work here is deepening it — documentation quality governance, payer negotiations, and the financial story that comes with it.";
     }
   } else if (domain === 'workforce') {
     if (level === 1) {
       base.narrative = "Providers report less after-hours work. The next step is quantifying it — in-clinic time plus a structured provider survey turns that anecdotal relief into a retention-relevant data point.";
     } else if (level === 2) {
       const midpoint = Math.round(providers * 0.07 * 350000);
-      base.narrative = `You've measured hours of burden reduction. The question your organization hasn't answered is what turnover is costing you — and how much of that cost is connected to documentation burden. At industry-average turnover (6-8%) and replacement costs ($250K-$500K), the annual exposure at your scale is significant.`;
-      base.formula = `${providers.toLocaleString()} providers × 7% × $350K = ${formatDollar(midpoint)} in total annual turnover cost (industry midpoints).`;
+      const attributionLow = Math.round(midpoint * 0.20);
+      const attributionHigh = Math.round(midpoint * 0.30);
+      base.narrative = `Effort reduction is measured. What hasn't been asked yet is what turnover is costing — and how much of it traces back to documentation burden. At industry-average rates, that exposure is significant at your scale.`;
+      base.formula = `At ${providers.toLocaleString()} providers, industry midpoints put total annual turnover cost at ${formatDollar(midpoint)}. Burden-driven attribution of 20–30% puts the ambient-connected exposure at ${formatDollar(attributionLow)}–${formatDollar(attributionHigh)}.`;
       base.lowEstimate = midpoint;
     } else if (level === 3) {
       base.narrative = `You've quantified ${hasValue ? formatDollar(currentValue) : 'turnover exposure'}. The next level of maturity is seeing documentation burden reduction show up in actual labor spend — reduced agency reliance, reduced locum usage. Organizations at this level report $5K-$30K/month in agency and locum spend reduction.`;
@@ -158,7 +160,9 @@ function getNextLevelContent(
     }
   } else if (domain === 'risk') {
     if (level === 1) {
-      base.narrative = "Documentation is better — but no one is measuring it. Without a quality baseline, the downstream value to coding, CDI, and compliance stays invisible. Any form of monitoring unlocks what follows.\n\nOPPORTUNITY AHEAD: Documentation gaps create measurable financial exposure. Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. Without monitoring, this value remains invisible.";
+      const riskL1Low = Math.round(documentedEncounters * 150 / 1000) * 1000;
+      const riskL1High = Math.round(documentedEncounters * 400 / 1000) * 1000;
+      base.narrative = `The notes are better. No one downstream knows what to do with that yet. Without a quality baseline, the signal going to coding, CDI, and compliance is invisible — not absent.\n\nOPPORTUNITY AHEAD: Organizations with systematic quality monitoring capture $150–$400 per patient in additional risk-adjusted revenue in value-based contracts. At ${documentedEncounters.toLocaleString()} encounters, even at conservative rates, that range is ${formatDollar(riskL1Low)}–${formatDollar(riskL1High)} annually — currently going uncaptured.`;
     } else if (level === 2) {
       const riskLow = Math.round(documentedEncounters * 0.15 * 75 / 1000) * 1000;
       const riskHigh = Math.round(documentedEncounters * 0.15 * 200 / 1000) * 1000;
@@ -300,10 +304,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          Your 36-month trajectory.
+          What staying here costs you.
         </h1>
         <p className="text-base text-[#888888]">
-          Based on your current maturity and what becomes possible at the next level across each domain.
+          The gap between your current trajectory and full deployment — modeled across 36 months.
         </p>
       </motion.div>
 
@@ -323,7 +327,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                     <tr className="border-b border-[#E5E7EB]">
                       <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide"></th>
                       <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">You</th>
-                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Abridge-Observed</th>
+                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Peer Benchmark</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -364,7 +368,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               </div>
 
               <p className="text-xs text-[#888888] italic mt-4 leading-relaxed">
-                Benchmarks reflect top-performing deployment averages. Based on aggregated deployment data.
+                Peer benchmark reflects top-performing Abridge deployments.
               </p>
             </div>
           </motion.div>
@@ -376,7 +380,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                   36-Month Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
-                  Value in motion: current path vs. full strategic deployment
+                  Your current path vs. what full maturity unlocks.
                 </p>
                 <div className="h-[220px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -404,10 +408,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 </div>
 
                 <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
-                  The difference between your current trajectory and full strategic deployment over 36 months is approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
+                  The 36-month gap between your current path and full maturity: approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
                 </p>
                 <p className="text-xs text-[#888888] italic mt-2">
-                  Year 1 reflects a ~90-day ramp to full value realization. Years 2–3 assume maintained optimization at your current utilization gap.
+                  Year 1 includes a 90-day ramp. Years 2–3 project at maintained optimization.
                 </p>
                 <p className="text-xs text-[#888888] italic mt-1">
                   Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary.
@@ -530,7 +534,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 <p className="font-bold text-xl text-white/30 leading-none mb-1" data-testid="panel-hero-value">
                   Not yet measured
                 </p>
-                <p className="text-xs text-white/40 mb-5">complete domain inputs to see value</p>
+                <p className="text-xs text-white/40 mb-5">complete all four domains to see full picture</p>
               </>
             )}
 
@@ -587,7 +591,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 </span>
               </div>
               <p className="text-[11px] text-white/40 italic leading-relaxed">
-                This is value your deployment is positioned to generate as maturity deepens across each domain.
+                Value your deployment is positioned to capture as each domain matures.
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-white/70">6-month trajectory gap</span>

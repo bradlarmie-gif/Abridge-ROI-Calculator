@@ -130,31 +130,31 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
 
     if (score <= 24) {
       return {
-        headline: 'Deployment established.',
-        body: 'Ambient is live and time is being returned to providers. The strategic opportunity — connecting that time to measurable operational, financial, and clinical outcomes — is ahead of you. This assessment gives you the map.',
+        headline: 'The deployment is live. The value isn\'t captured yet.',
+        body: 'Ambient is running, but the organization hasn\'t started measuring what it\'s returning. The gap between running and capturing is where most organizations stay longest — and it\'s the most expensive place to be.',
       };
     }
     if (score <= 44) {
       return {
-        headline: 'Foundation building.',
-        body: 'Your deployment has established the baseline. Time recovery is understood, leadership is aware, and at least one domain is producing data. The next stage is moving from measurement to deployment — connecting what you\'ve built to operational decisions.',
+        headline: 'Something is being measured. Not enough is acting on it.',
+        body: 'At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct — that\'s where the next layer of value is sitting unmeasured.',
       };
     }
     if (score <= 64) {
       return {
-        headline: 'Value in motion.',
-        body: 'Your organization is producing real, measurable outcomes from ambient documentation in at least one domain. The strategic opportunity is in the domains where measurement hasn\'t yet translated to action. That\'s where the next layer of value lives.',
+        headline: 'Value is moving. Not all of it has a destination yet.',
+        body: 'At least one domain is producing a real number. The others haven\'t caught up. That gap — between where you are and where the tool could take you — is the strategic opportunity.',
       };
     }
     if (score <= 79) {
       return {
-        headline: 'Strategically managed.',
-        body: 'Most domains are connected to organizational data and producing measurable value. Documentation quality is becoming a strategic input — not just a clinical tool. The remaining gap is in the domains that haven\'t yet reached that stage.',
+        headline: 'Most of the value is captured. The last piece is the hardest.',
+        body: 'Your organization is operating at a level most ambient deployments never reach. What\'s left tends to be the domain that requires the most organizational will — but it carries some of the highest returns.',
       };
     }
     return {
-      headline: 'Leading practice.',
-      body: 'Ambient documentation is embedded in how your organization plans, measures, and reports value. You\'re operating at the level most organizations are working toward. The opportunity is in sustaining and scaling what you\'ve built.',
+      headline: 'You\'re running ambient the way it was meant to be run.',
+      body: 'All four domains are connected. Value is being captured, measured, and managed. This is what full ambient maturity looks like — and most organizations are years away from it.',
     };
   };
 
@@ -171,7 +171,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           Here's where you stand.
         </h1>
         <p className="text-base text-[#888888]">
-          Your score reflects how fully your organization has connected ambient documentation to operational, financial, and clinical outcomes — across four domains.
+          Four domains. One score. Here's where your organization actually is.
         </p>
       </motion.div>
 
@@ -357,8 +357,12 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                       </div>
                     </div>
 
-                    <p className="text-xs text-[#888888] italic leading-relaxed mt-4">
-                      Scoring uses a 25-point scale per domain. Level 1 = 6 pts, Level 2 = 12 pts, Level 3 = 19 pts, Level 4 = 25 pts. Weighted equally across four domains (max 100). Your total score reflects how intentionally your organization is managing the value created by ambient documentation. This is a self-assessment — it does not guarantee specific financial outcomes.
+                    <p className="text-sm font-semibold text-black mb-1">How the score works</p>
+                    <p className="text-xs text-[#888888] leading-relaxed mb-3">
+                      Each of the four domains — Capacity, Revenue, Workforce, and Quality — is worth 25 points. Points reflect how far your organization has moved from awareness to managed outcomes within each domain. Level 1 = awareness. Level 4 = a managed, measured system. The score is not a performance grade. It's a map of where value is being captured and where it isn't.
+                    </p>
+                    <p className="text-xs text-[#888888] italic leading-relaxed">
+                      This is a self-assessment — it does not guarantee specific financial outcomes.
                     </p>
                   </div>
                 </motion.div>
@@ -399,7 +403,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               Your Maturity Score
             </p>
             <p className="text-xs text-white/40 leading-relaxed mb-4">
-              Measures how intentionally your organization captures value across four strategic domains — Capacity, Revenue, Workforce, and Quality.
+              Measures how far your organization has moved from running ambient to capturing what it returns — across four domains.
             </p>
 
             <div className="text-center mb-2">
@@ -427,23 +431,23 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
 
             <div className="space-y-1.5 mb-6">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Deployment established</span>
+                <span className="text-xs text-white/50">Awareness</span>
                 <span className="text-sm font-bold text-white/50">24</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Foundation building</span>
+                <span className="text-xs text-white/50">Measuring</span>
                 <span className="text-sm font-bold text-white/50">44</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Value in motion</span>
+                <span className="text-xs text-white/50">Acting</span>
                 <span className="text-sm font-bold text-white/50">64</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Strategically managed</span>
+                <span className="text-xs text-white/50">Managing</span>
                 <span className="text-sm font-bold text-white/70">79</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Leading practice</span>
+                <span className="text-xs text-white/50">Full capture</span>
                 <span className="text-sm font-bold text-white">100</span>
               </div>
             </div>
