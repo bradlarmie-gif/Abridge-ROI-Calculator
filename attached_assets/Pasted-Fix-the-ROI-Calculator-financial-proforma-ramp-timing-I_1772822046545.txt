@@ -1,0 +1,32 @@
+Fix the ROI Calculator financial proforma — ramp timing, IRR, and payback calculations. Here are all the issues:
+1. Shorten the provider ramp-up from 6 months to 3 months.
+
+Currently "Actively Documenting" shows 100 in Year 1 (2026) and 200 in Years 2-3, implying a 6-month linear ramp to reach full adoption.
+Change this to a 3-month ramp. Providers should reach full adoption (200) by month 4, meaning the Year 1 average "Actively Documenting" should be roughly 150-175 (not 100). This will increase Year 1 total value significantly.
+Update all monthly value calculations that depend on the ramp accordingly — Doc Quality, Capacity & Efficiency, and Retention should all reflect the faster 3-month ramp.
+2. Fix the IRR calculation.
+The current IRR is displayed as "200%+" which appears to be calculated using net value cash flows (-$11K, +$494K, +$781K). When Year 1 net is near zero, this produces a mathematically meaningless/infinite IRR.
+Instead, calculate IRR using the proper cash flow structure: Year 0 (or Year 1) investment outflow vs. gross value inflows. Use annual cash flows where outflow = investment and inflow = gross value. Specifically: Year 1 CF = (Total Value - Investment), Year 2 CF = (Total Value - Investment), Year 3 CF = (Total Value - Investment). But the IRR should be solved on the initial investment basis, treating Year 1 investment as the initial outlay.
+Better approach: Use monthly cash flows for IRR. Each month has an investment outflow of $204K/12 = $17K and a value inflow based on the ramp. Calculate monthly IRR then annualize it (annual IRR = (1 + monthly IRR)^12 - 1).
+Display the actual calculated IRR percentage (e.g., "285%") instead of the vague "200%+".
+3. Fix the payback period calculation.
+Payback should be calculated on a monthly basis: find the exact month where cumulative total value exceeds cumulative total investment.
+With the 3-month ramp, cumulative value should exceed cumulative investment much sooner — likely around month 8-10 instead of the current 13 months.
+Make sure the payback calculation uses the same monthly ramp schedule as the value calculations.
+4. Recalculate Simple ROI and Value-to-Cost with the updated numbers.
+Simple ROI = Total 3-Year Net Value / Total 3-Year Investment × 100
+Value-to-Cost = Total 3-Year Value / Total 3-Year Investment
+These formulas are correct today but the inputs will change with the faster ramp, so make sure they update.
+5. Keep these things the same:
+The three value driver categories (Doc Quality immediate, Capacity & Efficiency 3mo delay, Retention phased) — keep their onset delay logic, just apply them to the faster 3-month provider ramp.
+The annual investment of $204K/year ($612K total) stays the same.
+The per-unit cost of $85/unit/month stays the same.
+Licensed Providers = 200 across all years stays the same.
+After making changes, verify the following makes sense:
+Year 1 total value should be significantly higher than $193K (probably $300K-400K range)
+Payback should be under 12 months
+IRR should display as an actual number
+"Actively Documenting" in Year 1 should show ~175 or similar (not 100)
+
+
+This prompt covers all three calculation fixes (ramp, IRR, payback) plus the downstream effects. You can paste it directly into Replit's AI chat.
