@@ -1,0 +1,33 @@
+6. Add year-by-year pricing support with multiple pricing models.
+Currently the calculator only allows one price input ($85/unit/month) applied uniformly across all 3 years. Replace this with a flexible pricing system that supports year-by-year pricing across multiple pricing models.
+Add a pricing model selector (dropdown or radio buttons) with these options:
+
+Per Provider Per Month (PPPM) — e.g., $85/provider/month. Investment = price × licensed providers × 12 months per year.
+Per Encounter — e.g., $3.50/encounter. Investment = price × encounters per provider per year × licensed providers. (Add an "avg encounters per provider per year" input if this model is selected.)
+Annual Fixed Fee — e.g., $200,000/year flat. Investment = the annual fee directly.
+For each pricing model, allow different prices per year. Instead of one price input, show 3 price fields:
+Year 1 (2026) price
+Year 2 (2027) price
+Year 3 (2028) price
+Pre-populate all three with the same default value so the user can just set one if pricing is flat. But allow them to change individual years for deals with escalators, introductory pricing, volume discounts, etc.
+Example UI behavior:
+User selects "Per Provider Per Month"
+Three input fields appear: "Y1: $85" / "Y2: $90" / "Y3: $95"
+The investment row in the proforma now shows different amounts per year based on each year's price × providers × 12
+All downstream calculations (Net Value, ROI, IRR, Payback) use the year-specific investment amounts
+Example with Per Encounter pricing:
+User selects "Per Encounter"
+A new input appears: "Avg encounters per provider per year" (default: 2,000)
+Three price fields: "Y1: $3.50" / "Y2: $3.75" / "Y3: $4.00"
+Y1 Investment = $3.50 × 2,000 × 200 = $1.4M (this would be a high example — let the math just work)
+Example with Annual Fixed Fee:
+User selects "Annual Fixed Fee"
+Three price fields: "Y1: $200,000" / "Y2: $210,000" / "Y3: $220,000"
+Investment row directly uses these values
+Implementation requirements:
+The investment calculation in the proforma must dynamically use the correct pricing model and year-specific price
+The monthly cash flow calculations (used for IRR and payback) should use the monthly equivalent of that year's price
+All summary metrics (Simple ROI, Value-to-Cost, IRR, Payback) must recalculate based on the year-specific investments
+Keep the UI clean — only show relevant inputs based on the selected pricing model
+Default to "Per Provider Per Month" with $85 across all years so existing behavior is preserved
+Make sure the "Actively Documenting" ramp applies to the provider-based pricing models — during the ramp period, investment should still be based on licensed providers (you pay for all licenses), not actively documenting ones. The value side uses actively documenting; the cost side uses licensed.
