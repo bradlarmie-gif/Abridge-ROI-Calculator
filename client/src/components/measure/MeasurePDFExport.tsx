@@ -34,7 +34,10 @@ const colors = {
   secondary: "#666666",
   tertiary: "#999999",
   border: "#E0E0E0",
+  assumptionBg: "#F7F7F5",
 };
+
+const TOTAL_PAGES = 7;
 
 const styles = StyleSheet.create({
   page: {
@@ -49,6 +52,14 @@ const styles = StyleSheet.create({
     flex: 1,
     display: "flex",
     flexDirection: "column",
+  },
+  confidentialHeader: {
+    fontSize: 7.5,
+    color: colors.tertiary,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    textAlign: "right",
+    marginBottom: 16,
   },
   sectionLabel: {
     fontSize: 9,
@@ -70,7 +81,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: colors.primaryText,
-    marginBottom: 6,
+    marginBottom: 8,
+  },
+  narrative: {
+    fontSize: 10.5,
+    color: colors.secondary,
+    lineHeight: 1.65,
+    marginBottom: 14,
   },
   body: {
     fontSize: 10.5,
@@ -96,6 +113,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cards,
     padding: 14,
     borderRadius: 4,
+  },
+  assumptionBox: {
+    backgroundColor: colors.assumptionBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 4,
+    padding: 14,
+    marginBottom: 10,
   },
   calloutBox: {
     backgroundColor: colors.cards,
@@ -125,6 +150,36 @@ const styles = StyleSheet.create({
     fontSize: 8.5,
     color: colors.tertiary,
   },
+  contextCard: {
+    flex: 1,
+    backgroundColor: colors.cards,
+    padding: 12,
+    borderRadius: 4,
+    alignItems: "center",
+  },
+  metricCard: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 8,
+  },
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.assumptionBg,
+  },
 });
 
 interface MeasurePDFData {
@@ -148,11 +203,15 @@ const formatSmartRange = (low: number, high: number): string => {
   return `${lowFmt} \u2013 ${highFmt}`;
 };
 
+const ConfidentialHeader = ({ orgName }: { orgName: string }) => (
+  <Text style={styles.confidentialHeader}>Confidential {"\u2014"} Prepared for {orgName}</Text>
+);
+
 const PageFooter = ({ pageNum, orgName }: { pageNum: number; orgName: string }) => (
   <View style={styles.footer}>
     <Text style={styles.footerLeft}>ABRIDGE</Text>
     <Text style={styles.footerCenter}>{orgName} {"\u00B7"} Value Story</Text>
-    <Text style={styles.footerRight}>Page {pageNum} of 4</Text>
+    <Text style={styles.footerRight}>Page {pageNum} of {TOTAL_PAGES}</Text>
   </View>
 );
 
@@ -168,11 +227,10 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
   const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
 
   const timeSavedPerNote = state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith;
-  const documentedEncounters = state.deployment.totalEncounters * (state.deployment.utilizationRate / 100);
-  const totalHoursSaved = (timeSavedPerNote * documentedEncounters) / 60;
+  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
+  const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
 
   const savingsHours = totalHoursSaved * (savingsPercent / 100);
-  const savingsValue = savingsHours * state.calibration.otHourlyRate;
 
   const capacityHours = totalHoursSaved * (capacityPercent / 100);
   const additionalVisits = capacityHours * (60 / state.calibration.minutesPerVisit);
@@ -183,34 +241,28 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     ? wellbeingHours / state.deployment.providers / (state.deployment.monthsOnAbridge * 4.33)
     : 0;
 
-  const timeValueSubtotal = capacityValue + savingsValue;
+  const adjustedTimeValue = capacityValue;
 
   const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
   const wrvuDeltaPercent = state.documentationQuality.wrvuWithout > 0
     ? (wrvuDelta / state.documentationQuality.wrvuWithout) * 100
     : 0;
-  const additionalWRVUs = wrvuDelta * documentedEncounters;
+  const additionalWRVUs = wrvuDelta * adoptedEncounters;
   const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.50;
   const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.75;
 
-  const totalValueLow = timeValueSubtotal + docValueLow;
-  const totalValueHigh = timeValueSubtotal + docValueHigh;
+  const totalValueLow = adjustedTimeValue + docValueLow;
+  const totalValueHigh = adjustedTimeValue + docValueHigh;
 
   const sameDayClosureDelta = state.timeEfficiency.sameDayClosureWith - state.timeEfficiency.sameDayClosureWithout;
   const timeToCloseDelta = state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith;
   const workOutsideDelta = state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith;
-  const workOutsideDeltaPercent = state.timeEfficiency.workOutsideWithout > 0
-    ? Math.round((workOutsideDelta / state.timeEfficiency.workOutsideWithout) * 100)
-    : 0;
 
   const expansion = calculateExpansionResults(
     state, totalValueLow, totalValueHigh, totalHoursSaved,
     state.expansionTargets?.targetAdoption,
     state.expansionTargets?.targetProviders
   );
-  const adjustedTimeValue = timeValueSubtotal - savingsValue;
-  const adjustedTotalLow = totalValueLow - savingsValue;
-  const adjustedTotalHigh = totalValueHigh - savingsValue;
 
   const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
   const hoursPerWeekReturned = state.deployment.providers > 0
@@ -221,18 +273,26 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
     ? Math.round(((state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith) / state.timeEfficiency.timeInNotesWithout) * 100)
     : 0;
 
-  const nonAbridgeEncounters = state.deployment.totalEncounters - Math.round(documentedEncounters);
-
   const perProviderValuePerYear = state.deployment.providers > 0
-    ? ((adjustedTotalLow + adjustedTotalHigh) / 2) / state.deployment.providers
+    ? ((totalValueLow + totalValueHigh) / 2) / state.deployment.providers
     : 0;
-  const perEncounterValue = state.deployment.totalEncounters > 0
-    ? ((adjustedTotalLow + adjustedTotalHigh) / 2) / state.deployment.totalEncounters
+  const perEncounterValue = adoptedEncounters > 0
+    ? ((totalValueLow + totalValueHigh) / 2) / adoptedEncounters
     : 0;
+
+  const targetAdoption = state.expansionTargets?.targetAdoption ?? 80;
+
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <Document>
-      {/* COVER PAGE */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* COVER PAGE (kept as-is)                                       */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
       <PDFCoverPage
         reportLabel="YOUR VALUE STORY"
         title={orgName}
@@ -241,64 +301,73 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
       />
 
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 1: YOUR PARTNERSHIP (Summary + Efficiency)               */}
+      {/* PAGE 1: YOUR PARTNERSHIP AT A GLANCE                          */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
+          <ConfidentialHeader orgName={orgName} />
           <Text style={styles.sectionLabel}>YOUR PARTNERSHIP</Text>
+          <Text style={styles.sectionHeadline}>Understanding Your Abridge Impact</Text>
 
-          {/* Hero banner */}
-          <View style={[styles.cardBg, { paddingVertical: 16, paddingHorizontal: 20, marginBottom: 6 }]}>
-            <Text style={{ fontSize: 14, color: colors.secondary, marginBottom: 6 }}>
-              {state.deployment.providers} providers. {state.deployment.monthsOnAbridge} months.
-            </Text>
-            <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
-              {formatNumber(Math.round(totalHoursSaved))} hours reclaimed
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 10 }}>
-              {hoursPerProvider} hours per provider {"\u00B7"} {hoursPerWeekReturned.toFixed(1)} hrs/wk returned
-            </Text>
-
-            {/* 4-stat row */}
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(state.deployment.totalEncounters)}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(documentedEncounters))}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>w/ Abridge</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{Math.round(state.deployment.utilizationRate)}%</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>adoption</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>est. value</Text>
-              </View>
-            </View>
-
-            <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 8 }}>
-              {state.deployment.providers} of {state.deployment.totalProviders} total providers are on Abridge today.
-            </Text>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          {/* TIME EFFICIENCY section */}
-          <Text style={styles.sectionLabel}>TIME EFFICIENCY</Text>
-          <Text style={styles.sectionHeadline}>Your Providers as Their Own Control Group</Text>
-          <Text style={styles.body}>
-            Of {formatNumber(state.deployment.totalEncounters)} encounters, {formatNumber(Math.round(documentedEncounters))} used Abridge. The remaining {formatNumber(nonAbridgeEncounters)} did not. Same physicians, same panels{"\u2014"}different documentation experience.
+          <Text style={styles.narrative}>
+            Over the past {state.deployment.monthsOnAbridge} months, {orgName} has partnered with Abridge across {state.deployment.providers} providers, representing {Math.round(state.deployment.utilizationRate)}% adoption within your {state.deployment.totalProviders}-provider organization. During this period, approximately {formatNumber(adoptedEncounters)} encounters were documented with Abridge assistance. This report explores what we can observe from that experience {"\u2014"} where the data is strong, where it suggests opportunity, and where your finance and operations teams can dig deeper.
           </Text>
 
           <View style={styles.divider} />
 
-          {/* TIME IN NOTES */}
-          <Text style={styles.sectionLabelGray}>TIME IN NOTES</Text>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
+            <View style={styles.contextCard}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{state.deployment.providers}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Providers on Abridge</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary }}>(of {state.deployment.totalProviders} total)</Text>
+            </View>
+            <View style={styles.contextCard}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{state.deployment.monthsOnAbridge}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Months Observed</Text>
+            </View>
+            <View style={styles.contextCard}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{formatNumber(adoptedEncounters)}</Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Encounters w/ Abridge</Text>
+            </View>
+            <View style={styles.contextCard}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{Math.round(state.deployment.utilizationRate)}%</Text>
+              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Adoption Rate</Text>
+            </View>
+          </View>
+
+          <View style={styles.thickDivider} />
+
+          <View style={styles.assumptionBox}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>A note on this analysis</Text>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
+              The estimates in this report are modeled from the data your team provided and Abridge's deployment experience across similar organizations. They are not audited financial projections. We present ranges rather than point estimates, clearly label our assumptions, and distinguish between directly measurable outcomes and modeled values. Our goal is to give your leadership a credible starting point for internal ROI conversations {"\u2014"} not to replace your finance team's analysis.
+            </Text>
+          </View>
+
+          <View style={{ marginTop: "auto", marginBottom: 6 }}>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5 }}>
+              All figures in this report are estimates based on user-provided inputs and Abridge deployment methodology. See the Methodology section (page {TOTAL_PAGES}) for complete assumptions and limitations.
+            </Text>
+          </View>
+
+          <PageFooter pageNum={1} orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* PAGE 2: WHAT WE OBSERVED — TIME & EFFICIENCY                  */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <ConfidentialHeader orgName={orgName} />
+          <Text style={styles.sectionLabel}>WHAT WE OBSERVED</Text>
+          <Text style={styles.sectionHeadline}>What Changed in Documentation Time</Text>
+
+          <Text style={styles.narrative}>
+            Before Abridge, your providers spent an average of {state.timeEfficiency.timeInNotesWithout} minutes per encounter on documentation. With Abridge, that dropped to {state.timeEfficiency.timeInNotesWith} minutes {"\u2014"} a {timeSavedPerNote}-minute reduction per note. Across {formatNumber(adoptedEncounters)} Abridge-documented encounters, that translates to approximately {formatNumber(Math.round(totalHoursSaved))} hours of documentation time returned to your providers over {state.deployment.monthsOnAbridge} months.
+          </Text>
+
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            {/* Without */}
             <View style={[styles.cardBg, { flex: 1 }]}>
               <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
                 WITHOUT ABRIDGE
@@ -308,7 +377,6 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               </Text>
               <Text style={{ fontSize: 10, color: colors.secondary }}>per encounter</Text>
             </View>
-            {/* With */}
             <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
               <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
                 WITH ABRIDGE
@@ -321,221 +389,75 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
             </View>
           </View>
 
+          <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 10 }}>
+            For each of your {state.deployment.providers} providers on Abridge, that is roughly {hoursPerProvider} hours over this period {"\u2014"} time that was previously spent in notes, now available for patient care, earlier departures, or reduced weekend catch-up.
+          </Text>
+
           <View style={styles.divider} />
 
-          {/* ADDITIONAL METRICS table */}
           <Text style={styles.sectionLabelGray}>ADDITIONAL METRICS</Text>
-          <View style={{ marginBottom: 10 }}>
-            {/* Header */}
-            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-              <Text style={{ flex: 2.5, fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5 }}>Metric</Text>
-              <Text style={{ flex: 1, fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Without</Text>
-              <Text style={{ flex: 1, fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>With</Text>
-              <Text style={{ flex: 1.2, fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Change</Text>
+
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>Same-Day Closure</Text>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>+{sameDayClosureDelta} percentage points</Text>
             </View>
-            {/* Same-Day Closure */}
-            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-              <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText }}>Same-Day Closure</Text>
-              <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{state.timeEfficiency.sameDayClosureWithout}%</Text>
-              <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{state.timeEfficiency.sameDayClosureWith}%</Text>
-              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>+{sameDayClosureDelta}pp</Text>
-            </View>
-            {/* Days to Close */}
-            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-              <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText }}>Days to Close</Text>
-              <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{state.timeEfficiency.timeToCloseWithout}</Text>
-              <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{state.timeEfficiency.timeToCloseWith}</Text>
-              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>-{timeToCloseDelta.toFixed(1)} days</Text>
-            </View>
-            {/* After-Hours */}
-            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: (state.customMetrics || []).filter(cm => cm.label.trim()).length > 0 ? 1 : 0, borderBottomColor: colors.border }}>
-              <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText }}>After-Hours</Text>
-              <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{state.timeEfficiency.workOutsideWithout} hrs</Text>
-              <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{state.timeEfficiency.workOutsideWith} hrs</Text>
-              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>-{workOutsideDelta.toFixed(1)}h ({workOutsideDeltaPercent}%)</Text>
-            </View>
-            {(state.customMetrics || []).filter(cm => cm.label.trim()).map((cm, i, arr) => {
-              const delta = cm.after - cm.before;
-              const pct = cm.before !== 0 ? ((delta / cm.before) * 100).toFixed(1) : "N/A";
-              return (
-                <View key={cm.id} style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-                  <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText, fontStyle: "italic" }}>{cm.label}</Text>
-                  <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{cm.before}</Text>
-                  <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{cm.after}</Text>
-                  <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{delta > 0 ? "+" : ""}{delta.toFixed(delta % 1 !== 0 ? 2 : 0)}{pct !== "N/A" ? ` (${pct}%)` : ""}</Text>
-                </View>
-              );
-            })}
-          </View>
-
-          {/* Total Hours Reclaimed bar */}
-          <View style={[styles.cardBg, { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 16 }]}>
-            <View>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>TOTAL HOURS RECLAIMED</Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary }}>{formatNumber(Math.round(totalHoursSaved))}</Text>
-              <Text style={{ fontSize: 12, color: colors.secondary }}>{hoursPerProvider} hrs/provider</Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary }}>{timeSavedPerNote} min {"\u00D7"} {formatNumber(Math.round(documentedEncounters))} / 60</Text>
-            </View>
-          </View>
-
-          <PageFooter pageNum={1} orgName={orgName} />
-        </View>
-      </Page>
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 2: WHERE THE VALUE LIVES (Value + Quality)               */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>YOUR VALUE</Text>
-          <Text style={styles.sectionHeadline}>Where the Time Went</Text>
-          <Text style={styles.body}>
-            Time saved creates value when it goes somewhere. Here's how {formatNumber(Math.round(totalHoursSaved))} hours are allocated across your organization.
-          </Text>
-
-          <View style={styles.divider} />
-
-          {/* TIME VALUE section */}
-          <Text style={styles.sectionLabelGray}>TIME VALUE</Text>
-          <View style={{ marginBottom: 10 }}>
-            {/* Time Returned */}
-            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8, backgroundColor: "#FAFAF8", padding: 8, borderRadius: 4 }}>
-              <View style={{ width: 3, height: 36, backgroundColor: "#999999", marginRight: 10, borderRadius: 1 }} />
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Time Returned to Providers</Text>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(savingsHours))} hours</Text>
-                </View>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  [{savingsPercent}% of time saved]
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 8 }} />
-
-            {/* Patient Capacity */}
-            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8 }}>
-              <View style={{ width: 3, height: 36, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1 }} />
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Patient Capacity</Text>
-                  <View style={{ flexDirection: "row", gap: 20 }}>
-                    <Text style={{ fontSize: 10, color: colors.secondary }}>{capacityPercent}%</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(capacityValue)}</Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  {formatNumber(Math.round(capacityHours))} hours {"\u2192"} {formatNumber(Math.round(additionalVisits))} visits possible{"\u00B2"}
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 8 }} />
-
-            {/* Provider Wellbeing */}
-            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8 }}>
-              <View style={{ width: 3, height: 36, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1 }} />
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Provider Wellbeing</Text>
-                  <View style={{ flexDirection: "row", gap: 20 }}>
-                    <Text style={{ fontSize: 10, color: colors.secondary }}>{wellbeingPercent}%</Text>
-                    <Text style={{ fontSize: 10, color: colors.primaryText }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk</Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  {formatNumber(Math.round(wellbeingHours))} hours returned to providers
-                </Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  Retention signal: 1 provider = $300-500K
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginBottom: 8 }} />
-
-            {/* Subtotal */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <View>
-                <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>Time Value Subtotal</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>Per provider: ~{formatCurrency(state.deployment.providers > 0 ? adjustedTimeValue / state.deployment.providers : 0)}/year</Text>
-              </View>
-              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(adjustedTimeValue)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* DOCUMENTATION QUALITY section */}
-          <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
-          <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8 }}>
-            Better notes capture clinical complexity more accurately.
-          </Text>
-
-          <View style={{ marginBottom: 8 }}>
-            <Text style={styles.sectionLabelGray}>wRVU PER ENCOUNTER</Text>
-            <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
-              {/* Without */}
-              <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
-                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>WITHOUT</Text>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWithout.toFixed(2)}</Text>
-              </View>
-              {/* Arrow */}
-              <View style={{ justifyContent: "center", alignItems: "center", paddingHorizontal: 2 }}>
-                <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
-              </View>
-              {/* With */}
-              <View style={{ flex: 1, padding: 10, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, alignItems: "center" }}>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WITH</Text>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWith.toFixed(2)}</Text>
-              </View>
-            </View>
-
-            <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primary, marginBottom: 8 }}>
-              +{wrvuDelta.toFixed(2)} per encounter {"\u00B7"} {Math.round(wrvuDeltaPercent)}% improvement
+            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
+              {state.timeEfficiency.sameDayClosureWithout}% {"\u2192"} {state.timeEfficiency.sameDayClosureWith}%
             </Text>
-
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 6 }}>
-              <View style={{ flex: 1, backgroundColor: colors.cards, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(documentedEncounters))}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters analyzed</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.cards, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(additionalWRVUs))}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>addtl wRVUs</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: colors.cards, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>revenue potential{"\u00B3"}</Text>
-              </View>
-            </View>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
+              A higher same-day closure rate means fewer open notes carrying over, reducing compliance risk and cognitive load.
+            </Text>
           </View>
 
-          <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
-
-          {/* ESTIMATED ANNUAL VALUE */}
-          <View style={[styles.cardBg, { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12, paddingHorizontal: 16 }]}>
-            <View>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>ESTIMATED ANNUAL VALUE</Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>Days to Close</Text>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>-{timeToCloseDelta.toFixed(1)} days</Text>
             </View>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>Per provider: ~{formatCurrency(perProviderValuePerYear)}/year</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>Per encounter: ~${Math.round(perEncounterValue)}</Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 4 }}>Time: {formatCurrency(adjustedTimeValue)} {"\u00B7"} Documentation: {formatSmartRange(docValueLow, docValueHigh)}</Text>
-            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
+              {state.timeEfficiency.timeToCloseWithout} days {"\u2192"} {state.timeEfficiency.timeToCloseWith} days
+            </Text>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
+              Faster note completion improves billing cycle time and reduces documentation backlog.
+            </Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>After-Hours Documentation</Text>
+              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>-{workOutsideDelta.toFixed(1)} hrs/day</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
+              {state.timeEfficiency.workOutsideWithout} hrs/day {"\u2192"} {state.timeEfficiency.workOutsideWith} hrs/day
+            </Text>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
+              This is time your providers are getting back in their personal lives {"\u2014"} evenings, weekends, time with family.
+            </Text>
+          </View>
 
-          {/* Footnotes */}
-          <View>
-            <Text style={styles.caption}>{"\u00B9"} ${state.calibration.otHourlyRate}/hr provider cost</Text>
-            <Text style={styles.caption}>{"\u00B2"} {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</Text>
-            <Text style={styles.caption}>{"\u00B3"} 50-75% attribution range</Text>
+          {(state.customMetrics || []).filter(cm => cm.label.trim()).map((cm) => {
+            const delta = cm.after - cm.before;
+            const pct = cm.before !== 0 ? ((delta / cm.before) * 100).toFixed(1) : "N/A";
+            return (
+              <View key={cm.id} style={styles.metricCard}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>{cm.label}</Text>
+                  <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>{delta > 0 ? "+" : ""}{delta.toFixed(delta % 1 !== 0 ? 2 : 0)}{pct !== "N/A" ? ` (${pct}%)` : ""}</Text>
+                </View>
+                <Text style={{ fontSize: 10, color: colors.secondary }}>
+                  {cm.before} {"\u2192"} {cm.after}
+                </Text>
+              </View>
+            );
+          })}
+
+          <View style={[styles.cardBg, { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 16, marginTop: 4 }]}>
+            <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1 }}>TOTAL HOURS RECLAIMED</Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primary }}>{formatNumber(Math.round(totalHoursSaved))}</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>{hoursPerProvider} hrs/provider</Text>
+            </View>
           </View>
 
           <PageFooter pageNum={2} orgName={orgName} />
@@ -543,22 +465,190 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
       </Page>
 
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 3: THE PATH AHEAD (Deepen + Expand)                      */}
+      {/* PAGE 3: WHAT WE OBSERVED — DOCUMENTATION QUALITY              */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE PATH AHEAD</Text>
-          <Text style={styles.sectionHeadline}>What's Next</Text>
-          <Text style={styles.body}>
-            You've proven the model with {state.deployment.providers} providers. The data suggests two layers of opportunity ahead.
+          <ConfidentialHeader orgName={orgName} />
+          <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
+          <Text style={styles.sectionHeadline}>What Changed in Clinical Capture</Text>
+
+          <Text style={styles.narrative}>
+            Documentation quality is not just about speed {"\u2014"} it is about capturing the clinical complexity that actually occurred. Your providers' average wRVU per encounter moved from {state.documentationQuality.wrvuWithout.toFixed(2)} to {state.documentationQuality.wrvuWith.toFixed(2)}, a {Math.round(wrvuDeltaPercent)}% increase. While multiple factors influence coding patterns, this shift is consistent with what we observe when AI-assisted documentation captures clinical detail that might otherwise be lost in manual note-writing.
+          </Text>
+
+          <Text style={styles.sectionLabelGray}>wRVU PER ENCOUNTER</Text>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>WITHOUT</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWithout.toFixed(2)}</Text>
+            </View>
+            <View style={{ justifyContent: "center", alignItems: "center", paddingHorizontal: 2 }}>
+              <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
+            </View>
+            <View style={{ flex: 1, padding: 12, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, alignItems: "center" }}>
+              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WITH</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWith.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primary, marginBottom: 10 }}>
+            +{wrvuDelta.toFixed(2)} per encounter {"\u00B7"} {Math.round(wrvuDeltaPercent)}% improvement
+          </Text>
+
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
+            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(adoptedEncounters)}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters analyzed</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(additionalWRVUs))}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>additional wRVUs</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>estimated revenue potential</Text>
+            </View>
+          </View>
+
+          <Text style={styles.narrative}>
+            If we attribute 50{"\u2013"}75% of this wRVU lift to improved documentation capture (our default assumption range based on published literature and deployment data), the {formatNumber(adoptedEncounters)} Abridge-documented encounters represent an estimated {formatSmartRange(docValueLow, docValueHigh)} in additional revenue capture annually.
+          </Text>
+
+          <View style={styles.assumptionBox}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Attribution note</Text>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
+              Not all coding improvement can be attributed to Abridge. Provider behavior changes, coding education, payer mix shifts, and other factors also play a role. The 50{"\u2013"}75% range reflects our conservative estimate of Abridge's contribution. Your coding and compliance teams can refine this based on internal analysis.
+            </Text>
+          </View>
+
+          <PageFooter pageNum={3} orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* PAGE 4: ESTIMATING YOUR VALUE                                 */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <ConfidentialHeader orgName={orgName} />
+          <Text style={styles.sectionLabel}>YOUR VALUE</Text>
+          <Text style={styles.sectionHeadline}>Putting the Pieces Together</Text>
+
+          <Text style={styles.narrative}>
+            Translating time savings into organizational value requires assumptions about how that time gets used. Rather than assigning a single dollar figure, we break this into what is directly measurable and what represents organizational potential.
           </Text>
 
           <View style={styles.thickDivider} />
 
-          {/* LAYER 1: DEEPEN */}
-          <Text style={styles.sectionLabel}>LAYER 1: DEEPEN</Text>
+          <Text style={styles.sectionLabel}>SECTION A: MEASURABLE VALUE</Text>
+
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Patient Capacity Opportunity</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatCurrency(capacityValue)}</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+              {capacityPercent}% of the {formatNumber(Math.round(totalHoursSaved))} hours saved were allocated to patient capacity. At {state.calibration.minutesPerVisit} minutes per visit, that is approximately {formatNumber(Math.round(additionalVisits))} additional patient visits. At ${state.calibration.revenuePerVisit} per visit, this represents {formatCurrency(capacityValue)} in potential additional revenue.
+            </Text>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
+              Whether this capacity is realized depends on scheduling, demand, and operational decisions {"\u2014"} but the time is available.
+            </Text>
+          </View>
+
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Documentation Quality Lift</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+              +{wrvuDelta.toFixed(2)} wRVU per encounter across {formatNumber(adoptedEncounters)} encounters, at ${state.calibration.conversionFactor} conversion, with 50{"\u2013"}75% attribution. See page 3 for the full methodology and attribution discussion.
+            </Text>
+          </View>
+
+          <View style={styles.thickDivider} />
+
+          <Text style={styles.sectionLabel}>SECTION B: NON-DOLLAR IMPACT</Text>
+
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Time Returned to Providers</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(savingsHours))} hours</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+              {formatNumber(Math.round(savingsHours))} hours of documentation time were returned to your {state.deployment.providers} providers. This time has real organizational value {"\u2014"} but how it is deployed varies. Some organizations see it in throughput. Others see it in provider satisfaction scores, reduced turnover intent, or simply better work-life balance.
+            </Text>
+          </View>
+
+          <View style={styles.metricCard}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Provider Wellbeing Signal</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+              Your providers are reclaiming approximately {hoursPerProviderPerWeek.toFixed(1)} hours per week of time previously spent on documentation. In a national environment where clinician burnout drives costly turnover, this is a meaningful retention signal.
+            </Text>
+            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
+              Industry benchmark: Replacing a single physician costs $300K{"\u2013"}$500K in recruitment, onboarding, and lost revenue. While we do not claim Abridge alone prevents turnover, reduced documentation burden is consistently cited as a top factor in provider satisfaction.
+            </Text>
+          </View>
+
+          <View style={styles.thickDivider} />
+
+          <View style={[styles.cardBg, { paddingVertical: 14, paddingHorizontal: 18 }]}>
+            <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>ESTIMATED ANNUAL VALUE SUMMARY</Text>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Patient Capacity</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatCurrency(capacityValue)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation Quality</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
+            </View>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>Total Measurable Value</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
+            </View>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>Time Returned</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(savingsHours))} hours (not dollarized)</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>Wellbeing</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk back per provider</Text>
+            </View>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 9, color: colors.tertiary }}>Per provider: ~{formatCurrency(perProviderValuePerYear)}/year</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary }}>Per encounter: ~${Math.round(perEncounterValue)}</Text>
+            </View>
+          </View>
+
+          <PageFooter pageNum={4} orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* PAGE 5: THE OPPORTUNITY AHEAD                                 */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <ConfidentialHeader orgName={orgName} />
+          <Text style={styles.sectionLabel}>THE OPPORTUNITY AHEAD</Text>
+          <Text style={styles.sectionHeadline}>Where This Could Go</Text>
+
+          <Text style={styles.narrative}>
+            Your current results reflect {Math.round(state.deployment.utilizationRate)}% adoption across {state.deployment.providers} of {state.deployment.totalProviders} providers. This is a snapshot of early impact {"\u2014"} not the ceiling.
+          </Text>
+
+          <View style={styles.thickDivider} />
+
+          <Text style={styles.sectionLabel}>DEEPEN: INCREASE ADOPTION</Text>
           <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>
-            Increase adoption within your current {state.deployment.providers} providers
+            More encounters with your current {state.deployment.providers} providers
           </Text>
 
           <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 14, marginBottom: 10 }}>
@@ -566,39 +656,33 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               <View>
                 <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>TODAY</Text>
                 <Text style={{ fontSize: 10, color: colors.secondary }}>{Math.round(state.deployment.utilizationRate)}% adoption</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(documentedEncounters))} encounters</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(totalHoursSaved))} hours saved</Text>
+                <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(adoptedEncounters)} encounters</Text>
               </View>
               <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
                 <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
               </View>
               <View>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>AT {state.expansionTargets?.targetAdoption ?? 85}% ADOPTION</Text>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>{state.expansionTargets?.targetAdoption ?? 85}% adoption</Text>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>AT {targetAdoption}% ADOPTION</Text>
                 <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(expansion.deepenEncounters)} encounters</Text>
                 <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(expansion.deepenHoursSaved))} hours saved</Text>
               </View>
             </View>
-
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 8 }} />
-
             <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
               Additional value: +{formatCurrency(expansion.deepenAdditionalValue)}/year
             </Text>
             <Text style={{ fontSize: 10, color: colors.secondary }}>
-              No additional investment. This is value from your existing deployment.
+              No additional investment required. This is value from your existing deployment.
             </Text>
           </View>
 
           <View style={styles.divider} />
 
-          {/* LAYER 2: EXPAND */}
-          <Text style={styles.sectionLabel}>LAYER 2: EXPAND</Text>
+          <Text style={styles.sectionLabel}>EXPAND: BRING ABRIDGE TO MORE PROVIDERS</Text>
           <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>
-            Bring Abridge to more of your organization
+            Extending to your broader organization
           </Text>
 
-          {/* Per-provider story cards */}
           <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
             <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
               <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>~{formatCurrency(perProviderValuePerYear)}</Text>
@@ -607,171 +691,172 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
             </View>
             <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
               <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{hoursPerProvider} hrs</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>saved per</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>provider/{state.deployment.monthsOnAbridge} mo</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary }}>saved per provider</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary }}>over {state.deployment.monthsOnAbridge} months</Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
               <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{expansion.remainingProviders}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary }}>providers not yet</Text>
               <Text style={{ fontSize: 9, color: colors.secondary }}>on Abridge</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary }}>(of {state.deployment.totalProviders} total)</Text>
             </View>
           </View>
 
+          <Text style={styles.narrative}>
+            Extending Abridge to all {state.deployment.totalProviders} providers, at current per-provider economics, would represent an estimated {formatSmartRange(expansion.expandValueLow, expansion.expandValueHigh)} annually. Your {expansion.remainingProviders} providers not yet on Abridge represent the largest untapped opportunity.
+          </Text>
+
           <View style={styles.divider} />
 
-          {/* COMBINED OUTLOOK */}
           <Text style={styles.sectionLabelGray}>COMBINED OUTLOOK</Text>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            {/* Today */}
             <View style={[styles.cardBg, { flex: 1, paddingVertical: 12 }]}>
               <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{state.deployment.providers} providers</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{Math.round(state.deployment.utilizationRate)}% adoption</Text>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 2 }}>est. annual value</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
             </View>
-            {/* Deeper + Wider */}
             <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>DEEPER + WIDER</Text>
+              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>FULL DEPLOYMENT</Text>
               <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{expansion.combinedProviders} providers</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{state.expansionTargets?.targetAdoption ?? 85}% adoption</Text>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 2 }}>est. annual value</Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{targetAdoption}% adoption</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}</Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
-
-          {/* Scaling insight callout */}
-          <View style={[styles.calloutBox, { marginBottom: 6 }]}>
-            <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5 }}>
-              Unlike programs that scale linearly with headcount, AI documentation cost per provider decreases as adoption grows, while value per encounter remains consistent.
-            </Text>
-          </View>
-
-          <Text style={styles.caption}>
-            Projections assume current time savings ({timeSavedPerNote} min/encounter), adoption patterns, and wRVU improvements continue.
+          <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5 }}>
+            These projections assume consistent per-provider economics as you scale. Actual results will depend on specialty mix, encounter volume, workflow integration, and organizational support for adoption. We recommend revisiting these estimates quarterly as your deployment matures.
           </Text>
 
-          <PageFooter pageNum={3} orgName={orgName} />
+          <PageFooter pageNum={5} orgName={orgName} />
         </View>
       </Page>
 
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 4: YOUR STORY + METHODOLOGY                             */}
+      {/* PAGE 6: METHODOLOGY & ASSUMPTIONS                             */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>YOUR STORY</Text>
-
-          {/* Hero story box */}
-          <View style={[styles.cardBg, { paddingVertical: 20, paddingHorizontal: 24, marginBottom: 10 }]}>
-            <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
-              {state.deployment.providers} providers.
-            </Text>
-            <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
-              {state.deployment.monthsOnAbridge} months.
-            </Text>
-            <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 8 }}>
-              {formatNumber(Math.round(totalHoursSaved))} hours back.
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.secondary }}>
-              {hoursPerProvider} hours per provider{"\u2014"}time that used to disappear into documentation.
-            </Text>
-          </View>
-
-          {/* Narrative callout */}
-          <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-            <Text style={{ fontSize: 11, color: colors.primaryText, lineHeight: 1.6 }}>
-              You gave {state.deployment.providers} people their evenings back{"\u2014"}and the notes got better, not worse.{"\n\n"}Better documentation comes from less time documenting. That's what happens when the technology works.
-            </Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* AT A GLANCE summary table */}
-          <Text style={styles.sectionLabelGray}>AT A GLANCE</Text>
-          <View style={{ marginBottom: 10 }}>
-            {/* Row items */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Hours Reclaimed</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(totalHoursSaved))} hrs   ({hoursPerProvider}/provider)</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>Time Returned ({savingsPercent}%)</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(savingsHours))} hours</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Patient Capacity ({capacityPercent}%)</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatCurrency(capacityValue)}</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Provider Wellbeing ({wellbeingPercent}%)</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation Quality</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
-            </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>Estimated Annual Value</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}   (~{formatCurrency(perProviderValuePerYear)}/provider)</Text>
-            </View>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          {/* METHODOLOGY section */}
+          <ConfidentialHeader orgName={orgName} />
           <Text style={styles.sectionLabel}>METHODOLOGY</Text>
-          <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 8 }}>
-            This analysis uses your organization's actual data.
+          <Text style={styles.sectionHeadline}>How We Built These Estimates</Text>
+
+          <Text style={styles.body}>
+            Provider counts, encounter volumes, and before/after metrics were provided by {orgName} for this analysis. Model defaults are informed by Abridge deployment data across health systems nationwide.
           </Text>
 
-          {/* Two-column data/model cards */}
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>YOUR DATA</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                {state.deployment.providers} providers, {state.deployment.monthsOnAbridge} mo{"\n"}
-                {formatNumber(state.deployment.totalEncounters)} encounters{"\n"}
-                {formatNumber(Math.round(documentedEncounters))} w/ Abridge{"\n"}
-                {Math.round(state.deployment.utilizationRate)}% adoption{"\n"}
-                {careSetting} setting
-              </Text>
+          <Text style={styles.sectionLabelGray}>KEY ASSUMPTIONS</Text>
+          <View style={{ marginBottom: 10 }}>
+            <View style={styles.tableHeader}>
+              <Text style={{ flex: 2.5, fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>Assumption</Text>
+              <Text style={{ flex: 1.2, fontSize: 9, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>Value Used</Text>
+              <Text style={{ flex: 1.5, fontSize: 9, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>Source</Text>
             </View>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>VALUE MODEL</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                Provider rate: ${state.calibration.otHourlyRate}/hr{"\n"}
-                Visit duration: {state.calibration.minutesPerVisit} min{"\n"}
-                Revenue/visit: ${state.calibration.revenuePerVisit}{"\n"}
-                wRVU value: ${state.calibration.conversionFactor}{"\n"}
-                Attribution: 50-75%{"\n"}
-                Allocation: {savingsPercent}/{capacityPercent}/{wellbeingPercent}
-              </Text>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Provider hourly rate</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.otHourlyRate}/hr</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Visit duration</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{state.calibration.minutesPerVisit} min</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Revenue per visit</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.revenuePerVisit}</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>wRVU conversion factor</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.conversionFactor}</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>CMS national avg</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Attribution range</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>50{"\u2013"}75%</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Deployment data</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Adoption target (Deepen)</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{targetAdoption}%</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Capacity</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{capacityPercent}%</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Returned</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{savingsPercent}%</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
+            </View>
+            <View style={{ ...styles.tableRow, borderBottomWidth: 0 }}>
+              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Wellbeing</Text>
+              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{wellbeingPercent}%</Text>
+              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
             </View>
           </View>
 
-          {/* Formulas */}
-          <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>FORMULAS</Text>
-          <View style={{ marginBottom: 8 }}>
-            <Text style={{ fontSize: 8.5, color: colors.secondary, fontFamily: "Courier", lineHeight: 1.6 }}>
-              Hours = (Time Without {"\u2212"} Time With) {"\u00D7"} Encounters / 60{"\n"}
-              Operational = Hours {"\u00D7"} {savingsPercent}% {"\u00D7"} ${state.calibration.otHourlyRate}/hr{"\n"}
-              Capacity = (Hours {"\u00D7"} {capacityPercent}%) / {state.calibration.minutesPerVisit} min {"\u00D7"} ${state.calibration.revenuePerVisit}{"\n"}
-              Doc Value = wRVU {"\u0394"} {"\u00D7"} Encounters {"\u00D7"} ${state.calibration.conversionFactor} {"\u00D7"} Attribution
+          <View style={styles.divider} />
+
+          <Text style={styles.sectionLabelGray}>CALCULATION METHODOLOGY</Text>
+          <View style={{ backgroundColor: colors.assumptionBg, padding: 12, borderRadius: 4, marginBottom: 10 }}>
+            <Text style={{ fontSize: 9, color: colors.secondary, fontFamily: "Courier", lineHeight: 1.7 }}>
+              Time savings: {timeSavedPerNote} min saved {"\u00D7"} {formatNumber(adoptedEncounters)} adopted encounters = {formatNumber(Math.round(totalHoursSaved))} hours{"\n"}
+              Patient capacity: {capacityPercent}% of hours {"\u00F7"} {state.calibration.minutesPerVisit} min {"\u00D7"} ${state.calibration.revenuePerVisit}/visit{"\n"}
+              wRVU lift: +{wrvuDelta.toFixed(2)} {"\u00D7"} {formatNumber(adoptedEncounters)} encounters {"\u00D7"} ${state.calibration.conversionFactor} {"\u00D7"} 50-75%{"\n"}
+              Expansion: Per-provider economics {"\u00D7"} provider count {"\u00D7"} adoption rate
             </Text>
           </View>
 
           <View style={styles.divider} />
 
-          <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-            This analysis is for planning purposes. Documentation value uses a 50-75% attribution range. Projections assume current patterns continue. Consult your finance team before making investment decisions based on these estimates.
+          <Text style={styles.sectionLabelGray}>LIMITATIONS</Text>
+          <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
+            This analysis is a modeled estimate, not an audited financial projection. It does not account for payer mix variation, specialty-specific differences in documentation patterns, seasonal volume fluctuations, or concurrent workflow changes. We recommend validating key metrics (particularly wRVU lift and same-day closure rates) with your revenue cycle and compliance teams. Abridge is committed to partnering with your team to refine these estimates over time.
           </Text>
 
-          <PageFooter pageNum={4} orgName={orgName} />
+          <PageFooter pageNum={6} orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      {/* PAGE 7: CLOSING PAGE                                          */}
+      {/* ═══════════════════════════════════════════════════════════════ */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Image src={abridgeLogoPath} style={{ width: 120, marginBottom: 40 }} />
+
+            <Text style={{ fontSize: 14, color: colors.secondary, marginBottom: 8, textAlign: "center" }}>
+              Prepared for
+            </Text>
+            <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 24, textAlign: "center" }}>
+              {orgName}
+            </Text>
+
+            <View style={{ width: 60, height: 2, backgroundColor: colors.primary, marginBottom: 24 }} />
+
+            <Text style={{ fontSize: 12, color: colors.secondary, marginBottom: 6, textAlign: "center" }}>
+              {today}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.secondary, marginBottom: 40, textAlign: "center" }}>
+              {displayPreparedBy}
+            </Text>
+
+            <View style={{ backgroundColor: colors.cards, padding: 20, borderRadius: 6, maxWidth: 360 }}>
+              <Text style={{ fontSize: 11, color: colors.primaryText, textAlign: "center", lineHeight: 1.6 }}>
+                Questions about this analysis?{"\n"}Contact your Abridge partnership team.
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 }}>
+            <Text style={{ fontSize: 8, color: colors.tertiary, textAlign: "center", lineHeight: 1.5 }}>
+              This document contains confidential information prepared exclusively for {orgName}. The estimates and projections herein are modeled from organization-provided data and Abridge deployment methodology. They are not audited financial projections and should not be used as the sole basis for investment decisions. {"\u00A9"} {new Date().getFullYear()} Abridge AI, Inc. All rights reserved.
+            </Text>
+          </View>
         </View>
       </Page>
     </Document>
