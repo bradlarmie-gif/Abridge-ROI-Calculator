@@ -30,10 +30,10 @@ const DOMAIN_CTA: Record<Domain, string> = {
 };
 
 const STEP_NODE_LABELS: Record<Domain, Record<number, string>> = {
-  capacity: { 1: 'Measured', 2: 'Quantified', 3: 'Deployed', 4: 'Strategic' },
-  revenue: { 1: 'Engaged', 2: 'Analyzing', 3: 'Measured', 4: 'Integrated' },
-  workforce: { 1: 'After-Hours', 2: 'Measured', 3: 'Retention', 4: 'Labor Cost' },
-  risk: { 1: 'Improved', 2: 'Tracked', 3: 'Downstream', 4: 'Governed' },
+  capacity: { 1: 'Recovering', 2: 'Quantified', 3: 'Deployed', 4: 'Strategic' },
+  revenue: { 1: 'Disconnected', 2: 'Analyzing', 3: 'Measured', 4: 'Managed' },
+  workforce: { 1: 'Feeling It', 2: 'Measured', 3: 'Connected', 4: 'Labor Impact' },
+  risk: { 1: 'Improved', 2: 'Monitored', 3: 'Downstream', 4: 'Embedded' },
 };
 
 type DomainState = {
@@ -64,10 +64,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'Ambient returns time. The question is what your organization does with it.',
     reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
     cards: [
-      { level: 1, label: 'Documentation Recovery Established', description: 'You know what you\'re getting back.' },
-      { level: 2, label: 'Recovery Quantified and Escalated', description: 'Leadership knows the number.' },
-      { level: 3, label: 'Capacity Deployed Into Patient Access', description: 'The time has a destination.' },
-      { level: 4, label: 'Workforce Architecture Impact', description: 'Ambient is in your hiring model.' },
+      { level: 1, label: 'Time Is Coming Back', description: 'You know what you\'re getting back.' },
+      { level: 2, label: 'The Number Is Known', description: 'Leadership knows the number.' },
+      { level: 3, label: 'Time Has a Destination', description: 'The time has a destination.' },
+      { level: 4, label: 'Hiring Plans Have Changed', description: 'Ambient is in your hiring model.' },
     ],
     framingQuestions: {
       1: 'Ambient is deployed and time is being returned. How much — and is that number formally on record anywhere?',
@@ -86,10 +86,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Every encounter you document with ambient is a coding opportunity. Most organizations aren\'t looking.',
     reframe: 'Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends entirely on whether your revenue cycle team is part of the conversation — most aren\'t yet.',
     cards: [
-      { level: 1, label: 'Revenue Cycle Hasn\'t Been Brought In Yet.', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
-      { level: 2, label: 'The Analysis Is Underway.', description: 'Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes.' },
-      { level: 3, label: 'The Impact Has Been Measured.', description: 'Your organization has before/after data that connects ambient documentation to a specific revenue outcome — a number leadership can work with.' },
-      { level: 4, label: 'Documentation Quality Is Built Into Revenue Cycle Operations.', description: 'Documentation quality and revenue cycle operate as a connected system — monitored, attributed, and factored into operational planning.' },
+      { level: 1, label: 'No One Is Connecting the Dots', description: 'Ambient is deployed, but the revenue cycle team hasn\'t been formally engaged on what it means for coding accuracy or reimbursement.' },
+      { level: 2, label: 'Revenue Cycle Is in the Conversation', description: 'Your revenue cycle team is actively analyzing the connection between documentation quality and coding or reimbursement outcomes.' },
+      { level: 3, label: 'The Impact Has Been Measured', description: 'Your organization has before/after data that connects ambient documentation to a specific revenue outcome — a number leadership can work with.' },
+      { level: 4, label: 'It\'s Now a Managed System', description: 'Documentation quality and revenue cycle operate as a connected system — monitored, attributed, and factored into operational planning.' },
     ],
     framingQuestions: {
       1: 'Has your revenue cycle team been formally engaged on what ambient documentation means for coding accuracy or reimbursement?',
@@ -108,10 +108,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Provider sustainability is one of the most consequential dimensions of an ambient deployment — and one of the least tracked.',
     reframe: 'When documentation burden decreases, providers get time back — inside the visit and after it. Understanding where that relief shows up is what this domain measures.',
     cards: [
-      { level: 1, label: 'After-Hours Burden Is Being Reduced.', description: 'Providers are spending less time on documentation outside clinical hours. This level establishes how much.' },
-      { level: 2, label: 'Burden Reduction Is Measured.', description: 'In-clinic and after-hours documentation time has been formally quantified, with provider experience data to support it.' },
-      { level: 3, label: 'Retention Impact Is Being Tracked.', description: 'Your organization has modeled turnover exposure and identified documentation burden as a measurable variable in provider retention.' },
-      { level: 4, label: 'Labor Costs Are Reflecting the Difference.', description: 'Reduced documentation burden is showing up in your labor cost structure — through lower agency spend, fewer locum engagements, or both.' },
+      { level: 1, label: 'Providers Are Getting Time Back', description: 'Providers are spending less time on documentation outside clinical hours. This level establishes how much.' },
+      { level: 2, label: 'The Relief Is on Record', description: 'In-clinic and after-hours documentation time has been formally quantified, with provider experience data to support it.' },
+      { level: 3, label: 'Retention Is Part of the Story', description: 'Your organization has modeled turnover exposure and identified documentation burden as a measurable variable in provider retention.' },
+      { level: 4, label: 'The Savings Are Showing Up', description: 'Reduced documentation burden is showing up in your labor cost structure — through lower agency spend, fewer locum engagements, or both.' },
     ],
     framingQuestions: {
       1: 'How much after-hours documentation time has ambient returned to your providers per week?',
@@ -130,10 +130,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     headline: 'Documentation quality is the foundation. This domain measures how far that signal has traveled downstream.',
     reframe: 'When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. This domain measures how far that signal has traveled downstream.',
     cards: [
-      { level: 1, label: 'Documentation Quality Has Improved.', description: 'Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected.' },
-      { level: 2, label: 'Documentation Quality Is Being Tracked.', description: 'Your organization is actively measuring documentation quality attributes — completeness, specificity, and accuracy — and gaps are visible.' },
-      { level: 3, label: 'Documentation Quality Is Driving Downstream Improvement.', description: 'Improved documentation is producing measurable results in downstream workflows — CDI, coding accuracy, quality measure performance, or prior authorization.' },
-      { level: 4, label: 'Documentation Is a Governed Strategic Asset.', description: 'Documentation quality is formally embedded in your organization\'s strategic operations — from payer relationships and quality programs to compliance governance and clinical governance.' },
+      { level: 1, label: 'The Notes Are Better. No One\'s Connecting It Yet.', description: 'Ambient is producing better clinical notes. The downstream opportunity — in coding, quality reporting, and compliance — is not yet connected.' },
+      { level: 2, label: 'Quality Is Being Monitored', description: 'Your organization is actively measuring documentation quality attributes — completeness, specificity, and accuracy — and gaps are visible.' },
+      { level: 3, label: 'The Signal Is Reaching Downstream Teams', description: 'Improved documentation is producing measurable results in downstream workflows — CDI, coding accuracy, quality measure performance, or prior authorization.' },
+      { level: 4, label: 'It\'s Built Into How We Run', description: 'Documentation quality is formally embedded in your organization\'s strategic operations — from payer relationships and quality programs to compliance governance and clinical governance.' },
     ],
     framingQuestions: {
       1: 'Ambient is producing better notes. Has your organization started connecting that improvement to anything downstream — coding, quality reporting, compliance, or care management?',

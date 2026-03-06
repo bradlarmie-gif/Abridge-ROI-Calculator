@@ -14,28 +14,28 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Documentation Recovery Established',
-    2: 'Recovery Quantified and Escalated',
-    3: 'Capacity Deployed Into Patient Access',
-    4: 'Workforce Architecture Impact',
+    1: 'Time Is Coming Back',
+    2: 'The Number Is Known',
+    3: 'Time Has a Destination',
+    4: 'Hiring Plans Have Changed',
   },
   revenue: {
-    1: 'Revenue Cycle Hasn\'t Been Brought In Yet.',
-    2: 'The Analysis Is Underway.',
-    3: 'The Impact Has Been Measured.',
-    4: 'Documentation Quality Is Built Into Revenue Cycle Operations.',
+    1: 'No One Is Connecting the Dots',
+    2: 'Revenue Cycle Is in the Conversation',
+    3: 'The Impact Has Been Measured',
+    4: 'It\'s Now a Managed System',
   },
   workforce: {
-    1: 'After-Hours Burden Is Being Reduced.',
-    2: 'Burden Reduction Is Measured.',
-    3: 'Retention Impact Is Being Tracked.',
-    4: 'Labor Costs Are Reflecting the Difference.',
+    1: 'Providers Are Getting Time Back',
+    2: 'The Relief Is on Record',
+    3: 'Retention Is Part of the Story',
+    4: 'The Savings Are Showing Up',
   },
   risk: {
-    1: 'Documentation Quality Has Improved.',
-    2: 'Documentation Quality Is Being Tracked.',
-    3: 'Documentation Quality Is Driving Downstream Improvement.',
-    4: 'Documentation Is a Governed Strategic Asset.',
+    1: 'The Notes Are Better. No One\'s Connecting It Yet.',
+    2: 'Quality Is Being Monitored',
+    3: 'The Signal Is Reaching Downstream Teams',
+    4: 'It\'s Built Into How We Run',
   },
 };
 

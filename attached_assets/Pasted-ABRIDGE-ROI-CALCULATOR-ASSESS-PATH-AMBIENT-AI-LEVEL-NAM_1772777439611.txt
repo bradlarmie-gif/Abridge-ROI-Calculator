@@ -1,0 +1,68 @@
+ABRIDGE ROI CALCULATOR — ASSESS PATH: AMBIENT AI — LEVEL NAMES + SUB-LABELS ONLY
+Bundle: /assets/index-Ca__T3aH.js
+Change ONLY the level label strings and the progress tracker sub-label strings listed 
+below. Do not change descriptions, framing questions, unlock teasers, roadmap text, 
+headlines, or anything else. Pure string replacement only.
+═══════════════════════════════════════════════════════════════
+SECTION 1 — O8t OBJECT (Progress tracker sub-labels)
+═══════════════════════════════════════════════════════════════
+FIND:
+capacity:{1:"Measured",2:"Quantified",3:"Deployed",4:"Strategic"},revenue:{1:"Engaged",2:"Analyzing",3:"Measured",4:"Integrated"},workforce:{1:"After-Hours",2:"Measured",3:"Retention",4:"Labor Cost"},risk:{1:"Improved",2:"Tracked",3:"Downstream",4:"Governed"}
+REPLACE:
+capacity:{1:"Recovering",2:"Quantified",3:"Deployed",4:"Strategic"},revenue:{1:"Disconnected",2:"Analyzing",3:"Measured",4:"Managed"},workforce:{1:"Feeling It",2:"Measured",3:"Connected",4:"Labor Impact"},risk:{1:"Improved",2:"Monitored",3:"Downstream",4:"Embedded"}
+═══════════════════════════════════════════════════════════════
+SECTION 2 — _8t OBJECT: CAPACITY level labels only
+═══════════════════════════════════════════════════════════════
+FIND:    label:"Documentation Recovery Established"
+REPLACE: label:"Time Is Coming Back"
+FIND:    label:"Recovery Quantified and Escalated"
+REPLACE: label:"The Number Is Known"
+FIND:    label:"Capacity Deployed Into Patient Access"
+REPLACE: label:"Time Has a Destination"
+FIND:    label:"Workforce Architecture Impact"
+REPLACE: label:"Hiring Plans Have Changed"
+═══════════════════════════════════════════════════════════════
+SECTION 3 — _8t OBJECT: REVENUE level labels only
+═══════════════════════════════════════════════════════════════
+FIND:    label:"Revenue Cycle Hasn't Been Brought In Yet."
+REPLACE: label:"No One Is Connecting the Dots"
+FIND:    label:"The Analysis Is Underway."
+REPLACE: label:"Revenue Cycle Is in the Conversation"
+FIND:    label:"The Impact Has Been Measured."
+REPLACE: label:"The Impact Has Been Measured"
+FIND:    label:"Documentation Quality Is Built Into Revenue Cycle Operations."
+REPLACE: label:"It's Now a Managed System"
+═══════════════════════════════════════════════════════════════
+SECTION 4 — _8t OBJECT: WORKFORCE level labels only
+═══════════════════════════════════════════════════════════════
+FIND:    label:"After-Hours Burden Is Being Reduced."
+REPLACE: label:"Providers Are Getting Time Back"
+FIND:    label:"Burden Reduction Is Measured."
+REPLACE: label:"The Relief Is on Record"
+FIND:    label:"Retention Impact Is Being Tracked."
+REPLACE: label:"Retention Is Part of the Story"
+FIND:    label:"Labor Costs Are Reflecting the Difference."
+REPLACE: label:"The Savings Are Showing Up"
+═══════════════════════════════════════════════════════════════
+SECTION 5 — _8t OBJECT: QUALITY level labels only (key: "risk")
+═══════════════════════════════════════════════════════════════
+FIND:    label:"Documentation Quality Has Improved."
+REPLACE: label:"The Notes Are Better. No One's Connecting It Yet."
+FIND:    label:"Documentation Quality Is Being Tracked."
+REPLACE: label:"Quality Is Being Monitored"
+FIND:    label:"Documentation Quality Is Driving Downstream Improvement."
+REPLACE: label:"The Signal Is Reaching Downstream Teams"
+FIND:    label:"Documentation Is a Governed Strategic Asset."
+REPLACE: label:"It's Built Into How We Run"
+═══════════════════════════════════════════════════════════════
+IMPLEMENTATION NOTES
+═══════════════════════════════════════════════════════════════
+1. Change ONLY the label strings listed. descriptions, framingQuestions, 
+   unlockTeasers, currentStateLabels, nextLevelUnlock — all untouched.
+2. Note: several old labels end with a period. The replacements do not. 
+   Match the old string exactly including its trailing period where present.
+3. The O8t object is a single object literal — replace it as one complete 
+   find/replace to avoid partial matches.
+4. After changes: verify in Assess → Ambient AI → Four Lenses that all 
+   16 level card labels and all sub-labels under the progress circles show 
+   the new text. Nothing else should have changed.
