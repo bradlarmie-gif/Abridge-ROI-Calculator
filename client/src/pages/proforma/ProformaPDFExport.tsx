@@ -24,8 +24,7 @@ import {
   groupByQuarter,
   calculateProformaSummary,
   getYearlySummary,
-  buildAnnualIRRCashFlows,
-  calculateAnnualIRR,
+  calculateIRR,
   getContractStartDate,
 } from "@/lib/proformaCalculations";
 
@@ -154,9 +153,8 @@ function fmt(n: number) {
   return `$${Math.round(n).toLocaleString()}`;
 }
 
-function fmtPct(n: number, cap = 200) {
+function fmtPct(n: number) {
   const val = Math.round(n * 100);
-  if (val > cap) return `${cap}%+`;
   return `${val}%`;
 }
 
@@ -857,7 +855,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR on annual net cash flows {"\u2014"} Period 0 = implementation fees, subsequent = annual value minus subscription.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""} Capped at 200%.
+                Value-to-Cost: total value / total cost. IRR on monthly net cash flows {"\u2014"} Period 0 = total investment, subsequent = monthly gross value inflows. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
               </Text>
             </View>
           </View>
@@ -942,18 +940,14 @@ export async function generateProformaPDF(
 
   const buildScaledIRR = (factor: number) => {
     const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-    const contractYears = Math.ceil(config.contractTermMonths / 12);
-    const yearBuckets: number[] = [];
-    for (let y = 0; y < contractYears; y++) {
-      const startM = y * 12 + 1;
-      const endM = (y + 1) * 12;
-      const yearRows = cashFlows.filter(r => r.period >= startM && r.period <= endM);
-      const yearGrossValue = yearRows.reduce((s, r) => s + r.totalValue, 0);
-      const yearSubscription = yearRows.reduce((s, r) => s + r.investment, 0);
-      yearBuckets.push(yearGrossValue * factor - yearSubscription);
-    }
-    const scaledFlows = totalImplFees > 0 ? [-totalImplFees, ...yearBuckets] : yearBuckets;
-    return calculateAnnualIRR(scaledFlows);
+    const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
+    const totalCost = totalImplFees + totalSubscription;
+    if (totalCost <= 0) return { annualizedRate: 0, method: "irr" as const, isValid: false };
+    const scaledFlows = [-totalCost, ...cashFlows.map(r => {
+      const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
+      return isFinite(gross) ? gross : 0;
+    })];
+    return calculateIRR(scaledFlows);
   };
   const consResult = buildScaledIRR(0.7);
   const optResult = buildScaledIRR(1.3);

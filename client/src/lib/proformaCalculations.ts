@@ -786,8 +786,8 @@ export function calculateProformaSummary(
     }
   }
 
-  const annualIrrCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
-  const irrResult = calculateAnnualIRR(annualIrrCF);
+  const monthlyIrrCF = buildIRRCashFlows(settings, config, cashFlows);
+  const irrResult = calculateIRR(monthlyIrrCF);
 
   const termValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);

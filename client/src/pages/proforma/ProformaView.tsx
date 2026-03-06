@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
-import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateAnnualIRR, getYearlySummary, buildAnnualIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, calculateIRR, getYearlySummary, buildIRRCashFlows, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -78,9 +78,8 @@ function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
   return unique.join("; ");
 }
 
-function fmtPct(n: number, cap = 200) {
+function fmtPct(n: number) {
   const val = Math.round(n * 100);
-  if (val > cap) return `${cap}%+`;
   return `${val}%`;
 }
 
@@ -229,18 +228,15 @@ export default function ProformaView({
         }
       }
 
-      const contractYears = Math.ceil(config.contractTermMonths / 12);
-      const yearBuckets: number[] = [];
-      for (let y = 0; y < contractYears; y++) {
-        const startM = y * 12 + 1;
-        const endM = (y + 1) * 12;
-        const yearRows = cashFlows.filter(r => r.period >= startM && r.period <= endM);
-        const yearGrossValue = yearRows.reduce((s, r) => s + r.totalValue, 0);
-        const yearSubscription = yearRows.reduce((s, r) => s + r.investment, 0);
-        yearBuckets.push(yearGrossValue * factor - yearSubscription);
-      }
-      const scaledIRRFlows = totalImplFees > 0 ? [-totalImplFees, ...yearBuckets] : yearBuckets;
-      const scaledIRR = calculateAnnualIRR(scaledIRRFlows);
+      const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
+      const totalCost = totalImplFees + totalSubscription;
+      const scaledIRRFlows = totalCost > 0
+        ? [-totalCost, ...cashFlows.map(r => {
+            const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
+            return isFinite(gross) ? gross : 0;
+          })]
+        : [0];
+      const scaledIRR = calculateIRR(scaledIRRFlows);
 
       return {
         annualValue: scaledAnnual,
@@ -1524,7 +1520,7 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on annual net cash flows — each period represents gross value minus subscription cost for that year. Period 0 includes implementation fees only (when applicable). Year 1 includes the implementation ramp during which no value accrues. Capped at 200% for presentation credibility. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on monthly net cash flows — Period 0 represents total investment (implementation fees plus subscription), followed by monthly gross value inflows. Annualized as (1 + monthly rate)^12 − 1. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
