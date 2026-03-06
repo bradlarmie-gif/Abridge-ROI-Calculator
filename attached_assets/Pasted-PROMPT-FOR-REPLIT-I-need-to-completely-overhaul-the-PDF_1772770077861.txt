@@ -1,0 +1,175 @@
+PROMPT FOR REPLIT:
+I need to completely overhaul the PDF export for the Measure path. Keep the same cover page design and Abridge branding, but make the document significantly more robust, narrative-driven, and defensible for EBR/QBR use. This PDF needs to feel like a trusted partner helping quantify impact — not a vendor declaring ROI numbers. The tone should be collaborative, transparent about limitations, and bring the reader on a journey.
+PDF STRUCTURE (keep existing cover page design, expand everything after it)
+PAGE 1: COVER PAGE (keep as-is)
+
+Abridge branding
+"Value Story" title
+Organization name
+Date generated
+Keep it clean and premium
+
+PAGE 2: YOUR PARTNERSHIP AT A GLANCE
+This is a new narrative intro page. Tone: collaborative, not sales-y.
+Header: "Understanding Your Abridge Impact"
+Opening paragraph (narrative, not bullet points):
+Something like: "Over the past [X months], [Organization Name] has partnered with Abridge across [X] providers, representing [utilization rate]% of your [total providers]-provider organization. During this period, [adopted encounters] encounters were documented with Abridge assistance. This report explores what we can observe from that experience — where the data is strong, where it suggests opportunity, and where your finance and operations teams can dig deeper."
+Key context box:
+
+Providers on Abridge: [X] of [total]
+Months observed: [X]
+Encounters with Abridge: [adopted encounters]
+Adoption rate: [X]%
+Important framing paragraph:
+"The estimates in this report are modeled from the data your team provided and Abridge's deployment experience across similar organizations. They are not audited financial projections. We present ranges rather than point estimates, clearly label our assumptions, and distinguish between directly measurable outcomes and modeled values. Our goal is to give your leadership a credible starting point for internal ROI conversations — not to replace your finance team's analysis."
+This paragraph is CRITICAL. It builds trust by being transparent. Skeptics will read this and think "okay, these people are being honest with me."
+
+PAGE 3: WHAT WE OBSERVED — TIME & EFFICIENCY
+Narrative format with supporting data.
+Header: "What Changed in Documentation Time"
+Narrative paragraph:
+"Before Abridge, your providers spent an average of [X] minutes per encounter on documentation. With Abridge, that dropped to [X] minutes — a [X]-minute reduction per note. Across [adopted encounters] Abridge-documented encounters, that translates to approximately [hours saved] hours of documentation time returned to your providers over [X] months."
+Visual: Before/After bar chart (same as web app)
+Per-provider context:
+"For each of your [X] providers on Abridge, that's roughly [per-provider hours] hours over this period — time that was previously spent in notes, now available for patient care, earlier departures, or reduced weekend catch-up."
+Additional metrics in clean cards:
+
+Same-Day Closure: [before]% → [after]% | "+[X] percentage points"
+
+Context: "A higher same-day closure rate means fewer open notes carrying over, reducing compliance risk and cognitive load."
+
+
+Days to Close: [before] → [after]
+
+Context: "Faster note completion improves billing cycle time and reduces documentation backlog."
+
+
+After-Hours Documentation: [before] → [after] hrs/day
+
+Context: "This is time your providers are getting back in their personal lives — evenings, weekends, time with family."
+
+
+
+PAGE 4: WHAT WE OBSERVED — DOCUMENTATION QUALITY
+Header: "What Changed in Clinical Capture"
+Narrative paragraph:
+"Documentation quality isn't just about speed — it's about capturing the clinical complexity that actually occurred. Your providers' average wRVU per encounter moved from [before] to [after], a [X]% increase. While multiple factors influence coding patterns, this shift is consistent with what we observe when AI-assisted documentation captures clinical detail that might otherwise be lost in manual note-writing."
+Visual: wRVU before/after comparison
+Revenue modeling paragraph (carefully framed):
+"If we attribute [low]–[high]% of this wRVU lift to improved documentation capture (our default assumption range based on published literature and deployment data), the [adopted encounters] Abridge-documented encounters represent an estimated [low $]–[high $] in additional revenue capture annually."
+Assumption transparency box:
+"Attribution note: Not all coding improvement can be attributed to Abridge. Provider behavior changes, coding education, payer mix shifts, and other factors also play a role. The [low]–[high]% range reflects our conservative estimate of Abridge's contribution. Your coding and compliance teams can refine this based on internal analysis."
+This box is ESSENTIAL. It's what makes this defensible in a QBR. You're not claiming credit for everything — you're saying "here's what we think is ours, and here's how you can verify."
+PAGE 5: ESTIMATING YOUR VALUE
+Header: "Putting the Pieces Together"
+Opening narrative:
+"Translating time savings into organizational value requires assumptions about how that time gets used. Rather than assigning a single dollar figure, we break this into what's directly measurable and what represents organizational potential."
+Section A: Measurable Value
+These are the numbers you can actually defend:
+
+Patient Capacity Opportunity: $[X]
+
+"[X]% of the [hours saved] hours saved were allocated to patient capacity (per your model settings). At [visit duration] minutes per visit, that's approximately [X] additional patient visits. At $[X] per visit, this represents $[X] in potential additional revenue."
+"Whether this capacity is realized depends on scheduling, demand, and operational decisions — but the time is available."
+
+
+Documentation Quality Lift: [X]–[X]–
+[X]–[X]
+
+
+(As described on Page 4)
+Section B: Non-Dollar Impact
+These matter but shouldn't be fake-dollarized:
+
+
+Time Returned to Providers: [X] hours
+
+"[X] hours of documentation time were returned to your [X] providers. This time has real organizational value — but how it's deployed varies. Some organizations see it in throughput. Others see it in provider satisfaction scores, reduced turnover intent, or simply better work-life balance."
+
+
+Provider Wellbeing Signal: [X] hrs/wk back per provider
+
+"Your providers are reclaiming approximately [X] hours per week of personal time previously spent on after-hours documentation. In a national environment where [brief context about burnout/turnover], this is a meaningful retention signal."
+"Industry benchmark: Replacing a single physician costs $300K–$500K in recruitment, onboarding, and lost revenue. While we don't claim Abridge alone prevents turnover, reduced documentation burden is consistently cited as a top factor in provider satisfaction."
+Estimated Annual Value Summary Box:
+
+
+Patient Capacity: $[X]
+Documentation Quality: [X]–[X]–
+[X]–[X]
+
+Total Measurable Value: [X]–[X]–
+[X]–[X]
+
+Time Returned: [X] hours (not dollarized)
+Wellbeing: [X] hrs/wk back per provider
+Per provider: ~[X]/year∣Perencounter: [X]/year | Per encounter: ~
+[X]/year∣Perencounter: [X]
+
+
+PAGE 6: THE OPPORTUNITY AHEAD
+Header: "Where This Could Go"
+Narrative opening:
+"Your current results reflect [X]% adoption across [X] of [total] providers. This is a snapshot of early impact — not the ceiling."
+Deepen section:
+"If adoption among your current [X] Abridge providers increased from [current]% to 80% of their encounters, the model suggests an additional $[X] in annual value — with no additional licensing or implementation investment. This is the lowest-friction growth lever available."
+Expand section:"Extending Abridge to all [total] providers, at current per-provider economics, would represent an estimated [X]–[X]–
+[X]–[X] annually. Your [remaining] providers not yet on Abridge represent the largest untapped opportunity."
+Combined opportunity:"At full deployment (200 providers, 80% adoption): [X]–[X]–
+[X]–[X] estimated annual value."
+Closing paragraph:
+"These projections assume consistent per-provider economics as you scale. Actual results will depend on specialty mix, encounter volume, workflow integration, and organizational support for adoption. We recommend revisiting these estimates quarterly as your deployment matures."
+PAGE 7: METHODOLOGY & ASSUMPTIONS (full transparency page)
+Header: "How We Built These Estimates"
+This page is what makes the document defensible. List EVERY assumption clearly:
+Data Sources:
+
+"Provider counts, encounter volumes, and before/after metrics were provided by [Organization Name] for this analysis."
+"Model defaults are informed by Abridge deployment data across [X]+ health systems."
+Key Assumptions Table:
+| Assumption | Value Used | Source |
+|---|---|---|
+| Provider hourly rate | $150 | Organization input / model default |
+| Visit duration | 30 min | Model default |
+| Revenue per visit | $200 | Model default |
+| wRVU conversion | $33 | CMS national average |
+| Attribution range | [X]–[X]% | Abridge deployment data |
+| Adoption target (Deepen) | 80% | Model default |
+| Time allocation: Capacity | [X]% | Organization input / model default |
+| Time allocation: Wellbeing | [X]% | Organization input / model default |
+Calculation methodology (brief):
+Time savings: [X] min saved × [adopted encounters] Abridge encounters = [X] hours
+Patient capacity: [X]% of hours saved ÷ [visit duration] min × $[revenue/visit]
+wRVU lift: +[X] wRVU × [adopted encounters] encounters × $[conversion] × [low-high]% attribution
+Expansion: Per-provider economics × provider count × adoption rate
+Limitations paragraph:
+"This analysis is a modeled estimate, not an audited financial projection. It does not account for payer mix variation, specialty-specific differences in documentation patterns, seasonal volume fluctuations, or concurrent workflow changes. We recommend validating key metrics (particularly wRVU lift and same-day closure rates) with your revenue cycle and compliance teams. Abridge is committed to partnering with your team to refine these estimates over time."
+
+PAGE 8: FOOTER/CLOSING PAGE
+
+Abridge logo
+"Prepared for [Organization Name]"
+Date
+"Questions about this analysis? Contact your Abridge partnership team."
+Small legal disclaimer
+
+
+TONE GUIDELINES FOR ALL COPY:
+
+Use "we observe" not "we deliver"
+Use "the data suggests" not "Abridge saves"
+Use "estimated" and "approximately" — never state dollar figures as facts
+Use "your providers" and "your organization" — make them the hero
+Frame Abridge as the partner helping them see the picture, not the vendor claiming credit
+Acknowledge limitations before the reader has to ask — this builds trust
+Ranges over point estimates wherever possible
+Every dollar figure should be traceable back to an assumption on the methodology page
+
+DESIGN NOTES:
+
+Keep existing cover page branding and color scheme
+Use the same chart/visualization styles as the web app
+Generous white space — this should feel executive-ready, not crammed
+Callout boxes for assumption transparency (light gray background, subtle border)
+Page numbers and organization name in footer of every page
+"Confidential — Prepared for [Org Name]" watermark or header
