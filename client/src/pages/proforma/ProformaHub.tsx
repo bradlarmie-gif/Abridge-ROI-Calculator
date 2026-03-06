@@ -4,9 +4,9 @@ import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, Bed
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario, QuarterlyProviders, QuarterlyPricing } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
-import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, annualToQuarterlyProviders, annualToQuarterlyPricing, quarterlyToAnnualProviders, quarterlyToAnnualPricing } from "@/lib/proformaCalculations";
 
 interface ProformaHubProps {
   settings: ProformaSettingSnapshot[];
@@ -349,7 +349,84 @@ export default function ProformaHub({
                                 </div>
                               )}
                               <div>
-                                <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{unitLabel} by Year</p>
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px]">{unitLabel} by {config.granularity === "quarterly" ? "Quarter" : "Year"}</p>
+                                  <div className="flex items-center bg-[#F5F0EB] rounded-lg p-0.5" data-testid={`toggle-granularity-${setting.careSetting}`}>
+                                    <button
+                                      onClick={() => {
+                                        if (config.granularity === "quarterly") {
+                                          const qp = setting.quarterlyProviders;
+                                          if (qp) {
+                                            const annual = quarterlyToAnnualProviders(qp);
+                                            onUpdateSetting(setting.id, { yearlyProviders: annual, providerCount: annual.year1, fullScaleProviders: annual.year3, quarterlyProviders: undefined });
+                                          }
+                                        }
+                                        onConfigChange({ ...config, granularity: "annual" });
+                                      }}
+                                      className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${config.granularity !== "quarterly" ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E]"}`}
+                                    >
+                                      Annual
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (config.granularity !== "quarterly") {
+                                          const annual = yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders };
+                                          if (!setting.quarterlyProviders) {
+                                            onUpdateSetting(setting.id, { quarterlyProviders: annualToQuarterlyProviders(annual) });
+                                          }
+                                          const yprice = setting.yearlyPricing || { year1: setting.costPerUnit, year2: setting.costPerUnit, year3: setting.costPerUnit };
+                                          if (!setting.quarterlyPricing) {
+                                            onUpdateSetting(setting.id, { quarterlyPricing: annualToQuarterlyPricing(yprice) });
+                                          }
+                                        }
+                                        onConfigChange({ ...config, granularity: "quarterly" });
+                                      }}
+                                      className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${config.granularity === "quarterly" ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E]"}`}
+                                    >
+                                      Quarterly
+                                    </button>
+                                  </div>
+                                </div>
+                                {config.granularity === "quarterly" ? (() => {
+                                  const qp = setting.quarterlyProviders || annualToQuarterlyProviders(yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders });
+                                  const qKeys: (keyof QuarterlyProviders)[][] = [
+                                    ["q1","q2","q3","q4"],
+                                    ["q5","q6","q7","q8"],
+                                    ["q9","q10","q11","q12"],
+                                  ];
+                                  return (
+                                    <div className="space-y-2">
+                                      {qKeys.map((row, yi) => (
+                                        <div key={yi}>
+                                          <p className="text-[10px] text-[#A39888] mb-1">Year {yi + 1}</p>
+                                          <div className="grid grid-cols-4 gap-1.5">
+                                            {row.map((qk, qi) => (
+                                              <div key={qk}>
+                                                <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Q{yi * 4 + qi + 1}</label>
+                                                <FormattedNumberInput
+                                                  value={qp[qk]}
+                                                  onChange={(v) => {
+                                                    const val = Math.max(v, 1);
+                                                    const updated = { ...qp, [qk]: val };
+                                                    const annual = quarterlyToAnnualProviders(updated);
+                                                    onUpdateSetting(setting.id, {
+                                                      quarterlyProviders: updated,
+                                                      yearlyProviders: annual,
+                                                      providerCount: annual.year1,
+                                                      fullScaleProviders: annual.year3,
+                                                    });
+                                                  }}
+                                                  className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded-lg px-1.5"
+                                                  data-testid={`input-${qk}-prov-${setting.careSetting}`}
+                                                />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })() : (
                                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Year 1</label>
@@ -364,6 +441,7 @@ export default function ProformaHub({
                                               year3: yp?.year3 ?? setting.fullScaleProviders,
                                             },
                                             providerCount: val,
+                                            quarterlyProviders: undefined,
                                           });
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
@@ -382,6 +460,7 @@ export default function ProformaHub({
                                               year2: val,
                                               year3: yp?.year3 ?? setting.fullScaleProviders,
                                             },
+                                            quarterlyProviders: undefined,
                                           });
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
@@ -401,6 +480,7 @@ export default function ProformaHub({
                                               year3: val,
                                             },
                                             fullScaleProviders: val,
+                                            quarterlyProviders: undefined,
                                           });
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
@@ -408,6 +488,7 @@ export default function ProformaHub({
                                       />
                                     </div>
                                   </div>
+                                )}
                               </div>
 
                               <div className="grid grid-cols-2 gap-3">
@@ -445,12 +526,67 @@ export default function ProformaHub({
                                 const updateYearPrice = (yearKey: "year1" | "year2" | "year3", v: number) => {
                                   const val = Math.max(v, 0);
                                   const updated = { ...yPricing, [yearKey]: val };
-                                  const legacyUpdate: Partial<typeof setting> = { yearlyPricing: updated };
+                                  const legacyUpdate: Partial<typeof setting> = { yearlyPricing: updated, quarterlyPricing: undefined };
                                   if (pricingModel === "annualFlat") legacyUpdate.annualLicenseFee = updated.year1;
                                   else if (pricingModel === "perEncounter") legacyUpdate.costPerEncounter = updated.year1;
                                   else legacyUpdate.costPerUnit = updated.year1;
                                   onUpdateSetting(setting.id, legacyUpdate);
                                 };
+
+                                if (config.granularity === "quarterly") {
+                                  const qPricing = setting.quarterlyPricing || annualToQuarterlyPricing(yPricing);
+                                  const qProviders = setting.quarterlyProviders || annualToQuarterlyProviders(yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders });
+                                  const qKeys: (keyof QuarterlyPricing)[][] = [
+                                    ["q1","q2","q3","q4"],
+                                    ["q5","q6","q7","q8"],
+                                    ["q9","q10","q11","q12"],
+                                  ];
+                                  return (
+                                    <div>
+                                      <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">{priceLabel} by Quarter</p>
+                                      <div className="space-y-2">
+                                        {qKeys.map((row, yi) => (
+                                          <div key={yi}>
+                                            <p className="text-[10px] text-[#A39888] mb-1">Year {yi + 1}</p>
+                                            <div className="grid grid-cols-4 gap-1.5">
+                                              {row.map((qk, qi) => {
+                                                const qIdx = yi * 4 + qi;
+                                                const provKey = `q${qIdx + 1}` as keyof QuarterlyProviders;
+                                                const provCount = qProviders[provKey];
+                                                const price = qPricing[qk];
+                                                const quarterBill = pricingModel === "perUnit" ? provCount * price * 3
+                                                  : pricingModel === "annualFlat" ? price / 4
+                                                  : price * provCount * 3;
+                                                return (
+                                                  <div key={qk}>
+                                                    <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Q{qIdx + 1}</label>
+                                                    <FormattedNumberInput
+                                                      value={price}
+                                                      onChange={(v) => {
+                                                        const val = Math.max(v, 0);
+                                                        const updated = { ...qPricing, [qk]: val };
+                                                        const annual = quarterlyToAnnualPricing(updated);
+                                                        const legacyUpdate: Partial<typeof setting> = { quarterlyPricing: updated, yearlyPricing: annual };
+                                                        if (pricingModel === "annualFlat") legacyUpdate.annualLicenseFee = annual.year1;
+                                                        else if (pricingModel === "perEncounter") legacyUpdate.costPerEncounter = annual.year1;
+                                                        else legacyUpdate.costPerUnit = annual.year1;
+                                                        onUpdateSetting(setting.id, legacyUpdate);
+                                                      }}
+                                                      prefix="$"
+                                                      className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded-lg px-1.5"
+                                                      data-testid={`input-price-${qk}-${setting.careSetting}`}
+                                                    />
+                                                    <p className="text-[9px] text-[#A39888] mt-0.5 text-right">{fmt(quarterBill)}/qtr</p>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                }
 
                                 return (
                                   <div>

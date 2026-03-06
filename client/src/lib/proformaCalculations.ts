@@ -4,8 +4,61 @@ import type {
   ProformaCashFlowRow,
   ProformaSummary,
   DriverOnset,
+  QuarterlyProviders,
+  QuarterlyPricing,
+  YearlyProviders,
+  YearlyPricing,
 } from "@/pages/proforma/proformaTypes";
 import { ONSET_DELAY_MONTHS } from "@/pages/proforma/proformaTypes";
+
+const QUARTERLY_KEYS: (keyof QuarterlyProviders)[] = [
+  "q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12",
+];
+
+export function annualToQuarterlyProviders(yp: YearlyProviders): QuarterlyProviders {
+  const y1 = yp.year1;
+  const y2 = yp.year2;
+  const y3 = yp.year3;
+  return {
+    q1: Math.round(y1 * 0.7),
+    q2: Math.round(y1 * 0.85),
+    q3: Math.round(y1 * 0.95),
+    q4: y1,
+    q5: Math.round(y1 + (y2 - y1) * 0.25),
+    q6: Math.round(y1 + (y2 - y1) * 0.5),
+    q7: Math.round(y1 + (y2 - y1) * 0.75),
+    q8: y2,
+    q9: Math.round(y2 + (y3 - y2) * 0.25),
+    q10: Math.round(y2 + (y3 - y2) * 0.5),
+    q11: Math.round(y2 + (y3 - y2) * 0.75),
+    q12: y3,
+  };
+}
+
+export function quarterlyToAnnualProviders(qp: QuarterlyProviders): YearlyProviders {
+  return { year1: qp.q4, year2: qp.q8, year3: qp.q12 };
+}
+
+export function annualToQuarterlyPricing(yp: YearlyPricing): QuarterlyPricing {
+  return {
+    q1: yp.year1, q2: yp.year1, q3: yp.year1, q4: yp.year1,
+    q5: yp.year2, q6: yp.year2, q7: yp.year2, q8: yp.year2,
+    q9: yp.year3, q10: yp.year3, q11: yp.year3, q12: yp.year3,
+  };
+}
+
+export function quarterlyToAnnualPricing(qp: QuarterlyPricing): YearlyPricing {
+  return { year1: qp.q4, year2: qp.q8, year3: qp.q12 };
+}
+
+function getQuarterlyValue<T extends QuarterlyProviders | QuarterlyPricing>(
+  qData: T,
+  monthsSinceGoLive: number
+): number {
+  const qIdx = Math.min(Math.floor(monthsSinceGoLive / 3), 11);
+  const key = QUARTERLY_KEYS[qIdx];
+  return qData[key] as number;
+}
 
 function getRetentionPhasingMultiplier(
   month: number,
@@ -75,10 +128,15 @@ function getProviderExpansion(
   _contractMonths: number,
   pilotProviders: number,
   fullScaleProviders: number,
-  yearlyProviders?: { year1: number; year2: number; year3: number }
+  yearlyProviders?: { year1: number; year2: number; year3: number },
+  quarterlyProviders?: QuarterlyProviders
 ): number {
   const monthsSinceGoLive = month - goLiveMonth;
   if (monthsSinceGoLive < 0) return 0;
+
+  if (quarterlyProviders) {
+    return getQuarterlyValue(quarterlyProviders, monthsSinceGoLive);
+  }
 
   if (yearlyProviders) {
     const y1 = yearlyProviders.year1;
@@ -109,10 +167,15 @@ export function getLicensedProviders(
   contractMonths: number,
   pilotProviders: number,
   fullScaleProviders: number,
-  yearlyProviders?: { year1: number; year2: number; year3: number }
+  yearlyProviders?: { year1: number; year2: number; year3: number },
+  quarterlyProviders?: QuarterlyProviders
 ): number {
   const monthsSinceGoLive = month - goLiveMonth;
   if (monthsSinceGoLive < 0) return 0;
+
+  if (quarterlyProviders) {
+    return getQuarterlyValue(quarterlyProviders, monthsSinceGoLive);
+  }
 
   if (yearlyProviders) {
     const y3 = contractMonths >= 36 ? yearlyProviders.year3 : yearlyProviders.year2;
@@ -192,7 +255,8 @@ export function buildMonthlyCashFlows(
       const currentProviders = getProviderExpansion(
         m, setting.goLiveMonth, months,
         setting.providerCount, fullScale,
-        setting.yearlyProviders
+        setting.yearlyProviders,
+        setting.quarterlyProviders
       );
       const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
         ? config.nursingYearlyUtilization
@@ -256,27 +320,32 @@ export function buildMonthlyCashFlows(
       const licensedProviders = getLicensedProviders(
         m, setting.goLiveMonth, months,
         setting.providerCount, fullScale,
-        setting.yearlyProviders
+        setting.yearlyProviders,
+        setting.quarterlyProviders
       );
 
       const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
-      const yearlyPrice = setting.yearlyPricing
+      const quarterlyPrice = setting.quarterlyPricing
+        ? getQuarterlyValue(setting.quarterlyPricing, monthsSinceGoLive)
+        : undefined;
+      const yearlyPrice = quarterlyPrice === undefined && setting.yearlyPricing
         ? [setting.yearlyPricing.year1, setting.yearlyPricing.year2, setting.yearlyPricing.year3][yearIndex]
         : undefined;
+      const resolvedPrice = quarterlyPrice ?? yearlyPrice;
 
       let monthlyInvestment: number;
       if (setting.pricingModel === "annualFlat") {
-        const price = yearlyPrice ?? (setting.annualLicenseFee || 0);
+        const price = resolvedPrice ?? (setting.annualLicenseFee || 0);
         monthlyInvestment = price / 12;
       } else if (setting.pricingModel === "perEncounter") {
-        const price = yearlyPrice ?? (setting.costPerEncounter || 0);
+        const price = resolvedPrice ?? (setting.costPerEncounter || 0);
         const encountersPerProvider = setting.providerCount > 0
           ? setting.encounters / setting.providerCount
           : 0;
         const monthlyEncounters = licensedProviders * encountersPerProvider * (currentUtil / 100) / 12;
         monthlyInvestment = price * monthlyEncounters;
       } else {
-        const price = yearlyPrice ?? setting.costPerUnit;
+        const price = resolvedPrice ?? setting.costPerUnit;
         monthlyInvestment = price * licensedProviders;
       }
 

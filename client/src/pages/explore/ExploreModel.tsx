@@ -315,6 +315,24 @@ export default function ExploreModel({
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
 
+    const hasDocDrivers = drivers.some(d => d.category === "documentation" && d.value > 0);
+    if (!hasDocDrivers && docValue === 0 && totalHoursSaved > 0) {
+      const docAllocPct = isOutpatientSetting ? timeDriverInputs.opAllocDocQualityPercent
+        : isED ? timeDriverInputs.edAllocDocQualityPercent
+        : isInpatient ? timeDriverInputs.ipAllocQualityPercent
+        : 0;
+      if (docAllocPct > 0) {
+        const docQualityHours = totalHoursSaved * (docAllocPct / 100);
+        const providerValuePerHour = state.annualEncounters > 0 && state.numberOfProviders > 0
+          ? (timeValue / (totalHoursSaved || 1))
+          : 150;
+        const impliedDocValue = Math.round(docQualityHours * Math.max(providerValuePerHour, 50));
+        if (impliedDocValue > 0) {
+          drivers.push({ id: "docQuality", name: "Documentation Quality", value: impliedDocValue, category: "documentation", onset: "immediate" as const });
+        }
+      }
+    }
+
     const retentionValue = isNursing
       ? nursingRetentionValue + nursingAgencyValue
       : clinicianRetentionValue;
@@ -339,9 +357,9 @@ export default function ExploreModel({
       },
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
-      annualValue: totalValue,
+      annualValue: totalValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
       timeValue,
-      docValue,
+      docValue: docValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
       retentionValue,
       totalHoursSaved,
       drivers,

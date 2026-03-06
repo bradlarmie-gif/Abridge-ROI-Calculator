@@ -1,0 +1,69 @@
+Three focused changes: Fix IRR math, show utilization ramp visually by quarter, and connect rollout speed to time-to-value. No new sections or clutter — refine what exists.
+1. Fix IRR Cash Flow Structure (CRITICAL — must be mathematically correct)
+The current IRR puts all investment in Period 0 then shows only value inflows. This is wrong — Abridge is a subscription, not a capital expenditure.
+Correct implementation:
+For each month (1 through 36):
+  monthly_cost = licensed_providers_that_month × price_per_provider_per_month
+  monthly_value = actively_documenting_providers_that_month × per_provider_monthly_value (based on utilization, time saved, value drivers, onset delays)
+  monthly_net_cash_flow[month] = monthly_value - monthly_cost
+
+Month 0 cash flow = implementation fee only (if any). If no impl fee, Month 0 = $0.
+Solve for monthly rate r where: Σ (monthly_net_cash_flow[t] / (1+r)^t) = 0 for t = 0 to 36
+Annualize: Annual IRR = (1 + r)^12 - 1
+Keep Newton-Raphson with bisection fallback. Use MIRR only if cash flows alternate sign multiple times.
+This will produce a lower, more believable IRR because it properly reflects that costs are spread over time, not front-loaded.
+Update methodology text to:
+"IRR: Solved on monthly net cash flows (monthly value minus monthly subscription cost) over the contract term. Accounts for implementation ramp, utilization growth, and provider expansion timing. Annualized from the monthly rate."
+Remove the current language about "Period 0 represents total investment."
+
+
+2. Show Utilization Ramp in the Quarterly View
+When the user switches to Quarterly mode, add a utilization row alongside the provider rollout and pricing rows:
+Q1Q2Q3Q42026 Providers501001502002026 Utilization30%45%50%55%2026 Billing$12.8K$25.5K$38.3K$51.0KQ1Q2Q3Q4---------------2027 Providers2502803003202027 Utilization60%65%70%75%2027 Billing$63.8K$71.4K$76.5K$81.6K
+
+Utilization cells are editable — the user can model a slower or faster adoption curve
+Default: auto-interpolate from the annual utilization targets (Y1: 55%, Y2: 75%, Y3: 85%) across their 4 quarters, starting lower and building up
+The utilization directly drives the "Actively Documenting" number: Active Providers = Licensed Providers × Utilization
+This means: Quarterly Value = Active Providers × value per provider per quarter (accounting for value driver onset delays)
+The billing row shows what the customer pays that quarter (based on licensed providers × price, NOT utilization — you pay for all seats)
+Keep the quarterly billing row as read-only — it's calculated from providers × price. Make it visually distinct (gray background or lighter text) so it's clearly an output, not an input.
+The key insight this shows the customer: "You're paying for 200 providers from Q1, but value ramps as utilization grows from 30% to 55%. The faster you drive adoption, the faster you hit payback."
+
+
+3. Connect Rollout Speed to Time-to-Value in the Chart
+Update the existing proforma chart (the one showing value over time) to:
+
+When in Quarterly mode, show quarterly data points instead of annual
+Plot TWO lines on the same chart:
+
+Cumulative Value (solid line, brand color)
+Cumulative Investment (solid line, gray)
+
+
+The intersection point is the payback period — where cumulative value crosses above cumulative investment
+Label that intersection: "Payback: Month X"
+Below the chart, show a simple insight line: "At your planned rollout pace, you reach payback in Month X. Accelerating to full deployment by Q2 would move payback to Month Y."
+
+Only show the second sentence if the ramp is longer than 2 quarters
+Calculate the accelerated payback by modeling what happens if all providers were live by Q2 instead of the configured schedule
+This is the "time to value" story — it's not a new section, it's context on the existing chart
+
+
+When in Annual mode, keep the existing annual bar chart but still show the cumulative crossover point
+Do NOT add a separate "time to value" section or widget. This is just making the existing chart smarter.
+
+
+4. Fix Simple ROI description (quick fix)
+Current: "1157% means you get back $12.57 for every $1 invested, net of the investment itself."
+This is wrong. $12.57 per $1 is Value-to-Cost (12.57x), not ROI.
+Fix to: "1157% means for every $1 of Abridge investment, you generate $11.57 in net value above the cost."
+5. DO NOT ADD:
+
+No "defensibility score" or "confidence indicator"
+No "Total Cost of Ownership" section with internal cost fields
+No additional methodology sections
+No new tabs, modals, or panels
+Keep the UX clean — we're refining existing elements, not adding new ones
+
+
+Priority: #1 (IRR fix) first — get the math right. Then #2 (utilization in quarterly view). Then #3 (chart upgrade). Then #4 (description fix).

@@ -22,6 +22,18 @@ export interface YearlyPricing {
   year3: number;
 }
 
+export interface QuarterlyProviders {
+  q1: number; q2: number; q3: number; q4: number;
+  q5: number; q6: number; q7: number; q8: number;
+  q9: number; q10: number; q11: number; q12: number;
+}
+
+export interface QuarterlyPricing {
+  q1: number; q2: number; q3: number; q4: number;
+  q5: number; q6: number; q7: number; q8: number;
+  q9: number; q10: number; q11: number; q12: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -50,6 +62,8 @@ export interface ProformaSettingSnapshot {
   yearlyEncounters?: { year1: number; year2: number; year3: number };
   retentionRate?: number;
   replacementCost?: number;
+  quarterlyProviders?: QuarterlyProviders;
+  quarterlyPricing?: QuarterlyPricing;
 }
 
 export interface RetentionPhasing {
@@ -75,6 +89,7 @@ export interface ProformaConfig {
   implementationRampMonths: number;
   yearlyUtilization: YearlyUtilization;
   nursingYearlyUtilization?: YearlyUtilization;
+  granularity?: "annual" | "quarterly";
 }
 
 export interface ProformaCashFlowRow {

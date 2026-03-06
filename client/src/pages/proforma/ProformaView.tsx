@@ -92,6 +92,14 @@ function fmtPct(n: number) {
   return `${val}%`;
 }
 
+function fmtIRR(irr: number, valid: boolean, method: "irr" | "mirr") {
+  if (!valid) return "N/A";
+  const pct = Math.round(irr * 100);
+  const label = method === "mirr" ? "MIRR" : "IRR";
+  if (pct > 500) return { display: ">500%", label };
+  return { display: `${pct}%`, label };
+}
+
 function contractTermLabel(months: number): string {
   return `${months / 12}-Year`;
 }
@@ -1078,6 +1086,40 @@ export default function ProformaView({
                       </div>
 
                       <div className="bg-[#F9F6F2] rounded-lg px-3 py-2.5">
+                        {config.granularity === "quarterly" && s.quarterlyPricing ? (() => {
+                          const qPr = s.quarterlyPricing;
+                          const qProv = s.quarterlyProviders;
+                          const qKeys: string[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
+                          const yearGroups = [qKeys.slice(0,4), qKeys.slice(4,8), qKeys.slice(8,12)];
+                          return (
+                            <>
+                              <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Quarterly Investment</p>
+                              {yearGroups.map((grp, yi) => {
+                                if (yi === 1 && !showY2) return null;
+                                if (yi === 2 && !showY3) return null;
+                                return (
+                                  <div key={yi} className="mb-1.5">
+                                    <p className="text-[10px] text-neutral-400 mb-0.5">Year {yi + 1}</p>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                      {grp.map((qk, qi) => {
+                                        const price = (qPr as any)[qk] || 0;
+                                        const prov = qProv ? (qProv as any)[qk] || yp[yi === 0 ? 'year1' : yi === 1 ? 'year2' : 'year3'] : yp[yi === 0 ? 'year1' : yi === 1 ? 'year2' : 'year3'];
+                                        const qCost = isFlat ? price / 4 : isEnc ? price * prov * 3 : price * prov * 3;
+                                        return (
+                                          <div key={qk}>
+                                            <p className="text-[10px] text-neutral-500">Q{yi * 4 + qi + 1}</p>
+                                            <p className="text-[11px] font-semibold text-neutral-800">{fmtFull(qCost)}</p>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </>
+                          );
+                        })() : (
+                        <>
                         <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
                         <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                           <div>
@@ -1095,6 +1137,8 @@ export default function ProformaView({
                             </div>
                           )}
                         </div>
+                        </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1324,7 +1368,7 @@ export default function ProformaView({
 
         {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
         <motion.div
-          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
+          className="grid grid-cols-2 min-[820px]:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -1339,10 +1383,21 @@ export default function ProformaView({
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
             <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
-            {hasInvestment && summary.irrValid && (
-              <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-1.5">{summary.irrMethod === "mirr" ? "MIRR" : "IRR"}: {fmtPct(summary.irr)}</p>
-            )}
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">(net value / investment)</p>
           </div>
+          {(() => {
+            const irrResult = fmtIRR(summary.irr, summary.irrValid, summary.irrMethod);
+            const irrDisplay = typeof irrResult === "string" ? irrResult : irrResult.display;
+            const irrLabel = typeof irrResult === "string" ? "" : irrResult.label;
+            return (
+              <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-irr">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
+                <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{irrLabel || "IRR"}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-neutral-900" data-testid="text-irr-panel">{hasInvestment ? irrDisplay : "N/A"}</p>
+                <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment && summary.irrValid ? "annualized return" : ""}</p>
+              </div>
+            );
+          })()}
           <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
             <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
@@ -1416,6 +1471,15 @@ export default function ProformaView({
                         <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
                         <p className={`text-sm sm:text-lg font-bold ${data.termNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
                           {fmt(data.termNet)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">{data.irrValid ? (data.irrMethod === "mirr" ? "MIRR" : "IRR") : "IRR"}</p>
+                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-irr-${scenario.key}`}>
+                          {(() => {
+                            const r = fmtIRR(data.irr, data.irrValid, data.irrMethod);
+                            return typeof r === "string" ? r : r.display;
+                          })()}
                         </p>
                       </div>
                     </div>
@@ -1616,6 +1680,7 @@ export default function ProformaView({
                       { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
                       { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
                       { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
+                      { label: "IRR", current: (() => { const r = fmtIRR(summary.irr, summary.irrValid, summary.irrMethod); return typeof r === "string" ? r : r.display; })(), values: scenarioSummaries.map(s => { const r = fmtIRR(s.summary.irr, s.summary.irrValid, s.summary.irrMethod); return typeof r === "string" ? r : r.display; }) },
                       { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
                       { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
                     ].map((row, ri) => (
