@@ -129,6 +129,7 @@ function getOnsetMultiplier(
   const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
 
   if (onset === "phased") {
+    if (monthsSinceGoLive < delayMonths) return 0;
     if (monthsSinceGoLive < 12) return phasing.year1Pct / 100;
     if (monthsSinceGoLive < 24) return phasing.year2Pct / 100;
     if (monthsSinceGoLive < 36) return phasing.year3Pct / 100;
@@ -139,10 +140,7 @@ function getOnsetMultiplier(
 
   if (onset === "delayed") {
     if (monthsSinceGoLive < delayMonths) return 0;
-    const monthsSinceOnset = monthsSinceGoLive - delayMonths;
-    const rampUpMonths = 3;
-    if (monthsSinceOnset >= rampUpMonths) return 1;
-    return monthsSinceOnset / rampUpMonths;
+    return 1;
   }
 
   if (monthsSinceGoLive === 0) return 0.5;
