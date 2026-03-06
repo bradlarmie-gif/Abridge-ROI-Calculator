@@ -1254,9 +1254,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1 sr-only">
-              Has your organization started connecting ambient documentation quality to any downstream workflow or team?
-            </label>
             <div className="flex flex-col gap-2">
               {[
                 { id: 'no', label: 'Not yet' },
@@ -1327,9 +1324,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3 sr-only">
-              How is your organization monitoring documentation quality?
-            </label>
             <div className="flex flex-col gap-2.5">
               {MONITORING_OPTIONS.map((opt) => (
                 <label
@@ -1451,9 +1445,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3 sr-only">
-              Which downstream workflows have been impacted by improved documentation?
-            </label>
             <div className="flex flex-col gap-2.5">
               {DOWNSTREAM_WORKFLOWS.map((wf, i) => {
                 const checked = isChecked('connectedWorkflows', i);
@@ -1560,9 +1551,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-black mb-3">
-            Where does it factor in?
-          </label>
           <div className="flex flex-col gap-2.5">
             {STRATEGIC_INTEGRATIONS.map((item, i) => {
               const checked = isChecked('strategicIntegrations', i);

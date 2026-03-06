@@ -123,7 +123,7 @@ function getNextLevelContent(
       base.lowEstimate = low;
       base.highEstimate = high;
     } else {
-      base.narrative = "You're at the highest maturity level. Continue deepening measurement and expanding across the organization.";
+      base.narrative = "Capacity is fully connected to operational decisions. The work here is deepening it — expanding the number of providers in the model, tightening the link between recovered time and financial outcomes, and keeping hiring plans informed by ambient data.";
     }
   } else if (domain === 'revenue') {
     if (level === 1) {

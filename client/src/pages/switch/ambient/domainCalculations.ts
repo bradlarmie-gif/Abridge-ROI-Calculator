@@ -156,7 +156,7 @@ export function computeCapacityFeedback(
       headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
       context: `Your organization has quantified ${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.\n\nOrganizations that bring this number to leadership with a plan attached move to deployment within a quarter. Without a destination, the hours stay invisible.`,
       formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'It becomes money at Level 3 — when the hours have somewhere to go.',
+      footnote: '',
       nextLevelTeaser: 'It becomes money at Level 3 — when the hours have somewhere to go.',
     };
   }
@@ -218,7 +218,7 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost`,
-      context: `At ${providers.toLocaleString()} providers, 1–2 avoided FTEs represents ${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost — fully loaded. That's the financial signature of ambient at maturity.`,
+      context: `At ${providers.toLocaleString()} providers, 1–2 avoided FTEs represents ${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost — fully loaded. That's what ambient looks like when it's actually changed how the organization operates.`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'This is the level where ambient stops being a tool and starts being infrastructure.',
@@ -262,7 +262,7 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${documentedEncounters.toLocaleString()} encounters. The revenue cycle hasn't looked.`,
-      context: `At this encounter volume, ambient is producing better documentation on every visit. Whether that translates to reimbursement depends entirely on whether anyone is looking.\n\nOrganizations that bring revenue cycle into the ambient conversation typically have a quantified number before their first contract renewal.`,
+      context: `Ambient is producing better documentation on every visit. Whether that translates to reimbursement depends entirely on whether anyone is looking.\n\nOrganizations that bring revenue cycle into the ambient conversation typically have a quantified number before their first contract renewal.`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'The revenue is likely already there. No one\'s measuring it yet.',
@@ -562,7 +562,7 @@ export function computeWorkforceFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'In-clinic time is quantified. Surveys are in.',
+        headlineMetric: 'In-clinic burden reduction, quantified.',
         context: `Organizations at this stage report 10–20 minutes per provider per day of in-clinic burden reduction. At ${providers.toLocaleString()} providers, that's ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually reclaimed inside the visit itself.`,
         formula: '',
         footnote: '',
@@ -712,10 +712,10 @@ const REVENUE_SIGNALS = [
 
 const REVENUE_INTEGRATIONS = [
   'Ongoing wRVU or collections monitoring linked to documentation',
-  'CDI workflow incorporates ambient documentation review',
-  'Denial management tracks documentation-related root causes',
-  'Revenue cycle dashboards include documentation quality metrics',
-  'Payer negotiations reference documentation-driven outcomes',
+  'CDI workflow includes ambient review',
+  'Denial management tracks documentation',
+  'Dashboards include documentation metrics',
+  'Payer negotiations reference it',
 ];
 
 export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS, REVENUE_INTEGRATIONS };
