@@ -865,7 +865,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, sensitivit
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                Value-to-Cost: total value / total cost. IRR on monthly net cash flows {"\u2014"} Period 0 = total investment, subsequent = monthly gross value inflows. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
+                Value-to-Cost: total value / total cost. IRR solved on monthly net cash flows (value minus subscription). Month 0 = implementation fee only. Annualized as (1 + monthly rate)^12 − 1.{summary.irrMethod === "mirr" ? " MIRR used due to non-conventional flows." : ""}
               </Text>
             </View>
           </View>

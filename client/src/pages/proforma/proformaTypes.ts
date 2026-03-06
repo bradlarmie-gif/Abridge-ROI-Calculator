@@ -34,6 +34,12 @@ export interface QuarterlyPricing {
   q9: number; q10: number; q11: number; q12: number;
 }
 
+export interface QuarterlyUtilization {
+  q1: number; q2: number; q3: number; q4: number;
+  q5: number; q6: number; q7: number; q8: number;
+  q9: number; q10: number; q11: number; q12: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -64,6 +70,7 @@ export interface ProformaSettingSnapshot {
   replacementCost?: number;
   quarterlyProviders?: QuarterlyProviders;
   quarterlyPricing?: QuarterlyPricing;
+  quarterlyUtilization?: QuarterlyUtilization;
 }
 
 export interface RetentionPhasing {

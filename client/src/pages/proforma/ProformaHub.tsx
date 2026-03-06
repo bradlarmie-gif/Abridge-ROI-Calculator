@@ -4,9 +4,9 @@ import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, Bed
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario, QuarterlyProviders, QuarterlyPricing } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario, QuarterlyProviders, QuarterlyPricing, QuarterlyUtilization } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
-import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, annualToQuarterlyProviders, annualToQuarterlyPricing, quarterlyToAnnualProviders, quarterlyToAnnualPricing } from "@/lib/proformaCalculations";
+import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, annualToQuarterlyProviders, annualToQuarterlyPricing, quarterlyToAnnualProviders, quarterlyToAnnualPricing, annualToQuarterlyUtilization, quarterlyToAnnualUtilization } from "@/lib/proformaCalculations";
 
 interface ProformaHubProps {
   settings: ProformaSettingSnapshot[];
@@ -378,6 +378,12 @@ export default function ProformaHub({
                                           if (!setting.quarterlyPricing) {
                                             onUpdateSetting(setting.id, { quarterlyPricing: annualToQuarterlyPricing(yprice) });
                                           }
+                                          const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
+                                            ? config.nursingYearlyUtilization
+                                            : config.yearlyUtilization;
+                                          if (!setting.quarterlyUtilization) {
+                                            onUpdateSetting(setting.id, { quarterlyUtilization: annualToQuarterlyUtilization(settingYearlyUtil) });
+                                          }
                                         }
                                         onConfigChange({ ...config, granularity: "quarterly" });
                                       }}
@@ -389,6 +395,10 @@ export default function ProformaHub({
                                 </div>
                                 {config.granularity === "quarterly" ? (() => {
                                   const qp = setting.quarterlyProviders || annualToQuarterlyProviders(yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders });
+                                  const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
+                                    ? config.nursingYearlyUtilization
+                                    : config.yearlyUtilization;
+                                  const qUtil = setting.quarterlyUtilization || annualToQuarterlyUtilization(settingYearlyUtil);
                                   const qKeys: (keyof QuarterlyProviders)[][] = [
                                     ["q1","q2","q3","q4"],
                                     ["q5","q6","q7","q8"],
@@ -419,6 +429,31 @@ export default function ProformaHub({
                                                   className="w-full text-right text-[11px] h-7 bg-white border border-neutral-200 rounded-lg px-1.5"
                                                   data-testid={`input-${qk}-prov-${setting.careSetting}`}
                                                 />
+                                              </div>
+                                            ))}
+                                          </div>
+                                          <div className="grid grid-cols-4 gap-1.5 mt-1">
+                                            {row.map((qk, qi) => (
+                                              <div key={`util-${qk}`}>
+                                                {qi === 0 && <label className="block text-[10px] text-[#8C7E6E] mb-0.5">Util %</label>}
+                                                {qi > 0 && <label className="block text-[10px] text-[#8C7E6E] mb-0.5">&nbsp;</label>}
+                                                <div className="relative">
+                                                  <FormattedNumberInput
+                                                    value={qUtil[qk as keyof QuarterlyUtilization]}
+                                                    onChange={(v) => {
+                                                      const val = Math.min(Math.max(Math.round(v), 1), 100);
+                                                      const updated = { ...qUtil, [qk]: val };
+                                                      const annualUtil = quarterlyToAnnualUtilization(updated);
+                                                      onUpdateSetting(setting.id, {
+                                                        quarterlyUtilization: updated,
+                                                        utilizationPercent: annualUtil.year1,
+                                                      });
+                                                    }}
+                                                    className="w-full text-right text-[11px] h-7 bg-[#F9F7F4] border border-neutral-200 rounded-lg px-1.5 pr-4 text-[#8C7E6E]"
+                                                    data-testid={`input-${qk}-util-${setting.careSetting}`}
+                                                  />
+                                                  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-[#A39888] pointer-events-none">%</span>
+                                                </div>
                                               </div>
                                             ))}
                                           </div>

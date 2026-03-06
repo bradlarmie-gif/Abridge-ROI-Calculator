@@ -6,8 +6,10 @@ import type {
   DriverOnset,
   QuarterlyProviders,
   QuarterlyPricing,
+  QuarterlyUtilization,
   YearlyProviders,
   YearlyPricing,
+  YearlyUtilization,
 } from "@/pages/proforma/proformaTypes";
 import { ONSET_DELAY_MONTHS } from "@/pages/proforma/proformaTypes";
 
@@ -51,7 +53,32 @@ export function quarterlyToAnnualPricing(qp: QuarterlyPricing): YearlyPricing {
   return { year1: qp.q4, year2: qp.q8, year3: qp.q12 };
 }
 
-function getQuarterlyValue<T extends QuarterlyProviders | QuarterlyPricing>(
+export function annualToQuarterlyUtilization(yu: YearlyUtilization): QuarterlyUtilization {
+  const y1 = yu.year1;
+  const y2 = yu.year2;
+  const y3 = yu.year3;
+  const startUtil = Math.max(y1 * 0.4, 5);
+  return {
+    q1: Math.round(startUtil),
+    q2: Math.round(startUtil + (y1 - startUtil) * 0.4),
+    q3: Math.round(startUtil + (y1 - startUtil) * 0.75),
+    q4: y1,
+    q5: Math.round(y1 + (y2 - y1) * 0.25),
+    q6: Math.round(y1 + (y2 - y1) * 0.5),
+    q7: Math.round(y1 + (y2 - y1) * 0.75),
+    q8: y2,
+    q9: Math.round(y2 + (y3 - y2) * 0.25),
+    q10: Math.round(y2 + (y3 - y2) * 0.5),
+    q11: Math.round(y2 + (y3 - y2) * 0.75),
+    q12: y3,
+  };
+}
+
+export function quarterlyToAnnualUtilization(qu: QuarterlyUtilization): YearlyUtilization {
+  return { year1: qu.q4, year2: qu.q8, year3: qu.q12 };
+}
+
+function getQuarterlyValue<T extends QuarterlyProviders | QuarterlyPricing | QuarterlyUtilization>(
   qData: T,
   monthsSinceGoLive: number
 ): number {
@@ -261,11 +288,13 @@ export function buildMonthlyCashFlows(
       const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
         ? config.nursingYearlyUtilization
         : config.yearlyUtilization;
-      const currentUtil = getUtilizationRamp(
-        m, setting.goLiveMonth, months,
-        setting.utilizationPercent, fullScaleUtil,
-        settingYearlyUtil
-      );
+      const currentUtil = setting.quarterlyUtilization
+        ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+        : getUtilizationRamp(
+            m, setting.goLiveMonth, months,
+            setting.utilizationPercent, fullScaleUtil,
+            settingYearlyUtil
+          );
 
       const providerScale = currentProviders / setting.providerCount;
       const utilScale = currentUtil / setting.utilizationPercent;
@@ -729,12 +758,14 @@ export function buildIRRCashFlows(
 
   if (totalCost <= 0) return [0];
 
-  const monthlyGrossReturns = cashFlows.map(r => {
+  const month0 = totalImplFees > 0 ? -totalImplFees : 0;
+  const monthlyNetFlows = cashFlows.map(r => {
     const gross = r.docValue + r.timeValue + r.retentionValue;
-    return isFinite(gross) ? gross : 0;
+    const net = (isFinite(gross) ? gross : 0) - r.investment;
+    return net;
   });
 
-  return [-totalCost, ...monthlyGrossReturns];
+  return [month0, ...monthlyNetFlows];
 }
 
 export function buildAnnualIRRCashFlows(
@@ -763,10 +794,7 @@ export function buildAnnualIRRCashFlows(
 
   const netFlows = yearBuckets.map(yb => yb.grossValue - yb.subscription);
 
-  if (totalImplFees > 0) {
-    return [-totalImplFees, ...netFlows];
-  }
-  return netFlows;
+  return [-totalImplFees, ...netFlows];
 }
 
 export function calculateAnnualIRR(annualCashFlows: number[]): IRRResult {

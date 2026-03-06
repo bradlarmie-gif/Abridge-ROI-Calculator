@@ -247,10 +247,11 @@ export default function ProformaView({
 
       const totalSubscription = cashFlows.reduce((s, r) => s + r.investment, 0);
       const totalCost = totalImplFees + totalSubscription;
+      const month0 = totalImplFees > 0 ? -totalImplFees : 0;
       const scaledIRRFlows = totalCost > 0
-        ? [-totalCost, ...cashFlows.map(r => {
+        ? [month0, ...cashFlows.map(r => {
             const gross = (r.docValue + r.timeValue + r.retentionValue) * factor;
-            return isFinite(gross) ? gross : 0;
+            return (isFinite(gross) ? gross : 0) - r.investment;
           })]
         : [0];
       const scaledIRR = calculateIRR(scaledIRRFlows);
@@ -284,7 +285,13 @@ export default function ProformaView({
   }, [settings, config, summary, cashFlows]);
 
   const chartData = useMemo(() => {
+    let cumValue = 0;
+    let cumInvestment = 0;
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    cumInvestment += totalImplFees;
     return displayData.map(row => {
+      cumValue += row.totalValue;
+      cumInvestment += row.investment;
       const entry: Record<string, number | string> = {
         label: row.label,
         period: row.period,
@@ -294,6 +301,8 @@ export default function ProformaView({
         retentionValue: row.retentionValue,
         total: row.totalValue,
         cumulativeNet: row.cumulativeNet,
+        cumulativeValue: cumValue,
+        cumulativeInvestment: cumInvestment,
       };
       settings.forEach(s => {
         entry[s.id] = Math.round(row.bySettings[s.id]?.value || 0);
@@ -829,6 +838,85 @@ export default function ProformaView({
               <div className="flex items-center justify-center gap-4 mt-2 text-[12px] text-neutral-400">
                 <span>Retention: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3{config.contractTermMonths > 36 ? "+" : ""}</span>
               </div>
+            )}
+          </div>
+
+          <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6 mt-4" data-testid="chart-cumulative">
+            <p className="text-[11px] sm:text-xs text-neutral-500 mb-3 sm:mb-4 font-medium uppercase tracking-wider">
+              Cumulative Value vs. Investment
+            </p>
+            <ResponsiveContainer width="100%" height={isMobile ? 240 : 320}>
+              <ComposedChart data={chartData} margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 20 } : { top: 20, right: 60, left: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                  interval={config.viewMode === "quarterly" ? (isMobile ? 2 : 1) : 0}
+                  axisLine={{ stroke: "#D5D0CB" }}
+                  height={30}
+                />
+                <YAxis
+                  tickFormatter={(v: number) => fmt(v)}
+                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                  width={isMobile ? 55 : 80}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  formatter={(v: number, name: string) => [fmt(v), name]}
+                  contentStyle={{ borderRadius: 10, border: "1px solid #E5E0DB", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="cumulativeValue"
+                  fill="rgba(234,44,0,0.06)"
+                  stroke="#EA2C00"
+                  strokeWidth={2.5}
+                  name="Cumulative Value"
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="cumulativeInvestment"
+                  stroke="#78716c"
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  dot={false}
+                  name="Cumulative Investment"
+                />
+                {paybackLabel && (
+                  <ReferenceLine
+                    x={paybackLabel}
+                    stroke="#EA2C00"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.7}
+                    strokeWidth={1.5}
+                    label={isMobile ? undefined : {
+                      value: `Payback: ${paybackLabel}`,
+                      position: "insideTopRight",
+                      fontSize: 11,
+                      fill: "#EA2C00",
+                      fontWeight: 600,
+                      dy: 8,
+                    }}
+                  />
+                )}
+              </ComposedChart>
+            </ResponsiveContainer>
+            <div className="flex items-center justify-center gap-6 mt-3 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ backgroundColor: "#EA2C00" }} />
+                <span className="text-neutral-600">Cumulative Value</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: "2px dashed #78716c" }} />
+                <span className="text-neutral-600">Cumulative Investment</span>
+              </span>
+            </div>
+            {summary.paybackMonth && (
+              <p className="text-center text-sm text-neutral-600 mt-3" data-testid="text-payback-insight">
+                At your planned rollout pace, you reach payback in <strong className="text-neutral-900">Month {summary.paybackMonth}</strong>.
+              </p>
             )}
           </div>
         </motion.div>
@@ -1606,8 +1694,8 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
-              <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means you get back ${(1 + summary.simpleROI).toFixed(2)} for every $1 invested, net of the investment itself.</p>
-              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Calculated on monthly net cash flows — Period 0 represents total investment (implementation fees plus subscription), followed by monthly gross value inflows. Annualized as (1 + monthly rate)^12 − 1. Newton-Raphson with bisection fallback; cross-validated via NPV. Non-conventional flows use MIRR.</p>
+              <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
+              <p><strong className="text-neutral-900">Internal Rate of Return (IRR):</strong> Solved on monthly net cash flows (monthly value minus monthly subscription cost) over the contract term. Month 0 includes only the implementation fee (if any). Accounts for implementation ramp, utilization growth, and provider expansion timing. Annualized from the monthly rate as (1 + r)^12 − 1. Newton-Raphson with bisection fallback; non-conventional flows use MIRR.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
               <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
