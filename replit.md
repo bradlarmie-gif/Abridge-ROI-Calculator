@@ -43,7 +43,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Chart Consolidation**: ProformaView has a single "Value Growth Trajectory" chart (no separate cumulative chart). Chart stacking order: Retention on bottom, Capacity & Efficiency in middle, Doc Quality on top — so Doc Quality (largest, immediate onset) is visually dominant and Retention (phased) appears as a thin base layer in early periods.
 -   **Sensitivity Analysis**: Linear scaling on base summary output for conservative and optimistic scenarios.
 -   **Narrative Sections**: Executive Summary callouts, simplified Cost of Waiting metrics, and refined ProformaConfig state management.
--   **PDF Structure**: A 7-page premium document with sections for Cover, Executive Summary, 3-Year Projection, Year-by-Year Narrative, Sensitivity & Risk, Methodology & Assumptions, and Back Cover.
+-   **PDF Structure**: A 7-page premium document with sections for Cover, Executive Summary, 3-Year Projection, Year-by-Year Narrative, Sensitivity & Risk, Methodology & Assumptions, and Back Cover. All sections are contract-term-aware (Y3 fields hidden for 2-year contracts). Executive Summary shows provider rollout trajectory. Year-by-Year cards use "Avg. Utilization" label. Model Confidence section is dynamic based on actual driver values. Sensitivity analysis uses `hasInvestment` guard for VTC display.
 
 ### System Design Choices
 -   **Calculation Engines**: Two primary engines for driver-level and narrative flow pillar calculations.

@@ -418,6 +418,8 @@ interface ProformaPDFProps {
 
 function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData, paybackQuarter, organizationName, preparedBy }: ProformaPDFProps & { chartData: ChartBar[]; paybackQuarter: string | null; organizationName?: string; preparedBy?: string }) {
   const termLabel = contractTermLabel(config.contractTermMonths);
+  const contractYears = Math.ceil(config.contractTermMonths / 12);
+  const hasInvestment = summary.termInvestment > 0;
   const settingInputSummaries = settings.map(s => ({ setting: s, inputs: getSettingInputSummary(s) }));
 
   const totalDocValue = yearlyData.reduce((s, y) => s + y.docValue, 0);
@@ -428,6 +430,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
   const timePct = totalAllValue > 0 ? Math.round((totalTimeValue / totalAllValue) * 100) : 0;
   const retPct = totalAllValue > 0 ? Math.round((totalRetentionValue / totalAllValue) * 100) : 0;
 
+  const totalInitial = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
   const totalFullScale = settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
   const totalHoursSaved = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
 
@@ -480,7 +483,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()} across {fmtNum(totalFullScale)} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes value realization. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes value realization. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
             </Text>
           </View>
 
@@ -496,7 +499,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{s.label}</Text>
                     <Text style={{ fontSize: 8, color: colors.secondary }}>
                       {s.yearlyProviders
-                        ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}`
+                        ? [
+                            `Y1: ${s.yearlyProviders.year1}`,
+                            contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
+                            contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
+                          ].filter(Boolean).join(" \u2192 ")
                         : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization
                     </Text>
                   </View>
@@ -685,7 +692,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmtNum(totalActive)}</Text>
                   </View>
                   <View>
-                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Adoption</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Avg. Utilization</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{adoptionPct}%</Text>
                   </View>
                   <View>
@@ -786,20 +793,39 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <View style={styles.thickDivider} />
 
           <Text style={styles.sectionLabelGray}>MODEL CONFIDENCE</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>STRONGEST</Text>
-              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-                {"\u2022"} Capacity & efficiency{"\n"}{"\u2022"} Documentation quality{"\n"}{"\u2022"} Adoption ramp{"\n"}{"\u2022"} Cost structure
-              </Text>
-            </View>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.negative, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WEAKEST</Text>
-              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-                {"\u2022"} Retention isolation{"\n"}{"\u2022"} Revenue realization{"\n"}{"\u2022"} Operational change{"\n"}{"\u2022"} Provider ramp smoothness
-              </Text>
-            </View>
-          </View>
+          {(() => {
+            const strongItems: string[] = [];
+            if (totalDocValue > 0) strongItems.push("Documentation quality");
+            if (totalTimeValue > 0) strongItems.push("Capacity & efficiency");
+            if (totalRetentionValue > 0) strongItems.push("Retention value");
+            strongItems.push("Cost structure");
+            strongItems.push("Adoption ramp");
+
+            const weakItems: string[] = [];
+            if (totalRetentionValue > 0) weakItems.push("Retention isolation");
+            if (totalDocValue > 0) weakItems.push("Revenue realization");
+            weakItems.push("Operational change");
+            weakItems.push("Provider ramp smoothness");
+            if (totalTimeValue === 0) weakItems.push("Capacity not modeled");
+            if (totalRetentionValue === 0) weakItems.push("Retention not modeled");
+
+            return (
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <View style={[styles.cardBg, { flex: 1 }]}>
+                  <Text style={{ fontSize: 9, color: colors.positive, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>STRONGEST</Text>
+                  <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+                    {strongItems.map(item => `\u2022 ${item}`).join("\n")}
+                  </Text>
+                </View>
+                <View style={[styles.cardBg, { flex: 1 }]}>
+                  <Text style={{ fontSize: 9, color: colors.negative, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WEAKEST</Text>
+                  <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+                    {weakItems.map(item => `\u2022 ${item}`).join("\n")}
+                  </Text>
+                </View>
+              </View>
+            );
+          })()}
 
           <PageFooter pageNum={5} totalPages={TOTAL_PDF_PAGES} />
         </View>
@@ -818,17 +844,23 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 <View key={s.id} style={{ marginBottom: 5 }}>
                   <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 1 }}>{s.label}</Text>
                   <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                    {s.yearlyProviders ? `Y1: ${s.yearlyProviders.year1} \u2192 Y2: ${s.yearlyProviders.year2} \u2192 Y3: ${s.yearlyProviders.year3}` : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)}{"\n"}
+                    {s.yearlyProviders
+                      ? [
+                          `Y1: ${s.yearlyProviders.year1}`,
+                          contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
+                          contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
+                        ].filter(Boolean).join(" \u2192 ")
+                      : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)}{"\n"}
                     {(() => {
                       const yp = s.yearlyPricing;
-                      const hasVaried = yp && (yp.year1 !== yp.year2 || yp.year2 !== yp.year3);
-                      if (s.pricingModel === "annualFlat") {
-                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/yr` : `${fmt(yp?.year1 ?? s.annualLicenseFee ?? 0)}/yr flat`;
-                      } else if (s.pricingModel === "perEncounter") {
-                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/enc` : `${fmt(yp?.year1 ?? s.costPerEncounter ?? 0)}/enc`;
-                      } else {
-                        return hasVaried ? `Y1: ${fmt(yp!.year1)} \u2192 Y2: ${fmt(yp!.year2)} \u2192 Y3: ${fmt(yp!.year3)}/${unitLabel(s.careSetting, false)}/mo` : `${fmt(yp?.year1 ?? s.costPerUnit)}/${unitLabel(s.careSetting, false)}/mo`;
+                      const prices = yp ? [yp.year1, yp.year2, yp.year3].slice(0, Math.min(contractYears, 3)) : null;
+                      const hasVaried = prices && prices.some(p => p !== prices[0]);
+                      const suffix = s.pricingModel === "annualFlat" ? "/yr" : s.pricingModel === "perEncounter" ? "/enc" : `/${unitLabel(s.careSetting, false)}/mo`;
+                      const defaultPrice = s.pricingModel === "annualFlat" ? (s.annualLicenseFee ?? 0) : s.pricingModel === "perEncounter" ? (s.costPerEncounter ?? 0) : s.costPerUnit;
+                      if (hasVaried && prices) {
+                        return prices.map((p, i) => `Y${i + 1}: ${fmt(p)}`).join(" \u2192 ") + suffix;
                       }
+                      return `${fmt(prices?.[0] ?? defaultPrice)}${suffix}${s.pricingModel === "annualFlat" ? " flat" : ""}`;
                     })()}
                     {s.implementationFee > 0 ? ` \u00B7 ${fmt(s.implementationFee)} impl` : ""}
                   </Text>
@@ -844,10 +876,18 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
                 Implementation ramp: {config.implementationRampMonths} months (no value){"\n"}
-                Utilization targets: {config.yearlyUtilization.year1}% Y1, {config.yearlyUtilization.year2}% Y2, {config.yearlyUtilization.year3}% Y3{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` (Nursing: ${config.nursingYearlyUtilization.year1}/${config.nursingYearlyUtilization.year2}/${config.nursingYearlyUtilization.year3}%)` : ""}{"\n"}
+                Utilization targets: {[
+                  `${config.yearlyUtilization.year1}% Y1`,
+                  contractYears >= 2 ? `${config.yearlyUtilization.year2}% Y2` : null,
+                  contractYears >= 3 ? `${config.yearlyUtilization.year3}% Y3` : null,
+                ].filter(Boolean).join(", ")}{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` (Nursing: ${[config.nursingYearlyUtilization.year1, contractYears >= 2 ? config.nursingYearlyUtilization.year2 : null, contractYears >= 3 ? config.nursingYearlyUtilization.year3 : null].filter(v => v != null).join("/")}%)` : ""}{"\n"}
                 Provider expansion: Per-year allocation{"\n"}
                 Onset timing: Immediate / 3mo delay / phased{"\n"}
-                Retention phasing: {config.retentionPhasing.year1Pct}% Y1, {config.retentionPhasing.year2Pct}% Y2, {config.retentionPhasing.year3Pct}% Y3
+                Retention phasing: {[
+                  `${config.retentionPhasing.year1Pct}% Y1`,
+                  contractYears >= 2 ? `${config.retentionPhasing.year2Pct}% Y2` : null,
+                  contractYears >= 3 ? `${config.retentionPhasing.year3Pct}% Y3` : null,
+                ].filter(Boolean).join(", ")}
               </Text>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>RETURN METHODOLOGY</Text>
               <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
