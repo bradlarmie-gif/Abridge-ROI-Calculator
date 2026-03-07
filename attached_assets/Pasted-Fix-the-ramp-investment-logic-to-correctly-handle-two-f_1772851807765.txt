@@ -1,0 +1,86 @@
+Fix the ramp/investment logic to correctly handle two fundamentally different pricing models, and clarify the Year-over-Year provider expansion behavior.
+1. Per Provider/Month (and Per Staffed Bed / Annual License) — all providers start Day 1
+When a hospital commits to 500 providers in Y1:
+
+All 500 are licensed from Day 1 of that year
+Investment is immediate and full: monthly cost = 500 × $85 from Month 1. No phasing on the cost side.
+Value ramps with utilization: Not all 500 use it right away. The implementation ramp (3 months) means onboarding/training takes time. Utilization (55% Y1) determines what percentage are actively generating value.
+Monthly value = 500 × utilization_for_that_month × per_provider_monthly_value × value_driver_onset_multiplier
+Payback occurs when cumulative value exceeds cumulative cost. Since cost is full from Day 1 but value ramps, there's an early deficit that gets recovered as utilization grows.
+For this pricing model, the current behavior of showing full annual investment ($510K) is CORRECT. Do not reduce investment by utilization.
+
+
+2. Per Encounter — encounters phase over the year with utilization
+When a hospital commits to 500,000 encounters in Y1:
+
+Those encounters are spread across the year — they don't all happen on Day 1
+Both cost AND value phase with utilization:
+
+If utilization is 30% in Month 1 and 55% by Month 12, encounters in Month 1 are ~30% of the monthly run-rate
+Monthly encounters = annual_encounters / 12 × (month_utilization / annual_avg_utilization) — weighted so months with higher utilization consume more encounters
+OR simpler: Monthly encounters = annual_encounters × (month_utilization / sum_of_all_month_utilizations) — distributes total encounters proportionally to utilization curve
+Monthly cost = monthly_encounters × price_per_encounter
+Monthly value = monthly_encounters × value_per_encounter
+
+
+Total annual cost still equals contracted encounters × price — e.g., 500,000 × $2.50 = $1,250,000. The phasing just determines WHEN during the year those dollars are spent.
+Payback occurs when cumulative value exceeds cumulative cost. Since both cost and value phase together, payback depends on when value per encounter exceeds cost per encounter (which depends on value driver onset delays — Doc Quality is immediate, C&E starts month 4, Retention starts month 7).
+For this pricing model, the annual investment total should still be contracted encounters × price. But the monthly distribution should follow the utilization curve. The earlier behavior of showing ~50% of contracted investment in Y1 was partially correct in concept (encounters are phased) but may have been miscalculating the monthly distribution.
+
+
+3. Year-over-Year Provider Expansion — how does the ramp work within a year?
+When a hospital goes from 200 providers in Y1 to 5,000 in Y2:
+Current behavior: The proforma assumes all Y2 providers (5,000) are live from Month 1 of Y2. This is unrealistic — you can't onboard 4,800 new providers overnight.
+Correct behavior for Per Provider pricing:
+
+Y1: All 200 start Day 1 of Y1 ✓
+Y2: The model needs to know HOW the 5,000 phase in during Y2
+Default assumption (when quarterly controls are NOT used):
+Apply the 3-month implementation ramp to the NET NEW providers added that year
+Y2 starts with 200 (carried from Y1, fully ramped) + 4,800 new providers ramping over 3 months
+Month 13 (Y2 start): 200 fully active + 4,800 × 33% ramped = 200 + 1,600 = 1,800
+Month 14: 200 + 4,800 × 67% = 3,400
+Month 15: 200 + 4,800 × 100% = 5,000 (fully ramped)
+Months 16-24: 5,000 at full ramp, utilization continues per Y2 utilization target
+Cost: All 5,000 are billed from Month 13 (Day 1 of Y2) — you pay for all licenses even while ramping
+When quarterly controls ARE used (future feature):
+User specifies exactly: Q1'27: 1,000, Q2'27: 2,500, Q3'27: 4,000, Q4'27: 5,000
+Each quarter's new cohort gets its own 3-month ramp
+Cost follows the quarterly provider count × price
+
+
+4. Update "Actively Documenting" to reflect this correctly
+"Actively Documenting" should mean: providers who have completed the implementation ramp AND are utilizing the product.
+Actively Documenting = ramped_providers × utilization_rate
+
+Y1 with 500 providers, 3-month ramp, 55% utilization:
+
+Months 1-3: ramping (33%/67%/100% of 500 have completed onboarding)
+But of those ramped, only 55% are actively using it
+Month 1: 167 ramped × 55% = 92 actively documenting
+Month 3: 500 ramped × 55% = 275 actively documenting
+Annual average: ~240 actively documenting
+Currently shows 375 — which is ramp only, no utilization applied
+Fix: Apply utilization ON TOP OF ramp. Display: "Actively Documenting: 240" (not 375). This will reduce Y1 value and make payback longer and more realistic.
+
+
+
+
+5. Recalculate payback with corrected logic
+Once the above is implemented:
+
+Monthly value = actively_documenting_that_month × per_provider_monthly_value × value_driver_onset_multiplier
+Monthly cost depends on pricing model:
+
+Per Provider: full licensed count × price (no reduction)
+Per Encounter: phased with utilization curve
+
+
+Payback = first month where cumulative value ≥ cumulative investment
+With utilization properly applied, Y1 value will be lower, and payback will be more realistic
+
+
+6. Summary of what changes per pricing model:
+Per Provider/MoPer EncounterCost in Month 1Full (all providers billed)Low (few encounters yet)Cost rampFlat within yearFollows utilization curveAnnual costProviders × price × 12Contracted encounters × priceValue rampUtilization × ramp × onset delaysUtilization × ramp × onset delaysPayback dynamicCost front-loaded, value ramps → payback takes timeCost and value ramp together → payback depends on value driver delaysY2 expansionNew providers billed Day 1 of Y2, ramp over 3 monthsEncounters phase with utilization
+
+Priority: Fix #4 (utilization on top of ramp) first — this is the root cause of overstated value and incorrect payback. Then #3 (Y2 expansion ramp). Then #2 (Per Encounter phasing). Then #1 is already correct.

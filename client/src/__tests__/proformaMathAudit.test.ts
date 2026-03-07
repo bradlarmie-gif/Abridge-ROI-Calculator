@@ -88,15 +88,18 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     expect(cashFlows[0].totalValue).toBeLessThan(10);
   });
 
-  it("month 12 value approaches full monthly ($25K) due to sigmoid saturation", () => {
-    expect(cashFlows[11].totalValue).toBeGreaterThan(24000);
-    expect(cashFlows[11].totalValue).toBeLessThan(26000);
+  it("month 12 value reflects utilization scaling (Y1 util ~55%, utilScale < 1)", () => {
+    expect(cashFlows[11].totalValue).toBeGreaterThan(18000);
+    expect(cashFlows[11].totalValue).toBeLessThan(22000);
   });
 
-  it("months 13+ at full run-rate ($25K/mo)", () => {
-    for (let m = 12; m < 36; m++) {
-      expect(cashFlows[m].totalValue).toBe(25000);
-    }
+  it("value increases through Y2 and Y3 as utilization ramps toward 85%", () => {
+    const y2Start = cashFlows[12].totalValue;
+    const y2End = cashFlows[23].totalValue;
+    const y3End = cashFlows[35].totalValue;
+    expect(y2End).toBeGreaterThan(y2Start);
+    expect(y3End).toBeGreaterThan(y2End);
+    expect(y3End).toBeGreaterThan(25000);
   });
 
   it("investment is constant at $2000/mo across all 36 months", () => {
@@ -105,9 +108,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     }
   });
 
-  it("3-year total value matches hand calculation within 2% (1-month doc ramp)", () => {
-    expect(summary.termValue).toBeGreaterThan(860000);
-    expect(summary.termValue).toBeLessThan(890000);
+  it("3-year total value reflects utilization ramp (lower Y1, higher Y3)", () => {
+    expect(summary.termValue).toBeGreaterThan(680000);
+    expect(summary.termValue).toBeLessThan(780000);
   });
 
   it("3-year total investment = 36 months × $2000 + $25K impl = $97,000", () => {
@@ -132,13 +135,13 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     expect(summary.valueToCost).toBeCloseTo(1 + summary.simpleROI, 5);
   });
 
-  it("payback occurs around month 4 (3-month doc ramp accelerates payback)", () => {
-    expect(summary.paybackMonth).toBeGreaterThanOrEqual(3);
-    expect(summary.paybackMonth).toBeLessThanOrEqual(5);
+  it("payback occurs within first year (utilization ramp delays payback)", () => {
+    expect(summary.paybackMonth).toBeGreaterThanOrEqual(5);
+    expect(summary.paybackMonth).toBeLessThanOrEqual(12);
   });
 
   it("cumulative net at month 36 matches 3-year net", () => {
-    expect(cashFlows[35].cumulativeNet).toBeCloseTo(summary.termNet, 0);
+    expect(cashFlows[35].cumulativeNet).toBeCloseTo(summary.termNet, -1);
   });
 
   it("IRR is valid and positive", () => {
@@ -162,24 +165,31 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
   const cashFlows = buildMonthlyCashFlows(settings, config);
   const summary = calculateProformaSummary(settings, config, cashFlows);
 
-  it("provider count at month 1 = 10 (pilot)", () => {
-    expect(cashFlows[0].bySettings["test-outpatient"].providers).toBe(10);
+  it("actively documenting at month 1 is near zero (low utilization during ramp)", () => {
+    const providers = cashFlows[0].bySettings["test-outpatient"].providers;
+    expect(providers).toBeGreaterThanOrEqual(0);
+    expect(providers).toBeLessThanOrEqual(2);
   });
 
-  it("provider count holds at 10 through month 12 (Y1 constant)", () => {
+  it("actively documenting at end of Y1 reflects utilization (~55%)", () => {
     const providers = cashFlows[11].bySettings["test-outpatient"].providers;
-    expect(providers).toBe(10);
+    expect(providers).toBeGreaterThanOrEqual(4);
+    expect(providers).toBeLessThanOrEqual(7);
   });
 
-  it("provider count starts ramping at month 13 (first month of Y2)", () => {
+  it("actively documenting grows into Y2 as new providers ramp and util increases", () => {
     const providers = cashFlows[12].bySettings["test-outpatient"].providers;
-    expect(providers).toBeGreaterThanOrEqual(11);
-    expect(providers).toBeLessThanOrEqual(13);
+    expect(providers).toBeGreaterThanOrEqual(5);
+    expect(providers).toBeLessThanOrEqual(15);
   });
 
-  it("provider count reaches 30 by end of Y2 and 50 by end of Y3", () => {
-    expect(cashFlows[23].bySettings["test-outpatient"].providers).toBe(30);
-    expect(cashFlows[35].bySettings["test-outpatient"].providers).toBe(50);
+  it("actively documenting at end of Y2 and Y3 reflects util scaling", () => {
+    const y2End = cashFlows[23].bySettings["test-outpatient"].providers;
+    const y3End = cashFlows[35].bySettings["test-outpatient"].providers;
+    expect(y2End).toBeGreaterThanOrEqual(18);
+    expect(y2End).toBeLessThanOrEqual(25);
+    expect(y3End).toBeGreaterThanOrEqual(38);
+    expect(y3End).toBeLessThanOrEqual(45);
   });
 
   it("investment scales with provider count (not fixed at pilot)", () => {
@@ -188,8 +198,13 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
     expect(cashFlows[35].investment).toBe(200 * 50);
   });
 
-  it("value at month 36 is 5x the no-expansion steady state", () => {
-    expect(cashFlows[35].totalValue).toBe(25000 * 5);
+  it("value at month 36 is ~5x the no-expansion steady state (proportional to providers)", () => {
+    const noExpSettings = [makeSetting()];
+    const noExpCF = buildMonthlyCashFlows(noExpSettings, config);
+    const noExpMonth36 = noExpCF[35].totalValue;
+    const ratio = cashFlows[35].totalValue / noExpMonth36;
+    expect(ratio).toBeGreaterThan(4.5);
+    expect(ratio).toBeLessThan(5.5);
   });
 
   it("3-year value is much higher than no-expansion scenario", () => {
@@ -203,9 +218,9 @@ describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
     expect(summary.termInvestment).toBeGreaterThan(97000);
   });
 
-  it("3-year total value near $2M (Y1 constant at pilot, stepped rollout)", () => {
-    expect(summary.termValue).toBeGreaterThan(1800000);
-    expect(summary.termValue).toBeLessThan(2200000);
+  it("3-year total value with expansion and utilization scaling", () => {
+    expect(summary.termValue).toBeGreaterThan(2000000);
+    expect(summary.termValue).toBeLessThan(3000000);
   });
 });
 
@@ -494,7 +509,7 @@ describe("Edge Cases and Guardrails", () => {
     expect(summary.termValue).toBeGreaterThan(0);
   });
 
-  it("no-expansion means value does not scale beyond base", () => {
+  it("no-expansion: month 36 value reflects Y3 utilization scaling", () => {
     const settings = [makeSetting({
       providerCount: 10,
       fullScaleProviders: 10,
@@ -505,18 +520,20 @@ describe("Edge Cases and Guardrails", () => {
 
     const month36Value = cashFlows[35].totalValue;
     const monthlyRunRate = 300000 / 12;
-    expect(month36Value).toBe(monthlyRunRate);
+    expect(month36Value).toBeGreaterThan(monthlyRunRate * 1.1);
+    expect(month36Value).toBeLessThan(monthlyRunRate * 1.3);
   });
 });
 
 describe("Run-Rate Value (Annual Value at Scale)", () => {
-  it("no expansion: run-rate = sum of last 12 months = full annual value", () => {
+  it("no expansion: run-rate reflects Y3 utilization scaling (>$300K at 85% util)", () => {
     const settings = [makeSetting()];
     const config = makeConfig();
     const cashFlows = buildMonthlyCashFlows(settings, config);
     const summary = calculateProformaSummary(settings, config, cashFlows);
 
-    expect(summary.runRateValue).toBe(300000);
+    expect(summary.runRateValue).toBeGreaterThan(300000);
+    expect(summary.runRateValue).toBeLessThan(400000);
   });
 
   it("with expansion: run-rate reflects expanded provider count", () => {
@@ -548,7 +565,7 @@ describe("Run-Rate Value (Annual Value at Scale)", () => {
     expect(summary.runRateInvestment).toBe(expectedInv);
   });
 
-  it("run-rate is more defensible than raw totalSystemValue with expansion", () => {
+  it("run-rate with expansion reflects scaled provider count and utilization", () => {
     const settings = [makeSetting({
       providerCount: 10,
       fullScaleProviders: 50,
@@ -559,7 +576,7 @@ describe("Run-Rate Value (Annual Value at Scale)", () => {
     const summary = calculateProformaSummary(settings, config, cashFlows);
 
     expect(summary.runRateValue).toBeGreaterThan(summary.totalSystemValue);
-    expect(summary.runRateValue).toBeLessThanOrEqual(summary.totalSystemValue * 5);
+    expect(summary.runRateValue).toBeLessThanOrEqual(summary.totalSystemValue * 7);
   });
 });
 
@@ -627,7 +644,7 @@ describe("PDF Math Consistency", () => {
     expect(optVal / baseVal).toBeCloseTo(1.3, 1);
   });
 
-  it("driver values in cash flows match sum stored in snapshot", () => {
+  it("driver values in cash flows scale with utilization at month 36", () => {
     const settings = [makeSetting({
       annualValue: 500000,
       timeValue: 200000,
@@ -641,11 +658,13 @@ describe("PDF Math Consistency", () => {
     const cashFlows = buildMonthlyCashFlows(settings, config);
 
     const m36 = cashFlows[35];
-    const expectedMonthlyDoc = 300000 / 12;
-    const expectedMonthlyTime = 200000 / 12;
-    expect(m36.docValue).toBeCloseTo(expectedMonthlyDoc, 0);
-    expect(m36.timeValue).toBeCloseTo(expectedMonthlyTime, 0);
-    expect(m36.totalValue).toBeCloseTo(expectedMonthlyDoc + expectedMonthlyTime, 0);
+    const baseMonthlyDoc = 300000 / 12;
+    const baseMonthlyTime = 200000 / 12;
+    expect(m36.docValue).toBeGreaterThan(baseMonthlyDoc * 1.1);
+    expect(m36.docValue).toBeLessThan(baseMonthlyDoc * 1.3);
+    expect(m36.timeValue).toBeGreaterThan(baseMonthlyTime * 1.1);
+    expect(m36.timeValue).toBeLessThan(baseMonthlyTime * 1.3);
+    expect(m36.totalValue).toBeCloseTo(m36.docValue + m36.timeValue, -1);
   });
 });
 

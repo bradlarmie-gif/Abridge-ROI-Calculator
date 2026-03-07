@@ -154,13 +154,23 @@ function getProviderExpansion(
   pilotProviders: number,
   fullScaleProviders: number,
   yearlyProviders?: { year1: number; year2: number; year3: number },
-  quarterlyProviders?: QuarterlyProviders
+  quarterlyProviders?: QuarterlyProviders,
+  implementationRampMonths: number = 3
 ): number {
   const monthsSinceGoLive = month - goLiveMonth;
   if (monthsSinceGoLive < 0) return 0;
 
   if (quarterlyProviders) {
-    return getQuarterlyValue(quarterlyProviders, monthsSinceGoLive);
+    const target = getQuarterlyValue(quarterlyProviders, monthsSinceGoLive);
+    const qIdx = Math.floor(monthsSinceGoLive / 3);
+    const prevTarget = qIdx > 0 ? getQuarterlyValue(quarterlyProviders, (qIdx - 1) * 3) : 0;
+    if (target > prevTarget && implementationRampMonths > 0) {
+      const monthInQuarter = monthsSinceGoLive % 3;
+      const netNew = target - prevTarget;
+      const rampProgress = Math.min((monthInQuarter + 1) / implementationRampMonths, 1);
+      return Math.round(prevTarget + netNew * rampProgress);
+    }
+    return target;
   }
 
   if (yearlyProviders) {
@@ -168,14 +178,29 @@ function getProviderExpansion(
     const y2 = yearlyProviders.year2;
     const y3 = _contractMonths >= 36 ? yearlyProviders.year3 : y2;
 
-    if (monthsSinceGoLive < 12) {
+    const rampMonths = implementationRampMonths;
+
+    if (monthsSinceGoLive < rampMonths) {
+      const rampProgress = (monthsSinceGoLive + 1) / rampMonths;
+      return Math.round(y1 * rampProgress);
+    } else if (monthsSinceGoLive < 12) {
       return y1;
     } else if (monthsSinceGoLive < 24) {
-      const progress = Math.min((monthsSinceGoLive - 12 + 1) / 12, 1);
-      return Math.round(y1 + (y2 - y1) * progress);
+      const monthInYear = monthsSinceGoLive - 12;
+      if (y2 > y1 && monthInYear < rampMonths) {
+        const netNew = y2 - y1;
+        const rampProgress = (monthInYear + 1) / rampMonths;
+        return Math.round(y1 + netNew * rampProgress);
+      }
+      return y2;
     } else if (monthsSinceGoLive < 36) {
-      const progress = Math.min((monthsSinceGoLive - 24 + 1) / 12, 1);
-      return Math.round(y2 + (y3 - y2) * progress);
+      const monthInYear = monthsSinceGoLive - 24;
+      if (y3 > y2 && monthInYear < rampMonths) {
+        const netNew = y3 - y2;
+        const rampProgress = (monthInYear + 1) / rampMonths;
+        return Math.round(y2 + netNew * rampProgress);
+      }
+      return y3;
     } else {
       return y3;
     }
@@ -277,11 +302,13 @@ export function buildMonthlyCashFlows(
       const fullScale = setting.fullScaleProviders || setting.providerCount;
       const fullScaleUtil = setting.fullScaleUtilization || setting.utilizationPercent;
 
+      const implRampMonths = config.implementationRampMonths ?? 3;
       const currentProviders = getProviderExpansion(
         m, setting.goLiveMonth, months,
         setting.providerCount, fullScale,
         setting.yearlyProviders,
-        setting.quarterlyProviders
+        setting.quarterlyProviders,
+        implRampMonths
       );
       const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
         ? config.nursingYearlyUtilization
@@ -294,6 +321,7 @@ export function buildMonthlyCashFlows(
             settingYearlyUtil
           );
 
+      const activelyDocumenting = Math.round(currentProviders * currentUtil / 100);
       const providerScale = currentProviders / setting.providerCount;
       const utilScale = currentUtil / setting.utilizationPercent;
       const expansionMultiplier = providerScale * utilScale;
@@ -366,10 +394,17 @@ export function buildMonthlyCashFlows(
         monthlyInvestment = price / 12;
       } else if (setting.pricingModel === "perEncounter") {
         const price = resolvedPrice ?? (setting.costPerEncounter || 0);
-        const encountersPerProvider = setting.providerCount > 0
-          ? setting.encounters / setting.providerCount
-          : 0;
-        const monthlyEncounters = licensedProviders * encountersPerProvider / 12;
+        let annualEncounters: number;
+        if (setting.yearlyEncounters) {
+          const ye = setting.yearlyEncounters;
+          annualEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
+        } else {
+          const encountersPerProvider = setting.providerCount > 0
+            ? setting.encounters / setting.providerCount
+            : 0;
+          annualEncounters = licensedProviders * encountersPerProvider;
+        }
+        const monthlyEncounters = annualEncounters / 12;
         monthlyInvestment = price * monthlyEncounters;
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;
@@ -384,7 +419,7 @@ export function buildMonthlyCashFlows(
       bySettings[setting.id] = {
         value: settingDocValue + settingTimeValue + settingRetentionValue,
         investment: monthlyInvestment,
-        providers: currentProviders,
+        providers: activelyDocumenting,
         licensedProviders,
         docValue: settingDocValue,
         timeValue: settingTimeValue,
@@ -392,19 +427,7 @@ export function buildMonthlyCashFlows(
       };
     }
 
-    const implRamp = config.implementationRampMonths || 0;
-    if (m <= implRamp) {
-      totalDocValue = 0;
-      totalTimeValue = 0;
-      totalRetentionValue = 0;
-      for (const key of Object.keys(bySettings)) {
-        bySettings[key].value = 0;
-        bySettings[key].docValue = 0;
-        bySettings[key].timeValue = 0;
-        bySettings[key].retentionValue = 0;
-        bySettings[key].providers = 0;
-      }
-    }
+    
 
     const totalValue = totalDocValue + totalTimeValue + totalRetentionValue;
     const netValue = totalValue - totalInvestment;
