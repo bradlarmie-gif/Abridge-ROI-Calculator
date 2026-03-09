@@ -1431,11 +1431,11 @@ export default function ProformaView({
                 <tr className="bg-neutral-50">
                   <td className="py-2.5 sm:py-3 font-bold text-neutral-900">Net Value</td>
                   {yearlyData.map(y => (
-                    <td key={y.label} className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${y.netValue >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
+                    <td key={y.label} className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${y.netValue >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                       {y.netValue >= 0 ? fmt(y.netValue) : `(${fmt(Math.abs(y.netValue))})`}
                     </td>
                   ))}
-                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
+                  <td className={`text-right py-2.5 sm:py-3 px-1.5 sm:px-4 font-bold ${isMobile ? "text-base" : "text-lg"} ${summary.termNet >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                     {summary.termNet >= 0 ? fmt(summary.termNet) : `(${fmt(Math.abs(summary.termNet))})`}
                   </td>
                 </tr>
