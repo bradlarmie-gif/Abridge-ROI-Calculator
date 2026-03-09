@@ -227,58 +227,138 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   return lines;
 }
 
-function getDriverNarrative(driver: ProformaDriver, snapshot: ProformaSettingSnapshot): string {
+const WRVU_SCENARIOS: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+const DENIALS_SCENARIOS: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
+const RETENTION_SCENARIOS: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+const DRG_SCENARIOS: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+const CDI_SCENARIOS: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+
+function fmtK(n: number): string {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  return `$${Math.round(n).toLocaleString()}`;
+}
+
+function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSnapshot): string[] {
   const s = snapshot.fullExploreState;
-  if (!s) return "";
+  if (!s) return [];
   const t = s.timeDriverInputs;
   const d = s.docQualityInputs;
   const cs = snapshot.careSetting;
   const encounters = s.annualEncounters || 0;
   const providers = s.numberOfProviders || 0;
+  const eligibleEnc = Math.round(encounters * (s.utilizationPercent / 100));
 
   switch (driver.id) {
-    case "wrvu":
-      if (cs === "ed") {
-        return `Level-of-service uplift at the ${d.wrvuScenario} scenario with ${d.wrvuRealization}% realization across ${fmtNum(encounters)} annual encounters.`;
-      }
-      return `${d.wrvuScenario.charAt(0).toUpperCase() + d.wrvuScenario.slice(1)} wRVU improvement scenario with ${d.wrvuRealization}% realization across ${fmtNum(encounters)} encounters.`;
+    case "wrvu": {
+      const liftPct = WRVU_SCENARIOS[d.wrvuScenario] || 5;
+      return [
+        `${d.currentWrvu} wRVU/enc \u00D7 ${liftPct}% lift \u00D7 ${eligibleEnc.toLocaleString()} encounters`,
+        `\u00D7 $${d.conversionFactor}/wRVU \u00D7 ${d.wrvuRealization}% realization`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    }
     case "hcc":
-      return `HCC recapture at ${d.hccRealization}% realization. Identifies diagnosis gaps already present in the clinical conversation.`;
-    case "denials":
-      return `${d.denialsScenario.charAt(0).toUpperCase() + d.denialsScenario.slice(1)} denial prevention scenario at ${d.denialRate}% denial rate with ${d.denialsRealization}% realization.`;
-    case "patientAccess":
-      return `${t.capacityRealizationPercent ?? 75}% of reclaimed capacity converted to visits at ${t.visitDuration}-minute visit duration and $${t.revenuePerVisit}/visit.`;
-    case "retention":
+      return [
+        `MA patients \u00D7 gap rate \u00D7 recapture rate \u00D7 RAF value`,
+        `\u00D7 ${d.hccRealization}% realization`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    case "denials": {
+      const preventPct = DENIALS_SCENARIOS[d.denialsScenario] || 50;
+      return [
+        `${eligibleEnc.toLocaleString()} enc \u00D7 ${d.denialRate}% denial rate`,
+        `\u00D7 ${d.unappealableRate}% doc-related \u00D7 ${preventPct}% prevented`,
+        `\u00D7 $${d.avgClaimValue.toLocaleString()}/claim = ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "patientAccess": {
+      const hoursAllocated = snapshot.totalHoursSaved * (t.opAllocCapacityPercent / 100);
+      const hoursConverted = hoursAllocated * ((t.capacityRealizationPercent ?? 75) / 100);
+      const potentialVisits = hoursConverted * (60 / t.visitDuration);
+      return [
+        `${snapshot.totalHoursSaved.toLocaleString()} hrs \u00D7 ${t.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
+        `${Math.round(hoursAllocated).toLocaleString()} hrs \u00D7 ${t.capacityRealizationPercent ?? 75}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
+        `${Math.round(hoursConverted).toLocaleString()} hrs \u00D7 (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
+        `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "retention": {
       if (cs === "nursing") {
-        return `Based on ${t.nursingTurnoverRate}% annual turnover and $${fmtNum(t.nursingReplacementCost ?? 0)} replacement cost per nurse.`;
+        return [
+          `${providers} FTEs \u00D7 ${t.nursingTurnoverRate}% turnover \u00D7 40% burnout-related`,
+          `\u00D7 ${t.retentionImpactScenario} impact \u00D7 $${(t.nursingReplacementCost ?? 0).toLocaleString()} replacement`,
+          `= ${fmtK(driver.value)}/year`,
+        ];
       }
-      return `${t.retentionImpactScenario} impact scenario based on ${t.annualTurnoverRate}% annual turnover, ${t.burnoutRelatedTurnover}% burnout attribution, and $${fmtNum(t.replacementCost)} replacement cost.`;
-    case "edLwbs":
-      return `${t.edLwbsReduction}% reduction in ${t.edLwbsRate}% LWBS rate across ${fmtNum(encounters)} annual visits at $${t.edRevenuePerVisit}/visit.`;
-    case "edAdmission":
-      return `Captures ${t.edAdmissionRate}% admission rate from recovered LWBS patients at $${fmtNum(t.edAdmissionRevenue)} per admission.`;
-    case "nursingOt":
-      return `${t.nursingOtReductionPercent}% overtime reduction at $${t.nursingOtHourlyRate}/hr across ${providers} nurse FTEs.`;
-    case "ipDrg":
-      return `${d.ipDrgScenario.charAt(0).toUpperCase() + d.ipDrgScenario.slice(1)} DRG accuracy scenario with ${d.ipDrgRealization}% realization on ${d.ipDrgAtRiskRate}% at-risk admissions.`;
-    case "ipCdi":
-      return `${d.ipCdiScenario.charAt(0).toUpperCase() + d.ipCdiScenario.slice(1)} CDI query reduction scenario at ${d.ipCdiQueryRate}% query rate.`;
+      const impactPct = RETENTION_SCENARIOS[t.retentionImpactScenario] || 30;
+      return [
+        `${providers} providers \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,
+        `\u00D7 ${impactPct}% Abridge impact \u00D7 $${t.replacementCost.toLocaleString()} replacement cost`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "edLwbs": {
+      const recovered = Math.round(encounters * (t.edLwbsRate / 100) * (t.edLwbsReduction / 100));
+      return [
+        `${encounters.toLocaleString()} enc \u00D7 ${t.edLwbsRate}% LWBS \u00D7 ${t.edLwbsReduction}% reduction`,
+        `${recovered.toLocaleString()} recovered \u00D7 $${t.edRevenuePerVisit}/visit \u00D7 ${t.edLwbsRealization}% realization`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "edAdmission": {
+      const recoveredBase = Math.round(encounters * (t.edLwbsRate / 100) * (t.edLwbsReduction / 100));
+      return [
+        `${recoveredBase.toLocaleString()} recovered \u00D7 ${t.edAdmissionRate}% admission rate`,
+        `\u00D7 $${t.edAdmissionRevenue.toLocaleString()}/admission \u00D7 ${t.edAdmissionRealization}% realization`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "nursingOt": {
+      const otHours = Math.round(snapshot.totalHoursSaved * (t.nursingOtReductionPercent / 100));
+      return [
+        `${snapshot.totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${t.nursingOtReductionPercent}% OT allocation = ${otHours.toLocaleString()} OT hrs`,
+        `${otHours.toLocaleString()} \u00D7 $${t.nursingOtHourlyRate}/hr = ${fmtK(driver.value)}/year`,
+      ];
+    }
+    case "ipDrg": {
+      const captureRate = DRG_SCENARIOS[d.ipDrgScenario] || 20;
+      return [
+        `${eligibleEnc.toLocaleString()} enc \u00D7 ${d.ipDrgAtRiskRate}% at-risk \u00D7 ${captureRate}% captured`,
+        `\u00D7 ${d.ipDrgWeightIncrease} wt increase \u00D7 $${d.ipDrgBasePayment.toLocaleString()} base`,
+        `\u00D7 ${d.ipDrgRealization}% realization = ${fmtK(driver.value)}/year`,
+      ];
+    }
     case "ipObsDefense":
-      return `Obs/IP status defense at ${d.ipObsDefenseDenialRate}% denial rate with ${d.ipObsDefenseRealization}% realization.`;
+      return [
+        `${eligibleEnc.toLocaleString()} admissions \u00D7 ${d.ipObsDefenseDenialRate}% denial rate \u00D7 $${d.ipObsDefenseClaimValue.toLocaleString()} avg claim`,
+        `\u00D7 ${d.ipObsDefenseDocContribution}% doc contribution \u00D7 ${d.ipObsDefenseRealization}% realization`,
+        `= ${fmtK(driver.value)}/year`,
+      ];
+    case "ipCdi": {
+      const reductionRate = CDI_SCENARIOS[d.ipCdiScenario] || 25;
+      return [
+        `${eligibleEnc.toLocaleString()} enc \u00D7 ${d.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
+        `\u00D7 $${d.ipCdiCostPerQuery}/query = ${fmtK(driver.value)}/year`,
+      ];
+    }
     case "ipCdiCapacity":
-      return `CDI capacity extension across ${t.ipCdiCapacityFtes} FTEs with ${t.ipCdiCapacityReductionPct}% query time reduction.`;
+      return [
+        `${t.ipCdiCapacityFtes} CDI FTEs \u00D7 $${t.ipCdiCapacitySalary.toLocaleString()} salary`,
+        `\u00D7 ${t.ipCdiCapacityQueryTimePct}% query time \u00D7 ${t.ipCdiCapacityReductionPct}% reduction = ${fmtK(driver.value)}/year`,
+      ];
     case "costReduction":
-      return `Direct operational cost reduction of $${fmtNum(t.estimatedCostReduction)} per year.`;
+      return [`Estimated annual cost reduction: ${fmtK(driver.value)}/year`];
     case "docQuality":
-      return `Implied documentation quality value from time allocated to thorough, complete notes.`;
+      return [`Implied documentation quality value from time allocated to complete notes = ${fmtK(driver.value)}/year`];
     case "nursingHapi":
-      return `HAPI risk reduction through improved documentation of skin assessments and interventions.`;
+      return [`HAPI risk reduction through improved documentation = ${fmtK(driver.value)}/year`];
     case "nursingFalls":
-      return `Fall risk visibility gap closure through better documentation of risk factors and protocols.`;
+      return [`Fall risk visibility gap closure = ${fmtK(driver.value)}/year`];
     case "nursingHac":
-      return `HAC penalty avoidance through comprehensive clinical documentation.`;
+      return [`HAC penalty avoidance through documentation = ${fmtK(driver.value)}/year`];
     default:
-      return "";
+      return [];
   }
 }
 
@@ -832,7 +912,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 )}
 
                 {allDrivers.map(driver => {
-                  const narrative = getDriverNarrative(driver, s);
+                  const calcSteps = getDriverCalcSteps(driver, s);
                   const categoryColor = driver.category === "documentation" ? colors.docBlue : driver.onset === "phased" ? colors.retentionAmber : colors.timeRed;
                   const categoryLabel = driver.category === "documentation" ? "Immediate" : driver.onset === "phased" ? "Phased" : `Delayed (${delayedOnsetMonths}mo)`;
 
@@ -848,9 +928,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                             </View>
                             <Text style={{ fontSize: 10, fontWeight: "bold", color: categoryColor }}>{fmt(driver.value)}</Text>
                           </View>
-                          {narrative ? (
-                            <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>{narrative}</Text>
-                          ) : null}
+                          {calcSteps.map((step, si) => (
+                            <Text key={si} style={{
+                              fontSize: 8,
+                              color: si === calcSteps.length - 1 ? categoryColor : colors.secondary,
+                              fontWeight: si === calcSteps.length - 1 ? "bold" : "normal",
+                              lineHeight: 1.4,
+                            }}>{step}</Text>
+                          ))}
                         </View>
                       </View>
                     </View>
