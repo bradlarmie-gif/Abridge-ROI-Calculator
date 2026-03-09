@@ -343,6 +343,8 @@ export default function ExploreModel({
 
     const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
     const fullScale = isNursing ? pilotProviders : state.fullScaleProviders;
+    const y2Providers = Math.round(pilotProviders + (fullScale - pilotProviders) * 0.4);
+    const encountersPerProvider = pilotProviders > 0 ? state.annualEncounters / pilotProviders : 0;
     const snapshot: ProformaSettingSnapshot = {
       id: `${cs}-${Date.now()}`,
       careSetting: cs,
@@ -352,7 +354,7 @@ export default function ExploreModel({
       fullScaleUtilization: isNursing ? state.utilizationPercent : Math.min(expandedUtilization, 95),
       yearlyProviders: {
         year1: pilotProviders,
-        year2: Math.round(pilotProviders + (fullScale - pilotProviders) * 0.4),
+        year2: y2Providers,
         year3: fullScale,
       },
       encounters: state.annualEncounters,
@@ -371,8 +373,13 @@ export default function ExploreModel({
       fullExploreState: { ...state },
       yearlyEncounters: {
         year1: state.annualEncounters,
-        year2: state.annualEncounters,
-        year3: state.annualEncounters,
+        year2: Math.round(y2Providers * encountersPerProvider),
+        year3: Math.round(fullScale * encountersPerProvider),
+      },
+      yearlyUtilization: {
+        year1: state.utilizationPercent,
+        year2: state.utilizationPercent,
+        year3: state.utilizationPercent,
       },
       retentionRate: retentionValue > 0 ? 0 : 0.5,
       replacementCost: 400000,

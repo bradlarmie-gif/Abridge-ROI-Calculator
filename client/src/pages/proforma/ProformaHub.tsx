@@ -218,7 +218,9 @@ export default function ProformaHub({
               const unitLabel = SETTING_UNIT_LABELS[setting.careSetting];
               const yp = setting.yearlyProviders;
               const isEncPricing = setting.pricingModel === "perEncounter";
-              const ye = isEncPricing ? computeYearlyEncounters(setting, config) : { year1: 0, year2: 0, year3: 0 };
+              const ye = isEncPricing
+                ? (setting.yearlyEncounters ?? computeYearlyEncounters(setting, config))
+                : { year1: 0, year2: 0, year3: 0 };
               const defaultUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
                 ? config.nursingYearlyUtilization
                 : config.yearlyUtilization;
@@ -339,26 +341,51 @@ export default function ProformaHub({
                             <div className="mt-4 pt-4 border-t border-[#F0EAE2] space-y-4">
                               {isEncPricing && (
                                 <div>
-                                  <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Encounters by Year</p>
+                                  <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Contracted Encounters by Year</p>
                                   <div className={`grid ${yearColsClass} gap-2 sm:gap-3 mb-2`}>
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y1 Encounters</label>
-                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y1-enc-${setting.careSetting}`}>{fmtNum(ye.year1)}</div>
+                                      <FormattedNumberInput
+                                        value={ye.year1}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          const newYe = { ...ye, year1: val };
+                                          onUpdateSetting(setting.id, { yearlyEncounters: newYe, encounters: val });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y1-enc-${setting.careSetting}`}
+                                      />
                                     </div>
                                     {contractYears >= 2 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y2 Encounters</label>
-                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y2-enc-${setting.careSetting}`}>{fmtNum(ye.year2)}</div>
+                                      <FormattedNumberInput
+                                        value={ye.year2}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, { yearlyEncounters: { ...ye, year2: val } });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y2-enc-${setting.careSetting}`}
+                                      />
                                     </div>
                                     )}
                                     {contractYears >= 3 && (
                                     <div>
                                       <label className="block text-[12px] text-[#8C7E6E] mb-1">Y3 Encounters</label>
-                                      <div className="w-full text-right text-sm h-8 bg-[#F9F6F3] border border-neutral-200 rounded-lg px-2 flex items-center justify-end text-[#6B5E4F] font-medium" data-testid={`display-y3-enc-${setting.careSetting}`}>{fmtNum(ye.year3)}</div>
+                                      <FormattedNumberInput
+                                        value={ye.year3}
+                                        onChange={(v) => {
+                                          const val = Math.max(v, 1);
+                                          onUpdateSetting(setting.id, { yearlyEncounters: { ...ye, year3: val } });
+                                        }}
+                                        className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
+                                        data-testid={`input-y3-enc-${setting.careSetting}`}
+                                      />
                                     </div>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-[#A39888]">Auto-calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()}</p>
+                                  <p className="text-[10px] text-[#A39888]">Editable — initially calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()}</p>
                                   <div className="mt-3">
                                     <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Utilization by Year</p>
                                     <div className={`grid ${yearColsClass} gap-2 sm:gap-3 mb-1`}>
@@ -372,7 +399,7 @@ export default function ProformaHub({
                                             value={yu.year1}
                                             onChange={(e) => {
                                               const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
-                                              onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, year1: v } });
+                                              onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, year1: v }, utilizationPercent: v });
                                             }}
                                             className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2 pr-6 text-[#6B5E4F] font-medium"
                                             data-testid={`input-y1-util-${setting.careSetting}`}
@@ -606,7 +633,7 @@ export default function ProformaHub({
                                         value={yp?.year1 ?? setting.providerCount}
                                         onChange={(v) => {
                                           const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
+                                          const updates: Partial<typeof setting> = {
                                             yearlyProviders: {
                                               year1: val,
                                               year2: yp?.year2 ?? setting.fullScaleProviders,
@@ -614,7 +641,14 @@ export default function ProformaHub({
                                             },
                                             providerCount: val,
                                             quarterlyProviders: undefined,
-                                          });
+                                          };
+                                          if (isEncPricing) {
+                                            const encPerProv = setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0;
+                                            const newEnc = Math.round(val * encPerProv);
+                                            updates.yearlyEncounters = { year1: newEnc, year2: ye.year2, year3: ye.year3 };
+                                            updates.encounters = newEnc;
+                                          }
+                                          onUpdateSetting(setting.id, updates);
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
                                         data-testid={`input-y1-${setting.careSetting}`}
@@ -627,14 +661,19 @@ export default function ProformaHub({
                                         value={yp?.year2 ?? setting.fullScaleProviders}
                                         onChange={(v) => {
                                           const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
+                                          const updates: Partial<typeof setting> = {
                                             yearlyProviders: {
                                               year1: yp?.year1 ?? setting.providerCount,
                                               year2: val,
                                               year3: yp?.year3 ?? setting.fullScaleProviders,
                                             },
                                             quarterlyProviders: undefined,
-                                          });
+                                          };
+                                          if (isEncPricing) {
+                                            const encPerProv = setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0;
+                                            updates.yearlyEncounters = { ...ye, year2: Math.round(val * encPerProv) };
+                                          }
+                                          onUpdateSetting(setting.id, updates);
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
                                         data-testid={`input-y2-${setting.careSetting}`}
@@ -648,7 +687,7 @@ export default function ProformaHub({
                                         value={yp?.year3 ?? setting.fullScaleProviders}
                                         onChange={(v) => {
                                           const val = Math.max(v, 1);
-                                          onUpdateSetting(setting.id, {
+                                          const updates: Partial<typeof setting> = {
                                             yearlyProviders: {
                                               year1: yp?.year1 ?? setting.providerCount,
                                               year2: yp?.year2 ?? setting.fullScaleProviders,
@@ -656,7 +695,12 @@ export default function ProformaHub({
                                             },
                                             fullScaleProviders: val,
                                             quarterlyProviders: undefined,
-                                          });
+                                          };
+                                          if (isEncPricing) {
+                                            const encPerProv = setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0;
+                                            updates.yearlyEncounters = { ...ye, year3: Math.round(val * encPerProv) };
+                                          }
+                                          onUpdateSetting(setting.id, updates);
                                         }}
                                         className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
                                         data-testid={`input-y3-${setting.careSetting}`}
@@ -668,7 +712,7 @@ export default function ProformaHub({
                               </div>
 
                               <div className={`grid ${config.granularity === "quarterly" ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
-                                {config.granularity !== "quarterly" && (
+                                {config.granularity !== "quarterly" && !isEncPricing && (
                                 <div>
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput

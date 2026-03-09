@@ -312,11 +312,11 @@ export function buildMonthlyCashFlows(
 
       const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
 
+      const encUtil = setting.yearlyUtilization
+        ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+          ? config.nursingYearlyUtilization : config.yearlyUtilization);
       let currentUtil: number;
       if (isPerEncounter) {
-        const encUtil = setting.yearlyUtilization
-          ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
-            ? config.nursingYearlyUtilization : config.yearlyUtilization);
         currentUtil = yearIndex === 0 ? encUtil.year1 : yearIndex === 1 ? encUtil.year2 : encUtil.year3;
       } else {
         const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
@@ -345,9 +345,11 @@ export function buildMonthlyCashFlows(
           currentYearEncounters = currentProviders * encountersPerProvider;
         }
         activelyDocumenting = Math.round(currentYearEncounters * currentUtil / 100);
-        const encounterScale = setting.encounters > 0
-          ? currentYearEncounters / setting.encounters : 1;
-        const utilScale = currentUtil / setting.utilizationPercent;
+        const baseEncounters = setting.yearlyEncounters?.year1 || setting.encounters;
+        const baseUtil = encUtil.year1;
+        const encounterScale = baseEncounters > 0
+          ? currentYearEncounters / baseEncounters : 1;
+        const utilScale = baseUtil > 0 ? currentUtil / baseUtil : 1;
         expansionMultiplier = encounterScale * utilScale;
       } else {
         activelyDocumenting = Math.round(currentProviders * currentUtil / 100);
