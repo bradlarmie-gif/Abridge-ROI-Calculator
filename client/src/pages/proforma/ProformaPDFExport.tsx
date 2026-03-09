@@ -162,6 +162,12 @@ function fmtNum(n: number) {
   return Math.round(n).toLocaleString();
 }
 
+function fmtNumShort(n: number) {
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 100_000) return `${Math.round(n / 1_000)}K`;
+  return Math.round(n).toLocaleString();
+}
+
 function contractTermLabel(months: number): string {
   if (months % 12 === 0) return `${months / 12}-Year`;
   return `${months}-Month`;
@@ -489,9 +495,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
       <PDFCoverPage
         reportLabel="FINANCIAL PROFORMA"
         title={`${termLabel} ${settings.length === 1 ? `${SETTING_LABELS[settings[0].careSetting] || settings[0].label} ` : ""}Value Model`}
-        subtitle={settings.length === 1
-          ? `${SETTING_LABELS[settings[0].careSetting] || settings[0].label}  \u00B7  Modeled on Aggregated Deployment Experience`
-          : `${settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ")}  \u00B7  Modeled on Aggregated Deployment Experience`}
+        subtitle={settingNames}
         clientName={organizationName}
         preparedBy={preparedBy}
         disclaimerText="This model reflects conservative estimates derived from user inputs and aggregated deployment experience. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
@@ -753,8 +757,8 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual hours returned{"\n"}to clinical care</Text>
               </View>
               <View style={[styles.cardBg, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 }]}>
-                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{allPerEncounter ? fmtNum(totalFullScaleEncounters) : fmtNum(totalFullScale)}</Text>
-                <Text style={{ fontSize: 8.5, color: colors.secondary }}>{allPerEncounter ? "contracted encounters" : (() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()}{"\n"}at full scale</Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{allPerEncounter ? fmtNumShort(totalFullScaleEncounters) : fmtNum(totalFullScale)}</Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary }}>{allPerEncounter ? "encounters" : (() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()}{"\n"}at full scale</Text>
               </View>
               <View style={[styles.cardBg, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 }]}>
                 <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmt(summary.runRateValue)}</Text>
