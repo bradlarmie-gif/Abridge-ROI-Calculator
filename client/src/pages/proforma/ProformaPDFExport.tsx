@@ -166,8 +166,8 @@ function fmtNum(n: number) {
 function fmtPrice(n: number) {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
-  if (n !== Math.floor(n)) return `$${n.toFixed(2)}`;
-  return `$${n.toLocaleString()}`;
+  if (Math.abs(n) < 100) return `$${n.toFixed(2)}`;
+  return `$${Math.round(n).toLocaleString()}`;
 }
 
 function fmtNumShort(n: number) {
@@ -204,7 +204,8 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   } else {
     lines.push(`${providers} ${unitLabel(cs)} \u00B7 ${encounters.toLocaleString()} encounters/yr`);
   }
-  lines.push(`${util}% utilization \u00B7 ${s.minutesSavedPerEncounter ?? 0} min saved/encounter`);
+  const minSaved = s.minutesSavedPerEncounter ?? 0;
+  lines.push(`${util}% utilization \u00B7 ${minSaved % 1 !== 0 ? minSaved.toFixed(1) : minSaved} min saved/encounter`);
 
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
@@ -822,7 +823,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                       {s.yearlyUtilization
                         ? `Y1: ${s.yearlyUtilization.year1}%${contractYears >= 2 ? `  Y2: ${s.yearlyUtilization.year2}%` : ""}${contractYears >= 3 ? `  Y3: ${s.yearlyUtilization.year3}%` : ""}`
                         : `${s.utilizationPercent}%`}
-                      {"\n"}{es?.minutesSavedPerEncounter ?? 0} min saved/encounter
+                      {"\n"}{es?.minutesSavedPerEncounter != null ? (es.minutesSavedPerEncounter % 1 !== 0 ? es.minutesSavedPerEncounter.toFixed(1) : es.minutesSavedPerEncounter) : 0} min saved/encounter
                     </Text>
                   </View>
 
