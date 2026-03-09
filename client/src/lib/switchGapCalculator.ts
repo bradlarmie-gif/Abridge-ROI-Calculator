@@ -68,6 +68,18 @@ export interface SwitchInputs {
   revenueDomainInputs: string;
   workforceDomainInputs: string;
   riskDomainInputs: string;
+  capacityContext: string;
+  revenueContext: string;
+  workforceContext: string;
+  riskContext: string;
+  capacityFormula: string;
+  revenueFormula: string;
+  workforceFormula: string;
+  riskFormula: string;
+  capacityFootnote: string;
+  revenueFootnote: string;
+  workforceFootnote: string;
+  riskFootnote: string;
 }
 
 export interface GapItem {

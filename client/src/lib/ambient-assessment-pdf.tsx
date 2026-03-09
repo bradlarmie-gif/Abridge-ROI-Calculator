@@ -62,6 +62,10 @@ export interface DomainData {
   headlineMetric?: string;
   keyInput?: string;
   primaryOpportunity: string;
+  context?: string;
+  formula?: string;
+  footnote?: string;
+  userInputs?: Record<string, string>;
 }
 
 const TOTAL_PAGES = 8;
@@ -623,6 +627,11 @@ function DomainPage({
   const name = domainDisplayName[domainKey];
   const frame = domainFrame[domainKey];
   const nextUnlock = level < 4 ? levelNextUnlock[domainKey][level] : "";
+  const dynamicContext = domain.context || "";
+  const formula = domain.formula || "";
+  const footnote = domain.footnote || "";
+  const userInputs = domain.userInputs || {};
+  const userInputEntries = Object.entries(userInputs).filter(([, v]) => v);
 
   return (
     <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
@@ -640,7 +649,7 @@ function DomainPage({
           <Text style={pdfStyles.body}>{frame.what}</Text>
           <View style={pdfStyles.divider} />
           <Text style={[pdfStyles.eyebrow, { marginBottom: 6 }]}>WHERE YOU STAND</Text>
-          <Text style={pdfStyles.body}>{frame.atThisLevel(level)}</Text>
+          <Text style={pdfStyles.body}>{dynamicContext || frame.atThisLevel(level)}</Text>
           {headlineMetric ? (
             <View style={[pdfStyles.beigeBox, { marginTop: 8 }]}>
               <Text style={pdfStyles.eyebrow}>MEASURED IMPACT</Text>
@@ -653,6 +662,13 @@ function DomainPage({
             <View style={{ marginTop: 14 }}>
               <Text style={pdfStyles.nextLevelLabel}>NEXT LEVEL UNLOCKS</Text>
               <Text style={pdfStyles.nextLevelText}>{nextUnlock}</Text>
+            </View>
+          ) : null}
+          {footnote ? (
+            <View style={{ marginTop: 10 }}>
+              <Text style={{ fontSize: 8.5, fontWeight: 400, color: "#999999", lineHeight: 1.5, fontStyle: "italic" }}>
+                {footnote}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -671,6 +687,29 @@ function DomainPage({
               Enter domain inputs to calculate
             </Text>
           )}
+          {userInputEntries.length > 0 ? (
+            <>
+              <View style={pdfStyles.darkDivider} />
+              <Text style={[pdfStyles.coachLabel, { marginBottom: 6 }]}>YOUR INPUTS</Text>
+              {userInputEntries.map(([key, val], i) => (
+                <View key={i} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 8.5, fontWeight: 400, color: "rgba(255,255,255,0.5)", flex: 1 }}>{key}</Text>
+                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "rgba(255,255,255,0.8)", textAlign: "right", maxWidth: "55%" }}>{val}</Text>
+                </View>
+              ))}
+            </>
+          ) : null}
+          {formula ? (
+            <>
+              <View style={pdfStyles.darkDivider} />
+              <Text style={[pdfStyles.coachLabel, { marginBottom: 4 }]}>FORMULA</Text>
+              {formula.split('\n').map((line, i) => (
+                <Text key={i} style={{ fontSize: 8, fontWeight: 400, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, fontStyle: "italic" }}>
+                  {line}
+                </Text>
+              ))}
+            </>
+          ) : null}
           <View style={pdfStyles.darkDivider} />
           <Text style={pdfStyles.coachLabel}>A THOUGHT ON THIS</Text>
           <Text style={pdfStyles.coachText}>{getCoachingNote(domainKey, level)}</Text>

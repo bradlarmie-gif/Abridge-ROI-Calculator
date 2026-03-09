@@ -237,6 +237,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       dispatch(assessmentActions.updateInput(`${activeDomain}Gap` as keyof typeof inputs, gapValue));
       dispatch(assessmentActions.updateInput(`${activeDomain}HasValue` as keyof typeof inputs, hasValue));
       dispatch(assessmentActions.updateInput(`${activeDomain}HeadlineMetric` as keyof typeof inputs, feedback?.headlineMetric || ''));
+      dispatch(assessmentActions.updateInput(`${activeDomain}Context` as keyof typeof inputs, feedback?.context || ''));
+      dispatch(assessmentActions.updateInput(`${activeDomain}Formula` as keyof typeof inputs, feedback?.formula || ''));
+      dispatch(assessmentActions.updateInput(`${activeDomain}Footnote` as keyof typeof inputs, feedback?.footnote || ''));
     }
 
     const idx = DOMAIN_ORDER.indexOf(activeDomain);

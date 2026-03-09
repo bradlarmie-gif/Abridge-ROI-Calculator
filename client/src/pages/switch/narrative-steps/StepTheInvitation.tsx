@@ -6,7 +6,6 @@ import {
   type SwitchInputs,
   type SwitchCalculations,
 } from "@/lib/switchGapCalculator";
-import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAssessment } from "@/lib/assessment";
@@ -97,26 +96,12 @@ export default function StepTheInvitation({
     return maxId;
   }, [pillars]);
 
-  const handleExportPDF = async (clientName: string, preparedBy: string) => {
-    setIsGeneratingPDF(true);
-    try {
-      await generateAmbientPDF({ inputs, calculations, clientName, preparedBy });
-      setShowExportModal(false);
-      toast({
-        title: "PDF Downloaded",
-        description: "Your assessment has been saved.",
-        variant: "brand",
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Export Failed",
-        description: "Unable to generate PDF. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
+  const handleExportPDF = async (_clientName: string, _preparedBy: string) => {
+    toast({
+      title: "Use the Assessment Flow",
+      description: "PDF export is available through the Ambient Assessment experience.",
+      variant: "brand",
+    });
   };
 
   const handleFormSubmit = () => {

@@ -30,6 +30,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Quarterly Granularity Mode**: Provides an option for quarterly data input and display for providers, pricing, and utilization.
 -   **Sensitivity Analysis**: Incorporates linear scaling for conservative and optimistic scenarios.
 -   **Dedicated Workforce Insights**: Includes a "Workforce Behind the Numbers" page in Explore PDFs for workforce metrics without dollar figures.
+-   **Ambient Assessment PDF (Domain Maturity)**: An 8-page PDF (`ambient-assessment-pdf.tsx`) for the Assess path that captures L1-L4 maturity across 4 domains (Capacity, Revenue, Workforce, Quality). Each domain page renders the user's specific inputs (checklist selections, before/after metrics, granular numbers), the calculation formula, dynamic context narrative from the domain feedback engine, and methodology footnotes. The PDF data flows from `Screen4Domains.tsx` (dispatches context/formula/footnote) through `Screen6Invitation.tsx` (builds `userInputs` summary via `buildUserInputsSummary` helper) into the PDF renderer. The legacy Switch PDF (`AmbientPDFExport.tsx`) has been removed.
 
 ### System Design Choices
 -   **Calculation Engines**: Two primary engines for driver-level and narrative flow pillar calculations.

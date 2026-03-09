@@ -97,6 +97,18 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   revenueDomainInputs: '{}',
   workforceDomainInputs: '{}',
   riskDomainInputs: '{}',
+  capacityContext: '',
+  revenueContext: '',
+  workforceContext: '',
+  riskContext: '',
+  capacityFormula: '',
+  revenueFormula: '',
+  workforceFormula: '',
+  riskFormula: '',
+  capacityFootnote: '',
+  revenueFootnote: '',
+  workforceFootnote: '',
+  riskFootnote: '',
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

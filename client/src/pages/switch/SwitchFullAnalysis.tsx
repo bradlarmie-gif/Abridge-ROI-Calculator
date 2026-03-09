@@ -11,7 +11,6 @@ import {
   VALUE_ASSUMPTIONS,
   type SwitchInputs 
 } from "@/lib/switchGapCalculator";
-import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 
 interface SwitchFullAnalysisProps {
@@ -45,26 +44,12 @@ export default function SwitchFullAnalysis({
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  const handleExportPDF = async (clientName: string, preparedBy: string) => {
-    setIsExporting(true);
-    try {
-      await generateAmbientPDF({ inputs, calculations, clientName, preparedBy });
-      setShowExportModal(false);
-      toast({
-        title: "PDF Downloaded",
-        description: "Your Value Realization Assessment has been saved.",
-        variant: "brand",
-      });
-    } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({
-        title: "Export Failed",
-        description: "There was an error generating the PDF. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
+  const handleExportPDF = async (_clientName: string, _preparedBy: string) => {
+    toast({
+      title: "Use the Assessment Flow",
+      description: "PDF export is available through the Ambient Assessment experience.",
+      variant: "brand",
+    });
   };
 
   const graphData = useMemo(() => {

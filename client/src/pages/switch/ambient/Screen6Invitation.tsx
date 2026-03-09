@@ -33,6 +33,144 @@ interface Screen6Props {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
+const parseDomainInputs = (json: string): Record<string, number | string> => {
+  try { return JSON.parse(json); } catch { return {}; }
+};
+
+const CAPACITY_PLANNING_OPTIONS = [
+  'Avoided or deferred new hires',
+  'Absorbed volume without adding FTEs',
+  'Redeployed providers',
+  'In the annual staffing model',
+  'In a service line business case',
+];
+
+const QUALITY_ATTRIBUTES_LABELS = [
+  'Completeness', 'Specificity', 'Quality measures', 'Compliance', 'HCC / RAF accuracy',
+];
+
+const DOWNSTREAM_WORKFLOWS_LABELS = [
+  'CDI queries', 'Denial reduction', 'Quality gap closure', 'Prior auth', 'Chart abstraction', 'RAF / HCC capture',
+];
+
+const STRATEGIC_INTEGRATIONS_LABELS = [
+  'VBC contracts', 'Payer strategy', 'Compliance governance', 'Annual quality goals',
+];
+
+const REVENUE_INTEGRATIONS_LABELS = [
+  'Monthly wRVU monitoring', 'CDI workflow integration', 'Denial tracking dashboard', 'Provider compensation model',
+];
+
+const INVESTIGATION_AREAS_LABELS = [
+  'wRVU trends', 'Coding specificity', 'Denial rates', 'Collections', 'CDI query volume', 'Coder productivity',
+];
+
+const SURVEY_FINDINGS_LABELS = [
+  'Reduced documentation burden', 'Better work-life balance', 'Less after-hours charting', 'Higher job satisfaction', 'Would recommend to peers',
+];
+
+function resolveChecklist(csv: string | undefined, labels: string[]): string[] {
+  if (!csv) return [];
+  return csv.split(',').filter(Boolean).map(i => labels[parseInt(i)] || '').filter(Boolean);
+}
+
+function fmtDollar(n: number): string {
+  if (!n) return '';
+  return `$${n.toLocaleString()}`;
+}
+
+function buildUserInputsSummary(domain: Domain, level: number, raw: Record<string, number | string>): Record<string, string> {
+  const out: Record<string, string> = {};
+
+  if (domain === 'capacity') {
+    if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;
+    if (raw.unmeasuredTime === 'true') out['Time savings'] = 'Using benchmark (2\u20133 min)';
+    if (level === 2) {
+      if (raw.capacityAggregated) out['Data status'] = raw.capacityAggregated === 'yes' ? 'Formally quantified' : raw.capacityAggregated === 'informal' ? 'Estimated, not reported' : 'Not aggregated yet';
+      if (raw.capacityLeadershipDecision) out['Leadership decision'] = raw.capacityLeadershipDecision === 'yes' ? 'Formal plan in place' : raw.capacityLeadershipDecision === 'partial' ? 'Evaluating options' : 'Presented, no decision';
+    }
+    if (level === 3) {
+      if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`;
+      if (raw.capacityAccessConfidence) out['Data confidence'] = String(raw.capacityAccessConfidence).charAt(0).toUpperCase() + String(raw.capacityAccessConfidence).slice(1);
+      if (raw.redesignedProviders) out['Providers in redesign'] = `${raw.redesignedProviders}`;
+    }
+    if (level === 4) {
+      const areas = resolveChecklist(raw.capacityPlanningAreas as string, CAPACITY_PLANNING_OPTIONS);
+      if (areas.length) out['Planning changes'] = areas.join(', ');
+      if (raw.fteAvoided) out['FTEs avoided/deferred'] = `${raw.fteAvoided}`;
+      if (raw.annualCostPerFte) out['Cost per FTE'] = fmtDollar(Number(raw.annualCostPerFte));
+    }
+  }
+
+  if (domain === 'revenue') {
+    if (level === 2) {
+      const areas = resolveChecklist(raw.investigationAreas as string, INVESTIGATION_AREAS_LABELS);
+      if (areas.length) out['Areas being analyzed'] = areas.join(', ');
+      if (raw.investigationDuration) out['Investigation duration'] = String(raw.investigationDuration);
+    }
+    if (level === 3) {
+      if (raw.revenueMetricType) out['Metric measured'] = String(raw.revenueMetricType);
+      if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}%`;
+      if (raw.measuredCollectionsDelta) out['Collections delta'] = fmtDollar(Number(raw.measuredCollectionsDelta));
+      if (raw.measuredRevenuePct) out['Revenue improvement'] = `${raw.measuredRevenuePct}%`;
+      if (raw.denialRateBefore || raw.denialRateAfter) out['Denial rate'] = `${raw.denialRateBefore || 0}% \u2192 ${raw.denialRateAfter || 0}%`;
+    }
+    if (level === 4) {
+      const areas = resolveChecklist(raw.revenueIntegrations as string, REVENUE_INTEGRATIONS_LABELS);
+      if (areas.length) out['Integrated into'] = areas.join(', ');
+      if (raw.recognizedRevenue) out['Recognized annual revenue'] = fmtDollar(Number(raw.recognizedRevenue));
+    }
+  }
+
+  if (domain === 'workforce') {
+    if (level === 1) {
+      if (raw.afterHoursReduction) out['After-hours reduction'] = `${raw.afterHoursReduction} hrs/week`;
+    }
+    if (level === 2) {
+      if (raw.editTimeSaved) out['In-clinic time saved'] = `${raw.editTimeSaved} min/day`;
+      if (raw.confirmedAfterHoursReduction) out['Confirmed after-hours reduction'] = `${raw.confirmedAfterHoursReduction} hrs/week`;
+      if (raw.surveyType) out['Survey approach'] = String(raw.surveyType);
+      const findings = resolveChecklist(raw.surveyFindings as string, SURVEY_FINDINGS_LABELS);
+      if (findings.length) out['Survey findings'] = findings.join(', ');
+      if (raw.burdenScoreBefore || raw.burdenScoreAfter) out['Burden score'] = `${raw.burdenScoreBefore || '\u2014'} \u2192 ${raw.burdenScoreAfter || '\u2014'} (scale 1\u201310)`;
+    }
+    if (level === 3) {
+      if (raw.turnoverRate) out['Annual turnover rate'] = `${raw.turnoverRate}%`;
+      if (raw.replacementCost) out['Replacement cost per provider'] = fmtDollar(Number(raw.replacementCost));
+      if (raw.docBurdenShare) out['Documentation burden share'] = `${raw.docBurdenShare}%`;
+    }
+    if (level === 4) {
+      if (raw.agencyReduction) out['Monthly agency/locum reduction'] = fmtDollar(Number(raw.agencyReduction));
+      if (raw.laborLineSustained) out['Labor line status'] = String(raw.laborLineSustained);
+    }
+  }
+
+  if (domain === 'risk') {
+    if (level === 2) {
+      const attrs = resolveChecklist(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS);
+      if (attrs.length) out['Quality attributes tracked'] = attrs.join(', ');
+      if (raw.chartGapRate) out['Chart gap rate'] = `${raw.chartGapRate}%`;
+    }
+    if (level === 3) {
+      const wf = resolveChecklist(raw.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS_LABELS);
+      if (wf.length) out['Connected workflows'] = wf.join(', ');
+      if (raw.cdiQueriesBefore || raw.cdiQueriesAfter) out['CDI queries'] = `${raw.cdiQueriesBefore || 0} \u2192 ${raw.cdiQueriesAfter || 0}`;
+      if (raw.riskDenialBefore || raw.riskDenialAfter) out['Risk denials'] = `${raw.riskDenialBefore || 0}% \u2192 ${raw.riskDenialAfter || 0}%`;
+      if (raw.priorAuthBefore || raw.priorAuthAfter) out['Prior auth'] = `${raw.priorAuthBefore || 0} \u2192 ${raw.priorAuthAfter || 0}`;
+      if (raw.qualityGapsClosed) out['Quality gaps closed'] = `${raw.qualityGapsClosed}`;
+      if (raw.abstractionHoursSaved) out['Abstraction hours saved'] = `${raw.abstractionHoursSaved} hrs/month`;
+      if (raw.rafChange) out['RAF score change'] = `+${raw.rafChange}`;
+    }
+    if (level === 4) {
+      const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);
+      if (si.length) out['Embedded in'] = si.join(', ');
+      if (raw.confirmedQualityValue) out['Confirmed annual quality value'] = fmtDollar(Number(raw.confirmedQualityValue));
+    }
+  }
+
+  return out;
+}
+
 const ROADMAP_STRATEGIC_ORDER: Domain[] = ['capacity', 'workforce', 'risk', 'revenue'];
 
 const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel: string; nextLevelUnlock: string }>> = {
@@ -156,9 +294,10 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       risk: inputs.riskGap || 0,
     };
 
-    const r: Record<string, { activationLevel: 1|2|3|4; activationLabel: string; score: number; gapValue: number; hasValue: boolean; headlineMetric: string; primaryOpportunity: string }> = {};
+    const r: Record<string, any> = {};
     for (const d of DOMAIN_ORDER) {
       const level = scoreToActivationLevel(d, scores[d]);
+      const rawInputs = parseDomainInputs((inputs as any)[`${d}DomainInputs`] || '{}');
       r[d] = {
         activationLevel: level,
         activationLabel: ACTIVATION_LABELS[d][level],
@@ -167,6 +306,10 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         hasValue: domainHasValue[d],
         headlineMetric: (inputs as any)[`${d}HeadlineMetric`] || '',
         primaryOpportunity: opportunityText[d]?.[level] || '',
+        context: (inputs as any)[`${d}Context`] || '',
+        formula: (inputs as any)[`${d}Formula`] || '',
+        footnote: (inputs as any)[`${d}Footnote`] || '',
+        userInputs: buildUserInputsSummary(d as Domain, level, rawInputs),
       };
     }
     return r;
