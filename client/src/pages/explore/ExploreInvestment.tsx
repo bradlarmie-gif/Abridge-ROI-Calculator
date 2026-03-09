@@ -37,8 +37,11 @@ export default function ExploreInvestment({
     if (state.pricingModel === 'perProvider') {
       return state.numberOfProviders * state.costPerProvider * 12;
     }
+    if (state.pricingModel === 'perEncounter') {
+      return state.annualEncounters * state.costPerEncounter;
+    }
     return state.annualLicenseFee;
-  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee]);
+  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.annualEncounters, state.costPerEncounter]);
 
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
@@ -136,6 +139,33 @@ export default function ExploreInvestment({
               </div>
             </button>
 
+            {/* Per Encounter */}
+            {!isNursing && (
+              <button
+                onClick={() => updateState({ pricingModel: 'perEncounter' })}
+                className={`w-full p-3 sm:p-4 rounded-lg text-left transition-all min-h-[56px] ${
+                  state.pricingModel === 'perEncounter'
+                    ? "bg-white border-l-4 border-[#EA2C00]"
+                    : "bg-white hover:bg-white/80"
+                }`}
+                data-testid="button-pricing-encounter"
+              >
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
+                    state.pricingModel === 'perEncounter' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {state.pricingModel === 'perEncounter' && (
+                      <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-black text-sm sm:text-base">Per Encounter</p>
+                    <p className="text-xs sm:text-sm text-[#888888]">Pay per documented encounter. Scales with volume.</p>
+                  </div>
+                </div>
+              </button>
+            )}
+
             {/* Annual License */}
             <button
               onClick={() => updateState({ pricingModel: 'annual' })}
@@ -183,6 +213,26 @@ export default function ExploreInvestment({
                   ? <>{formatNumber(state.nursingStaffedBeds)} beds × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
                   : <>{formatNumber(state.numberOfProviders)} providers × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
                 }
+              </p>
+            </div>
+          ) : state.pricingModel === 'perEncounter' ? (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-sm text-black">Cost per encounter</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={state.costPerEncounter}
+                    onChange={(v: number) => updateState({ costPerEncounter: v })}
+                    className="h-11 bg-white pl-7 pr-20 text-base"
+                    data-testid="input-cost-per-encounter"
+                    step={0.01}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/encounter</span>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-[#888888] break-words">
+                {formatNumber(state.annualEncounters)} encounters × ${(state.costPerEncounter ?? 0).toFixed(2)} = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
               </p>
             </div>
           ) : (

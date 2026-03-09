@@ -359,8 +359,8 @@ export default function ProformaView({
     <div className="min-h-screen bg-white">
       <UnifiedHeader 
         pathType="explore" 
-        currentStep={1} 
-        totalSteps={1} 
+        currentStep={2} 
+        totalSteps={2} 
         stepName="Financial Proforma" 
         onHome={onHome}
         showBack={false}
@@ -825,7 +825,7 @@ export default function ProformaView({
 
             {config.retentionPhasing.year2Pct > 0 && (
               <div className="flex items-center justify-center gap-4 mt-2 text-[12px] text-neutral-400">
-                <span>Retention: {config.retentionPhasing.year1Pct}% Y1 → {config.retentionPhasing.year2Pct}% Y2 → {config.retentionPhasing.year3Pct}% Y3{config.contractTermMonths > 36 ? "+" : ""}</span>
+                <span>Retention: {config.retentionPhasing.year1Pct}% Y1{Math.ceil(config.contractTermMonths / 12) >= 2 ? ` → ${config.retentionPhasing.year2Pct}% Y2` : ""}{Math.ceil(config.contractTermMonths / 12) >= 3 ? ` → ${config.retentionPhasing.year3Pct}% Y3${config.contractTermMonths > 36 ? "+" : ""}` : ""}</span>
               </div>
             )}
           </div>
@@ -1280,8 +1280,8 @@ export default function ProformaView({
 
             <p className="text-xs font-bold text-neutral-600 mb-2">Retention Benefit Phasing</p>
             <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the {ONSET_DELAY_MONTHS.delayed}-month clinical onset delay already built into capacity & efficiency cash flows.</p>
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
-              {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
+            <div className={`grid gap-3 sm:gap-4 ${Math.ceil(config.contractTermMonths / 12) >= 3 ? 'grid-cols-3' : Math.ceil(config.contractTermMonths / 12) >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {(["year1Pct", "year2Pct", "year3Pct"] as const).slice(0, Math.min(Math.max(Math.ceil(config.contractTermMonths / 12), 1), 3)).map((key, idx) => (
                 <div key={key}>
                   <label className="block text-[12px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}{idx === 2 && config.contractTermMonths > 36 ? "+" : ""}</label>
                   <div className="flex items-center gap-1 sm:gap-2">
@@ -1665,7 +1665,7 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
-              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1, {config.retentionPhasing.year2Pct}% in Year 2, {config.retentionPhasing.year3Pct}% in Year 3{config.contractTermMonths > 36 ? "+" : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
+              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1{Math.ceil(config.contractTermMonths / 12) >= 2 ? `, ${config.retentionPhasing.year2Pct}% in Year 2` : ""}{Math.ceil(config.contractTermMonths / 12) >= 3 ? `, ${config.retentionPhasing.year3Pct}% in Year 3${config.contractTermMonths > 36 ? "+" : ""}` : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided linear analysis scaling total value realization by 70% (conservative) and 130% (optimistic). Investment is held constant. Derived metrics (VTC, ROI, payback) are recalculated from the scaled values. This brackets the range of likely financial outcomes.</p>
             </div>
           )}

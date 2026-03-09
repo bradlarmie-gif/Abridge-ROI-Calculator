@@ -365,8 +365,13 @@ export default function ExploreModel({
       retentionValue,
       totalHoursSaved,
       drivers,
-      costPerUnit: state.costPerProvider,
-      yearlyPricing: { year1: state.costPerProvider, year2: state.costPerProvider, year3: state.costPerProvider },
+      costPerUnit: state.pricingModel === 'perProvider' ? state.costPerProvider : 0,
+      yearlyPricing: state.pricingModel === 'perProvider'
+        ? { year1: state.costPerProvider, year2: state.costPerProvider, year3: state.costPerProvider }
+        : { year1: 0, year2: 0, year3: 0 },
+      pricingModel: state.pricingModel === 'perEncounter' ? 'perEncounter' : state.pricingModel === 'annual' ? 'annualFlat' : 'perUnit',
+      costPerEncounter: state.pricingModel === 'perEncounter' ? (state.costPerEncounter ?? 0) : undefined,
+      annualLicenseFee: state.pricingModel === 'annual' ? state.annualLicenseFee : undefined,
       implementationFee: state.includeImplementation ? state.implementationFee : 0,
       goLiveMonth: 1,
       color: SETTING_COLORS[cs] || "#EA2C00",
@@ -1460,6 +1465,17 @@ export default function ExploreModel({
                             data-testid="input-quick-cost"
                           />
                         </div>
+                      ) : state.pricingModel === 'perEncounter' ? (
+                        <div>
+                          <label className="block text-[12px] text-neutral-500 mb-1">$ / Encounter</label>
+                          <FormattedNumberInput
+                            value={state.costPerEncounter}
+                            onChange={(v) => updateState({ costPerEncounter: Math.max(v, 0) })}
+                            step={0.01}
+                            className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
+                            data-testid="input-quick-encounter-cost"
+                          />
+                        </div>
                       ) : (
                         <div>
                           <label className="block text-[12px] text-neutral-500 mb-1">Annual License Fee</label>
@@ -2280,6 +2296,10 @@ export default function ExploreModel({
               {isNursing ? (
                 <p className="text-sm text-[#888888]">
                   {careSettingLabel} · {formatNumber(state.nursingStaffedBeds)} beds · ${formatNumber(state.costPerProvider)}/bed/mo
+                </p>
+              ) : state.pricingModel === 'perEncounter' ? (
+                <p className="text-sm text-[#888888]">
+                  {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers · ${(state.costPerEncounter ?? 0).toFixed(2)}/encounter
                 </p>
               ) : (
                 <p className="text-sm text-[#888888]">

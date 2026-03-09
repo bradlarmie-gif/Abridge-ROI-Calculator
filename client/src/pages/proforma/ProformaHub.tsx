@@ -138,7 +138,7 @@ export default function ProformaHub({
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <UnifiedHeader onHome={onBack} />
+      <UnifiedHeader pathType="explore" currentStep={1} totalSteps={2} stepName="Deal Structure" onHome={onBack} />
       <UnifiedHeaderSpacer />
 
       <div className="bg-[#1A1A1A] text-white py-14 px-4">
