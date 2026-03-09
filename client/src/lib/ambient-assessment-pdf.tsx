@@ -24,6 +24,14 @@ Font.register({
   ],
 });
 
+export interface OrgContext {
+  systemSize?: number;
+  orgType?: string;
+  payerMixMedicare?: number;
+  payerMixMedicaid?: number;
+  payerMixCommercial?: number;
+}
+
 export interface AmbientAssessmentPDFData {
   organizationName: string;
   preparedBy?: string;
@@ -45,6 +53,7 @@ export interface AmbientAssessmentPDFData {
   providerRate?: number;
   conversionFactor?: number;
   assessmentNarrative: string;
+  orgContext?: OrgContext;
   domains: {
     capacity: DomainData;
     revenue: DomainData;
@@ -738,6 +747,69 @@ function DomainPage({
   );
 }
 
+function getTimelineLabel(level: number): string {
+  if (level === 1) return "30 DAYS";
+  if (level === 2) return "60 DAYS";
+  if (level === 3) return "90 DAYS";
+  return "";
+}
+
+function buildDataDrivenInsight(domainKey: string, domain: DomainData, orgContext?: OrgContext): string {
+  const inputs = domain.userInputs || {};
+  const level = domain.activationLevel || 1;
+  const parts: string[] = [];
+
+  if (domainKey === 'capacity') {
+    if (level === 2 && inputs['Weekly hours recovered']) {
+      parts.push(`Your ${inputs['Weekly hours recovered']} weekly recovered hours need a documented destination.`);
+    }
+    if (level === 2 && inputs['Scheduling changes'] && inputs['Scheduling changes'] !== 'Not yet') {
+      parts.push(`Scheduling changes are ${inputs['Scheduling changes'].toLowerCase()} — formalize the access expansion plan.`);
+    }
+  }
+
+  if (domainKey === 'revenue') {
+    if (level === 1 && inputs['Deficiency/query rate']) {
+      parts.push(`Your ${inputs['Deficiency/query rate']} deficiency rate suggests recoverable value — engage your revenue cycle team.`);
+    }
+    if (level === 1 && inputs['E&M complexity']) {
+      parts.push(`E&M distribution (${inputs['E&M complexity']}) indicates documentation-driven upcoding opportunity.`);
+    }
+    if (level === 2 && inputs['Coding specificity improvement']) {
+      parts.push(`Your estimated ${inputs['Coding specificity improvement']} coding improvement needs before/after validation.`);
+    }
+    if (level === 2 && inputs['Current denial rate']) {
+      parts.push(`At ${inputs['Current denial rate']} denial rate, documentation-driven denial reduction is a priority.`);
+    }
+    if (orgContext?.payerMixMedicare && orgContext.payerMixMedicare >= 40) {
+      parts.push(`As a Medicare-heavy organization (${orgContext.payerMixMedicare}%), HCC/RAF capture should be a top priority.`);
+    }
+  }
+
+  if (domainKey === 'workforce') {
+    if (inputs['After-hours reduction']) {
+      parts.push(`${inputs['After-hours reduction']} of after-hours time recovered — connect this to retention data.`);
+    }
+  }
+
+  if (domainKey === 'risk') {
+    if (level === 1 && inputs['Chart completion rate']) {
+      parts.push(`Chart completion at ${inputs['Chart completion rate']} — closing the gap to 95%+ will improve downstream workflows.`);
+    }
+    if (level === 1 && inputs['Coding accuracy']) {
+      parts.push(`Coding accuracy at ${inputs['Coding accuracy']} — each percentage point improvement impacts revenue integrity.`);
+    }
+    if (level === 2 && inputs['Days to chart closure']) {
+      parts.push(`${inputs['Days to chart closure']} days to chart closure — reducing toward <3 days accelerates collections.`);
+    }
+    if (level === 2 && inputs['Compliance audit pass rate']) {
+      parts.push(`Compliance audit pass rate at ${inputs['Compliance audit pass rate']} — improving toward 90%+ reduces risk exposure.`);
+    }
+  }
+
+  return parts.join(' ');
+}
+
 function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
   const e = data;
   const hasGap = e.totalAnnualGap > 0;
@@ -770,11 +842,49 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
     ],
   };
 
+  const sortedDomains = [...domainOrder].sort((a, b) => {
+    const domA = e.domains?.[a as keyof typeof e.domains] || ({} as DomainData);
+    const domB = e.domains?.[b as keyof typeof e.domains] || ({} as DomainData);
+    const gapA = domA.gapValue || 0;
+    const gapB = domB.gapValue || 0;
+    if (gapA !== gapB) return gapB - gapA;
+    return (domA.activationLevel || 1) - (domB.activationLevel || 1);
+  });
+
+  const orgCtx = e.orgContext;
+  const hasOrgContext = orgCtx && (orgCtx.systemSize || orgCtx.orgType || orgCtx.payerMixMedicare);
+
+  const ORG_TYPE_LABELS: Record<string, string> = {
+    amc: "Academic Medical Center",
+    community: "Community Health System",
+    idn: "Integrated Delivery Network",
+    other: "Healthcare Organization",
+  };
+
   return (
     <Page size="LETTER" style={pdfStyles.whitePage} wrap={false}>
       <Text style={pdfStyles.eyebrow}>YOUR ROADMAP</Text>
-      <Text style={pdfStyles.headline}>{"Four domains.\nFour next levels.\nOne direction."}</Text>
+      <Text style={pdfStyles.headline}>{"Prioritized Action Plan"}</Text>
       <View style={pdfStyles.redRule} />
+      {hasOrgContext && (
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+          {orgCtx?.orgType && (
+            <View style={[pdfStyles.beigeBox, { paddingVertical: 6, paddingHorizontal: 10 }]}>
+              <Text style={{ fontSize: 8, color: "#888888" }}>{ORG_TYPE_LABELS[orgCtx.orgType] || orgCtx.orgType}</Text>
+            </View>
+          )}
+          {orgCtx?.systemSize && orgCtx.systemSize > 0 && (
+            <View style={[pdfStyles.beigeBox, { paddingVertical: 6, paddingHorizontal: 10 }]}>
+              <Text style={{ fontSize: 8, color: "#888888" }}>{orgCtx.systemSize} Facilities</Text>
+            </View>
+          )}
+          {orgCtx?.payerMixMedicare && orgCtx.payerMixMedicare > 0 && (
+            <View style={[pdfStyles.beigeBox, { paddingVertical: 6, paddingHorizontal: 10 }]}>
+              <Text style={{ fontSize: 8, color: "#888888" }}>Medicare {orgCtx.payerMixMedicare}%</Text>
+            </View>
+          )}
+        </View>
+      )}
       {hasGap ? (
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
           {[
@@ -804,12 +914,15 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
           ))}
         </View>
       ) : null}
-      {domainOrder.map((key) => {
+      {sortedDomains.map((key, idx) => {
         const domain = e.domains?.[key as keyof typeof e.domains] || ({} as DomainData);
         const level = domain.activationLevel || 1;
         const label = domain.activationLabel || "";
         const name = domainDisplayName[key];
         const nextAction = level < 4 ? nextUnlocksByDomain[key][level] : "";
+        const timelineTag = level < 4 ? getTimelineLabel(level) : "";
+        const dataDrivenInsight = buildDataDrivenInsight(key, domain, orgCtx);
+        const gapVal = domain.gapValue || 0;
 
         return (
           <View key={key} style={{ marginBottom: 10 }}>
@@ -819,7 +932,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
                   width: 18,
                   height: 18,
                   borderRadius: 9,
-                  backgroundColor: "#EA2C00",
+                  backgroundColor: idx === 0 ? "#EA2C00" : "#888888",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -827,27 +940,45 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
                 <Text style={{ fontSize: 9, fontWeight: 800, color: "#FFFFFF" }}>{level}</Text>
               </View>
               <Text style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{name}</Text>
-              <Text style={{ fontSize: 9, fontWeight: 400, color: "#888888" }}>
+              {gapVal > 0 && (
+                <Text style={{ fontSize: 9, fontWeight: 700, color: "#EA2C00" }}>{fmt(gapVal)}</Text>
+              )}
+              {timelineTag && (
+                <View style={{ backgroundColor: "#F5F0EB", borderRadius: 4, paddingVertical: 2, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#888888", letterSpacing: 0.8 }}>{timelineTag}</Text>
+                </View>
+              )}
+              {idx === 0 && level < 4 && (
+                <View style={{ backgroundColor: "#EA2C00", borderRadius: 4, paddingVertical: 2, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.8 }}>TOP PRIORITY</Text>
+                </View>
+              )}
+            </View>
+            <View style={{ paddingLeft: 26 }}>
+              <Text style={{ fontSize: 8.5, fontWeight: 400, color: "#888888", lineHeight: 1.4, marginBottom: 2 }}>
                 {label}
               </Text>
-            </View>
-            {nextAction ? (
-              <View style={{ paddingLeft: 26 }}>
-                <Text style={{ fontSize: 9, fontWeight: 600, color: "#888888", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>
-                  NEXT MOVE
-                </Text>
-                <Text style={{ fontSize: 9.5, fontWeight: 400, color: "#555555", lineHeight: 1.55 }}>
-                  {nextAction}
-                </Text>
-              </View>
-            ) : (
-              <View style={{ paddingLeft: 26 }}>
+              {nextAction ? (
+                <>
+                  <Text style={{ fontSize: 9, fontWeight: 600, color: "#888888", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>
+                    NEXT MOVE
+                  </Text>
+                  <Text style={{ fontSize: 9.5, fontWeight: 400, color: "#555555", lineHeight: 1.55 }}>
+                    {nextAction}
+                  </Text>
+                  {dataDrivenInsight ? (
+                    <Text style={{ fontSize: 8.5, fontWeight: 400, color: "#EA2C00", lineHeight: 1.5, marginTop: 3, fontStyle: "italic" }}>
+                      {dataDrivenInsight}
+                    </Text>
+                  ) : null}
+                </>
+              ) : (
                 <Text style={{ fontSize: 9.5, fontWeight: 400, color: "#888888", lineHeight: 1.55 }}>
                   Leading practice achieved. Focus on governance and sustainability.
                 </Text>
-              </View>
-            )}
-            {key !== "risk" && (
+              )}
+            </View>
+            {idx < sortedDomains.length - 1 && (
               <View style={{ height: 1, backgroundColor: "#E5E0D9", marginTop: 8 }} />
             )}
           </View>

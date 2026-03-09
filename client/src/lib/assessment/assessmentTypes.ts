@@ -109,6 +109,11 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   revenueFootnote: '',
   workforceFootnote: '',
   riskFootnote: '',
+  systemSize: 0,
+  orgType: "" as const,
+  payerMixMedicare: 0,
+  payerMixMedicaid: 0,
+  payerMixCommercial: 0,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

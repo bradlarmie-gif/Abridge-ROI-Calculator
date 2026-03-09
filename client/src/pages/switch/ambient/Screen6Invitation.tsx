@@ -88,6 +88,9 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
     if (level === 2) {
       if (raw.capacityAggregated) out['Data status'] = raw.capacityAggregated === 'yes' ? 'Formally quantified' : raw.capacityAggregated === 'informal' ? 'Estimated, not reported' : 'Not aggregated yet';
       if (raw.capacityLeadershipDecision) out['Leadership decision'] = raw.capacityLeadershipDecision === 'yes' ? 'Formal plan in place' : raw.capacityLeadershipDecision === 'partial' ? 'Evaluating options' : 'Presented, no decision';
+      if (raw.weeklyHoursRecovered) out['Weekly hours recovered'] = `${raw.weeklyHoursRecovered} hrs/week`;
+      if (raw.schedulingChangesExplored) out['Scheduling changes'] = raw.schedulingChangesExplored === 'piloting' ? 'Yes — piloting' : raw.schedulingChangesExplored === 'planning' ? 'Yes — planning' : 'Not yet';
+      if (raw.additionalSlotsPerWeek) out['Additional slots/week'] = `${raw.additionalSlotsPerWeek}`;
     }
     if (level === 3) {
       if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`;
@@ -103,10 +106,17 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
   }
 
   if (domain === 'revenue') {
+    if (level === 1) {
+      if (raw.revenueCycleEngaged) out['Revenue cycle engagement'] = raw.revenueCycleEngaged === 'yes' ? 'Formally engaged' : raw.revenueCycleEngaged === 'informal' ? 'Conversations started' : 'Not yet';
+      if (raw.emComplexity) out['E&M complexity'] = String(raw.emComplexity) === 'mostly_l3' ? 'Mostly Level 3' : String(raw.emComplexity) === 'mix_l3_l4' ? 'Mix of Level 3–4' : String(raw.emComplexity) === 'mostly_l4_l5' ? 'Mostly Level 4–5' : 'Unsure';
+      if (raw.docDeficiencyRate) out['Deficiency/query rate'] = `${raw.docDeficiencyRate}%`;
+    }
     if (level === 2) {
       const areas = resolveChecklist(raw.investigationAreas as string, INVESTIGATION_AREAS_LABELS);
       if (areas.length) out['Areas being analyzed'] = areas.join(', ');
       if (raw.investigationDuration) out['Investigation duration'] = String(raw.investigationDuration);
+      if (raw.codingSpecificityImprovement) out['Coding specificity improvement'] = `${raw.codingSpecificityImprovement}%`;
+      if (raw.currentDenialRate) out['Current denial rate'] = `${raw.currentDenialRate}%`;
     }
     if (level === 3) {
       if (raw.revenueMetricType) out['Metric measured'] = String(raw.revenueMetricType);
@@ -146,10 +156,17 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
   }
 
   if (domain === 'risk') {
+    if (level === 1) {
+      if (raw.qualityDownstreamConnected) out['Downstream connection'] = raw.qualityDownstreamConnected === 'yes' ? 'One team formally engaged' : raw.qualityDownstreamConnected === 'informal' ? 'Starting informally' : 'Not yet';
+      if (raw.chartCompletionRate) out['Chart completion rate'] = `${raw.chartCompletionRate}%`;
+      if (raw.codingAccuracy) out['Coding accuracy'] = `${raw.codingAccuracy}%`;
+    }
     if (level === 2) {
       const attrs = resolveChecklist(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS);
       if (attrs.length) out['Quality attributes tracked'] = attrs.join(', ');
       if (raw.chartGapRate) out['Chart gap rate'] = `${raw.chartGapRate}%`;
+      if (raw.complianceAuditPassRate) out['Compliance audit pass rate'] = `${raw.complianceAuditPassRate}%`;
+      if (raw.daysToChartClosure) out['Days to chart closure'] = `${raw.daysToChartClosure} days`;
     }
     if (level === 3) {
       const wf = resolveChecklist(raw.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS_LABELS);
@@ -414,6 +431,13 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         providerRate: inputs.providerRate || 150,
         conversionFactor: inputs.conversionFactor || 33,
         assessmentNarrative,
+        orgContext: {
+          systemSize: (inputs as any).systemSize || 0,
+          orgType: (inputs as any).orgType || '',
+          payerMixMedicare: (inputs as any).payerMixMedicare || 0,
+          payerMixMedicaid: (inputs as any).payerMixMedicaid || 0,
+          payerMixCommercial: (inputs as any).payerMixCommercial || 0,
+        },
         domains: {
           capacity: domainData.capacity as any,
           revenue: domainData.revenue as any,

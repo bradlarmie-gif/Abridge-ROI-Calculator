@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { staggerContainer, staggerItem } from "@/components/PageTransition";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
@@ -20,6 +21,7 @@ const INDUSTRY_UTIL = 45;
 export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }: Screen2Props) {
   const [showEstimator, setShowEstimator] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(true);
+  const [showOrgProfile, setShowOrgProfile] = useState(false);
   const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
 
   const hasBothInputs = inputs.providers > 0 && inputs.annualEncounters > 0;
@@ -277,6 +279,118 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                             className="w-full h-12 bg-white border-[#E5E7EB]"
                             data-testid="input-conversion-factor"
                           />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="mt-8">
+              <button
+                type="button"
+                onClick={() => setShowOrgProfile(!showOrgProfile)}
+                className="flex items-center gap-2 cursor-pointer bg-transparent border-none text-sm font-medium text-[#888888] hover:text-black transition-colors"
+                data-testid="button-org-profile-toggle"
+              >
+                <Building2 size={14} />
+                <ChevronDown
+                  size={14}
+                  className="transition-transform duration-200"
+                  style={{ transform: showOrgProfile ? 'rotate(180deg)' : 'rotate(0)' }}
+                />
+                Organization Profile
+                <span className="text-xs font-normal text-[#AAAAAA] ml-1">(optional)</span>
+              </button>
+
+              <AnimatePresence>
+                {showOrgProfile && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-5 mt-4 pt-4 border-t border-[#E5E7EB]">
+                      <p className="text-xs text-[#888888] italic leading-relaxed -mt-1 mb-1">
+                        Providing organizational context helps us tailor recommendations to your specific environment.
+                      </p>
+
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          Number of facilities
+                        </label>
+                        <p className="text-xs text-[#888888] mb-2">How many hospitals or clinics in your system?</p>
+                        <FormattedNumberInput
+                          value={inputs.systemSize || 0}
+                          onChange={(v) => updateInput("systemSize", v || 0)}
+                          placeholder="e.g. 12"
+                          className="w-full h-12 bg-white border-[#E5E7EB]"
+                          data-testid="input-system-size"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-1">
+                          Organization type
+                        </label>
+                        <p className="text-xs text-[#888888] mb-2">This helps us contextualize benchmarks for your setting.</p>
+                        <Select
+                          value={inputs.orgType || ""}
+                          onValueChange={(v) => updateInput("orgType", v as SwitchInputs["orgType"])}
+                        >
+                          <SelectTrigger className="w-full h-12 bg-white border-[#E5E7EB]" data-testid="select-org-type">
+                            <SelectValue placeholder="Select organization type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="amc">Academic Medical Center</SelectItem>
+                            <SelectItem value="community">Community Health System</SelectItem>
+                            <SelectItem value="idn">Integrated Delivery Network</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-2">
+                          Approximate payer mix
+                        </label>
+                        <p className="text-xs text-[#888888] mb-3">Rough percentages — doesn't need to total exactly 100%.</p>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Medicare</span>
+                            <FormattedNumberInput
+                              value={inputs.payerMixMedicare || 0}
+                              onChange={(v) => updateInput("payerMixMedicare", Math.min(100, Math.max(0, v || 0)))}
+                              placeholder="40"
+                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                              data-testid="input-payer-medicare"
+                            />
+                            <span className="text-sm text-[#888888]">%</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Medicaid</span>
+                            <FormattedNumberInput
+                              value={inputs.payerMixMedicaid || 0}
+                              onChange={(v) => updateInput("payerMixMedicaid", Math.min(100, Math.max(0, v || 0)))}
+                              placeholder="15"
+                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                              data-testid="input-payer-medicaid"
+                            />
+                            <span className="text-sm text-[#888888]">%</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Commercial</span>
+                            <FormattedNumberInput
+                              value={inputs.payerMixCommercial || 0}
+                              onChange={(v) => updateInput("payerMixCommercial", Math.min(100, Math.max(0, v || 0)))}
+                              placeholder="45"
+                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                              data-testid="input-payer-commercial"
+                            />
+                            <span className="text-sm text-[#888888]">%</span>
+                          </div>
                         </div>
                       </div>
                     </div>

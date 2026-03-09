@@ -416,6 +416,88 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Total weekly hours recovered across your deployment
+            </label>
+            <p className="text-xs text-[#888888] mb-2">
+              {(() => {
+                const ts = (currentState.inputs.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
+                if (ts > 0 && documentedEncounters > 0) {
+                  const weeklyHint = Math.round(documentedEncounters * ts / 60 / 48);
+                  return `Auto-estimate from your L1 data: ~${weeklyHint} hrs/week (${documentedEncounters.toLocaleString()} encounters × ${ts} min ÷ 60 ÷ 48 weeks)`;
+                }
+                return 'Enter observed weekly hours, or use the auto-estimate once time per encounter is set.';
+              })()}
+            </p>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.weeklyHoursRecovered as number) || 0}
+                onChange={(v) => setDomainInput('weeklyHoursRecovered', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-weekly-hours-recovered"
+              />
+              <span className="text-sm text-[#888888]">hrs/wk</span>
+            </div>
+            <BenchmarkContext text="Varies by deployment size. Typical range: 20–200 hrs/week for mid-size deployments." />
+          </div>
+
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-black mb-3">
+              Have any scheduling or template changes been explored?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'piloting', label: 'Yes — piloting changes now' },
+                { id: 'planning', label: 'Yes — planning changes' },
+                { id: 'not_yet', label: 'Not yet' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('schedulingChangesExplored', opt.id)}
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    (currentState.inputs.schedulingChangesExplored as string) === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-scheduling-changes-${opt.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${(currentState.inputs.schedulingChangesExplored as string) === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {((currentState.inputs.schedulingChangesExplored as string) === 'piloting' || (currentState.inputs.schedulingChangesExplored as string) === 'planning') && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Estimated additional slots per week
+                  </label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.additionalSlotsPerWeek as number) || 0}
+                    onChange={(v) => setDomainInput('additionalSlotsPerWeek', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-additional-slots-per-week"
+                  />
+                  <BenchmarkContext text="Organizations with scheduling redesigns typically add 5–20 slots/week across the deployment." />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       );
     }
@@ -566,6 +648,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     if (level === 1) {
       const revenueCycleEngaged = currentState.inputs.revenueCycleEngaged as string | undefined;
       const revenueCycleStatus = currentState.inputs.revenueCycleStatus as string | undefined;
+      const emComplexity = currentState.inputs.emComplexity as string | undefined;
+      const docDeficiencyRate = currentState.inputs.docDeficiencyRate as number | undefined;
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -649,6 +733,56 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Average E&M complexity level distribution
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {[
+                { id: 'mostly_l3', label: 'Mostly Level 3' },
+                { id: 'mix_l3_l4', label: 'Mix of Level 3–4' },
+                { id: 'mostly_l4_l5', label: 'Mostly Level 4–5' },
+                { id: 'unsure', label: 'Unsure' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('emComplexity', opt.id)}
+                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                    emComplexity === opt.id
+                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-em-complexity-${opt.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${emComplexity === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <span>{opt.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <BenchmarkContext text="Organizations with mostly L3 visits typically have the largest upcoding opportunity from better documentation." />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Documentation deficiency or query rate
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={docDeficiencyRate || 0}
+                onChange={(v) => setDomainInput('docDeficiencyRate', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-doc-deficiency-rate"
+                step={0.1}
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Industry average: 8–12% of charts with coding queries" />
+          </div>
         </div>
       );
     }
@@ -663,6 +797,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         'Coder productivity',
       ];
       const duration = currentState.inputs.investigationDuration as string || '';
+      const codingSpecificityImprovement = currentState.inputs.codingSpecificityImprovement as number | undefined;
+      const currentDenialRate = currentState.inputs.currentDenialRate as number | undefined;
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -724,6 +860,42 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Estimated coding specificity improvement
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={codingSpecificityImprovement || 0}
+                onChange={(v) => setDomainInput('codingSpecificityImprovement', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-coding-specificity-improvement"
+                step={0.1}
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Organizations typically see 5–15% improvement in coding specificity with ambient" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Current denial rate
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={currentDenialRate || 0}
+                onChange={(v) => setDomainInput('currentDenialRate', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-current-denial-rate"
+                step={0.1}
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Industry average: 5–10% denial rate. Documentation-driven denials are often 30–50% of total." />
           </div>
         </div>
       );
@@ -1337,6 +1509,40 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               </div>
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Current chart completion rate
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.chartCompletionRate as number) || 0}
+                onChange={(v) => setDomainInput('chartCompletionRate', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-chart-completion-rate"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Target: 95%+" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Average coding accuracy
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.codingAccuracy as number) || 0}
+                onChange={(v) => setDomainInput('codingAccuracy', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-coding-accuracy"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Industry: 85–92%" />
+          </div>
         </div>
       );
     }
@@ -1429,6 +1635,40 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     />
                     <span className="text-sm text-[#888888]">%</span>
                   </div>
+                </div>
+
+                <div className="mt-5">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Compliance audit pass rate
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.complianceAuditPassRate as number) || 0}
+                      onChange={(v) => setDomainInput('complianceAuditPassRate', Math.min(100, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-compliance-audit-pass-rate"
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
+                  <BenchmarkContext text="Target: 90%+" />
+                </div>
+
+                <div className="mt-5">
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Average days to chart closure
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.daysToChartClosure as number) || 0}
+                      onChange={(v) => setDomainInput('daysToChartClosure', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-days-to-chart-closure"
+                    />
+                    <span className="text-sm text-[#888888]">days</span>
+                  </div>
+                  <BenchmarkContext text="Best practice: <3 days" />
                 </div>
               </motion.div>
             )}

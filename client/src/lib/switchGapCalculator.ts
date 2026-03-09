@@ -80,6 +80,11 @@ export interface SwitchInputs {
   revenueFootnote: string;
   workforceFootnote: string;
   riskFootnote: string;
+  systemSize: number;
+  orgType: "amc" | "community" | "idn" | "other" | "";
+  payerMixMedicare: number;
+  payerMixMedicaid: number;
+  payerMixCommercial: number;
 }
 
 export interface GapItem {
