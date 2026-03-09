@@ -162,6 +162,13 @@ function fmtNum(n: number) {
   return Math.round(n).toLocaleString();
 }
 
+function fmtPrice(n: number) {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  if (n !== Math.floor(n)) return `$${n.toFixed(2)}`;
+  return `$${n.toLocaleString()}`;
+}
+
 function fmtNumShort(n: number) {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (Math.abs(n) >= 100_000) return `${Math.round(n / 1_000)}K`;
@@ -187,12 +194,16 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   const cs = snapshot.careSetting;
   const lines: string[] = [];
 
+  const providers = snapshot.providerCount ?? s.numberOfProviders ?? 0;
+  const encounters = snapshot.encounters ?? s.annualEncounters ?? 0;
+  const util = snapshot.utilizationPercent ?? s.utilizationPercent ?? 0;
+
   if (cs === "nursing") {
-    lines.push(`${s.nursingStaffedBeds ?? 0} staffed beds \u00B7 ${s.numberOfProviders ?? 0} nurse FTEs`);
+    lines.push(`${s.nursingStaffedBeds ?? 0} staffed beds \u00B7 ${providers} nurse FTEs`);
   } else {
-    lines.push(`${s.numberOfProviders ?? 0} ${unitLabel(cs)} \u00B7 ${(s.annualEncounters ?? 0).toLocaleString()} encounters/yr`);
+    lines.push(`${providers} ${unitLabel(cs)} \u00B7 ${encounters.toLocaleString()} encounters/yr`);
   }
-  lines.push(`${s.utilizationPercent ?? 0}% utilization \u00B7 ${s.minutesSavedPerEncounter ?? 0} min saved/encounter`);
+  lines.push(`${util}% utilization \u00B7 ${s.minutesSavedPerEncounter ?? 0} min saved/encounter`);
 
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
@@ -245,9 +256,10 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
   const t = s.timeDriverInputs;
   const d = s.docQualityInputs;
   const cs = snapshot.careSetting;
-  const encounters = s.annualEncounters || 0;
-  const providers = s.numberOfProviders || 0;
-  const eligibleEnc = Math.round(encounters * (s.utilizationPercent / 100));
+  const encounters = snapshot.encounters ?? s.annualEncounters ?? 0;
+  const providers = snapshot.providerCount ?? s.numberOfProviders ?? 0;
+  const util = snapshot.utilizationPercent ?? s.utilizationPercent ?? 100;
+  const eligibleEnc = Math.round(encounters * (util / 100));
 
   switch (driver.id) {
     case "wrvu": {
@@ -718,7 +730,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                           ? (yp?.year1 ?? s.costPerEncounter ?? 0)
                           : (yp?.year1 ?? s.costPerUnit);
                         const suffix = s.pricingModel === "annualFlat" ? "/yr flat" : s.pricingModel === "perEncounter" ? "/encounter" : `/${unitLabel(s.careSetting, false)}/mo`;
-                        return `${fmt(price)}${suffix}`;
+                        return `${fmtPrice(price)}${suffix}`;
                       })()}
                     </Text>
                   </View>
@@ -813,7 +825,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>PRICING</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
-                      {fmt(priceVal)}{priceSuffix}
+                      {fmtPrice(priceVal)}{priceSuffix}
                       {s.implementationFee > 0 ? `\n${fmt(s.implementationFee)} implementation` : ""}
                     </Text>
                   </View>
@@ -1369,9 +1381,9 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                       const suffix = s.pricingModel === "annualFlat" ? "/yr" : s.pricingModel === "perEncounter" ? "/enc" : `/${unitLabel(s.careSetting, false)}/mo`;
                       const defaultPrice = s.pricingModel === "annualFlat" ? (s.annualLicenseFee ?? 0) : s.pricingModel === "perEncounter" ? (s.costPerEncounter ?? 0) : s.costPerUnit;
                       if (hasVaried && prices) {
-                        return prices.map((p, i) => `Y${i + 1}: ${fmt(p)}`).join(" \u2192 ") + suffix;
+                        return prices.map((p, i) => `Y${i + 1}: ${fmtPrice(p)}`).join(" \u2192 ") + suffix;
                       }
-                      return `${fmt(prices?.[0] ?? defaultPrice)}${suffix}${s.pricingModel === "annualFlat" ? " flat" : ""}`;
+                      return `${fmtPrice(prices?.[0] ?? defaultPrice)}${suffix}${s.pricingModel === "annualFlat" ? " flat" : ""}`;
                     })()}
                     {s.implementationFee > 0 ? ` \u00B7 ${fmt(s.implementationFee)} impl` : ""}
                   </Text>
