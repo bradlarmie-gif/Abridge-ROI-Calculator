@@ -26,7 +26,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Flexible Pricing Models**: Supports Year-by-Year pricing for Per Provider/Month, Per Encounter, and Annual Fixed Fee models, with an inline pricing comparison tool.
 -   **Configurable Ramps and Onset Timings**: Allows detailed configuration of implementation and utilization ramps, and various driver onset timings (immediate, delayed, phased).
 -   **Key Metrics**: Focuses on Value-to-Cost, Simple ROI, Payback, and Net Value.
--   **Dynamic PDF Generation**: Creates premium, multi-page PDFs tailored to contract terms, care settings, and driver values, featuring executive summaries, projections, narratives, and methodology.
+-   **Dynamic PDF Generation**: Creates premium, 9-page PDFs tailored to contract terms, care settings, and driver values. Pages: Cover, Executive Summary, Key Assumptions & Configuration (deployment profile, pricing, implementation phasing), Value Driver Detail (per-driver breakdown with narratives, category subtotals, workforce impact), Contract Projection (stacked chart + P&L table), Year-by-Year Narrative, Sensitivity & Risk, Methodology & Assumptions, Back Cover. The `getDriverNarrative` helper generates per-driver explanations (wRVU, HCC, retention, patient access, LWBS, OT reduction, DRG, CDI, etc.).
 -   **Quarterly Granularity Mode**: Provides an option for quarterly data input and display for providers, pricing, and utilization.
 -   **Sensitivity Analysis**: Incorporates linear scaling for conservative and optimistic scenarios.
 -   **Dedicated Workforce Insights**: Includes a "Workforce Behind the Numbers" page in Explore PDFs for workforce metrics without dollar figures.

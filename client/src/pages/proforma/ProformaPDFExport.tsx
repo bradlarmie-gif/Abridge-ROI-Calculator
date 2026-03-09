@@ -17,7 +17,7 @@ import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaDriver } from "./proformaTypes";
 import type { ProformaSummary } from "./proformaTypes";
 import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import {
@@ -227,6 +227,60 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   return lines;
 }
 
+function getDriverNarrative(driver: ProformaDriver, snapshot: ProformaSettingSnapshot): string {
+  const s = snapshot.fullExploreState;
+  if (!s) return "";
+  const t = s.timeDriverInputs;
+  const d = s.docQualityInputs;
+  const cs = snapshot.careSetting;
+  const encounters = s.annualEncounters || 0;
+  const providers = s.numberOfProviders || 0;
+
+  switch (driver.id) {
+    case "wrvu":
+      if (cs === "ed") {
+        return `Level-of-service uplift at the ${d.wrvuScenario} scenario with ${d.wrvuRealization}% realization across ${fmtNum(encounters)} annual encounters.`;
+      }
+      return `${d.wrvuScenario.charAt(0).toUpperCase() + d.wrvuScenario.slice(1)} wRVU improvement scenario with ${d.wrvuRealization}% realization across ${fmtNum(encounters)} encounters.`;
+    case "hcc":
+      return `HCC recapture at ${d.hccRealization}% realization. Identifies diagnosis gaps already present in the clinical conversation.`;
+    case "denials":
+      return `${d.denialsScenario.charAt(0).toUpperCase() + d.denialsScenario.slice(1)} denial prevention scenario at ${d.denialRate}% denial rate with ${d.denialsRealization}% realization.`;
+    case "patientAccess":
+      return `${t.capacityRealizationPercent ?? 75}% of reclaimed capacity converted to visits at ${t.visitDuration}-minute visit duration and $${t.revenuePerVisit}/visit.`;
+    case "retention":
+      if (cs === "nursing") {
+        return `Based on ${t.nursingTurnoverRate}% annual turnover and $${fmtNum(t.nursingReplacementCost ?? 0)} replacement cost per nurse.`;
+      }
+      return `${t.retentionImpactScenario} impact scenario based on ${t.annualTurnoverRate}% annual turnover, ${t.burnoutRelatedTurnover}% burnout attribution, and $${fmtNum(t.replacementCost)} replacement cost.`;
+    case "edLwbs":
+      return `${t.edLwbsReduction}% reduction in ${t.edLwbsRate}% LWBS rate across ${fmtNum(encounters)} annual visits at $${t.edRevenuePerVisit}/visit.`;
+    case "edAdmission":
+      return `Captures ${t.edAdmissionRate}% admission rate from recovered LWBS patients at $${fmtNum(t.edAdmissionRevenue)} per admission.`;
+    case "nursingOt":
+      return `${t.nursingOtReductionPercent}% overtime reduction at $${t.nursingOtHourlyRate}/hr across ${providers} nurse FTEs.`;
+    case "ipDrg":
+      return `${d.ipDrgScenario.charAt(0).toUpperCase() + d.ipDrgScenario.slice(1)} DRG accuracy scenario with ${d.ipDrgRealization}% realization on ${d.ipDrgAtRiskRate}% at-risk admissions.`;
+    case "ipCdi":
+      return `${d.ipCdiScenario.charAt(0).toUpperCase() + d.ipCdiScenario.slice(1)} CDI query reduction scenario at ${d.ipCdiQueryRate}% query rate.`;
+    case "ipObsDefense":
+      return `Obs/IP status defense at ${d.ipObsDefenseDenialRate}% denial rate with ${d.ipObsDefenseRealization}% realization.`;
+    case "ipCdiCapacity":
+      return `CDI capacity extension across ${t.ipCdiCapacityFtes} FTEs with ${t.ipCdiCapacityReductionPct}% query time reduction.`;
+    case "costReduction":
+      return `Direct operational cost reduction of $${fmtNum(t.estimatedCostReduction)} per year.`;
+    case "docQuality":
+      return `Implied documentation quality value from time allocated to thorough, complete notes.`;
+    case "nursingHapi":
+      return `HAPI risk reduction through improved documentation of skin assessments and interventions.`;
+    case "nursingFalls":
+      return `Fall risk visibility gap closure through better documentation of risk factors and protocols.`;
+    case "nursingHac":
+      return `HAC penalty avoidance through comprehensive clinical documentation.`;
+    default:
+      return "";
+  }
+}
 
 function fmtAxis(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -388,7 +442,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
 }
 
 
-const TOTAL_PDF_PAGES = 7;
+const TOTAL_PDF_PAGES = 9;
 
 const PageFooter = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
   <View style={styles.footer}>
@@ -614,7 +668,251 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
         </View>
       </Page>
 
-      {/* PAGE 3: 3-YEAR PROJECTION */}
+      {/* PAGE 3: KEY ASSUMPTIONS & INPUTS */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>MODEL INPUTS</Text>
+          <Text style={styles.sectionHeadline}>Key Assumptions & Configuration</Text>
+          <Text style={styles.body}>
+            Every number in this model traces back to specific inputs provided during configuration. This page documents the assumptions that drive the projections.
+          </Text>
+
+          <Text style={styles.sectionLabelGray}>DEPLOYMENT PROFILE</Text>
+          {settings.map(s => {
+            const settingColor = s.color || colors.primary;
+            const isPerEnc = s.pricingModel === "perEncounter";
+            const es = s.fullExploreState;
+            const yp = s.yearlyProviders;
+            const ye = s.yearlyEncounters;
+            const priceLbl = s.pricingModel === "annualFlat" ? "Annual Fixed Fee" : isPerEnc ? "Per Encounter" : "Per Provider/Month";
+            const priceVal = s.pricingModel === "annualFlat"
+              ? (s.yearlyPricing?.year1 ?? s.annualLicenseFee ?? 0)
+              : isPerEnc
+              ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0)
+              : (s.yearlyPricing?.year1 ?? s.costPerUnit);
+            const priceSuffix = s.pricingModel === "annualFlat" ? "/yr" : isPerEnc ? "/enc" : "/mo";
+
+            return (
+              <View key={s.id} style={[styles.cardBg, { marginBottom: 8, padding: 0 }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <View style={{ width: 4, height: 16, backgroundColor: settingColor, borderRadius: 2, marginRight: 8 }} />
+                  <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText, flex: 1 }}>{s.label}</Text>
+                  <Text style={{ fontSize: 9, color: colors.tertiary }}>{priceLbl}</Text>
+                </View>
+
+                <View style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, gap: 6 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>SCALE</Text>
+                    {s.careSetting === "nursing" ? (
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                        {es?.nursingStaffedBeds ?? 0} staffed beds{"\n"}{s.providerCount} nurse FTEs
+                      </Text>
+                    ) : isPerEnc ? (
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                        {ye ? `${fmtNum(ye.year1)}${contractYears >= 2 ? ` \u2192 ${fmtNum(ye.year2)}` : ""}${contractYears >= 3 ? ` \u2192 ${fmtNum(ye.year3)}` : ""} encounters` : `${fmtNum(s.encounters)} encounters/yr`}
+                        {"\n"}{s.providerCount} {unitLabel(s.careSetting)}
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                        {yp ? `${yp.year1}${contractYears >= 2 ? ` \u2192 ${yp.year2}` : ""}${contractYears >= 3 ? ` \u2192 ${yp.year3}` : ""} ${unitLabel(s.careSetting)}` : `${s.providerCount} ${unitLabel(s.careSetting)}`}
+                        {"\n"}{fmtNum(s.encounters)} encounters/yr
+                      </Text>
+                    )}
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>UTILIZATION</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                      {s.yearlyUtilization
+                        ? `Y1: ${s.yearlyUtilization.year1}%${contractYears >= 2 ? `  Y2: ${s.yearlyUtilization.year2}%` : ""}${contractYears >= 3 ? `  Y3: ${s.yearlyUtilization.year3}%` : ""}`
+                        : `${s.utilizationPercent}%`}
+                      {"\n"}{es?.minutesSavedPerEncounter ?? 0} min saved/encounter
+                    </Text>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>PRICING</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                      {fmt(priceVal)}{priceSuffix}
+                      {s.implementationFee > 0 ? `\n${fmt(s.implementationFee)} implementation` : ""}
+                    </Text>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>ANNUAL VALUE</Text>
+                    <Text style={{ fontSize: 13, fontWeight: "bold", color: settingColor }}>{fmt(s.annualValue)}</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.thickDivider} />
+
+          <Text style={styles.sectionLabelGray}>IMPLEMENTATION & PHASING</Text>
+          <View style={[styles.cardBg, { padding: 12 }]}>
+            <View style={{ flexDirection: "row", gap: 12, marginBottom: 8 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>CONTRACT TERM</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{termLabel}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>IMPLEMENTATION RAMP</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{config.implementationRampMonths} months</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OPERATIONAL LAG</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{delayedOnsetMonths} months</Text>
+              </View>
+            </View>
+
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 8 }} />
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>RETENTION PHASING</Text>
+                <View style={{ flexDirection: "row", gap: 4 }}>
+                  <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 3, padding: 4, alignItems: "center" }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary }}>Y1</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber }}>{config.retentionPhasing.year1Pct}%</Text>
+                  </View>
+                  {contractYears >= 2 && (
+                    <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 3, padding: 4, alignItems: "center" }}>
+                      <Text style={{ fontSize: 7, color: colors.tertiary }}>Y2</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber }}>{config.retentionPhasing.year2Pct}%</Text>
+                    </View>
+                  )}
+                  {contractYears >= 3 && (
+                    <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 3, padding: 4, alignItems: "center" }}>
+                      <Text style={{ fontSize: 7, color: colors.tertiary }}>Y3</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber }}>{config.retentionPhasing.year3Pct}%</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>VALUE ONSET</Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                  Doc quality: immediate after ramp{"\n"}
+                  Capacity & efficiency: +{delayedOnsetMonths}mo delay{"\n"}
+                  Retention: phased per schedule above
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <PageFooter pageNum={3} totalPages={TOTAL_PDF_PAGES} />
+        </View>
+      </Page>
+
+      {/* PAGE 4: VALUE DRIVER DETAIL */}
+      <Page size="LETTER" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>VALUE DRIVERS</Text>
+          <Text style={styles.sectionHeadline}>How the Value Breaks Down</Text>
+          <Text style={styles.body}>
+            Each driver below represents a specific, measurable improvement. Together, they form the basis of the projected return.
+          </Text>
+
+          {settings.map(s => {
+            const settingColor = s.color || colors.primary;
+            const docDrivers = s.drivers.filter(d => d.category === "documentation" && d.value > 0);
+            const timeDrivers = s.drivers.filter(d => d.category === "time" && d.onset !== "phased" && d.value > 0);
+            const retentionDrivers = s.drivers.filter(d => d.onset === "phased" && d.value > 0);
+            const allDrivers = [...docDrivers, ...timeDrivers, ...retentionDrivers];
+            if (allDrivers.length === 0) return null;
+
+            return (
+              <View key={s.id} style={{ marginBottom: 10 }}>
+                {settings.length > 1 && (
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                    <View style={{ width: 4, height: 12, backgroundColor: settingColor, borderRadius: 2, marginRight: 6 }} />
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{s.label}</Text>
+                  </View>
+                )}
+
+                {allDrivers.map(driver => {
+                  const narrative = getDriverNarrative(driver, s);
+                  const categoryColor = driver.category === "documentation" ? colors.docBlue : driver.onset === "phased" ? colors.retentionAmber : colors.timeRed;
+                  const categoryLabel = driver.category === "documentation" ? "Immediate" : driver.onset === "phased" ? "Phased" : `Delayed (${delayedOnsetMonths}mo)`;
+
+                  return (
+                    <View key={driver.id} style={[styles.cardBg, { marginBottom: 4, padding: 0 }]}>
+                      <View style={{ flexDirection: "row" }}>
+                        <View style={{ width: 3, backgroundColor: categoryColor, borderTopLeftRadius: 4, borderBottomLeftRadius: 4 }} />
+                        <View style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 7 }}>
+                          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                              <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>{driver.name}</Text>
+                              <Text style={{ fontSize: 6.5, color: categoryColor, textTransform: "uppercase", letterSpacing: 0.5 }}>{categoryLabel}</Text>
+                            </View>
+                            <Text style={{ fontSize: 10, fontWeight: "bold", color: categoryColor }}>{fmt(driver.value)}</Text>
+                          </View>
+                          {narrative ? (
+                            <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>{narrative}</Text>
+                          ) : null}
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
+
+          <View style={styles.thickDivider} />
+
+          <Text style={styles.sectionLabelGray}>CATEGORY SUBTOTALS</Text>
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
+            {totalDocValue > 0 && (
+              <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
+                <View style={{ width: 20, height: 3, backgroundColor: colors.docBlue, borderRadius: 1, marginBottom: 6 }} />
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalDocValue)}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Documentation Quality</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginTop: 2 }}>{docPct}%</Text>
+              </View>
+            )}
+            {totalTimeValue > 0 && (
+              <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
+                <View style={{ width: 20, height: 3, backgroundColor: colors.timeRed, borderRadius: 1, marginBottom: 6 }} />
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalTimeValue)}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Capacity & Efficiency</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginTop: 2 }}>{timePct}%</Text>
+              </View>
+            )}
+            {totalRetentionValue > 0 && (
+              <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
+                <View style={{ width: 20, height: 3, backgroundColor: colors.retentionAmber, borderRadius: 1, marginBottom: 6 }} />
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalRetentionValue)}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Retention</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber, marginTop: 2 }}>{retPct}%</Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.sectionLabelGray}>WORKFORCE IMPACT</Text>
+          <View style={[styles.cardBg, { padding: 0, flexDirection: "row" }]}>
+            <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved))}</Text>
+              <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/year returned{"\n"}to clinical care</Text>
+            </View>
+            <View style={{ width: 0.5, backgroundColor: colors.border }} />
+            <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalInitial > 0 ? (totalHoursSaved / totalInitial / 52).toFixed(1) : "0"}</Text>
+              <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/week{"\n"}per {unitLabel(settings[0]?.careSetting || "outpatient", false)}</Text>
+            </View>
+            <View style={{ width: 0.5, backgroundColor: colors.border }} />
+            <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalInitial > 0 ? (totalHoursSaved / totalInitial / 8).toFixed(0) : "0"}</Text>
+              <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>days/year not{"\n"}at a keyboard</Text>
+            </View>
+          </View>
+
+          <PageFooter pageNum={4} totalPages={TOTAL_PDF_PAGES} />
+        </View>
+      </Page>
+
+      {/* PAGE 5: CONTRACT PROJECTION */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>{termLabel.toUpperCase()} PROJECTION</Text>
@@ -737,11 +1035,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             </Text>
           )}
 
-          <PageFooter pageNum={3} totalPages={TOTAL_PDF_PAGES} />
+          <PageFooter pageNum={5} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 4: YEAR-BY-YEAR NARRATIVE */}
+      {/* PAGE 6: YEAR-BY-YEAR NARRATIVE */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>YEAR-BY-YEAR OUTLOOK</Text>
@@ -845,11 +1143,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             </Text>
           </View>
 
-          <PageFooter pageNum={4} totalPages={TOTAL_PDF_PAGES} />
+          <PageFooter pageNum={6} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 5: SENSITIVITY & RISK */}
+      {/* PAGE 7: SENSITIVITY & RISK */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>SCENARIO ANALYSIS</Text>
@@ -946,11 +1244,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             );
           })()}
 
-          <PageFooter pageNum={5} totalPages={TOTAL_PDF_PAGES} />
+          <PageFooter pageNum={7} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 6: METHODOLOGY & ASSUMPTIONS */}
+      {/* PAGE 8: METHODOLOGY & ASSUMPTIONS */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>METHODOLOGY & ASSUMPTIONS</Text>
@@ -1058,11 +1356,11 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             </Text>
           </View>
 
-          <PageFooter pageNum={6} totalPages={TOTAL_PDF_PAGES} />
+          <PageFooter pageNum={8} totalPages={TOTAL_PDF_PAGES} />
         </View>
       </Page>
 
-      {/* PAGE 7: BACK COVER */}
+      {/* PAGE 9: BACK COVER */}
       <Page size="LETTER" style={[styles.page, { padding: 0 }]} wrap={false}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
           <Image src={abridgeLogoRed} style={{ width: 120, marginBottom: 24 }} />
