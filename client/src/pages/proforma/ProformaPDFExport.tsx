@@ -473,7 +473,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes full value realization, with value scaling gradually during ramp. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes full value realization, with value scaling gradually during ramp. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
             </Text>
           </View>
 
@@ -494,7 +494,21 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                             contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
                             contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
                           ].filter(Boolean).join(" \u2192 ")
-                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization
+                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization {"\u00B7"} {(() => {
+                        const yp = s.yearlyPricing;
+                        const price = s.pricingModel === "annualFlat"
+                          ? (yp?.year1 ?? s.annualLicenseFee ?? 0)
+                          : s.pricingModel === "perEncounter"
+                          ? (yp?.year1 ?? s.costPerEncounter ?? 0)
+                          : (yp?.year1 ?? s.costPerUnit);
+                        const suffix = s.pricingModel === "annualFlat" ? "/yr flat" : s.pricingModel === "perEncounter" ? "/encounter" : `/${unitLabel(s.careSetting, false)}/mo`;
+                        const priceLine = `${fmt(price)}${suffix}`;
+                        if (s.pricingModel === "perEncounter") {
+                          const enc = s.yearlyEncounters?.year1 ?? s.encounters;
+                          return `${priceLine} · ${fmtNum(enc)} encounters/yr`;
+                        }
+                        return priceLine;
+                      })()}
                     </Text>
                   </View>
                   <Text style={{ fontSize: 14, fontWeight: "bold", color: settingColor }}>{fmt(s.annualValue)}</Text>
