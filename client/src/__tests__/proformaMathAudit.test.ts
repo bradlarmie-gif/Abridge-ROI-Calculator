@@ -421,6 +421,61 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
   });
 });
 
+describe("Adoption Ramp Uses Implementation Ramp Duration", () => {
+  it("phased driver produces value at month 7 (after 6-month onset delay)", () => {
+    const settings = [makeSetting({
+      annualValue: 120000,
+      retentionValue: 120000,
+      drivers: [
+        { id: "retention", name: "Retention", value: 120000, category: "time", onset: "phased" as const },
+      ],
+    })];
+    const config = makeConfig({ implementationRampMonths: 3 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+
+    for (let m = 0; m < 6; m++) {
+      expect(cashFlows[m].retentionValue).toBe(0);
+    }
+    expect(cashFlows[6].retentionValue).toBeGreaterThan(0);
+  });
+
+  it("delayed driver produces value at month 4 (onset delay = 3 months)", () => {
+    const settings = [makeSetting({
+      annualValue: 120000,
+      timeValue: 120000,
+      drivers: [
+        { id: "capacity", name: "Capacity", value: 120000, category: "time", onset: "delayed" as const },
+      ],
+    })];
+    const config = makeConfig({ implementationRampMonths: 3 });
+    const cashFlows = buildMonthlyCashFlows(settings, config);
+
+    expect(cashFlows[0].timeValue).toBe(0);
+    expect(cashFlows[1].timeValue).toBe(0);
+    expect(cashFlows[2].timeValue).toBe(0);
+    expect(cashFlows[3].timeValue).toBeGreaterThan(0);
+  });
+
+  it("adoption ramp with implRampMonths=3 produces more early value than 12-month ramp would", () => {
+    const settings = [makeSetting({
+      annualValue: 120000,
+      timeValue: 120000,
+      drivers: [
+        { id: "capacity", name: "Capacity", value: 120000, category: "time", onset: "delayed" as const },
+      ],
+    })];
+    const config3 = makeConfig({ implementationRampMonths: 3 });
+    const config12 = makeConfig({ implementationRampMonths: 12 });
+
+    const cf3 = buildMonthlyCashFlows(settings, config3);
+    const cf12 = buildMonthlyCashFlows(settings, config12);
+
+    const early3 = cf3.slice(3, 8).reduce((s, r) => s + r.timeValue, 0);
+    const early12 = cf12.slice(3, 8).reduce((s, r) => s + r.timeValue, 0);
+    expect(early3).toBeGreaterThan(early12);
+  });
+});
+
 describe("Edge Cases and Guardrails", () => {
   it("zero-value drivers produce zero total value", () => {
     const settings = [makeSetting({

@@ -349,7 +349,7 @@ export function buildMonthlyCashFlows(
 
       for (const driver of effectiveDrivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
-        const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 1 : 12;
+        const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 1 : implRampMonths;
         const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, rampMonths);
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
