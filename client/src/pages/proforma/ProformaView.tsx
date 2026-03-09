@@ -476,7 +476,7 @@ export default function ProformaView({
             <div className="mb-4">
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-total-value">{fmt(summary.runRateValue)}</p>
-              {totalFullScaleProviders > 0 && (
+              {totalFullScaleProviders > 0 && !settings.every(s => s.pricingModel === "perEncounter") && (
                 <p className="text-[12px] text-white/50 mt-0.5" data-testid="text-per-provider-mobile">per provider at scale: {fmt(perProviderValue)}</p>
               )}
             </div>
@@ -523,7 +523,7 @@ export default function ProformaView({
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
-              {totalFullScaleProviders > 0 && (
+              {totalFullScaleProviders > 0 && !settings.every(s => s.pricingModel === "perEncounter") && (
                 <p className="text-[12px] text-white/50 mt-1" data-testid="text-per-provider">per provider at scale: {fmt(perProviderValue)}</p>
               )}
             </div>
@@ -584,6 +584,12 @@ export default function ProformaView({
                 <p className="text-[12px] sm:text-xs text-neutral-500 mt-1">
                   {(() => {
                     const cYears = Math.ceil(config.contractTermMonths / 12);
+                    if (s.pricingModel === "perEncounter") {
+                      const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+                      const finalEnc = cYears >= 3 ? ye.year3 : cYears >= 2 ? ye.year2 : ye.year1;
+                      if (cYears <= 1) return `${fmtNum(ye.year1)} encounters`;
+                      return `Y1: ${fmtNum(ye.year1)} → Y${cYears}: ${fmtNum(finalEnc)} encounters`;
+                    }
                     const yp = s.yearlyProviders;
                     if (!yp) return `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
                     const finalCount = cYears >= 3 ? yp.year3 : cYears >= 2 ? yp.year2 : yp.year1;
@@ -610,6 +616,13 @@ export default function ProformaView({
               <span>
                 {(() => {
                   const cYears = Math.ceil(config.contractTermMonths / 12);
+                  const allEnc = settings.every(s => s.pricingModel === "perEncounter");
+                  if (allEnc) {
+                    const y1Enc = settings.reduce((s, v) => s + (v.yearlyEncounters?.year1 || v.encounters), 0);
+                    const yFinalEnc = settings.reduce((s, v) => s + (cYears >= 3 ? (v.yearlyEncounters?.year3 || v.encounters) : cYears >= 2 ? (v.yearlyEncounters?.year2 || v.encounters) : (v.yearlyEncounters?.year1 || v.encounters)), 0);
+                    if (cYears <= 1) return `${fmtNum(y1Enc)} total encounters`;
+                    return `${fmtNum(y1Enc)} → ${fmtNum(yFinalEnc)} total encounters`;
+                  }
                   const y1 = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
                   const yFinal = settings.reduce((s, v) => s + (cYears >= 3 ? (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount) : cYears >= 2 ? (v.yearlyProviders?.year2 || v.fullScaleProviders || v.providerCount) : (v.yearlyProviders?.year1 || v.providerCount)), 0);
                   const label = settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting];
@@ -919,7 +932,10 @@ export default function ProformaView({
                         </div>
                         <div>
                           <h3 className="text-sm font-bold text-neutral-900">{s.label}</h3>
-                          <p className="text-xs text-neutral-500">{showY2 ? `${fmtNum(yp.year1)} → ${fmtNum(showY3 ? yp.year3 : yp.year2)} ${unitLabel}` : `${fmtNum(yp.year1)} ${unitLabel}`}</p>
+                          <p className="text-xs text-neutral-500">{isEnc
+                            ? (showY2 ? `${fmtNum(ye.year1)} → ${fmtNum(showY3 ? ye.year3 : ye.year2)} encounters` : `${fmtNum(ye.year1)} encounters`)
+                            : (showY2 ? `${fmtNum(yp.year1)} → ${fmtNum(showY3 ? yp.year3 : yp.year2)} ${unitLabel}` : `${fmtNum(yp.year1)} ${unitLabel}`)
+                          }</p>
                         </div>
                       </div>
 
@@ -1370,17 +1386,21 @@ export default function ProformaView({
                 {!isMobile && (
                   <>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-neutral-500 text-xs">Licensed Providers</td>
+                      <td className="py-2 pl-4 text-neutral-500 text-xs">{settings.every(s => s.pricingModel === "perEncounter") ? "Contracted Encounters" : "Licensed Providers"}</td>
                       {yearlyData.map(y => {
-                        const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+                        const allEnc = settings.every(s => s.pricingModel === "perEncounter");
+                        const totalVal = allEnc
+                          ? settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.encounters || 0), 0)
+                          : settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
                         return (
-                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalLicensed)}</td>
+                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalVal)}</td>
                         );
                       })}
                       <td className="text-right py-2 px-4 text-xs text-neutral-500">
                         {(() => {
                           const finalMonth = cashFlows[cashFlows.length - 1];
-                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.licensedProviders || 0), 0)) : "—";
+                          const allEnc = settings.every(s => s.pricingModel === "perEncounter");
+                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (allEnc ? (finalMonth.bySettings[s.id]?.encounters || 0) : (finalMonth.bySettings[s.id]?.licensedProviders || 0)), 0)) : "—";
                         })()}
                       </td>
                     </tr>

@@ -247,7 +247,10 @@ export default function ProformaHub({
                           <div>
                             <h3 className="font-bold text-neutral-900">{setting.label}</h3>
                             <p className="text-sm text-[#8C7E6E]">
-                              {fmtNum(setting.providerCount)} → {fmtNum(setting.fullScaleProviders)} {unitLabel} · {setting.utilizationPercent}% util
+                              {isEncPricing
+                                ? `${fmtNum(ye.year1)} → ${fmtNum(contractYears >= 2 ? ye.year2 : ye.year1)} encounters · ${yu.year1}% → ${contractYears >= 2 ? yu.year2 : yu.year1}% util`
+                                : `${fmtNum(setting.providerCount)} → ${fmtNum(setting.fullScaleProviders)} ${unitLabel} · ${setting.utilizationPercent}% util`
+                              }
                             </p>
                           </div>
                         </div>

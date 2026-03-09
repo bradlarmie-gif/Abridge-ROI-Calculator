@@ -110,7 +110,7 @@ export interface ProformaCashFlowRow {
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }>;
+  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }>;
 }
 
 export interface ProformaSummary {

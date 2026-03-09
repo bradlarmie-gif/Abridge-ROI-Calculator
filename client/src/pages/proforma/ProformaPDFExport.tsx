@@ -532,13 +532,28 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{s.label}</Text>
                     <Text style={{ fontSize: 8, color: colors.secondary }}>
-                      {s.yearlyProviders
+                      {s.pricingModel === "perEncounter"
+                        ? (() => {
+                            const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+                            return [
+                              `Y1: ${fmtNum(ye.year1)}`,
+                              contractYears >= 2 ? `Y2: ${fmtNum(ye.year2)}` : null,
+                              contractYears >= 3 ? `Y3: ${fmtNum(ye.year3)}` : null,
+                            ].filter(Boolean).join(" \u2192 ") + " encounters";
+                          })()
+                        : s.yearlyProviders
                         ? [
                             `Y1: ${s.yearlyProviders.year1}`,
                             contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
                             contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
-                          ].filter(Boolean).join(" \u2192 ")
-                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)} {"\u00B7"} {s.utilizationPercent}% utilization {"\u00B7"} {(() => {
+                          ].filter(Boolean).join(" \u2192 ") + ` ${unitLabel(s.careSetting)}`
+                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}`} {"\u00B7"} {s.pricingModel === "perEncounter" && s.yearlyUtilization
+                        ? [
+                            `Y1: ${s.yearlyUtilization.year1}%`,
+                            contractYears >= 2 ? `Y2: ${s.yearlyUtilization.year2}%` : null,
+                            contractYears >= 3 ? `Y3: ${s.yearlyUtilization.year3}%` : null,
+                          ].filter(Boolean).join(" \u2192 ") + " util"
+                        : `${s.utilizationPercent}% utilization`} {"\u00B7"} {(() => {
                         const yp = s.yearlyPricing;
                         const price = s.pricingModel === "annualFlat"
                           ? (yp?.year1 ?? s.annualLicenseFee ?? 0)
@@ -546,12 +561,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                           ? (yp?.year1 ?? s.costPerEncounter ?? 0)
                           : (yp?.year1 ?? s.costPerUnit);
                         const suffix = s.pricingModel === "annualFlat" ? "/yr flat" : s.pricingModel === "perEncounter" ? "/encounter" : `/${unitLabel(s.careSetting, false)}/mo`;
-                        const priceLine = `${fmt(price)}${suffix}`;
-                        if (s.pricingModel === "perEncounter") {
-                          const enc = s.yearlyEncounters?.year1 ?? s.encounters;
-                          return `${priceLine} · ${fmtNum(enc)} encounters/yr`;
-                        }
-                        return priceLine;
+                        return `${fmt(price)}${suffix}`;
                       })()}
                     </Text>
                   </View>
@@ -648,13 +658,20 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             </View>
 
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>Licensed Providers</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>{settings.every(s => s.pricingModel === "perEncounter") ? "Contracted Encounters" : "Licensed Providers"}</Text>
               {yearlyData.map(y => {
-                const total = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+                const allEnc = settings.every(s => s.pricingModel === "perEncounter");
+                const total = allEnc
+                  ? settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.encounters || 0), 0)
+                  : settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
                 return <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>;
               })}
               <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>
-                {fmtNum(settings.reduce((sum, s) => sum + (yearlyData[yearlyData.length - 1]?.bySettings[s.id]?.licensedProviders || 0), 0))}
+                {(() => {
+                  const allEnc = settings.every(s => s.pricingModel === "perEncounter");
+                  const last = yearlyData[yearlyData.length - 1];
+                  return fmtNum(settings.reduce((sum, s) => sum + (allEnc ? (last?.bySettings[s.id]?.encounters || 0) : (last?.bySettings[s.id]?.licensedProviders || 0)), 0));
+                })()}
               </Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 2, paddingLeft: 8 }}>
@@ -921,13 +938,22 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 <View key={s.id} style={{ marginBottom: 5 }}>
                   <Text style={{ fontSize: 9, fontWeight: "bold", color: s.color || colors.primaryText, marginBottom: 1 }}>{s.label}</Text>
                   <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.5 }}>
-                    {s.yearlyProviders
+                    {s.pricingModel === "perEncounter"
+                      ? (() => {
+                          const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+                          return [
+                            `Y1: ${fmtNum(ye.year1)}`,
+                            contractYears >= 2 ? `Y2: ${fmtNum(ye.year2)}` : null,
+                            contractYears >= 3 ? `Y3: ${fmtNum(ye.year3)}` : null,
+                          ].filter(Boolean).join(" \u2192 ") + " encounters";
+                        })()
+                      : s.yearlyProviders
                       ? [
                           `Y1: ${s.yearlyProviders.year1}`,
                           contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
                           contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
-                        ].filter(Boolean).join(" \u2192 ")
-                      : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount}`} {unitLabel(s.careSetting)}{"\n"}
+                        ].filter(Boolean).join(" \u2192 ") + ` ${unitLabel(s.careSetting)}`
+                      : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}`}{"\n"}
                     {(() => {
                       const yp = s.yearlyPricing;
                       const prices = yp ? [yp.year1, yp.year2, yp.year3].slice(0, Math.min(contractYears, 3)) : null;

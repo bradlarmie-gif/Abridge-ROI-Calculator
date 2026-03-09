@@ -288,12 +288,12 @@ export function buildMonthlyCashFlows(
     let totalDocValue = 0;
     let totalTimeValue = 0;
     let totalRetentionValue = 0;
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, encounters: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
         continue;
       }
 
@@ -310,26 +310,32 @@ export function buildMonthlyCashFlows(
       );
       const isPerEncounter = setting.pricingModel === "perEncounter";
 
-      const settingYearlyUtil = isPerEncounter && setting.yearlyUtilization
-        ? setting.yearlyUtilization
-        : setting.careSetting === "nursing" && config.nursingYearlyUtilization
+      const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
+
+      let currentUtil: number;
+      if (isPerEncounter) {
+        const encUtil = setting.yearlyUtilization
+          ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+            ? config.nursingYearlyUtilization : config.yearlyUtilization);
+        currentUtil = yearIndex === 0 ? encUtil.year1 : yearIndex === 1 ? encUtil.year2 : encUtil.year3;
+      } else {
+        const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
           ? config.nursingYearlyUtilization
           : config.yearlyUtilization;
-      const currentUtil = setting.quarterlyUtilization
-        ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
-        : getUtilizationRamp(
-            m, setting.goLiveMonth, months,
-            setting.utilizationPercent, fullScaleUtil,
-            settingYearlyUtil
-          );
+        currentUtil = setting.quarterlyUtilization
+          ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+          : getUtilizationRamp(
+              m, setting.goLiveMonth, months,
+              setting.utilizationPercent, fullScaleUtil,
+              settingYearlyUtil
+            );
+      }
 
       let activelyDocumenting: number;
       let expansionMultiplier: number;
-
-      const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
+      let currentYearEncounters = 0;
 
       if (isPerEncounter) {
-        let currentYearEncounters: number;
         if (setting.yearlyEncounters) {
           const ye = setting.yearlyEncounters;
           currentYearEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
@@ -444,6 +450,7 @@ export function buildMonthlyCashFlows(
         investment: monthlyInvestment,
         providers: activelyDocumenting,
         licensedProviders,
+        encounters: currentYearEncounters,
         docValue: settingDocValue,
         timeValue: settingTimeValue,
         retentionValue: settingRetentionValue,
@@ -497,7 +504,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -505,11 +512,15 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
       const endLicensed = chunk.length > 0
         ? chunk[chunk.length - 1]?.bySettings[id]?.licensedProviders || 0
         : 0;
+      const endEncounters = chunk.length > 0
+        ? chunk[chunk.length - 1]?.bySettings[id]?.encounters || 0
+        : 0;
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
         providers: avgProviders,
         licensedProviders: endLicensed,
+        encounters: endEncounters,
         docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
         timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
         retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
@@ -543,7 +554,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -551,11 +562,15 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
       const endLicensed = chunk.length > 0
         ? chunk[chunk.length - 1]?.bySettings[id]?.licensedProviders || 0
         : 0;
+      const endEncounters = chunk.length > 0
+        ? chunk[chunk.length - 1]?.bySettings[id]?.encounters || 0
+        : 0;
       bySettings[id] = {
         value: chunk.reduce((s, r) => s + (r.bySettings[id]?.value || 0), 0),
         investment: chunk.reduce((s, r) => s + (r.bySettings[id]?.investment || 0), 0),
         providers: avgProviders,
         licensedProviders: endLicensed,
+        encounters: endEncounters,
         docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
         timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
         retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
@@ -664,7 +679,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   return years
     .filter(y => y.rows.length > 0)
     .map((y, idx) => {
-      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number; licensedProviders: number }> = {};
+      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number; licensedProviders: number; encounters: number }> = {};
       settings.forEach(s => {
         const avgProviders = y.rows.length > 0
           ? Math.round(y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.providers || 0), 0) / y.rows.length)
@@ -672,12 +687,16 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
         const licensedProviders = y.rows.length > 0
           ? y.rows[y.rows.length - 1]?.bySettings[s.id]?.licensedProviders || 0
           : 0;
+        const encounters = y.rows.length > 0
+          ? y.rows[y.rows.length - 1]?.bySettings[s.id]?.encounters || 0
+          : 0;
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
           retention: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.retentionValue || 0), 0),
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
           providers: avgProviders,
           licensedProviders,
+          encounters,
         };
       });
 
