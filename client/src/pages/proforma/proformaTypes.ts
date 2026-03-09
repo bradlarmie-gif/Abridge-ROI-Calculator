@@ -119,9 +119,6 @@ export interface ProformaSummary {
   simpleROI: number;
   valueToCost: number;
   totalHours: number;
-  irr: number;
-  irrMethod: "irr" | "mirr";
-  irrValid: boolean;
   paybackMonth: number | null;
   termNet: number;
   termValue: number;
@@ -211,14 +208,14 @@ export const SCENARIO_COLORS = ["#EA2C00", "#1E3A5F", "#D4930A", "#2D7377"];
 export const SCENARIO_DASHES = ["", "8 4", "4 4", "8 2 2 2"];
 export const MAX_SCENARIOS = 4;
 
-export const ONSET_LABELS: Record<DriverOnset, string> = {
-  immediate: "Immediate",
-  delayed: "Delayed (M3+)",
-  phased: "Phased (Y1/Y2/Y3)",
-};
-
 export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
   immediate: 0,
   delayed: 3,
   phased: 6,
+};
+
+export const ONSET_LABELS: Record<DriverOnset, string> = {
+  immediate: "Immediate",
+  delayed: `Delayed (M${ONSET_DELAY_MONTHS.delayed}+)`,
+  phased: "Phased (Y1/Y2/Y3)",
 };

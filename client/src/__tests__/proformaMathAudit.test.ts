@@ -2,11 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   buildMonthlyCashFlows,
   calculateProformaSummary,
-  buildAnnualIRRCashFlows,
-  calculateAnnualIRR,
-  npvAtRate,
+  getYearlySummary,
 } from "@/lib/proformaCalculations";
-import { getYearlySummary } from "@/lib/proformaCalculations";
 import type {
   ProformaSettingSnapshot,
   ProformaConfig,
@@ -144,15 +141,6 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     expect(cashFlows[35].cumulativeNet).toBeCloseTo(summary.termNet, -1);
   });
 
-  it("IRR is valid and positive", () => {
-    expect(summary.irrValid).toBe(true);
-    expect(summary.irr).toBeGreaterThan(0);
-  });
-
-  it("IRR is finite and positive (high is expected: $300K value on $97K cost)", () => {
-    expect(isFinite(summary.irr)).toBe(true);
-    expect(summary.irr).toBeGreaterThan(1.0);
-  });
 });
 
 describe("Test Case 2: Expansion Scenario — Providers 10→30→50", () => {
@@ -433,49 +421,6 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
   });
 });
 
-describe("IRR Cross-Validation", () => {
-  it("NPV at the annual IRR rate is approximately zero", () => {
-    const settings = [makeSetting()];
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows(settings, config);
-    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
-    const result = calculateAnnualIRR(annualCF);
-
-    expect(result.isValid).toBe(true);
-    const npv = npvAtRate(annualCF, result.annualizedRate);
-    const totalAbsFlow = annualCF.reduce((s, v) => s + Math.abs(v), 0);
-    expect(Math.abs(npv) / totalAbsFlow).toBeLessThan(0.001);
-  });
-
-  it("annual cash flow period 0 = negative implementation fees only", () => {
-    const settings = [makeSetting({ implementationFee: 50000 })];
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows(settings, config);
-    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
-
-    expect(annualCF[0]).toBeCloseTo(-50000, 0);
-  });
-
-  it("annual cash flows have 4 entries (period 0 + 3 years)", () => {
-    const settings = [makeSetting()];
-    const config = makeConfig({ contractTermMonths: 36 });
-    const cashFlows = buildMonthlyCashFlows(settings, config);
-    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
-
-    expect(annualCF.length).toBe(4);
-  });
-
-  it("year 1 return = year 1 net value (gross value minus subscription)", () => {
-    const settings = [makeSetting()];
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows(settings, config);
-    const annualCF = buildAnnualIRRCashFlows(settings, config, cashFlows);
-
-    const y1Net = cashFlows.slice(0, 12).reduce((s, r) => s + (r.docValue + r.timeValue + r.retentionValue) - r.investment, 0);
-    expect(annualCF[1]).toBeCloseTo(y1Net, 0);
-  });
-});
-
 describe("Edge Cases and Guardrails", () => {
   it("zero-value drivers produce zero total value", () => {
     const settings = [makeSetting({
@@ -611,7 +556,6 @@ describe("PDF Math Consistency", () => {
     expect(summary1.termInvestment).toBe(summary2.termInvestment);
     expect(summary1.valueToCost).toBe(summary2.valueToCost);
     expect(summary1.simpleROI).toBe(summary2.simpleROI);
-    expect(summary1.irr).toBe(summary2.irr);
     expect(summary1.paybackMonth).toBe(summary2.paybackMonth);
   });
 
@@ -719,18 +663,6 @@ describe("Annual Flat License Pricing", () => {
     expect(summary.totalInvestment).toBe(annualFee);
   });
 
-  it("IRR works correctly with annualFlat pricing", () => {
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows([flatSetting], config);
-    const annualCF = buildAnnualIRRCashFlows([flatSetting], config, cashFlows);
-    const irrResult = calculateAnnualIRR(annualCF);
-
-    expect(irrResult.isValid).toBe(true);
-    expect(irrResult.annualizedRate).toBeGreaterThan(0);
-
-    expect(annualCF[0]).toBeCloseTo(-flatSetting.implementationFee, 0);
-  });
-
   it("mixed scenario: one perUnit + one annualFlat", () => {
     const perUnitSetting = makeSetting({
       id: "per-unit-setting",
@@ -812,25 +744,6 @@ describe("Annual Flat License Pricing", () => {
     const summary = calculateProformaSummary([setting], config, cashFlows);
 
     expect(summary.totalInvestment).toBe(15 * 20000);
-  });
-
-  it("IRR is valid for encounter-based pricing", () => {
-    const setting = makeSetting({
-      pricingModel: "perEncounter",
-      costPerEncounter: 10,
-      encounters: 30000,
-      providerCount: 10,
-      annualValue: 500000,
-      implementationFee: 25000,
-      costPerUnit: 0,
-    });
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows([setting], config);
-    const annualCF = buildAnnualIRRCashFlows([setting], config, cashFlows);
-    const irr = calculateAnnualIRR(annualCF);
-
-    expect(irr.isValid).toBe(true);
-    expect(irr.annualizedRate).toBeGreaterThan(0);
   });
 
   it("three-model mixed scenario produces correct combined investment", () => {

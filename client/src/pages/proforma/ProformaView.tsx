@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
-import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS } from "./proformaTypes";
+import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
@@ -1196,7 +1196,7 @@ export default function ProformaView({
             </div>
 
             <p className="text-xs font-bold text-neutral-600 mb-2">Retention Benefit Phasing</p>
-            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the 3-month clinical onset delay already built into capacity & efficiency cash flows.</p>
+            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the {ONSET_DELAY_MONTHS.delayed}-month clinical onset delay already built into capacity & efficiency cash flows.</p>
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {(["year1Pct", "year2Pct", "year3Pct"] as const).map((key, idx) => (
                 <div key={key}>
@@ -1281,7 +1281,7 @@ export default function ProformaView({
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Capacity & Efficiency (3mo delay)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Capacity & Efficiency ({ONSET_DELAY_MONTHS.delayed}mo delay)</td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.timeValue)}</td>
                       ))}
@@ -1571,9 +1571,9 @@ export default function ProformaView({
           </button>
           {showMethodology && (
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
-              <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month implementation ramp is applied before value begins accruing. During this period, subscription costs are incurred but no operational value is projected. This accounts for training, EHR integration, and workflow adjustment.</p>
+              <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month gradual implementation ramp is applied as providers are onboarded. During this period, value scales gradually (e.g. ~33%/67%/100% for a 3-month ramp) while full subscription costs are incurred. This accounts for training, EHR integration, and workflow adjustment.</p>
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~3 additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~{ONSET_DELAY_MONTHS.delayed} additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
