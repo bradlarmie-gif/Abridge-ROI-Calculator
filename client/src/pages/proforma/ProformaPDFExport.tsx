@@ -422,14 +422,50 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
   const delayedOnsetMonths = ONSET_DELAY_MONTHS.delayed;
-  const yearNarratives = [
-    { title: "Establish the Evidence", desc: `Initial deployment builds the evidence base during the ${config.implementationRampMonths}-month implementation ramp. Documentation quality value begins post-implementation while capacity gains follow after an additional ${delayedOnsetMonths}-month operational ramp.` },
-    { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
-    { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories are contributing at or near full scale." },
-    { title: "Sustained Returns", desc: "Steady-state value continues with mature adoption. Operational workflows are fully integrated, and the organization benefits from predictable, recurring returns." },
-    { title: "Strategic Scale", desc: "Long-term deployment enables strategic expansion opportunities. Proven value across established settings informs broader organizational adoption decisions." },
-    { title: "Long-Term Value", desc: "The partnership reaches full maturity. Compounded efficiency gains and deeply embedded workflows deliver maximum organizational impact." },
-  ];
+
+  function buildYearNarrative(yearIdx: number, y: typeof yearlyData[0]): { title: string; desc: string } {
+    const yearNum = yearIdx + 1;
+    const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
+    const prevLicensed = yearIdx > 0 ? settings.reduce((sum, s) => sum + (yearlyData[yearIdx - 1].bySettings[s.id]?.licensedProviders || 0), 0) : 0;
+    const isScaling = yearIdx > 0 && totalLicensed > prevLicensed;
+    const hasRetention = y.retentionValue > 0;
+    const hasCapacity = y.timeValue > 0;
+    const hasDocQuality = y.docValue > 0;
+    const unitLbl = (() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })();
+
+    if (yearNum === 1) {
+      const driverList: string[] = [];
+      if (hasDocQuality) driverList.push("documentation quality");
+      if (hasCapacity) driverList.push(`capacity and efficiency (after a ${delayedOnsetMonths}-month operational lag)`);
+      if (hasRetention) driverList.push("early retention effects");
+      return {
+        title: `Building the Foundation with ${fmtNum(totalLicensed)} ${unitLbl}`,
+        desc: `The ${config.implementationRampMonths}-month implementation ramp establishes workflows and provider adoption. ${driverList.length > 0 ? `Value begins with ${driverList.join(", ")}.` : ""} Year 1 projects ${fmt(y.totalValue)} in organizational value.`,
+      };
+    }
+    if (yearNum === 2) {
+      return {
+        title: isScaling ? `Scaling to ${fmtNum(totalLicensed)} ${unitLbl}` : `Deepening Adoption Across ${fmtNum(totalLicensed)} ${unitLbl}`,
+        desc: `${isScaling ? "Expanded deployment broadens the value base." : "Mature adoption strengthens value realization."} ${hasRetention ? "Retention value begins to materialize as clinician satisfaction compounds." : "Capacity and efficiency gains reach steady state."} Year 2 projects ${fmt(y.totalValue)} in organizational value.`,
+      };
+    }
+    if (yearNum === 3) {
+      return {
+        title: `Full Impact at ${fmtNum(totalLicensed)} ${unitLbl}`,
+        desc: `All value drivers are contributing at or near full scale. ${hasRetention ? "Retention effects reach their target phasing." : ""} The organization is projected to realize ${fmt(y.totalValue)} in value${y.totalValue >= Math.max(...yearlyData.map(yd => yd.totalValue)) ? ` ${"\u2014"} the strongest year of the partnership` : ""}.`,
+      };
+    }
+    if (yearNum === 4) {
+      return {
+        title: `Sustained Returns ${"\u2014"} Year ${yearNum}`,
+        desc: `Mature adoption delivers predictable, recurring value. Operational workflows are fully embedded, and the organization benefits from ${fmt(y.totalValue)} in projected value with minimal incremental effort.`,
+      };
+    }
+    return {
+      title: `Long-Term Value ${"\u2014"} Year ${yearNum}`,
+      desc: `The partnership reaches full maturity. Compounded efficiency gains and deeply embedded workflows deliver ${fmt(y.totalValue)} in projected organizational impact.`,
+    };
+  }
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
@@ -472,8 +508,16 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           </View>
 
           <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes full value realization, with value scaling gradually during ramp. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+            <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.6, fontWeight: "bold", marginBottom: 4 }}>
+              This {termLabel.toLowerCase()} partnership is projected to deliver {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on investment.
+            </Text>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+              {totalInitial !== totalFullScale
+                ? `The model scales from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)} ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over ${contractYears} year${contractYears > 1 ? "s" : ""}, with a total investment of ${fmt(summary.termInvestment)}.`
+                : `Across ${fmtNum(totalFullScale)} ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over ${contractYears} year${contractYears > 1 ? "s" : ""}, the total investment is ${fmt(summary.termInvestment)}.`} Value realization follows a deliberate phasing: documentation quality improvements begin after a {config.implementationRampMonths}-month implementation ramp, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively as clinician satisfaction compounds.
+            </Text>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6 }}>
+              At full scale, the model projects {fmt(summary.runRateValue)} in annual recurring value{summary.paybackMonth ? ` with payback at month ${summary.paybackMonth}` : ""}.
             </Text>
           </View>
 
@@ -543,7 +587,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabel}>{termLabel.toUpperCase()} PROJECTION</Text>
           <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
           <Text style={styles.body}>
-            Value is phased by driver onset timing with per-year provider allocation and adoption ramp. Documentation quality (navy) appears immediately, capacity & efficiency (red) follows after a {delayedOnsetMonths}-month lag, and retention (gold) phases in over years.
+            Value builds progressively as the deployment matures. Documentation quality gains (navy) appear first, capacity and efficiency improvements (red) follow after a {delayedOnsetMonths}-month operational lag, and retention value (gold) compounds over the contract term.
           </Text>
 
           <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
@@ -666,9 +710,26 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             Each year of the partnership has a distinct character. Value compounds as provider adoption deepens, retention effects materialize, and the organization operationalizes freed-up capacity.
           </Text>
 
+          {totalHoursSaved > 0 && (
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 }]}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmtNum(Math.round(totalHoursSaved))}</Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual hours returned{"\n"}to clinical care</Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 }]}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmtNum(totalFullScale)}</Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary }}>{(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()}{"\n"}at full scale</Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 8 }]}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmt(summary.runRateValue)}</Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary }}>annual run-rate{"\n"}value at maturity</Text>
+              </View>
+            </View>
+          )}
+
           {yearlyData.map((y, idx) => {
             const yearNum = idx + 1;
-            const h = yearNarratives[Math.min(idx, yearNarratives.length - 1)];
+            const h = buildYearNarrative(idx, y);
             const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
             const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
             const adoptionPct = totalLicensed > 0 ? Math.round((totalActive / totalLicensed) * 100) : 0;
@@ -727,10 +788,18 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               STRATEGIC OBSERVATION
             </Text>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {settings.length === 1
-                ? `This model focuses on ${settingNames}. A single-setting deployment provides a focused proof of value. Once baselines are established and outcomes measured, this model can be extended to additional care settings.`
-                : `Across ${settings.length} care settings (${settingNames}), this model is ${docPct > timePct ? "documentation quality" : "capacity & efficiency"}-weighted: ${docPct}% doc quality, ${timePct}% capacity, ${retPct}% retention. The ${termLabel.toLowerCase()} horizon allows retention value to reach meaningful scale.`
-              }
+              {(() => {
+                const vtc = summary.valueToCost;
+                const dominantDriver = docPct >= timePct && docPct >= retPct ? "documentation quality" : timePct >= retPct ? "capacity and efficiency" : "retention";
+                const dominantPct = Math.max(docPct, timePct, retPct);
+                const strengthPhrase = vtc >= 4 ? "exceptionally strong" : vtc >= 2.5 ? "compelling" : vtc >= 1.5 ? "favorable" : "positive";
+                const paybackPhrase = summary.paybackMonth && summary.paybackMonth <= 6 ? ` The projected ${summary.paybackMonth}-month payback reflects rapid time-to-value.` : summary.paybackMonth && summary.paybackMonth <= 12 ? ` Payback within the first year reinforces the near-term financial case.` : "";
+
+                if (settings.length === 1) {
+                  return `This ${settingNames} deployment presents a ${strengthPhrase} financial case, with ${dominantDriver} representing ${dominantPct}% of total value. A single-setting model provides a focused proof of value ${"\u2014"} once outcomes are validated, this framework extends naturally to additional care settings.${paybackPhrase}`;
+                }
+                return `Across ${settings.length} care settings (${settingNames}), this model delivers a ${strengthPhrase} ${vtc.toFixed(1)}x return weighted toward ${dominantDriver} (${dominantPct}% of total value). The multi-setting approach diversifies value sources and strengthens the organizational case for investment.${paybackPhrase}`;
+              })()}
             </Text>
           </View>
 
@@ -741,10 +810,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
       {/* PAGE 5: SENSITIVITY & RISK */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>SENSITIVITY & RISK</Text>
-          <Text style={styles.sectionHeadline}>What If Assumptions Are Wrong?</Text>
+          <Text style={styles.sectionLabel}>SCENARIO ANALYSIS</Text>
+          <Text style={styles.sectionHeadline}>Confidence Range & Cost of Delay</Text>
           <Text style={styles.body}>
-            No model is perfect. This section brackets the range of likely outcomes and identifies what the organization foregoes by deferring implementation.
+            Robust financial planning accounts for variability. This section brackets the range of likely outcomes and quantifies the opportunity cost of deferred implementation.
           </Text>
 
           <Text style={styles.sectionLabelGray}>SENSITIVITY ANALYSIS</Text>
@@ -788,9 +857,13 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmt(Math.round(summary.runRateValue / 12))}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated monthly value deferred</Text>
               </View>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved))}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>annual hours returned to care</Text>
+              </View>
             </View>
-            <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.5 }}>
-              Each month of delayed implementation defers this estimated value while documentation costs continue.
+            <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+              Every month without implementation, your {(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} spend {fmtNum(Math.round(totalHoursSaved / 12))} hours on documentation that could be redirected to patient care {"\u2014"} representing {fmt(Math.round(summary.runRateValue / 12))} in deferred organizational value.
             </Text>
           </View>
 
@@ -839,7 +912,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>METHODOLOGY & ASSUMPTIONS</Text>
-          <Text style={styles.sectionHeadline}>How We Built This Model</Text>
+          <Text style={styles.sectionHeadline}>Modeling Framework & Assumptions</Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
