@@ -658,7 +658,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               </Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 2, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>Actively Documenting</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.tertiary }}>{settings.every(s => s.pricingModel === "perEncounter") ? "Utilized Encounters" : settings.some(s => s.pricingModel === "perEncounter") ? "Active Volume" : "Actively Documenting"}</Text>
               {yearlyData.map(y => {
                 const total = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
                 return <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmtNum(total)}</Text>;

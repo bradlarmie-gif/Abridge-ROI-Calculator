@@ -219,6 +219,10 @@ export default function ProformaHub({
               const yp = setting.yearlyProviders;
               const isEncPricing = setting.pricingModel === "perEncounter";
               const ye = isEncPricing ? computeYearlyEncounters(setting, config) : { year1: 0, year2: 0, year3: 0 };
+              const defaultUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
+                ? config.nursingYearlyUtilization
+                : config.yearlyUtilization;
+              const yu = setting.yearlyUtilization ?? defaultUtil;
               const contractYears = Math.ceil(config.contractTermMonths / 12);
               const yearColsClass = contractYears >= 3 ? "grid-cols-3" : contractYears === 2 ? "grid-cols-2" : "grid-cols-1";
               return (
@@ -352,6 +356,70 @@ export default function ProformaHub({
                                     )}
                                   </div>
                                   <p className="text-[10px] text-[#A39888]">Auto-calculated from {unitLabel.toLowerCase()} × encounters/{unitLabel.replace(/s$/, '').toLowerCase()}</p>
+                                  <div className="mt-3">
+                                    <p className="text-[12px] font-medium text-[#9C8E7E] uppercase tracking-[1.5px] mb-2">Utilization by Year</p>
+                                    <div className={`grid ${yearColsClass} gap-2 sm:gap-3 mb-1`}>
+                                      <div>
+                                        <label className="block text-[12px] text-[#8C7E6E] mb-1">Y1 Util %</label>
+                                        <div className="relative">
+                                          <input
+                                            type="number"
+                                            min={1}
+                                            max={100}
+                                            value={yu.year1}
+                                            onChange={(e) => {
+                                              const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                              onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, year1: v } });
+                                            }}
+                                            className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2 pr-6 text-[#6B5E4F] font-medium"
+                                            data-testid={`input-y1-util-${setting.careSetting}`}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-[#A39888]">%</span>
+                                        </div>
+                                      </div>
+                                      {contractYears >= 2 && (
+                                      <div>
+                                        <label className="block text-[12px] text-[#8C7E6E] mb-1">Y2 Util %</label>
+                                        <div className="relative">
+                                          <input
+                                            type="number"
+                                            min={1}
+                                            max={100}
+                                            value={yu.year2}
+                                            onChange={(e) => {
+                                              const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                              onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, year2: v } });
+                                            }}
+                                            className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2 pr-6 text-[#6B5E4F] font-medium"
+                                            data-testid={`input-y2-util-${setting.careSetting}`}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-[#A39888]">%</span>
+                                        </div>
+                                      </div>
+                                      )}
+                                      {contractYears >= 3 && (
+                                      <div>
+                                        <label className="block text-[12px] text-[#8C7E6E] mb-1">Y3 Util %</label>
+                                        <div className="relative">
+                                          <input
+                                            type="number"
+                                            min={1}
+                                            max={100}
+                                            value={yu.year3}
+                                            onChange={(e) => {
+                                              const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                              onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, year3: v } });
+                                            }}
+                                            className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2 pr-6 text-[#6B5E4F] font-medium"
+                                            data-testid={`input-y3-util-${setting.careSetting}`}
+                                          />
+                                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-[#A39888]">%</span>
+                                        </div>
+                                      </div>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-[#A39888]">% of encounters where Abridge is used</p>
+                                  </div>
                                 </div>
                               )}
                               <div>
@@ -384,9 +452,10 @@ export default function ProformaHub({
                                           if (!setting.quarterlyPricing) {
                                             onUpdateSetting(setting.id, { quarterlyPricing: annualToQuarterlyPricing(yprice) });
                                           }
-                                          const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
-                                            ? config.nursingYearlyUtilization
-                                            : config.yearlyUtilization;
+                                          const settingYearlyUtil = setting.yearlyUtilization
+                                            ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+                                              ? config.nursingYearlyUtilization
+                                              : config.yearlyUtilization);
                                           if (!setting.quarterlyUtilization) {
                                             onUpdateSetting(setting.id, { quarterlyUtilization: annualToQuarterlyUtilization(settingYearlyUtil) });
                                           }
@@ -401,9 +470,10 @@ export default function ProformaHub({
                                 </div>
                                 {config.granularity === "quarterly" ? (() => {
                                   const qp = setting.quarterlyProviders || annualToQuarterlyProviders(yp || { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders });
-                                  const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
-                                    ? config.nursingYearlyUtilization
-                                    : config.yearlyUtilization;
+                                  const settingYearlyUtil = setting.yearlyUtilization
+                                    ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+                                      ? config.nursingYearlyUtilization
+                                      : config.yearlyUtilization);
                                   const qUtil = setting.quarterlyUtilization || annualToQuarterlyUtilization(settingYearlyUtil);
                                   const pricingModel = setting.pricingModel || "perUnit";
                                   const defaultPrice = pricingModel === "annualFlat" ? (setting.annualLicenseFee || 0)

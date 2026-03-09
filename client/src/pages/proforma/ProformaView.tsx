@@ -887,6 +887,10 @@ export default function ProformaView({
               const encAnnual = (s.costPerEncounter || 0) * s.encounters;
               const baseProv = s.providerCount || 1;
               const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+              const defaultUtil = s.careSetting === "nursing" && config.nursingYearlyUtilization
+                ? config.nursingYearlyUtilization
+                : config.yearlyUtilization;
+              const yu = s.yearlyUtilization ?? defaultUtil;
               const yPr = s.yearlyPricing || {
                 year1: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
                 year2: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
@@ -922,6 +926,7 @@ export default function ProformaView({
                       <div className="mb-4">
                         <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
                         {isEnc ? (
+                          <>
                           <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                             <div>
                               <label className="block text-[12px] text-neutral-500 mb-1">Y1 encounters</label>
@@ -955,6 +960,68 @@ export default function ProformaView({
                               </div>
                             )}
                           </div>
+                          <div className={`grid gap-3 mt-2 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                            <div>
+                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 util %</label>
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={100}
+                                  value={yu.year1}
+                                  onChange={(e) => {
+                                    const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                    onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year1: v } });
+                                  }}
+                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
+                                  data-testid={`input-y1-util-${s.careSetting}`}
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
+                              </div>
+                            </div>
+                            {showY2 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 util %</label>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={yu.year2}
+                                    onChange={(e) => {
+                                      const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                      onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year2: v } });
+                                    }}
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
+                                    data-testid={`input-y2-util-${s.careSetting}`}
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
+                                </div>
+                              </div>
+                            )}
+                            {showY3 && (
+                              <div>
+                                <label className="block text-[12px] text-neutral-500 mb-1">Y3 util %</label>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={yu.year3}
+                                    onChange={(e) => {
+                                      const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
+                                      onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year3: v } });
+                                    }}
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
+                                    data-testid={`input-y3-util-${s.careSetting}`}
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-neutral-400 mt-1">% of encounters where Abridge is used</p>
+                          </>
                         ) : (
                           <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                             <div>
@@ -1318,7 +1385,7 @@ export default function ProformaView({
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-neutral-500 text-xs">Actively Documenting</td>
+                      <td className="py-2 pl-4 text-neutral-500 text-xs">{settings.every(s => s.pricingModel === "perEncounter") ? "Utilized Encounters" : settings.some(s => s.pricingModel === "perEncounter") ? "Active Volume" : "Actively Documenting"}</td>
                       {yearlyData.map(y => {
                         const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
                         return (

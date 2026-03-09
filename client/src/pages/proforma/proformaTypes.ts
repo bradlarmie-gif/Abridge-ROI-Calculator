@@ -66,6 +66,7 @@ export interface ProformaSettingSnapshot {
   fullExploreState: ExploreState;
   yearlyProviders?: YearlyProviders;
   yearlyEncounters?: { year1: number; year2: number; year3: number };
+  yearlyUtilization?: YearlyUtilization;
   retentionRate?: number;
   replacementCost?: number;
   quarterlyProviders?: QuarterlyProviders;

@@ -308,9 +308,13 @@ export function buildMonthlyCashFlows(
         setting.quarterlyProviders,
         implRampMonths
       );
-      const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
-        ? config.nursingYearlyUtilization
-        : config.yearlyUtilization;
+      const isPerEncounter = setting.pricingModel === "perEncounter";
+
+      const settingYearlyUtil = isPerEncounter && setting.yearlyUtilization
+        ? setting.yearlyUtilization
+        : setting.careSetting === "nursing" && config.nursingYearlyUtilization
+          ? config.nursingYearlyUtilization
+          : config.yearlyUtilization;
       const currentUtil = setting.quarterlyUtilization
         ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
         : getUtilizationRamp(
@@ -319,10 +323,32 @@ export function buildMonthlyCashFlows(
             settingYearlyUtil
           );
 
-      const activelyDocumenting = Math.round(currentProviders * currentUtil / 100);
-      const providerScale = currentProviders / setting.providerCount;
-      const utilScale = currentUtil / setting.utilizationPercent;
-      const expansionMultiplier = providerScale * utilScale;
+      let activelyDocumenting: number;
+      let expansionMultiplier: number;
+
+      const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
+
+      if (isPerEncounter) {
+        let currentYearEncounters: number;
+        if (setting.yearlyEncounters) {
+          const ye = setting.yearlyEncounters;
+          currentYearEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
+        } else {
+          const encountersPerProvider = setting.providerCount > 0
+            ? setting.encounters / setting.providerCount : 0;
+          currentYearEncounters = currentProviders * encountersPerProvider;
+        }
+        activelyDocumenting = Math.round(currentYearEncounters * currentUtil / 100);
+        const encounterScale = setting.encounters > 0
+          ? currentYearEncounters / setting.encounters : 1;
+        const utilScale = currentUtil / setting.utilizationPercent;
+        expansionMultiplier = encounterScale * utilScale;
+      } else {
+        activelyDocumenting = Math.round(currentProviders * currentUtil / 100);
+        const providerScale = currentProviders / setting.providerCount;
+        const utilScale = currentUtil / setting.utilizationPercent;
+        expansionMultiplier = providerScale * utilScale;
+      }
 
       let settingDocValue = 0;
       let settingTimeValue = 0;
@@ -377,7 +403,6 @@ export function buildMonthlyCashFlows(
         setting.quarterlyProviders
       );
 
-      const yearIndex = monthsSinceGoLive < 12 ? 0 : monthsSinceGoLive < 24 ? 1 : 2;
       const quarterlyPrice = setting.quarterlyPricing
         ? getQuarterlyValue(setting.quarterlyPricing, monthsSinceGoLive)
         : undefined;
