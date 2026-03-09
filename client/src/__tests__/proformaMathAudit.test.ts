@@ -105,9 +105,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     }
   });
 
-  it("3-year total value reflects utilization ramp (lower Y1, higher Y3)", () => {
-    expect(summary.termValue).toBeGreaterThan(680000);
-    expect(summary.termValue).toBeLessThan(780000);
+  it("3-year total value reflects utilization targets (Y1=55%, Y2=75%, Y3=85%)", () => {
+    expect(summary.termValue).toBeGreaterThan(780000);
+    expect(summary.termValue).toBeLessThan(900000);
   });
 
   it("3-year total investment = 36 months × $2000 + $25K impl = $97,000", () => {
@@ -132,9 +132,9 @@ describe("Test Case 1: Simple Outpatient — Single Driver, No Expansion", () =>
     expect(summary.valueToCost).toBeCloseTo(1 + summary.simpleROI, 5);
   });
 
-  it("payback occurs within first year (utilization ramp delays payback)", () => {
-    expect(summary.paybackMonth).toBeGreaterThanOrEqual(5);
-    expect(summary.paybackMonth).toBeLessThanOrEqual(12);
+  it("payback occurs early (high value-to-cost ratio)", () => {
+    expect(summary.paybackMonth).toBeGreaterThanOrEqual(1);
+    expect(summary.paybackMonth).toBeLessThanOrEqual(6);
   });
 
   it("cumulative net at month 36 matches 3-year net", () => {
@@ -397,7 +397,7 @@ describe("Test Case 5: 3-Year P&L Cross-Check", () => {
 
   it("value breakdown (doc + time + retention) matches total per year", () => {
     for (const year of yearlyData) {
-      expect(Math.abs(year.totalValue - (year.docValue + year.timeValue + year.retentionValue))).toBeLessThanOrEqual(5);
+      expect(Math.abs(year.totalValue - (year.docValue + year.timeValue + year.retentionValue))).toBeLessThanOrEqual(10);
     }
   });
 

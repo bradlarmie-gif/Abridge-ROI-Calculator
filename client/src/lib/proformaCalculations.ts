@@ -57,11 +57,10 @@ export function annualToQuarterlyUtilization(yu: YearlyUtilization): QuarterlyUt
   const y1 = yu.year1;
   const y2 = yu.year2;
   const y3 = yu.year3;
-  const startUtil = Math.max(y1 * 0.4, 5);
   return {
-    q1: Math.round(startUtil),
-    q2: Math.round(startUtil + (y1 - startUtil) * 0.4),
-    q3: Math.round(startUtil + (y1 - startUtil) * 0.75),
+    q1: y1,
+    q2: y1,
+    q3: y1,
     q4: y1,
     q5: Math.round(y1 + (y2 - y1) * 0.25),
     q6: Math.round(y1 + (y2 - y1) * 0.5),
@@ -256,8 +255,7 @@ function getUtilizationRamp(
     const y3 = yearlyUtilization.year3;
 
     if (monthsSinceGoLive < 12) {
-      const progress = monthsSinceGoLive / 12;
-      return y1 * sigmoidRamp(progress);
+      return y1;
     } else if (monthsSinceGoLive < 24) {
       const progress = (monthsSinceGoLive - 12) / 12;
       return y1 + (y2 - y1) * sigmoidRamp(progress);
