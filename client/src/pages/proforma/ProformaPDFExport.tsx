@@ -6,19 +6,20 @@ import {
   StyleSheet,
   pdf,
   Font,
+  Image,
   Svg,
   Rect,
   Line as SvgLine,
   G,
-  Circle,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import type { ProformaSummary } from "./proformaTypes";
-import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_LABELS } from "./proformaTypes";
+import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import {
   buildMonthlyCashFlows,
   groupByQuarter,
@@ -162,7 +163,8 @@ function fmtNum(n: number) {
 }
 
 function contractTermLabel(months: number): string {
-  return `${months / 12}-Year`;
+  if (months % 12 === 0) return `${months / 12}-Year`;
+  return `${months}-Month`;
 }
 
 function unitLabel(careSetting: string, plural = true): string {
@@ -172,17 +174,19 @@ function unitLabel(careSetting: string, plural = true): string {
 
 function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   const s = snapshot.fullExploreState;
+  if (!s) return [];
   const t = s.timeDriverInputs;
   const d = s.docQualityInputs;
+  if (!t || !d) return [];
   const cs = snapshot.careSetting;
   const lines: string[] = [];
 
   if (cs === "nursing") {
-    lines.push(`${s.nursingStaffedBeds} staffed beds \u00B7 ${s.numberOfProviders} nurse FTEs`);
+    lines.push(`${s.nursingStaffedBeds ?? 0} staffed beds \u00B7 ${s.numberOfProviders ?? 0} nurse FTEs`);
   } else {
-    lines.push(`${s.numberOfProviders} ${unitLabel(cs)} \u00B7 ${s.annualEncounters.toLocaleString()} encounters/yr`);
+    lines.push(`${s.numberOfProviders ?? 0} ${unitLabel(cs)} \u00B7 ${(s.annualEncounters ?? 0).toLocaleString()} encounters/yr`);
   }
-  lines.push(`${s.utilizationPercent}% utilization \u00B7 ${s.minutesSavedPerEncounter} min saved/encounter`);
+  lines.push(`${s.utilizationPercent ?? 0}% utilization \u00B7 ${s.minutesSavedPerEncounter ?? 0} min saved/encounter`);
 
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
@@ -204,7 +208,7 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
     if (d.ipCdiEnabled) lines.push(`CDI: ${d.ipCdiScenario} scenario \u00B7 ${d.ipCdiQueryRate}% query rate`);
   } else if (cs === "nursing") {
     if (t.nursingOtEnabled) lines.push(`OT: ${t.nursingOtReductionPercent}% reduction \u00B7 $${t.nursingOtHourlyRate}/hr`);
-    if (t.nursingRetentionEnabled) lines.push(`Retention: ${t.nursingTurnoverRate}% turnover \u00B7 $${t.nursingReplacementCost.toLocaleString()} replacement`);
+    if (t.nursingRetentionEnabled) lines.push(`Retention: ${t.nursingTurnoverRate}% turnover \u00B7 $${(t.nursingReplacementCost ?? 0).toLocaleString()} replacement`);
   }
 
   if (t.wellbeingEnabled && t.calculateRetentionValue && cs !== "nursing") {
@@ -286,7 +290,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
                   {retH > 0.5 && <Rect x={x} y={retY} width={barW} height={retH} fill={colors.retentionAmber} fillOpacity={0.75} rx={1} />}
                   {timeH > 0.5 && <Rect x={x} y={timeY} width={barW} height={timeH} fill={colors.timeRed} fillOpacity={0.75} />}
                   {docH > 0.5 && <Rect x={x} y={docY} width={barW} height={docH} fill={colors.docBlue} fillOpacity={0.8} rx={1} />}
-                  {invH > 0.5 && <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#78716C" fillOpacity={0.12} rx={1} />}
+                  {invH > 0.5 && <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#78716C" fillOpacity={0.35} rx={1} />}
                   {invH > 0.5 && <SvgLine x1={x + barW + 2} y1={invY} x2={x + barW + 2 + invBarW} y2={invY} stroke="#78716C" strokeWidth={0.8} />}
                 </G>
               );
@@ -326,7 +330,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
           <Text style={{ fontSize: 7, color: "#666666" }}>Retention</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <View style={{ width: 10, height: 6, backgroundColor: "#78716C", borderRadius: 1, opacity: 0.15 }} />
+          <View style={{ width: 10, height: 6, backgroundColor: "#78716C", borderRadius: 1, opacity: 0.4 }} />
           <Text style={{ fontSize: 7, color: "#666666" }}>Investment</Text>
         </View>
         {paybackQuarter && (
@@ -352,7 +356,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
     <View style={{ marginTop: 8, marginBottom: 6 }}>
       <Svg width={barW} height={h} viewBox={`0 0 ${barW} ${h}`}>
         {docW > 0 && <Rect x={0} y={0} width={docW} height={h} fill={colors.docBlue} fillOpacity={0.8} rx={docPct >= 98 ? 3 : 0} />}
-        {docW > 0 && <Rect x={0} y={0} width={Math.min(docW, 6)} height={h} fill={colors.docBlue} fillOpacity={0.8} rx={3} />}
+        {docW > 6 && <Rect x={0} y={0} width={6} height={h} fill={colors.docBlue} fillOpacity={0.8} rx={3} />}
         {timeW > 0 && <Rect x={docW} y={0} width={timeW} height={h} fill={colors.timeRed} fillOpacity={0.75} />}
         {retW > 0 && <Rect x={docW + timeW} y={0} width={retW} height={h} fill={colors.retentionAmber} fillOpacity={0.75} rx={retPct > 0 ? 3 : 0} />}
       </Svg>
@@ -377,25 +381,6 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
   );
 }
 
-
-function PDFSensitivityBars({ conservative, base, optimistic }: { conservative: number; base: number; optimistic: number }) {
-  const w = 120;
-  const maxVal = Math.max(conservative, base, optimistic, 0.01);
-  const barH = 5;
-  const gap = 4;
-  const totalH = barH * 3 + gap * 2;
-  const scale = (v: number) => Math.max((v / maxVal) * w * 0.9, 3);
-
-  return (
-    <View style={{ marginTop: 6 }}>
-      <Svg width={w} height={totalH} viewBox={`0 0 ${w} ${totalH}`}>
-        <Rect x={0} y={0} width={scale(conservative)} height={barH} fill="#999999" fillOpacity={0.45} rx={2} />
-        <Rect x={0} y={barH + gap} width={scale(base)} height={barH} fill="#EA2C00" fillOpacity={0.65} rx={2} />
-        <Rect x={0} y={(barH + gap) * 2} width={scale(optimistic)} height={barH} fill={colors.positive} fillOpacity={0.55} rx={2} />
-      </Svg>
-    </View>
-  );
-}
 
 const TOTAL_PDF_PAGES = 7;
 
@@ -436,10 +421,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
+  const delayedOnsetMonths = ONSET_DELAY_MONTHS.delayed;
   const yearNarratives = [
-    { title: "Establish the Evidence", desc: `Initial deployment builds the evidence base during the ${config.implementationRampMonths}-month implementation ramp. Documentation quality value begins post-implementation while capacity gains follow after an additional 3-month operational ramp.` },
+    { title: "Establish the Evidence", desc: `Initial deployment builds the evidence base during the ${config.implementationRampMonths}-month implementation ramp. Documentation quality value begins post-implementation while capacity gains follow after an additional ${delayedOnsetMonths}-month operational ramp.` },
     { title: "Scale What Works", desc: "Expanded deployment deepens adoption across the organization. Retention value begins to materialize as clinician satisfaction compounds over time." },
     { title: "Full Organizational Impact", desc: "The complete value model is active. All driver categories are contributing at or near full scale." },
+    { title: "Sustained Returns", desc: "Steady-state value continues with mature adoption. Operational workflows are fully integrated, and the organization benefits from predictable, recurring returns." },
+    { title: "Strategic Scale", desc: "Long-term deployment enables strategic expansion opportunities. Proven value across established settings informs broader organizational adoption decisions." },
+    { title: "Long-Term Value", desc: "The partnership reaches full maturity. Compounded efficiency gains and deeply embedded workflows deliver maximum organizational impact." },
   ];
 
   const today = new Date();
@@ -449,9 +438,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
     <Document>
       {/* PAGE 1: COVER */}
       <PDFCoverPage
-        reportLabel="ORGANIZATION PROFORMA"
-        title={organizationName || "Organization"}
-        subtitle={`${termLabel} Financial Model  \u00B7  ${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Aggregated Deployment Experience`}
+        reportLabel="FINANCIAL PROFORMA"
+        title={`${termLabel} Value Model`}
+        subtitle={`${settings.length} Care Setting${settings.length > 1 ? "s" : ""}  \u00B7  Modeled on Aggregated Deployment Experience`}
+        clientName={organizationName}
         preparedBy={preparedBy}
         disclaimerText="This model reflects conservative estimates derived from user inputs and aggregated deployment experience. All assumptions are documented. Projections do not constitute a guarantee of financial performance."
       />
@@ -483,7 +473,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
           <View style={styles.calloutBox}>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes value realization. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional 3-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
+              Over a {termLabel.toLowerCase()} partnership, the estimated investment of ${Math.round(summary.termInvestment).toLocaleString()}{totalInitial !== totalFullScale ? `, scaling from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)}` : ` across ${fmtNum(totalFullScale)}`} {settings.length > 1 ? "providers" : unitLabel(settings[0]?.careSetting)} over {contractYears} year{contractYears > 1 ? "s" : ""}, is projected to return {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on every dollar invested. A {config.implementationRampMonths}-month implementation ramp precedes full value realization, with value scaling gradually during ramp. Documentation quality improvements begin post-implementation, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively over the contract term. At full scale, the model projects {fmt(summary.runRateValue)} in annual value{summary.paybackMonth ? `, with payback estimated at month ${summary.paybackMonth}` : ""}.
             </Text>
           </View>
 
@@ -520,7 +510,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.timeRed }} />
-                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Delayed (3mo) {"\u2014"} Capacity</Text>
+                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Delayed ({ONSET_DELAY_MONTHS.delayed}mo) {"\u2014"} Capacity</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.retentionAmber }} />
@@ -539,7 +529,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabel}>{termLabel.toUpperCase()} PROJECTION</Text>
           <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
           <Text style={styles.body}>
-            Value is phased by driver onset timing with per-year provider allocation and adoption ramp. Documentation quality (navy) appears immediately, capacity & efficiency (red) follows after a 3-month lag, and retention (gold) phases in over years.
+            Value is phased by driver onset timing with per-year provider allocation and adoption ramp. Documentation quality (navy) appears immediately, capacity & efficiency (red) follows after a {delayedOnsetMonths}-month lag, and retention (gold) phases in over years.
           </Text>
 
           <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
@@ -585,7 +575,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <Text style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(totalDocValue)}</Text>
             </View>
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 7.5, color: colors.timeRed }}>Capacity & Efficiency (3mo delay)</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.timeRed }}>Capacity & Efficiency ({ONSET_DELAY_MONTHS.delayed}mo delay)</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(y.timeValue)}</Text>
               ))}
@@ -664,7 +654,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
           {yearlyData.map((y, idx) => {
             const yearNum = idx + 1;
-            const h = yearNarratives[Math.min(idx, 2)];
+            const h = yearNarratives[Math.min(idx, yearNarratives.length - 1)];
             const totalLicensed = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
             const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
             const adoptionPct = totalLicensed > 0 ? Math.round((totalActive / totalLicensed) * 100) : 0;
@@ -692,7 +682,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmtNum(totalActive)}</Text>
                   </View>
                   <View>
-                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Avg. Utilization</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Effective Adoption</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{adoptionPct}%</Text>
                   </View>
                   <View>
@@ -778,7 +768,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved / 12))}</Text>
-                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/month on manual documentation</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>provider hours freed monthly</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmt(Math.round(summary.runRateValue / 12))}</Text>
@@ -875,14 +865,14 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>CALCULATION METHOD</Text>
               <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
                 Contract term: {termLabel} ({config.contractTermMonths} months){"\n"}
-                Implementation ramp: {config.implementationRampMonths} months (no value){"\n"}
+                Implementation ramp: {config.implementationRampMonths} months (gradual onset){"\n"}
                 Utilization targets: {[
                   `${config.yearlyUtilization.year1}% Y1`,
                   contractYears >= 2 ? `${config.yearlyUtilization.year2}% Y2` : null,
                   contractYears >= 3 ? `${config.yearlyUtilization.year3}% Y3` : null,
                 ].filter(Boolean).join(", ")}{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` (Nursing: ${[config.nursingYearlyUtilization.year1, contractYears >= 2 ? config.nursingYearlyUtilization.year2 : null, contractYears >= 3 ? config.nursingYearlyUtilization.year3 : null].filter(v => v != null).join("/")}%)` : ""}{"\n"}
                 Provider expansion: Per-year allocation{"\n"}
-                Onset timing: Immediate / 3mo delay / phased{"\n"}
+                Onset timing: Immediate / {ONSET_DELAY_MONTHS.delayed}mo delay / phased{"\n"}
                 Retention phasing: {[
                   `${config.retentionPhasing.year1Pct}% Y1`,
                   contractYears >= 2 ? `${config.retentionPhasing.year2Pct}% Y2` : null,
@@ -922,7 +912,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
       {/* PAGE 7: BACK COVER */}
       <Page size="LETTER" style={[styles.page, { padding: 0 }]} wrap={false}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
-          <Text style={{ fontSize: 32, fontWeight: "bold", color: colors.primary, marginBottom: 24 }}>ABRIDGE</Text>
+          <Image src={abridgeLogoRed} style={{ width: 120, marginBottom: 24 }} />
 
           <View style={{ borderTopWidth: 2, borderTopColor: colors.primary, width: 80, marginBottom: 24 }} />
 
