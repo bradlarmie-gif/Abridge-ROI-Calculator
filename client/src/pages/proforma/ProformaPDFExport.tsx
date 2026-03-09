@@ -11,6 +11,7 @@ import {
   Rect,
   Line as SvgLine,
   G,
+  Path,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
@@ -513,17 +514,17 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
         {retW > 0 && <Rect x={docW + timeW} y={0} width={retW} height={h} fill={colors.retentionAmber} fillOpacity={0.75} rx={retPct > 0 ? 3 : 0} />}
       </Svg>
       <View style={{ flexDirection: "row", marginTop: 3 }}>
-        {docPct > 0 && (
+        {docPct >= 8 && (
           <View style={{ flex: docPct, alignItems: docPct > 12 ? "center" : "flex-start" }}>
             <Text style={{ fontSize: 6.5, color: colors.docBlue }}>{docPct}% Doc Quality</Text>
           </View>
         )}
-        {timePct > 0 && (
+        {timePct >= 8 && (
           <View style={{ flex: timePct, alignItems: timePct > 12 ? "center" : "flex-start" }}>
-            <Text style={{ fontSize: 6.5, color: colors.timeRed }}>{timePct}% Capacity & Efficiency</Text>
+            <Text style={{ fontSize: 6.5, color: colors.timeRed }}>{timePct}% Capacity</Text>
           </View>
         )}
-        {retPct > 0 && (
+        {retPct >= 8 && (
           <View style={{ flex: retPct, alignItems: retPct > 12 ? "center" : "flex-end" }}>
             <Text style={{ fontSize: 6.5, color: colors.retentionAmber }}>{retPct}% Retention</Text>
           </View>
@@ -673,17 +674,20 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           </View>
 
           <View style={styles.calloutBox}>
-            <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.6, fontWeight: "bold", marginBottom: 4 }}>
+            <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.6, fontWeight: "bold", marginBottom: 6 }}>
               This {termLabel.toLowerCase()} partnership is projected to deliver {fmt(summary.termNet)} in net organizational value {"\u2014"} a {summary.valueToCost.toFixed(1)}x return on investment.
             </Text>
-            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
               {allPerEncounter
                 ? (totalInitialEncounters !== totalFullScaleEncounters
                   ? `The model scales from ${fmtNum(totalInitialEncounters)} to ${fmtNum(totalFullScaleEncounters)} contracted encounters over ${contractYears} year${contractYears > 1 ? "s" : ""}, with a total investment of ${fmt(summary.termInvestment)}.`
                   : `Across ${fmtNum(totalFullScaleEncounters)} contracted encounters over ${contractYears} year${contractYears > 1 ? "s" : ""}, the total investment is ${fmt(summary.termInvestment)}.`)
                 : (totalInitial !== totalFullScale
                   ? `The model scales from ${fmtNum(totalInitial)} to ${fmtNum(totalFullScale)} ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over ${contractYears} year${contractYears > 1 ? "s" : ""}, with a total investment of ${fmt(summary.termInvestment)}.`
-                  : `Across ${fmtNum(totalFullScale)} ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over ${contractYears} year${contractYears > 1 ? "s" : ""}, the total investment is ${fmt(summary.termInvestment)}.`)} Value realization follows a deliberate phasing: documentation quality improvements begin after a {config.implementationRampMonths}-month implementation ramp, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively as clinician satisfaction compounds.
+                  : `Across ${fmtNum(totalFullScale)} ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} over ${contractYears} year${contractYears > 1 ? "s" : ""}, the total investment is ${fmt(summary.termInvestment)}.`)}
+            </Text>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 6 }}>
+              Value realization follows a deliberate phasing: documentation quality improvements begin after a {config.implementationRampMonths}-month implementation ramp, capacity and efficiency gains follow after an additional {delayedOnsetMonths}-month operational lag, and retention value phases in conservatively as clinician satisfaction compounds.
             </Text>
             <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6 }}>
               At full scale, the model projects {fmt(summary.runRateValue)} in annual recurring value{summary.paybackMonth ? ` with payback at month ${summary.paybackMonth}` : ""}.
@@ -1033,7 +1037,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 4 }} />
 
             {settings.map((s, si) => (
-              <View key={s.id} style={{ flexDirection: "row", marginBottom: 2, backgroundColor: si % 2 === 0 ? "#FAFAF9" : "transparent", paddingVertical: 2 }}>
+              <View key={s.id} style={{ flexDirection: "row", marginBottom: 2, backgroundColor: si % 2 === 0 ? colors.cards : "transparent", paddingVertical: 2 }}>
                 <Text style={{ flex: 2, fontSize: 9, color: colors.primaryText }}>{s.label}</Text>
                 {yearlyData.map(y => (
                   <Text key={y.label} style={{ flex: 1, fontSize: 9, color: colors.secondary, textAlign: "right" }}>{fmt(y.bySettings[s.id]?.value || 0)}</Text>
@@ -1044,7 +1048,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               </View>
             ))}
 
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 4 }} />
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.primaryText, marginVertical: 4 }} />
             <View style={{ flexDirection: "row", marginBottom: 2 }}>
               <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Total Value</Text>
               {yearlyData.map(y => (
@@ -1112,7 +1116,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <Text style={{ flex: 1, fontSize: 9, color: colors.negative, fontWeight: "bold", textAlign: "right" }}>({fmt(summary.termInvestment)})</Text>
             </View>
 
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 3 }} />
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.primaryText, marginVertical: 3 }} />
             <View style={{ flexDirection: "row" }}>
               <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold" }}>Net Value</Text>
               {yearlyData.map(y => (
@@ -1266,10 +1270,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                 </Text>
                 <Text style={{ fontSize: 7, color: colors.tertiary, marginTop: 2 }}>Conservative VTC</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
-                <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 2 }}>YOUR ASSUMPTIONS</Text>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
-                <Text style={{ fontSize: 7, color: colors.primary, marginTop: 2 }}>Base Case VTC</Text>
+              <View style={{ flex: 1, backgroundColor: colors.background, padding: 14, borderRadius: 3, alignItems: "center", borderBottomWidth: 2, borderBottomColor: colors.primary }}>
+                <Text style={{ fontSize: 8, color: colors.primary, marginBottom: 4 }}>YOUR ASSUMPTIONS</Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</Text>
+                <Text style={{ fontSize: 7, color: colors.primary, marginTop: 4 }}>Base Case VTC</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 2 }}>130% REALIZATION</Text>
@@ -1459,8 +1463,20 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
       {/* PAGE 9: BACK COVER */}
       <Page size="LETTER" style={[styles.page, { padding: 0 }]} wrap={false}>
+        <View style={{ position: "absolute", top: 0, left: 0, width: 300, height: 300 }}>
+          <Svg width={300} height={300} viewBox="0 0 300 300">
+            <Path
+              d="M 0 300 Q 50 250 120 200 Q 190 150 240 80 Q 270 40 300 0"
+              stroke={colors.primary}
+              strokeWidth={80}
+              fill="none"
+              strokeOpacity={0.06}
+              strokeLinecap="round"
+            />
+          </Svg>
+        </View>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
-          <Image src={abridgeLogoRed} style={{ width: 120, marginBottom: 24 }} />
+          <Image src={abridgeLogoRed} style={{ width: 140, marginBottom: 24 }} />
 
           <View style={{ borderTopWidth: 2, borderTopColor: colors.primary, width: 80, marginBottom: 24 }} />
 
