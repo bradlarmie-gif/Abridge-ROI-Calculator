@@ -512,7 +512,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     closingInsight: "In emergency medicine, time spent documenting is time not spent with the next patient. Ambient documentation doesn\u2019t just save time\u2014it removes the trade-off between thorough documentation and throughput.",
     keyMetrics: [
       "1. Documentation time per encounter (target: -50%)",
-      "2. LWBS rate reduction (target: -15-25%)",
+      "2. LWBS rate reduction (target: -10-30%)",
       "3. E&M accuracy / level distribution shift",
     ],
   },

@@ -338,7 +338,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // ED-specific defaults
     edLwbsEnabled: false,
     edLwbsRate: 3, // 3% baseline LWBS rate
-    edLwbsReduction: 15, // 15% reduction in LWBS
+    edLwbsReduction: 10, // 10% reduction in LWBS (conservative default)
     edRevenuePerVisit: 450, // Higher than outpatient
     edLwbsRealization: 75, // 75% realization (not all recovered patients complete visits)
     edThroughputEnabled: false,
