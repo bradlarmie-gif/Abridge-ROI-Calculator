@@ -548,6 +548,18 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     prevCareSettingRef.current = state.careSetting;
   }, [state.careSetting]);
 
+  const prevBaselineRef = useRef({ providers: state.numberOfProviders, beds: state.nursingStaffedBeds });
+  useEffect(() => {
+    const baselineCount = state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders;
+    if (baselineCount > 0) {
+      const target = baselineCount * 3;
+      if (state.fullScaleProviders < target) {
+        setState(prev => ({ ...prev, fullScaleProviders: target }));
+      }
+    }
+    prevBaselineRef.current = { providers: state.numberOfProviders, beds: state.nursingStaffedBeds };
+  }, [state.numberOfProviders, state.nursingStaffedBeds, state.careSetting]);
+
   // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
     // Use requestAnimationFrame to ensure DOM has updated before scrolling

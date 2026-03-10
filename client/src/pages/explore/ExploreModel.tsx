@@ -2045,7 +2045,7 @@ export default function ExploreModel({
                 <FormattedNumberInput
                   value={state.fullScaleProviders}
                   onChange={(v: number) => updateState({ fullScaleProviders: v })}
-                  onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
+                  onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, isNursing ? state.nursingStaffedBeds : state.numberOfProviders) })}
                   className="h-9 sm:h-10 w-20 sm:w-24 text-center text-xl sm:text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
                   data-testid="input-full-scale-providers"
                 />
