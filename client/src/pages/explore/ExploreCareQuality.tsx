@@ -17,7 +17,6 @@ interface ExploreCareQualityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  onEditAllocation?: () => void;
 }
 
 export default function ExploreCareQuality({
@@ -30,7 +29,6 @@ export default function ExploreCareQuality({
   onNext,
   onBack,
   onHome,
-  onEditAllocation,
 }: ExploreCareQualityProps) {
   const { docQualityInputs } = state;
 
@@ -106,8 +104,8 @@ export default function ExploreCareQuality({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={6}
-        totalSteps={8}
+        currentStep={5}
+        totalSteps={7}
         stepName="Care Quality"
         onBack={onBack}
         onHome={onHome}
@@ -158,6 +156,35 @@ export default function ExploreCareQuality({
                   CARE QUALITY POTENTIAL
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
+              </div>
+
+              <div className="bg-white rounded-lg p-4 mb-2">
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <div>
+                    <p className="font-semibold text-black text-sm">Direct Care Time</p>
+                    <p className="text-xs text-[#888888]">What percentage of recovered documentation time goes to direct patient care?</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-lg font-bold text-black">{timeDriverInputs.nursingCareTimePercent}%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={10}
+                  max={80}
+                  step={5}
+                  value={timeDriverInputs.nursingCareTimePercent}
+                  onChange={(e) => updateTimeDriverInputs({ nursingCareTimePercent: Number(e.target.value) })}
+                  className="w-full accent-[#EA2C00]"
+                  data-testid="slider-nursing-care-time-percent"
+                />
+                <div className="flex justify-between text-xs text-[#888888] mt-1">
+                  <span>10%</span>
+                  <span>80%</span>
+                </div>
+                <p className="text-xs text-[#888888] mt-2">
+                  This drives the care quality calculations below — higher allocation means more time at the bedside for assessments and interventions.
+                </p>
               </div>
 
               {/* Driver 1: HAPI Prevention */}
@@ -311,10 +338,7 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set on the Time Allocation page.{' '}
-                              {onEditAllocation && (
-                                <button onClick={onEditAllocation} className="text-[#EA2C00] font-medium hover:underline" data-testid="link-edit-hapi-allocation">Edit</button>
-                              )}
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care.
                             </p>
                           </div>
                         </div>
@@ -475,10 +499,7 @@ export default function ExploreCareQuality({
 
                           <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care, set on the Time Allocation page.{' '}
-                              {onEditAllocation && (
-                                <button onClick={onEditAllocation} className="text-[#EA2C00] font-medium hover:underline" data-testid="link-edit-falls-allocation">Edit</button>
-                              )}
+                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care.
                             </p>
                           </div>
                         </div>

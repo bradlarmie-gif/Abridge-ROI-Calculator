@@ -98,7 +98,7 @@ export default function ExplorePractice({
       <UnifiedHeader
         pathType="explore"
         currentStep={2}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Your Practice"
         onBack={onBack}
         onHome={onHome}

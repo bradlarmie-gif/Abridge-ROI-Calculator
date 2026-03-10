@@ -154,7 +154,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       <UnifiedHeader
         pathType="explore"
         currentStep={2}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Opportunity Size"
         onBack={onBack}
         onHome={onHome}

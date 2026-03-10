@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
-import ExploreTimeAllocation from "./ExploreTimeAllocation";
+
 import ExploreValueDrivers from "./ExploreValueDrivers";
 import ExploreDocQuality from "./ExploreDocQuality";
 import ExploreCareQuality from "./ExploreCareQuality";
@@ -350,18 +350,18 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
     ipReplacementCost: 300000, // $300,000 replacement cost
-    // Outpatient time allocation defaults
-    opAllocCapacityPercent: 0,
-    opAllocDocQualityPercent: 0,
-    opAllocWellbeingPercent: 0,
-    // ED time allocation defaults
-    edAllocThroughputPercent: 0,
-    edAllocDocQualityPercent: 0,
-    edAllocWellbeingPercent: 0,
-    // Inpatient time allocation defaults
-    ipAllocQualityPercent: 0,
-    ipAllocCostPercent: 0,
-    ipAllocWellbeingPercent: 0,
+    // Outpatient time allocation defaults (auto-set, no longer user-facing)
+    opAllocCapacityPercent: 33,
+    opAllocDocQualityPercent: 34,
+    opAllocWellbeingPercent: 33,
+    // ED time allocation defaults (auto-set, no longer user-facing)
+    edAllocThroughputPercent: 33,
+    edAllocDocQualityPercent: 34,
+    edAllocWellbeingPercent: 33,
+    // Inpatient time allocation defaults (auto-set, no longer user-facing)
+    ipAllocQualityPercent: 34,
+    ipAllocCostPercent: 33,
+    ipAllocWellbeingPercent: 33,
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtExpanded: true,
@@ -492,7 +492,6 @@ type ExplorePhase =
   | 'careSetting' 
   | 'practice' 
   | 'timeSavings' 
-  | 'timeAllocation'
   | 'valueDrivers' 
   | 'careQuality'
   | 'docQuality'
@@ -843,24 +842,13 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreTimeSavings
           state={state}
           updateState={updateState}
-          onNext={() => navigate('timeAllocation')}
-          onBack={() => navigate('practice')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'timeAllocation':
-      return (
-        <ExploreTimeAllocation
-          state={state}
-          updateState={updateState}
           onNext={() => {
             const td = state.timeDriverInputs;
             if (isNursing) {
               updateState({
                 timeDriverInputs: {
                   ...td,
-                  nursingOtEnabled: td.nursingOtReductionPercent > 0,
+                  nursingOtEnabled: true,
                   nursingRetentionEnabled: td.nursingShiftSustainabilityPercent > 0,
                 },
                 docQualityInputs: {
@@ -873,33 +861,33 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
               updateState({
                 timeDriverInputs: {
                   ...td,
-                  edLwbsEnabled: td.edAllocThroughputPercent > 0,
-                  edThroughputEnabled: td.edAllocThroughputPercent > 0,
-                  wellbeingEnabled: td.edAllocWellbeingPercent > 0,
+                  edLwbsEnabled: true,
+                  edThroughputEnabled: true,
+                  wellbeingEnabled: true,
                 },
               });
             } else if (isInpatient) {
               updateState({
                 timeDriverInputs: {
                   ...td,
-                  ipRoundingEnabled: td.ipAllocQualityPercent > 0,
-                  ipCdiCapacityEnabled: td.ipAllocCostPercent > 0,
-                  costReductionEnabled: td.ipAllocWellbeingPercent > 0,
-                  wellbeingEnabled: td.ipAllocWellbeingPercent > 0,
+                  ipRoundingEnabled: true,
+                  ipCdiCapacityEnabled: true,
+                  costReductionEnabled: true,
+                  wellbeingEnabled: true,
                 },
               });
             } else {
               updateState({
                 timeDriverInputs: {
                   ...td,
-                  patientAccessEnabled: td.opAllocCapacityPercent > 0,
-                  wellbeingEnabled: td.opAllocWellbeingPercent > 0,
+                  patientAccessEnabled: true,
+                  wellbeingEnabled: true,
                 },
               });
             }
             navigate('valueDrivers');
           }}
-          onBack={() => navigate('timeSavings')}
+          onBack={() => navigate('practice')}
           onHome={goHome}
         />
       );
@@ -911,7 +899,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
           onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
-          onBack={() => navigate('timeAllocation')}
+          onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
       );
@@ -928,7 +916,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}
-          onEditAllocation={() => navigate('timeAllocation')}
         />
       );
     
@@ -960,11 +947,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     
     case 'model': {
       const stepPhaseMap: ExplorePhase[] = isNursing
-        ? ['careSetting', 'practice', 'timeSavings', 'timeAllocation', 'valueDrivers', 'careQuality', 'investment', 'model']
-        : ['careSetting', 'practice', 'timeSavings', 'timeAllocation', 'valueDrivers', 'docQuality', 'investment', 'model'];
+        ? ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'careQuality', 'investment', 'model']
+        : ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'docQuality', 'investment', 'model'];
       const stepLabels = isNursing
-        ? ['Care Setting', 'Practice', 'Time Savings', 'Time Allocation', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
-        : ['Care Setting', 'Practice', 'Time Savings', 'Time Allocation', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
+        ? ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
+        : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
       return (
         <ExploreModel
           state={state}

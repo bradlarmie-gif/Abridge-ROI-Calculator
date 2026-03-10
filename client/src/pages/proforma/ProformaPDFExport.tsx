@@ -209,11 +209,8 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
 
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
-      const hasAlloc = (t as any).opAllocCapacityPercent != null;
       const realPct = t.capacityRealizationPercent ?? (t as any).capacityPercent ?? 75;
-      lines.push(hasAlloc
-        ? `Capacity: ${(t as any).opAllocCapacityPercent}% allocated × ${realPct}% realization · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`
-        : `Capacity: ${realPct}% toward visits · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
+      lines.push(`Capacity: ${realPct}% realization · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
     }
     if (d.wrvuEnabled) lines.push(`wRVU: ${d.wrvuScenario} scenario \u00B7 ${d.wrvuRealization}% realization`);
     if (d.hccEnabled) lines.push(`HCC: ${d.hccRealization}% realization`);
@@ -291,8 +288,8 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
       const hoursConverted = hoursAllocated * ((t.capacityRealizationPercent ?? 75) / 100);
       const potentialVisits = hoursConverted * (60 / t.visitDuration);
       return [
-        `${snapshot.totalHoursSaved.toLocaleString()} hrs \u00D7 ${t.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
-        `${Math.round(hoursAllocated).toLocaleString()} hrs \u00D7 ${t.capacityRealizationPercent ?? 75}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
+        `${snapshot.totalHoursSaved.toLocaleString()} hrs saved`,
+        `\u00D7 ${t.capacityRealizationPercent ?? 75}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
         `${Math.round(hoursConverted).toLocaleString()} hrs \u00D7 (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
         `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(driver.value)}/year`,
       ];

@@ -1194,8 +1194,8 @@ export default function ExploreModel({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={8}
-        totalSteps={8}
+        currentStep={7}
+        totalSteps={7}
         stepName="Your Model"
         onBack={onBack}
         onHome={onHome}
@@ -1648,7 +1648,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.opAllocCapacityPercent}% allocated × {timeDriverInputs.capacityRealizationPercent}% realization)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityRealizationPercent}% realization rate)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
@@ -2389,7 +2389,7 @@ export default function ExploreModel({
                   </p>
                   {timeDriverInputs.patientAccessEnabled && (
                     <p>
-                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.opAllocCapacityPercent}% of reclaimed time allocated to capacity × {timeDriverInputs.capacityRealizationPercent}% realization rate × ${timeDriverInputs.revenuePerVisit}/visit × {timeDriverInputs.visitDuration} min visits.
+                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.capacityRealizationPercent}% realization rate × ${timeDriverInputs.revenuePerVisit}/visit × {timeDriverInputs.visitDuration} min visits.
                     </p>
                   )}
                   {docQualityInputs.wrvuEnabled && (

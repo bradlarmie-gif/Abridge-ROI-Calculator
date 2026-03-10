@@ -53,18 +53,9 @@ export default function ExploreValueDrivers({
 
   const hoursPerProviderPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return '0';
-    if (isOutpatientSetting) {
-      const burdenReliefPct = (timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent) / 100;
-      const allocatedHours = totalHoursSaved * burdenReliefPct;
-      return (allocatedHours / state.numberOfProviders / 52).toFixed(1);
-    }
-    if (isED) {
-      const burdenReliefPct = (timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100;
-      const allocatedHours = totalHoursSaved * burdenReliefPct;
-      return (allocatedHours / state.numberOfProviders / 48).toFixed(1);
-    }
-    return (totalHoursSaved / state.numberOfProviders / 48).toFixed(1);
-  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting, isED, timeDriverInputs.opAllocDocQualityPercent, timeDriverInputs.opAllocWellbeingPercent, timeDriverInputs.edAllocDocQualityPercent, timeDriverInputs.edAllocWellbeingPercent]);
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;
+    return (totalHoursSaved / state.numberOfProviders / weeksPerYear).toFixed(1);
+  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting]);
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
@@ -348,8 +339,8 @@ export default function ExploreValueDrivers({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={5}
-        totalSteps={8}
+        currentStep={4}
+        totalSteps={7}
         stepName="Value Drivers"
         onBack={onBack}
         onHome={onHome}
@@ -461,22 +452,6 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">Throughput allocation (from your time split)</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-black">{timeDriverInputs.edAllocThroughputPercent}%</span>
-                        <button
-                          onClick={onBack}
-                          className="text-xs font-medium text-[#EA2C00] hover:underline"
-                          data-testid="link-edit-throughput-allocation"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   <p className="text-sm text-black mb-4">
                     Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
@@ -748,23 +723,6 @@ export default function ExploreValueDrivers({
                     Not all time saved converts to OT reduction—some goes to care, some to efficiency—but a portion does.
                   </p>
 
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">OT ALLOCATION</p>
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#666666]">OT allocation (from your time split)</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
-                        <button
-                          onClick={onBack}
-                          className="text-xs font-medium text-[#EA2C00] hover:underline"
-                          data-testid="link-edit-ot-allocation"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                   <div className="space-y-2.5 mb-6">
                     <label className="text-sm text-[#888888]">Average OT hourly rate</label>
@@ -787,7 +745,7 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">× OT allocation (from your time split)</span>
+                        <span className="text-[#666666] min-w-0">× OT reduction rate</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
@@ -873,26 +831,8 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  {!isNursing && !isED && !isInpatient && (
-                    <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#666666]">Capacity allocation (from your time split)</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-black">{timeDriverInputs.opAllocCapacityPercent}%</span>
-                          <button
-                            onClick={onBack}
-                            className="text-xs font-medium text-[#EA2C00] hover:underline"
-                            data-testid="link-edit-capacity-allocation"
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <p className="text-sm text-black mb-4">
-                    Realization rate — what percentage of your allocated capacity time converts to actual patient visits?
+                    Realization rate — what percentage of recovered time can realistically convert to new patient visits?
                   </p>
 
                   <div className="mb-4">
@@ -938,7 +878,7 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityRealizationPercent}% realization of your {timeDriverInputs.opAllocCapacityPercent}% capacity allocation:</p>
+                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityRealizationPercent}% realization:</p>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666] min-w-0">Hours available for visits:</span>
@@ -956,7 +896,7 @@ export default function ExploreValueDrivers({
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
                       <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-                      <span>Defaulted to {timeDriverInputs.capacityRealizationPercent}% — a conservative realization rate. Not all allocated time converts perfectly to scheduled visits due to scheduling gaps, no-shows, and ramp-up.</span>
+                      <span>Defaulted to {timeDriverInputs.capacityRealizationPercent}% — a conservative realization rate. Not all recovered time converts to scheduled visits due to scheduling gaps, no-shows, and ramp-up.</span>
                     </div>
                   </div>
                 </div>
@@ -1316,29 +1256,6 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  {!isNursing && !isInpatient && (
-                    <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#666666]">Time back to providers (from your time split)</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-black">
-                            {isED ? (timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) : (timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent)}%
-                          </span>
-                          <button
-                            onClick={onBack}
-                            className="text-xs font-medium text-[#EA2C00] hover:underline"
-                            data-testid="link-edit-wellbeing-allocation"
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </div>
-                      <p className="text-xs text-[#888888] mt-2">
-                        Includes documentation quality and sustainability time — only {isED ? 'throughput' : 'patient capacity'} time is excluded because it's reinvested into seeing more patients.
-                      </p>
-                    </div>
-                  )}
-
                   <p className="text-sm text-[#888888] mb-3">Your providers would get back:</p>
 
                   <div className="text-center mb-4">

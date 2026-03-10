@@ -186,8 +186,8 @@ export default function ExploreDocQuality({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={6}
-        totalSteps={8}
+        currentStep={5}
+        totalSteps={7}
         stepName="Documentation Quality"
         onBack={onBack}
         onHome={onHome}

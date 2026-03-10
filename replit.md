@@ -40,8 +40,8 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Calculation Engines**: Two primary engines for driver-level and narrative flow pillar calculations.
 -   **Data Management**: Utilizes confidence haircuts, consolidated benchmarks, and supports variable contract terms (1-6 years).
 -   **Adoption Model**: Employs an S-curve adoption model for projections.
--   **Time Allocation**: Includes a dedicated Time Allocation step with a realization rate slider for Outpatient.
--   **Burden Relief Model**: Retention/wellbeing calculations consider all non-capacity time as "burden relief."
+-   **Inline Driver Inputs**: The capacity realization rate is embedded directly in the Patient Access driver (Outpatient). The nursing care time percentage is embedded in the Care Quality section (Nursing). No separate time allocation step exists — the Explore flow is 7 steps: Care Setting → Practice → Time Savings → Value Drivers → Doc/Care Quality → Investment → Your Model.
+-   **Burden Relief Model**: Retention/wellbeing calculations use fixed allocation defaults (33/34/33 split across categories).
 -   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing.
 -   **Architecture**: Component-driven UI, configuration-driven ROI levers, pure functions for calculation logic, and handling of qualitative drivers.
 

@@ -75,8 +75,8 @@ export default function ExploreInvestment({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={7}
-        totalSteps={8}
+        currentStep={6}
+        totalSteps={7}
         stepName="Investment"
         onBack={onBack}
         onHome={onHome}
