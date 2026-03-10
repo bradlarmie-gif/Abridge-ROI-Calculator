@@ -281,6 +281,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
   const [isExporting, setIsExporting] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportError, setExportError] = useState(false);
   const [exportOrgName, setExportOrgName] = useState("");
   const [exportPreparedBy, setExportPreparedBy] = useState("");
 
@@ -363,6 +364,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
   const openExportModal = () => {
     setExportSuccess(false);
+    setExportError(false);
     setExportModalOpen(true);
   };
 
@@ -407,6 +409,8 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
   const handleExport = async () => {
     setIsExporting(true);
+    setExportError(false);
+    setExportSuccess(false);
     try {
       const pdfData: AmbientAssessmentPDFData = {
         organizationName: exportOrgName || "Your Organization",
@@ -449,6 +453,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       setExportSuccess(true);
     } catch (err) {
       console.error('PDF generation failed:', err instanceof Error ? err.message : err, err);
+      setExportError(true);
     } finally {
       setIsExporting(false);
     }
@@ -720,7 +725,36 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             </DialogDescription>
           </DialogHeader>
 
-          {!exportSuccess ? (
+          {exportError ? (
+            <div className="py-8 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <X className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg" data-testid="text-pdf-error">PDF Generation Failed</h3>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Something went wrong. Please try again.
+                </p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  className="flex-1"
+                  onClick={() => { setExportError(false); handleExport(); }}
+                  data-testid="button-retry-pdf"
+                >
+                  Retry
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-close-error"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : !exportSuccess ? (
             <div className="space-y-5 py-3">
               <div className="space-y-4">
                 <div className="space-y-2">

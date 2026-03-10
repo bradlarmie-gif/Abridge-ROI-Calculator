@@ -18,6 +18,7 @@ Font.register({
   family: "Manrope",
   fonts: [
     { src: manropeRegular, fontWeight: 400 },
+    { src: manropeRegular, fontWeight: 400, fontStyle: "italic" },
     { src: manropeBold, fontWeight: 600 },
     { src: manropeBold, fontWeight: 700 },
     { src: manropeBold, fontWeight: 800 },
@@ -852,7 +853,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
   });
 
   const orgCtx = e.orgContext;
-  const hasOrgContext = orgCtx && (orgCtx.systemSize || orgCtx.orgType || orgCtx.payerMixMedicare);
+  const hasOrgContext = !!(orgCtx && (orgCtx.systemSize || orgCtx.orgType || orgCtx.payerMixMedicare));
 
   const ORG_TYPE_LABELS: Record<string, string> = {
     amc: "Academic Medical Center",
