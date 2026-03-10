@@ -314,6 +314,11 @@ export default function ExploreModel({
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
+    for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
+      if (item.amount > 0 && item.label) {
+        drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", onset: "immediate" as const });
+      }
+    }
 
     const hasDocDrivers = drivers.some(d => d.category === "documentation" && d.value > 0);
     if (!hasDocDrivers && docValue === 0 && totalHoursSaved > 0) {
@@ -676,6 +681,14 @@ export default function ExploreModel({
             ],
           });
         }
+        for (const item of timeDriverInputs.nursingAdditionalCostSavings) {
+          if (item.amount > 0 && item.label) {
+            drivers.push({
+              id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: 'time',
+              calcSteps: [`Organization-identified saving: ${fmtK(item.amount)}`],
+            });
+          }
+        }
         if (nursingCareQualityPotential > 0) {
           const parts: string[] = [];
           if (nursingHapiValue > 0) parts.push(`HAPI risk reduction: ${fmtK(nursingHapiValue)}`);
@@ -1006,7 +1019,8 @@ export default function ExploreModel({
           const nAgencyOn = timeDriverInputs.nursingAgencyEnabled && timeDriverInputs.nursingRetentionEnabled;
           const nAgencyWeeks = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
           const nAgencyPrem = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-          const nStaffingTotal = nursingOtValue + nursingRetentionValue + nursingAgencyValue;
+          const nAdditionalSavingsTotal = timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
+          const nStaffingTotal = nursingOtValue + nursingRetentionValue + nursingAgencyValue + nAdditionalSavingsTotal;
 
           const careEff = directCarePct / 100;
           const hapiRate = docQualityInputs.nursingHapiRate;
@@ -1089,6 +1103,7 @@ export default function ExploreModel({
             nursingFullScaleAdoption: nFullScaleAdoption,
             nursingFullScaleValue: nFullScaleHard,
             nursingFullScalePerBed: nFullScalePerBed,
+            nursingAdditionalCostSavings: timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.amount > 0 && item.label),
           };
         })() : {}),
       };

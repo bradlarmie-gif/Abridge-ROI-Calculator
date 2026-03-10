@@ -136,6 +136,8 @@ export interface TimeDriverInputs {
   nursingAgencyWeeksPerVacancy: number; // Weeks of agency coverage per vacancy
   nursingAgencyWeeklyPremium: number; // Weekly agency premium (above base cost)
   
+  nursingAdditionalCostSavings: Array<{ id: string; label: string; amount: number }>;
+
   // Care Quality (Nursing) - HAPI & Falls prevention
   nursingCareQualityEnabled: boolean;
   nursingCareQualityExpanded: boolean;
@@ -381,6 +383,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingAvgAgencyHourlyRate: 150, // $150/hr default (legacy)
     nursingAgencyWeeksPerVacancy: 12, // 12 weeks average time to fill
     nursingAgencyWeeklyPremium: 2500, // $2,500 weekly premium above base cost
+    nursingAdditionalCostSavings: [],
     // Care Quality (HAPI & Falls) defaults
     nursingCareQualityEnabled: false,
     nursingCareQualityExpanded: true,
@@ -686,6 +689,9 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           const weeklyPremium = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
           total += Math.round(retained * weeksOfCoverage * weeklyPremium);
         }
+      }
+      if (timeDriverInputs.nursingAdditionalCostSavings.length > 0) {
+        total += timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
       }
     } else {
       // Outpatient: Patient Access and Wellbeing/Retention

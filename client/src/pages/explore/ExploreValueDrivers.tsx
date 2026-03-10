@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, AlertTriangle, ChevronDown, Check } from "lucide-react";
+import { ArrowRight, AlertTriangle, ChevronDown, Check, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -328,6 +328,9 @@ export default function ExploreValueDrivers({
       total += nursingOtValue + nursingRetentionValue;
       if (timeDriverInputs.nursingAgencyEnabled) {
         total += nursingAgencyCalcs.agencySavings;
+      }
+      if (timeDriverInputs.nursingAdditionalCostSavings.length > 0) {
+        total += timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
       }
     } else {
       // Outpatient uses Patient Access and Wellbeing/Retention
@@ -1902,12 +1905,134 @@ export default function ExploreValueDrivers({
         </motion.div>
         )}
 
+        {/* Additional Cost Savings - Nursing Only */}
+        {isNursing && (
+        <motion.div
+          className="mt-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="bg-white rounded-lg border border-dashed border-[#D1D5DB] hover:border-[#EA2C00]/40 transition-colors">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-1">
+                <div>
+                  <p className="font-semibold text-black">Additional Cost Savings</p>
+                  <p className="text-sm text-[#888888]">Capture other savings you expect from Abridge</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const newItem = { id: `acs-${Date.now()}`, label: '', amount: 0 };
+                    updateTimeDriverInputs({
+                      nursingAdditionalCostSavings: [...timeDriverInputs.nursingAdditionalCostSavings, newItem]
+                    });
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#EA2C00] bg-[#FFF8F6] hover:bg-[#FFDDD6]/60 rounded-md transition-colors"
+                  data-testid="button-add-cost-saving"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </button>
+              </div>
+
+              <AnimatePresence mode="popLayout">
+                {timeDriverInputs.nursingAdditionalCostSavings.length === 0 ? (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="py-6 text-center"
+                  >
+                    <p className="text-sm text-[#AAAAAA]">
+                      Think there's more savings? Add them here.
+                    </p>
+                    <p className="text-xs text-[#CCCCCC] mt-1">
+                      e.g., Reduced supply waste, Fewer chart corrections, Staffing flexibility
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.div layout className="space-y-3 mt-4">
+                    {timeDriverInputs.nursingAdditionalCostSavings.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-start gap-3 group"
+                        data-testid={`additional-cost-saving-${index}`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <input
+                            type="text"
+                            value={item.label}
+                            onChange={(e) => {
+                              const updated = [...timeDriverInputs.nursingAdditionalCostSavings];
+                              updated[index] = { ...updated[index], label: e.target.value };
+                              updateTimeDriverInputs({ nursingAdditionalCostSavings: updated });
+                            }}
+                            placeholder="e.g., Reduced supply waste"
+                            className="w-full h-10 px-3 text-sm bg-[#FAFAFA] border border-[#E5E5E5] rounded-md focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]/50 placeholder:text-[#CCCCCC]"
+                            autoFocus={!item.label}
+                            data-testid={`input-cost-saving-label-${index}`}
+                          />
+                        </div>
+                        <div className="w-[140px] flex-shrink-0 relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                          <FormattedNumberInput
+                            value={item.amount}
+                            onChange={(v: number) => {
+                              const updated = [...timeDriverInputs.nursingAdditionalCostSavings];
+                              updated[index] = { ...updated[index], amount: v };
+                              updateTimeDriverInputs({ nursingAdditionalCostSavings: updated });
+                            }}
+                            className="h-10 bg-[#FAFAFA] pl-7"
+                            data-testid={`input-cost-saving-amount-${index}`}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = timeDriverInputs.nursingAdditionalCostSavings.filter((_, i) => i !== index);
+                            updateTimeDriverInputs({ nursingAdditionalCostSavings: updated });
+                          }}
+                          className="p-2 text-[#CCCCCC] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all mt-0.5"
+                          data-testid={`button-remove-cost-saving-${index}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {timeDriverInputs.nursingAdditionalCostSavings.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-4 pt-3 border-t border-[#E5E5E5]"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#666666]">Total Additional Savings</span>
+                    <span className="text-sm font-bold text-[#EA2C00]" data-testid="text-additional-savings-total">
+                      {formatCurrency(timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0))}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+        )}
+
         {/* Continue Button - Mobile */}
         <motion.div 
           className="flex flex-col items-center gap-2 lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.45 }}
         >
           <Button
             onClick={onNext}
@@ -2321,6 +2446,20 @@ export default function ExploreValueDrivers({
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks × {formatCurrency(timeDriverInputs.nursingAgencyWeeklyPremium)})</p>
                       )}
                     </div>
+
+                    {timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.amount > 0 && item.label.trim()).map((item) => (
+                      <div key={item.id}>
+                        <div className="flex justify-between items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                            <span className="text-sm text-[#888888] truncate max-w-[120px]">{item.label}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-white">
+                            {formatCurrency(item.amount)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
 
                   </>
                 ) : (

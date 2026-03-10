@@ -369,6 +369,7 @@ export interface ExplorePDFData {
   nursingFullScaleAdoption?: number;
   nursingFullScaleValue?: number;
   nursingFullScalePerBed?: number;
+  nursingAdditionalCostSavings?: Array<{ id: string; label: string; amount: number }>;
 }
 
 const fmtCurrency = (n: number): string => {
@@ -3245,6 +3246,23 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             )}
 
+            {(data.nursingAdditionalCostSavings || []).filter(item => item.amount > 0 && item.label).map((item) => (
+              <View key={item.id} style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 24 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{item.label}</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(item.amount)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Organization-identified cost saving applied as a one-time annual benefit.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+
             <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
               <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Staffing Efficiency Subtotal</Text>
@@ -3549,6 +3567,12 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Agency Reduction</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{agencyOn && agencyVal > 0 ? fmtCurrency(agencyVal) : "Not Modeled"}</Text>
                   </View>
+                  {(data.nursingAdditionalCostSavings || []).filter(item => item.amount > 0 && item.label).map((item) => (
+                    <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                      <Text style={{ fontSize: 8.5, color: colors.secondary }}>{item.label}</Text>
+                      <Text style={{ fontSize: 8.5, color: colors.secondary }}>{fmtCurrency(item.amount)}</Text>
+                    </View>
+                  ))}
                 </View>
                 <View style={{ marginBottom: 4 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
