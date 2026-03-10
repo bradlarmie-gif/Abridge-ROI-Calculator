@@ -319,12 +319,9 @@ export interface ExplorePDFData {
   nursingEnabledShifts?: number;
   nursingMinutesPerShift?: number;
   nursingOtAllocationPct?: number;
-  nursingShiftSustainabilityPct?: number;
-  nursingDirectPatientCarePct?: number;
+  nursingOtHoursPerNurseWeek?: number;
+  nursingCurrentOtPerYear?: number;
   nursingOtHoursEliminated?: number;
-  nursingSustainabilityHours?: number;
-  nursingDirectCareHours?: number;
-  nursingDirectCareHrsPerNursePerWk?: number;
   nursingHoursPerNurse?: number;
   nursingHoursPerWeek?: number;
   nursingOtHourlyRate?: number;
@@ -697,10 +694,7 @@ const getInpatientObservation = (data: ExplorePDFData): string => {
 const getNursingObservation = (data: ExplorePDFData): string => {
   const staffingTotal = safe(data.nursingStaffingTotal);
   const potentialTotal = safe(data.nursingPotentialTotal);
-  const otPct = safe(data.nursingOtAllocationPct);
-  const sustainPct = safe(data.nursingShiftSustainabilityPct);
-  const directCarePct = safe(data.nursingDirectPatientCarePct);
-  const laborPct = otPct + sustainPct;
+  const otVal = safe(data.nursingOtValue);
   const retVal = safe(data.nursingRetentionValue);
   const agencyOn = !!data.nursingAgencyEnabled;
 
@@ -710,22 +704,23 @@ const getNursingObservation = (data: ExplorePDFData): string => {
     return `Your assessment focused on qualitative drivers (${driverList}). These represent strategic value for your nursing program \u2014 patient experience, bedside presence, and care quality \u2014 that is meaningful but not easily dollarized. To build a financial case, consider enabling OT Reduction or Retention Savings.`;
   }
 
-  if (laborPct > 50) {
-    if (agencyOn) {
-      return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT, retention, and agency costs. Overtime and agency costs dominate. This is typical for organizations with high turnover or significant agency dependence.`;
-    }
-    return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
+  if (otVal > 0 && retVal > 0 && agencyOn) {
+    return `Your model captures three labor cost levers: overtime reduction grounded in current OT spend, retention savings from reduced burnout-driven turnover, and avoided agency costs. This is typical for organizations with high turnover or significant agency dependence.`;
   }
 
-  if (laborPct <= 50 && directCarePct >= 40) {
-    return `Your model balances labor economics (${laborPct}%) with care quality (${100 - laborPct}%). This profile suggests both staffing and patient outcomes can improve simultaneously.`;
+  if (otVal > 0 && retVal > 0) {
+    return `Your model combines overtime reduction with retention savings. OT reduction is grounded in your current overtime spend; retention reflects the burnout-related turnover that documentation burden accelerates. Together they form a defensible staffing ROI.`;
   }
 
-  if (sustainPct >= 35 && retVal > 0) {
-    return `You put real weight on clinician sustainability \u2014 ${sustainPct}% of reclaimed time, plus a quantified retention model. That\u2019s an organization trying to solve for all three at once \u2014 OT, retention, and bedside time \u2014 which is exactly the right instinct. The model reflects that balance.`;
+  if (otVal > 0) {
+    return `Your model focuses on overtime reduction \u2014 grounded in your nurses\u2019 current OT hours. This is the most direct, measurable labor cost savings in nursing: fewer hours on the clock past shift end.`;
   }
 
-  return `Your model weights labor economics heavily \u2014 ${laborPct}% of reclaimed time maps to OT and retention. This is the right starting point for organizations where end-of-shift overtime is measurable and turnover costs are high.`;
+  if (retVal > 0) {
+    return `Your model focuses on retention savings. Documentation burden is among the most frequently cited contributors to nurse burnout and turnover. Quantifying the retention impact creates a compelling case for investment.`;
+  }
+
+  return `Your model captures staffing efficiency value from documentation time savings. The remaining time returns to the bedside for assessments, interventions, and the clinical presence that improves care quality.`;
 };
 
 const ALLOCATION_FOOTER_NOTE = "Not all reclaimed time creates direct dollar value \u2014 some makes shifts more sustainable. That\u2019s real value too, just harder to count.";
@@ -778,20 +773,16 @@ const getIpAllocationSentence = (directPct: number, docPct: number, susPct: numb
   return `Your time is split: ${directPct}% to direct patient care, ${docPct}% to documentation quality, and ${susPct}% to shift sustainability. Each allocation drives a different kind of value \u2014 modeled separately below.`;
 };
 
-const getNursingAllocationSentence = (otPct: number, susPct: number, directPct: number): string => {
-  if (otPct >= 50) {
-    return `Overtime reduction is your primary driver \u2014 ${otPct}% of reclaimed shift time converts directly into reduced end-of-shift overtime. That\u2019s the most direct labor cost savings in nursing: fewer hours on the clock past shift end. ${directPct}% flows to the bedside and connects to care quality outcomes below.`;
+const getNursingTimeSentence = (data: ExplorePDFData): string => {
+  const otHrsPerWk = safe(data.nursingOtHoursPerNurseWeek);
+  const otReduction = safe(data.nursingOtAllocationPct);
+  const otVal = safe(data.nursingOtValue);
+  const hrsPerWk = safe(data.nursingHoursPerWeek);
+
+  if (otVal > 0) {
+    return `Your nurses currently average ${otHrsPerWk} overtime hours per week. With a ${otReduction}% expected reduction from better documentation, the OT savings are grounded in your actual overtime spend \u2014 not a percentage of saved time. The remaining ${hrsPerWk} hrs/wk of documentation time saved per nurse returns to shift sustainability and bedside care.`;
   }
-  if (directPct >= 50) {
-    return `Bedside presence is your primary driver \u2014 ${directPct}% of reclaimed shift time returns to direct patient care. That\u2019s where the care quality value lives: more time for assessments, interventions, and documentation that\u2019s current rather than reconstructed. The potential value drivers below flow from this choice. ${otPct}% reduces overtime directly.`;
-  }
-  if (susPct >= 50) {
-    return `Shift sustainability is your primary focus \u2014 ${susPct}% of reclaimed time is absorbed as genuine breathing room for your nurses. That doesn\u2019t model as a dollar figure, but it matters: reduced documentation stress, better retention, and a nursing workforce that isn\u2019t running on empty. ${otPct}% reduces overtime, ${directPct}% returns to the bedside.`;
-  }
-  if (otPct === 0 && directPct === 0) {
-    return "100% of reclaimed shift time is allocated to sustainability. No hard-value or potential-value drivers are active in this model. The value is real \u2014 it lives in nurse retention, shift satisfaction, and reduced documentation burden.";
-  }
-  return `Your time is split: ${otPct}% reduces overtime directly, ${susPct}% supports shift sustainability, and ${directPct}% returns to direct patient care. Each allocation drives a different kind of value \u2014 hard, qualitative, and potential \u2014 modeled separately below.`;
+  return `Documentation time savings of ${hrsPerWk} hrs/wk per nurse return to the bedside for assessments, interventions, and the clinical presence that improves care quality. No overtime reduction is modeled in this assessment.`;
 };
 
 const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
@@ -2960,10 +2951,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const netPerBed = beds > 0 ? Math.round(hardNetValue / beds) : 0;
     const hrsPerWk = safe(data.nursingHoursPerWeek);
     const hrsPerNurse = safe(data.nursingHoursPerNurse);
-    const directCarePerWk = safe(data.nursingDirectCareHrsPerNursePerWk);
     const otPct = safe(data.nursingOtAllocationPct);
-    const sustainPct = safe(data.nursingShiftSustainabilityPct);
-    const directCarePct = safe(data.nursingDirectPatientCarePct);
+    const otHrsPerWk = safe(data.nursingOtHoursPerNurseWeek);
+    const currentOtPerYear = safe(data.nursingCurrentOtPerYear);
     const otHrsElim = safe(data.nursingOtHoursEliminated);
     const patientDays = safe(data.nursingPatientDays);
 
@@ -3122,18 +3112,39 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>HOW YOUR TIME IS DEPLOYED</Text>
 
-            <AllocationIntentBlock rows={[
-              { pct: otPct, label: "Overtime reduction", description: "Time that directly eliminates end-of-shift overtime. The most immediate, measurable labor cost savings in nursing. This is the hard savings story. Its dollar figures are on the next page.", badge: { text: "HARD VALUE", color: colors.primary } },
-              { pct: sustainPct, label: "Shift breathing room", description: "Time absorbed as genuine recovery \u2014 less stress, less documentation pressure at the end of a long shift. The single most cited driver of nurse satisfaction when documentation burden improves. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a nurse stays.", badge: { text: "QUALITATIVE", color: "#888888" } },
-              { pct: directCarePct, label: "Back to the bedside", description: "Time returned to assessments, interventions, and the presence that documentation too often displaces. More time present means earlier recognition of deterioration, more complete flowsheet entries, and better care quality data. This connects to the potential value drivers on the following page.", badge: { text: "POTENTIAL VALUE", color: "#888888", dotted: true } },
-            ]} />
+            <View style={[styles.cardBg, { padding: 12, marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OVERTIME REDUCTION</Text>
+                  <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{fmtNum(otHrsElim)} hrs/yr</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                    Based on {otHrsPerWk} OT hrs/nurse/wk {"\u00D7"} {otPct}% reduction {"\u00D7"} 52 weeks. Grounded in your actual overtime spend.
+                  </Text>
+                  <Text style={{ fontSize: 7, color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>HARD VALUE</Text>
+                </View>
+                <View style={{ width: 0.5, backgroundColor: colors.border }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>TIME RETURNED TO NURSING</Text>
+                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{hrsPerWk} hrs/wk</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                    Per nurse, from documentation time savings. Returns to shift sustainability, bedside care, and clinical presence.
+                  </Text>
+                  <Text style={{ fontSize: 7, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>SUSTAINABILITY + CARE QUALITY</Text>
+                </View>
+              </View>
+              <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: colors.border }}>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  {getNursingTimeSentence(data)}
+                </Text>
+              </View>
+            </View>
 
             <View style={styles.divider} />
 
             <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow show what these three produce {"\u2014"} in hard labor{"\n"}savings, in care quality potential, and in the retention economics{"\n"}your workforce strategy depends on.{"\u201D"}
+              {"\u201C"}The pages that follow show what this produces {"\u2014"} in hard labor{"\n"}savings, in care quality potential, and in the retention economics{"\n"}your workforce strategy depends on.{"\u201D"}
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
@@ -3151,32 +3162,30 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={{ backgroundColor: "#F5F2EE", borderRadius: 4, padding: 12, marginBottom: 10 }}>
               <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                YOUR TIME ALLOCATION
+                YOUR DOCUMENTATION TIME IMPACT
               </Text>
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OVERTIME REDUCTION</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: otPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{otPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Time that directly reduces end-of-shift overtime.</Text>
-                  <Text style={{ fontSize: 7, color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5 }}>HARD VALUE</Text>
+                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>TIME SAVED</Text>
+                  <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{hrsPerWk} hrs/wk</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Per nurse, from reduced documentation burden.</Text>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>SHIFT SUSTAINABILITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: sustainPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{sustainPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Time absorbed into shift breathing room; reduces documentation stress and supports retention.</Text>
-                  <Text style={{ fontSize: 7, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5 }}>QUALITATIVE</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>DIRECT PATIENT CARE</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: directCarePct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{directCarePct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Time returned to the bedside for assessments, interventions, and presence.</Text>
-                  <View style={{ borderWidth: 1, borderColor: "#888888", borderStyle: "dotted", borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1, alignSelf: "flex-start" }}>
-                    <Text style={{ fontSize: 7, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5 }}>POTENTIAL VALUE</Text>
+                {otHrsElim > 0 && (
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OT HOURS ELIMINATED</Text>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{fmtNum(otHrsElim)}/yr</Text>
+                    <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>{otHrsPerWk} OT hrs/wk {"\u00D7"} {otPct}% reduction {"\u00D7"} 52 wks.</Text>
+                    <Text style={{ fontSize: 7, color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5 }}>HARD VALUE</Text>
                   </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>HOURS PER NURSE</Text>
+                  <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{fmtNum(hrsPerNurse)}/yr</Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Returned to the bedside for assessments and care.</Text>
                 </View>
               </View>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
-                {getNursingAllocationSentence(otPct, sustainPct, directCarePct)}
+                {getNursingTimeSentence(data)}
               </Text>
               <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
                 {ALLOCATION_FOOTER_NOTE}
@@ -3217,7 +3226,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(retVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. The {sustainPct + directCarePct}% of reclaimed time going to shift sustainability and direct patient care is the primary mechanism {"\u2014"} only overtime reduction time is excluded because it{"\u2019"}s reinvested into staffing efficiency. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
+                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. Reclaimed documentation time reduces the end-of-shift pressure that drives burnout {"\u2014"} the primary mechanism behind retention impact. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
                     </Text>
                   </View>
                 </View>
@@ -3291,7 +3300,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hapiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Your program generates roughly {safe(data.nursingHapiPerYear)?.toFixed(1)} hospital-acquired pressure injuries per year across {fmtNum(patientDays)} patient days {"\u2014"} consistent with a national rate of {safe(data.nursingHapiRatePer1000)}/1,000 patient days. Real-time documentation of skin assessments, Braden scores, and turning schedules creates the clinical visibility that enables earlier intervention. Abridge{"\u2019"}s attributable share is modeled at {safe(data.nursingHapiPreventionRate)}% {"\u2014"} exactly half the 13% reduction observed in Dowding et al. (JAMIA 2012) {"\u2014"} to reflect that documentation is one input in a broader care system. Applied to your direct care allocation ({directCarePct}%), the potential value is {fmtCurrency(hapiVal)}.
+                      Your program generates roughly {safe(data.nursingHapiPerYear)?.toFixed(1)} hospital-acquired pressure injuries per year across {fmtNum(patientDays)} patient days {"\u2014"} consistent with a national rate of {safe(data.nursingHapiRatePer1000)}/1,000 patient days. Real-time documentation of skin assessments, Braden scores, and turning schedules creates the clinical visibility that enables earlier intervention. Abridge{"\u2019"}s attributable share is modeled at {safe(data.nursingHapiPreventionRate)}% {"\u2014"} exactly half the 13% reduction observed in Dowding et al. (JAMIA 2012) {"\u2014"} to reflect that documentation is one input in a broader care system. The potential value is {fmtCurrency(hapiVal)}.
                     </Text>
                     <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
                       Source: Dowding J et al., JAMIA 2012. Prevention rate halved (6.5% vs 13% observed) to reflect documentation as one input in a broader prevention system.
@@ -3311,7 +3320,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(fallsVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Your hospital experiences roughly {safe(data.nursingFallsPerYear)?.toFixed(1)} patient falls per year. Real-time Morse score and mobility documentation ensures fall risk status reflects the patient{"\u2019"}s current condition {"\u2014"} not end-of-shift catch-up charting. This is not a prevention claim {"\u2014"} it is a documentation timeliness gap claim. At a {safe(data.nursingFallsDocGapRate)}% documentation gap rate (Joint Commission sentinel event data), with {directCarePct}% care allocation and {fmtCurrency(safe(data.nursingFallsCostPer))} cost per fall, the potential value is {fmtCurrency(fallsVal)}.
+                      Your hospital experiences roughly {safe(data.nursingFallsPerYear)?.toFixed(1)} patient falls per year. Real-time Morse score and mobility documentation ensures fall risk status reflects the patient{"\u2019"}s current condition {"\u2014"} not end-of-shift catch-up charting. This is not a prevention claim {"\u2014"} it is a documentation timeliness gap claim. At a {safe(data.nursingFallsDocGapRate)}% documentation gap rate (Joint Commission sentinel event data) and {fmtCurrency(safe(data.nursingFallsCostPer))} cost per fall, the potential value is {fmtCurrency(fallsVal)}.
                     </Text>
                     <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
                       Source: Joint Commission Sentinel Event data. Gap rate reflects documentation-timing-related falls only.
@@ -3331,7 +3340,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hacVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      The CMS HAC Reduction Program penalizes hospitals in the bottom quartile by reducing Medicare payments by 1%. At {fmtCurrency(safe(data.nursingHacMedicareRevenue))} in annual Medicare inpatient revenue, that{"\u2019"}s a {fmtCurrency(safe(data.nursingHacPenalty))} penalty. With {safe(data.nursingHacAttribution)}% attribution to documentation and {safe(data.nursingHacRealization)}% Year 1 realization, applied to your {directCarePct}% care allocation, the potential value is {fmtCurrency(hacVal)}.
+                      The CMS HAC Reduction Program penalizes hospitals in the bottom quartile by reducing Medicare payments by 1%. At {fmtCurrency(safe(data.nursingHacMedicareRevenue))} in annual Medicare inpatient revenue, that{"\u2019"}s a {fmtCurrency(safe(data.nursingHacPenalty))} penalty. With {safe(data.nursingHacAttribution)}% attribution to documentation and {safe(data.nursingHacRealization)}% Year 1 realization, the potential value is {fmtCurrency(hacVal)}.
                     </Text>
                   </View>
                 </View>

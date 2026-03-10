@@ -198,9 +198,10 @@ export default function ExploreModel({
 
   const nursingOtValue = useMemo(() => {
     if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
-    const otHoursEliminated = totalHoursSaved * (state.timeDriverInputs.nursingOtReductionPercent / 100);
+    const currentOtHoursPerYear = state.numberOfProviders * state.timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+    const otHoursEliminated = currentOtHoursPerYear * (state.timeDriverInputs.nursingOtReductionPercent / 100);
     return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
-  }, [isNursing, totalHoursSaved, state.timeDriverInputs]);
+  }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
 
   const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
 
@@ -224,11 +225,6 @@ export default function ExploreModel({
     return Math.round(nursingRetainedCount * weeksOfCoverage * weeklyPremium);
   }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
-  const nursingCareTimeEffectiveness = useMemo(() => {
-    if (!isNursing) return 1;
-    return state.timeDriverInputs.nursingCareTimePercent / 100;
-  }, [isNursing, state.timeDriverInputs.nursingCareTimePercent]);
-
   const nursingCareQualityPotential = useMemo(() => {
     if (!isNursing) return 0;
     const { docQualityInputs } = state;
@@ -236,18 +232,18 @@ export default function ExploreModel({
     let total = 0;
     if (docQualityInputs.nursingHapiEnabled) {
       const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost * nursingCareTimeEffectiveness;
+      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
     }
     if (docQualityInputs.nursingFallsEnabled) {
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost * nursingCareTimeEffectiveness;
+      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
     }
     if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
       const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
-      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100) * nursingCareTimeEffectiveness;
+      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
     }
     return Math.round(total);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
   const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
@@ -256,25 +252,21 @@ export default function ExploreModel({
     if (!isNursing || !state.docQualityInputs.nursingHapiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const hapIs = (patientDays / 1000) * state.docQualityInputs.nursingHapiRate;
-    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost * nursingCareTimeEffectiveness);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
+    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingFallsValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingFallsEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
-    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost * nursingCareTimeEffectiveness);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs, nursingCareTimeEffectiveness]);
+    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingHacValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingHacEnabled || !state.docQualityInputs.nursingHacBottomQuartile) return 0;
     const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01;
-    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100) * nursingCareTimeEffectiveness);
-  }, [isNursing, state.docQualityInputs, nursingCareTimeEffectiveness]);
-
-  const nursingCareTimePerWeek = isNursing 
-    ? ((totalHoursSaved / state.numberOfProviders / 48) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
-    : '0';
+    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100));
+  }, [isNursing, state.docQualityInputs]);
 
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
@@ -653,12 +645,14 @@ export default function ExploreModel({
         }
       } else if (state.careSetting === 'nursing') {
         if (timeDriverInputs.nursingOtEnabled && nursingOtValue > 0) {
-          const otHours = Math.round(totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100));
+          const currentOtPerYear = state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+          const otHoursElim = Math.round(currentOtPerYear * (timeDriverInputs.nursingOtReductionPercent / 100));
           drivers.push({
             id: 'nursingOT', name: 'OT Reduction', value: nursingOtValue, category: 'time',
             calcSteps: [
-              `${totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${timeDriverInputs.nursingOtReductionPercent}% OT allocation = ${otHours.toLocaleString()} OT hrs`,
-              `${otHours.toLocaleString()} \u00D7 $${timeDriverInputs.nursingOtHourlyRate}/hr = ${fmtK(nursingOtValue)}/year`,
+              `${state.numberOfProviders} nurses \u00D7 ${timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk \u00D7 52 wks = ${currentOtPerYear.toLocaleString()} OT hrs/yr`,
+              `${currentOtPerYear.toLocaleString()} \u00D7 ${timeDriverInputs.nursingOtReductionPercent}% reduction = ${otHoursElim.toLocaleString()} hrs eliminated`,
+              `${otHoursElim.toLocaleString()} \u00D7 $${timeDriverInputs.nursingOtHourlyRate}/hr = ${fmtK(nursingOtValue)}/year`,
             ],
           });
         }
@@ -998,14 +992,10 @@ export default function ExploreModel({
           const enabledShifts = Math.round(ftes * 260 * (adoptRate / 100));
           const minsPerShift = state.minutesSavedPerEncounter;
           const otPct = timeDriverInputs.nursingOtReductionPercent;
-          const sustainPct = 100 - otPct - timeDriverInputs.nursingCareTimePercent;
-          const directCarePct = timeDriverInputs.nursingCareTimePercent;
-          const otHrsElim = Math.round(totalHoursSaved * (otPct / 100));
-          const sustainHrs = Math.round(totalHoursSaved * (sustainPct / 100));
-          const directCareHrs = Math.round(totalHoursSaved * (directCarePct / 100));
+          const currentOtPerYear = ftes * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+          const otHrsElim = Math.round(currentOtPerYear * (otPct / 100));
           const hrsPerNurse = ftes > 0 ? Math.round(totalHoursSaved / ftes) : 0;
           const hrsPerWk = ftes > 0 ? parseFloat((totalHoursSaved / ftes / 52).toFixed(1)) : 0;
-          const directCarePerWk = ftes > 0 ? parseFloat((directCareHrs / ftes / 52).toFixed(2)) : 0;
 
           const nOtRate = timeDriverInputs.nursingOtHourlyRate;
           const nTurnover = timeDriverInputs.nursingTurnoverRate;
@@ -1022,18 +1012,17 @@ export default function ExploreModel({
           const nAdditionalSavingsTotal = timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
           const nStaffingTotal = nursingOtValue + nursingRetentionValue + nursingAgencyValue + nAdditionalSavingsTotal;
 
-          const careEff = directCarePct / 100;
           const hapiRate = docQualityInputs.nursingHapiRate;
           const hapiPerYr = parseFloat(((patientDays / 1000) * hapiRate).toFixed(1));
           const hapiPrevRate = docQualityInputs.nursingHapiPreventionRate;
           const hapiCost = docQualityInputs.nursingHapiCost;
-          const hapiAddressed = parseFloat((hapiPerYr * (hapiPrevRate / 100) * careEff).toFixed(2));
+          const hapiAddressed = parseFloat((hapiPerYr * (hapiPrevRate / 100)).toFixed(2));
 
           const fallsRate = docQualityInputs.nursingFallsRate;
           const fallsPerYr = parseFloat(((patientDays / 1000) * fallsRate).toFixed(1));
           const fallsGapRate = docQualityInputs.nursingFallsPreventionRate;
           const fallsCost = docQualityInputs.nursingFallsCost;
-          const fallsAddressed = parseFloat((fallsPerYr * (fallsGapRate / 100) * careEff).toFixed(2));
+          const fallsAddressed = parseFloat((fallsPerYr * (fallsGapRate / 100)).toFixed(2));
 
           const hacMedRev = docQualityInputs.nursingHacMedicareRevenue;
           const hacPenalty = Math.round(hacMedRev * 0.01);
@@ -1053,12 +1042,9 @@ export default function ExploreModel({
             nursingEnabledShifts: enabledShifts,
             nursingMinutesPerShift: minsPerShift,
             nursingOtAllocationPct: otPct,
-            nursingShiftSustainabilityPct: sustainPct,
-            nursingDirectPatientCarePct: directCarePct,
+            nursingOtHoursPerNurseWeek: timeDriverInputs.nursingOtHoursPerNurseWeek,
+            nursingCurrentOtPerYear: currentOtPerYear,
             nursingOtHoursEliminated: otHrsElim,
-            nursingSustainabilityHours: sustainHrs,
-            nursingDirectCareHours: directCareHrs,
-            nursingDirectCareHrsPerNursePerWk: directCarePerWk,
             nursingHoursPerNurse: hrsPerNurse,
             nursingHoursPerWeek: hrsPerWk,
             nursingOtHourlyRate: nOtRate,
@@ -1572,7 +1558,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}</span>
                     </div>
                     {state.timeDriverInputs.nursingOtEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(from your time split: {state.timeDriverInputs.nursingOtReductionPercent}% allocated to OT reduction)</p>
+                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk × {state.timeDriverInputs.nursingOtReductionPercent}% reduction)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• Retention Savings</span>
@@ -1719,7 +1705,7 @@ export default function ExploreModel({
                       This is potential value—requires clinical practice, not just docs.
                     </p>
                     <p className="text-sm text-[#666666] mt-2">
-                      Direct care time available: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse — based on your {state.timeDriverInputs.nursingCareTimePercent}% direct care allocation
+                      Time saved per nurse: <span className="font-semibold text-black">{hoursPerProviderPerWeek} hrs/wk</span> — available for direct patient care
                     </p>
                   </>
                 ) : isInpatient ? (

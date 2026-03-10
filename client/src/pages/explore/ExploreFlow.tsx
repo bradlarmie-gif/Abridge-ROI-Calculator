@@ -681,9 +681,9 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100));
       }
     } else if (isNursing) {
-      // Nursing: OT Reduction (time-to-OT conversion from total hours saved)
       if (timeDriverInputs.nursingOtEnabled) {
-        const otHoursEliminated = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+        const currentOtHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+        const otHoursEliminated = currentOtHoursPerYear * (timeDriverInputs.nursingOtReductionPercent / 100);
         total += Math.round(otHoursEliminated * timeDriverInputs.nursingOtHourlyRate);
       }
       // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
@@ -849,12 +849,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                 timeDriverInputs: {
                   ...td,
                   nursingOtEnabled: true,
-                  nursingRetentionEnabled: td.nursingShiftSustainabilityPercent > 0,
+                  nursingRetentionEnabled: true,
                 },
                 docQualityInputs: {
                   ...state.docQualityInputs,
-                  nursingHapiEnabled: td.nursingCareTimePercent > 0,
-                  nursingFallsEnabled: td.nursingCareTimePercent > 0,
+                  nursingHapiEnabled: true,
+                  nursingFallsEnabled: true,
                 },
               });
             } else if (isED) {

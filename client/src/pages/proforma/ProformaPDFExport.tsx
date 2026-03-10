@@ -326,10 +326,13 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
       ];
     }
     case "nursingOt": {
-      const otHours = Math.round(snapshot.totalHoursSaved * (t.nursingOtReductionPercent / 100));
+      const nurseFtes = s.numberOfProviders ?? providers;
+      const currentOtPerYear = nurseFtes * (t.nursingOtHoursPerNurseWeek || 4) * 52;
+      const otHoursElim = Math.round(currentOtPerYear * (t.nursingOtReductionPercent / 100));
       return [
-        `${snapshot.totalHoursSaved.toLocaleString()} hrs saved \u00D7 ${t.nursingOtReductionPercent}% OT allocation = ${otHours.toLocaleString()} OT hrs`,
-        `${otHours.toLocaleString()} \u00D7 $${t.nursingOtHourlyRate}/hr = ${fmtK(driver.value)}/year`,
+        `${nurseFtes} nurses \u00D7 ${t.nursingOtHoursPerNurseWeek || 4} OT hrs/wk \u00D7 52 wks = ${currentOtPerYear.toLocaleString()} OT hrs/yr`,
+        `${currentOtPerYear.toLocaleString()} \u00D7 ${t.nursingOtReductionPercent}% reduction = ${otHoursElim.toLocaleString()} hrs eliminated`,
+        `${otHoursElim.toLocaleString()} \u00D7 $${t.nursingOtHourlyRate}/hr = ${fmtK(driver.value)}/year`,
       ];
     }
     case "ipDrg": {

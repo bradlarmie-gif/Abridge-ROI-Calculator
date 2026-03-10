@@ -50,17 +50,13 @@ export default function ExploreCareQuality({
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
   }, [state.nursingStaffedBeds, state.nursingOccupancyRate]);
 
-  const careTimeEffectiveness = useMemo(() => {
-    return timeDriverInputs.nursingCareTimePercent / 100;
-  }, [timeDriverInputs.nursingCareTimePercent]);
-
   const hapisPerYear = useMemo(() => {
     return (patientDaysPerYear / 1000) * docQualityInputs.nursingHapiRate;
   }, [patientDaysPerYear, docQualityInputs.nursingHapiRate]);
 
   const hapisPrevented = useMemo(() => {
-    return hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100) * careTimeEffectiveness;
-  }, [hapisPerYear, docQualityInputs.nursingHapiPreventionRate, careTimeEffectiveness]);
+    return hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
+  }, [hapisPerYear, docQualityInputs.nursingHapiPreventionRate]);
 
   const hapiValue = useMemo(() => {
     return hapisPrevented * docQualityInputs.nursingHapiCost;
@@ -71,8 +67,8 @@ export default function ExploreCareQuality({
   }, [patientDaysPerYear, docQualityInputs.nursingFallsRate]);
 
   const fallsPrevented = useMemo(() => {
-    return fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100) * careTimeEffectiveness;
-  }, [fallsPerYear, docQualityInputs.nursingFallsPreventionRate, careTimeEffectiveness]);
+    return fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
+  }, [fallsPerYear, docQualityInputs.nursingFallsPreventionRate]);
 
   const fallsValue = useMemo(() => {
     return fallsPrevented * docQualityInputs.nursingFallsCost;
@@ -84,8 +80,8 @@ export default function ExploreCareQuality({
   }, [docQualityInputs.nursingHacBottomQuartile, docQualityInputs.nursingHacMedicareRevenue]);
 
   const hacValue = useMemo(() => {
-    return hacPenalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100) * careTimeEffectiveness;
-  }, [hacPenalty, docQualityInputs.nursingHacAbridgeAttribution, docQualityInputs.nursingHacRealization, careTimeEffectiveness]);
+    return hacPenalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
+  }, [hacPenalty, docQualityInputs.nursingHacAbridgeAttribution, docQualityInputs.nursingHacRealization]);
 
   const totalPotentialValue = useMemo(() => {
     return (docQualityInputs.nursingHapiEnabled ? hapiValue : 0) +
@@ -94,11 +90,9 @@ export default function ExploreCareQuality({
   }, [docQualityInputs.nursingHapiEnabled, hapiValue, docQualityInputs.nursingFallsEnabled, fallsValue, docQualityInputs.nursingHacEnabled, hacValue]);
 
   const carePerNurseWeek = useMemo(() => {
-    const careTimePercent = timeDriverInputs.nursingCareTimePercent / 100;
-    const careTimeHours = totalHoursSaved * careTimePercent;
     if (state.numberOfProviders <= 0) return 0;
-    return careTimeHours / state.numberOfProviders / 52;
-  }, [totalHoursSaved, timeDriverInputs.nursingCareTimePercent, state.numberOfProviders]);
+    return totalHoursSaved / state.numberOfProviders / 52;
+  }, [totalHoursSaved, state.numberOfProviders]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -156,35 +150,6 @@ export default function ExploreCareQuality({
                   CARE QUALITY POTENTIAL
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
-              </div>
-
-              <div className="bg-white rounded-lg p-4 mb-2">
-                <div className="flex items-center justify-between gap-4 mb-3">
-                  <div>
-                    <p className="font-semibold text-black text-sm">Direct Care Time</p>
-                    <p className="text-xs text-[#888888]">What percentage of recovered documentation time goes to direct patient care?</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-lg font-bold text-black">{timeDriverInputs.nursingCareTimePercent}%</span>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min={10}
-                  max={80}
-                  step={5}
-                  value={timeDriverInputs.nursingCareTimePercent}
-                  onChange={(e) => updateTimeDriverInputs({ nursingCareTimePercent: Number(e.target.value) })}
-                  className="w-full accent-[#EA2C00]"
-                  data-testid="slider-nursing-care-time-percent"
-                />
-                <div className="flex justify-between text-xs text-[#888888] mt-1">
-                  <span>10%</span>
-                  <span>80%</span>
-                </div>
-                <p className="text-xs text-[#888888] mt-2">
-                  This drives the care quality calculations below — higher allocation means more time at the bedside for assessments and interventions.
-                </p>
               </div>
 
               {/* Driver 1: HAPI Prevention */}
@@ -314,10 +279,6 @@ export default function ExploreCareQuality({
                               <span className="text-[#666666]">x Prevention rate</span>
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHapiPreventionRate}%</span>
                             </div>
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">× Care time allocation (from your time split)</span>
-                              <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
-                            </div>
                             <div className="text-xs text-[#888888] italic mt-1 mb-1">
                               6.5% represents the share of HAPIs where real-time documentation of skin assessments, Braden scores, and turning schedules would have created earlier clinical visibility. Source: Conservative relative to Dowding et al. (JAMIA 2012), which observed 13% HAPU reduction following nursing documentation technology implementation across 29 hospitals.
                             </div>
@@ -336,11 +297,6 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-white/60 rounded-lg p-3">
-                            <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care.
-                            </p>
-                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -475,10 +431,6 @@ export default function ExploreCareQuality({
                               <span className="text-[#666666]">x Documentation gap rate</span>
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
                             </div>
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">× Care time allocation (from your time split)</span>
-                              <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
-                            </div>
                             <div className="text-xs text-[#888888] italic mt-1 mb-1">
                               This models falls where real-time Morse score and mobility documentation would have ensured updated fall precautions were in place. This is not a prevention claim — it is a documentation timeliness gap claim. Abridge's role is ensuring risk status is current; clinical response to that risk status remains with the care team.
                             </div>
@@ -497,11 +449,6 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-white/60 rounded-lg p-3">
-                            <p className="text-xs text-[#888888]">
-                              Care time allocation ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects the share of reclaimed time going to direct patient care.
-                            </p>
-                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -657,10 +604,6 @@ export default function ExploreCareQuality({
                                 <div className="flex justify-between gap-2">
                                   <span className="text-[#666666]">x Year 1 realization</span>
                                   <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHacRealization}%</span>
-                                </div>
-                                <div className="flex justify-between gap-2">
-                                  <span className="text-[#666666]">× Care time allocation (from your time split)</span>
-                                  <span className="font-semibold text-black flex-shrink-0">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                                 </div>
                                 <div className="h-px bg-[#E5E5E5] my-2" />
                                 <div className="flex justify-between gap-2">
