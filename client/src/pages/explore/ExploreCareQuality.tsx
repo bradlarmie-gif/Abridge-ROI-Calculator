@@ -279,9 +279,6 @@ export default function ExploreCareQuality({
                               <span className="text-[#666666]">x Prevention rate</span>
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingHapiPreventionRate}%</span>
                             </div>
-                            <div className="text-xs text-[#888888] italic mt-1 mb-1">
-                              6.5% represents the share of HAPIs where real-time documentation of skin assessments, Braden scores, and turning schedules would have created earlier clinical visibility. Source: Conservative relative to Dowding et al. (JAMIA 2012), which observed 13% HAPU reduction following nursing documentation technology implementation across 29 hospitals.
-                            </div>
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= HAPIs prevented</span>
                               <span className="font-semibold text-black flex-shrink-0">{hapisPrevented.toFixed(2)}</span>
@@ -430,9 +427,6 @@ export default function ExploreCareQuality({
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Documentation gap rate</span>
                               <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingFallsPreventionRate}%</span>
-                            </div>
-                            <div className="text-xs text-[#888888] italic mt-1 mb-1">
-                              This models falls where real-time Morse score and mobility documentation would have ensured updated fall precautions were in place. This is not a prevention claim — it is a documentation timeliness gap claim. Abridge's role is ensuring risk status is current; clinical response to that risk status remains with the care team.
                             </div>
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">= Falls addressed</span>
