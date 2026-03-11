@@ -29,12 +29,6 @@ const DOMAIN_CTA: Record<Domain, string> = {
   risk: 'See My Score →',
 };
 
-const STEP_NODE_LABELS: Record<Domain, Record<number, string>> = {
-  capacity: { 1: 'Recovering', 2: 'Quantified', 3: 'Deployed', 4: 'Strategic' },
-  revenue: { 1: 'Disconnected', 2: 'Analyzing', 3: 'Measured', 4: 'Managed' },
-  workforce: { 1: 'Feeling It', 2: 'Measured', 3: 'Connected', 4: 'Labor Impact' },
-  risk: { 1: 'Improved', 2: 'Monitored', 3: 'Downstream', 4: 'Embedded' },
-};
 
 type DomainState = {
   activationLevel: ActivationLevel | null;
@@ -64,10 +58,10 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'Ambient returns time. The question is what your organization does with it.',
     reframe: 'Most health systems treat recovered time as a productivity footnote. Leading organizations treat it as deployable capacity — and that distinction is worth millions annually.',
     cards: [
-      { level: 1, label: 'Time Is Coming Back', description: 'You know what you\'re getting back.' },
-      { level: 2, label: 'The Number Is Known', description: 'Leadership knows the number.' },
-      { level: 3, label: 'Time Has a Destination', description: 'The time has a destination.' },
-      { level: 4, label: 'Hiring Plans Have Changed', description: 'Ambient is in your hiring model.' },
+      { level: 1, label: 'Time Recovering', description: 'You know what you\'re getting back.' },
+      { level: 2, label: 'Quantified', description: 'Leadership knows the number.' },
+      { level: 3, label: 'Deployed', description: 'The time has a destination.' },
+      { level: 4, label: 'Workforce Impact', description: 'Ambient is in your hiring model.' },
     ],
     framingQuestions: {
       1: undefined as any,
@@ -83,13 +77,14 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'Every encounter you document with ambient is a coding opportunity. Most organizations aren\'t looking.',
-    reframe: 'Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends entirely on whether your revenue cycle team is part of the conversation — most aren\'t yet.',
+    headline: 'REVENUE',
+    subheadline: 'Every documented encounter is a coding opportunity. Most organizations aren\'t looking.',
+    reframe: 'Ambient improves documentation specificity on every encounter. Whether that translates to revenue depends on whether your revenue cycle team is in the conversation.',
     cards: [
-      { level: 1, label: 'No One Is Connecting the Dots', description: 'Revenue cycle hasn\'t entered the room yet.' },
-      { level: 2, label: 'Revenue Cycle Is in the Conversation', description: 'Someone is looking. What are they seeing?' },
-      { level: 3, label: 'The Impact Has Been Measured', description: 'There\'s a number. Leadership can work with it.' },
-      { level: 4, label: 'It\'s Now a Managed System', description: 'The loop is closed. It runs on its own now.' },
+      { level: 1, label: 'Disconnected', description: 'Revenue cycle hasn\'t entered the room yet.' },
+      { level: 2, label: 'Under Investigation', description: 'Someone is looking. What are they seeing?' },
+      { level: 3, label: 'Impact Measured', description: 'There\'s a number. Leadership can work with it.' },
+      { level: 4, label: 'Managed & Integrated', description: 'The loop is closed. It runs on its own now.' },
     ],
     framingQuestions: {
       1: '{encounterCount} encounters. Has anyone from revenue cycle looked at what that means for coding?',
@@ -105,13 +100,14 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   workforce: {
     label: 'WORKFORCE',
-    headline: 'Provider sustainability is one of the most consequential dimensions of an ambient deployment — and one of the least tracked.',
-    reframe: 'When documentation burden decreases, providers get time back — inside the visit and after it. Understanding where that relief shows up is what this domain measures.',
+    headline: 'WORKFORCE',
+    subheadline: 'Sustainability is a financial lever — not just a sentiment.',
+    reframe: 'When documentation burden decreases, providers get time back. Understanding where that relief shows up is what separates a productivity tool from an investment.',
     cards: [
-      { level: 1, label: 'Providers Are Getting Time Back', description: 'The after-hours load is lighter. How much lighter?' },
-      { level: 2, label: 'Effort Reduction Is Measured', description: 'In-clinic time is tracked. Providers have been asked.' },
-      { level: 3, label: 'Retention Is Part of the Story', description: 'Turnover is being modeled. Burden is part of it.' },
-      { level: 4, label: 'The Savings Are Showing Up', description: 'It\'s in the labor line now.' },
+      { level: 1, label: 'Time Is Returning', description: 'The after-hours load is lighter. How much lighter?' },
+      { level: 2, label: 'Burden Measured', description: 'In-clinic time is tracked. Providers have been asked.' },
+      { level: 3, label: 'Retention Modeled', description: 'Turnover is being modeled. Burden is part of it.' },
+      { level: 4, label: 'Labor Line Impact', description: 'It\'s in the labor line now.' },
     ],
     framingQuestions: {
       1: undefined as any,
@@ -127,13 +123,14 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'Documentation quality is the foundation. This domain measures how far that signal has traveled downstream.',
-    reframe: 'When documentation improves, the clinical record becomes more complete, more specific, and more useful — to coders, quality teams, compliance officers, and care managers. This domain measures how far that signal has traveled downstream.',
+    headline: 'QUALITY',
+    subheadline: 'Better documentation is only valuable if the signal reaches downstream.',
+    reframe: 'When documentation improves, the clinical record becomes more complete and more useful — to coders, quality teams, and care managers. This measures how far that signal has traveled.',
     cards: [
-      { level: 1, label: 'The Notes Are Better. No One\'s Connecting It Yet.', description: 'Better notes. No one downstream knows it yet.' },
-      { level: 2, label: 'Quality Is Being Monitored', description: 'Quality is being watched. Gaps are showing up.' },
-      { level: 3, label: 'The Signal Is Reaching Downstream Teams', description: 'At least one downstream team is seeing a measurable difference.' },
-      { level: 4, label: 'It\'s Built Into How We Run', description: 'This isn\'t a project anymore. It\'s how the organization runs.' },
+      { level: 1, label: 'Notes Improving', description: 'Better notes. No one downstream knows it yet.' },
+      { level: 2, label: 'Actively Monitored', description: 'Quality is being watched. Gaps are showing up.' },
+      { level: 3, label: 'Downstream Connected', description: 'At least one downstream team is seeing a measurable difference.' },
+      { level: 4, label: 'Operationally Embedded', description: 'This isn\'t a project anymore. It\'s how the organization runs.' },
     ],
     framingQuestions: {
       1: 'Documentation is improving. Has anyone downstream noticed yet?',
@@ -1921,22 +1918,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex items-center justify-center gap-1 sm:gap-3 mb-8 sm:mb-10">
         {DOMAIN_ORDER.map((d, idx) => {
           const isActive = d === activeDomain;
-          const isComplete = idx < activeIdx;
+          const hasLevel = domainStates[d].activationLevel !== null;
 
           return (
             <div key={d} className="flex items-center gap-1 sm:gap-3">
               <div className="flex flex-col items-center min-w-0">
                 <button
                   onClick={() => setActiveDomain(d)}
-                  className={`text-[10px] sm:text-xs font-medium uppercase tracking-[0.5px] sm:tracking-[1.5px] mb-2 px-0.5 sm:px-1 py-1 whitespace-nowrap ${
-                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black cursor-pointer hover:text-[#EA2C00] transition-colors' : 'text-[#888888] cursor-not-allowed'
+                  className={`text-[10px] sm:text-xs font-medium uppercase tracking-[0.5px] sm:tracking-[1.5px] mb-2 px-0.5 sm:px-1 py-1 whitespace-nowrap cursor-pointer transition-colors ${
+                    isActive ? 'text-[#EA2C00]' : 'text-[#888888] hover:text-[#EA2C00]'
                   }`}
                   data-testid={`domain-label-${d}`}
-                  disabled={!isComplete && !isActive}
                 >
                   {DOMAIN_LABELS[d]}
                 </button>
-                {isComplete && domainStates[d].activationLevel !== null ? (
+                {hasLevel ? (
                   <div
                     className="flex items-center justify-center w-5 h-5 rounded-full bg-[#EA2C00] text-white text-[9px] font-bold font-abridge"
                     data-testid={`domain-dot-${d}`}
@@ -1990,7 +1986,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           <span className="text-[12px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-sm font-bold text-white">
-            {feedback ? (feedback.hasValue ? formatDollar(feedback.value || 0) : '$0') : '—'}
+            {feedback ? (feedback.hasValue && feedback.value ? formatDollar(feedback.value) : '—') : '—'}
           </span>
         </div>
         <span className="text-[12px] text-white/40 uppercase tracking-wider">
@@ -2002,46 +1998,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
-              {activeDomain === 'capacity' ? 'YOUR CAPACITY MATURITY' : activeDomain === 'revenue' ? 'YOUR REVENUE MATURITY' : activeDomain === 'workforce' ? 'YOUR WORKFORCE MATURITY' : activeDomain === 'risk' ? 'YOUR QUALITY MATURITY' : 'Where is your organization today?'}
+              Where is your organization today?
             </p>
-
-            <div className="flex items-center w-full mb-6">
-              {[1, 2, 3, 4].map((lvl) => {
-                const selectedLevel = currentState.activationLevel;
-                const isActive = selectedLevel === lvl;
-                const isComplete = selectedLevel !== null && lvl < selectedLevel;
-                const isUpcoming = !isActive && !isComplete;
-                const nodeLabels = STEP_NODE_LABELS[activeDomain];
-                return (
-                  <div key={lvl} className="flex items-center flex-1 last:flex-none">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                          isComplete ? 'bg-[#EA2C00]' :
-                          isActive ? 'bg-[#EA2C00] ring-4 ring-[#EA2C00]/20' :
-                          'bg-[#F5F0EB] border-2 border-[#D9D3CB]'
-                        }`}
-                        data-testid={`${activeDomain}-dot-${lvl}`}
-                      >
-                        {isComplete ? (
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        ) : (
-                          <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-[#AAAAAA]'}`}>{lvl}</span>
-                        )}
-                      </div>
-                      <span className={`text-[9px] sm:text-[10px] text-center mt-1 leading-tight ${isUpcoming ? 'text-[#AAAAAA]' : 'text-[#1A1A1A]'}`}>
-                        {nodeLabels[lvl]}
-                      </span>
-                    </div>
-                    {lvl < 4 && (
-                      <div className={`flex-1 h-0.5 mx-1 ${
-                        selectedLevel !== null && lvl < selectedLevel ? 'bg-[#EA2C00]' : 'bg-[#E5E0D9]'
-                      }`} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
 
             <div className="flex flex-col">
               {config.cards.map((card, cardIdx) => {
@@ -2142,7 +2100,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                      className="group bg-[#FAFAF9] border border-[#E8E3DC] rounded-xl mb-2 cursor-pointer hover:border-[#EA2C00]/30 transition-all duration-200 opacity-85"
+                      className="group bg-[#FAFAF9] border border-[#E8E3DC] rounded-xl mb-2 cursor-pointer hover:border-[#EA2C00]/30 transition-all duration-200"
                       onClick={() => setActivation(card.level)}
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
                     >
@@ -2200,22 +2158,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   );
                 }
 
-                const isNextLevel = selectedLevel !== null && card.level === selectedLevel + 1;
-                const canClick = selectedLevel === null || isNextLevel;
-
                 return (
                   <motion.div
                     key={card.level}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                    className={canClick
-                      ? 'bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200'
-                      : 'bg-[#FAF8F6] border border-[#EAE5DF] rounded-xl mb-3 opacity-40 pointer-events-none'
-                    }
-                    onClick={() => {
-                      if (canClick) setActivation(card.level);
-                    }}
+                    className="bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200"
+                    onClick={() => setActivation(card.level)}
                     data-testid={`activation-card-${activeDomain}-${card.level}`}
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
@@ -2322,9 +2272,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const timeSaved = (inputs.timeSavedPerEncounter as number) || 0;
               const hoursRecovered = Math.round(documentedEncounters * timeSaved / 60);
               const domainProvocations: Record<string, string> = {
-                capacity: `Your inputs suggest ${hoursRecovered.toLocaleString()} hours recovered annually. Which of these best describes where your organization is with that number?`,
+                capacity: hoursRecovered > 0
+                  ? `Your inputs suggest ${hoursRecovered.toLocaleString()} hours recovered annually. Which of these best describes where your organization is with that number?`
+                  : 'Select a maturity level to see how your organization is using recovered time.',
                 revenue: `${documentedEncounters.toLocaleString()} encounters documented annually — each one an opportunity for more accurate coding. Has your revenue cycle team been brought into that conversation?`,
-                workforce: `${providers} providers. ${hoursRecovered.toLocaleString()} hours of documentation time returned. Where does your organization stand on measuring what that relief is worth?`,
+                workforce: hoursRecovered > 0
+                  ? `${providers} providers. ${hoursRecovered.toLocaleString()} hours of documentation time returned. Where does your organization stand on measuring what that relief is worth?`
+                  : `${providers} providers are getting time back. Select a level to estimate what that relief is worth.`,
                 risk: `${documentedEncounters.toLocaleString()} encounters documented with improved specificity. How far has that signal traveled downstream — to coding, quality teams, or compliance?`,
               };
               const provocation = domainProvocations[activeDomain] || "Select your organization's maturity level to see estimated impact.";

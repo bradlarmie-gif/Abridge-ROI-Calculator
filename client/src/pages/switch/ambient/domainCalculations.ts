@@ -14,28 +14,28 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Time Is Coming Back',
-    2: 'The Number Is Known',
-    3: 'Time Has a Destination',
-    4: 'Hiring Plans Have Changed',
+    1: 'Time Recovering',
+    2: 'Quantified',
+    3: 'Deployed',
+    4: 'Workforce Impact',
   },
   revenue: {
-    1: 'No One Is Connecting the Dots',
-    2: 'Revenue Cycle Is in the Conversation',
-    3: 'The Impact Has Been Measured',
-    4: 'It\'s Now a Managed System',
+    1: 'Disconnected',
+    2: 'Under Investigation',
+    3: 'Impact Measured',
+    4: 'Managed & Integrated',
   },
   workforce: {
-    1: 'Providers Are Getting Time Back',
-    2: 'Effort Reduction Is Measured',
-    3: 'Retention Is Part of the Story',
-    4: 'The Savings Are Showing Up',
+    1: 'Time Is Returning',
+    2: 'Burden Measured',
+    3: 'Retention Modeled',
+    4: 'Labor Line Impact',
   },
   risk: {
-    1: 'The Notes Are Better. No One\'s Connecting It Yet.',
-    2: 'Quality Is Being Monitored',
-    3: 'The Signal Is Reaching Downstream Teams',
-    4: 'It\'s Built Into How We Run',
+    1: 'Notes Improving',
+    2: 'Actively Monitored',
+    3: 'Downstream Connected',
+    4: 'Operationally Embedded',
   },
 };
 
