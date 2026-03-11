@@ -102,24 +102,36 @@ export function computeCapacityFeedback(
         value: null,
         hasValue: false,
         headlineMetric: `${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours recoverable annually`,
-        context: `At ${documentedEncounters.toLocaleString()} encounters, 2–3 minutes returned per encounter is ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually. Enter your observed value or use the benchmark to continue.`,
+        context: `At ${documentedEncounters.toLocaleString()} encounters, 2–3 minutes returned per encounter yields ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually. Enter your observed value or use the benchmark.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 2 — Is this number in front of leadership yet?',
+        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
       };
     }
     const ts = hasTimeSaved ? timeSaved! : 0;
     const recoveredHours = Math.round(documentedEncounters * ts / 60);
+    if (recoveredHours === 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Enter time saved per encounter to calculate.',
+        context: `${providers.toLocaleString()} providers documenting ${documentedEncounters.toLocaleString()} encounters annually. Enter minutes saved per encounter to estimate recovered hours.`,
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
+      };
+    }
     const fte = (recoveredHours / 2080).toFixed(1);
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
-      context: `Your ${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that's ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.`,
+      context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.`,
       formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
-      footnote: 'This is the raw material. What your organization does with it determines whether it becomes revenue, capacity, or nothing.',
-      nextLevelTeaser: 'Level 2 — Is this number in front of leadership yet?',
+      footnote: 'Recovered hours represent available capacity. Financial value depends on how this time is allocated at higher maturity levels.',
+      nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
     };
   }
 
@@ -136,7 +148,7 @@ export function computeCapacityFeedback(
         context: `Enter time saved per encounter to quantify recovered capacity. At this encounter volume, the benchmark range is ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'It becomes money at Level 3 — when the hours have somewhere to go.',
+        nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
       };
     }
     const recoveredHours = Math.round(documentedEncounters * ts / 60);
@@ -165,11 +177,11 @@ export function computeCapacityFeedback(
     let schedulingContext = '';
     let slotsFormula = '';
     if (schedulingChanges === 'piloting') {
-      schedulingContext = '\n\nScheduling changes are being piloted — early movers at this stage typically convert recovered time to access revenue within one quarter.';
+      schedulingContext = '\n\nScheduling changes are being piloted.';
     } else if (schedulingChanges === 'planning') {
-      schedulingContext = '\n\nScheduling changes are in the planning phase. Converting plans to pilot programs accelerates the path to measurable access revenue.';
+      schedulingContext = '\n\nScheduling changes are in the planning phase.';
     } else if (schedulingChanges === 'not_yet') {
-      schedulingContext = '\n\nNo scheduling or template changes explored yet. This is often the fastest lever to convert recovered time into patient access.';
+      schedulingContext = '\n\nNo scheduling or template changes explored yet.';
     }
 
     if ((schedulingChanges === 'piloting' || schedulingChanges === 'planning') && additionalSlots && additionalSlots > 0) {
@@ -184,10 +196,10 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
-      context: `Your organization has quantified ${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.\n\nOrganizations that bring this number to leadership with a plan attached move to deployment within a quarter. Without a destination, the hours stay invisible.${weeklyContext}${schedulingContext}`,
+      context: `${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.${weeklyContext}${schedulingContext}`,
       formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}${weeklyFormula}${slotsFormula}`,
       footnote: '',
-      nextLevelTeaser: 'It becomes money at Level 3 — when the hours have somewhere to go.',
+      nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
     };
   }
 
@@ -201,10 +213,10 @@ export function computeCapacityFeedback(
         value: null,
         hasValue: false,
         headlineMetric: `${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually`,
-        context: `Organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At ${providers.toLocaleString()} providers, that's ${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually — and the revenue that comes with them.`,
+        context: `Benchmark: organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At ${providers.toLocaleString()} providers, that is ${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 — when this changes who you hire, the number gets bigger.',
+        nextLevelTeaser: 'Level 4 incorporates capacity changes into workforce planning.',
       };
     }
     const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
@@ -217,10 +229,10 @@ export function computeCapacityFeedback(
       value: accessRevenue,
       hasValue: true,
       headlineMetric: `${formatDollar(accessRevenue)} in access revenue annually`,
-      context: `Recovered time has a destination — and that destination generates revenue.\n\n${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month, across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''}, is ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
+      context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
       footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
-      nextLevelTeaser: 'Level 4 — When hiring plans change, it\'s a different conversation.',
+      nextLevelTeaser: 'Level 4 incorporates capacity changes into workforce planning.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }
@@ -248,10 +260,9 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost`,
-      context: `At ${providers.toLocaleString()} providers, 1–2 avoided FTEs represents ${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost — fully loaded. That's what ambient looks like when it's actually changed how the organization operates.`,
+      context: `At ${providers.toLocaleString()} providers, 1–2 avoided FTEs represents ${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost, fully loaded. Select workforce planning areas and enter FTEs avoided to calculate.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'This is the level where ambient stops being a tool and starts being infrastructure.',
     };
   }
 
@@ -273,7 +284,7 @@ export function computeCapacityFeedback(
     value: capacityValue,
     hasValue: true,
     headlineMetric: `${formatDollar(capacityValue)} in avoided workforce cost`,
-    context: `This is your most durable capacity value — not revenue you might earn, but a cost your organization did not incur because ambient-enabled capacity made the hire unnecessary.\n\n${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+    context: `${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year in avoided workforce cost.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
     formula: `[avoidedWorkforceCost] = ${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} / FTE = ${formatDollar(capacityValue)}`,
     footnote: 'Fully-loaded cost includes salary, benefits, malpractice, and recruitment. AMGA benchmark: $350K–$450K per outpatient physician FTE.',
   };
@@ -318,7 +329,7 @@ export function computeRevenueFeedback(
         context: `At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually.${complexityNote ? `\n\n${complexityNote}` : ''}${deficiencyNote}`,
         formula: `[estimatedRange] = ${documentedEncounters.toLocaleString()} encounters × $${upliftPerEncounter} uplift × deficiency factor (${deficiencyMultiplier.toFixed(1)})`,
         footnote: 'Estimate based on E&M complexity profile and documentation deficiency rate. Actual impact requires revenue cycle analysis.',
-        nextLevelTeaser: 'The revenue is likely already there. No one\'s measuring it yet.',
+        nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
       };
     }
 
@@ -326,11 +337,11 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${documentedEncounters.toLocaleString()} encounters. The revenue cycle hasn't looked.`,
-      context: `Ambient is producing better documentation on every visit. Whether that translates to reimbursement depends entirely on whether anyone is looking.\n\nOrganizations that bring revenue cycle into the ambient conversation typically have a quantified number before their first contract renewal.`,
+      headlineMetric: `${documentedEncounters.toLocaleString()} encounters — revenue cycle not yet engaged.`,
+      context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. Revenue impact has not been analyzed. Enter E&M complexity data or deficiency rates to estimate the opportunity.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'The revenue is likely already there. No one\'s measuring it yet.',
+      nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
     };
   }
 
@@ -385,7 +396,7 @@ export function computeRevenueFeedback(
         context: contextParts.join('\n\n') + analysisNote,
         formula: formulaParts.join('\n'),
         footnote: 'Estimates based on your coding specificity and denial rate data. Confirmed impact requires before/after measurement at Level 3.',
-        nextLevelTeaser: 'Level 3 is where the analysis becomes a number — one your CFO can work with.',
+        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
       };
     }
 
@@ -395,27 +406,27 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'The analysis is running. No number yet.',
-        context: `At ${documentedEncounters.toLocaleString()} encounters annually, a 0.1 wRVU improvement per encounter is worth ~${formatDollar(wRVUValue)} at standard conversion rates. That's the size of what's being looked for.`,
+        headlineMetric: 'Analysis not yet started.',
+        context: `At ${documentedEncounters.toLocaleString()} encounters annually, a 0.1 wRVU improvement per encounter is approximately ${formatDollar(wRVUValue)} at standard conversion rates. Select the areas being analyzed.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'A number changes the conversation. Level 3 is where you get one.',
+        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
       };
     }
 
     const checkedLabels = checked.map(shortLabel).join(', ');
     const duration = inputs.investigationDuration as string | undefined;
-    const durationNote = duration === '90plus' ? '\n\nAt 90+ days, the analysis is mature enough to produce a confirmed figure — Level 3 is the natural next step.' : '';
+    const durationNote = duration === '90plus' ? '\n\nAnalysis is 90+ days in — sufficient for before/after comparison at Level 3.' : '';
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `Analysis underway across ${count} area${count !== 1 ? 's' : ''}.`,
-      context: `Your revenue cycle team is actively examining the relationship between documentation quality and ${checkedLabels}.\n\nThe faster this analysis produces a before/after number, the faster your organization has something concrete to build on.${durationNote}`,
+      context: `Revenue cycle is analyzing: ${checkedLabels}.${durationNote}`,
       formula: '',
-      footnote: 'A dollar value appears at Level 3, when your organization has before/after data to work with.',
-      nextLevelTeaser: 'Level 3 is where the analysis becomes a number — one your CFO can work with.',
+      footnote: 'Dollar value available at Level 3 when before/after data is entered.',
+      nextLevelTeaser: 'Level 3 requires before/after measurement data.',
     };
   }
 
@@ -426,11 +437,11 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'You have a number. Most don\'t.',
-        context: `Select what you measured to calculate the impact. Organizations with before/after data at this encounter volume typically report $150K–$500K in annual revenue attributed to documentation improvement.`,
+        headlineMetric: 'Select measurement type to calculate.',
+        context: `Select what was measured to calculate the revenue impact. Benchmark at this encounter volume: $150K–$500K annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
       };
     }
 
@@ -442,11 +453,11 @@ export function computeRevenueFeedback(
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
-          headlineMetric: 'You have a number. Most don\'t.',
-          context: `Enter your measured wRVU change per encounter. At this volume, even a 0.1 wRVU improvement is ~${formatDollar(benchValue)} annually.`,
+          headlineMetric: 'Enter measured wRVU change to calculate.',
+          context: `Enter your measured wRVU change per encounter. At this volume, a 0.1 wRVU improvement is approximately ${formatDollar(benchValue)} annually.`,
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
         };
       }
       const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
@@ -454,10 +465,10 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `A ${wrvuDelta} wRVU improvement per encounter, across ${documentedEncounters.toLocaleString()} documented encounters, represents ${formatDollar(revenueImpact)} in annual revenue — sourced entirely from your organization's measured data.`,
+        context: `${wrvuDelta} wRVU improvement per encounter across ${documentedEncounters.toLocaleString()} documented encounters = ${formatDollar(revenueImpact)} in annual revenue.`,
         formula: `[revenueImpact] = ${wrvuDelta} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} (CMS conversion factor) = ${formatDollar(revenueImpact)}`,
         footnote: `CMS conversion factor: $${conversionFactor}. Adjustable in baseline settings.`,
-        nextLevelTeaser: 'Level 4 is where this becomes a managed input — built into dashboards, CDI workflows, and revenue cycle operations.',
+        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
       };
     }
 
@@ -470,11 +481,11 @@ export function computeRevenueFeedback(
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
-          headlineMetric: 'You have a number. Most don\'t.',
-          context: `Enter your measured collections change per encounter. Benchmark range: $3–$10 per encounter is ${formatDollar(benchLow)}–${formatDollar(benchHigh)} annually.`,
+          headlineMetric: 'Enter measured collections change to calculate.',
+          context: `Enter your measured collections change per encounter. Benchmark range: $3–$10 per encounter = ${formatDollar(benchLow)}–${formatDollar(benchHigh)} annually.`,
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
         };
       }
       const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
@@ -482,10 +493,10 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `A ${formatDollar(collectionsDelta)} increase in collections per encounter, across ${documentedEncounters.toLocaleString()} documented encounters, is ${formatDollar(revenueImpact)} annually — based on your organization's data.`,
+        context: `${formatDollar(collectionsDelta)} increase in collections per encounter across ${documentedEncounters.toLocaleString()} documented encounters = ${formatDollar(revenueImpact)} annually.`,
         formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}`,
         footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 is where this becomes a managed input — built into dashboards, CDI workflows, and revenue cycle operations.',
+        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
       };
     }
 
@@ -496,11 +507,11 @@ export function computeRevenueFeedback(
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
-          headlineMetric: 'You have a number. Most don\'t.',
-          context: `Enter your measured revenue change percentage. Organizations at this stage typically report 1–4% improvement.`,
+          headlineMetric: 'Enter measured revenue change to calculate.',
+          context: `Enter your measured revenue change percentage. Benchmark at this stage: 1–4% improvement.`,
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
         };
       }
       const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (revenuePct / 100));
@@ -508,10 +519,10 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `A ${revenuePct}% revenue improvement across ${documentedEncounters.toLocaleString()} encounters at ${formatDollar(revenuePerVisit)}/visit is ${formatDollar(revenueImpact)} annually — based on your organization's measured data.`,
+        context: `${revenuePct}% revenue improvement across ${documentedEncounters.toLocaleString()} encounters at ${formatDollar(revenuePerVisit)}/visit = ${formatDollar(revenueImpact)} annually.`,
         formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${revenuePct}% = ${formatDollar(revenueImpact)}`,
         footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 is where this becomes a managed input — built into dashboards, CDI workflows, and revenue cycle operations.',
+        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
       };
     }
 
@@ -524,11 +535,11 @@ export function computeRevenueFeedback(
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
-          headlineMetric: 'You have a number. Most don\'t.',
-          context: `Enter your denial rate before and after ambient. Organizations at this stage typically report 5–15% denial rate reduction.`,
+          headlineMetric: 'Enter denial rate data to calculate.',
+          context: `Enter your denial rate before and after ambient. Benchmark: 5–15% denial rate reduction.`,
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
         };
       }
 
@@ -550,10 +561,10 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: denialSavings,
         hasValue: true,
-        context: `Documentation-related denial rate: ${denialBefore}% → ${denialAfter}%. A ${denialDelta.toFixed(1)} point improvement across ${documentedEncounters.toLocaleString()} encounters.\n\nThis is your organization's data — before and after, attributed and auditable.`,
+        context: `Denial rate: ${denialBefore}% → ${denialAfter}%. ${denialDelta.toFixed(1)} point improvement across ${documentedEncounters.toLocaleString()} encounters.`,
         formula: `[denialSavings] = (${denialBefore}% - ${denialAfter}%) × ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} = ${formatDollar(denialSavings)}`,
         footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 is where this becomes a managed input — built into dashboards, CDI workflows, and revenue cycle operations.',
+        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
       };
     }
 
@@ -561,11 +572,11 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'You have a number. Most don\'t.',
-      context: `Select what you measured to calculate the impact. Organizations with before/after data at this encounter volume typically report $150K–$500K in annual revenue attributed to documentation improvement.`,
+      headlineMetric: 'Select measurement type to calculate.',
+      context: `Select what was measured to calculate the revenue impact. Benchmark at this encounter volume: $150K–$500K annually.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 4 is when this stops being a finding and starts being a managed line.',
+      nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
     };
   }
 
@@ -582,8 +593,8 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'The loop is closed. What\'s the annual number?',
-      context: `Organizations with full revenue cycle integration at ${documentedEncounters.toLocaleString()} encounters report $200K–$600K in annually attributed revenue. Enter your confirmed figure, or use the benchmark as a working estimate.`,
+      headlineMetric: 'Enter annually attributed revenue to calculate.',
+      context: `Benchmark for full revenue cycle integration at ${documentedEncounters.toLocaleString()} encounters: $200K–$600K annually. Enter your confirmed figure or use the benchmark.`,
       formula: '',
       footnote: '',
     };
@@ -594,8 +605,8 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'The loop is closed. What\'s the annual number?',
-      context: `Working estimate: at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration, the typical range is $200K–$600K annually. This is a planning figure — not a guarantee.`,
+      headlineMetric: 'Enter annually attributed revenue to calculate.',
+      context: `Working estimate at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. Planning figure, not confirmed.`,
       formula: '',
       footnote: '',
     };
@@ -617,7 +628,7 @@ export function computeRevenueFeedback(
     label: 'Estimated Impact',
     value: recognizedRevenue || 0,
     hasValue: true,
-    context: `Your organization formally attributes ${formatDollar(recognizedRevenue || 0)} in annual revenue to documentation quality improvements — across ${count} integrated area${count !== 1 ? 's' : ''}: ${checkedLabels}.\n\nThis is the number that belongs in your ambient strategic narrative.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    context: `${formatDollar(recognizedRevenue || 0)} in annual revenue attributed to documentation quality improvements across ${count} integrated area${count !== 1 ? 's' : ''}: ${checkedLabels}.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
     formula: '',
     footnote: '',
   };
@@ -646,11 +657,11 @@ export function computeWorkforceFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${totalHoursReturned.toLocaleString()} hours of after-hours time returned annually`,
-      context: `At ${providers.toLocaleString()} providers and ${effectiveHrs} hrs/week, that's ${totalHoursReturned.toLocaleString()} hours annually — time providers aren't spending at home finishing charts. That's the starting point.\n\nThe financial value of that time depends on what happens at Levels 2–4.`,
+      headlineMetric: `${totalHoursReturned.toLocaleString()} after-hours hours returned annually`,
+      context: `${providers.toLocaleString()} providers × ${effectiveHrs} hrs/week × 52 weeks = ${totalHoursReturned.toLocaleString()} hours of after-hours documentation time returned annually.`,
       formula: `[burdenHours] = ${effectiveHrs} × ${providers} × 52 = ${totalHoursReturned.toLocaleString()}`,
       footnote: 'Uses 52 weeks. For clinical weeks only, adjust to 46–48.',
-      nextLevelTeaser: 'After-hours is only part of the picture. Level 2 adds the in-clinic side.',
+      nextLevelTeaser: 'Level 2 adds in-clinic time savings and provider survey data.',
     };
   }
 
@@ -670,11 +681,11 @@ export function computeWorkforceFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'In-clinic burden reduction, quantified.',
-        context: `Organizations at this stage report 10–20 minutes per provider per day of in-clinic burden reduction. At ${providers.toLocaleString()} providers, that's ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually reclaimed inside the visit itself.`,
+        headlineMetric: 'Enter in-clinic time savings to calculate.',
+        context: `Benchmark: 10–20 minutes per provider per day of in-clinic burden reduction. At ${providers.toLocaleString()} providers, that is ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'When this shows up in retention data, it stops being a satisfaction metric and becomes a financial one.',
+        nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
       };
     }
 
@@ -688,7 +699,7 @@ export function computeWorkforceFeedback(
     const surveyNarrative = hasSurveyData
       ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`
       : surveyType === 'not_yet' || surveyType === 'informal' || !surveyType
-        ? '\n\nProvider survey not yet conducted or informal only. Operational data shows burden reduction — clinician voice would validate and strengthen this finding.'
+        ? '\n\nProvider survey not yet conducted or informal only.'
         : '';
 
     const burdenScoreBefore = inputs.burdenScoreBefore as number | undefined;
@@ -709,10 +720,10 @@ export function computeWorkforceFeedback(
       value: null,
       hasValue: false,
       headlineMetric,
-      context: `Your providers are getting measurable time back — inside the visit and after it.\n\nIn-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}${burnoutNarrative}`,
+      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}${burnoutNarrative}`,
       formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 230 / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × 52 = ${afterHoursHours.toLocaleString()}` : ''}`,
-      footnote: '230 clinical working days. Time returned is shown in hours — dollar value appears at Level 3 when turnover data is entered.',
-      nextLevelTeaser: 'Level 3 — when turnover data is in the picture, burden reduction connects to a retention value your CHRO can work with.',
+      footnote: '230 clinical working days. Dollar value appears at Level 3 when turnover data is entered.',
+      nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
     };
   }
 
@@ -729,11 +740,11 @@ export function computeWorkforceFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Turnover exposure is being modeled.',
-        context: `National physician turnover averages 6–8% annually. At ${providers.toLocaleString()} providers, that's ${Math.round(lowDepartures)}–${Math.round(highDepartures)} departures per year. If documentation burden drives even 20% of that, and replacement costs $350K per physician — that's ${formatDollar(exposureLow)}–${formatDollar(exposureHigh)} in annual exposure.`,
+        headlineMetric: 'Enter turnover data to calculate exposure.',
+        context: `National physician turnover: 6–8% annually. At ${providers.toLocaleString()} providers, approximately ${Math.round(lowDepartures)}–${Math.round(highDepartures)} departures per year. At 20% documentation-driven and $350K replacement cost, exposure is ${formatDollar(exposureLow)}–${formatDollar(exposureHigh)} annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'At Level 4, this stops being exposure and starts showing up as savings.',
+        nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
       };
     }
     const totalTurnover = providers * (turnoverRate / 100);
@@ -754,7 +765,7 @@ export function computeWorkforceFeedback(
       context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nAt ${formatDollar(replacementCost)} replacement cost per provider, total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion ambient retention improvement works directly against.` : 'Enter the share of turnover you attribute to documentation burden to see the portion ambient can influence.'}`,
       formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,
       footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',
-      nextLevelTeaser: 'Level 4 — when agency and locum spend start to reflect the difference, it shows up directly in the P&L.',
+      nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
     };
   }
 
@@ -764,11 +775,10 @@ export function computeWorkforceFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'The labor line is shifting.',
-      context: `Organizations at this maturity level report $5K–$30K per month in agency and locum spend reduction. At ${providers.toLocaleString()} providers, that's $60K–$360K annually in recovered labor cost — savings that finance can see.`,
+      headlineMetric: 'Enter monthly spend reduction to calculate.',
+      context: `Benchmark: $5K–$30K per month in agency and locum spend reduction. At ${providers.toLocaleString()} providers, that is $60K–$360K annually.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'This is the financial proof that ambient changed the workforce model, not just the documentation.',
     };
   }
   const annualSavings = Math.round(agencyReduction * 12);
@@ -777,7 +787,7 @@ export function computeWorkforceFeedback(
     value: annualSavings,
     hasValue: true,
     headlineMetric: `${formatDollar(annualSavings)} in annual labor spend reduction.`,
-    context: `Agency and locum spend is one of the most visible labor cost lines in a health system. When it decreases — and the decrease is attributable to improved provider retention — that's ambient showing up directly in your P&L.`,
+    context: `${formatDollar(agencyReduction)} per month in agency and locum spend reduction = ${formatDollar(annualSavings)} annually.`,
     formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}`,
     footnote: '',
   };
@@ -901,17 +911,17 @@ export function computeRiskFeedback(
 
     const headlineMetric = estimatedValue && estimatedValue > 0
       ? `${formatDollar(estimatedValue)} estimated quality improvement opportunity`
-      : `${documentedEncounters.toLocaleString()} encounters with better notes.`;
+      : `${documentedEncounters.toLocaleString()} encounters with improved documentation.`;
 
     return {
       label: 'Estimated Impact',
       value: estimatedValue,
       hasValue: estimatedValue !== null && estimatedValue > 0,
       headlineMetric,
-      context: `Every one of those visits produced a more complete clinical record. Whether that reaches coding, quality reporting, or care management depends on whether anyone connects it.\n\nOrganizations that route this signal to one downstream team first move fastest.${qualityNarrative}`,
+      context: `${documentedEncounters.toLocaleString()} encounters with improved documentation. ${statusText}${qualityNarrative}`,
       formula: formulaStr,
       footnote: estimatedValue && estimatedValue > 0 ? 'Estimated opportunity based on gap between current rates and industry benchmarks. Actual recoverable value depends on payer mix and clinical context.' : '',
-      nextLevelTeaser: 'The signal exists. Level 2 is when someone starts watching it.',
+      nextLevelTeaser: 'Level 2 establishes systematic quality tracking.',
     };
   }
 
@@ -922,11 +932,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Gaps are becoming visible.',
-        context: `At ${documentedEncounters.toLocaleString()} encounters annually, even a 5% improvement in coding specificity can shift reimbursement meaningfully. Formal monitoring is what makes that measurable — and defensible.\n\nSelect how quality is being tracked to see what the data suggests.`,
+        headlineMetric: 'Select monitoring approach to continue.',
+        context: `${documentedEncounters.toLocaleString()} encounters annually. Select how documentation quality is being tracked.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 3 is when a downstream team sees a number change.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
     if (approach === 'not_yet') {
@@ -934,11 +944,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Gaps are becoming visible.',
-        context: `At ${documentedEncounters.toLocaleString()} encounters annually, even a 5% improvement in coding specificity can shift reimbursement meaningfully. Formal monitoring is what makes that measurable — and defensible.`,
+        headlineMetric: 'No formal quality tracking in place.',
+        context: `${documentedEncounters.toLocaleString()} encounters annually. No formal documentation quality monitoring established.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 3 is when a downstream team sees a number change.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
     if (approach === 'spot_checks') {
@@ -946,11 +956,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Gaps are becoming visible.',
-        context: `At ${documentedEncounters.toLocaleString()} encounters annually, even a 5% improvement in coding specificity can shift reimbursement meaningfully. Informal review is surfacing issues — formalizing that review makes patterns visible and improvement demonstrable.`,
+        headlineMetric: 'Informal quality review in place.',
+        context: `${documentedEncounters.toLocaleString()} encounters annually. Informal spot checks are surfacing issues. Systematic tracking would make patterns measurable.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 3 is when a downstream team sees a number change.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
     const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
@@ -999,11 +1009,11 @@ export function computeRiskFeedback(
         hasValue: l2EstimatedValue !== null && l2EstimatedValue > 0,
         headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
           ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
-          : 'Gaps are becoming visible.',
-        context: `Systematic tracking is active. Select which documentation attributes are being tracked to see where the gaps are — and where the value is.${l2Narrative}`,
+          : 'Select documentation attributes being tracked.',
+        context: `Systematic tracking is active. Select which documentation attributes are being tracked.${l2Narrative}`,
         formula: l2Formula,
         footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
-        nextLevelTeaser: 'Level 3 is when a downstream team sees a number change.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
     const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
@@ -1019,10 +1029,10 @@ export function computeRiskFeedback(
         headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
           ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
           : `${count} of 5 quality dimensions tracked. ${chartsWithGaps.toLocaleString()} charts with gaps identified annually.`,
-        context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps identified annually — based on your ${gapRate}% review gap rate.${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}${l2Narrative}`,
+        context: `Tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps annually (${gapRate}% gap rate).${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}${l2Narrative}`,
         formula: l2Formula,
         footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
-        nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
 
@@ -1033,10 +1043,10 @@ export function computeRiskFeedback(
       headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
         ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
         : `${count} of 5 quality dimensions tracked`,
-      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter your chart documentation gap rate to see volume of charts with gaps.${l2Narrative}`,
+      context: `Tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter chart documentation gap rate to calculate volume of charts with gaps.${l2Narrative}`,
       formula: l2Formula,
       footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
-      nextLevelTeaser: 'Level 3 — when a downstream workflow shows measurable improvement, documentation quality becomes a number your organization can act on.',
+      nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
     };
   }
 
@@ -1051,11 +1061,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'At least one team is seeing it.',
-        context: `Select the workflows that have shifted. Organizations that reach this level at ${documentedEncounters.toLocaleString()} encounters typically identify $100K–$400K in downstream value — across coding accuracy, prior auth, and quality measure performance.`,
+        headlineMetric: 'Select connected workflows to calculate.',
+        context: `Select which downstream workflows have shown measurable change. Benchmark at ${documentedEncounters.toLocaleString()} encounters: $100K–$400K in downstream value.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 is when this becomes part of how the organization runs — not a project.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into governance and strategy.',
       };
     }
 
@@ -1118,7 +1128,7 @@ export function computeRiskFeedback(
         value: null,
         hasValue: false,
         headlineMetric: `${count} downstream workflow${count > 1 ? 's' : ''} connected`,
-        context: `Your documentation infrastructure is connected to ${count} downstream workflow${count > 1 ? 's' : ''}: ${checkedNames}.\n\nEnter before/after metrics for each connected workflow to calculate the impact. Use your organization's actual data — even directional improvements (e.g., CDI queries down 20%) produce a defensible number.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+        context: `Connected to ${count} downstream workflow${count > 1 ? 's' : ''}: ${checkedNames}.\n\nEnter before/after metrics for each connected workflow to calculate impact.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
         formula: '',
         footnote: '',
       };
@@ -1131,10 +1141,10 @@ export function computeRiskFeedback(
       value: totalValue,
       hasValue: true,
       headlineMetric: `${formatDollar(totalValue)} in measured downstream improvement across ${count} workflow${count > 1 ? 's' : ''}.`,
-      context: `Your documentation quality improvements are producing measurable results:\n\n${workflowValues.map(w => `${w.name}: ${formatDollar(w.value)}`).join('\n')}${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedNames}` : ''}`,
+      context: `Measured downstream improvements:\n\n${workflowValues.map(w => `${w.name}: ${formatDollar(w.value)}`).join('\n')}${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedNames}` : ''}`,
       formula: formulaLines,
       footnote: '',
-      nextLevelTeaser: 'Level 4 — when documentation quality is formally embedded in strategy, payer relationships, and governance, it becomes a durable organizational asset.',
+      nextLevelTeaser: 'Level 4 embeds documentation quality into governance and strategy.',
     };
   }
 
@@ -1146,9 +1156,9 @@ export function computeRiskFeedback(
   const uncheckedLabels = unchecked.map(shortLabel).join(', ');
 
   const ownerLine = executiveOwner === 'yes'
-    ? `\n\nA named executive owns documentation quality strategy${inputs.executiveOwnerRole ? ` (${inputs.executiveOwnerRole})` : ''} — this is the strongest signal of strategic maturity.`
+    ? `\n\nNamed executive owner${inputs.executiveOwnerRole ? ` (${inputs.executiveOwnerRole})` : ''} for documentation quality strategy.`
     : executiveOwner === 'no'
-      ? '\n\nNo named executive owner yet. Organizations with executive accountability for documentation quality see 2–3× faster value realization.'
+      ? '\n\nNo named executive owner for documentation quality.'
       : '';
 
   const noConfirmedStrategicValue = inputs.noConfirmedStrategicValue === 'true';
@@ -1158,8 +1168,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Documentation quality is a strategic asset.',
-      context: `Organizations at this level — with full integration across quality programs, compliance, and payer relationships — report $200K–$1M+ in annual strategic value at scale.\n\nEnter your confirmed figure, or use the benchmark range as your working estimate.`,
+      headlineMetric: 'Enter strategic value to calculate.',
+      context: `Benchmark for full quality integration: $200K–$1M+ in annual strategic value. Enter your confirmed figure or use the benchmark.`,
       formula: '',
       footnote: '',
     };
@@ -1170,8 +1180,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Documentation quality is a strategic asset.',
-      context: `Working estimate: at ${documentedEncounters.toLocaleString()} encounters with full quality integration, the typical range is $200K–$1M+ annually — across quality programs, compliance risk reduction, and contract performance.`,
+      headlineMetric: 'Enter strategic value to calculate.',
+      context: `Working estimate at ${documentedEncounters.toLocaleString()} encounters with full quality integration: $200K–$1M+ annually across quality programs, compliance, and contract performance.`,
       formula: '',
       footnote: '',
     };
@@ -1194,7 +1204,7 @@ export function computeRiskFeedback(
     value: strategicValue || 0,
     hasValue: true,
     headlineMetric: `${formatDollar(strategicValue || 0)} in recognized annual strategic value.`,
-    context: `Documentation quality is embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\n${strategicValue && strategicValue > 0 ? `Your organization formally attributes ${formatDollar(strategicValue)} in strategic value to documentation quality — a number that belongs in your ambient program narrative.` : 'Enter the strategic value your organization attributes to documentation quality to complete this level.'}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    context: `Documentation quality embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\n${strategicValue && strategicValue > 0 ? `${formatDollar(strategicValue)} in annual strategic value attributed to documentation quality.` : 'Enter the strategic value your organization attributes to documentation quality.'}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
     formula: '',
     footnote: '',
   };
