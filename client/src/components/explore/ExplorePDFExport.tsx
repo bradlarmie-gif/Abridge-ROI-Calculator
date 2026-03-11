@@ -180,6 +180,7 @@ export interface ExplorePDFData {
   sustainabilityHours?: number;
 
   patientAccessEnabled?: boolean;
+  additionalVisitsPerWeek?: number;
   accessConversionPct?: number;
   avgVisitDurationMin?: number;
   revenuePerVisit?: number;
@@ -588,18 +589,20 @@ const getOutpatientObservation = (data: ExplorePDFData): string => {
   const hasDocDrivers = !!(data.wrvuEnabled || data.hccEnabled || data.denialEnabled);
 
   let obs = "";
-  const roughlyEqual = Math.abs(capPct - susPct) <= 5 && Math.abs(capPct - docPct) <= 5;
+  const visitsPerWk = safe(data.additionalVisitsPerWeek);
 
-  if (roughlyEqual) {
-    obs = `You spread the allocation evenly \u2014 capacity, documentation quality, and clinician sustainability each getting meaningful weight. That reflects an organization trying to solve for all three at once, which is exactly the right instinct. The model reflects that balance.`;
+  if (data.patientAccessEnabled && hasRetention) {
+    obs = `Your organization modeled ${visitsPerWk} additional visits per provider per week, using ~${capPct}% of recovered time for scheduling capacity. The remaining time flows into documentation quality and clinician sustainability${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a deliberate balance between near-term revenue and long-term workforce protection.`;
+  } else if (data.patientAccessEnabled && capPct >= 40) {
+    obs = `Your model is capacity-driven \u2014 ${visitsPerWk} additional visits per provider per week uses ~${capPct}% of recovered documentation time. That\u2019s the most direct line from documentation efficiency to revenue. The remaining ${100 - capPct}% adds a buffer against burnout without making it the headline.`;
   } else if (susPct >= 30 || hasRetention) {
-    obs = `You put real weight on clinician sustainability \u2014 ${susPct}% of reclaimed time${hasRetention ? ", plus a quantified retention model" : ""}. That\u2019s a leadership signal: this isn\u2019t just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment.`;
-  } else if (capPct >= 40 && !hasRetention) {
-    obs = `Your model is weighted toward capacity \u2014 ${capPct}% of reclaimed time flows back to patient access. That\u2019s the most direct line from documentation efficiency to revenue. The sustainability allocation (${susPct}%) adds a buffer against burnout without making it the headline.`;
+    obs = `You put real weight on clinician sustainability${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a leadership signal: this isn\u2019t just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment.`;
   } else if (docPct >= 40 && hasDocDrivers) {
-    obs = `The ${docPct}% you allocated to documentation quality time isn\u2019t passive \u2014 it\u2019s the foundation of the revenue capture on the right. Better notes require attention in the moment. Abridge creates the space for that.`;
+    obs = `Documentation quality is at the center of your model. Better notes require attention in the moment. Abridge creates the space for that. The revenue capture drivers on the right are built on this foundation.`;
+  } else if (data.patientAccessEnabled) {
+    obs = `Your organization modeled ${visitsPerWk} additional visits per provider per week. That uses ~${capPct}% of recovered documentation time, with the rest flowing into documentation quality and provider sustainability.`;
   } else {
-    obs = `Your model balances capacity (${capPct}%), documentation quality (${docPct}%), and clinician sustainability (${susPct}%). That reflects an organization working across multiple value dimensions simultaneously.`;
+    obs = `Your model focuses on documentation quality and provider sustainability rather than scheduling additional visits. That\u2019s the right approach when the priority is workforce protection and care quality.`;
   }
 
   if (!hasDocDrivers) {
@@ -851,10 +854,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
     const timeRecapturedCopy = (() => {
       if (data.patientAccessEnabled && data.retentionValueEnabled) {
-        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You directed ${capPct}% toward patient access and ${susPct}% toward clinician wellbeing \u2014 a deliberate balance between near-term capacity and long-term retention.`;
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. Your organization modeled ${safe(data.additionalVisitsPerWeek)} additional visits per provider per week \u2014 using ~${capPct}% of recovered time for capacity while investing the rest in documentation quality and retention.`;
       }
       if (data.patientAccessEnabled) {
-        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You directed ${capPct}% of that time toward patient access \u2014 the most direct path from documentation savings to revenue.`;
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. Your organization modeled ${safe(data.additionalVisitsPerWeek)} additional visits per provider per week \u2014 the most direct path from documentation savings to revenue.`;
       }
       if (data.sustainabilityEnabled) {
         return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You chose to apply this time to clinician wellbeing \u2014 a signal that retention and sustainability are the priority right now.`;
@@ -1099,10 +1102,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.patientAccessValue))}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      You directed {capPct}% of reclaimed time {"\u2014"} {fmtNum(capHrs)} hours {"\u2014"} toward patient capacity. At a {convPct}% conversion rate to scheduled visits, that generates {fmtNum(safe(data.projectedAdditionalVisits))} additional encounters per year. At ${safe(data.revenuePerVisit)} per visit, the return is {fmtCurrency(safe(data.patientAccessValue))}.
+                      Your organization modeled {safe(data.additionalVisitsPerWeek)} additional visits per provider per week. Across {fmtNum(data.providers)} providers over 48 working weeks, that{"\u2019"}s {fmtNum(safe(data.projectedAdditionalVisits))} additional encounters annually. At ${safe(data.revenuePerVisit)} per visit, the return is {fmtCurrency(safe(data.patientAccessValue))}.
                     </Text>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      The {convPct}% conversion rate reflects the realistic friction between recovered time and scheduled appointments {"\u2014"} scheduling demand, slot availability, and provider willingness to add volume. {convPct === 10 ? "The 10% default is the midpoint of what Abridge-deployed organizations typically see." : convPct > 10 ? "You modeled this above the typical starting point \u2014 that reflects confidence in your scheduling capacity and demand." : "You modeled this conservatively, which is the right approach for a first-year model."}
+                      This uses approximately {capPct}% of recovered documentation time for scheduling capacity. The remaining time flows into documentation quality and provider sustainability. {safe(data.additionalVisitsPerWeek) === 1 ? "One additional visit per week is a conservative starting point \u2014 achievable with minimal scheduling changes." : safe(data.additionalVisitsPerWeek) === 2 ? "Two additional visits per week reflects intentional template adjustments to capture recovered time." : (safe(data.additionalVisitsPerWeek) ?? 0) >= 3 ? "This level of capacity expansion requires active workflow redesign and scheduling optimization." : ""}
                     </Text>
                   </View>
                 </View>
@@ -1121,7 +1124,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       </Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      {docPct + susPct}% of reclaimed time goes back to your providers {"\u2014"} through documentation quality ({docPct}%) and sustainability ({susPct}%). That returns {hrsPerWkBack.toFixed(1)} hours per week to each provider. Only the {capPct}% directed to patient capacity is reinvested into additional visits.
+                      {100 - capPct}% of reclaimed time goes back to your providers {"\u2014"} split between documentation quality and sustainability. That returns {hrsPerWkBack.toFixed(1)} hours per week to each provider. Only {capPct}% is reinvested into additional patient visits.
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>

@@ -36,20 +36,23 @@ export default function ExploreValueDrivers({
   // Calculations
   const isOutpatientSetting = state.careSetting === 'outpatient';
   const isED = state.careSetting === 'ed';
-  const hoursAllocatedToCapacity = useMemo(() => {
-    return isOutpatientSetting ? Math.round(totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)) : totalHoursSaved;
-  }, [totalHoursSaved, timeDriverInputs.opAllocCapacityPercent, isOutpatientSetting]);
-  const hoursTowardCapacity = useMemo(() => {
-    return Math.round(hoursAllocatedToCapacity * (timeDriverInputs.capacityRealizationPercent / 100));
-  }, [hoursAllocatedToCapacity, timeDriverInputs.capacityRealizationPercent]);
 
   const potentialVisits = useMemo(() => {
-    return Math.round(hoursTowardCapacity * (60 / timeDriverInputs.visitDuration));
-  }, [hoursTowardCapacity, timeDriverInputs.visitDuration]);
+    return timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
+  }, [timeDriverInputs.additionalVisitsPerWeek, state.numberOfProviders]);
 
   const potentialRevenue = useMemo(() => {
     return potentialVisits * timeDriverInputs.revenuePerVisit;
   }, [potentialVisits, timeDriverInputs.revenuePerVisit]);
+
+  const capacityHoursUsed = useMemo(() => {
+    return Math.round(timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * state.numberOfProviders * 48);
+  }, [timeDriverInputs.additionalVisitsPerWeek, timeDriverInputs.visitDuration, state.numberOfProviders]);
+
+  const capacityPctOfSaved = useMemo(() => {
+    if (totalHoursSaved <= 0) return 0;
+    return Math.round((capacityHoursUsed / totalHoursSaved) * 100);
+  }, [capacityHoursUsed, totalHoursSaved]);
 
   const hoursPerProviderPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return '0';
@@ -1009,24 +1012,52 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
-                    Realization rate — what percentage of recovered time can realistically convert to new patient visits?
+                    If providers had more time, how many additional visits per week could your organization realistically schedule?
                   </p>
 
-                  <div className="mb-4">
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      value={timeDriverInputs.capacityRealizationPercent}
-                      onChange={(e) => updateTimeDriverInputs({ capacityRealizationPercent: Number(e.target.value) })}
-                      className="w-full accent-[#EA2C00] h-2"
-                      data-testid="slider-capacity-realization"
-                    />
-                    <div className="flex justify-between text-xs text-[#888888] mt-1">
-                      <span>0%</span>
-                      <span className="text-base font-semibold text-black">{timeDriverInputs.capacityRealizationPercent}%</span>
-                      <span>100%</span>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-[#888888]">Additional visits per provider per week</label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.max(0, timeDriverInputs.additionalVisitsPerWeek - 1) })}
+                          className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
+                          data-testid="button-visits-decrement"
+                        >−</button>
+                        <span className="text-2xl font-bold text-black w-8 text-center" data-testid="text-visits-per-week">{timeDriverInputs.additionalVisitsPerWeek}</span>
+                        <button
+                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.min(10, timeDriverInputs.additionalVisitsPerWeek + 1) })}
+                          className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
+                          data-testid="button-visits-increment"
+                        >+</button>
+                      </div>
                     </div>
+
+                    <div className="flex gap-2">
+                      {[
+                        { label: 'Conservative', value: 1, desc: 'Minimal scheduling changes' },
+                        { label: 'Moderate', value: 2, desc: 'Intentional template adjustments' },
+                        { label: 'Aggressive', value: 3, desc: 'Active capacity expansion' },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: preset.value })}
+                          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                            timeDriverInputs.additionalVisitsPerWeek === preset.value
+                              ? 'bg-[#EA2C00] text-white'
+                              : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                          }`}
+                          data-testid={`button-visits-preset-${preset.label.toLowerCase()}`}
+                        >
+                          <span className="font-medium">{preset.label}</span>
+                          <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}/wk</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-[#888888]">
+                      Most recovered documentation time is absorbed into quality of life, inbox, and longer patient conversations — not additional visits. Recovered time comes in small increments (5-10 min) spread throughout the day, not as full visit slots. Only a fraction converts to schedulable capacity.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
@@ -1037,6 +1068,7 @@ export default function ExploreValueDrivers({
                           value={timeDriverInputs.visitDuration}
                           onChange={(v: number) => updateTimeDriverInputs({ visitDuration: v })}
                           className="h-12 bg-white pr-12"
+                          data-testid="input-visit-duration"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">min</span>
                       </div>
@@ -1049,31 +1081,36 @@ export default function ExploreValueDrivers({
                           value={timeDriverInputs.revenuePerVisit}
                           onChange={(v: number) => updateTimeDriverInputs({ revenuePerVisit: v })}
                           className="h-12 bg-white pl-7"
+                          data-testid="input-revenue-per-visit"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityRealizationPercent}% realization:</p>
-                    <div className="space-y-1 text-sm">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Hours available for visits:</span>
-                        <span className="font-semibold text-black">{formatNumber(hoursTowardCapacity)}</span>
+                        <span className="text-[#666666]">{timeDriverInputs.additionalVisitsPerWeek} visits/wk × {state.numberOfProviders} providers × 48 wks</span>
+                        <span className="font-semibold text-black flex-shrink-0">= {formatNumber(potentialVisits)} visits</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Projected additional visits:</span>
-                        <span className="font-semibold text-black">{formatNumber(potentialVisits)}</span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Projected revenue:</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(potentialRevenue)}</span>
+                        <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
+                        <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
-                      <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-                      <span>Defaulted to {timeDriverInputs.capacityRealizationPercent}% — a conservative realization rate. Not all recovered time converts to scheduled visits due to scheduling gaps, no-shows, and ramp-up.</span>
+                    <div className="h-px bg-[#E5E5E5] my-3" />
+
+                    <div className="text-xs text-[#666666]">
+                      <p>
+                        Your providers save ~<span className="font-semibold text-black">{hoursPerProviderPerWeek}</span> hrs/wk each.
+                        At {timeDriverInputs.additionalVisitsPerWeek} extra visits ({timeDriverInputs.visitDuration} min each), you're using <span className="font-semibold text-black">{Math.round(timeDriverInputs.additionalVisitsPerWeek * timeDriverInputs.visitDuration / 60 * 10) / 10} hrs/wk</span> per provider — about <span className="font-semibold text-black">{capacityPctOfSaved > 100 ? '>100' : capacityPctOfSaved}%</span> of saved time.
+                        {capacityPctOfSaved <= 30 && ' The rest flows into documentation quality and work-life balance.'}
+                        {capacityPctOfSaved > 30 && capacityPctOfSaved <= 60 && ' A significant portion of saved time goes to capacity — consider whether this is realistic for your organization.'}
+                        {capacityPctOfSaved > 60 && capacityPctOfSaved <= 100 && ' This assumes most recovered time converts to visits — an aggressive target that requires intentional scheduling redesign.'}
+                        {capacityPctOfSaved > 100 && ' Warning: this exceeds the time saved. Consider reducing visits or confirming your time savings estimate.'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -2008,12 +2045,13 @@ export default function ExploreValueDrivers({
               {isOutpatientSetting && (
                 <>
                   {(() => {
-                    const capPct = timeDriverInputs.opAllocCapacityPercent / 100;
-                    const docPct = timeDriverInputs.opAllocDocQualityPercent / 100;
-                    const wellPct = timeDriverInputs.opAllocWellbeingPercent / 100;
-                    const capHours = Math.round(totalHoursSaved * capPct);
-                    const docHours = Math.round(totalHoursSaved * docPct);
-                    const wellHours = Math.round(totalHoursSaved * wellPct);
+                    const capHours = timeDriverInputs.patientAccessEnabled ? capacityHoursUsed : 0;
+                    const remainingHours = Math.max(0, totalHoursSaved - capHours);
+                    const docHours = Math.round(remainingHours * 0.4);
+                    const wellHours = remainingHours - docHours;
+                    const capPctDisplay = totalHoursSaved > 0 ? Math.round((capHours / totalHoursSaved) * 100) : 0;
+                    const docPctDisplay = totalHoursSaved > 0 ? Math.round((docHours / totalHoursSaved) * 100) : 0;
+                    const wellPctDisplay = totalHoursSaved > 0 ? 100 - capPctDisplay - docPctDisplay : 0;
                     
                     return (
                       <div className="mb-5">
@@ -2036,7 +2074,7 @@ export default function ExploreValueDrivers({
                             </div>
                             <div className="text-right">
                               <span className="text-sm font-semibold text-white">{formatNumber(capHours)} hrs</span>
-                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocCapacityPercent}%)</span>
+                              <span className="text-xs text-[#666666] ml-1">({capPctDisplay}%)</span>
                             </div>
                           </div>
                           
@@ -2048,7 +2086,7 @@ export default function ExploreValueDrivers({
                               </div>
                               <div className="text-right">
                                 <span className="text-sm font-semibold text-[#888888]">{formatNumber(docHours)} hrs</span>
-                                <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocDocQualityPercent}%)</span>
+                                <span className="text-xs text-[#666666] ml-1">({docPctDisplay}%)</span>
                               </div>
                             </div>
                             <p className="text-xs text-[#666666] ml-4 mt-0.5">Surfaced in Documentation Quality step →</p>
@@ -2061,7 +2099,7 @@ export default function ExploreValueDrivers({
                             </div>
                             <div className="text-right">
                               <span className="text-sm font-semibold text-[#888888]">{formatNumber(wellHours)} hrs</span>
-                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.opAllocWellbeingPercent}%)</span>
+                              <span className="text-xs text-[#666666] ml-1">({wellPctDisplay}%)</span>
                             </div>
                           </div>
                         </div>
@@ -2391,7 +2429,7 @@ export default function ExploreValueDrivers({
                         </span>
                       </div>
                       {timeDriverInputs.patientAccessEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.opAllocCapacityPercent}% allocated × {timeDriverInputs.capacityRealizationPercent}% realization)</p>
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider)</p>
                       )}
                     </div>
 

@@ -209,8 +209,8 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
 
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
-      const realPct = t.capacityRealizationPercent ?? (t as any).capacityPercent ?? 75;
-      lines.push(`Capacity: ${realPct}% realization · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
+      const visitsPerWk = (t as any).additionalVisitsPerWeek ?? 2;
+      lines.push(`Capacity: ${visitsPerWk} visits/wk per provider · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
     }
     if (d.wrvuEnabled) lines.push(`wRVU: ${d.wrvuScenario} scenario \u00B7 ${d.wrvuRealization}% realization`);
     if (d.hccEnabled) lines.push(`HCC: ${d.hccRealization}% realization`);
@@ -284,14 +284,12 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
       ];
     }
     case "patientAccess": {
-      const hoursAllocated = snapshot.totalHoursSaved * (t.opAllocCapacityPercent / 100);
-      const hoursConverted = hoursAllocated * ((t.capacityRealizationPercent ?? 75) / 100);
-      const potentialVisits = hoursConverted * (60 / t.visitDuration);
+      const visitsPerWk = (t as any).additionalVisitsPerWeek ?? 2;
+      const providerCount = snapshot.providerCount ?? s.numberOfProviders ?? 0;
+      const annualVisits = visitsPerWk * providerCount * 48;
       return [
-        `${snapshot.totalHoursSaved.toLocaleString()} hrs saved`,
-        `\u00D7 ${t.capacityRealizationPercent ?? 75}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
-        `${Math.round(hoursConverted).toLocaleString()} hrs \u00D7 (60/${t.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
-        `${Math.round(potentialVisits).toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(driver.value)}/year`,
+        `${visitsPerWk} visits/wk \u00D7 ${providerCount} providers \u00D7 48 wks = ${annualVisits.toLocaleString()} visits`,
+        `${annualVisits.toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(driver.value)}/year`,
       ];
     }
     case "retention": {

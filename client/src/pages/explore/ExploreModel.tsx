@@ -68,13 +68,9 @@ export default function ExploreModel({
   
   const patientAccessValue = useMemo(() => {
     if (!timeDriverInputs.patientAccessEnabled) return 0;
-    const hoursAllocatedToCapacity = isOutpatientSetting
-      ? totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100)
-      : totalHoursSaved;
-    const hoursConvertedToVisits = hoursAllocatedToCapacity * (timeDriverInputs.capacityRealizationPercent / 100);
-    const potentialVisits = hoursConvertedToVisits * (60 / timeDriverInputs.visitDuration);
-    return Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);
-  }, [totalHoursSaved, timeDriverInputs, isOutpatientSetting]);
+    const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
+    return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);
+  }, [timeDriverInputs, state.numberOfProviders]);
 
   const isED = state.careSetting === 'ed';
   const costReductionValue = (!isOutpatientSetting && !isED && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
@@ -189,7 +185,7 @@ export default function ExploreModel({
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
-        ? (totalHoursSaved * ((timeDriverInputs.opAllocDocQualityPercent + timeDriverInputs.opAllocWellbeingPercent) / 100) / state.numberOfProviders / 52)
+        ? (totalHoursSaved / state.numberOfProviders / 52)
         : isED
           ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
           : (totalHoursSaved / state.numberOfProviders / 48)
@@ -478,16 +474,12 @@ export default function ExploreModel({
 
       if (state.careSetting === 'outpatient') {
         if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
-          const hoursAllocated = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
-          const hoursConverted = hoursAllocated * (timeDriverInputs.capacityRealizationPercent / 100);
-          const potentialVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
+          const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
           drivers.push({
             id: 'patientAccess', name: 'Patient Access', value: patientAccessValue, category: 'time',
             calcSteps: [
-              `${totalHoursSaved.toLocaleString()} hrs × ${timeDriverInputs.opAllocCapacityPercent}% capacity allocation = ${Math.round(hoursAllocated).toLocaleString()} hrs`,
-              `${Math.round(hoursAllocated).toLocaleString()} hrs × ${timeDriverInputs.capacityRealizationPercent}% realization = ${Math.round(hoursConverted).toLocaleString()} hrs`,
-              `${Math.round(hoursConverted).toLocaleString()} hrs × (60/${timeDriverInputs.visitDuration} min) = ${Math.round(potentialVisits).toLocaleString()} visits`,
-              `${Math.round(potentialVisits).toLocaleString()} × $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
+              `${timeDriverInputs.additionalVisitsPerWeek} visits/wk × ${state.numberOfProviders} providers × 48 wks = ${annualVisits.toLocaleString()} visits`,
+              `${annualVisits.toLocaleString()} visits × $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
             ],
           });
         }
@@ -734,14 +726,15 @@ export default function ExploreModel({
       const denialsPrevVal = unappealableDenialsVal * (denialsPreventionPct / 100);
       const denialGrossVal = denialsPrevVal * docQualityInputs.avgClaimValue;
 
-      const capHrs = totalHoursSaved * (timeDriverInputs.opAllocCapacityPercent / 100);
-      const docQualHrs = totalHoursSaved * (timeDriverInputs.opAllocDocQualityPercent / 100);
-      const susHrs = totalHoursSaved * (timeDriverInputs.opAllocWellbeingPercent / 100);
+      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
+      const capHrsRaw = timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * state.numberOfProviders * 48;
+      const capHrs = Math.round(Math.min(capHrsRaw, totalHoursSaved));
+      const remainingHrs = Math.max(0, totalHoursSaved - (timeDriverInputs.patientAccessEnabled ? capHrs : 0));
+      const docQualHrs = Math.round(remainingHrs * 0.4);
+      const susHrs = remainingHrs - docQualHrs;
       const burdenReliefHrs = docQualHrs + susHrs;
       const hrsPerWkBack = state.numberOfProviders > 0 ? burdenReliefHrs / state.numberOfProviders / 52 : 0;
-
-      const hoursConverted = capHrs * (timeDriverInputs.capacityRealizationPercent / 100);
-      const projVisits = hoursConverted * (60 / timeDriverInputs.visitDuration);
+      const capPctDerived = totalHoursSaved > 0 ? Math.min(100, Math.round((capHrsRaw / totalHoursSaved) * 100)) : 0;
 
       const pdfData: ExplorePDFData = {
         careSetting: state.careSetting as ExplorePDFData['careSetting'],
@@ -772,18 +765,19 @@ export default function ExploreModel({
         efficiencyValue: timeValue,
         documentationQualityValue: docValue,
 
-        capacityAllocationPct: timeDriverInputs.opAllocCapacityPercent,
-        docQualityAllocationPct: timeDriverInputs.opAllocDocQualityPercent,
-        sustainabilityAllocationPct: timeDriverInputs.opAllocWellbeingPercent,
-        capacityHours: Math.round(capHrs),
-        docQualityHours: Math.round(docQualHrs),
-        sustainabilityHours: Math.round(susHrs),
+        capacityAllocationPct: capPctDerived,
+        docQualityAllocationPct: totalHoursSaved > 0 ? Math.round((docQualHrs / totalHoursSaved) * 100) : 0,
+        sustainabilityAllocationPct: totalHoursSaved > 0 ? Math.max(0, 100 - capPctDerived - Math.round((docQualHrs / totalHoursSaved) * 100)) : 0,
+        capacityHours: capHrs,
+        docQualityHours: docQualHrs,
+        sustainabilityHours: susHrs,
+        additionalVisitsPerWeek: timeDriverInputs.additionalVisitsPerWeek,
 
         patientAccessEnabled: timeDriverInputs.patientAccessEnabled,
-        accessConversionPct: timeDriverInputs.capacityRealizationPercent,
+        accessConversionPct: capPctDerived,
         avgVisitDurationMin: timeDriverInputs.visitDuration,
         revenuePerVisit: timeDriverInputs.revenuePerVisit,
-        projectedAdditionalVisits: Math.round(projVisits),
+        projectedAdditionalVisits: annualVisits,
         patientAccessValue,
 
         sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
@@ -1634,7 +1628,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityRealizationPercent}% realization rate)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
@@ -2375,7 +2369,7 @@ export default function ExploreModel({
                   </p>
                   {timeDriverInputs.patientAccessEnabled && (
                     <p>
-                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.capacityRealizationPercent}% realization rate × ${timeDriverInputs.revenuePerVisit}/visit × {timeDriverInputs.visitDuration} min visits.
+                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider × {state.numberOfProviders} providers × 48 wks × ${timeDriverInputs.revenuePerVisit}/visit.
                     </p>
                   )}
                   {docQualityInputs.wrvuEnabled && (
