@@ -85,7 +85,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             Let's build your deployment profile.
           </h1>
           <p className="text-base text-[#888888]">
-            Three inputs. Everything that follows is built on what you tell us here.
+            A few inputs. Everything that follows is built on what you tell us here.
           </p>
         </motion.div>
 
@@ -112,7 +112,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  How many encounters per year does ambient touch?
+                  How many total encounters does your practice handle per year?
                 </label>
                 <FormattedNumberInput
                   value={inputs.annualEncounters}
@@ -158,7 +158,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  What share of encounters go through ambient?
+                  What percentage of those encounters use ambient?
                 </label>
 
                 <div className="flex items-center gap-2">
