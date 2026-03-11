@@ -2045,13 +2045,15 @@ export default function ExploreValueDrivers({
               {isOutpatientSetting && (
                 <>
                   {(() => {
-                    const capHours = timeDriverInputs.patientAccessEnabled ? capacityHoursUsed : 0;
+                    const capHoursRaw = timeDriverInputs.patientAccessEnabled ? capacityHoursUsed : 0;
+                    const exceedsTotal = capHoursRaw > totalHoursSaved;
+                    const capHours = Math.min(capHoursRaw, totalHoursSaved);
                     const remainingHours = Math.max(0, totalHoursSaved - capHours);
                     const docHours = Math.round(remainingHours * 0.4);
                     const wellHours = remainingHours - docHours;
-                    const capPctDisplay = totalHoursSaved > 0 ? Math.round((capHours / totalHoursSaved) * 100) : 0;
+                    const capPctDisplay = totalHoursSaved > 0 ? Math.min(100, Math.round((capHoursRaw / totalHoursSaved) * 100)) : 0;
                     const docPctDisplay = totalHoursSaved > 0 ? Math.round((docHours / totalHoursSaved) * 100) : 0;
-                    const wellPctDisplay = totalHoursSaved > 0 ? 100 - capPctDisplay - docPctDisplay : 0;
+                    const wellPctDisplay = Math.max(0, totalHoursSaved > 0 ? 100 - capPctDisplay - docPctDisplay : 0);
                     
                     return (
                       <div className="mb-5">
@@ -2073,10 +2075,13 @@ export default function ExploreValueDrivers({
                               <span className="text-xs text-[#888888]">Patient Capacity</span>
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-semibold text-white">{formatNumber(capHours)} hrs</span>
-                              <span className="text-xs text-[#666666] ml-1">({capPctDisplay}%)</span>
+                              <span className={`text-sm font-semibold ${exceedsTotal ? 'text-[#F59E0B]' : 'text-white'}`}>{formatNumber(capHours)} hrs</span>
+                              <span className={`text-xs ml-1 ${exceedsTotal ? 'text-[#F59E0B]' : 'text-[#666666]'}`}>({capPctDisplay}%)</span>
                             </div>
                           </div>
+                          {exceedsTotal && (
+                            <p className="text-[10px] text-[#F59E0B] ml-4 mt-0.5">Visits exceed saved time — consider reducing visits/wk</p>
+                          )}
                           
                           <div>
                             <div className="flex justify-between items-center gap-2">
