@@ -516,10 +516,18 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     if (initialExploreState) {
       return { ...DEFAULT_EXPLORE_STATE, ...initialExploreState };
     }
-    return {
+    const fresh = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: initialCareSetting || null,
     };
+    if (initialCareSetting === 'ed') {
+      fresh.minutesSavedPerEncounter = 2;
+    } else if (initialCareSetting === 'inpatient') {
+      fresh.minutesSavedPerEncounter = 3;
+    } else if (initialCareSetting === 'nursing') {
+      fresh.minutesSavedPerEncounter = 15;
+    }
+    return fresh;
   });
 
   const updateState = useCallback((updates: Partial<ExploreState>) => {
@@ -542,6 +550,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           };
         } else if (newCareSetting === 'inpatient') {
           fresh.minutesSavedPerEncounter = 3;
+        } else if (newCareSetting === 'nursing') {
+          fresh.minutesSavedPerEncounter = 15;
         }
         return fresh;
       });

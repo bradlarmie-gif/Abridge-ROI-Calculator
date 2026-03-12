@@ -347,8 +347,12 @@ export default function ExploreTimeSavings({
                   <span className="text-white font-semibold">{hoursPerWeek}</span>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <span className="text-white/50">Daily impact</span>
-                  <span className="text-white font-semibold">~{Math.round(hoursPerProvider * 60 / 220)}min/day per provider</span>
+                  <span className="text-white/50">{isNursing ? 'Per-shift impact' : 'Daily impact'}</span>
+                  <span className="text-white font-semibold">
+                    {isNursing
+                      ? `${state.minutesSavedPerEncounter}min/shift per nurse`
+                      : `~${Math.round(hoursPerProvider * 60 / 220)}min/day per provider`}
+                  </span>
                 </div>
               </div>
 
