@@ -174,7 +174,7 @@ export default function ExploreTimeSavings({
                 }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">
-                Source: Abridge customer data, 2024-2025
+                Source: Abridge customer data, 2025-2026
               </p>
             </motion.div>
 
