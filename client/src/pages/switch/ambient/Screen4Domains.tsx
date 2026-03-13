@@ -2355,9 +2355,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
 
               const tr = (inp.turnoverRate as number) || 0;
-              const rc = (inp.replacementCost as number) || 0;
+              const rcRaw = (inp.replacementCost as number) || 0;
+              const rc = rcRaw > 0 ? rcRaw : 350000;
               const dbs = (inp.docBurdenShare as number) || 0;
-              const retentionExposure = (tr > 0 && rc > 0 && dbs > 0)
+              const retentionExposure = (tr > 0 && dbs > 0)
                 ? Math.round(providers * (tr / 100) * rc * (dbs / 100))
                 : null;
 
