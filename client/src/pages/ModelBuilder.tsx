@@ -2156,8 +2156,8 @@ export default function ModelBuilder({
               <p className="text-sm font-semibold text-blue-800">The Theory</p>
               <p className="text-sm text-blue-700 leading-relaxed">
                 Physicians under time pressure document less than the full clinical picture. 
-                AI-assisted documentation captures the complexity that supports accurate coding—not 
-                upcoding, just getting credit for work already done.
+                AI-assisted documentation captures the complexity that supports accurate coding — 
+                getting credit for work already done.
               </p>
             </div>
           </div>
@@ -2257,7 +2257,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Abridge improves wRVU capture by 5% through more complete documentation of clinical complexity. Complete HPI, ROS, and medical decision-making supports appropriate E&M level coding (e.g., 99214 vs 99213)—not upcoding, just accurate coding for work already performed.
+            Abridge improves wRVU capture by 5% through more complete documentation of clinical complexity. Complete HPI, ROS, and medical decision-making supports appropriate E&M level coding (e.g., 99214 vs 99213) — accurate coding for work already performed.
           </p>
         </div>
 
@@ -3689,7 +3689,7 @@ export default function ModelBuilder({
             Specifically, Abridge captures critical E&M elements—detailed HPI, comprehensive review of systems, 
             and medical decision-making complexity—that support appropriate level coding. When documentation fully 
             reflects the work performed, visits can be accurately coded at the appropriate E&M level (e.g., 99284 vs 99283) 
-            rather than conservatively downcoded due to incomplete notes. This isn't upcoding—it's accurate coding based on the clinical picture.
+            rather than conservatively downcoded due to incomplete notes. This is accurate coding based on the clinical picture.
           </p>
         </div>
 

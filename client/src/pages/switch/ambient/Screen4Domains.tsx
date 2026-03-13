@@ -764,7 +764,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </button>
               ))}
             </div>
-            <BenchmarkContext text="Organizations with mostly L3 visits typically have the largest upcoding opportunity from better documentation." />
+            <BenchmarkContext text="Organizations with mostly L3 visits typically have the largest coding accuracy opportunity from better documentation." />
           </div>
 
           <div>
@@ -1111,7 +1111,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
           {currentState.inputs.noConfirmedRevenue === 'true' && (
             <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-              At {documentedEncounters.toLocaleString()} encounters, organizations at this integration level typically attribute $200K–$600K annually. This can serve as a working estimate.
+              Abridge deployment benchmark at {documentedEncounters.toLocaleString()} encounters: organizations at this integration level typically attribute $200K–$600K annually. This can serve as a working estimate.
             </p>
           )}
         </div>
@@ -1683,6 +1683,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         0: { fields: [
           { key: 'cdiQueriesBefore', label: 'CDI queries/month before', suffix: '/mo' },
           { key: 'cdiQueriesAfter', label: 'CDI queries/month after', suffix: '/mo' },
+          { key: 'cdiCostPerQuery', label: 'Cost per CDI query', suffix: '$', sublabel: 'Industry range: $20–$60 per query (default: $25)' },
         ] },
         1: { fields: [
           { key: 'riskDenialBefore', label: 'Denial rate before (%)', suffix: '%', step: 0.1 },
@@ -1694,6 +1695,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         ] },
         3: { fields: [
           { key: 'qualityGapsClosed', label: 'Quality gaps closed per month', suffix: '/mo' },
+          { key: 'qualityGapValue', label: 'Value per quality gap closed', suffix: '$', sublabel: 'VBC incentive or penalty per gap (default: $100)' },
         ] },
         4: { fields: [
           { key: 'abstractionHoursSaved', label: 'Abstraction hours saved per month', suffix: 'hrs/mo' },
@@ -1871,7 +1873,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
           {currentState.inputs.noConfirmedStrategicValue === 'true' && (
             <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-              At {documentedEncounters.toLocaleString()} encounters, organizations at this level typically attribute $200K–$1M+ in strategic value. This can serve as a working estimate.
+              At {documentedEncounters.toLocaleString()} encounters, enter the strategic value your organization attributes to documentation quality programs.
             </p>
           )}
         </div>

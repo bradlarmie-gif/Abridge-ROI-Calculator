@@ -53,7 +53,7 @@ export function FormattedNumberInput({
     if (currentParsed !== numValue) {
       setDisplayValue(value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
     }
-  }, [value, decimals, numValue, isFocused]);
+  }, [value, decimals, numValue, isFocused, displayValue]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;

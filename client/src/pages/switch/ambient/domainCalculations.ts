@@ -328,7 +328,7 @@ export function computeRevenueFeedback(
       const complexityNote = emComplexity === 'mostly_l3'
         ? 'With predominantly Level 3 visits, there is significant opportunity for more specific documentation to support higher-complexity coding.'
         : emComplexity === 'mix_l3_l4'
-          ? 'A mix of Level 3–4 visits suggests moderate upcoding opportunity from improved documentation specificity.'
+          ? 'A mix of Level 3–4 visits suggests moderate coding accuracy opportunity from improved documentation specificity.'
           : emComplexity === 'mostly_l4_l5'
             ? 'With higher-complexity visits, the opportunity shifts toward reducing denials and improving specificity rather than level shifts.'
             : '';
@@ -337,12 +337,17 @@ export function computeRevenueFeedback(
         ? `\n\nYour ${docDeficiencyRate}% query rate ${docDeficiencyRate! > 12 ? 'is above' : docDeficiencyRate! < 8 ? 'is below' : 'is within'} the industry average (8–12%). ${docDeficiencyRate! > 12 ? 'This elevated rate suggests substantial recoverable value from better documentation.' : docDeficiencyRate! < 8 ? 'A lower rate suggests your documentation is relatively strong — opportunity is in specificity improvements.' : 'Typical rate — ambient documentation improvements should have a meaningful impact.'}`
         : '';
 
+      let contextParts: string[] = [];
+      if (complexityNote) contextParts.push(complexityNote);
+      if (deficiencyNote) contextParts.push(deficiencyNote.trim());
+      contextParts.push(`At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually.`);
+
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
         headlineMetric: `${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} estimated revenue opportunity`,
-        context: `At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually.${complexityNote ? `\n\n${complexityNote}` : ''}${deficiencyNote}`,
+        context: contextParts.join('\n\n'),
         formula: `[estimatedRange] = ${documentedEncounters.toLocaleString()} encounters × $${upliftPerEncounter} uplift × deficiency factor (${deficiencyMultiplier.toFixed(1)})`,
         footnote: 'Estimate based on E&M complexity profile and documentation deficiency rate. Actual impact requires revenue cycle analysis.',
         nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
@@ -377,53 +382,13 @@ export function computeRevenueFeedback(
     const hasCodingData = codingSpecificityImprovement !== undefined && codingSpecificityImprovement > 0;
     const hasDenialData = currentDenialRate !== undefined && currentDenialRate > 0;
 
-    if (hasCodingData || hasDenialData) {
-      let estimatedOpportunityLow = 0;
-      let estimatedOpportunityHigh = 0;
-      let formulaParts: string[] = [];
-      let contextParts: string[] = [];
-
-      if (hasCodingData) {
-        const specificityRevLow = Math.round(documentedEncounters * revenuePerVisit * (codingSpecificityImprovement! * 0.3 / 100));
-        const specificityRevHigh = Math.round(documentedEncounters * revenuePerVisit * (codingSpecificityImprovement! * 0.7 / 100));
-        estimatedOpportunityLow += specificityRevLow;
-        estimatedOpportunityHigh += specificityRevHigh;
-        contextParts.push(`A ${codingSpecificityImprovement}% coding specificity improvement across ${documentedEncounters.toLocaleString()} encounters could represent ${formatDollar(specificityRevLow)}–${formatDollar(specificityRevHigh)} in revenue uplift.`);
-        formulaParts.push(`[codingUplift] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${codingSpecificityImprovement}% × (30–70% capture) = ${formatDollar(specificityRevLow)}–${formatDollar(specificityRevHigh)}`);
-      }
-
-      if (hasDenialData) {
-        const denialRecoveryLow = Math.round(documentedEncounters * revenuePerVisit * (currentDenialRate! / 100) * 0.15);
-        const denialRecoveryHigh = Math.round(documentedEncounters * revenuePerVisit * (currentDenialRate! / 100) * 0.35);
-        estimatedOpportunityLow += denialRecoveryLow;
-        estimatedOpportunityHigh += denialRecoveryHigh;
-        contextParts.push(`At a ${currentDenialRate}% denial rate, reducing documentation-driven denials by 15–35% represents ${formatDollar(denialRecoveryLow)}–${formatDollar(denialRecoveryHigh)} in recoverable revenue.`);
-        formulaParts.push(`[denialRecovery] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${currentDenialRate}% × (15–35% reduction) = ${formatDollar(denialRecoveryLow)}–${formatDollar(denialRecoveryHigh)}`);
-      }
-
-      const checkedLabels = checked.map(shortLabel).join(', ');
-      const analysisNote = count > 0 ? `\n\nYour team is analyzing ${count} area${count !== 1 ? 's' : ''}: ${checkedLabels}.` : '';
-
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} estimated revenue opportunity`,
-        context: contextParts.join('\n\n') + analysisNote,
-        formula: formulaParts.join('\n'),
-        footnote: 'Estimates based on your coding specificity and denial rate data. Confirmed impact requires before/after measurement at Level 3.',
-        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
-      };
-    }
-
     if (count === 0) {
-      const wRVUValue = Math.round(documentedEncounters * 0.1 * conversionFactor / 1000) * 1000;
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
         headlineMetric: 'Analysis not yet started.',
-        context: `At ${documentedEncounters.toLocaleString()} encounters annually, a 0.1 wRVU improvement per encounter is approximately ${formatDollar(wRVUValue)} at standard conversion rates. Select the areas being analyzed.`,
+        context: `Your revenue cycle is actively investigating. Select the areas being analyzed. Financial impact will be quantified when before/after measurement is available (Level 3).`,
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 3 requires before/after measurement data.',
@@ -434,12 +399,22 @@ export function computeRevenueFeedback(
     const duration = inputs.investigationDuration as string | undefined;
     const durationNote = duration === '90plus' ? '\n\nAnalysis is 90+ days in — sufficient for before/after comparison at Level 3.' : '';
 
+    let investigationContext = `Revenue cycle is analyzing: ${checkedLabels}.`;
+    if (hasCodingData) {
+      investigationContext += `\n\nEstimated coding specificity improvement: ${codingSpecificityImprovement}%.`;
+    }
+    if (hasDenialData) {
+      investigationContext += `\n\nCurrent denial rate: ${currentDenialRate}%.`;
+    }
+    investigationContext += durationNote;
+    investigationContext += '\n\nFinancial impact will be quantified when before/after measurement is available (Level 3).';
+
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `Analysis underway across ${count} area${count !== 1 ? 's' : ''}.`,
-      context: `Revenue cycle is analyzing: ${checkedLabels}.${durationNote}`,
+      context: investigationContext,
       formula: '',
       footnote: 'Dollar value available at Level 3 when before/after data is entered.',
       nextLevelTeaser: 'Level 3 requires before/after measurement data.',
@@ -454,7 +429,7 @@ export function computeRevenueFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Select measurement type to calculate.',
-        context: `Select what was measured to calculate the revenue impact. Benchmark at this encounter volume: $150K–$500K annually.`,
+        context: `Select what was measured to calculate the revenue impact. Abridge deployment benchmark at this encounter volume: $150K–$500K annually.`,
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -470,7 +445,7 @@ export function computeRevenueFeedback(
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured wRVU change to calculate.',
-          context: `Enter your measured wRVU change per encounter. At this volume, a 0.1 wRVU improvement is approximately ${formatDollar(benchValue)} annually.`,
+          context: `Enter your measured wRVU change per encounter. Abridge benchmark: a 0.1 wRVU improvement per encounter is approximately ${formatDollar(benchValue)} annually.`,
           formula: '',
           footnote: '',
           nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -498,7 +473,7 @@ export function computeRevenueFeedback(
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured collections change to calculate.',
-          context: `Enter your measured collections change per encounter. Benchmark range: $3–$10 per encounter = ${formatDollar(benchLow)}–${formatDollar(benchHigh)} annually.`,
+          context: `Enter your measured collections change per encounter. Abridge benchmark: $3–$10 per encounter = ${formatDollar(benchLow)}–${formatDollar(benchHigh)} annually.`,
           formula: '',
           footnote: '',
           nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -524,7 +499,7 @@ export function computeRevenueFeedback(
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured revenue change to calculate.',
-          context: `Enter your measured revenue change percentage. Benchmark at this stage: 1–4% improvement.`,
+          context: `Enter your measured revenue change percentage. Abridge benchmark: 1–4% improvement.`,
           formula: '',
           footnote: '',
           nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -552,7 +527,7 @@ export function computeRevenueFeedback(
           value: null,
           hasValue: false,
           headlineMetric: 'Enter denial rate data to calculate.',
-          context: `Enter your denial rate before and after ambient. Benchmark: 5–15% denial rate reduction.`,
+          context: `Enter your denial rate before and after ambient. Abridge benchmark: 5–15% denial rate reduction.`,
           formula: '',
           footnote: '',
           nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -589,7 +564,7 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Select measurement type to calculate.',
-      context: `Select what was measured to calculate the revenue impact. Benchmark at this encounter volume: $150K–$500K annually.`,
+      context: `Select what was measured to calculate the revenue impact. Abridge deployment benchmark at this encounter volume: $150K–$500K annually.`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
@@ -610,7 +585,7 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Enter annually attributed revenue to calculate.',
-      context: `Benchmark for full revenue cycle integration at ${documentedEncounters.toLocaleString()} encounters: $200K–$600K annually. Enter your confirmed figure or use the benchmark.`,
+      context: `Abridge deployment benchmark for full revenue cycle integration at ${documentedEncounters.toLocaleString()} encounters: $200K–$600K annually. Enter your confirmed figure.`,
       formula: '',
       footnote: '',
     };
@@ -622,7 +597,7 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Enter annually attributed revenue to calculate.',
-      context: `Working estimate at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. Planning figure, not confirmed.`,
+      context: `Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. Planning figure, not confirmed.`,
       formula: '',
       footnote: '',
     };
@@ -987,48 +962,29 @@ export function computeRiskFeedback(
     const hasCompliance = complianceAuditPassRate !== undefined && complianceAuditPassRate > 0;
     const hasChartClosure = daysToChartClosure !== undefined && daysToChartClosure > 0;
 
-    const l2MetricParts: string[] = [];
-    const l2FormulaParts: string[] = [];
-    let l2EstimatedValue: number | null = null;
+    let l2MetricParts: string[] = [];
 
     if (hasCompliance) {
       const complianceGap = Math.max(0, 90 - complianceAuditPassRate!);
       l2MetricParts.push(`Compliance audit pass rate: ${complianceAuditPassRate}%${complianceGap > 0 ? ` (${complianceGap} points below 90% target)` : ' (at or above target)'}.`);
-      if (complianceGap > 0) {
-        const failedAudits = Math.round(documentedEncounters * (complianceGap / 100));
-        const complianceRisk = Math.round(failedAudits * revenuePerVisit * 0.02);
-        l2MetricParts.push(`Estimated ${formatDollar(complianceRisk)} in compliance-related revenue exposure.`);
-        l2FormulaParts.push(`[complianceGap] = ${documentedEncounters.toLocaleString()} × ${complianceGap}% = ${failedAudits.toLocaleString()} charts\n[complianceRisk] = ${failedAudits.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 2% = ${formatDollar(complianceRisk)}`);
-        l2EstimatedValue = (l2EstimatedValue || 0) + complianceRisk;
-      }
     }
 
     if (hasChartClosure) {
       const closureGap = Math.max(0, daysToChartClosure! - 3);
       l2MetricParts.push(`Average days to chart closure: ${daysToChartClosure} day${daysToChartClosure !== 1 ? 's' : ''}${closureGap > 0 ? ` (${closureGap} day${closureGap !== 1 ? 's' : ''} above best practice of <3)` : ' (at or below best practice)'}.`);
-      if (closureGap > 0) {
-        const delayedCharts = Math.round(documentedEncounters * 0.15);
-        const closureImpact = Math.round(delayedCharts * closureGap * 5);
-        l2MetricParts.push(`Delayed chart closure affects billing cycle — estimated ${formatDollar(closureImpact)} in delayed or lost collections.`);
-        l2FormulaParts.push(`[delayedCharts] = ${documentedEncounters.toLocaleString()} × 15% = ${delayedCharts.toLocaleString()}\n[closureImpact] = ${delayedCharts.toLocaleString()} × ${closureGap} excess days × $5 = ${formatDollar(closureImpact)}`);
-        l2EstimatedValue = (l2EstimatedValue || 0) + closureImpact;
-      }
     }
 
     const l2Narrative = l2MetricParts.length > 0 ? `\n\n${l2MetricParts.join('\n')}` : '';
-    const l2Formula = l2FormulaParts.join('\n');
 
     if (count === 0) {
       return {
         label: 'Estimated Impact',
-        value: l2EstimatedValue,
-        hasValue: l2EstimatedValue !== null && l2EstimatedValue > 0,
-        headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
-          ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
-          : 'Select documentation attributes being tracked.',
-        context: `Systematic tracking is active. Select which documentation attributes are being tracked.${l2Narrative}`,
-        formula: l2Formula,
-        footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Quality monitoring approach identified.',
+        context: `Systematic tracking is active. Select which documentation attributes are being tracked.\n\nNo financial estimate at this level — the value is in establishing measurement.${l2Narrative}`,
+        formula: '',
+        footnote: '',
         nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
@@ -1040,28 +996,24 @@ export function computeRiskFeedback(
       const chartsWithGaps = Math.round(documentedEncounters * (gapRate / 100));
       return {
         label: 'Estimated Impact',
-        value: l2EstimatedValue,
-        hasValue: l2EstimatedValue !== null && l2EstimatedValue > 0,
-        headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
-          ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
-          : `${count} of 5 quality dimensions tracked. ${chartsWithGaps.toLocaleString()} charts with gaps identified annually.`,
-        context: `Tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps annually (${gapRate}% gap rate).${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}${l2Narrative}`,
-        formula: l2Formula,
-        footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
+        value: null,
+        hasValue: false,
+        headlineMetric: `${count} of 5 quality dimensions tracked. ${chartsWithGaps.toLocaleString()} charts with gaps identified annually.`,
+        context: `Quality monitoring approach identified. No financial estimate at this level — the value is in establishing measurement.\n\nTracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps annually (${gapRate}% gap rate).${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}${l2Narrative}`,
+        formula: '',
+        footnote: '',
         nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
       };
     }
 
     return {
       label: 'Estimated Impact',
-      value: l2EstimatedValue,
-      hasValue: l2EstimatedValue !== null && l2EstimatedValue > 0,
-      headlineMetric: l2EstimatedValue && l2EstimatedValue > 0
-        ? `${formatDollar(l2EstimatedValue)} in estimated quality improvement opportunity`
-        : `${count} of 5 quality dimensions tracked`,
-      context: `Tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter chart documentation gap rate to calculate volume of charts with gaps.${l2Narrative}`,
-      formula: l2Formula,
-      footnote: l2EstimatedValue && l2EstimatedValue > 0 ? 'Estimates based on gap between current metrics and industry benchmarks.' : '',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} of 5 quality dimensions tracked`,
+      context: `Quality monitoring approach identified. No financial estimate at this level — the value is in establishing measurement.\n\nTracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter chart documentation gap rate to calculate volume of charts with gaps.${l2Narrative}`,
+      formula: '',
+      footnote: '',
       nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
     };
   }
@@ -1090,9 +1042,10 @@ export function computeRiskFeedback(
     if (checked.some(c => c.includes('CDI'))) {
       const before = (inputs.cdiQueriesBefore as number) || 0;
       const after = (inputs.cdiQueriesAfter as number) || 0;
+      const costPerQuery = (inputs.cdiCostPerQuery as number) || 25;
       if (before > after) {
-        const val = Math.round((before - after) * 25 * 12);
-        workflowValues.push({ name: 'CDI query reduction', value: val, formula: `(${before} - ${after}) × $25 × 12 = ${formatDollar(val)}` });
+        const val = Math.round((before - after) * costPerQuery * 12);
+        workflowValues.push({ name: 'CDI query reduction', value: val, formula: `(${before} - ${after}) × $${costPerQuery} × 12 = ${formatDollar(val)}` });
       }
     }
     if (checked.some(c => c.includes('Coding'))) {
@@ -1105,9 +1058,10 @@ export function computeRiskFeedback(
     }
     if (checked.some(c => c.includes('Quality'))) {
       const gapsClosed = (inputs.qualityGapsClosed as number) || 0;
+      const qualityGapValue = (inputs.qualityGapValue as number) || 100;
       if (gapsClosed > 0) {
-        const val = Math.round(gapsClosed * 12 * 100);
-        workflowValues.push({ name: 'Quality gap closure', value: val, formula: `${gapsClosed} gaps/mo × 12 × $100 = ${formatDollar(val)}` });
+        const val = Math.round(gapsClosed * 12 * qualityGapValue);
+        workflowValues.push({ name: 'Quality gap closure', value: val, formula: `${gapsClosed} gaps/mo × 12 × $${qualityGapValue} = ${formatDollar(val)}` });
       }
     }
     if (checked.some(c => c.includes('Prior'))) {
@@ -1185,7 +1139,7 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Enter strategic value to calculate.',
-      context: `Benchmark for full quality integration: $200K–$1M+ in annual strategic value. Enter your confirmed figure or use the benchmark.`,
+      context: `At this level, documentation quality is embedded in organizational strategy. Enter the strategic value your organization attributes to documentation quality programs.`,
       formula: '',
       footnote: '',
     };
@@ -1197,7 +1151,7 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Enter strategic value to calculate.',
-      context: `Working estimate at ${documentedEncounters.toLocaleString()} encounters with full quality integration: $200K–$1M+ annually across quality programs, compliance, and contract performance.`,
+      context: `At ${documentedEncounters.toLocaleString()} encounters, documentation quality programs typically generate value across compliance, quality reporting, and contract performance. Enter your organization's confirmed strategic value.`,
       formula: '',
       footnote: '',
     };

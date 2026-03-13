@@ -774,7 +774,7 @@ function buildDataDrivenInsight(domainKey: string, domain: DomainData, orgContex
       parts.push(`Your ${inputs['Deficiency/query rate']} deficiency rate suggests recoverable value — engage your revenue cycle team.`);
     }
     if (level === 1 && inputs['E&M complexity']) {
-      parts.push(`E&M distribution (${inputs['E&M complexity']}) indicates documentation-driven upcoding opportunity.`);
+      parts.push(`E&M distribution (${inputs['E&M complexity']}) indicates documentation-driven coding accuracy opportunity.`);
     }
     if (level === 2 && inputs['Coding specificity improvement']) {
       parts.push(`Your estimated ${inputs['Coding specificity improvement']} coding improvement needs before/after validation.`);

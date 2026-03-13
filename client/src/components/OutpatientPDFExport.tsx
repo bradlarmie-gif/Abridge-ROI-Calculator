@@ -531,7 +531,7 @@ const DriverEducationContent: Record<string, {
   },
   wrvu: {
     definition: "The revenue improvement from documentation that accurately captures clinical complexity, supporting appropriate E/M coding.",
-    whyMatters: "Physicians under time pressure routinely under-document visit complexity. This isn't about upcoding—it's about getting credit for work already performed. A 5% wRVU lift across thousands of encounters compounds significantly.",
+    whyMatters: "Physicians under time pressure routinely under-document visit complexity. This is about getting credit for work already performed. A 5% wRVU lift across thousands of encounters compounds significantly.",
     whatDrives: "Documentation completeness, HPI detail, medical decision-making clarity, time documentation, and whether the note tells the full clinical story that coders need.",
     getInsight: (inputs, value) => `At ${inputs.wrvu.pctIncreaseWrvuPerEncounter}% wRVU improvement and $${inputs.wrvu.wrvuConversionFactor}/wRVU, you're capturing ${formatCurrency(value)}. Commercial payer rates ($45-65/wRVU) would increase this significantly.`,
   },

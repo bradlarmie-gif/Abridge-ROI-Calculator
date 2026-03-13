@@ -138,7 +138,7 @@ const METRIC_CONFIGS: PresetMetricConfig[] = [
     icon: <TrendingUp className="w-5 h-5 text-[#EA2C00]" />,
     title: "Coding Impact",
     description: "Observed wRVU change since AI implementation",
-    tooltip: "wRVU lift reflects whether documentation is capturing the complexity of care delivered. This isn't about upcoding — it's about accurate coding. The correlation is strongest when utilization exceeds 70% and documentation completeness exceeds 85%.",
+    tooltip: "wRVU lift reflects whether documentation is capturing the complexity of care delivered. The correlation is strongest when utilization exceeds 70% and documentation completeness exceeds 85%.",
     presets: [
       { label: "+1%", value: 1 },
       { label: "+3%", value: 3 },

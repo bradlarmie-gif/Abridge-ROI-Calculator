@@ -1198,7 +1198,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                         When visit notes fully reflect the complexity of what happened in the room, E/M levels code higher. The current average of {safe(data.currentAvgWrvuPerVisit)} wRVU per visit has room to move. At a {safe(data.wrvuImprovementPct)}% documentation improvement {"\u2014"} the {data.wrvuScenario} scenario, where industry data shows a 2{"\u2013"}7% lift range {"\u2014"} that{"\u2019"}s {safe(data.wrvuLiftPerVisit)?.toFixed(3)} additional wRVU per visit, {fmtNum(safe(data.totalAdditionalWrvus))} across your {fmtNum(safe(data.eligibleEncounters))} eligible encounters. At a ${safe(data.wrvuConversionFactor)} conversion factor and {safe(data.wrvuRealizationRate)}% realization, the annual value is {fmtCurrency(safe(data.annualWrvuValue))}.
                       </Text>
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        This is not upcoding. It is accurate coding of complexity that was always there.
+                        This is accurate coding of complexity that was always there.
                       </Text>
                     </View>
                   </View>
@@ -1940,7 +1940,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                         When ED notes fully reflect visit complexity, E/M levels code higher. The current average of {safe(data.currentAvgWrvuPerVisit)} wRVU per visit has room to move. At a {safe(data.emImprovementPct)}% documentation improvement {"\u2014"} the {data.emScenario} scenario in a range where industry data shows 2{"\u2013"}7% is achievable {"\u2014"} that{"\u2019"}s {safe(data.emWrvuLiftPerVisit)?.toFixed(3)} additional wRVU per visit, {fmtNum(safe(data.totalAdditionalWrvus))} across your {fmtNum(safe(data.eligibleEncounters))} eligible encounters. At a ${safe(data.emConversionFactor)} conversion factor and {safe(data.emRealizationRate)}% realization, the annual value is {fmtCurrency(safe(data.annualEmValue))}.
                       </Text>
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        This is not upcoding. It is accurate coding of complexity that was delivered and documented {"\u2014"} just documented completely.
+                        This is accurate coding of complexity that was delivered and documented {"\u2014"} just documented completely.
                       </Text>
                     </View>
                   </View>

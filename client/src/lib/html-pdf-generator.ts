@@ -589,7 +589,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
           theory: [
             "Physicians under time pressure document less than the full",
             "clinical picture. AI captures complexity that supports accurate",
-            "coding - not upcoding, just getting credit for work done.",
+            "coding — getting credit for work already done.",
           ],
           variables: [
             { label: formatNumber(eligibleEncounters), value: 'encounters eligible' },

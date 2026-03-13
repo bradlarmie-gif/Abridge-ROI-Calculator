@@ -327,7 +327,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                       <p className="text-black">
                         Most visits contain clinical complexity that gets discussed but doesn't make it 
                         into the note. A 99214 that should have been a 99215. A procedure that was performed 
-                        but not documented. This isn't upcoding — it's capturing what actually happened.
+                        but not documented. This is capturing what actually happened.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">

@@ -153,7 +153,7 @@ export function generateDriverExplanation(
           `Revenue: ${formatNumber(additionalWrvus)} × $${revenuePerWrvu} = ${formatCurrency(driverValue)}`,
         ],
         meaning: `Better documentation enables your coders to capture the true complexity of care. A ${improvementPct}% improvement across ${formatNumber(encountersWithAbridge)} encounters adds ${formatNumber(additionalWrvus)} wRVUs annually.`,
-        whyItMatters: "This isn't upcoding - it's accurate coding. When documentation supports the complexity of care actually delivered, you capture revenue you've already earned.",
+        whyItMatters: "When documentation supports the complexity of care actually delivered, you capture revenue you've already earned.",
         assumptions: [
           {
             label: 'Baseline wRVU',

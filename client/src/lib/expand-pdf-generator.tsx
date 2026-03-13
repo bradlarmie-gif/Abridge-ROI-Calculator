@@ -631,7 +631,7 @@ const getMetricNarrative = (metric: ExpandMetricData): string => {
   
   if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
     if (magnitude >= 5) return "We're observing documentation that appears to be capturing more clinical complexity. This suggests providers may be getting better recognition for work they were already doing—though it's worth validating what's driving this pattern.";
-    if (magnitude >= 3) return "The data suggests documentation is telling a more complete story. This isn't about upcoding—it's about accuracy. These early patterns are worth monitoring as the deployment matures.";
+    if (magnitude >= 3) return "The data suggests documentation is telling a more complete story. These early patterns are worth monitoring as the deployment matures.";
     if (magnitude >= 1) return "We're seeing early signals of improvement. As providers become more comfortable with AI-generated notes, the documentation often becomes more thorough naturally.";
     return "The foundation is being established. wRVU patterns typically become clearer as providers settle into the new workflow and develop trust in the documentation quality.";
   }

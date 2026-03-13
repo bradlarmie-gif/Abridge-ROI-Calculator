@@ -188,7 +188,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     <p className="text-sm text-[#666666] leading-relaxed">
                       This is the highest-value mechanism. When clinical conversations capture 
                       comorbidities, complications, and clinical reasoning completely, DRG assignment 
-                      reflects true patient acuity. This isn't upcoding — it's ensuring documentation 
+                      reflects true patient acuity. This ensures documentation 
                       reflects the care actually delivered. CDI teams know exactly how much opportunity 
                       exists; Abridge helps capture it at the point of care instead of retrospectively.
                     </p>

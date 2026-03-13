@@ -176,7 +176,7 @@ function getNextLevelContent(
       const riskL3High = Math.round(documentedEncounters * 0.15 * 300 / 1000) * 1000;
       base.narrative = `You've connected downstream workflows${hasValue ? `, saving an estimated ${formatDollar(currentValue)} annually` : ''}. The next level is making documentation quality a strategic input — informing payer strategy, value-based care design, and compliance governance. This is where documentation stops being a clinical byproduct and becomes organizational intelligence.\n\nOPPORTUNITY AHEAD: With correction workflows in place, your organization is positioned to quantify risk-adjustment accuracy. Benchmark: $125–$300 per relevant encounter at 15% risk-adjustment relevance = ${formatDollar(riskL3Low)}–${formatDollar(riskL3High)} annual opportunity.`;
     } else {
-      base.narrative = "You're at the highest maturity level. Your documentation infrastructure is positioned for next-generation AI applications — from automated prior authorization to predictive quality reporting. Continue expanding the data asset across organizational strategy.";
+      base.narrative = "You're at the highest maturity level. Your documentation infrastructure supports strategic use cases — from automated prior authorization to predictive quality reporting. Continue expanding the data asset across organizational strategy.";
     }
   }
 

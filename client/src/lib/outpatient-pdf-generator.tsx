@@ -961,7 +961,7 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
 
     case "wrvu": {
       return {
-        theory: `Complex medical decision-making often goes undocumented in the rush between patients. When notes capture the complete picture, coding reflects the actual work performed.\n\nThis isn't about upcoding—it's about accurate coding. The gap between what clinicians do and what gets documented is real and measurable.`,
+        theory: `Complex medical decision-making often goes undocumented in the rush between patients. When notes capture the complete picture, coding reflects the actual work performed.\n\nThe gap between what clinicians do and what gets documented is real and measurable.`,
         steps: [
           {
             label: "STEP 1: BASELINE GENERATION",

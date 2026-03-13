@@ -136,7 +136,7 @@ Abridge lightens that load by reducing after-hours charting, helping create a mo
 Abridge generates richer clinical narratives that surface relevant conditions naturally, making it easier for clinicians to confirm or update them. This supports more accurate risk adjustment without adding administrative burden — the result is a more complete picture and more accurate risk scoring.`,
   wrvu: `Visits are frequently coded below their true complexity because documentation does not fully capture the clinical reasoning behind the encounter. When essential details of assessment and decision-making are missing, coders default to safer, lower levels.
 
-Abridge preserves more of the clinician's thought process, enabling coding to reflect the visit's actual complexity: not upcoding, just accurate alignment. When notes reflect the full complexity of the visit, coding teams can assign the level that matches the work.`,
+Abridge preserves more of the clinician's thought process, enabling coding to reflect the visit's actual complexity — accurate alignment. When notes reflect the full complexity of the visit, coding teams can assign the level that matches the work.`,
   denials: `A significant share of unrecoverable denials stem from insufficient documentation of medical necessity or incomplete MDM. These denials cannot be overturned through rework and represent avoidable revenue loss.
 
 Abridge strengthens the clinical narrative by capturing clear reasoning for decisions during the visit, reducing denials that originate from documentation gaps rather than clinical care. When the story is clearer, there's less room for payers to question necessity.`,
