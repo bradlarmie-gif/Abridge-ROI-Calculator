@@ -1,0 +1,156 @@
+# Domain Fixes — Implement in This Order
+
+These are fixes to the four domain screens in the Ambient Assessment (Capacity, Revenue, Workforce, Quality). Do not change the score page, trajectory page, summary page, or overall navigation. Only fix the domain screens.
+
+---
+
+## FIRST: Standardize the working year across the entire application
+
+Every calculation that annualizes time should use the same assumption. Right now the app uses 2,080 hours, 48 weeks, 52 weeks, 230 days, and 250 days in different places. Standardize everything to:
+
+```
+CLINICAL_DAYS = 230
+CLINICAL_WEEKS = 46
+ANNUAL_HOURS = 1,840  (230 × 8)
+```
+
+Specific changes:
+- Capacity L1/L2: FTE divisor changes from 2,080 to 1,840. Display as "÷ 1,840 (230 clinical days × 8 hrs)"
+- Capacity L2: Weekly annualization changes from 48 weeks to 46 weeks
+- Capacity L3: 11 clinical months stays (it's consistent with 230 days)
+- Workforce L1: After-hours annualization changes from 52 weeks to 46 weeks
+- Workforce L2: Formula already uses 230 days — keep it. But fix the PRE-ENTRY benchmark text that currently uses 250 days. Recalculate the benchmark range using 230 days.
+
+Add a note somewhere on the baseline inputs screen: "All calculations use 230 clinical working days per year."
+
+---
+
+## CAPACITY DOMAIN
+
+### Level 1
+- Change FTE formula to divide by 1,840 instead of 2,080
+- The "$228K opportunity at 20% redeployment" callout: add inline text "Based on 20% redeployment scenario at your provider rate of $[providerRate]/hr"
+
+### Level 2
+- Change weekly annualization from 48 to 46 weeks
+- Fix the dual-hours display: L1 formula shows 3,000 hours and L2 shows a different number from the weekly calculation. Show only ONE hours figure on the L2 screen — the one from the user's weekly input × 46 weeks. Remove the L1 formula from the L2 impact card.
+- The 20% and 35% redeployment percentages in the opportunity range: add labels "20% = early-stage redeployment, 35% = organizations with intentional scheduling changes"
+
+### Level 3
+- The "11 clinical months" is currently in hover text on the right panel. Move it to be visible directly in the input card, inline with the formula: "× 11 clinical months (230 working days)"
+
+### Level 4
+- No changes needed. This is the strongest calculation in the app.
+
+---
+
+## REVENUE DOMAIN
+
+### Level 1
+- Replace every instance of the word "upcoding" with "coding accuracy opportunity" or "appropriate level recapture potential." Search the entire Revenue domain for this word.
+- The $1.22M denial exposure and $502K wRVU opportunity appear as headline numbers before the assumptions are shown. Restructure so the assumption text comes FIRST, then the number. Example: "At a 4% national average denial rate (MGMA), documentation-related denial exposure at your encounter volume is approximately $1.22M"
+- The HCC $200/member assumption: make this an editable input field. Default stays $200. Label: "Industry estimate for HCC undercapture per VBC member. Adjust to match your organization." Add to the output: "This is a directional benchmark, not your organization's measured HCC data."
+- The $100/quality gap assumption: label it at point of use: "$100 per quality measure gap (estimated MIPS/Stars exposure per gap)." Consider making it editable.
+
+### Level 2
+- THIS IS THE MOST IMPORTANT FIX. The coding uplift formula is methodologically wrong:
+  ```
+  Current: 60,000 × $200 × 10% × (30-70% capture) = $360K-$840K
+  ```
+  This treats coding improvement as a percentage of total encounter revenue. That's not how coding works. A 10% coding specificity improvement means some charts move up a code level — it affects the delta on those specific charts, not 10% of all revenue.
+
+  **Replace with one of these two options:**
+
+  **Option A (recommended): Remove the dollar output at Level 2 entirely.** Level 2 is "Under Investigation" — they haven't measured anything yet. Show only the qualitative signals (the checkboxes for what they're investigating) and frame the output as: "Your revenue cycle is actively investigating. Financial impact will be quantified when before/after measurement is available (Level 3)." This is honest for an investigation-stage level.
+
+  **Option B: Replace with a wRVU-based estimate** matching L3's methodology. Use a conservative estimated wRVU delta (0.03-0.08) instead of the coding percentage approach:
+  ```
+  [estimatedImpact] = documentedEncounters × 0.05 wRVU × conversionFactor
+  ```
+  Label as: "Directional estimate using conservative wRVU assumptions. To be confirmed with before/after measurement at Level 3."
+
+- The "30-70% capture" rate: if keeping any dollar formula at L2, this multiplier must be explained. Add: "Capture rate reflects the estimated percentage of coding improvements translating to reimbursement (30% conservative, 70% optimistic)." Better: make it a toggle.
+- The 0.5% CDI floor ($152K): move the assumption text to appear before the number, not after.
+
+### Level 3
+- No formula changes needed. This is the best calculation in the tool.
+- The pre-selection benchmark teaser "$150K-$500K at this encounter volume" needs a source label: "Based on aggregated deployment experience at comparable encounter volumes."
+
+### Level 4
+- Sidebar benchmark "$200K-$600K annually" needs a source: "Based on aggregated deployment experience."
+- No other changes needed.
+
+### Fix the VBC% input display bug
+After entering a value in the VBC% field and tabbing out, the field visually shows "0" while the calculation uses the correct value. Fix the input component to display the entered value after blur/tab-out. This affects both Revenue L1 and Quality L1.
+
+---
+
+## WORKFORCE DOMAIN
+
+### Level 1
+- The 2 hrs/week field is auto-filled without explanation. Add a prominent label directly on the input: "Pre-filled from deployment benchmarks (2 hrs/week). Adjust to match your organization's data." Make this label clearly visible, not footnote text.
+- Change the annualization from 52 weeks to 46 weeks. Update the formula display: "× 46 clinical weeks"
+- Remove the "15% risk/hr" turnover proxy entirely. The formula that shows "2 hrs × 15% risk/hr = 30% elevated burnout risk" is fabricated — the 15% figure is not from AAMC despite the footnote. Replace with qualitative text: "Published research consistently links after-hours documentation burden to clinician burnout and turnover risk (Shanafelt et al., AMA studies)." Do not generate a percentage-based risk score.
+
+### Level 2
+- Fix the pre-entry benchmark range. It currently shows "2,083-4,167 hours" which uses 250 working days. Recalculate using 230 days: at 10 min/day with 50 providers = 10×50×230/60 = 1,917 hrs. At 20 min/day = 3,833 hrs. Update the benchmark text to show "1,917-3,833 hours annually."
+- No formula changes needed — the 230-day calculation is already correct.
+
+### Level 3
+- Change the text "The portion ambient retention improvement works directly against" to "the portion potentially attributable to documentation burden reduction." The current text makes a causal claim about ambient improving retention.
+- The sidebar pre-calculates "$210K-$280K" using assumed defaults before the user enters data. Don't show a dollar figure until the user enters their turnover rate and replacement cost. Show instead: "Enter your turnover rate and replacement cost to see estimated retention exposure."
+- The $350K default: if the user keeps the default, label the output as "Using AMGA benchmark midpoint: $350K." If the user changes it, label as "Based on your input: $[X]."
+
+### Level 4
+- No changes needed. Clean formula.
+
+### Fix the Workforce Summary display bug
+Level 1 computes after-hours burden (5,200 hours with current 52-week calc, will be different after Fix 2) but the Workforce Summary card shows "—" for After-Hours Returned across all levels. The summary should pull and display the L1 hours figure.
+
+---
+
+## QUALITY DOMAIN
+
+### Level 1
+- Same fixes as Revenue L1 for the shared formulas: assumptions before numbers for denial exposure, HCC $200/member editable, $100/gap labeled. These formulas appear in both domains — make sure fixes apply in both places.
+
+### Level 2
+- After the user completes all fields, the Estimated Impact panel shows "Not yet entered." Change to: "Quality monitoring approach identified. No financial estimate at this level — the value is in establishing measurement."
+
+### Level 3
+- The $25/CDI query assumption is completely hidden. Add it as a visible, editable input:
+  ```
+  Cost per CDI query avoided
+  $ [___] (default: $25)
+  Reflects estimated CDI specialist time per query.
+  Adjust to match your organization's cost structure.
+  ```
+  Show in the formula: "20 queries avoided × $25/query × 12 months = $6,000"
+
+### Level 4
+- Change "Your documentation infrastructure is positioned for next-generation AI applications — from automated prior authorization to predictive quality reporting" to "Organizations at this level are best positioned to leverage documentation data across emerging clinical and operational workflows."
+- The "$200K-$1M+" benchmark range is too wide (5x) with no formula. Either narrow with a calculation based on their encounter volume and governance areas, or remove the dollar benchmark and keep L4 qualitative: "Strategic value varies significantly by organization. Enter your attributed value if known."
+
+---
+
+## CROSS-DOMAIN
+
+### Add instruction text above level cards in every domain
+When the user arrives at any domain, add one line above the four level cards: "Select the level that best describes your organization today."
+
+### Add a baseline screen note about working days
+On the baseline inputs screen, add visible text: "All calculations use 230 clinical working days per year (accounting for PTO, CME, holidays, and non-clinical time)."
+
+---
+
+## AFTER IMPLEMENTING
+
+Browse through all four domains again. At each level, enter the same test data (50 providers, 100K encounters, 60% utilization, 3 min, $200/visit, $150/hr, $33 CMS factor) and verify:
+1. Every formula uses 230 days / 46 weeks / 1,840 hours consistently
+2. No two different hour figures appear on the same screen
+3. Every dollar figure has its assumptions visible BEFORE the number
+4. No field is auto-filled without a visible label explaining the pre-fill
+5. The word "upcoding" does not appear anywhere
+6. The VBC% field displays correctly after entry
+7. The Workforce Summary shows the L1 after-hours figure
+8. Quality L2 shows confirmation text, not "Not yet entered"
