@@ -1156,6 +1156,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             />
             <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
           </div>
+          <p className="text-xs text-[#888888] mt-1.5">Pre-filled from deployment benchmarks (2 hrs/week). Adjust to match your organization's data.</p>
           <BenchmarkContext text="Abridge benchmark: 1–3 hrs/week" />
         </div>
       );
@@ -1344,7 +1345,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 data-testid="input-replacement-cost"
               />
             </div>
-            <BenchmarkContext text="Industry range: $250K–$500K (AAMC)" />
+            <BenchmarkContext text="AMGA benchmark midpoint: $350K. Industry range: $250K–$500K." />
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -2025,8 +2026,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
               Where is your organization today?
+            </p>
+            <p className="text-sm text-[#525252] mb-4" data-testid="text-level-instruction">
+              Select the level that best describes your organization today.
             </p>
 
             <div className="flex flex-col">
@@ -2063,18 +2067,16 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   }
                   if (activeDomain === 'workforce') {
                     if (card.level === 1) {
-                      const ahr = (inp.afterHoursReduction as number) || 0;
-                      if (ahr > 0) {
-                        const hrs = Math.round(ahr * providers * 52);
-                        return `${hrs.toLocaleString()} hrs/yr`;
-                      }
+                      const ahr = (inp.afterHoursReduction as number) || 2.0;
+                      const hrs = Math.round(ahr * providers * CLINICAL_WEEKS);
+                      return `${hrs.toLocaleString()} hrs/yr`;
                     }
                     if (card.level === 2) {
                       const mins = (inp.editTimeSaved as number) || 0;
                       if (mins > 0) {
                         const clinicHrs = Math.round(mins * providers * 230 / 60);
                         const cAfterHours = (inp.confirmedAfterHoursReduction as number) || (inp.afterHoursReduction as number) || 0;
-                        const ahHrs = cAfterHours > 0 ? Math.round(cAfterHours * providers * 52) : 0;
+                        const ahHrs = cAfterHours > 0 ? Math.round(cAfterHours * providers * CLINICAL_WEEKS) : 0;
                         const totalHrs = clinicHrs + ahHrs;
                         return `${totalHrs.toLocaleString()} hrs/yr`;
                       }
@@ -2346,8 +2348,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
             {activeDomain === 'workforce' && currentState.activationLevel && (() => {
               const inp = currentState.inputs;
-              const ahr = (inp.afterHoursReduction as number) || 0;
-              const afterHoursHrs = ahr > 0 ? Math.round(ahr * providers * 52) : 0;
+              const ahr = (inp.afterHoursReduction as number) || 2.0;
+              const afterHoursHrs = Math.round(ahr * providers * CLINICAL_WEEKS);
 
               const mins = (inp.editTimeSaved as number) || 0;
               const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;

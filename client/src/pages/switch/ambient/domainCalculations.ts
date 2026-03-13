@@ -662,15 +662,15 @@ export function computeWorkforceFeedback(
     const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
     const defaultHrs = 2.0;
     const effectiveHrs = (afterHoursReduction && afterHoursReduction > 0) ? afterHoursReduction : defaultHrs;
-    const totalHoursReturned = Math.round(effectiveHrs * providers * 52);
+    const totalHoursReturned = Math.round(effectiveHrs * providers * CLINICAL_WEEKS);
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${totalHoursReturned.toLocaleString()} after-hours hours returned annually`,
-      context: `${providers.toLocaleString()} providers × ${effectiveHrs} hrs/week × 52 weeks = ${totalHoursReturned.toLocaleString()} hours of after-hours documentation time returned annually.`,
-      formula: `[burdenHours] = ${effectiveHrs} × ${providers} × 52 = ${totalHoursReturned.toLocaleString()}`,
-      footnote: 'Uses 52 weeks. For clinical weeks only, adjust to 46–48.',
+      context: `${providers.toLocaleString()} providers × ${effectiveHrs} hrs/week × ${CLINICAL_WEEKS} clinical weeks = ${totalHoursReturned.toLocaleString()} hours of after-hours documentation time returned annually.\n\nResearch consistently identifies documentation burden as a leading contributor to physician burnout and intent to leave (Shanafelt et al., 2022; Melnick et al., 2020).`,
+      formula: `[burdenHours] = ${effectiveHrs} × ${providers} × ${CLINICAL_WEEKS} = ${totalHoursReturned.toLocaleString()}`,
+      footnote: `Annualized using ${CLINICAL_WEEKS} clinical weeks (${CLINICAL_DAYS} working days). After-hours time is self-reported and may vary by specialty and EHR workflow.`,
       nextLevelTeaser: 'Level 2 adds in-clinic time savings and provider survey data.',
     };
   }
@@ -685,8 +685,8 @@ export function computeWorkforceFeedback(
     const checkedLabels = checkedFindings.map(i => SURVEY_FINDING_LABELS[i]).filter(Boolean);
 
     if (!minutesSaved || minutesSaved <= 0) {
-      const lowHrs = Math.round(providers * 10 * 250 / 60);
-      const highHrs = Math.round(providers * 20 * 250 / 60);
+      const lowHrs = Math.round(providers * 10 * CLINICAL_DAYS / 60);
+      const highHrs = Math.round(providers * 20 * CLINICAL_DAYS / 60);
       return {
         label: 'Estimated Impact',
         value: null,
@@ -702,7 +702,7 @@ export function computeWorkforceFeedback(
     const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);
 
     const afterHoursHours = confirmedAfterHours && confirmedAfterHours > 0
-      ? Math.round(confirmedAfterHours * providers * 52)
+      ? Math.round(confirmedAfterHours * providers * CLINICAL_WEEKS)
       : 0;
 
     const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
@@ -731,7 +731,7 @@ export function computeWorkforceFeedback(
       hasValue: false,
       headlineMetric,
       context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}${burnoutNarrative}`,
-      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × 230 / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × 52 = ${afterHoursHours.toLocaleString()}` : ''}`,
+      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : ''}`,
       footnote: '230 clinical working days. Dollar value appears at Level 3 when turnover data is entered.',
       nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
     };
@@ -742,16 +742,12 @@ export function computeWorkforceFeedback(
     const replacementCost = inputs.replacementCost as number | undefined;
     const docBurdenShare = (inputs.docBurdenShare as number) || 0;
     if (!turnoverRate || !replacementCost || turnoverRate <= 0 || replacementCost <= 0) {
-      const lowDepartures = providers * 0.06;
-      const highDepartures = providers * 0.08;
-      const exposureLow = Math.round(lowDepartures * 0.20 * 350000);
-      const exposureHigh = Math.round(highDepartures * 0.20 * 350000);
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
         headlineMetric: 'Enter turnover data to calculate exposure.',
-        context: `National physician turnover: 6–8% annually. At ${providers.toLocaleString()} providers, approximately ${Math.round(lowDepartures)}–${Math.round(highDepartures)} departures per year. At 20% documentation-driven and $350K replacement cost, exposure is ${formatDollar(exposureLow)}–${formatDollar(exposureHigh)} annually.`,
+        context: `Enter your turnover rate and replacement cost to see estimated retention exposure.`,
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
@@ -762,6 +758,9 @@ export function computeWorkforceFeedback(
     const docDrivenCost = docBurdenShare > 0 ? Math.round(totalCost * (docBurdenShare / 100)) : 0;
 
     const hasDocShare = docBurdenShare > 0 && docDrivenCost > 0;
+    const replacementLabel = replacementCost === 350000
+      ? `${formatDollar(replacementCost)} (AMGA benchmark midpoint)`
+      : `${formatDollar(replacementCost)} (your input)`;
 
     const headlineMetric = hasDocShare
       ? `${formatDollar(docDrivenCost)} in documentation-attributable turnover exposure.`
@@ -772,7 +771,7 @@ export function computeWorkforceFeedback(
       value: hasDocShare ? docDrivenCost : null,
       hasValue: hasDocShare,
       headlineMetric,
-      context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nAt ${formatDollar(replacementCost)} replacement cost per provider, total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion ambient retention improvement works directly against.` : 'Enter the share of turnover you attribute to documentation burden to see the portion ambient can influence.'}`,
+      context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}. Total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion potentially attributable to documentation burden reduction.` : 'Enter the share of turnover you attribute to documentation burden to see the portion potentially attributable to documentation burden reduction.'}`,
       formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,
       footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',
       nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
