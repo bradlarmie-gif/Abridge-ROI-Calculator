@@ -784,6 +784,23 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             </div>
             <BenchmarkContext text="Industry average: 8–12% of charts with coding queries" />
           </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              HCC / risk adjustment value per member
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={(currentState.inputs.hccValuePerMember as number) || 0}
+                onChange={(v) => setDomainInput('hccValuePerMember', Math.max(0, v))}
+                placeholder="200"
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-hcc-value-per-member"
+              />
+            </div>
+            <BenchmarkContext text="Average HCC gap closure value: $100–$400 per member per year (default: $200). Applies to value-based care populations." />
+          </div>
         </div>
       );
     }

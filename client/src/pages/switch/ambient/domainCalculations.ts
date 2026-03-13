@@ -316,10 +316,12 @@ export function computeRevenueFeedback(
   if (level === 1) {
     const emComplexity = inputs.emComplexity as string | undefined;
     const docDeficiencyRate = inputs.docDeficiencyRate as number | undefined;
+    const hccValuePerMember = (inputs.hccValuePerMember as number) || 0;
     const hasDeficiencyData = docDeficiencyRate !== undefined && docDeficiencyRate > 0;
     const hasComplexityData = emComplexity && emComplexity !== 'unsure';
+    const hasHccData = hccValuePerMember > 0;
 
-    if (hasDeficiencyData || hasComplexityData) {
+    if (hasDeficiencyData || hasComplexityData || hasHccData) {
       const upliftPerEncounter = emComplexity === 'mostly_l3' ? 8 : emComplexity === 'mix_l3_l4' ? 5 : emComplexity === 'mostly_l4_l5' ? 3 : 5;
       const deficiencyMultiplier = hasDeficiencyData ? Math.min(docDeficiencyRate! / 10, 2.0) : 1.0;
       const estimatedOpportunityLow = Math.round(documentedEncounters * upliftPerEncounter * 0.5 * deficiencyMultiplier);
@@ -334,22 +336,39 @@ export function computeRevenueFeedback(
             : '';
 
       const deficiencyNote = hasDeficiencyData
-        ? `\n\nYour ${docDeficiencyRate}% query rate ${docDeficiencyRate! > 12 ? 'is above' : docDeficiencyRate! < 8 ? 'is below' : 'is within'} the industry average (8–12%). ${docDeficiencyRate! > 12 ? 'This elevated rate suggests substantial recoverable value from better documentation.' : docDeficiencyRate! < 8 ? 'A lower rate suggests your documentation is relatively strong — opportunity is in specificity improvements.' : 'Typical rate — ambient documentation improvements should have a meaningful impact.'}`
+        ? `Your ${docDeficiencyRate}% query rate ${docDeficiencyRate! > 12 ? 'is above' : docDeficiencyRate! < 8 ? 'is below' : 'is within'} the industry average (8–12%). ${docDeficiencyRate! > 12 ? 'This elevated rate suggests substantial recoverable value from better documentation.' : docDeficiencyRate! < 8 ? 'A lower rate suggests your documentation is relatively strong — opportunity is in specificity improvements.' : 'Typical rate — ambient documentation improvements should have a meaningful impact.'}`
+        : '';
+
+      const hccNote = hasHccData
+        ? `HCC/risk adjustment value: ${formatDollar(hccValuePerMember)} per member per year. This applies to value-based care populations where improved documentation captures additional risk-adjusted revenue.`
         : '';
 
       let contextParts: string[] = [];
       if (complexityNote) contextParts.push(complexityNote);
-      if (deficiencyNote) contextParts.push(deficiencyNote.trim());
-      contextParts.push(`At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually.`);
+      if (deficiencyNote) contextParts.push(deficiencyNote);
+      if (hccNote) contextParts.push(hccNote);
+      if (hasComplexityData || hasDeficiencyData) {
+        contextParts.push(`At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually in coding accuracy uplift.`);
+      }
+
+      let formulaParts: string[] = [];
+      if (hasComplexityData || hasDeficiencyData) {
+        formulaParts.push(`[codingUplift] = ${documentedEncounters.toLocaleString()} encounters × $${upliftPerEncounter} uplift × deficiency factor (${deficiencyMultiplier.toFixed(1)})`);
+      }
+      if (hasHccData) {
+        formulaParts.push(`[hccValue] = HCC gap closure at ${formatDollar(hccValuePerMember)}/member/year (user input)`);
+      }
 
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: `${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} estimated revenue opportunity`,
+        headlineMetric: (hasComplexityData || hasDeficiencyData)
+          ? `${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} estimated revenue opportunity`
+          : `HCC value: ${formatDollar(hccValuePerMember)}/member — enter E&M data to estimate coding uplift`,
         context: contextParts.join('\n\n'),
-        formula: `[estimatedRange] = ${documentedEncounters.toLocaleString()} encounters × $${upliftPerEncounter} uplift × deficiency factor (${deficiencyMultiplier.toFixed(1)})`,
-        footnote: 'Estimate based on E&M complexity profile and documentation deficiency rate. Actual impact requires revenue cycle analysis.',
+        formula: formulaParts.join('\n'),
+        footnote: 'Estimate based on E&M complexity profile, documentation deficiency rate, and HCC value inputs. Actual impact requires revenue cycle analysis.',
         nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
       };
     }
@@ -359,7 +378,7 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${documentedEncounters.toLocaleString()} encounters — revenue cycle not yet engaged.`,
-      context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. Revenue impact has not been analyzed. Enter E&M complexity data or deficiency rates to estimate the opportunity.`,
+      context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. Revenue impact has not been analyzed. Enter E&M complexity data, deficiency rates, or HCC value per member to estimate the opportunity.`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
@@ -1045,7 +1064,7 @@ export function computeRiskFeedback(
       const costPerQuery = (inputs.cdiCostPerQuery as number) || 25;
       if (before > after) {
         const val = Math.round((before - after) * costPerQuery * 12);
-        workflowValues.push({ name: 'CDI query reduction', value: val, formula: `(${before} - ${after}) × $${costPerQuery} × 12 = ${formatDollar(val)}` });
+        workflowValues.push({ name: 'CDI query reduction', value: val, formula: `(${before} - ${after}) × $${costPerQuery} (cost per CDI query) × 12 = ${formatDollar(val)}` });
       }
     }
     if (checked.some(c => c.includes('Coding'))) {
@@ -1061,7 +1080,7 @@ export function computeRiskFeedback(
       const qualityGapValue = (inputs.qualityGapValue as number) || 100;
       if (gapsClosed > 0) {
         const val = Math.round(gapsClosed * 12 * qualityGapValue);
-        workflowValues.push({ name: 'Quality gap closure', value: val, formula: `${gapsClosed} gaps/mo × 12 × $${qualityGapValue} = ${formatDollar(val)}` });
+        workflowValues.push({ name: 'Quality gap closure', value: val, formula: `${gapsClosed} gaps/mo × 12 × $${qualityGapValue} (quality gap value) = ${formatDollar(val)}` });
       }
     }
     if (checked.some(c => c.includes('Prior'))) {
