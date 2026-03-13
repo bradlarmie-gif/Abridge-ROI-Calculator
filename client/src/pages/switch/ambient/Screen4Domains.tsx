@@ -15,6 +15,7 @@ import {
   computeWorkforceFeedback, computeRiskFeedback,
   QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
   type DomainFeedback,
+  CLINICAL_WEEKS, ANNUAL_HOURS,
 } from "./domainCalculations";
 
 interface Screen4Props {
@@ -422,8 +423,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {(() => {
                 const ts = (currentState.inputs.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
                 if (ts > 0 && documentedEncounters > 0) {
-                  const weeklyHint = Math.round(documentedEncounters * ts / 60 / 48);
-                  return `Auto-estimate from your L1 data: ~${weeklyHint} hrs/week (${documentedEncounters.toLocaleString()} encounters × ${ts} min ÷ 60 ÷ 48 weeks)`;
+                  const weeklyHint = Math.round(documentedEncounters * ts / 60 / CLINICAL_WEEKS);
+                  return `Auto-estimate from your L1 data: ~${weeklyHint} hrs/week (${documentedEncounters.toLocaleString()} encounters × ${ts} min ÷ 60 ÷ ${CLINICAL_WEEKS} clinical weeks)`;
                 }
                 return 'Enter observed weekly hours, or use the auto-estimate once time per encounter is set.';
               })()}
@@ -516,6 +517,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-additional-patients"
             />
             <BenchmarkContext text="Structured access redesign: 3–8 patients/provider/month" />
+            <p className="text-xs text-[#888888] mt-1">
+              Annualized over 11 clinical months (230 working days).
+            </p>
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -2391,7 +2395,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const inp = currentState.inputs;
               const ts = (inp.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
               const recoveredHours = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
-              const fte = ts > 0 ? (recoveredHours / 2080).toFixed(1) : null;
+              const fte = ts > 0 ? (recoveredHours / ANNUAL_HOURS).toFixed(1) : null;
 
               const pts = (inp.additionalPatientsPerMonth as number) || 0;
               const rp = (inp.redesignedProviders as number) || providers;

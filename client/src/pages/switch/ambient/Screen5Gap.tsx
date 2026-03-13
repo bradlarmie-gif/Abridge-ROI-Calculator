@@ -10,6 +10,7 @@ import {
   type Domain, type ActivationLevel,
   DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
   scoreToActivationLevel,
+  ANNUAL_HOURS,
 } from "./domainCalculations";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
@@ -116,10 +117,10 @@ function getNextLevelContent(
         base.highEstimate = bmkValueHigh;
       }
     } else if (level === 3) {
-      const low = 1 * providerRate * 2080;
-      const high = 3 * providerRate * 2080;
+      const low = 1 * providerRate * ANNUAL_HOURS;
+      const high = 3 * providerRate * ANNUAL_HOURS;
       base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured capacity value'} through access redesign. The next level of maturity is using recovered capacity as a planning variable — informing hiring decisions, site expansion, and service line strategy. Organizations at this level report 1-3 FTE equivalent impact in workforce planning.`;
-      base.formula = `1 FTE × $${providerRate.toLocaleString()}/hr × 2,080 = ${formatDollar(low)}\n3 FTE × $${providerRate.toLocaleString()}/hr × 2,080 = ${formatDollar(high)}`;
+      base.formula = `1 FTE × $${providerRate.toLocaleString()}/hr × ${ANNUAL_HOURS.toLocaleString()} = ${formatDollar(low)}\n3 FTE × $${providerRate.toLocaleString()}/hr × ${ANNUAL_HOURS.toLocaleString()} = ${formatDollar(high)}`;
       base.lowEstimate = low;
       base.highEstimate = high;
     } else {

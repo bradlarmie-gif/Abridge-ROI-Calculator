@@ -1,5 +1,9 @@
 import { formatDollar } from "./ambientCalculator";
 
+export const CLINICAL_DAYS = 230;
+export const CLINICAL_WEEKS = 46;
+export const ANNUAL_HOURS = 1840;
+
 export type Domain = 'capacity' | 'revenue' | 'workforce' | 'risk';
 export type ActivationLevel = 1 | 2 | 3 | 4;
 
@@ -87,7 +91,7 @@ export function computeCapacityFeedback(
   providers: number,
   documentedEncounters: number,
   revenuePerVisit: number,
-  _providerRate: number,
+  providerRate: number,
 ): DomainFeedback {
   const timeSaved = inputs.timeSaved as number | undefined;
   const hasTimeSaved = timeSaved !== undefined && timeSaved > 0;
@@ -122,14 +126,15 @@ export function computeCapacityFeedback(
         nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
       };
     }
-    const fte = (recoveredHours / 2080).toFixed(1);
+    const fte = (recoveredHours / ANNUAL_HOURS).toFixed(1);
+    const redeployValue = Math.round(recoveredHours * providerRate * 0.20);
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
-      context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.`,
-      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}`,
+      context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.\n\nAt 20% redeployment, that is ${formatDollar(redeployValue)} in recoverable capacity value. Based on 20% redeployment scenario at your provider rate of $${providerRate.toLocaleString()}/hr.`,
+      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${fte}\n[redeployment opportunity] = ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(redeployValue)}`,
       footnote: 'Recovered hours represent available capacity. Financial value depends on how this time is allocated at higher maturity levels.',
       nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
     };
@@ -151,8 +156,6 @@ export function computeCapacityFeedback(
         nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
       };
     }
-    const recoveredHours = Math.round(documentedEncounters * ts / 60);
-    const fte = (recoveredHours / 2080).toFixed(1);
     const aggregated = inputs.capacityAggregated as string | undefined;
     const leadershipDecision = inputs.capacityLeadershipDecision as string | undefined;
     let decisionStatus = 'pending';
@@ -168,10 +171,14 @@ export function computeCapacityFeedback(
 
     let weeklyContext = '';
     let weeklyFormula = '';
+    let displayHours = 0;
+    let displayFte = '0.0';
     if (weeklyHoursRecovered && weeklyHoursRecovered > 0) {
-      const annualFromWeekly = Math.round(weeklyHoursRecovered * 48);
-      weeklyContext = `\n\nYour team reports ${weeklyHoursRecovered} hours recovered per week — ${annualFromWeekly.toLocaleString()} hours annualized (48 clinical weeks).`;
-      weeklyFormula = `\n[annualRecoveredHours] = ${weeklyHoursRecovered} hrs/week × 48 weeks = ${annualFromWeekly.toLocaleString()}`;
+      const annualFromWeekly = Math.round(weeklyHoursRecovered * CLINICAL_WEEKS);
+      displayHours = annualFromWeekly;
+      displayFte = (annualFromWeekly / ANNUAL_HOURS).toFixed(1);
+      weeklyContext = `Your team reports ${weeklyHoursRecovered} hours recovered per week — ${annualFromWeekly.toLocaleString()} hours annualized (${CLINICAL_WEEKS} clinical weeks). That is ${displayFte} FTE equivalent.`;
+      weeklyFormula = `[annualRecoveredHours] = ${weeklyHoursRecovered} hrs/week × ${CLINICAL_WEEKS} weeks = ${annualFromWeekly.toLocaleString()}\n[FTE equivalent] = ${annualFromWeekly.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${displayFte}`;
     }
 
     let schedulingContext = '';
@@ -185,19 +192,28 @@ export function computeCapacityFeedback(
     }
 
     if ((schedulingChanges === 'piloting' || schedulingChanges === 'planning') && additionalSlots && additionalSlots > 0) {
-      const annualSlots = Math.round(additionalSlots * 48);
+      const annualSlots = Math.round(additionalSlots * CLINICAL_WEEKS);
       const slotRevenue = Math.round(annualSlots * revenuePerVisit);
       schedulingContext += ` At ${additionalSlots} additional slots/week, that's ${annualSlots.toLocaleString()} incremental encounters annually — worth an estimated ${formatDollar(slotRevenue)}.`;
-      slotsFormula = `\n[slotsRevenue] = ${additionalSlots} slots/week × 48 weeks × ${formatDollar(revenuePerVisit)}/visit = ${formatDollar(slotRevenue)}`;
+      slotsFormula = `\n[slotsRevenue] = ${additionalSlots} slots/week × ${CLINICAL_WEEKS} weeks × ${formatDollar(revenuePerVisit)}/visit = ${formatDollar(slotRevenue)}`;
     }
+
+    const redeployLow = displayHours > 0 ? Math.round(displayHours * providerRate * 0.20) : 0;
+    const redeployHigh = displayHours > 0 ? Math.round(displayHours * providerRate * 0.35) : 0;
+    const redeployContext = displayHours > 0
+      ? `\n\nOpportunity range: ${formatDollar(redeployLow)}–${formatDollar(redeployHigh)} annually. 20% = early-stage redeployment, 35% = organizations with intentional scheduling changes.`
+      : '';
+    const redeployFormula = displayHours > 0
+      ? `\n[redeployment low] = ${displayHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(redeployLow)}\n[redeployment high] = ${displayHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(redeployHigh)}`
+      : '';
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${recoveredHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.`,
-      context: `${recoveredHours.toLocaleString()} hours of recovered capacity annually — ${fte} FTE equivalent.${weeklyContext}${schedulingContext}`,
-      formula: `[recoveredHours] = ${documentedEncounters.toLocaleString()} × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} / 2,080 = ${fte}${weeklyFormula}${slotsFormula}`,
+      headlineMetric: displayHours > 0 ? `${displayHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.` : `Decision ${decisionStatus}. Enter weekly hours to quantify.`,
+      context: `${weeklyContext}${redeployContext}${schedulingContext}`,
+      formula: `${weeklyFormula}${redeployFormula}${slotsFormula}`,
       footnote: '',
       nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
     };
@@ -689,7 +705,7 @@ export function computeWorkforceFeedback(
       };
     }
 
-    const clinicSavedHours = Math.round(minutesSaved * providers * 230 / 60);
+    const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);
 
     const afterHoursHours = confirmedAfterHours && confirmedAfterHours > 0
       ? Math.round(confirmedAfterHours * providers * 52)
@@ -709,7 +725,7 @@ export function computeWorkforceFeedback(
       : '';
 
     const totalHours = clinicSavedHours + afterHoursHours;
-    const fteEquiv = Math.round(totalHours / 2080 * 10) / 10;
+    const fteEquiv = Math.round(totalHours / ANNUAL_HOURS * 10) / 10;
 
     const headlineMetric = afterHoursHours > 0
       ? `${clinicSavedHours.toLocaleString()} in-clinic hours + ${afterHoursHours.toLocaleString()} after-hours hours recovered annually — ${fteEquiv} FTE equivalent of provider time.`

@@ -96,6 +96,10 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             </p>
             <div className="h-px bg-[#E5E7EB] mb-6" />
 
+            <p className="text-xs text-[#888888] italic mb-5">
+              All calculations use 230 clinical working days per year (accounting for PTO, CME, holidays, and non-clinical time).
+            </p>
+
             <div className="flex flex-col gap-6">
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
