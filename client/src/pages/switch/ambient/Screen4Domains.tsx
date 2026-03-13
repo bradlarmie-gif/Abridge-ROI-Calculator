@@ -1338,7 +1338,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <div className="flex items-center gap-2">
               <span className="text-sm text-[#888888]">$</span>
               <FormattedNumberInput
-                value={(currentState.inputs.replacementCost as number) || 0}
+                value={(currentState.inputs.replacementCost as number) || 350000}
                 onChange={(v) => setDomainInput('replacementCost', v)}
                 placeholder=""
                 className="w-full h-12 bg-white border-[#E5E7EB]"

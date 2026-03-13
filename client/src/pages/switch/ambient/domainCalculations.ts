@@ -739,9 +739,10 @@ export function computeWorkforceFeedback(
 
   if (level === 3) {
     const turnoverRate = inputs.turnoverRate as number | undefined;
-    const replacementCost = inputs.replacementCost as number | undefined;
+    const replacementCostRaw = inputs.replacementCost as number | undefined;
+    const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
     const docBurdenShare = (inputs.docBurdenShare as number) || 0;
-    if (!turnoverRate || !replacementCost || turnoverRate <= 0 || replacementCost <= 0) {
+    if (!turnoverRate || turnoverRate <= 0) {
       return {
         label: 'Estimated Impact',
         value: null,
@@ -759,8 +760,8 @@ export function computeWorkforceFeedback(
 
     const hasDocShare = docBurdenShare > 0 && docDrivenCost > 0;
     const replacementLabel = replacementCost === 350000
-      ? `${formatDollar(replacementCost)} (AMGA benchmark midpoint)`
-      : `${formatDollar(replacementCost)} (your input)`;
+      ? `Using AMGA benchmark midpoint: ${formatDollar(replacementCost)}`
+      : `Based on your input: ${formatDollar(replacementCost)}`;
 
     const headlineMetric = hasDocShare
       ? `${formatDollar(docDrivenCost)} in documentation-attributable turnover exposure.`
