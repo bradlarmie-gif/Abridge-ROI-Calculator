@@ -1752,18 +1752,23 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     {checked && WORKFLOW_DELTA_FIELDS[i] && (
                       <div className="ml-8 mt-2 mb-1 flex flex-col gap-2">
                         {WORKFLOW_DELTA_FIELDS[i].fields.map((f) => (
-                          <div key={f.key} className="flex items-center gap-2">
-                            {f.suffix === '$' && <span className="text-sm text-[#888888]">$</span>}
-                            <FormattedNumberInput
-                              value={(currentState.inputs[f.key] as number) || 0}
-                              onChange={(v) => setDomainInput(f.key, Math.max(0, v))}
-                              placeholder=""
-                              className="w-full h-10 bg-white border-[#E5E7EB] text-sm"
-                              data-testid={`input-${f.key}`}
-                              step={f.step}
-                            />
-                            {f.suffix && f.suffix !== '$' && <span className="text-xs text-[#888888] whitespace-nowrap">{f.suffix}</span>}
-                            <span className="text-xs text-[#888888] whitespace-nowrap min-w-[80px] sm:min-w-[100px]">{f.label}</span>
+                          <div key={f.key}>
+                            <div className="flex items-center gap-2">
+                              {f.suffix === '$' && <span className="text-sm text-[#888888]">$</span>}
+                              <FormattedNumberInput
+                                value={(currentState.inputs[f.key] as number) || 0}
+                                onChange={(v) => setDomainInput(f.key, Math.max(0, v))}
+                                placeholder=""
+                                className="w-full h-10 bg-white border-[#E5E7EB] text-sm"
+                                data-testid={`input-${f.key}`}
+                                step={f.step}
+                              />
+                              {f.suffix && f.suffix !== '$' && <span className="text-xs text-[#888888] whitespace-nowrap">{f.suffix}</span>}
+                              <span className="text-xs text-[#888888] whitespace-nowrap min-w-[80px] sm:min-w-[100px]">{f.label}</span>
+                            </div>
+                            {f.sublabel && (
+                              <p className="text-xs text-[#888888] mt-1 ml-0.5">{f.sublabel}</p>
+                            )}
                           </div>
                         ))}
                       </div>
