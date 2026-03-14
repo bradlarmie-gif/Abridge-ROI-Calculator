@@ -1,0 +1,447 @@
+# Revenue Domain — Full Rebuild for Replit
+
+Rebuild the Revenue domain. The current implementation has formula issues flagged across multiple audits, inputs that executives won't have, and levels that don't represent a clear enough progression. Keep the same UX patterns, card treatments, sidebar formula panel, and brand styling. Change the content, inputs, and calculations.
+
+---
+
+## Domain Header
+
+**Keep the existing header:**
+WHAT IS DOCUMENTATION FIDELITY WORTH TO YOUR REVENUE CYCLE?
+
+**Keep the existing subhead:**
+Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.
+
+**Add instruction above the level cards:**
+"Select the level that best describes your organization today."
+
+---
+
+## Level 1: Disconnected
+
+**Card text:**
+```
+Disconnected
+Documentation-driven revenue impact has not
+been analyzed.
+```
+
+**Description when selected:**
+"No one has analyzed whether documentation changes are affecting reimbursement."
+
+**Inputs:**
+```
+Has your organization reviewed how documentation
+changes from ambient affect coding or reimbursement?
+○ Not yet
+○ Conversations have started
+○ Formally engaged
+
+Average E&M complexity level distribution
+○ Mostly Level 3
+○ Mix of Level 3-4
+○ Mostly Level 4-5
+○ Unsure
+```
+
+The E&M question is context for the live conversation only. It does NOT feed into any calculation.
+
+**Remove from Level 1:**
+- Remove the "Documentation deficiency or query rate" input
+- Remove the "HCC / risk adjustment value per member" input and the $200 default
+- Remove ALL dollar calculations at Level 1 — no denial exposure, no wRVU opportunity, no HCC exposure
+- Remove any auto-calculated dollar figures that appear before the user enters data
+
+**Estimated Impact card:**
+```
+ESTIMATED IMPACT
+
+Not yet analyzed.
+
+Documentation specificity has improved across
+[documentedEncounters] encounters. No one has
+analyzed whether this is affecting coding,
+collections, or reimbursement.
+
+Level 2 involves observing trends in coding,
+denials, and collections.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+No dollar figure. No benchmark-derived projections. The insight at Level 1 is that nobody has looked.
+
+---
+
+## Level 2: Directional Signal
+
+**Card text:**
+```
+Directional Signal
+Your organization has observed trends suggesting
+documentation is affecting reimbursement.
+Not yet formally validated.
+```
+
+**Description when selected:**
+"Your organization has observed movement in coding, denials, or collections — but hasn't done a formal before/after analysis."
+
+**Inputs:**
+```
+What has your organization observed?
+☐ wRVU per encounter trending upward
+☐ Coding specificity improving (ICD-10 distribution shifting)
+☐ Denial rates trending downward
+☐ Collections per encounter trending upward
+☐ CDI query volume decreasing
+☐ Coder productivity improving
+
+What's your directional estimate of the revenue impact?
+○ Under 1% of encounter revenue
+○ 1-3% of encounter revenue
+○ 3-5% of encounter revenue
+○ 5%+ of encounter revenue
+○ Not sure — we see movement but haven't estimated
+```
+
+**Remove from Level 2:**
+- Remove the "How far along" timeline radio (under 30 days, 30-90, 90+) — not needed
+- Remove the "Estimated coding specificity improvement %" input
+- Remove the "Current denial rate %" input
+- Remove the coding uplift formula entirely: `encounters × revenue × improvement % × capture rate` — this was flagged as the most misleading calculation in the tool across multiple audits. Gone.
+- Remove the 0.5% CDI floor estimate
+- Remove any dollar calculations that use benchmark percentages applied to encounter revenue
+
+**Estimated Impact card:**
+
+If a percentage range is selected (not "not sure"):
+```
+ESTIMATED IMPACT
+
+$[lowEstimate]-$[highEstimate] directional estimate
+
+Your organization estimates [selectedRange] of
+encounter revenue is being affected by documentation
+improvements.
+
+At [documentedEncounters] documented encounters
+× $[revenuePerVisit] per visit:
+[lowPct]% = $[lowEstimate]
+[highPct]% = $[highEstimate]
+
+This is your team's directional estimate based on
+trending data. A formal before/after analysis
+(Level 3) would validate this figure.
+
+[checkedCount] area(s) showing movement:
+[list of checked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+The dollar range calculation:
+```
+lowEstimate = documentedEncounters × revenuePerVisit × lowPct
+highEstimate = documentedEncounters × revenuePerVisit × highPct
+
+For "Under 1%": lowPct = 0.005, highPct = 0.01
+For "1-3%": lowPct = 0.01, highPct = 0.03
+For "3-5%": lowPct = 0.03, highPct = 0.05
+For "5%+": lowPct = 0.05, highPct = 0.07
+```
+
+If "Not sure" selected:
+```
+ESTIMATED IMPACT
+
+[checkedCount] area(s) showing movement
+
+Your organization has observed changes in
+[checkedCount] area(s):
+[list of checked items]
+
+Movement is visible but the impact hasn't been
+estimated yet. A formal before/after analysis
+(Level 3) would quantify it.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Key principle:** The dollar figure at Level 2 comes from THEIR estimate (the range they selected), not from a benchmark formula we built. We're just applying their estimate to their encounter volume. This is fundamentally different from the old approach which generated numbers from hidden assumptions.
+
+---
+
+## Level 3: Impact Measured
+
+**Card text:**
+```
+Impact Measured
+Before/after analysis completed.
+Documentation-driven revenue impact quantified.
+```
+
+**Description when selected:**
+"Before/after revenue data has been collected and reviewed."
+
+**Inputs:**
+```
+What did you measure?
+○ wRVU per encounter
+○ Collections per encounter
+○ Overall revenue change
+○ Denial rate reduction
+```
+
+Each radio selection reveals a different input field:
+
+**If wRVU per encounter:**
+```
+Measured wRVU change per encounter
+[___]
+Abridge benchmark: 0.05-0.15 wRVU per encounter
+```
+
+**If Collections per encounter:**
+```
+Measured collections change per encounter
+$ [___]
+Organizations at this level have reported
+$3-$10 increase per encounter.
+Based on aggregated deployment experience.
+```
+
+**If Overall revenue change:**
+```
+Measured revenue change attributed to documentation
+[___] %
+Organizations at this level have reported
+2-7% improvement.
+Based on aggregated deployment experience.
+```
+
+**If Denial rate reduction:**
+```
+Measured denial rate reduction
+[___] %
+Organizations at this level have reported
+5-15% reduction in documentation-related denials.
+Based on aggregated deployment experience.
+```
+
+**Estimated Impact card — for wRVU:**
+```
+ESTIMATED IMPACT
+
+$[revenueImpact] in measured revenue impact
+
+[wrvuDelta] wRVU × [documentedEncounters] encounters
+× $[conversionFactor] conversion factor = $[revenueImpact]
+
+Based on your organization's measured data.
+No attribution discount applied to user-measured values.
+
+FORMULA
+[revenueImpact] = [wrvuDelta] × [documentedEncounters]
+× $[conversionFactor]
+
+CMS conversion factor from your baseline inputs.
+Estimates based on your inputs. Individual results vary.
+```
+
+**Estimated Impact card — for Collections:**
+```
+ESTIMATED IMPACT
+
+$[revenueImpact] in measured revenue impact
+
+$[collectionsDelta] per encounter × [documentedEncounters]
+encounters = $[revenueImpact]
+
+Based on your organization's measured data.
+No attribution discount applied to user-measured values.
+
+FORMULA
+[revenueImpact] = [collectionsDelta] × [documentedEncounters]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Estimated Impact card — for Overall revenue change:**
+```
+ESTIMATED IMPACT
+
+$[revenueImpact] in measured revenue impact
+
+[revenuePct]% × [documentedEncounters] encounters
+× $[revenuePerVisit] = $[revenueImpact]
+
+Based on your organization's measured data.
+No attribution discount applied to user-measured values.
+
+FORMULA
+[revenueImpact] = [documentedEncounters] × [revenuePerVisit]
+× [revenuePct]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Estimated Impact card — for Denial rate reduction (qualitative):**
+```
+ESTIMATED IMPACT
+
+Denial rate reduced [denialPct]%
+
+Your documentation-related denial rate decreased
+by [denialPct]%.
+
+To estimate dollar impact, multiply your average
+monthly documentation-related denial volume by
+the reduction percentage and your average denial
+value.
+
+Based on your organization's measured data.
+Estimates based on your inputs. Individual results vary.
+```
+
+Denial rate stays qualitative — no dollar conversion. The math to go from denial rate reduction to dollars requires denial volume and average denial value that most executives won't have in the room. Show the percentage, note it's meaningful, move on.
+
+**Keep the "No attribution discount applied to user-measured values" note.** This was called out as one of the strongest transparency moments in the tool across all audits.
+
+---
+
+## Level 4: Documentation as a Revenue Lever
+
+**Card text:**
+```
+Documentation as a Revenue Lever
+Documentation intelligence drives revenue cycle
+strategy, payer positioning, and financial planning.
+```
+
+**Description when selected:**
+"Documentation-driven revenue is tracked continuously. Documentation quality informs organizational revenue strategy."
+
+**Inputs:**
+```
+How is documentation quality being used strategically
+in revenue decisions?
+
+☐ Specialty-level analysis identifies where documentation
+  has the biggest revenue impact
+☐ CDI strategy is informed by ambient documentation
+  patterns and gaps
+☐ Documentation quality data supports payer contract
+  negotiations or rate discussions
+☐ Denial prevention is proactive — documentation gaps
+  identified before claims submitted
+☐ Documentation-driven revenue is a line item in
+  financial planning and forecasting
+☐ Revenue cycle, CDI, and clinical leadership have a
+  shared view of documentation-to-revenue performance
+
+Annual revenue attributed to documentation improvements
+$ [___]
+This should be a number your CFO and revenue cycle
+leadership would stand behind — formally tracked
+and incorporated into financial reporting.
+
+☐ Don't have a confirmed number yet
+
+Abridge deployment benchmark at [documentedEncounters]
+encounters with revenue cycle integration: $200K-$600K
+annually. This can serve as a working estimate.
+```
+
+**Estimated Impact card — if dollar value entered:**
+```
+ESTIMATED IMPACT
+
+$[revenue] in attributed annual revenue
+[checkedCount] strategic integration(s)
+
+Documentation intelligence is driving revenue
+strategy across [checkedCount] area(s):
+[list of checked items]
+
+Your organization formally attributes $[revenue]
+in annual revenue to documentation quality. This
+figure is incorporated into financial planning.
+
+Not yet integrated:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Estimated Impact card — if no dollar value (checkbox checked):**
+```
+ESTIMATED IMPACT
+
+[checkedCount] strategic integration(s)
+
+Documentation intelligence is driving revenue
+strategy across [checkedCount] area(s):
+[list of checked items]
+
+Enter your attributed annual revenue when available.
+Organizations at this level typically have a figure
+that revenue cycle and finance leadership reference
+in planning.
+
+Not yet integrated:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+---
+
+## Revenue Summary in Sidebar
+
+```
+REVENUE SUMMARY
+
+Revenue Signals       [checkedCount] area(s) or —
+Directional Estimate  $[range] or —
+Measured Impact       $[amount] or —
+Attributed Revenue    $[amount] or —
+
+Total Revenue         $[highest level dollar value]
+```
+
+Show the highest-level dollar figure as the total. Don't add Level 2 estimate + Level 3 measurement — they're measuring the same thing at different confidence levels. The total is whichever level they're at.
+
+---
+
+## What Gets Removed From Revenue Entirely
+
+1. **HCC / risk adjustment calculations.** All of them. The $200/member assumption, the VBC% input, the $8.51M output. Move HCC to Quality domain if appropriate or remove from the tool entirely. It was flagged as the most problematic number across all audits.
+
+2. **The coding uplift formula at Level 2.** `encounters × revenue × coding improvement % × capture rate`. Methodologically wrong. Replaced with the user's own directional estimate.
+
+3. **The 0.5% CDI floor estimate.** Benchmark-derived number at a level where the org hasn't measured. Removed.
+
+4. **The word "upcoding."** Search the entire Revenue domain. Replace every instance with "coding accuracy opportunity."
+
+5. **The "Documentation deficiency or query rate" input at Level 1.** An exec at Level 1 won't know this and we don't use it in a calculation.
+
+6. **All auto-calculated dollar figures at Level 1.** No denial exposure, no wRVU opportunity, no projections from benchmarks. Level 1 = nobody has looked = no dollar figure.
+
+7. **The VBC% input field.** Remove from Revenue. If VBC/HCC analysis belongs anywhere, it's in Quality.
+
+---
+
+## After Implementing
+
+Browse through all four Revenue levels with test data (50 providers, 100K encounters, 60% utilization, $200/visit, $33 CMS factor) and verify:
+
+1. Level 1 shows NO dollar figures — only encounter volume and "Not yet analyzed"
+2. Level 2 shows a dollar range ONLY if the user selected an estimate range — and the range uses their selection, not a benchmark formula
+3. Level 2 shows NO dollar figure if user selected "Not sure"
+4. Level 3 shows dollars from the user's measured input — with the correct formula for each measurement type
+5. Level 3 denial rate is qualitative only — no dollar conversion
+6. Level 4 shows dollars only if the user entered an attributed revenue figure
+7. The word "upcoding" does not appear anywhere
+8. HCC, VBC%, and denial exposure calculations are completely gone from Level 1
+9. The "No attribution discount applied to user-measured values" note appears at Level 3
+10. All benchmark text includes "Based on aggregated deployment experience" where applicable

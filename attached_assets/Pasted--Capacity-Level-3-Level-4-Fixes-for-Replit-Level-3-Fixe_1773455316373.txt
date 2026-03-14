@@ -1,0 +1,132 @@
+# Capacity Level 3 + Level 4 — Fixes for Replit
+
+---
+
+## Level 3 Fixes
+
+### Remove the auto-populated patient range before user enters data
+Currently shows "1,800-4,800 additional patients annually" as a headline before the user types anything. Remove this calculated range. The input field should be empty. The estimated impact card should show: "Enter additional patients per provider per month to calculate access revenue."
+
+Keep the benchmark text below the input: "Structured access redesign: 3-8 patients/provider/month. Annualized over 11 clinical months (230 working days)."
+
+### Make data confidence toggle visually change the output
+
+When **Measured** is selected, the estimated impact headline shows:
+```
+$880K in access revenue annually
+Based on your confirmed scheduling data.
+```
+
+When **Estimated** is selected:
+```
+$880K in access revenue annually (estimated)
+Based on your organization's estimate. Validate
+with scheduling data to confirm.
+```
+
+When **Aspirational** is selected:
+```
+$880K access revenue target
+This is a planning target, not confirmed data.
+```
+
+The framing text below the number should change with each selection. Right now Measured and Estimated produce the same output which defeats the purpose.
+
+### Add visit type note below the formula
+Below the access revenue formula, add: "Revenue per visit uses your baseline input of $[X]. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings."
+
+---
+
+## Level 4 — Rebuild
+
+### Remove the downstream revenue per visit input entirely
+
+Drop the "Downstream revenue per additional visit" field and the $150-$500 range. Here's why:
+
+1. The $150-$500 range dramatically understates what a new patient is actually worth to a system downstream. Real downstream value per new patient is $1,500-$5,000+ in the first year depending on specialty and complexity.
+
+2. But putting ANY downstream revenue number in a formula creates an attribution problem. The downstream utilization depends on clinical needs, referral patterns, insurance, and dozens of factors that have nothing to do with ambient documentation. A CFO will challenge the connection immediately.
+
+3. The downstream story is better as a conversation point, not a calculation. When you're in the room you can say: "And by the way, every one of those 4,400 new visits is a new patient entering your system who generates downstream labs, imaging, referrals, and follow-ups. You can estimate what that's worth." That's more powerful as a verbal insight than as a formula that tries to be precise about something imprecise.
+
+### Keep Level 4 focused on access outcomes being tracked
+
+Level 4's value is in the checkboxes — showing which access outcomes the organization is measuring as a result of recovered capacity. That's the strategic maturity. Most organizations will check 2-3 of 6, which reveals the gap.
+
+### Updated Level 4 content:
+
+**Card description:**
+```
+Access Impact Tracked
+Downstream access outcomes are tracked and
+attributed to recovered time.
+```
+
+**Inputs:**
+```
+Which downstream access outcomes are you tracking?
+☐ Panel size increased
+☐ New patient slots opened
+☐ Same-day/urgent access expanded
+☐ Referral-to-visit time reduced
+☐ Third-next-available improved
+☐ No-show backfill utilized
+
+Confirmed additional patients per provider per month
+[___]
+(Carries from Level 3 if entered. This is the same
+input — Level 4 assumes you're still counting visits.)
+```
+
+No downstream revenue input. No dollar calculation beyond the Level 3 access revenue that carries forward.
+
+### Updated estimated impact:
+
+```
+ESTIMATED IMPACT
+
+$[accessRevenue] in measured access revenue
+[checkedCount] access outcome(s) tracked
+
+[additionalPatients] patients/provider/month × [providers]
+providers × 11 clinical months = [annualVisits] visits.
+Direct access: [annualVisits] × $[revPerVisit] = $[accessRevenue]
+
+Your organization is tracking [checkedCount] downstream
+access outcome(s):
+[list of checked items]
+
+Not yet tracked:
+[list of unchecked items]
+
+Every additional patient entering your system also
+generates downstream activity — labs, imaging,
+referrals, follow-up visits, and procedures.
+The access revenue above captures the initial visit.
+The full system value of these patients is
+significantly higher.
+
+Uses 11 clinical months (230 working days ÷ ~21 days/month).
+Revenue per visit from your baseline inputs.
+Estimates based on your inputs. Individual results vary.
+```
+
+### Why this is better:
+
+The last paragraph — "Every additional patient entering your system also generates downstream activity... The full system value is significantly higher" — plants the idea without trying to calculate it. The executive reads that and thinks "yeah, each of those patients is probably worth $3,000-$5,000 to us over the year." You can have that conversation verbally. But the tool doesn't try to put a formula around something that's hard to attribute and easy to challenge.
+
+Level 4's value is the checkboxes. An organization that checks 4 of 6 is strategically managing access. An organization that checks 1 is just counting visits. That gap IS the Level 3 → Level 4 distinction. The downstream revenue was adding complexity without adding credibility.
+
+### Updated Capacity Summary in sidebar:
+
+```
+CAPACITY SUMMARY
+
+Time Recovered      1,333 hrs/yr (0.7 FTE)
+Access Revenue      $880K
+Access Outcomes     4 of 6 tracked
+
+Total Capacity      $880K
+```
+
+Remove "Downstream Revenue" from the summary. Replace with "Access Outcomes" showing the checkbox count. This makes the summary cleaner and avoids showing "—" for a line item nobody entered.
