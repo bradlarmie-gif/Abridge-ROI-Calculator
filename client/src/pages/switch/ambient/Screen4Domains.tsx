@@ -57,7 +57,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     label: 'CAPACITY',
     headline: 'CAPACITY',
     subheadline: 'Ambient reduces documentation time. This section measures how that time is being used.',
-    reframe: 'Recovered time can stay unmeasured, or it can be tracked, allocated, and built into workforce planning. Each level reflects a different degree of organizational follow-through.',
+    reframe: 'Recovered time can stay unmeasured, or it can be tracked, allocated, and converted into patient access. Each level reflects a different degree of organizational follow-through.',
     cards: [
       { level: 1, label: 'Time Recovering', description: 'Providers report reduced documentation time. Not yet aggregated.' },
       { level: 2, label: 'Quantified', description: 'Aggregate hours are calculated and reviewed by leadership.' },
@@ -613,7 +613,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
         </div>
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Downstream revenue per additional visit</label>
-          <BenchmarkContext text="Referrals, follow-ups, and ancillary services. Typical range: $50–$150." />
+          <BenchmarkContext text="Referrals, follow-ups, and ancillary services. Typical range: $150–$500+." />
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
