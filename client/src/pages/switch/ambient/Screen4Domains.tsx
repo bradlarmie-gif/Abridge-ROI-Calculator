@@ -1919,7 +1919,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 const staircaseCompletedSummary = isClaimed ? (() => {
                   const inp = currentState.inputs;
                   if (activeDomain === 'capacity') {
-                    const ts = (inp.timeSaved as number) || 0;
+                    const ts = (inp.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
                     if (card.level === 1 && ts > 0) {
                       const hrs = Math.round(documentedEncounters * ts / 60);
                       return `${hrs.toLocaleString()} hrs/yr`;
