@@ -2228,8 +2228,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const siCsv = (inp.strategicIntegrations as string) || '';
               const siCount = siCsv.split(',').filter(Boolean).length;
 
-              const dv = (inp.downstreamValue as number) || 0;
-              const sv = (inp.strategicValue as number) || 0;
+              const noDownstream = inp.noDownstreamValue === 'true';
+              const noStrategic = inp.noConfirmedStrategicValue === 'true';
+              const dv = noDownstream ? 0 : ((inp.downstreamValue as number) || 0);
+              const sv = noStrategic ? 0 : ((inp.strategicValue as number) || 0);
 
               const hasAnyValue = attrCount > 0 || wfCount > 0 || siCount > 0 || dv > 0 || sv > 0;
               if (!hasAnyValue) return null;

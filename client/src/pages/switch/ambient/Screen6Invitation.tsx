@@ -198,13 +198,13 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
         const depthLabels: Record<string, string> = { qualitative: 'Qualitative', partial: 'Partially measured', measured: 'Measured data available' };
         out['Measurement depth'] = depthLabels[String(raw.qualityMeasurementDepth)] || String(raw.qualityMeasurementDepth);
       }
-      if (raw.downstreamValue) out['Downstream quality value'] = fmtDollar(Number(raw.downstreamValue));
+      if (raw.downstreamValue && raw.noDownstreamValue !== 'true') out['Downstream quality value'] = fmtDollar(Number(raw.downstreamValue));
     }
     if (level === 4) {
       const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);
       if (si.length) out['Strategic areas'] = si.join(', ');
       if (raw.executiveOwner) out['Executive owner'] = raw.executiveOwner === 'yes' ? 'Yes' : 'Not yet';
-      if (raw.strategicValue) out['Strategic value'] = fmtDollar(Number(raw.strategicValue));
+      if (raw.strategicValue && raw.noConfirmedStrategicValue !== 'true') out['Strategic value'] = fmtDollar(Number(raw.strategicValue));
     }
   }
 
