@@ -111,7 +111,7 @@ export function computeCapacityFeedback(
         context: `At ${documentedEncounters.toLocaleString()} encounters, 2–3 minutes returned per encounter yields ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually. Enter your observed value or use the benchmark.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
+        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review and operational decisions.',
       };
     }
     const ts = hasTimeSaved ? timeSaved! : 0;
@@ -125,7 +125,7 @@ export function computeCapacityFeedback(
         context: `${providers.toLocaleString()} providers documenting ${documentedEncounters.toLocaleString()} encounters annually. Enter minutes saved per encounter to estimate recovered hours.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
+        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review and operational decisions.',
       };
     }
     const fte = (recoveredHours / ANNUAL_HOURS).toFixed(1);
@@ -137,7 +137,7 @@ export function computeCapacityFeedback(
       context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.\n\n$0 deployed. Time is recovered but no operational decision has been made about how to use it.`,
       formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${fte}`,
       footnote: 'Recovered hours represent available capacity. Financial value depends on how this time is allocated at higher maturity levels.',
-      nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
+      nextLevelTeaser: 'Level 2 aggregates these hours for leadership review and operational decisions.',
     };
   }
 
@@ -166,7 +166,7 @@ export function computeCapacityFeedback(
       context: `${narrative}${hoursContext}\n\n$0 deployed. The value at this level is the decision itself — not dollars.`,
       formula: recoveredHrs > 0 ? `[hours] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}\n[FTE] = ${recoveredHrs.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} = ${fte2}` : '',
       footnote: '',
-      nextLevelTeaser: 'Level 3 measures how many additional patients are being seen with recovered time.',
+      nextLevelTeaser: 'Organizations with structured access redesign report 3–8 additional patients/provider/month.',
     };
   }
 
@@ -325,7 +325,7 @@ export function computeRevenueFeedback(
         context,
         formula: `[lowEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.lowPct * 100).toFixed(1)}% = ${formatDollar(lowEstimate)}\n[highEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.highPct * 100).toFixed(1)}% = ${formatDollar(highEstimate)}`,
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
+        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
       };
     }
 
@@ -338,7 +338,7 @@ export function computeRevenueFeedback(
         context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible but the impact hasn't been estimated yet. A formal before/after analysis (Level 3) would quantify it.`,
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
+        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
       };
     }
 
@@ -365,7 +365,7 @@ export function computeRevenueFeedback(
         context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
@@ -380,7 +380,7 @@ export function computeRevenueFeedback(
           context: 'Enter your measured wRVU change per encounter. Abridge benchmark: 0.05–0.15 wRVU per encounter. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
       const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
@@ -392,7 +392,7 @@ export function computeRevenueFeedback(
         context: `${wrvuDelta} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
         formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,
         footnote: `CMS conversion factor from your baseline inputs.\nEstimates based on your inputs. Individual results vary.`,
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
@@ -407,7 +407,7 @@ export function computeRevenueFeedback(
           context: 'Enter your measured collections change per encounter. Organizations at this level have reported $3–$10 increase per encounter. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
       const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
@@ -419,7 +419,7 @@ export function computeRevenueFeedback(
         context: `${formatDollar(collectionsDelta)} per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
         formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
@@ -434,7 +434,7 @@ export function computeRevenueFeedback(
           context: 'Enter your measured revenue change percentage. Organizations at this level have reported 2–7% improvement. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
       const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (revenuePct / 100));
@@ -446,7 +446,7 @@ export function computeRevenueFeedback(
         context: `${revenuePct}% × ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
         formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${revenuePct}% = ${formatDollar(revenueImpact)}`,
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
@@ -462,7 +462,7 @@ export function computeRevenueFeedback(
           context: 'Enter your measured denial rate reduction percentage. Organizations at this level have reported 5–15% reduction in documentation-related denials. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
 
@@ -474,7 +474,7 @@ export function computeRevenueFeedback(
         context: `Your documentation-related denial rate decreased by ${denialPct}%.\n\nTo estimate dollar impact, multiply your average monthly documentation-related denial volume by the reduction percentage and your average denial value.\n\nBased on your organization's measured data.`,
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
@@ -486,7 +486,7 @@ export function computeRevenueFeedback(
       context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
+      nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
     };
   }
 
@@ -930,7 +930,7 @@ export function computeRiskFeedback(
         context: 'Select which downstream areas have been connected to documentation quality improvements.',
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
 
@@ -951,7 +951,7 @@ export function computeRiskFeedback(
         context: `Documentation quality is driving ${formatDollar(downstreamValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
         formula: `[annualValue] = ${formatDollar(downstreamValue)} (organization estimate)`,
         footnote: 'Based on your organization\'s estimate. Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
 
@@ -963,7 +963,7 @@ export function computeRiskFeedback(
       context: `Documentation quality is driving improvement across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
-      nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
+      nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
     };
   }
 

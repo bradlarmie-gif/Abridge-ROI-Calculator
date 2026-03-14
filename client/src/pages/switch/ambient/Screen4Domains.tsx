@@ -78,8 +78,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'WHAT IS DOCUMENTATION FIDELITY WORTH TO YOUR REVENUE CYCLE?',
-    subheadline: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
+    headline: 'REVENUE',
+    subheadline: 'Improved documentation can affect coding accuracy, denials, and reimbursement. This measures whether your organization is tracking it.',
     reframe: 'Select the level that best describes your organization today.',
     cards: [
       { level: 1, label: 'Disconnected', description: 'Documentation-driven revenue impact has not been analyzed.' },
@@ -124,8 +124,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'WHAT IS YOUR DOCUMENTATION QUALITY UNLOCKING?',
-    subheadline: 'Improved notes are the starting point. The real value depends on whether that improvement reaches CDI, coding, quality reporting, compliance, and future AI initiatives.',
+    headline: 'QUALITY',
+    subheadline: 'Improved notes are the starting point. The real value depends on whether that improvement reaches coding, quality reporting, compliance, and future AI initiatives.',
     reframe: 'Select the level that best describes your organization today.',
     cards: [
       { level: 1, label: 'Notes Improving', description: 'Documentation quality has improved. No one has measured how or connected it downstream.' },
@@ -1690,7 +1690,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     if (card.level === 2) {
                       const stage = inp.accessDecisionStage as string;
                       if (stage) return stage.charAt(0).toUpperCase() + stage.slice(1);
-                      return 'No stage selected';
+                      return 'Confirmed';
                     }
                     if (card.level === 3) {
                       const pts = (inp.additionalPatientsPerMonth as number) || 0;
@@ -1740,12 +1740,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       if (engaged === 'yes' && status === 'analyzing') return 'Engaged — analyzing';
                       if (engaged === 'yes') return 'Engaged';
                       if (engaged === 'informal') return 'Informally aware';
-                      return 'Not yet engaged';
+                      return 'Confirmed';
                     }
                     if (card.level === 2) {
                       const areas = (inp.observedMovement as string) || '';
                       const count = areas.split(',').filter(Boolean).length;
-                      return count > 0 ? `${count} signal${count !== 1 ? 's' : ''} observed` : null;
+                      return count > 0 ? `${count} signal${count !== 1 ? 's' : ''} observed` : 'Confirmed';
                     }
                     if (card.level === 3) {
                       const metricType = inp.revenueMetricType as string;
@@ -1756,7 +1756,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       }
                     }
                   }
-                  return null;
+                  return 'Confirmed';
                 })() : null;
 
                 if (isClaimed) {
@@ -1777,7 +1777,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         <span className="text-sm font-semibold text-[#1A1A1A]">{card.label}</span>
                         <div className="ml-auto flex items-center gap-3">
                           <span className="text-sm font-semibold text-[#EA2C00]" data-testid={`completed-value-${activeDomain}-${card.level}`}>
-                            {staircaseCompletedSummary || '—'}
+                            {staircaseCompletedSummary}
                           </span>
                           <span className="text-xs text-[#AAAAAA] opacity-0 group-hover:opacity-100 transition-opacity duration-200">Edit</span>
                         </div>
@@ -1824,6 +1824,26 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   );
                 }
 
+                const FUTURE_DESCRIPTIONS: Record<string, Record<number, string>> = {
+                  capacity: {
+                    3: 'Measure how many additional patients are seen with recovered time and calculate access revenue.',
+                    4: 'Track downstream access outcomes — panel growth, referral conversion, third-next-available — attributed to recovered time.',
+                  },
+                  revenue: {
+                    3: 'Complete a before/after analysis to quantify documentation-driven revenue impact.',
+                    4: 'Documentation intelligence drives revenue strategy, payer positioning, and financial planning.',
+                  },
+                  workforce: {
+                    3: 'Model turnover costs with documentation burden as a contributing factor.',
+                    4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',
+                  },
+                  risk: {
+                    3: 'Connect documentation quality improvements to downstream programs — CDI, coding, quality measures.',
+                    4: 'Structured documentation informs quality programs, value-based care, compliance, and AI readiness.',
+                  },
+                };
+                const futureDesc = (card.level >= 3) ? FUTURE_DESCRIPTIONS[activeDomain]?.[card.level] : config.unlockTeasers?.[card.level];
+
                 return (
                   <motion.div
                     key={card.level}
@@ -1840,8 +1860,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#AAAAAA]">{card.label}</p>
-                        {isFuture && config.unlockTeasers?.[card.level] && (
-                          <p className="text-xs text-[#999999] mt-0.5">{config.unlockTeasers[card.level]}</p>
+                        {isFuture && futureDesc && (
+                          <p className="text-xs text-[#999999] mt-0.5 leading-relaxed">{futureDesc}</p>
                         )}
                       </div>
                       <span className="text-sm text-[#CCCCCC] ml-auto">→</span>
@@ -1885,6 +1905,38 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                      ''}
                   </p>
                 )}
+
+                {currentState.activationLevel && currentState.activationLevel >= 2 && (() => {
+                  const journeyLines: Record<string, Record<number, string>> = {
+                    capacity: {
+                      2: 'Your organization has recovered documentation time. Here\'s where the access decision stands.',
+                      3: 'Your organization has recovered time and decided to deploy it toward access. Here\'s what that\'s producing.',
+                      4: 'Your organization has recovered time, deployed it toward access, and measured the results. Here\'s the downstream impact.',
+                    },
+                    revenue: {
+                      2: 'Your organization has observed documentation affecting reimbursement. Here\'s your directional estimate.',
+                      3: 'Your organization has observed signals and is now measuring impact. Here\'s what the data shows.',
+                      4: 'Your organization has measured documentation-driven revenue. Here\'s how it informs strategy.',
+                    },
+                    workforce: {
+                      2: 'Your organization is measuring in-clinic burden reduction. Here\'s what the data shows.',
+                      3: 'Your organization has measured burden reduction and is modeling its effect on retention.',
+                      4: 'Your organization has modeled retention and is integrating burden data into workforce strategy.',
+                    },
+                    risk: {
+                      2: 'Your organization has observed documentation quality improving. Here\'s how it\'s being tracked.',
+                      3: 'Your organization is actively monitoring documentation quality and connecting it to downstream workflows.',
+                      4: 'Your organization has connected quality to downstream programs. Here\'s the strategic picture.',
+                    },
+                  };
+                  const line = journeyLines[activeDomain]?.[currentState.activationLevel!];
+                  if (!line) return null;
+                  return (
+                    <p className="text-sm text-white/60 leading-relaxed mb-3" data-testid="text-journey-context">
+                      {line}
+                    </p>
+                  );
+                })()}
 
                 <div className="h-px bg-white/10 my-4" />
 
@@ -1987,25 +2039,22 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const ahr = (inp.afterHoursReduction as number) || 2.0;
               const afterHoursHrs = Math.round(ahr * providers * CLINICAL_WEEKS);
 
-              const mins = (inp.editTimeSaved as number) || 0;
+              const mins = currentState.activationLevel >= 2 ? ((inp.editTimeSaved as number) || 0) : 0;
               const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
 
-              const tr = (inp.turnoverRate as number) || 0;
+              const tr = currentState.activationLevel >= 3 ? ((inp.turnoverRate as number) || 0) : 0;
               const rcRaw = (inp.replacementCost as number) || 0;
               const rc = rcRaw > 0 ? rcRaw : 350000;
-              const dbs = (inp.docBurdenShare as number) || 0;
-              const retentionExposure = (tr > 0 && dbs > 0)
+              const dbs = currentState.activationLevel >= 3 ? ((inp.docBurdenShare as number) || 0) : 0;
+              const retentionExposure = (currentState.activationLevel >= 3 && tr > 0 && dbs > 0)
                 ? Math.round(providers * (tr / 100) * rc * (dbs / 100))
                 : null;
 
               const strategyCsv = (inp.workforceStrategies as string) || '';
-              const strategyCount = strategyCsv.split(',').filter(Boolean).length;
+              const strategyCount = currentState.activationLevel >= 4 ? strategyCsv.split(',').filter(Boolean).length : 0;
 
-              const ar = (inp.agencyReduction as number) || 0;
+              const ar = currentState.activationLevel >= 4 ? ((inp.agencyReduction as number) || 0) : 0;
               const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
-
-              const hasAnyValue = afterHoursHrs > 0 || clinicHrs > 0 || retentionExposure !== null || strategyCount > 0 || agencyAnnual !== null;
-              if (!hasAnyValue) return null;
 
               const totalDollar = (retentionExposure || 0) + (agencyAnnual || 0);
               const hasDollarValue = retentionExposure !== null || agencyAnnual !== null;
@@ -2023,38 +2072,24 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         {afterHoursHrs > 0 ? `${afterHoursHrs.toLocaleString()} hrs/yr` : '—'}
                       </span>
                     </div>
-                    {currentState.activationLevel >= 2 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/60">In-Clinic Returned</span>
-                        <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
-                          {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
-                        </span>
-                      </div>
-                    )}
-                    {currentState.activationLevel >= 3 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/60">Retention Exposure</span>
-                        <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
-                          {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
-                        </span>
-                      </div>
-                    )}
-                    {currentState.activationLevel >= 4 && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Strategic Integrations</span>
-                          <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
-                            {`${strategyCount} of 6`}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Agency Reduction</span>
-                          <span className="text-white font-medium" data-testid="text-workforce-summary-agency">
-                            {agencyAnnual !== null ? formatDollar(agencyAnnual) : '—'}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">In-Clinic Returned</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
+                        {currentState.activationLevel >= 2 && clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Retention Exposure</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
+                        {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Strategic Integrations</span>
+                      <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
+                        {currentState.activationLevel >= 4 ? `${strategyCount} of 6` : '—'}
+                      </span>
+                    </div>
                     {hasDollarValue && (
                       <>
                         <div className="h-px bg-white/10 my-2" />
@@ -2105,9 +2140,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               }
 
               const attributedRevenue = (inp.recognizedRevenue as number) || 0;
-
-              const hasAnyValue = observedCount > 0 || directionalRange || measuredImpact !== null || attributedRevenue > 0;
-              if (!hasAnyValue) return null;
 
               const totalDollar = attributedRevenue > 0 ? attributedRevenue : measuredImpact !== null ? measuredImpact : (directionalRange ? Math.round(documentedEncounters * revenuePerVisit * (ESTIMATE_RANGES[directionalEst!]?.highPct || 0)) : null);
 
@@ -2166,13 +2198,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
               const pts = (inp.additionalPatientsPerMonth as number) || 0;
               const rp = (inp.redesignedProviders as number) || providers;
-              const accessRevenue = pts > 0 ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
+              const accessRevenue = (currentState.activationLevel >= 3 && pts > 0) ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
 
               const outcomesCsv = (inp.accessOutcomes as string) || '';
-              const outcomeCount = outcomesCsv.split(',').filter(Boolean).length;
-
-              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || outcomeCount > 0;
-              if (!hasAnyValue) return null;
+              const outcomeCount = currentState.activationLevel >= 4 ? outcomesCsv.split(',').filter(Boolean).length : 0;
 
               return (
                 <>
@@ -2193,14 +2222,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         {accessRevenue !== null ? formatDollar(accessRevenue) : '—'}
                       </span>
                     </div>
-                    {currentState.activationLevel >= 4 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/60">Access Outcomes</span>
-                        <span className="text-white font-medium" data-testid="text-capacity-summary-outcomes">
-                          {outcomeCount > 0 ? `${outcomeCount} of 6 tracked` : '—'}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Access Outcomes</span>
+                      <span className="text-white font-medium" data-testid="text-capacity-summary-outcomes">
+                        {currentState.activationLevel >= 4 && outcomeCount > 0 ? `${outcomeCount} of 6 tracked` : '—'}
+                      </span>
+                    </div>
                     {accessRevenue !== null && (
                       <>
                         <div className="h-px bg-white/10 my-2" />
@@ -2220,21 +2247,18 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             {activeDomain === 'risk' && currentState.activationLevel && (() => {
               const inp = currentState.inputs;
               const attrCsv = (inp.qualityAttributes as string) || '';
-              const attrCount = attrCsv.split(',').filter(Boolean).length;
+              const attrCount = currentState.activationLevel >= 2 ? attrCsv.split(',').filter(Boolean).length : 0;
 
               const wfCsv = (inp.connectedWorkflows as string) || '';
-              const wfCount = wfCsv.split(',').filter(Boolean).length;
+              const wfCount = currentState.activationLevel >= 3 ? wfCsv.split(',').filter(Boolean).length : 0;
 
               const siCsv = (inp.strategicIntegrations as string) || '';
-              const siCount = siCsv.split(',').filter(Boolean).length;
+              const siCount = currentState.activationLevel >= 4 ? siCsv.split(',').filter(Boolean).length : 0;
 
               const noDownstream = inp.noDownstreamValue === 'true';
               const noStrategic = inp.noConfirmedStrategicValue === 'true';
-              const dv = noDownstream ? 0 : ((inp.downstreamValue as number) || 0);
-              const sv = noStrategic ? 0 : ((inp.strategicValue as number) || 0);
-
-              const hasAnyValue = attrCount > 0 || wfCount > 0 || siCount > 0 || dv > 0 || sv > 0;
-              if (!hasAnyValue) return null;
+              const dv = (currentState.activationLevel >= 3 && !noDownstream) ? ((inp.downstreamValue as number) || 0) : 0;
+              const sv = (currentState.activationLevel >= 4 && !noStrategic) ? ((inp.strategicValue as number) || 0) : 0;
 
               const totalDollar = dv + sv;
               const hasDollarValue = dv > 0 || sv > 0;
@@ -2246,46 +2270,24 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     Quality Summary
                   </p>
                   <div className="space-y-2 text-sm">
-                    {currentState.activationLevel >= 2 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/60">Quality Dimensions Tracked</span>
-                        <span className="text-white font-medium" data-testid="text-quality-summary-attributes">
-                          {attrCount > 0 ? `${attrCount} of 5` : '—'}
-                        </span>
-                      </div>
-                    )}
-                    {currentState.activationLevel >= 3 && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Downstream Areas Connected</span>
-                          <span className="text-white font-medium" data-testid="text-quality-summary-downstream-count">
-                            {wfCount > 0 ? `${wfCount} of 6` : '—'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Downstream Value</span>
-                          <span className="text-white font-medium" data-testid="text-quality-summary-downstream-value">
-                            {dv > 0 ? formatDollar(dv) : '—'}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    {currentState.activationLevel >= 4 && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Strategic Areas Connected</span>
-                          <span className="text-white font-medium" data-testid="text-quality-summary-strategic-count">
-                            {siCount > 0 ? `${siCount} of 6` : '—'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/60">Strategic Value</span>
-                          <span className="text-white font-medium" data-testid="text-quality-summary-strategic-value">
-                            {sv > 0 ? formatDollar(sv) : '—'}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Quality Tracking</span>
+                      <span className="text-white font-medium" data-testid="text-quality-summary-attributes">
+                        {currentState.activationLevel >= 2 && attrCount > 0 ? `${attrCount} of 5` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Downstream Connected</span>
+                      <span className="text-white font-medium" data-testid="text-quality-summary-downstream-count">
+                        {currentState.activationLevel >= 3 && wfCount > 0 ? `${wfCount} of 6` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Strategic Areas</span>
+                      <span className="text-white font-medium" data-testid="text-quality-summary-strategic-count">
+                        {currentState.activationLevel >= 4 && siCount > 0 ? `${siCount} of 6` : '—'}
+                      </span>
+                    </div>
                     {hasDollarValue && (
                       <>
                         <div className="h-px bg-white/10 my-2" />
