@@ -1,0 +1,303 @@
+# Capacity Domain — Full Rebuild
+
+## The Problem Right Now
+
+Level 1 and Level 2 are basically the same conversation split awkwardly. Level 1 says "time is saved, not aggregated." Level 2 says "aggregate hours are calculated and reviewed by leadership." The difference between these is just... math. Someone multiplied the number. That's not a maturity level — that's a calculator step.
+
+Meanwhile Level 2 crams in three huge questions: has leadership reviewed it, has an operational decision been made, and have scheduling changes been explored. That's too much for one level and it bleeds into what Level 3 should be.
+
+## What the Progression Should Actually Be
+
+Think about it as organizational decisions, not math steps:
+
+1. **We know time is being saved.** (Awareness — we see it, providers tell us, maybe we've measured it per encounter. But nobody has decided what to do with it.)
+
+2. **We've decided to use it for access.** (Commitment — leadership has made the decision to convert recovered time into patient access. Maybe they're piloting, planning, or actively redesigning schedules. The decision is made but results may still be early.)
+
+3. **We're seeing more patients because of it.** (Results — additional patients are being seen. We can count them. This is measured, not aspirational.)
+
+4. **We're measuring what that access created downstream.** (Impact — we're tracking what happened because those patients were seen. Wait times, referrals, downstream revenue, growth informed by the data.)
+
+The arc: Awareness → Commitment → Results → Impact.
+
+Each step is a DECISION, not a math operation.
+
+---
+
+## Rebuilt Levels
+
+### Level 1: Time Recovered
+**What it means:** Providers are saving time on documentation. The organization knows it's happening — either from provider feedback or from measured time per encounter. But no operational decision has been made about what to do with that time.
+
+**Card description:**
+```
+Time Recovered
+Providers are saving time. No operational decision
+has been made about how to use it.
+```
+
+**Inputs:**
+```
+Minutes returned per encounter
+[___] min
+Abridge observed benchmark: 2-3 min
+
+☐ Use benchmark (2-3 min)
+```
+
+**Estimated Impact:**
+```
+[hours] hours returned annually — [FTE] FTE equivalent.
+
+No operational decision has been made about this
+time. It exists as available capacity but is not
+being directed toward patient access or other
+organizational priorities.
+
+recoveredHours = documentedEncounters × timeSaved / 60
+FTE = recoveredHours / 1,840 (230 clinical days × 8 hrs)
+
+Dollar value: $0 in deployed capacity.
+```
+
+**Why this works:** Simple. One input. The executive says "yes, our providers are saving about 3 minutes per encounter." The output shows a big hours number with $0 deployed. That's the gut punch. Everyone gets it.
+
+---
+
+### Level 2: Access Decision Made
+**What it means:** Leadership has reviewed the recovered capacity data and made a decision to use it for patient access. They may be piloting scheduling changes, planning template modifications, or actively redesigning how recovered time gets used. The key distinction from Level 1: someone decided to act.
+
+**Card description:**
+```
+Access Decision Made
+Leadership has committed to converting recovered
+time into patient access. Changes are planned
+or underway.
+```
+
+**Inputs:**
+```
+Minutes returned per encounter
+[___] min (carries from L1 if already entered)
+
+Where is your organization in the process?
+○ Evaluating — looking at the data, no changes yet
+○ Planning — scheduling or template changes in development
+○ Piloting — changes being tested with a subset of providers
+○ Implementing — changes rolling out across the deployment
+```
+
+That's it. No weekly hours input. No "has leadership reviewed" question. No "estimated additional slots per week." The Level 2 question is simple: have you decided to act, and where are you in that process?
+
+**Estimated Impact:**
+```
+[hours] hours returned annually — [FTE] FTE equivalent.
+
+Your organization has committed to converting
+recovered capacity into patient access.
+[Dynamic based on selection:]
+
+Evaluating: "Data is being reviewed. No operational
+changes have been made yet."
+
+Planning: "Scheduling or template changes are in
+development. Impact will be measurable once
+changes are implemented."
+
+Piloting: "Changes are being tested. Early results
+will inform broader rollout."
+
+Implementing: "Changes are rolling out. Track
+additional patients per provider to measure
+impact at Level 3."
+
+Dollar value: $0 in measured access revenue.
+The commitment has been made — measurement
+comes at the next level.
+```
+
+**Why this works:** The distinction from Level 1 is crystal clear. Level 1 = nobody has decided anything. Level 2 = someone decided to act. The radio options show where they are in that process without asking them to calculate anything. Still $0 in access revenue — because the access hasn't been measured yet. The value at this level is the decision, not the dollars.
+
+---
+
+### Level 3: Access Measured
+**What it means:** Additional patients are being seen as a result of scheduling or template changes driven by recovered capacity. The organization can count the additional visits. This is measured, not aspirational.
+
+**Card description:**
+```
+Access Measured
+Additional patients are being seen. The volume
+impact of recovered capacity is quantified.
+```
+
+**Inputs:**
+```
+Additional patients per provider per month
+[___]
+Structured access redesign: 3-8 patients/provider/month
+
+Data confidence
+[Measured] [Estimated] [Aspirational]
+
+Providers with redesigned schedules
+[___] (defaults to total provider count)
+If only some providers have changed schedules,
+enter the count here.
+```
+
+**Estimated Impact:**
+```
+$[accessRevenue] in access revenue annually
+
+[additionalPatients] patients/mo × [providers] providers
+× 11 clinical months = [annualVisits] additional visits
+× $[revenuePerVisit] = $[accessRevenue]
+
+Uses 11 clinical months (230 working days ÷ ~21
+working days/month). Revenue per visit from your
+baseline inputs.
+
+[If data confidence = Estimated or Aspirational:]
+"This is based on your [estimate/target], not
+confirmed scheduling data."
+
+[If data confidence = Measured:]
+"Based on your measured data."
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Why this works:** This is where the money shows up. The input is simple — how many more patients per provider per month. The "data confidence" toggle is honest (are you measuring this or guessing). The "providers with redesigned schedules" input prevents the inflated-total-provider problem we identified in audits.
+
+---
+
+### Level 4: Access Impact Tracked
+**What it means:** The organization isn't just counting additional visits — it's measuring what those visits created downstream. Wait time improvements, referral capture, downstream utilization, growth planning informed by capacity data. This is strategic capacity management.
+
+**Card description:**
+```
+Access Impact Tracked
+The downstream impact of additional access is
+measured — wait times, referrals, downstream
+revenue, and growth planning.
+```
+
+**Inputs:**
+```
+Additional patients per provider per month
+[___] (carries from L3 if already entered)
+
+What access outcomes are you tracking?
+☐ Third-next-available wait time decreased
+☐ New patient access volume or mix improved
+☐ Referral capture improved (fewer lost to competitors)
+☐ Downstream utilization tracked (labs, imaging,
+  procedures from new visits)
+☐ Access data informs growth or expansion planning
+☐ Panel optimization driven by recovered capacity data
+
+Estimated downstream revenue per new patient visit (optional)
+$ [___]
+Beyond the initial visit — labs, imaging, procedures,
+follow-ups, specialist referrals generated by each
+new patient. Organizations tracking this report
+$150-$500+ depending on specialty mix.
+```
+
+**Estimated Impact:**
+
+If only checkboxes (no downstream revenue):
+```
+$[accessRevenue] in direct access revenue
+[checkedCount] access outcome(s) tracked
+
+Your organization is tracking the downstream impact
+of recovered capacity across [checkedCount] area(s):
+[list of checked items]
+
+Not yet tracking:
+[unchecked items]
+
+accessRevenue = additionalPatients × providers × 11 months
+× revenuePerVisit
+```
+
+If downstream revenue entered:
+```
+$[totalCapacityValue] in total capacity value
+[checkedCount] access outcome(s) tracked
+
+Direct access: $[accessRevenue]
+Downstream impact: $[downstreamValue]
+
+accessRevenue = additionalPatients × providers × 11 months
+× revenuePerVisit
+downstreamValue = additionalPatients × providers × 11 months
+× downstreamRevenuePerVisit
+
+Your organization is tracking [checkedCount] access
+outcome(s):
+[list]
+
+Not yet tracking:
+[unchecked items]
+```
+
+**Why this works:** Level 3 counts the visits. Level 4 measures what those visits created. The checkboxes show whether the org is tracking wait times, referrals, downstream revenue, and growth planning — most will check 0-2, which reveals the gap. The downstream revenue input is optional but powerful — it shows that a $200 visit generating $300 in downstream work makes the capacity story 2.5x bigger. That's the Level 4 unlock.
+
+---
+
+## The Clean Progression
+
+```
+Level 1: Time Recovered
+"We know we're saving time."
+Input: minutes per encounter
+Output: hours + FTE, $0
+
+Level 2: Access Decision Made
+"We've decided to use it for access."
+Input: where are you in the process (radio)
+Output: qualitative status, $0
+
+Level 3: Access Measured
+"We're seeing more patients and counting them."
+Input: additional patients/month
+Output: access revenue $
+
+Level 4: Access Impact Tracked
+"We're measuring what those patients created downstream."
+Input: checkboxes + optional downstream revenue
+Output: total capacity value including downstream $
+```
+
+Each level is a clear organizational decision:
+1 → 2: "We decided to act"
+2 → 3: "We can measure the results"
+3 → 4: "We're tracking the ripple effect"
+
+An executive can self-select in 5 seconds at every level. The inputs are simple and knowable. The math is clean and transparent. No level tries to do the work of two levels.
+
+---
+
+## What Changed from Current State
+
+| Current | New | Why |
+|---|---|---|
+| L1: Time Recovering (time per encounter) | L1: Time Recovered (same) | Minor rename, same function |
+| L2: Quantified (3 radio questions + weekly hours + scheduling question) | L2: Access Decision Made (one radio: where in process) | Dramatically simplified. L2 was doing too much. |
+| L3: Deployed (patients/month) | L3: Access Measured (patients/month + confidence toggle + provider count) | Mostly same, added provider count for accuracy |
+| L4: Workforce Impact (FTEs, hiring) | L4: Access Impact Tracked (checkboxes + downstream revenue) | Completely rebuilt. Stays in access lane. |
+
+## What Happens to the Old L2 Content
+
+The old L2 had three questions:
+1. "Has leadership reviewed aggregate hours?" — This is implicit in L2 now. If they've made an access decision, leadership reviewed the data.
+2. "Has an operational decision been made?" — This IS Level 2 now. The radio options cover where they are in that decision.
+3. "Have scheduling changes been explored?" — This is split between L2 (planning/piloting) and L3 (measured results).
+
+The weekly hours input from old L2 is removed. It was creating a confusing dual-number display (3,000 hours from L1 formula vs. 3,024 from weekly × 48). The hours figure comes from L1's formula and that's sufficient.
+
+## What Happens to the Old L4 Content
+
+FTE avoidance (avoided hires, redeployed providers) — either move to Workforce domain or remove entirely. It doesn't belong in Capacity. If Workforce has room for it at L4, it could fit there. If not, cut it. Clean domain boundaries matter more than capturing every possible value driver.
