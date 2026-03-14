@@ -1,0 +1,307 @@
+# Domain Page UX Fixes — All Four Domains
+
+Keep the exact same visual design, colors, card treatments, typography, and layout. These are behavioral and content fixes to how the levels display and interact. No new visual patterns.
+
+---
+
+## Fix 1: Previous levels should never show "No stage selected" or "—"
+
+When a user clicks Level 3, Levels 1 and 2 appear above it with check marks. Currently, if the user didn't fill in those levels' inputs, the status shows "No stage selected" or "—" which looks broken.
+
+**New behavior:** When a user selects any level, all levels below it automatically show as passed through. The status text should be:
+
+For levels that have data entered from earlier (e.g., time saved from baseline feeds Level 1):
+```
+✓ Time Recovered                    1,600 hrs/yr
+```
+Show the actual value.
+
+For levels that don't have data but are below the selected level:
+```
+✓ Access Decision Made              Confirmed
+```
+Show "Confirmed" — not "No stage selected" and not "—". Being at Level 3 implies you've passed through Level 2. The word "Confirmed" communicates that without requiring the user to go back and fill in Level 2's radio buttons.
+
+**Apply this across all four domains.** Every level below the selected level shows a check mark with either its calculated value (if data exists) or "Confirmed" (if no data but the level is implicitly passed through).
+
+---
+
+## Fix 2: Level 4 descriptions should be readable when not selected
+
+Currently when a level is grayed out (not selected), the user sees the level name and a short subtitle. The full description only appears when they click into it.
+
+**New behavior:** Show a slightly longer description on the grayed-out Level 4 card — enough that an executive can read what Level 4 represents without clicking it. This is important because Level 4 is the aspirational ceiling. The executive should always be able to see what "great" looks like even when they're at Level 1.
+
+For each domain, the grayed-out Level 4 card should show:
+
+**Capacity Level 4 (when not selected):**
+```
+4   Access Impact Tracked
+    Track downstream access outcomes — panel growth,
+    referral conversion, third-next-available — attributed
+    to recovered time.
+```
+
+**Revenue Level 4 (when not selected):**
+```
+4   Documentation as a Revenue Lever
+    Documentation intelligence drives revenue strategy,
+    payer positioning, and financial planning.
+```
+
+**Workforce Level 4 (when not selected):**
+```
+4   Workforce Strategically Managed
+    Documentation burden reduction informs recruitment,
+    retention programs, and staffing decisions.
+```
+
+**Quality Level 4 (when not selected):**
+```
+4   Documentation as a Strategic Asset
+    Structured documentation informs quality programs,
+    value-based care, compliance, and AI readiness.
+```
+
+Keep the grayed-out visual treatment. Just show enough text that the executive reads it and thinks "we're not there yet." The gap between where they are and Level 4 should be visible the entire time they're on the domain page.
+
+Apply the same treatment to Level 3 when grayed out — show a one-line description. Levels 1 and 2 can keep their current shorter display since they're the starting points, not the aspirational targets.
+
+---
+
+## Fix 3: Estimated Impact card should acknowledge the level journey
+
+When someone selects Level 3, the estimated impact card should briefly acknowledge what's implied by being at this level before showing the Level 3 specific content.
+
+**Current behavior:** The estimated impact card only shows Level 3's output. No acknowledgment of Levels 1-2 being passed through.
+
+**New behavior:** Add one line of context at the top of the impact card that connects the journey. Keep it short — one sentence.
+
+**Capacity Level 3 impact card:**
+```
+ESTIMATED IMPACT
+
+$880K in access revenue annually
+
+Your organization has recovered time and decided to
+deploy it toward access. Here's what that's producing:
+
+8 additional patients/provider/month × 50 providers
+× 11 clinical months = 4,400 visits × $200 = $880K
+
+[rest of impact card content]
+```
+
+**Revenue Level 2 impact card:**
+```
+ESTIMATED IMPACT
+
+$120K-$360K directional estimate
+
+Your organization has observed documentation affecting
+reimbursement. Here's your directional estimate:
+
+[rest of impact card content]
+```
+
+**Workforce Level 2 impact card:**
+```
+ESTIMATED IMPACT
+
+2,875 hours reclaimed annually
+
+Your organization is measuring in-clinic burden
+reduction. Here's what the data shows:
+
+[rest of impact card content]
+```
+
+**Quality Level 3 impact card:**
+```
+ESTIMATED IMPACT
+
+3 downstream areas connected
+
+Your organization is actively monitoring documentation
+quality and connecting it to downstream workflows:
+
+[rest of impact card content]
+```
+
+The opening sentence is always: "Your organization has [what L1-L2 accomplished]. Here's [what this level shows]." One sentence. It connects the dot without adding clutter.
+
+---
+
+## Fix 4: The Abridge benchmark should be visible at every level
+
+Currently benchmarks appear near input fields. Make sure that at every level in every domain, the Abridge benchmark for the NEXT level is visible somewhere — either in the impact card or as a callout below the inputs. This creates forward pull.
+
+**Capacity Level 1 should show:**
+In the impact card or below the inputs:
+```
+Level 2 aggregates these hours for leadership review
+and operational decisions.
+```
+
+**Capacity Level 2 should show:**
+```
+Organizations with structured access redesign report
+3-8 additional patients/provider/month.
+```
+
+**Capacity Level 3 should show:**
+```
+Level 4 tracks downstream access outcomes — panel
+growth, referral conversion, same-day access —
+attributed to recovered time.
+```
+
+**Revenue Level 1 should show:**
+```
+Level 2 involves observing trends in coding,
+denials, and collections.
+```
+
+**Revenue Level 2 should show:**
+```
+Organizations with before/after measurement have
+reported 2-7% revenue improvement.
+```
+
+**Revenue Level 3 should show:**
+```
+Level 4 integrates documentation intelligence into
+revenue strategy, payer positioning, and financial
+planning.
+```
+
+**Workforce Level 1 should show:**
+```
+Level 2 adds in-clinic time savings and provider
+survey data.
+```
+
+**Workforce Level 2 should show:**
+```
+Level 3 models turnover costs with documentation
+burden as a factor.
+```
+
+**Workforce Level 3 should show:**
+```
+Level 4 connects burden reduction to recruitment,
+retention programs, and staffing strategy.
+```
+
+**Quality Level 1 should show:**
+```
+Level 2 establishes systematic quality tracking.
+```
+
+**Quality Level 2 should show:**
+```
+Level 3 connects documentation quality to a
+downstream workflow.
+```
+
+**Quality Level 3 should show:**
+```
+Level 4 embeds documentation quality into quality
+programs, value-based care, compliance, and
+AI readiness.
+```
+
+These should appear in the existing callout box style (the highlighted box in the impact card that already exists — like "Level 2 adds in-clinic time savings and provider survey data"). Keep the same visual treatment. Just make sure every level has a forward-pointing reference to what the next level involves.
+
+---
+
+## Fix 5: Domain Summary in sidebar should show the complete picture
+
+The sidebar summary for each domain should show ALL levels' outputs — not just the selected level. This creates the layered story.
+
+**Capacity Summary when Level 3 is selected:**
+```
+CAPACITY SUMMARY
+
+Time Recovered      1,600 hrs/yr (0.9 FTE)
+Access Revenue      $880K
+Access Outcomes     —
+
+Total Capacity      $880K
+```
+
+Time Recovered shows even though they're at Level 3 — because it was calculated from their baseline inputs. Access Revenue shows because they entered Level 3 data. Access Outcomes shows "—" because they're not at Level 4.
+
+**Revenue Summary when Level 2 is selected:**
+```
+REVENUE SUMMARY
+
+Signals Observed    4 areas
+Directional Est.    $120K-$360K
+Measured Impact     —
+Strategic Revenue   —
+```
+
+Signals and estimate show because they're at Level 2. Measured and strategic show "—" because they haven't gotten there.
+
+**Workforce Summary when Level 2 is selected:**
+```
+WORKFORCE SUMMARY
+
+After-Hours Returned    4,600 hrs/yr
+In-Clinic Returned      2,875 hrs/yr
+Survey Findings         3 validated
+Retention Exposure      —
+Strategic Integrations  —
+```
+
+After-Hours shows from Level 1 (pre-filled from baseline). In-Clinic and Survey show from Level 2 data. Retention and Strategic show "—" because they're at Level 2.
+
+**Quality Summary when Level 1 is selected:**
+```
+QUALITY SUMMARY
+
+Quality Tracking        —
+Downstream Connected    —
+Strategic Areas         —
+```
+
+All dashes because Level 1 has no quantifiable output.
+
+**The key:** The summary shows the full ladder. Completed levels have values. Future levels show "—". The executive can see at a glance what they have and what they don't. The dashes ARE the gap.
+
+**Fix the existing display bug:** The Workforce Summary currently shows "—" for After-Hours Returned even when Level 1 has calculated hours. Make sure each summary line correctly pulls from its corresponding level's calculation.
+
+---
+
+## Fix 6: Domain intro text should set the right frame
+
+Each domain has an intro paragraph at the top. These should be sharp enough to frame the question before the executive selects their level. Review and update if needed:
+
+**Capacity intro (current is good, keep it):**
+Something like: "Ambient reduces documentation time. This section measures how that time is being used."
+
+**Revenue intro — update to remove "revenue cycle" focus:**
+Change from revenue-cycle-centric language to: "Improved documentation can affect coding accuracy, denials, and reimbursement. This measures whether your organization is tracking it."
+
+**Workforce intro (current is good, keep it):**
+Something like: "Reduced documentation burden affects provider time, satisfaction, and retention. This measures how far those effects have been tracked."
+
+**Quality intro — update to match the rebuild:**
+Change to: "Improved notes are the starting point. The real value depends on whether that improvement reaches coding, quality reporting, compliance, and future AI initiatives."
+
+---
+
+## After Implementing
+
+Walk through the full assessment with test data and verify:
+
+1. Select Level 3 in Capacity — Level 1 shows hours, Level 2 shows "Confirmed" (not "No stage selected" or "—")
+2. Select Level 4 in Revenue — Levels 1-3 show check marks with appropriate status (not "—" for passed-through levels)
+3. Level 4 descriptions in all domains are readable WITHOUT clicking into them
+4. Every level's impact card has a one-sentence journey acknowledgment at the top
+5. Every level shows a forward-pointing reference to the next level
+6. The domain summary sidebar shows all levels with values where data exists and "—" where it doesn't
+7. The Workforce Summary After-Hours bug is fixed — shows hours when Level 1 data exists
+8. No new colors, fonts, or visual patterns were introduced
+9. The overall feel is the same — clean, warm, Abridge brand
