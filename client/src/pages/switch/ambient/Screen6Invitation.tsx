@@ -87,11 +87,15 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
     if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;
     if (raw.unmeasuredTime === 'true') out['Time savings'] = 'Using benchmark (2\u20133 min)';
     if (level === 2) {
-      if (raw.capacityAggregated) out['Data status'] = raw.capacityAggregated === 'yes' ? 'Formally quantified' : raw.capacityAggregated === 'informal' ? 'Estimated, not reported' : 'Not aggregated yet';
-      if (raw.capacityLeadershipDecision) out['Leadership decision'] = raw.capacityLeadershipDecision === 'yes' ? 'Formal plan in place' : raw.capacityLeadershipDecision === 'partial' ? 'Evaluating options' : 'Presented, no decision';
-      if (raw.weeklyHoursRecovered) out['Weekly hours recovered'] = `${raw.weeklyHoursRecovered} hrs/week`;
-      if (raw.schedulingChangesExplored) out['Scheduling changes'] = raw.schedulingChangesExplored === 'piloting' ? 'Yes — piloting' : raw.schedulingChangesExplored === 'planning' ? 'Yes — planning' : 'Not yet';
-      if (raw.additionalSlotsPerWeek) out['Additional slots/week'] = `${raw.additionalSlotsPerWeek}`;
+      if (raw.accessDecisionStage) {
+        const stageLabels: Record<string, string> = {
+          evaluating: 'Evaluating',
+          planning: 'Planning',
+          piloting: 'Piloting',
+          implementing: 'Implementing',
+        };
+        out['Access decision stage'] = stageLabels[raw.accessDecisionStage as string] || String(raw.accessDecisionStage);
+      }
     }
     if (level === 3) {
       if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`;
@@ -194,16 +198,16 @@ const ROADMAP_STRATEGIC_ORDER: Domain[] = ['capacity', 'workforce', 'risk', 'rev
 const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel: string; nextLevelUnlock: string }>> = {
   capacity: {
     1: {
-      currentStateLabel: "Time is being recovered. The total hasn't been quantified yet.",
-      nextLevelUnlock: "A full accounting of hours recovered across your deployment — the number that anchors every downstream conversation about what to do with that time.",
+      currentStateLabel: "Time is being recovered. No operational decision has been made about how to use it.",
+      nextLevelUnlock: "An organizational decision about converting recovered time into patient access — whether evaluating, planning, piloting, or implementing scheduling changes.",
     },
     2: {
-      currentStateLabel: "Recovery is quantified. Leadership hasn't formally decided how to use it.",
-      nextLevelUnlock: "A documented redeployment strategy — whether that's access expansion, administrative offload, or revenue-generating visits — that turns recovered hours into a planned organizational outcome.",
+      currentStateLabel: "Your organization has decided to convert recovered time into patient access.",
+      nextLevelUnlock: "Measured patient volume increases — confirmed additional patients per provider per month attributed to recovered time, with revenue calculated.",
     },
     3: {
-      currentStateLabel: "A redeployment plan is in place. Downstream access outcomes are the next frontier.",
-      nextLevelUnlock: "Confirmed tracking of downstream access impact — panel growth, same-day access, referral conversion — attributed to recovered time, with direct and downstream revenue measured.",
+      currentStateLabel: "Additional patients are being seen with recovered time. Access revenue is measured.",
+      nextLevelUnlock: "Tracking of downstream access outcomes — panel growth, same-day access, referral conversion — with direct and downstream revenue attributed to recovered time.",
     },
     4: {
       currentStateLabel: "Downstream access outcomes are tracked and attributed to recovered time.",

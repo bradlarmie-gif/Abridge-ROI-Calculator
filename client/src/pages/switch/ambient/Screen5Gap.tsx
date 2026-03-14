@@ -92,39 +92,28 @@ function getNextLevelContent(
       const hoursFromUserInput = Math.round((netTimeSaved * annualEncounters) / 60);
       const bmkValueLow = Math.round(hoursFromUserInput * providerRate * 0.20);
       const bmkValueHigh = Math.round(hoursFromUserInput * providerRate * 0.35);
-      base.narrative = `The time is coming back. The number isn't in front of anyone yet. That's the gap — not the hours, but what happens to them without a name attached.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: When the total hours are quantified and in front of leadership, organizations typically move from awareness to deployment within one quarter — unlocking ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually at your scale.` : ''}`;
+      base.narrative = `Time is being recovered. No operational decision has been made about how to use it — that's the gap. The hours exist, but without a decision to convert them into patient access, they remain undeployed capacity.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: When your organization decides to convert recovered time into access, the typical range is ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually at your scale.` : ''}`;
       if (annualEncounters > 0) {
         base.formula = `${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters / 60 = ${hoursFromUserInput.toLocaleString()} hrs\nLow: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
         base.lowEstimate = bmkValueLow;
         base.highEstimate = bmkValueHigh;
       }
     } else if (level === 2) {
-      const hardSavings = Math.round(recoveredHours * providerRate * 0.25);
-      const additionalVisits = Math.round(recoveredHours / 0.5);
-      const revenueOpportunity = additionalVisits * revenuePerVisit;
-      if (recoveredHours > 0) {
-        base.narrative = `Your ${recoveredHours.toLocaleString()} recovered hours — at $${providerRate.toLocaleString()}/hr with 25% redeployment = ${formatDollar(hardSavings)} in hard savings, plus capacity for ${additionalVisits.toLocaleString()} additional patient visits at $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)} in potential revenue. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
-        base.formula = `Hard savings: ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 25% = ${formatDollar(hardSavings)}\nAdditional visits: ${recoveredHours.toLocaleString()} hrs / 0.5 hrs per visit = ${additionalVisits.toLocaleString()} visits\nRevenue: ${additionalVisits.toLocaleString()} visits × $${revenuePerVisit.toLocaleString()} = ${formatDollar(revenueOpportunity)}\nTotal opportunity: ${formatDollar(hardSavings + revenueOpportunity)}`;
-        base.lowEstimate = hardSavings;
-        base.highEstimate = hardSavings + revenueOpportunity;
-      } else {
-        const bmkHours = Math.round((documentedEncounters * netTimeSaved) / 60);
-        const bmkValueLow = Math.round(bmkHours * providerRate * 0.20);
-        const bmkValueHigh = Math.round(bmkHours * providerRate * 0.35);
-        base.narrative = `Benchmark: ${netTimeSaved} min saved × ${documentedEncounters.toLocaleString()} encounters ÷ 60 = ${bmkHours.toLocaleString()} hours recovered. At $${providerRate.toLocaleString()}/hr with 20–35% redeployment = ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually. The question your organization hasn't answered yet is whether that time can be structurally converted into access.`;
-        base.formula = `${netTimeSaved} min × ${documentedEncounters.toLocaleString()} encounters / 60 = ${bmkHours.toLocaleString()} hrs\nLow: ${bmkHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${bmkHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
-        base.lowEstimate = bmkValueLow;
-        base.highEstimate = bmkValueHigh;
-      }
+      const bmkLow = Math.round(3 * providers * 11 * revenuePerVisit);
+      const bmkHigh = Math.round(8 * providers * 11 * revenuePerVisit);
+      base.narrative = `Your organization has decided to convert recovered time into patient access. The next step is measuring how many additional patients are actually being seen. Organizations that restructure scheduling around ambient typically see 3–8 additional patients per provider per month — ${formatDollar(bmkLow)}–${formatDollar(bmkHigh)} annually at your scale.`;
+      base.formula = `Low: 3 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(bmkLow)}\nHigh: 8 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(bmkHigh)}`;
+      base.lowEstimate = bmkLow;
+      base.highEstimate = bmkHigh;
     } else if (level === 3) {
       const low = Math.round(2 * providers * 11 * revenuePerVisit);
       const high = Math.round(5 * providers * 11 * revenuePerVisit);
-      base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured capacity value'} through access redesign. The next level of maturity is tracking downstream access outcomes — panel growth, same-day access, referral conversion — and attributing them to recovered time. Organizations at this level confirm 2–5 additional patients per provider per month in sustained access gains.`;
+      base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured access revenue'} through additional patients seen with recovered time. The next level tracks downstream access outcomes — panel growth, same-day access, referral conversion — attributed to recovered time.`;
       base.formula = `Low: 2 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(low)}\nHigh: 5 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(high)}`;
       base.lowEstimate = low;
       base.highEstimate = high;
     } else {
-      base.narrative = "Downstream access outcomes are confirmed and tracked. The work here is deepening it — expanding the number of providers in the model, adding downstream revenue attribution, and sustaining access gains across scheduling cycles.";
+      base.narrative = "Downstream access outcomes are confirmed and tracked. The work ahead is expanding the provider footprint, deepening downstream revenue attribution, and sustaining access gains across scheduling cycles.";
     }
   } else if (domain === 'revenue') {
     if (level === 1) {

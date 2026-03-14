@@ -18,10 +18,10 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
-    1: 'Time Recovering',
-    2: 'Quantified',
-    3: 'Deployed',
-    4: 'Access Impact Measured',
+    1: 'Time Recovered',
+    2: 'Access Decision Made',
+    3: 'Access Measured',
+    4: 'Access Impact Tracked',
   },
   revenue: {
     1: 'Disconnected',
@@ -109,7 +109,7 @@ export function computeCapacityFeedback(
         context: `At ${documentedEncounters.toLocaleString()} encounters, 2–3 minutes returned per encounter yields ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually. Enter your observed value or use the benchmark.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
+        nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
       };
     }
     const ts = hasTimeSaved ? timeSaved! : 0;
@@ -123,99 +123,48 @@ export function computeCapacityFeedback(
         context: `${providers.toLocaleString()} providers documenting ${documentedEncounters.toLocaleString()} encounters annually. Enter minutes saved per encounter to estimate recovered hours.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
+        nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
       };
     }
     const fte = (recoveredHours / ANNUAL_HOURS).toFixed(1);
-    const redeployValue = Math.round(recoveredHours * providerRate * 0.20);
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${recoveredHours.toLocaleString()} hours returned annually`,
-      context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.\n\nAt 20% redeployment, that is ${formatDollar(redeployValue)} in recoverable capacity value. Based on 20% redeployment scenario at your provider rate of $${providerRate.toLocaleString()}/hr.`,
-      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${fte}\n[redeployment opportunity] = ${recoveredHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(redeployValue)}`,
+      context: `${providers.toLocaleString()} providers document ${documentedEncounters.toLocaleString()} encounters annually. At ${ts} minutes returned per encounter, that is ${recoveredHours.toLocaleString()} hours — ${fte} FTE equivalent.\n\n$0 deployed. Time is recovered but no operational decision has been made about how to use it.`,
+      formula: `[hours] = ${documentedEncounters.toLocaleString()} documented encounters × ${ts} min / 60 = ${recoveredHours.toLocaleString()}\n[FTE equivalent] = ${recoveredHours.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${fte}`,
       footnote: 'Recovered hours represent available capacity. Financial value depends on how this time is allocated at higher maturity levels.',
-      nextLevelTeaser: 'Level 2 aggregates these hours for leadership review.',
+      nextLevelTeaser: 'Level 2 captures whether your organization has decided to convert recovered time into patient access.',
     };
   }
 
   if (level === 2) {
     const ts = (inputs.timeSaved as number) || 0;
-    if (!hasTimeSaved && !unmeasuredChecked) {
-      const benchLow = Math.round(documentedEncounters * 2 / 60);
-      const benchHigh = Math.round(documentedEncounters * 3 / 60);
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours recoverable annually`,
-        context: `Enter time saved per encounter to quantify recovered capacity. At this encounter volume, the benchmark range is ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually.`,
-        formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
-      };
-    }
-    const aggregated = inputs.capacityAggregated as string | undefined;
-    const leadershipDecision = inputs.capacityLeadershipDecision as string | undefined;
-    let decisionStatus = 'pending';
-    if (aggregated === 'yes' && leadershipDecision === 'yes') {
-      decisionStatus = 'confirmed';
-    } else if (aggregated === 'yes' && leadershipDecision === 'partial') {
-      decisionStatus = 'in progress';
-    }
+    const recoveredHrs = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
+    const fte2 = recoveredHrs > 0 ? (recoveredHrs / ANNUAL_HOURS).toFixed(1) : '0.0';
+    const stage = (inputs.accessDecisionStage as string) || '';
 
-    const weeklyHoursRecovered = inputs.weeklyHoursRecovered as number | undefined;
-    const schedulingChanges = inputs.schedulingChangesExplored as string | undefined;
-    const additionalSlots = inputs.additionalSlotsPerWeek as number | undefined;
+    const stageNarratives: Record<string, string> = {
+      evaluating: 'Your organization is evaluating whether recovered time can be converted to patient access. No structural changes have been made yet.',
+      planning: 'Leadership is planning how to convert recovered time into patient access. Scheduling or template changes are being scoped.',
+      piloting: 'Your organization is piloting access changes — scheduling adjustments or template redesigns are underway in a subset of providers.',
+      implementing: 'Access redesign is being implemented across the deployment. Scheduling changes are rolling out broadly.',
+    };
 
-    let weeklyContext = '';
-    let weeklyFormula = '';
-    let displayHours = 0;
-    let displayFte = '0.0';
-    if (weeklyHoursRecovered && weeklyHoursRecovered > 0) {
-      const annualFromWeekly = Math.round(weeklyHoursRecovered * CLINICAL_WEEKS);
-      displayHours = annualFromWeekly;
-      displayFte = (annualFromWeekly / ANNUAL_HOURS).toFixed(1);
-      weeklyContext = `Your team reports ${weeklyHoursRecovered} hours recovered per week — ${annualFromWeekly.toLocaleString()} hours annualized (${CLINICAL_WEEKS} clinical weeks). That is ${displayFte} FTE equivalent.`;
-      weeklyFormula = `[annualRecoveredHours] = ${weeklyHoursRecovered} hrs/week × ${CLINICAL_WEEKS} weeks = ${annualFromWeekly.toLocaleString()}\n[FTE equivalent] = ${annualFromWeekly.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} (${CLINICAL_DAYS} clinical days × 8 hrs) = ${displayFte}`;
-    }
-
-    let schedulingContext = '';
-    let slotsFormula = '';
-    if (schedulingChanges === 'piloting') {
-      schedulingContext = '\n\nScheduling changes are being piloted.';
-    } else if (schedulingChanges === 'planning') {
-      schedulingContext = '\n\nScheduling changes are in the planning phase.';
-    } else if (schedulingChanges === 'not_yet') {
-      schedulingContext = '\n\nNo scheduling or template changes explored yet.';
-    }
-
-    if ((schedulingChanges === 'piloting' || schedulingChanges === 'planning') && additionalSlots && additionalSlots > 0) {
-      const annualSlots = Math.round(additionalSlots * CLINICAL_WEEKS);
-      const slotRevenue = Math.round(annualSlots * revenuePerVisit);
-      schedulingContext += ` At ${additionalSlots} additional slots/week, that's ${annualSlots.toLocaleString()} incremental encounters annually — worth an estimated ${formatDollar(slotRevenue)}.`;
-      slotsFormula = `\n[slotsRevenue] = ${additionalSlots} slots/week × ${CLINICAL_WEEKS} weeks × ${formatDollar(revenuePerVisit)}/visit = ${formatDollar(slotRevenue)}`;
-    }
-
-    const redeployLow = displayHours > 0 ? Math.round(displayHours * providerRate * 0.20) : 0;
-    const redeployHigh = displayHours > 0 ? Math.round(displayHours * providerRate * 0.35) : 0;
-    const redeployContext = displayHours > 0
-      ? `\n\nOpportunity range: ${formatDollar(redeployLow)}–${formatDollar(redeployHigh)} annually. 20% = early-stage redeployment, 35% = organizations with intentional scheduling changes.`
-      : '';
-    const redeployFormula = displayHours > 0
-      ? `\n[redeployment low] = ${displayHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(redeployLow)}\n[redeployment high] = ${displayHours.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(redeployHigh)}`
-      : '';
+    const stageLabel = stage ? stage.charAt(0).toUpperCase() + stage.slice(1) : 'Not selected';
+    const narrative = stageNarratives[stage] || 'Select where your organization stands on converting recovered time to patient access.';
+    const hoursContext = recoveredHrs > 0 ? `\n\n${recoveredHrs.toLocaleString()} hours (${fte2} FTE) recovered annually across ${providers.toLocaleString()} providers.` : '';
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: displayHours > 0 ? `${displayHours.toLocaleString()} hours quantified. Decision ${decisionStatus}.` : `Decision ${decisionStatus}. Enter weekly hours to quantify.`,
-      context: `${weeklyContext}${redeployContext}${schedulingContext}`,
-      formula: `${weeklyFormula}${redeployFormula}${slotsFormula}`,
+      headlineMetric: stage ? `Access decision: ${stageLabel}` : 'Select your access decision stage',
+      context: `${narrative}${hoursContext}\n\n$0 deployed. The value at this level is the decision itself — not dollars.`,
+      formula: recoveredHrs > 0 ? `[hours] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}\n[FTE] = ${recoveredHrs.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} = ${fte2}` : '',
       footnote: '',
-      nextLevelTeaser: 'Level 3 allocates recovered hours to patient access or scheduling.',
+      nextLevelTeaser: 'Level 3 measures how many additional patients are being seen with recovered time.',
     };
   }
 
@@ -232,7 +181,7 @@ export function computeCapacityFeedback(
         context: `Benchmark: organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At ${providers.toLocaleString()} providers, that is ${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 measures downstream access outcomes attributed to recovered time.',
+        nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
       };
     }
     const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
@@ -248,7 +197,7 @@ export function computeCapacityFeedback(
       context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
       footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
-      nextLevelTeaser: 'Level 4 measures downstream access outcomes attributed to recovered time.',
+      nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }

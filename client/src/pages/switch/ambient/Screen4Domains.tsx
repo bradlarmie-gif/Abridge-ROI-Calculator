@@ -59,21 +59,21 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'Ambient reduces documentation time. This section measures how that time is being used.',
     reframe: 'Recovered time can stay unmeasured, or it can be tracked, allocated, and converted into patient access. Each level reflects a different degree of organizational follow-through.',
     cards: [
-      { level: 1, label: 'Time Recovering', description: 'Providers report reduced documentation time. Not yet aggregated.' },
-      { level: 2, label: 'Quantified', description: 'Aggregate hours are calculated and reviewed by leadership.' },
-      { level: 3, label: 'Deployed', description: 'Recovered time is allocated to patient access or other priorities.' },
-      { level: 4, label: 'Access Impact Measured', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
+      { level: 1, label: 'Time Recovered', description: 'Providers report reduced documentation time. No operational decision made yet.' },
+      { level: 2, label: 'Access Decision Made', description: 'Organization has decided to convert recovered time into patient access.' },
+      { level: 3, label: 'Access Measured', description: 'Additional patients are being seen with recovered time.' },
+      { level: 4, label: 'Access Impact Tracked', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
     ],
     framingQuestions: {
       1: undefined as any,
-      2: 'Has leadership reviewed the aggregate hours recovered?',
+      2: 'Where does your organization stand on converting recovered time to patient access?',
       3: 'How many additional patients are being seen with recovered time?',
       4: 'Which downstream access outcomes are you tracking?',
     },
     unlockTeasers: {
-      2: 'Aggregate hours and present to leadership.',
-      3: 'Allocate recovered time to scheduling or patient access.',
-      4: 'Measure downstream access impact from recovered time.',
+      2: 'Decide how recovered time will be used for patient access.',
+      3: 'Measure how many additional patients are seen with recovered time.',
+      4: 'Track downstream access impact from recovered time.',
     },
   },
   revenue: {
@@ -340,163 +340,38 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 2) {
-      const capacityAggregated = currentState.inputs.capacityAggregated as string | undefined;
-      const capacityLeadershipDecision = currentState.inputs.capacityLeadershipDecision as string | undefined;
+      const accessDecisionStage = currentState.inputs.accessDecisionStage as string | undefined;
       return (
-        <>
-          <div className="mb-5">
-            <label className="block text-sm font-medium text-black mb-3">
-              Where does this stand?
-            </label>
-            <div className="flex flex-col gap-2.5">
-              {[
-                { id: 'no', label: "Not aggregated yet" },
-                { id: 'informal', label: "Estimated, not reported" },
-                { id: 'yes', label: 'Formally quantified' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('capacityAggregated', opt.id)}
-                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    capacityAggregated === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-aggregated-${opt.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${capacityAggregated === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                    <span>{opt.label}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {capacityAggregated === 'yes' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
+        <div className="mb-5">
+          <label className="block text-sm font-medium text-black mb-3">
+            Where does your organization stand on converting recovered time to patient access?
+          </label>
+          <div className="flex flex-col gap-2.5">
+            {[
+              { id: 'evaluating', label: 'Evaluating — exploring whether recovered time can drive access' },
+              { id: 'planning', label: 'Planning — scoping scheduling or template changes' },
+              { id: 'piloting', label: 'Piloting — testing access changes with a subset of providers' },
+              { id: 'implementing', label: 'Implementing — rolling out access redesign broadly' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDomainInput('accessDecisionStage', opt.id)}
+                className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                  accessDecisionStage === opt.id
+                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-access-stage-${opt.id}`}
               >
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-black mb-3">
-                    Has leadership made an operational decision about how to use this capacity?
-                  </label>
-                  <div className="flex flex-col gap-2.5">
-                    {[
-                      { id: 'no', label: "Presented, no decision yet" },
-                      { id: 'partial', label: "Evaluating options" },
-                      { id: 'yes', label: 'Formal plan in place' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setDomainInput('capacityLeadershipDecision', opt.id)}
-                        className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                          capacityLeadershipDecision === opt.id
-                            ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                            : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                        }`}
-                        data-testid={`radio-leadership-decision-${opt.id}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${capacityLeadershipDecision === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                          <span>{opt.label}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${accessDecisionStage === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                  <span>{opt.label}</span>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="mb-5">
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Total weekly hours recovered across your deployment
-            </label>
-            <p className="text-xs text-[#888888] mb-2">
-              {(() => {
-                const ts = (currentState.inputs.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
-                if (ts > 0 && documentedEncounters > 0) {
-                  const weeklyHint = Math.round(documentedEncounters * ts / 60 / CLINICAL_WEEKS);
-                  return `Auto-estimate from your L1 data: ~${weeklyHint} hrs/week (${documentedEncounters.toLocaleString()} encounters × ${ts} min ÷ 60 ÷ ${CLINICAL_WEEKS} clinical weeks)`;
-                }
-                return 'Enter observed weekly hours, or use the auto-estimate once time per encounter is set.';
-              })()}
-            </p>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.weeklyHoursRecovered as number) || 0}
-                onChange={(v) => setDomainInput('weeklyHoursRecovered', Math.max(0, v))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-weekly-hours-recovered"
-              />
-              <span className="text-sm text-[#888888]">hrs/wk</span>
-            </div>
-            <BenchmarkContext text="Varies by deployment size. Typical range: 20–200 hrs/week for mid-size deployments." />
+              </button>
+            ))}
           </div>
-
-          <div className="mb-5">
-            <label className="block text-sm font-medium text-black mb-3">
-              Have any scheduling or template changes been explored?
-            </label>
-            <div className="flex flex-col gap-2.5">
-              {[
-                { id: 'piloting', label: 'Yes — piloting changes now' },
-                { id: 'planning', label: 'Yes — planning changes' },
-                { id: 'not_yet', label: 'Not yet' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('schedulingChangesExplored', opt.id)}
-                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    (currentState.inputs.schedulingChangesExplored as string) === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-scheduling-changes-${opt.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${(currentState.inputs.schedulingChangesExplored as string) === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                    <span>{opt.label}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {((currentState.inputs.schedulingChangesExplored as string) === 'piloting' || (currentState.inputs.schedulingChangesExplored as string) === 'planning') && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Estimated additional slots per week
-                  </label>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.additionalSlotsPerWeek as number) || 0}
-                    onChange={(v) => setDomainInput('additionalSlotsPerWeek', Math.max(0, v))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-additional-slots-per-week"
-                  />
-                  <BenchmarkContext text="Organizations with scheduling redesigns typically add 5–20 slots/week across the deployment." />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>
+        </div>
       );
     }
 
@@ -2050,12 +1925,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       return `${hrs.toLocaleString()} hrs/yr`;
                     }
                     if (card.level === 2) {
-                      const agg = inp.capacityAggregated as string;
-                      const ld = inp.capacityLeadershipDecision as string;
-                      let status = 'pending';
-                      if (agg === 'yes' && ld === 'yes') status = 'confirmed';
-                      else if (agg === 'yes' && ld === 'partial') status = 'in progress';
-                      return `Decision ${status}`;
+                      const stage = inp.accessDecisionStage as string;
+                      if (stage) return stage.charAt(0).toUpperCase() + stage.slice(1);
+                      return 'No stage selected';
                     }
                     if (card.level === 3) {
                       const pts = (inp.additionalPatientsPerMonth as number) || 0;
@@ -2244,7 +2116,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
                   <p className="text-xs text-white/50 italic leading-relaxed mb-3">
-                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue — direct and downstream, based on confirmed patient volume.` : `Recoverable capacity value — based on your ${documentedEncounters.toLocaleString()} encounters and industry time estimates.`) :
+                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue — direct and downstream, based on confirmed patient volume.` : `Access revenue — based on additional patients seen with recovered time.`) :
                      activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
                      activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
                      ''}
