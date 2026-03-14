@@ -170,7 +170,10 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       ];
       const strategies = resolveChecklist(raw.workforceStrategies as string, WORKFORCE_STRATEGY_SHORT);
       if (strategies.length) out['Strategic integrations'] = strategies.join(', ');
-      if (raw.workforceOutcomesStatus) out['Outcomes status'] = String(raw.workforceOutcomesStatus);
+      if (raw.workforceOutcomesStatus) {
+        const statusLabels: Record<string, string> = { not_yet: 'Not yet measured', anecdotal: 'Anecdotal only', yes: 'Measurable outcomes confirmed' };
+        out['Outcomes status'] = statusLabels[String(raw.workforceOutcomesStatus)] || String(raw.workforceOutcomesStatus);
+      }
       const outcomes = resolveChecklist(raw.workforceOutcomes as string, WORKFORCE_OUTCOME_SHORT);
       if (outcomes.length) out['Measured outcomes'] = outcomes.join(', ');
       if (raw.agencyReduction) out['Monthly agency/locum reduction'] = fmtDollar(Number(raw.agencyReduction));

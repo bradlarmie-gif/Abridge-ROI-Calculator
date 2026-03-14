@@ -2163,7 +2163,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         <div className="flex items-center justify-between">
                           <span className="text-white/60">Strategic Integrations</span>
                           <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
-                            {strategyCount > 0 ? `${strategyCount} of 6` : '—'}
+                            {`${strategyCount} of 6`}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
