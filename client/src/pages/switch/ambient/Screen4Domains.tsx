@@ -108,18 +108,18 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
       { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
       { level: 3, label: 'Retention Modeled', description: 'Turnover costs are modeled with documentation burden as a factor.' },
-      { level: 4, label: 'Labor Line Impact', description: 'Agency or locum spend reduction is measured and attributed.' },
+      { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden reduction is a variable in workforce strategy — recruitment, retention programs, and staffing decisions.' },
     ],
     framingQuestions: {
       1: undefined,
       2: undefined,
       3: undefined,
-      4: 'What is the monthly reduction in agency or locum spend?',
+      4: 'Where is documentation burden data informing workforce strategy?',
     },
     unlockTeasers: {
       2: 'Measure in-clinic time savings and survey providers.',
       3: 'Model turnover costs with documentation burden as a variable.',
-      4: 'Track agency and locum spend changes attributed to retention.',
+      4: 'Connect burden reduction to workforce strategy decisions.',
     },
   },
   risk: {
@@ -989,34 +989,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Documentation burden score before
-                  </label>
-                  <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.burdenScoreBefore as number) || 0}
-                    onChange={(v) => setDomainInput('burdenScoreBefore', Math.min(10, Math.max(0, v)))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-burden-before"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Documentation burden score after
-                  </label>
-                  <p className="text-xs text-[#888888] mb-2">Scale of 1–10</p>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.burdenScoreAfter as number) || 0}
-                    onChange={(v) => setDomainInput('burdenScoreAfter', Math.min(10, Math.max(0, v)))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-burden-after"
-                  />
-                </div>
-              </div>
             </>
           )}
         </div>
@@ -1106,11 +1078,112 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       );
     }
 
+    const WORKFORCE_STRATEGIES = [
+      'Recruitment and hiring — ambient documentation is part of the value proposition to candidates',
+      'Retention program design — burden reduction is a measured component of retention initiatives',
+      'Time-to-fill tracking — positions are filling faster partly attributed to improved work environment',
+      'Provider experience strategy — documentation burden metrics are tracked alongside satisfaction and engagement',
+      'Staffing model decisions — documentation efficiency informs how shifts, panels, or coverage are structured',
+      'Agency/locum spend actively managed against burden reduction trends',
+    ];
+    const WORKFORCE_OUTCOMES = [
+      'Turnover rate decreased',
+      'Time-to-fill for positions decreased',
+      'Agency or locum reliance decreased',
+      'Provider satisfaction scores improved',
+      'Recruitment acceptance rates improved',
+    ];
+    const strategyCsv = (currentState.inputs.workforceStrategies as string) || '';
+    const strategySet = new Set(strategyCsv.split(',').filter(Boolean));
+    const outcomesStatus = (currentState.inputs.workforceOutcomesStatus as string) || '';
+    const outcomesCsv = (currentState.inputs.workforceOutcomes as string) || '';
+    const outcomeSet = new Set(outcomesCsv.split(',').filter(Boolean));
+
     return (
       <div className="flex flex-col gap-5">
         <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+            Where is documentation burden data informing workforce strategy?
+          </label>
+          <div className="flex flex-col gap-2.5">
+            {WORKFORCE_STRATEGIES.map((strategy, i) => {
+              const checked = strategySet.has(String(i));
+              return (
+                <label
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] transition-all cursor-pointer"
+                  data-testid={`checkbox-workforce-strategy-${i}`}
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={() => toggleCheckboxItem('workforceStrategies', i)}
+                  />
+                  <span className="text-sm text-black">{strategy}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+            Has your organization seen measurable workforce outcomes attributed to documentation burden reduction?
+          </label>
+          <div className="flex flex-col gap-2.5">
+            {[
+              { id: 'not_yet', label: 'Not yet — too early to measure' },
+              { id: 'anecdotal', label: "Anecdotally — we believe it's helping but haven't isolated the effect" },
+              { id: 'yes', label: 'Yes — we can point to specific outcomes (turnover improvement, time-to-fill changes, agency spend reduction)' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDomainInput('workforceOutcomesStatus', opt.id)}
+                className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                  outcomesStatus === opt.id
+                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-outcomes-status-${opt.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${outcomesStatus === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                  <span>{opt.label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {outcomesStatus === 'yes' && (
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+              Which outcomes have you measured?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {WORKFORCE_OUTCOMES.map((outcome, i) => {
+                const checked = outcomeSet.has(String(i));
+                return (
+                  <label
+                    key={i}
+                    className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] transition-all cursor-pointer"
+                    data-testid={`checkbox-workforce-outcome-${i}`}
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggleCheckboxItem('workforceOutcomes', i)}
+                    />
+                    <span className="text-sm text-black">{outcome}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Monthly reduction in agency or locum spend
+            Monthly agency or locum spend reduction (if tracking)
           </label>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -1122,39 +1195,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               data-testid="input-agency-reduction"
             />
           </div>
-          <BenchmarkContext text="Abridge benchmark: $5K–$30K/month" />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Is this showing up in the labor line on a sustained basis?
-          </label>
-          <div className="flex flex-col gap-2.5">
-            {[
-              { id: 'yes', label: "Yes — it's in the numbers" },
-              { id: 'tracking', label: "We're tracking it" },
-              { id: 'not_yet', label: 'Not yet confirmed' },
-            ].map((opt) => {
-              const laborLineSustained = currentState.inputs.laborLineSustained as string | undefined;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('laborLineSustained', opt.id)}
-                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    laborLineSustained === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-labor-line-${opt.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${laborLineSustained === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                    <span>{opt.label}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <BenchmarkContext text="Organizations at this level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
         </div>
       </div>
     );
@@ -2004,7 +2045,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 {activeDomain === 'workforce' && currentState.activationLevel && (currentState.activationLevel === 3 || currentState.activationLevel === 4) && !feedback.hasValue && (
                   <p className="text-xs text-[#EA2C00]/80 italic mt-3 leading-relaxed" data-testid="text-workforce-score-note">
-                    Enter {currentState.activationLevel === 3 ? 'turnover rate and replacement cost' : 'agency/locum spend'} to complete your score
+                    Enter {currentState.activationLevel === 3 ? 'turnover rate and replacement cost' : 'strategy integrations or agency/locum spend'} to complete your score
                   </p>
                 )}
 
@@ -2076,10 +2117,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 ? Math.round(providers * (tr / 100) * rc * (dbs / 100))
                 : null;
 
+              const strategyCsv = (inp.workforceStrategies as string) || '';
+              const strategyCount = strategyCsv.split(',').filter(Boolean).length;
+
               const ar = (inp.agencyReduction as number) || 0;
               const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
 
-              const hasAnyValue = afterHoursHrs > 0 || clinicHrs > 0 || retentionExposure !== null || agencyAnnual !== null;
+              const hasAnyValue = afterHoursHrs > 0 || clinicHrs > 0 || retentionExposure !== null || strategyCount > 0 || agencyAnnual !== null;
               if (!hasAnyValue) return null;
 
               const totalDollar = (retentionExposure || 0) + (agencyAnnual || 0);
@@ -2098,24 +2142,38 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         {afterHoursHrs > 0 ? `${afterHoursHrs.toLocaleString()} hrs/yr` : '—'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">In-Clinic Returned</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
-                        {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Retention Exposure</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
-                        {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Agency Reduction</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-agency">
-                        {agencyAnnual !== null ? formatDollar(agencyAnnual) : '—'}
-                      </span>
-                    </div>
+                    {currentState.activationLevel >= 2 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">In-Clinic Returned</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
+                          {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
+                        </span>
+                      </div>
+                    )}
+                    {currentState.activationLevel >= 3 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Retention Exposure</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
+                          {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
+                        </span>
+                      </div>
+                    )}
+                    {currentState.activationLevel >= 4 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Strategic Integrations</span>
+                          <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
+                            {strategyCount > 0 ? `${strategyCount} of 6` : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Agency Reduction</span>
+                          <span className="text-white font-medium" data-testid="text-workforce-summary-agency">
+                            {agencyAnnual !== null ? formatDollar(agencyAnnual) : '—'}
+                          </span>
+                        </div>
+                      </>
+                    )}
                     {hasDollarValue && (
                       <>
                         <div className="h-px bg-white/10 my-2" />

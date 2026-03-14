@@ -136,12 +136,11 @@ function getNextLevelContent(
       base.formula = `At ${providers.toLocaleString()} providers, industry midpoints put total annual turnover cost at ${formatDollar(midpoint)}. Burden-driven attribution of 20–30% puts the ambient-connected exposure at ${formatDollar(attributionLow)}–${formatDollar(attributionHigh)}.`;
       base.lowEstimate = midpoint;
     } else if (level === 3) {
-      base.narrative = `You've quantified ${hasValue ? formatDollar(currentValue) : 'turnover exposure'}. The next level of maturity is seeing documentation burden reduction show up in actual labor spend — reduced agency reliance, reduced locum usage. Organizations at this level report $5K-$30K/month in agency and locum spend reduction.`;
-      base.formula = `$5K × 12 = $60K annually (low end)\n$30K × 12 = $360K annually (high end)`;
+      base.narrative = `You've quantified ${hasValue ? formatDollar(currentValue) : 'turnover exposure'}. The next level of maturity is connecting documentation burden reduction to workforce strategy — recruitment, retention programs, staffing decisions, and provider experience. Organizations at this level that also track agency/locum spend report $5K–$30K/month in reductions.`;
       base.lowEstimate = 60000;
       base.highEstimate = 360000;
     } else {
-      base.narrative = "You're at the highest maturity level. Continue tracking agency and locum spend against documentation burden metrics to validate the long-term trend.";
+      base.narrative = "Documentation burden reduction is informing workforce strategy. Continue expanding strategic integrations and tracking measured outcomes across recruitment, retention, and staffing.";
     }
   } else if (domain === 'risk') {
     if (level === 1) {

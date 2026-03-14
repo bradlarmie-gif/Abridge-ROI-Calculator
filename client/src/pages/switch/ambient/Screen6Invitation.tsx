@@ -146,7 +146,6 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       if (raw.surveyType) out['Survey approach'] = String(raw.surveyType);
       const findings = resolveChecklist(raw.surveyFindings as string, SURVEY_FINDINGS_LABELS);
       if (findings.length) out['Survey findings'] = findings.join(', ');
-      if (raw.burdenScoreBefore || raw.burdenScoreAfter) out['Burden score'] = `${raw.burdenScoreBefore || '\u2014'} \u2192 ${raw.burdenScoreAfter || '\u2014'} (scale 1\u201310)`;
     }
     if (level === 3) {
       if (raw.turnoverRate) out['Annual turnover rate'] = `${raw.turnoverRate}%`;
@@ -154,8 +153,27 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       if (raw.docBurdenShare) out['Documentation burden share'] = `${raw.docBurdenShare}%`;
     }
     if (level === 4) {
+      const WORKFORCE_STRATEGY_SHORT = [
+        'Recruitment and hiring',
+        'Retention program design',
+        'Time-to-fill tracking',
+        'Provider experience strategy',
+        'Staffing model decisions',
+        'Agency/locum spend management',
+      ];
+      const WORKFORCE_OUTCOME_SHORT = [
+        'Turnover rate decreased',
+        'Time-to-fill decreased',
+        'Agency/locum reliance decreased',
+        'Provider satisfaction improved',
+        'Recruitment acceptance improved',
+      ];
+      const strategies = resolveChecklist(raw.workforceStrategies as string, WORKFORCE_STRATEGY_SHORT);
+      if (strategies.length) out['Strategic integrations'] = strategies.join(', ');
+      if (raw.workforceOutcomesStatus) out['Outcomes status'] = String(raw.workforceOutcomesStatus);
+      const outcomes = resolveChecklist(raw.workforceOutcomes as string, WORKFORCE_OUTCOME_SHORT);
+      if (outcomes.length) out['Measured outcomes'] = outcomes.join(', ');
       if (raw.agencyReduction) out['Monthly agency/locum reduction'] = fmtDollar(Number(raw.agencyReduction));
-      if (raw.laborLineSustained) out['Labor line status'] = String(raw.laborLineSustained);
     }
   }
 
@@ -219,15 +237,15 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
       nextLevelUnlock: "Structured measurement of in-clinic and after-hours time savings — turning anecdotal relief into an organizational data point that supports retention decisions and provider contracts.",
     },
     2: {
-      currentStateLabel: "Burden reduction is measured. The data isn't yet integrated into operational decisions.",
-      nextLevelUnlock: "Workforce data wired into operational planning — informing scheduling, staffing ratios, and provider engagement in a way that's defensible to leadership and HR.",
+      currentStateLabel: "Burden reduction is measured. In-clinic and after-hours time savings are quantified.",
+      nextLevelUnlock: "Modeling turnover costs with documentation burden as a contributing factor — connecting provider experience data to retention economics.",
     },
     3: {
-      currentStateLabel: "Burden reduction data is informing operational decisions. Retention linkage is the next step.",
-      nextLevelUnlock: "A direct connection between documentation burden reduction and retention outcomes — giving your organization a measurable ROI story on provider experience investment.",
+      currentStateLabel: "Turnover exposure is modeled with documentation burden as a factor.",
+      nextLevelUnlock: "Documentation burden reduction becomes a variable in workforce strategy — informing recruitment, retention programs, staffing models, and provider experience decisions.",
     },
     4: {
-      currentStateLabel: "Provider experience data is fully integrated into workforce strategy.",
+      currentStateLabel: "Documentation burden reduction is informing workforce strategy across recruitment, retention, staffing, and provider experience.",
       nextLevelUnlock: "",
     },
   },

@@ -1,0 +1,436 @@
+# Quality Domain — Full Rebuild for Replit
+
+The Quality domain is currently trying to do too much. It has six downstream workflows at Level 3 each with before/after inputs, HCC calculations with indefensible assumptions, and a Level 4 that's just governance checkboxes and a dollar input. Rebuild it to be focused, strategic, and completable in 5-8 minutes of conversation.
+
+The core story: ambient documentation creates structured, complete clinical notes at scale. That's a data asset. Quality measures whether the organization is building on that asset or just letting it sit in the EHR.
+
+Keep the same UX patterns, card treatments, sidebar formula panel, and brand styling. Change the content, inputs, and calculations.
+
+---
+
+## Domain Header
+
+**Header:**
+WHAT IS YOUR DOCUMENTATION QUALITY UNLOCKING?
+
+**Subhead:**
+Improved notes are the starting point. The real value depends on whether that improvement reaches CDI, coding, quality reporting, compliance, and future AI initiatives.
+
+**Add instruction above level cards:**
+"Select the level that best describes your organization today."
+
+---
+
+## Level 1: Notes Improving
+
+**Card text:**
+```
+Notes Improving
+Documentation quality has improved. No one has
+measured how or connected it downstream.
+```
+
+**Description when selected:**
+"Documentation quality has improved. Downstream teams have not yet been engaged."
+
+**Inputs:**
+```
+Have any downstream teams reviewed documentation
+changes from ambient?
+○ Not yet
+○ Starting informally
+○ One team is formally in
+```
+
+That's it. No chart completion rate input. No coding accuracy percentage. Those are Level 2 concerns. Level 1 is simply: notes are better, nobody downstream has looked.
+
+**Remove from Level 1:**
+- Remove "Current chart completion rate" input
+- Remove "Average coding accuracy" input
+- Remove ALL dollar calculations at Level 1
+- Remove any denial exposure, HCC exposure, or quality gap calculations
+
+**Estimated Impact card:**
+```
+ESTIMATED IMPACT
+
+[documentedEncounters] encounters with improved
+documentation.
+
+Downstream connection not yet started. The value
+of improved documentation depends on whether
+coding, quality reporting, compliance, and other
+teams can see and use the improvement.
+
+Level 2 establishes systematic quality tracking.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+No dollars. The insight is that nobody downstream is using the improvement yet.
+
+---
+
+## Level 2: Actively Monitored
+
+**Card text:**
+```
+Actively Monitored
+Documentation quality attributes are being
+tracked systematically.
+```
+
+**Description when selected:**
+"Documentation quality metrics are being tracked systematically."
+
+**Inputs:**
+```
+How are documentation quality metrics being tracked?
+○ Not tracking formally yet
+○ Spot checks and anecdotal
+○ Structured audits or dashboards
+
+[If "Structured audits or dashboards" selected:]
+
+What documentation attributes are you tracking?
+☐ Note completeness (history, exam, assessment, plan)
+☐ Diagnostic specificity (ICD-10 code level and accuracy)
+☐ Quality measure documentation (HEDIS, MIPS, Stars gaps)
+☐ Compliance and audit readiness
+☐ HCC and risk adjustment capture (for value-based populations)
+```
+
+**Remove from Level 2:**
+- Remove "What % of reviewed charts have documentation gaps" input
+- Remove "Compliance audit pass rate" input
+- Remove "Average days to chart closure" input
+- These are too granular for a strategic conversation and don't feed into meaningful calculations
+
+**Estimated Impact card:**
+
+If "Not tracking formally" or "Spot checks":
+```
+ESTIMATED IMPACT
+
+Quality monitoring not yet formalized.
+
+[If spot checks:] Informal monitoring is a start.
+Establishing structured tracking creates the
+baseline needed to measure downstream impact.
+
+[If not tracking:] Without measurement, the value
+of improved documentation remains invisible to
+the organization.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+If "Structured audits" + checkboxes:
+```
+ESTIMATED IMPACT
+
+[checkedCount] of 5 quality dimensions tracked
+
+Your organization is systematically tracking
+[checkedCount] documentation quality attribute(s):
+[list of checked items]
+
+Not yet tracked:
+[list of unchecked items]
+
+Level 3 connects documentation quality to
+downstream programs and workflows.
+
+Estimates based on your inputs. Individual results vary.
+```
+
+No dollars at Level 2. This is about establishing measurement. The value is qualitative — how many dimensions are you tracking? The gap (unchecked items) is the insight.
+
+---
+
+## Level 3: Downstream Connected
+
+**Card text:**
+```
+Downstream Connected
+Documentation quality improvements are connected
+to at least one downstream program or workflow.
+```
+
+**Description when selected:**
+"At least one downstream workflow shows measurable improvement from documentation quality."
+
+**Inputs:**
+```
+Which downstream areas have been connected to
+documentation quality improvements?
+
+☐ CDI — fewer queries, faster turnaround, or
+  improved capture rates
+☐ Coding accuracy — specificity improvements
+  or denial reduction
+☐ Quality measures — HEDIS, MIPS, or Stars gap
+  closure improved
+☐ Prior authorization — documentation supporting
+  faster or higher approval rates
+☐ Chart abstraction — less manual effort for
+  registries, research, or reporting
+☐ Risk adjustment — HCC capture or RAF accuracy
+  improved for VBC populations
+
+For connected areas, has the impact been measured?
+○ Qualitatively — we can see improvement but
+  haven't quantified it
+○ Partially — some areas have before/after data
+○ Yes — we have measured data for connected workflows
+```
+
+**Remove the entire before/after input matrix.** Currently Level 3 opens sub-inputs for each checked workflow (CDI queries before/after, denial rate before/after, prior auth before/after, quality gaps per month, abstraction hours, RAF score change, members in VBC, capitation rate). This is too much for a 30-minute session. An executive cannot fill in before/after data for six different workflows.
+
+Replace with ONE optional summary input:
+
+```
+If you can estimate the combined annual value of
+documentation quality improvements across your
+connected workflows, enter it here. (optional)
+
+$ [___]
+
+This could include CDI efficiency gains, coding
+accuracy improvements, quality measure incentives
+captured, abstraction time saved, or other
+measurable downstream value.
+
+☐ Don't have a combined number yet
+```
+
+**Estimated Impact card:**
+
+If checkboxes + no dollar value:
+```
+ESTIMATED IMPACT
+
+[checkedCount] downstream area(s) connected
+
+Documentation quality is driving improvement
+across [checkedCount] area(s):
+[list of checked items]
+
+[If "Qualitatively":] Impact is visible but not
+yet quantified.
+[If "Partially":] Some areas have measured data.
+[If "Yes":] Measured data is available.
+
+Not yet connected:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+If dollar value entered:
+```
+ESTIMATED IMPACT
+
+$[annualValue] in downstream quality value
+[checkedCount] area(s) connected
+
+Documentation quality is driving $[annualValue]
+in annual value across [checkedCount] area(s):
+[list of checked items]
+
+Not yet connected:
+[list of unchecked items]
+
+Based on your organization's estimate.
+Estimates based on your inputs. Individual results vary.
+```
+
+**Why this is better:** The checkboxes show breadth (how many downstream areas are connected). The measurement question shows depth (how rigorously). The optional dollar input lets organizations that have a number share it without forcing organizations that don't to guess. The "not yet connected" list creates the gap visualization. Clean, fast, conversational.
+
+---
+
+## Level 4: Documentation as a Strategic Asset
+
+**Card text:**
+```
+Documentation as a Strategic Asset
+Structured documentation informs organizational
+strategy — quality programs, value-based care,
+compliance governance, and AI readiness.
+```
+
+**Description when selected:**
+"Documentation quality is embedded in governance and strategy."
+
+**This is where the big strategic vision lives.** Level 3 is about downstream workflows being connected. Level 4 is about documentation quality being a variable in how the organization makes strategic decisions.
+
+**Inputs:**
+```
+Where does documentation quality inform
+organizational strategy?
+
+☐ Quality program design — documentation data
+  shapes HEDIS, MIPS, or Stars strategy
+☐ Value-based care — documentation supports risk
+  stratification and population health initiatives
+☐ Compliance governance — documentation quality
+  is a governed metric with executive oversight
+☐ AI and automation readiness — structured
+  documentation is positioned as the foundation
+  for clinical AI, predictive models, or
+  automated reporting
+☐ Payer strategy — documentation quality data
+  informs payer negotiations or contract design
+☐ Clinical research — structured documentation
+  supports research data extraction or registry
+  participation
+
+Is there a named executive owner of documentation
+quality strategy?
+○ Yes
+○ Not yet
+
+Annual strategic value attributed to documentation
+quality programs (optional)
+$ [___]
+
+This is hard to quantify precisely. If your
+organization can estimate the combined strategic
+value of documentation-driven quality, compliance,
+VBC, and AI initiatives — enter it here.
+If not, leave blank.
+
+☐ Don't have a confirmed number yet
+```
+
+**Estimated Impact card:**
+
+If checkboxes + dollar value:
+```
+ESTIMATED IMPACT
+
+$[strategicValue] in attributed strategic value
+[checkedCount] strategic area(s) connected
+
+Documentation quality informs organizational
+strategy across [checkedCount] area(s):
+[list of checked items]
+
+Executive owner: [Yes/Not yet]
+
+Your organization attributes $[strategicValue]
+in annual value to documentation quality programs.
+
+Not yet connected:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+If checkboxes but no dollar value:
+```
+ESTIMATED IMPACT
+
+[checkedCount] strategic area(s) connected
+
+Documentation quality informs organizational
+strategy across [checkedCount] area(s):
+[list of checked items]
+
+Executive owner: [Yes/Not yet]
+
+Strategic value not yet quantified. Organizations
+at this level typically identify significant value
+across quality, compliance, and VBC programs when
+they formalize attribution.
+
+Not yet connected:
+[list of unchecked items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Why this is genuinely Level 4:** The checkboxes describe an organization that is using documentation quality as strategic infrastructure — not just fixing downstream workflows (Level 3) but building organizational capability on the documentation foundation. Quality program design, VBC strategy, AI readiness, payer negotiations, clinical research. Most organizations will check 0-1. That gap is the aspiration.
+
+**The "AI and automation readiness" checkbox is the forward-looking hook.** Every health system is talking about clinical AI. This checkbox says: your structured documentation IS the foundation. If it's not complete, consistent, and governed — your AI initiatives have nothing to build on. That insight alone is worth the conversation.
+
+---
+
+## What Gets Removed from Quality Entirely
+
+1. **All the before/after input matrices at Level 3.** CDI queries before/after, denial rate before/after, prior auth rates, quality gaps per month with $100/gap assumption, abstraction hours, RAF score change, members in VBC, capitation rate. ALL of it. Replaced with checkboxes for what's connected + one optional dollar input.
+
+2. **The $25/CDI query hidden assumption.** Gone. No per-query calculations.
+
+3. **The $100/quality gap assumption.** Gone. No per-gap calculations.
+
+4. **The HCC calculation from Level 1.** The $200/member × VBC% producing massive numbers. Gone from Quality Level 1. If HCC capture matters, it's a checkbox at Level 3 ("Risk adjustment — HCC capture improved") and a strategic checkbox at Level 4 ("Value-based care — documentation supports risk stratification"). Not a formula.
+
+5. **The denial exposure calculation from Level 1.** Same as Revenue — we removed dollar calculations from Level 1 there too. Consistency.
+
+6. **"Average days to chart closure" at Level 2.** Too granular.
+
+7. **"Compliance audit pass rate" at Level 2.** Too granular.
+
+8. **"What % of reviewed charts have documentation gaps" at Level 2.** Asking a percentage that most executives won't know in a live conversation.
+
+---
+
+## The Clean Progression
+
+```
+Level 1: Notes Improving
+"Documentation is better. Nobody downstream has looked."
+Input: engagement status (radio)
+Output: encounter volume, no dollars
+
+Level 2: Actively Monitored
+"We're measuring documentation quality attributes."
+Input: tracking method + what attributes (checkboxes)
+Output: X of 5 dimensions tracked, no dollars
+
+Level 3: Downstream Connected
+"Documentation quality is improving downstream workflows."
+Input: which areas connected (checkboxes) + optional $
+Output: X areas connected + dollar value if entered
+
+Level 4: Documentation as a Strategic Asset
+"Documentation quality informs organizational strategy."
+Input: strategic areas (checkboxes) + optional $
+Output: X strategic areas + dollar value if entered
+```
+
+Dollars only appear at Level 3 and 4 — and only if the organization enters them. Levels 1 and 2 are qualitative. This matches the pattern across all four domains: early levels are about awareness and measurement, higher levels are about action and strategy.
+
+---
+
+## Quality Summary in Sidebar
+
+```
+QUALITY SUMMARY
+
+Quality Dimensions Tracked    [X] of 5 or —
+Downstream Areas Connected    [X] of 6 or —
+Strategic Areas Connected     [X] of 6 or —
+Downstream Value              $[X] or —
+Strategic Value               $[X] or —
+```
+
+---
+
+## After Implementing
+
+Browse through all four Quality levels with test data and verify:
+
+1. Level 1 shows NO dollar figures — only encounter volume and engagement status
+2. Level 1 does NOT have chart completion rate or coding accuracy inputs
+3. Level 2 shows quality dimension checkboxes only when "Structured audits" is selected
+4. Level 2 does NOT have gap rate %, audit pass rate, or chart closure days
+5. Level 2 shows "X of 5 dimensions tracked" with checked/unchecked lists
+6. Level 3 shows workflow checkboxes WITHOUT the before/after input matrix
+7. Level 3 has ONE optional dollar input for combined value, not per-workflow calculations
+8. Level 3 does NOT use the $25/query or $100/gap assumptions anywhere
+9. Level 4 shows strategic checkboxes including AI readiness, VBC, payer strategy
+10. Level 4 executive owner question works correctly
+11. No HCC dollar calculations appear at any level
+12. No denial exposure calculations appear at any level

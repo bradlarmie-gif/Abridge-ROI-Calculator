@@ -33,7 +33,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     1: 'Time Is Returning',
     2: 'Burden Measured',
     3: 'Retention Modeled',
-    4: 'Labor Line Impact',
+    4: 'Workforce Strategically Managed',
   },
   risk: {
     1: 'Notes Improving',
@@ -76,8 +76,10 @@ export function computeDomainScore(domain: Domain, level: ActivationLevel, input
       }
     }
     if (level === 4) {
+      const strategyCsv = inputs.workforceStrategies as string | undefined;
+      const strategyCount = (strategyCsv || '').split(',').filter(Boolean).length;
       const agencyReduction = inputs.agencyReduction as number | undefined;
-      if (!agencyReduction || agencyReduction <= 0) {
+      if (strategyCount === 0 && (!agencyReduction || agencyReduction <= 0)) {
         return 15;
       }
     }
@@ -617,12 +619,6 @@ export function computeWorkforceFeedback(
         ? '\n\nProvider survey not yet conducted or informal only.'
         : '';
 
-    const burdenScoreBefore = inputs.burdenScoreBefore as number | undefined;
-    const burdenScoreAfter = inputs.burdenScoreAfter as number | undefined;
-    const burnoutNarrative = burdenScoreBefore && burdenScoreAfter && burdenScoreBefore > burdenScoreAfter
-      ? `\n\nDocumentation burden score improved from ${burdenScoreBefore}/10 to ${burdenScoreAfter}/10.`
-      : '';
-
     const totalHours = clinicSavedHours + afterHoursHours;
     const fteEquiv = Math.round(totalHours / ANNUAL_HOURS * 10) / 10;
 
@@ -635,7 +631,7 @@ export function computeWorkforceFeedback(
       value: null,
       hasValue: false,
       headlineMetric,
-      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}${burnoutNarrative}`,
+      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}`,
       formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : ''}`,
       footnote: '230 clinical working days. Dollar value appears at Level 3 when turnover data is entered.',
       nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
@@ -656,7 +652,7 @@ export function computeWorkforceFeedback(
         context: `Enter your turnover rate and replacement cost to see estimated retention exposure.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
+        nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
       };
     }
     const totalTurnover = providers * (turnoverRate / 100);
@@ -680,31 +676,85 @@ export function computeWorkforceFeedback(
       context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}. Total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion potentially attributable to documentation burden reduction.` : 'Enter the share of turnover you attribute to documentation burden to see the portion potentially attributable to documentation burden reduction.'}`,
       formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,
       footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',
-      nextLevelTeaser: 'Level 4 measures agency and locum spend reduction.',
+      nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
     };
   }
 
-  const agencyReduction = inputs.agencyReduction as number | undefined;
-  if (!agencyReduction || agencyReduction <= 0) {
+  const WORKFORCE_STRATEGY_LABELS = [
+    'Recruitment and hiring — ambient documentation is part of the value proposition to candidates',
+    'Retention program design — burden reduction is a measured component of retention initiatives',
+    'Time-to-fill tracking — positions are filling faster partly attributed to improved work environment',
+    'Provider experience strategy — documentation burden metrics are tracked alongside satisfaction and engagement',
+    'Staffing model decisions — documentation efficiency informs how shifts, panels, or coverage are structured',
+    'Agency/locum spend actively managed against burden reduction trends',
+  ];
+  const WORKFORCE_OUTCOME_LABELS = [
+    'Turnover rate decreased',
+    'Time-to-fill for positions decreased',
+    'Agency or locum reliance decreased',
+    'Provider satisfaction scores improved',
+    'Recruitment acceptance rates improved',
+  ];
+
+  const strategyCsv = inputs.workforceStrategies as string | undefined;
+  const strategySet = new Set((strategyCsv || '').split(',').filter(Boolean));
+  const checkedStrategies = WORKFORCE_STRATEGY_LABELS.filter((_, i) => strategySet.has(String(i)));
+  const uncheckedStrategies = WORKFORCE_STRATEGY_LABELS.filter((_, i) => !strategySet.has(String(i)));
+  const strategyCount = checkedStrategies.length;
+
+  const outcomesStatus = (inputs.workforceOutcomesStatus as string) || '';
+  const outcomesCsv = inputs.workforceOutcomes as string | undefined;
+  const outcomeSet = new Set((outcomesCsv || '').split(',').filter(Boolean));
+  const checkedOutcomes = WORKFORCE_OUTCOME_LABELS.filter((_, i) => outcomeSet.has(String(i)));
+  const outcomeCount = checkedOutcomes.length;
+
+  const agencyReduction = (inputs.agencyReduction as number) || 0;
+  const annualAgencySavings = agencyReduction > 0 ? Math.round(agencyReduction * 12) : 0;
+
+  if (strategyCount === 0 && agencyReduction <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Enter monthly spend reduction to calculate.',
-      context: `Benchmark: $5K–$30K per month in agency and locum spend reduction. At ${providers.toLocaleString()} providers, that is $60K–$360K annually.`,
+      headlineMetric: 'Select where documentation burden data is informing workforce strategy.',
+      context: 'Ambient documentation isn\'t just reducing burden — it\'s informing how your organization approaches workforce challenges. Recruitment, retention program design, staffing models, and provider experience strategy are connected to documentation burden data.',
       formula: '',
       footnote: '',
     };
   }
-  const annualSavings = Math.round(agencyReduction * 12);
+
+  const hasAgency = annualAgencySavings > 0;
+  const headlineParts: string[] = [];
+  if (hasAgency) headlineParts.push(`${formatDollar(annualAgencySavings)} in agency/locum reduction`);
+  if (strategyCount > 0) headlineParts.push(`${strategyCount} strategic integration${strategyCount !== 1 ? 's' : ''}`);
+  if (outcomesStatus === 'yes' && outcomeCount > 0) headlineParts.push(`${outcomeCount} workforce outcome${outcomeCount !== 1 ? 's' : ''} measured`);
+
+  let contextParts = '';
+  if (strategyCount > 0) {
+    contextParts += `Documentation burden reduction is informing workforce strategy across ${strategyCount} area${strategyCount !== 1 ? 's' : ''}:\n${checkedStrategies.map(s => `• ${s.split(' — ')[0]}`).join('\n')}`;
+  }
+  if (outcomesStatus === 'yes' && outcomeCount > 0) {
+    contextParts += `\n\nMeasured workforce outcomes:\n${checkedOutcomes.map(o => `• ${o}`).join('\n')}`;
+  } else if (outcomesStatus === 'anecdotal') {
+    contextParts += '\n\nWorkforce outcomes are anecdotally observed but not yet formally measured.';
+  } else if (!outcomesStatus || outcomesStatus === 'not_yet') {
+    contextParts += '\n\nWorkforce outcomes have not yet been formally measured. Organizations at this level that track outcomes typically identify improvements in turnover rate, time-to-fill, and provider satisfaction.';
+  }
+  if (hasAgency) {
+    contextParts += `\n\nAgency/locum reduction: ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)} annually.`;
+  }
+  if (uncheckedStrategies.length > 0) {
+    contextParts += `\n\nNot yet integrated:\n${uncheckedStrategies.map(s => `• ${s.split(' — ')[0]}`).join('\n')}`;
+  }
+
   return {
     label: 'Estimated Impact',
-    value: annualSavings,
-    hasValue: true,
-    headlineMetric: `${formatDollar(annualSavings)} in annual labor spend reduction.`,
-    context: `${formatDollar(agencyReduction)} per month in agency and locum spend reduction = ${formatDollar(annualSavings)} annually.`,
-    formula: `[annualSavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualSavings)}`,
-    footnote: '',
+    value: hasAgency ? annualAgencySavings : null,
+    hasValue: hasAgency,
+    headlineMetric: headlineParts.join('\n'),
+    context: contextParts,
+    formula: hasAgency ? `[annualAgencySavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)}` : '',
+    footnote: 'Estimates based on your inputs. Individual results vary.',
   };
 }
 
