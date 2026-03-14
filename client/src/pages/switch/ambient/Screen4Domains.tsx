@@ -48,7 +48,7 @@ type DomainConfig = {
   subheadline?: string;
   reframe: string;
   cards: ActivationCard[];
-  framingQuestions?: Record<number, string>;
+  framingQuestions?: Record<number, string | undefined>;
   unlockTeasers?: Record<number, string>;
 };
 
@@ -65,7 +65,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 4, label: 'Access Impact Tracked', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
     ],
     framingQuestions: {
-      1: undefined as any,
+      1: undefined,
       2: 'Where does your organization stand on converting recovered time to patient access?',
       3: 'How many additional patients are being seen with recovered time?',
       4: 'Which downstream access outcomes are you tracking?',
@@ -90,7 +90,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     framingQuestions: {
       1: 'Has your revenue cycle team reviewed documentation changes from ambient?',
       2: 'Which revenue areas are being analyzed?',
-      3: undefined as any,
+      3: undefined,
       4: 'How is revenue tracking integrated into ongoing operations?',
     },
     unlockTeasers: {
@@ -111,9 +111,9 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 4, label: 'Labor Line Impact', description: 'Agency or locum spend reduction is measured and attributed.' },
     ],
     framingQuestions: {
-      1: undefined as any,
-      2: undefined as any,
-      3: undefined as any,
+      1: undefined,
+      2: undefined,
+      3: undefined,
       4: 'What is the monthly reduction in agency or locum spend?',
     },
     unlockTeasers: {
