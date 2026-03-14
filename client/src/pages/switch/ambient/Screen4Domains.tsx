@@ -147,6 +147,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
 };
 
+const FUTURE_DESCRIPTIONS: Record<string, Record<number, string>> = {
+  capacity: {
+    3: 'Measure how many additional patients are seen with recovered time and calculate access revenue.',
+    4: 'Track downstream access outcomes — panel growth, referral conversion, third-next-available — attributed to recovered time.',
+  },
+  revenue: {
+    3: 'Complete a before/after analysis to quantify documentation-driven revenue impact.',
+    4: 'Documentation intelligence drives revenue strategy, payer positioning, and financial planning.',
+  },
+  workforce: {
+    3: 'Model turnover costs with documentation burden as a contributing factor.',
+    4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',
+  },
+  risk: {
+    3: 'Connect documentation quality improvements to downstream programs — CDI, coding, quality measures.',
+    4: 'Structured documentation informs quality programs, value-based care, compliance, and AI readiness.',
+  },
+};
+
 function BenchmarkContext({ text }: { text: string }) {
   return <p className="text-xs text-[#999999] italic mt-2">{text}</p>;
 }
@@ -1824,24 +1843,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   );
                 }
 
-                const FUTURE_DESCRIPTIONS: Record<string, Record<number, string>> = {
-                  capacity: {
-                    3: 'Measure how many additional patients are seen with recovered time and calculate access revenue.',
-                    4: 'Track downstream access outcomes — panel growth, referral conversion, third-next-available — attributed to recovered time.',
-                  },
-                  revenue: {
-                    3: 'Complete a before/after analysis to quantify documentation-driven revenue impact.',
-                    4: 'Documentation intelligence drives revenue strategy, payer positioning, and financial planning.',
-                  },
-                  workforce: {
-                    3: 'Model turnover costs with documentation burden as a contributing factor.',
-                    4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',
-                  },
-                  risk: {
-                    3: 'Connect documentation quality improvements to downstream programs — CDI, coding, quality measures.',
-                    4: 'Structured documentation informs quality programs, value-based care, compliance, and AI readiness.',
-                  },
-                };
                 const futureDesc = (card.level >= 3) ? FUTURE_DESCRIPTIONS[activeDomain]?.[card.level] : config.unlockTeasers?.[card.level];
 
                 return (
