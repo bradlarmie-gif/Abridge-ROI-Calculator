@@ -18,8 +18,8 @@ const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2, string>> = {
     2: "Recovered time is measured but not being converted to access.",
   },
   revenue: {
-    1: "No one has connected documentation quality to how your organization gets paid.",
-    2: "Revenue signals observed but not measured.",
+    1: "No one has analyzed whether documentation changes are affecting reimbursement.",
+    2: "Directional signals observed but not formally validated.",
   },
   workforce: {
     1: "After-hours burden reduced but broader workforce impact isn't tracked.",

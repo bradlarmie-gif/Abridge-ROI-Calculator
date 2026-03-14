@@ -78,25 +78,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   revenue: {
     label: 'REVENUE',
-    headline: 'REVENUE',
-    subheadline: 'Improved documentation can affect coding accuracy, denials, and reimbursement. This measures whether your revenue cycle is tracking it.',
-    reframe: 'Documentation specificity improves with ambient. The revenue impact depends on whether your revenue cycle team is analyzing the change and has before/after data.',
+    headline: 'WHAT IS DOCUMENTATION FIDELITY WORTH TO YOUR REVENUE CYCLE?',
+    subheadline: 'Revenue cycle can only work with what documentation gives them. Every encounter is either capturing the revenue it earned — or leaking it.',
+    reframe: 'Select the level that best describes your organization today.',
     cards: [
-      { level: 1, label: 'Disconnected', description: 'Revenue cycle has not reviewed documentation changes.' },
-      { level: 2, label: 'Under Investigation', description: 'Revenue cycle is analyzing coding or denial trends.' },
-      { level: 3, label: 'Impact Measured', description: 'Before/after revenue data has been collected and reviewed.' },
-      { level: 4, label: 'Managed & Integrated', description: 'Revenue impact is tracked continuously in operations.' },
+      { level: 1, label: 'Disconnected', description: 'Documentation-driven revenue impact has not been analyzed.' },
+      { level: 2, label: 'Directional Signal', description: 'Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.' },
+      { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue impact quantified.' },
+      { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
     ],
     framingQuestions: {
-      1: 'Has your revenue cycle team reviewed documentation changes from ambient?',
-      2: 'Which revenue areas are being analyzed?',
+      1: 'Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?',
+      2: 'What has your organization observed?',
       3: undefined,
-      4: 'How is revenue tracking integrated into ongoing operations?',
+      4: 'How is documentation quality being used strategically in revenue decisions?',
     },
     unlockTeasers: {
-      2: 'Engage revenue cycle to review coding and denial trends.',
-      3: 'Collect before/after data on wRVUs, collections, or denials.',
-      4: 'Integrate documentation-revenue tracking into standard workflows.',
+      2: 'Observe trends in coding, denials, and collections.',
+      3: 'Complete a before/after analysis to quantify documentation-driven revenue impact.',
+      4: 'Integrate documentation intelligence into revenue strategy and financial planning.',
     },
   },
   workforce: {
@@ -495,10 +495,10 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   ];
 
   const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
-    wrvu: 'Abridge benchmark: 0.05\u20130.15 wRVU per encounter',
-    collections: 'Abridge benchmark: $3\u2013$10 per encounter',
-    revenue_pct: 'Abridge benchmark: 1\u20134% improvement',
-    denial_rate: 'Abridge benchmark: 5\u201315% denial rate reduction',
+    wrvu: 'Abridge benchmark: 0.05\u20130.15 wRVU per encounter. Based on aggregated deployment experience.',
+    collections: 'Organizations at this level have reported $3\u2013$10 increase per encounter. Based on aggregated deployment experience.',
+    revenue_pct: 'Organizations at this level have reported 2\u20137% improvement. Based on aggregated deployment experience.',
+    denial_rate: 'Organizations at this level have reported 5\u201315% reduction in documentation-related denials. Based on aggregated deployment experience.',
   };
 
   const renderRevenueInputs = () => {
@@ -507,14 +507,12 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     if (level === 1) {
       const revenueCycleEngaged = currentState.inputs.revenueCycleEngaged as string | undefined;
-      const revenueCycleStatus = currentState.inputs.revenueCycleStatus as string | undefined;
       const emComplexity = currentState.inputs.emComplexity as string | undefined;
-      const docDeficiencyRate = currentState.inputs.docDeficiencyRate as number | undefined;
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-3">
-              Where does this stand?
+              Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?
             </label>
             <div className="flex flex-col gap-2.5">
               {[
@@ -541,58 +539,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               ))}
             </div>
           </div>
-
-          <AnimatePresence>
-            {revenueCycleEngaged === 'yes' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="mb-3">
-                  <label className="block text-sm font-medium text-black mb-3">
-                    Where is that engagement?
-                  </label>
-                  <div className="flex flex-col gap-2.5">
-                    {[
-                      { id: 'aware', label: 'Aware, no analysis yet' },
-                      { id: 'analyzing', label: 'Analysis in progress' },
-                      { id: 'measured', label: 'Before/after data exists' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setDomainInput('revenueCycleStatus', opt.id)}
-                        className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                          revenueCycleStatus === opt.id
-                            ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                            : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                        }`}
-                        data-testid={`radio-revenue-status-${opt.id}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${revenueCycleStatus === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                          <span>{opt.label}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {revenueCycleStatus === 'analyzing' && (
-                  <p className="text-sm text-[#EA2C00] font-medium mt-2">
-                    It sounds like your team is already at Level 2. Jump there to capture what's being analyzed.
-                  </p>
-                )}
-                {revenueCycleStatus === 'measured' && (
-                  <p className="text-sm text-[#EA2C00] font-medium mt-2">
-                    You have measured data — that puts you at Level 3. Jump there to enter your numbers.
-                  </p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -623,81 +569,43 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </button>
               ))}
             </div>
-            <BenchmarkContext text="Organizations with mostly L3 visits typically have the largest coding accuracy opportunity from better documentation." />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Documentation deficiency or query rate
-            </label>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={docDeficiencyRate || 0}
-                onChange={(v) => setDomainInput('docDeficiencyRate', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-doc-deficiency-rate"
-                step={0.1}
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <BenchmarkContext text="Industry average: 8–12% of charts with coding queries" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              HCC / risk adjustment value per member
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#888888]">$</span>
-              <FormattedNumberInput
-                value={(currentState.inputs.hccValuePerMember as number) || 0}
-                onChange={(v) => setDomainInput('hccValuePerMember', Math.max(0, v))}
-                placeholder="200"
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-hcc-value-per-member"
-              />
-            </div>
-            <BenchmarkContext text="Average HCC gap closure value: $100–$400 per member per year (default: $200). Applies to value-based care populations." />
           </div>
         </div>
       );
     }
 
     if (level === 2) {
-      const INVESTIGATION_AREAS = [
-        'wRVU per encounter trends',
-        'Coding specificity / ICD-10 distribution',
-        'Denial rates tied to documentation',
-        'Collections before vs. after',
-        'CDI query volume',
-        'Coder productivity',
+      const OBSERVATION_AREAS = [
+        'wRVU per encounter trending upward',
+        'Coding specificity improving (ICD-10 distribution shifting)',
+        'Denial rates trending downward',
+        'Collections per encounter trending upward',
+        'CDI query volume decreasing',
+        'Coder productivity improving',
       ];
-      const duration = currentState.inputs.investigationDuration as string || '';
-      const codingSpecificityImprovement = currentState.inputs.codingSpecificityImprovement as number | undefined;
-      const currentDenialRate = currentState.inputs.currentDenialRate as number | undefined;
+      const directionalEstimate = currentState.inputs.directionalEstimate as string || '';
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-3 sr-only">
-              What is your revenue cycle team analyzing?
+              What has your organization observed?
             </label>
             <div className="flex flex-col gap-2.5">
-              {INVESTIGATION_AREAS.map((area, i) => {
-                const checked = isChecked('investigationAreas', i);
+              {OBSERVATION_AREAS.map((area, i) => {
+                const checked = isChecked('observedMovement', i);
                 return (
                   <label
                     key={i}
-                    htmlFor={`investigation-area-${i}`}
+                    htmlFor={`observed-movement-${i}`}
                     className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
                       checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                     }`}
                   >
                     <Checkbox
-                      id={`investigation-area-${i}`}
+                      id={`observed-movement-${i}`}
                       checked={checked}
-                      onCheckedChange={() => toggleCheckboxItem('investigationAreas', i)}
-                      data-testid={`checkbox-investigation-${i}`}
+                      onCheckedChange={() => toggleCheckboxItem('observedMovement', i)}
+                      data-testid={`checkbox-observed-movement-${i}`}
                       className="mt-0.5"
                     />
                     <span className="text-sm text-[#525252] select-none leading-snug">
@@ -711,68 +619,34 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              How far along?
+              What's your directional estimate of the revenue impact?
             </label>
             <div className="flex flex-col gap-2">
               {[
-                { id: 'under30', label: 'Early — under 30 days' },
-                { id: '30to90', label: '30–90 days' },
-                { id: '90plus', label: '90+ days' },
+                { id: 'under_1', label: 'Under 1% of encounter revenue' },
+                { id: '1_3', label: '1–3% of encounter revenue' },
+                { id: '3_5', label: '3–5% of encounter revenue' },
+                { id: '5_plus', label: '5%+ of encounter revenue' },
+                { id: 'not_sure', label: 'Not sure — we see movement but haven\'t estimated' },
               ].map((opt) => (
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setDomainInput('investigationDuration', opt.id)}
+                  onClick={() => setDomainInput('directionalEstimate', opt.id)}
                   className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    duration === opt.id
+                    directionalEstimate === opt.id
                       ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
                       : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
                   }`}
-                  data-testid={`radio-investigation-duration-${opt.id}`}
+                  data-testid={`radio-directional-estimate-${opt.id}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${duration === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${directionalEstimate === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
                     <span>{opt.label}</span>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Estimated coding specificity improvement
-            </label>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={codingSpecificityImprovement || 0}
-                onChange={(v) => setDomainInput('codingSpecificityImprovement', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-coding-specificity-improvement"
-                step={0.1}
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <BenchmarkContext text="Organizations typically see 5–15% improvement in coding specificity with ambient" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Current denial rate
-            </label>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={currentDenialRate || 0}
-                onChange={(v) => setDomainInput('currentDenialRate', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-current-denial-rate"
-                step={0.1}
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <BenchmarkContext text="Industry average: 5–10% denial rate. Documentation-driven denials are often 30–50% of total." />
           </div>
         </div>
       );
@@ -882,39 +756,20 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4"
               >
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Denial rate before ambient deployment
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.denialRateBefore as number) || 0}
-                      onChange={(v) => setDomainInput('denialRateBefore', Math.min(100, Math.max(0, v)))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-denial-before"
-                      step={0.1}
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Denial rate after ambient deployment
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.denialRateAfter as number) || 0}
-                      onChange={(v) => setDomainInput('denialRateAfter', Math.min(100, Math.max(0, v)))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-denial-after"
-                      step={0.1}
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                  Measured denial rate reduction
+                </label>
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={(currentState.inputs.measuredDenialReduction as number) || 0}
+                    onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-denial-reduction"
+                    step={0.1}
+                  />
+                  <span className="text-sm text-[#888888]">%</span>
                 </div>
                 <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.denial_rate} />
               </motion.div>
@@ -928,7 +783,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex flex-col gap-5">
         <div>
           <label className="block text-sm font-medium text-black mb-3 sr-only">
-            How is documentation quality integrated into revenue cycle?
+            How is documentation quality being used strategically in revenue decisions?
           </label>
           <div className="flex flex-col gap-2.5">
             {REVENUE_INTEGRATIONS.map((item, i) => {
@@ -959,7 +814,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Annual revenue attributed
+            Annual revenue attributed to documentation improvements
           </label>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
@@ -972,6 +827,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               disabled={currentState.inputs.noConfirmedRevenue === 'true'}
             />
           </div>
+          <p className="text-xs text-[#888888] mt-1 leading-relaxed">
+            This should be a number your CFO and revenue cycle leadership would stand behind — formally tracked and incorporated into financial reporting.
+          </p>
           <div className="flex items-center gap-2.5 mt-3">
             <Checkbox
               id="no-confirmed-revenue"
@@ -987,7 +845,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
           {currentState.inputs.noConfirmedRevenue === 'true' && (
             <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-              Abridge deployment benchmark at {documentedEncounters.toLocaleString()} encounters: organizations at this integration level typically attribute $200K–$600K annually. This can serve as a working estimate.
+              Abridge deployment benchmark at {documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a working estimate.
             </p>
           )}
         </div>
@@ -1963,9 +1821,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       return 'Not yet engaged';
                     }
                     if (card.level === 2) {
-                      const areas = (inp.investigationAreas as string) || '';
+                      const areas = (inp.observedMovement as string) || '';
                       const count = areas.split(',').filter(Boolean).length;
-                      return count > 0 ? `${count} area${count !== 1 ? 's' : ''} analyzed` : null;
+                      return count > 0 ? `${count} signal${count !== 1 ? 's' : ''} observed` : null;
                     }
                     if (card.level === 3) {
                       const metricType = inp.revenueMetricType as string;
@@ -2100,7 +1958,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
                   <p className="text-xs text-white/50 italic leading-relaxed mb-3">
                     {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue based on confirmed patient volume.` : `Access revenue — based on additional patients seen with recovered time.`) :
-                     activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
+                     activeDomain === 'revenue' ? (currentState.activationLevel === 2 ? `Directional estimate — based on your team's assessment applied to ${documentedEncounters.toLocaleString()} encounters.` : currentState.activationLevel === 3 ? `Measured impact — based on your organization's data.` : `Attributed revenue — formally tracked and incorporated into financial planning.`) :
                      activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
                      ''}
                   </p>
@@ -2264,6 +2122,93 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         <div className="flex items-center justify-between">
                           <span className="text-white font-semibold">Total Workforce Value</span>
                           <span className="text-[#EA2C00] font-bold" data-testid="text-workforce-summary-total">
+                            {formatDollar(totalDollar)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+
+            {activeDomain === 'revenue' && currentState.activationLevel && (() => {
+              const inp = currentState.inputs;
+              const observedCsv = (inp.observedMovement as string) || '';
+              const observedCount = observedCsv.split(',').filter(Boolean).length;
+
+              const directionalEst = inp.directionalEstimate as string | undefined;
+              const ESTIMATE_RANGES: Record<string, { lowPct: number; highPct: number }> = {
+                'under_1': { lowPct: 0.005, highPct: 0.01 },
+                '1_3': { lowPct: 0.01, highPct: 0.03 },
+                '3_5': { lowPct: 0.03, highPct: 0.05 },
+                '5_plus': { lowPct: 0.05, highPct: 0.07 },
+              };
+              let directionalRange: string | null = null;
+              if (directionalEst && directionalEst !== 'not_sure' && ESTIMATE_RANGES[directionalEst]) {
+                const r = ESTIMATE_RANGES[directionalEst];
+                const low = Math.round(documentedEncounters * revenuePerVisit * r.lowPct);
+                const high = Math.round(documentedEncounters * revenuePerVisit * r.highPct);
+                directionalRange = `${formatDollar(low)}–${formatDollar(high)}`;
+              }
+
+              const metricType = inp.revenueMetricType as string | undefined;
+              let measuredImpact: number | null = null;
+              if (metricType === 'wrvu') {
+                const d = (inp.measuredWrvuDelta as number) || 0;
+                if (d > 0) measuredImpact = Math.round(d * documentedEncounters * ((inputs.conversionFactor as number) || 33));
+              } else if (metricType === 'collections') {
+                const d = (inp.measuredCollectionsDelta as number) || 0;
+                if (d > 0) measuredImpact = Math.round(d * documentedEncounters);
+              } else if (metricType === 'revenue_pct') {
+                const d = (inp.measuredRevenuePct as number) || 0;
+                if (d > 0) measuredImpact = Math.round(documentedEncounters * revenuePerVisit * (d / 100));
+              }
+
+              const attributedRevenue = (inp.recognizedRevenue as number) || 0;
+
+              const hasAnyValue = observedCount > 0 || directionalRange || measuredImpact !== null || attributedRevenue > 0;
+              if (!hasAnyValue) return null;
+
+              const totalDollar = attributedRevenue > 0 ? attributedRevenue : measuredImpact !== null ? measuredImpact : (directionalRange ? Math.round(documentedEncounters * revenuePerVisit * (ESTIMATE_RANGES[directionalEst!]?.highPct || 0)) : null);
+
+              return (
+                <>
+                  <div className="h-px bg-white/10 my-5" />
+                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-revenue-summary-label">
+                    Revenue Summary
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Revenue Signals</span>
+                      <span className="text-white font-medium" data-testid="text-revenue-summary-signals">
+                        {observedCount > 0 ? `${observedCount} area${observedCount !== 1 ? 's' : ''}` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Directional Estimate</span>
+                      <span className="text-white font-medium" data-testid="text-revenue-summary-directional">
+                        {directionalRange || '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Measured Impact</span>
+                      <span className="text-white font-medium" data-testid="text-revenue-summary-measured">
+                        {measuredImpact !== null ? formatDollar(measuredImpact) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/60">Attributed Revenue</span>
+                      <span className="text-white font-medium" data-testid="text-revenue-summary-attributed">
+                        {attributedRevenue > 0 ? formatDollar(attributedRevenue) : '—'}
+                      </span>
+                    </div>
+                    {totalDollar !== null && totalDollar > 0 && (
+                      <>
+                        <div className="h-px bg-white/10 my-2" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">Total Revenue</span>
+                          <span className="text-[#EA2C00] font-bold" data-testid="text-revenue-summary-total">
                             {formatDollar(totalDollar)}
                           </span>
                         </div>

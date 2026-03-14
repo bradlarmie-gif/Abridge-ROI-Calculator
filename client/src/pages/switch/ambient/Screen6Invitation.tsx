@@ -59,11 +59,11 @@ const STRATEGIC_INTEGRATIONS_LABELS = [
 ];
 
 const REVENUE_INTEGRATIONS_LABELS = [
-  'Monthly wRVU monitoring', 'CDI workflow integration', 'Denial tracking dashboard', 'Provider compensation model',
+  'Specialty-level revenue analysis', 'CDI strategy', 'Payer negotiations', 'Proactive denial prevention', 'Financial planning line item', 'Shared doc-to-revenue view',
 ];
 
-const INVESTIGATION_AREAS_LABELS = [
-  'wRVU trends', 'Coding specificity', 'Denial rates', 'Collections', 'CDI query volume', 'Coder productivity',
+const OBSERVATION_AREAS_LABELS = [
+  'wRVU trending up', 'Coding specificity improving', 'Denial rates trending down', 'Collections trending up', 'CDI queries decreasing', 'Coder productivity improving',
 ];
 
 const SURVEY_FINDINGS_LABELS = [
@@ -113,26 +113,26 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
     if (level === 1) {
       if (raw.revenueCycleEngaged) out['Revenue cycle engagement'] = raw.revenueCycleEngaged === 'yes' ? 'Formally engaged' : raw.revenueCycleEngaged === 'informal' ? 'Conversations started' : 'Not yet';
       if (raw.emComplexity) out['E&M complexity'] = String(raw.emComplexity) === 'mostly_l3' ? 'Mostly Level 3' : String(raw.emComplexity) === 'mix_l3_l4' ? 'Mix of Level 3–4' : String(raw.emComplexity) === 'mostly_l4_l5' ? 'Mostly Level 4–5' : 'Unsure';
-      if (raw.docDeficiencyRate) out['Deficiency/query rate'] = `${raw.docDeficiencyRate}%`;
     }
     if (level === 2) {
-      const areas = resolveChecklist(raw.investigationAreas as string, INVESTIGATION_AREAS_LABELS);
-      if (areas.length) out['Areas being analyzed'] = areas.join(', ');
-      if (raw.investigationDuration) out['Investigation duration'] = String(raw.investigationDuration);
-      if (raw.codingSpecificityImprovement) out['Coding specificity improvement'] = `${raw.codingSpecificityImprovement}%`;
-      if (raw.currentDenialRate) out['Current denial rate'] = `${raw.currentDenialRate}%`;
+      const areas = resolveChecklist(raw.observedMovement as string, OBSERVATION_AREAS_LABELS);
+      if (areas.length) out['Areas showing movement'] = areas.join(', ');
+      if (raw.directionalEstimate) {
+        const estLabels: Record<string, string> = { under_1: 'Under 1%', '1_3': '1–3%', '3_5': '3–5%', '5_plus': '5%+', not_sure: 'Not sure' };
+        out['Directional estimate'] = estLabels[raw.directionalEstimate as string] || String(raw.directionalEstimate);
+      }
     }
     if (level === 3) {
       if (raw.revenueMetricType) out['Metric measured'] = String(raw.revenueMetricType);
-      if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}%`;
+      if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}`;
       if (raw.measuredCollectionsDelta) out['Collections delta'] = fmtDollar(Number(raw.measuredCollectionsDelta));
       if (raw.measuredRevenuePct) out['Revenue improvement'] = `${raw.measuredRevenuePct}%`;
-      if (raw.denialRateBefore || raw.denialRateAfter) out['Denial rate'] = `${raw.denialRateBefore || 0}% \u2192 ${raw.denialRateAfter || 0}%`;
+      if (raw.measuredDenialReduction) out['Denial rate reduction'] = `${raw.measuredDenialReduction}%`;
     }
     if (level === 4) {
       const areas = resolveChecklist(raw.revenueIntegrations as string, REVENUE_INTEGRATIONS_LABELS);
-      if (areas.length) out['Integrated into'] = areas.join(', ');
-      if (raw.recognizedRevenue) out['Recognized annual revenue'] = fmtDollar(Number(raw.recognizedRevenue));
+      if (areas.length) out['Strategic integrations'] = areas.join(', ');
+      if (raw.recognizedRevenue) out['Attributed annual revenue'] = fmtDollar(Number(raw.recognizedRevenue));
     }
   }
 
@@ -251,19 +251,19 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
   },
   revenue: {
     1: {
-      currentStateLabel: "Coding accuracy and specificity aren't yet tracked at the encounter level.",
-      nextLevelUnlock: "Visibility into wRVU accuracy and documentation specificity gaps — the starting point for understanding what revenue integrity looks like at your scale.",
+      currentStateLabel: "No one has analyzed whether documentation changes are affecting reimbursement.",
+      nextLevelUnlock: "Observing trends in coding, denials, and collections — the directional signal that documentation is affecting revenue.",
     },
     2: {
-      currentStateLabel: "Revenue gaps are visible. Systematic correction isn't in place yet.",
-      nextLevelUnlock: "A closed-loop process that connects documentation quality to coding correction — so that specificity gaps get fixed before they become denials or underpayments.",
+      currentStateLabel: "Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.",
+      nextLevelUnlock: "A formal before/after analysis that quantifies the documentation-driven revenue impact — giving leadership a number they can stand behind.",
     },
     3: {
-      currentStateLabel: "Revenue cycle operations are receiving documentation quality as a managed input.",
-      nextLevelUnlock: "Documentation governance tied to payer strategy — where your coding accuracy data directly informs contract negotiations and prior auth workflows.",
+      currentStateLabel: "Before/after analysis completed. Documentation-driven revenue impact quantified.",
+      nextLevelUnlock: "Documentation intelligence integrated into revenue strategy — where documentation quality drives payer positioning, financial planning, and proactive denial prevention.",
     },
     4: {
-      currentStateLabel: "Documentation quality is a fully governed revenue cycle input.",
+      currentStateLabel: "Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.",
       nextLevelUnlock: "",
     },
   },
@@ -274,7 +274,7 @@ function getHeroNarrative(domainLevels: Record<string, number>): string {
   const atCeiling = [capacity, workforce, risk, revenue].filter(l => l === 4).length;
   if (atCeiling === 4) return "You're operating at full maturity across all four domains. The opportunity now is sustaining and deepening.";
   if (atCeiling >= 2) return "You've reached leading maturity in several domains. The remaining gaps are where your next unlock lives.";
-  if (revenue === 4) return "Your revenue documentation is mature. Capacity, Workforce, and Quality are where the next level of value gets built.";
+  if (revenue === 4) return "Documentation intelligence is driving your revenue strategy. Capacity, Workforce, and Quality are where the next level of value gets built.";
   return "Your deployment is established. What follows is the specific path to making it work at full strategic scale.";
 }
 
@@ -396,7 +396,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
     const INSIGHTS: Record<string, Record<1|2, string>> = {
       capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
-      revenue: { 1: "No one has connected documentation quality to how your organization gets paid.", 2: "Revenue signals observed but not measured." },
+      revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },
       workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
       risk: { 1: "Documentation quality improved but nothing downstream has changed.", 2: "Quality monitoring started but downstream workflows aren't connected." },
     };

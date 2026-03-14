@@ -1003,10 +1003,10 @@ const opportunityText: Record<string, Record<number, string>> = {
     4: "Recovered FTE equivalent is a variable in hiring, expansion, and build planning. Capacity drives staffing and growth decisions.",
   },
   revenue: {
-    1: "No one has connected ambient deployment to coding or billing. Revenue cycle has not been asked.",
-    2: "CDI, coding, or billing leadership has an active analysis in progress. Revenue cycle is investigating.",
+    1: "No one has analyzed whether documentation changes are affecting reimbursement. Revenue cycle has not been asked.",
+    2: "Your organization has observed directional signals — trends in coding, denials, or collections suggesting documentation is affecting reimbursement.",
     3: "Before/after analysis complete; a dollar number exists that leadership can stand behind. Revenue impact measured and attributed.",
-    4: "Ongoing, real-time integration between documentation quality and revenue cycle operations. Documentation quality is a managed revenue input.",
+    4: "Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning. Documentation quality is a managed revenue lever.",
   },
   workforce: {
     1: "Providers report less after-hours work, but it has not been measured yet. Anecdotal feedback only; no structured data.",

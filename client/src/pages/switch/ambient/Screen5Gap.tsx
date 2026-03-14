@@ -117,18 +117,13 @@ function getNextLevelContent(
     }
   } else if (domain === 'revenue') {
     if (level === 1) {
-      base.narrative = "Your revenue cycle team hasn't engaged with the documentation change yet. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
+      base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
     } else if (level === 2) {
-      const low = Math.round(documentedEncounters * revenuePerVisit * 0.02);
-      const high = Math.round(documentedEncounters * revenuePerVisit * 0.07);
-      base.narrative = `You've identified revenue signals but haven't quantified the impact. Organizations who move from signals to measurement typically find 2-7% improvement in coding-related revenue. At your encounter volume, even 2% represents ${formatDollar(low)} annually.`;
-      base.formula = `${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 2% = ${formatDollar(low)}\n${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 7% = ${formatDollar(high)}`;
-      base.lowEstimate = low;
-      base.highEstimate = high;
+      base.narrative = `Your organization has observed directional signals but hasn't done a formal before/after analysis. A formal measurement (Level 3) would validate the estimate and give you a number leadership can stand behind.`;
     } else if (level === 3) {
-      base.narrative = `You've measured ${hasValue ? formatDollar(currentValue) : 'documentation-driven revenue impact'}. The next level of maturity is making documentation quality an ongoing, governed input to revenue cycle operations — not a one-time study. Organizations at this level treat documentation quality the way they treat charge capture: continuously monitored and optimized.`;
+      base.narrative = `You've measured ${hasValue ? formatDollar(currentValue) : 'documentation-driven revenue impact'}. The next level of maturity is making documentation intelligence an ongoing input to revenue strategy — not a one-time study. Organizations at this level treat documentation quality the way they treat charge capture: continuously monitored and optimized.`;
     } else {
-      base.narrative = "Revenue cycle is fully connected. The work here is deepening it — documentation quality governance, payer negotiations, and the financial story that comes with it.";
+      base.narrative = "Documentation intelligence drives revenue cycle strategy. The work here is deepening it — payer negotiations, financial planning, and the strategic story that comes with it.";
     }
   } else if (domain === 'workforce') {
     if (level === 1) {

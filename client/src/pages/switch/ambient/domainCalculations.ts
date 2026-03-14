@@ -25,9 +25,9 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
   },
   revenue: {
     1: 'Disconnected',
-    2: 'Under Investigation',
+    2: 'Directional Signal',
     3: 'Impact Measured',
-    4: 'Managed & Integrated',
+    4: 'Documentation as a Revenue Lever',
   },
   workforce: {
     1: 'Time Is Returning',
@@ -279,128 +279,75 @@ export function computeRevenueFeedback(
   conversionFactor: number = 33,
 ): DomainFeedback {
   if (level === 1) {
-    const emComplexity = inputs.emComplexity as string | undefined;
-    const docDeficiencyRate = inputs.docDeficiencyRate as number | undefined;
-    const hccValuePerMember = (inputs.hccValuePerMember as number) || 0;
-    const hasDeficiencyData = docDeficiencyRate !== undefined && docDeficiencyRate > 0;
-    const hasComplexityData = emComplexity && emComplexity !== 'unsure';
-    const hasHccData = hccValuePerMember > 0;
-
-    if (hasDeficiencyData || hasComplexityData || hasHccData) {
-      const upliftPerEncounter = emComplexity === 'mostly_l3' ? 8 : emComplexity === 'mix_l3_l4' ? 5 : emComplexity === 'mostly_l4_l5' ? 3 : 5;
-      const deficiencyMultiplier = hasDeficiencyData ? Math.min(docDeficiencyRate! / 10, 2.0) : 1.0;
-      const estimatedOpportunityLow = Math.round(documentedEncounters * upliftPerEncounter * 0.5 * deficiencyMultiplier);
-      const estimatedOpportunityHigh = Math.round(documentedEncounters * upliftPerEncounter * 1.5 * deficiencyMultiplier);
-
-      const complexityNote = emComplexity === 'mostly_l3'
-        ? 'With predominantly Level 3 visits, there is significant opportunity for more specific documentation to support higher-complexity coding.'
-        : emComplexity === 'mix_l3_l4'
-          ? 'A mix of Level 3–4 visits suggests moderate coding accuracy opportunity from improved documentation specificity.'
-          : emComplexity === 'mostly_l4_l5'
-            ? 'With higher-complexity visits, the opportunity shifts toward reducing denials and improving specificity rather than level shifts.'
-            : '';
-
-      const deficiencyNote = hasDeficiencyData
-        ? `Your ${docDeficiencyRate}% query rate ${docDeficiencyRate! > 12 ? 'is above' : docDeficiencyRate! < 8 ? 'is below' : 'is within'} the industry average (8–12%). ${docDeficiencyRate! > 12 ? 'This elevated rate suggests substantial recoverable value from better documentation.' : docDeficiencyRate! < 8 ? 'A lower rate suggests your documentation is relatively strong — opportunity is in specificity improvements.' : 'Typical rate — ambient documentation improvements should have a meaningful impact.'}`
-        : '';
-
-      const hccNote = hasHccData
-        ? `HCC/risk adjustment value: ${formatDollar(hccValuePerMember)} per member per year. This applies to value-based care populations where improved documentation captures additional risk-adjusted revenue.`
-        : '';
-
-      let contextParts: string[] = [];
-      if (complexityNote) contextParts.push(complexityNote);
-      if (deficiencyNote) contextParts.push(deficiencyNote);
-      if (hccNote) contextParts.push(hccNote);
-      if (hasComplexityData || hasDeficiencyData) {
-        contextParts.push(`At ${documentedEncounters.toLocaleString()} encounters, documentation improvements could generate ${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} annually in coding accuracy uplift.`);
-      }
-
-      let formulaParts: string[] = [];
-      if (hasComplexityData || hasDeficiencyData) {
-        formulaParts.push(`[codingUplift] = ${documentedEncounters.toLocaleString()} encounters × $${upliftPerEncounter} uplift × deficiency factor (${deficiencyMultiplier.toFixed(1)})`);
-      }
-      if (hasHccData) {
-        formulaParts.push(`[hccValue] = HCC gap closure at ${formatDollar(hccValuePerMember)}/member/year (user input)`);
-      }
-
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: (hasComplexityData || hasDeficiencyData)
-          ? `${formatDollar(estimatedOpportunityLow)}–${formatDollar(estimatedOpportunityHigh)} estimated revenue opportunity`
-          : `HCC value: ${formatDollar(hccValuePerMember)}/member — enter E&M data to estimate coding uplift`,
-        context: contextParts.join('\n\n'),
-        formula: formulaParts.join('\n'),
-        footnote: 'Estimate based on E&M complexity profile, documentation deficiency rate, and HCC value inputs. Actual impact requires revenue cycle analysis.',
-        nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
-      };
-    }
-
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${documentedEncounters.toLocaleString()} encounters — revenue cycle not yet engaged.`,
-      context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. Revenue impact has not been analyzed. Enter E&M complexity data, deficiency rates, or HCC value per member to estimate the opportunity.`,
+      headlineMetric: 'Not yet analyzed.',
+      context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. No one has analyzed whether this is affecting coding, collections, or reimbursement.`,
       formula: '',
-      footnote: '',
-      nextLevelTeaser: 'Level 2 involves active analysis of coding and denial trends.',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+      nextLevelTeaser: 'Level 2 involves observing trends in coding, denials, and collections.',
     };
   }
 
   if (level === 2) {
-    const INVESTIGATION_AREAS = [
-      'wRVU per encounter trends',
-      'Coding specificity / ICD-10 distribution',
-      'Denial rates tied to documentation',
-      'Collections before vs. after',
-      'CDI query volume',
-      'Coder productivity',
-    ];
-    const { checked } = parseCheckedItems(inputs.investigationAreas as string, INVESTIGATION_AREAS);
+    const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);
     const count = checked.length;
-    const codingSpecificityImprovement = inputs.codingSpecificityImprovement as number | undefined;
-    const currentDenialRate = inputs.currentDenialRate as number | undefined;
-    const hasCodingData = codingSpecificityImprovement !== undefined && codingSpecificityImprovement > 0;
-    const hasDenialData = currentDenialRate !== undefined && currentDenialRate > 0;
+    const directionalEstimate = inputs.directionalEstimate as string | undefined;
 
-    if (count === 0) {
+    const ESTIMATE_RANGES: Record<string, { lowPct: number; highPct: number; label: string }> = {
+      'under_1': { lowPct: 0.005, highPct: 0.01, label: 'Under 1%' },
+      '1_3': { lowPct: 0.01, highPct: 0.03, label: '1–3%' },
+      '3_5': { lowPct: 0.03, highPct: 0.05, label: '3–5%' },
+      '5_plus': { lowPct: 0.05, highPct: 0.07, label: '5%+' },
+    };
+
+    const checkedLabels = checked.map(shortLabel).join(', ');
+
+    if (directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]) {
+      const range = ESTIMATE_RANGES[directionalEstimate];
+      const lowEstimate = Math.round(documentedEncounters * revenuePerVisit * range.lowPct);
+      const highEstimate = Math.round(documentedEncounters * revenuePerVisit * range.highPct);
+
+      let context = `Your organization estimates ${range.label} of encounter revenue is being affected by documentation improvements.\n\nAt ${documentedEncounters.toLocaleString()} documented encounters × ${formatDollar(revenuePerVisit)} per visit:\n${(range.lowPct * 100).toFixed(1)}% = ${formatDollar(lowEstimate)}\n${(range.highPct * 100).toFixed(1)}% = ${formatDollar(highEstimate)}\n\nThis is your team's directional estimate based on trending data. A formal before/after analysis (Level 3) would validate this figure.`;
+      if (count > 0) {
+        context += `\n\n${count} area${count !== 1 ? 's' : ''} showing movement:\n${checkedLabels}`;
+      }
+
       return {
         label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: 'Analysis not yet started.',
-        context: `Your revenue cycle is actively investigating. Select the areas being analyzed. Financial impact will be quantified when before/after measurement is available (Level 3).`,
-        formula: '',
-        footnote: '',
+        value: highEstimate,
+        hasValue: true,
+        headlineMetric: `${formatDollar(lowEstimate)}–${formatDollar(highEstimate)} directional estimate`,
+        context,
+        formula: `[lowEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.lowPct * 100).toFixed(1)}% = ${formatDollar(lowEstimate)}\n[highEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.highPct * 100).toFixed(1)}% = ${formatDollar(highEstimate)}`,
+        footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 3 requires before/after measurement data.',
       };
     }
 
-    const checkedLabels = checked.map(shortLabel).join(', ');
-    const duration = inputs.investigationDuration as string | undefined;
-    const durationNote = duration === '90plus' ? '\n\nAnalysis is 90+ days in — sufficient for before/after comparison at Level 3.' : '';
-
-    let investigationContext = `Revenue cycle is analyzing: ${checkedLabels}.`;
-    if (hasCodingData) {
-      investigationContext += `\n\nEstimated coding specificity improvement: ${codingSpecificityImprovement}%.`;
+    if (count > 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+        context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible but the impact hasn't been estimated yet. A formal before/after analysis (Level 3) would quantify it.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 requires before/after measurement data.',
+      };
     }
-    if (hasDenialData) {
-      investigationContext += `\n\nCurrent denial rate: ${currentDenialRate}%.`;
-    }
-    investigationContext += durationNote;
-    investigationContext += '\n\nFinancial impact will be quantified when before/after measurement is available (Level 3).';
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `Analysis underway across ${count} area${count !== 1 ? 's' : ''}.`,
-      context: investigationContext,
+      headlineMetric: 'Select observed areas and estimate impact.',
+      context: 'Select the areas where your organization has observed movement, and provide a directional estimate of the revenue impact.',
       formula: '',
-      footnote: 'Dollar value available at Level 3 when before/after data is entered.',
+      footnote: '',
       nextLevelTeaser: 'Level 3 requires before/after measurement data.',
     };
   }
@@ -413,26 +360,25 @@ export function computeRevenueFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Select measurement type to calculate.',
-        context: `Select what was measured to calculate the revenue impact. Abridge deployment benchmark at this encounter volume: $150K–$500K annually.`,
+        context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
       };
     }
 
     if (metricType === 'wrvu') {
       const wrvuDelta = inputs.measuredWrvuDelta as number | undefined;
       if (!wrvuDelta || wrvuDelta <= 0) {
-        const benchValue = Math.round(documentedEncounters * 0.1 * conversionFactor / 1000) * 1000;
         return {
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured wRVU change to calculate.',
-          context: `Enter your measured wRVU change per encounter. Abridge benchmark: a 0.1 wRVU improvement per encounter is approximately ${formatDollar(benchValue)} annually.`,
+          context: 'Enter your measured wRVU change per encounter. Abridge benchmark: 0.05–0.15 wRVU per encounter. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
         };
       }
       const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
@@ -440,27 +386,26 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `${wrvuDelta} wRVU improvement per encounter across ${documentedEncounters.toLocaleString()} documented encounters = ${formatDollar(revenueImpact)} in annual revenue.`,
-        formula: `[revenueImpact] = ${wrvuDelta} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} (CMS conversion factor) = ${formatDollar(revenueImpact)}`,
-        footnote: `CMS conversion factor: $${conversionFactor}. Adjustable in baseline settings.`,
-        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
+        context: `${wrvuDelta} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
+        formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,
+        footnote: `CMS conversion factor from your baseline inputs.\nEstimates based on your inputs. Individual results vary.`,
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
       };
     }
 
     if (metricType === 'collections') {
       const collectionsDelta = inputs.measuredCollectionsDelta as number | undefined;
       if (!collectionsDelta || collectionsDelta <= 0) {
-        const benchLow = Math.round(documentedEncounters * 3);
-        const benchHigh = Math.round(documentedEncounters * 10);
         return {
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured collections change to calculate.',
-          context: `Enter your measured collections change per encounter. Abridge benchmark: $3–$10 per encounter = ${formatDollar(benchLow)}–${formatDollar(benchHigh)} annually.`,
+          context: 'Enter your measured collections change per encounter. Organizations at this level have reported $3–$10 increase per encounter. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
         };
       }
       const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
@@ -468,10 +413,11 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `${formatDollar(collectionsDelta)} increase in collections per encounter across ${documentedEncounters.toLocaleString()} documented encounters = ${formatDollar(revenueImpact)} annually.`,
-        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}`,
-        footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
+        context: `${formatDollar(collectionsDelta)} per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
+        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
       };
     }
 
@@ -483,10 +429,10 @@ export function computeRevenueFeedback(
           value: null,
           hasValue: false,
           headlineMetric: 'Enter measured revenue change to calculate.',
-          context: `Enter your measured revenue change percentage. Abridge benchmark: 1–4% improvement.`,
+          context: 'Enter your measured revenue change percentage. Organizations at this level have reported 2–7% improvement. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
         };
       }
       const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (revenuePct / 100));
@@ -494,52 +440,39 @@ export function computeRevenueFeedback(
         label: 'Estimated Impact',
         value: revenueImpact,
         hasValue: true,
-        context: `${revenuePct}% revenue improvement across ${documentedEncounters.toLocaleString()} encounters at ${formatDollar(revenuePerVisit)}/visit = ${formatDollar(revenueImpact)} annually.`,
-        formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} × ${revenuePct}% = ${formatDollar(revenueImpact)}`,
-        footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
+        context: `${revenuePct}% × ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
+        formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${revenuePct}% = ${formatDollar(revenueImpact)}`,
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
       };
     }
 
     if (metricType === 'denial_rate') {
-      const denialBefore = inputs.denialRateBefore as number | undefined;
-      const denialAfter = inputs.denialRateAfter as number | undefined;
+      const denialPct = inputs.measuredDenialReduction as number | undefined;
 
-      if (!denialBefore || denialBefore <= 0) {
+      if (!denialPct || denialPct <= 0) {
         return {
           label: 'Estimated Impact',
           value: null,
           hasValue: false,
-          headlineMetric: 'Enter denial rate data to calculate.',
-          context: `Enter your denial rate before and after ambient. Abridge benchmark: 5–15% denial rate reduction.`,
+          headlineMetric: 'Enter measured denial rate reduction to calculate.',
+          context: 'Enter your measured denial rate reduction percentage. Organizations at this level have reported 5–15% reduction in documentation-related denials. Based on aggregated deployment experience.',
           formula: '',
           footnote: '',
-          nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
         };
       }
 
-      const denialDelta = (denialBefore || 0) - (denialAfter || 0);
-      if (denialDelta <= 0) {
-        return {
-          label: 'Estimated Impact',
-          value: null,
-          hasValue: false,
-          headlineMetric: 'No denial rate improvement detected',
-          context: `Your denial rate after (${denialAfter || 0}%) is not lower than before (${denialBefore}%). Enter the rates to see the impact of documentation-driven denial reduction.`,
-          formula: '',
-          footnote: '',
-        };
-      }
-
-      const denialSavings = Math.round((denialDelta / 100) * documentedEncounters * revenuePerVisit);
       return {
         label: 'Estimated Impact',
-        value: denialSavings,
-        hasValue: true,
-        context: `Denial rate: ${denialBefore}% → ${denialAfter}%. ${denialDelta.toFixed(1)} point improvement across ${documentedEncounters.toLocaleString()} encounters.`,
-        formula: `[denialSavings] = (${denialBefore}% - ${denialAfter}%) × ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} = ${formatDollar(denialSavings)}`,
-        footnote: 'Based on your organization\'s measured data.',
-        nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+        value: null,
+        hasValue: false,
+        headlineMetric: `Denial rate reduced ${denialPct}%`,
+        context: `Your documentation-related denial rate decreased by ${denialPct}%.\n\nTo estimate dollar impact, multiply your average monthly documentation-related denial volume by the reduction percentage and your average denial value.\n\nBased on your organization's measured data.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
       };
     }
 
@@ -548,10 +481,10 @@ export function computeRevenueFeedback(
       value: null,
       hasValue: false,
       headlineMetric: 'Select measurement type to calculate.',
-      context: `Select what was measured to calculate the revenue impact. Abridge deployment benchmark at this encounter volume: $150K–$500K annually.`,
+      context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 4 integrates revenue tracking into ongoing operations.',
+      nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy.',
     };
   }
 
@@ -560,50 +493,57 @@ export function computeRevenueFeedback(
   const count = checked.length;
   const checkedLabels = checked.map(shortLabel).join(', ');
   const uncheckedLabels = unchecked.map(shortLabel).join(', ');
-
   const noConfirmedRevenue = inputs.noConfirmedRevenue === 'true';
+  const hasRevenue = recognizedRevenue !== undefined && recognizedRevenue > 0;
 
-  if (count === 0 && (!recognizedRevenue || recognizedRevenue <= 0) && !noConfirmedRevenue) {
+  if (hasRevenue) {
+    let context: string;
+    if (count > 0) {
+      context = `Documentation intelligence is driving revenue strategy across ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nYour organization formally attributes ${formatDollar(recognizedRevenue!)} in annual revenue to documentation quality. This figure is incorporated into financial planning.`;
+    } else {
+      context = `Your organization formally attributes ${formatDollar(recognizedRevenue!)} in annual revenue to documentation quality. Select strategic integrations above to show how documentation intelligence connects to revenue operations.`;
+    }
+    if (unchecked.length > 0) {
+      context += `\n\nNot yet integrated:\n${uncheckedLabels}`;
+    }
     return {
       label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: 'Enter annually attributed revenue to calculate.',
-      context: `Abridge deployment benchmark for full revenue cycle integration at ${documentedEncounters.toLocaleString()} encounters: $200K–$600K annually. Enter your confirmed figure.`,
+      value: recognizedRevenue!,
+      hasValue: true,
+      headlineMetric: `${formatDollar(recognizedRevenue!)} in attributed annual revenue`,
+      context,
       formula: '',
-      footnote: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
     };
   }
 
-  if (noConfirmedRevenue && (!recognizedRevenue || recognizedRevenue <= 0)) {
+  if (count > 0) {
+    let context = `Documentation intelligence is driving revenue strategy across ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}`;
+    if (noConfirmedRevenue) {
+      context += `\n\nNo confirmed revenue attribution yet. Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a planning estimate until formal attribution is available.`;
+    } else {
+      context += `\n\nEnter your attributed annual revenue when available. Organizations at this level typically have a figure that revenue cycle and finance leadership reference in planning.`;
+    }
+    if (unchecked.length > 0) {
+      context += `\n\nNot yet integrated:\n${uncheckedLabels}`;
+    }
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Enter annually attributed revenue to calculate.',
-      context: `Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. Planning figure, not confirmed.`,
+      headlineMetric: noConfirmedRevenue ? `${count} strategic integration${count !== 1 ? 's' : ''} — revenue not yet confirmed` : `${count} strategic integration${count !== 1 ? 's' : ''}`,
+      context,
       formula: '',
-      footnote: '',
-    };
-  }
-
-  if (count > 0 && (!recognizedRevenue || recognizedRevenue <= 0)) {
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: `${count} integration${count !== 1 ? 's' : ''} active.`,
-      context: `Your revenue cycle and documentation quality are formally connected across ${count} area${count !== 1 ? 's' : ''}. Enter the revenue your organization has formally attributed to complete this level.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
-      formula: '',
-      footnote: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
     };
   }
 
   return {
     label: 'Estimated Impact',
-    value: recognizedRevenue || 0,
-    hasValue: true,
-    context: `${formatDollar(recognizedRevenue || 0)} in annual revenue attributed to documentation quality improvements across ${count} integrated area${count !== 1 ? 's' : ''}: ${checkedLabels}.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    value: null,
+    hasValue: false,
+    headlineMetric: 'Select strategic integrations and enter attributed revenue.',
+    context: `Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a working estimate.`,
     formula: '',
     footnote: '',
   };
@@ -794,22 +734,24 @@ const STRATEGIC_INTEGRATIONS = [
 ];
 
 const REVENUE_SIGNALS = [
-  'Fewer CDI queries (notes are more complete upfront)',
-  'More specific diagnosis coding (ICD-10 specificity improved)',
-  'Improved HCC / risk adjustment capture',
-  'Fewer claim denials related to documentation',
-  'Faster coding turnaround (less back-and-forth)',
+  'wRVU per encounter trending upward',
+  'Coding specificity improving (ICD-10 distribution shifting)',
+  'Denial rates trending downward',
+  'Collections per encounter trending upward',
+  'CDI query volume decreasing',
+  'Coder productivity improving',
 ];
 
-const REVENUE_INTEGRATIONS = [
-  'Ongoing wRVU or collections monitoring linked to documentation',
-  'CDI workflow includes ambient review',
-  'Denial management tracks documentation',
-  'Dashboards include documentation metrics',
-  'Payer negotiations reference it',
+export const REVENUE_INTEGRATIONS = [
+  'Specialty-level analysis identifies where documentation has the biggest revenue impact',
+  'CDI strategy is informed by ambient documentation patterns and gaps',
+  'Documentation quality data supports payer contract negotiations or rate discussions',
+  'Denial prevention is proactive — documentation gaps identified before claims submitted',
+  'Documentation-driven revenue is a line item in financial planning and forecasting',
+  'Revenue cycle, CDI, and clinical leadership have a shared view of documentation-to-revenue performance',
 ];
 
-export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS, REVENUE_INTEGRATIONS };
+export { QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_SIGNALS };
 
 function parseCheckedItems(csv: string | undefined, allItems: string[]): { checked: string[]; unchecked: string[] } {
   if (!csv) return { checked: [], unchecked: [...allItems] };
