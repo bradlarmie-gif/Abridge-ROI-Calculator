@@ -1,0 +1,197 @@
+# Workforce Domain — Fixes for Replit
+
+The Workforce domain is the closest to being right. Levels 1-3 need minor fixes. Level 4 needs a rebuild. Keep the same UX patterns, card treatments, sidebar formula panel, and brand styling.
+
+---
+
+## Level 1: Time Is Returning — Minor fixes only
+
+**Keep:** The after-hours input, the 46 clinical weeks, the Shanafelt citation, the pre-fill label explaining "Pre-filled from deployment benchmarks."
+
+**Keep:** The formula and estimated impact output. This level works.
+
+**No changes needed at Level 1.**
+
+---
+
+## Level 2: Burden Measured — Remove the burden score
+
+**Keep:** The in-clinic time returned input (min/day), the clinician survey question (Not yet / Informal pulse / Structured survey), and the survey findings checkboxes.
+
+**Remove:** The "Documentation burden score before" and "Documentation burden score after" fields (Scale of 1-10). These don't feed into any calculation and add dead weight to a 30-minute session. Cut both fields entirely.
+
+**Everything else at Level 2 stays as-is.** The survey combo is strong — especially since Abridge has its own clinician survey tool. The in-clinic time savings formula is correct (min × providers × 230 / 60).
+
+---
+
+## Level 3: Retention Modeled — No changes needed
+
+**Keep everything:**
+- Annual physician turnover rate input with AAMC benchmark
+- Replacement cost input with AMGA benchmark and $350K default
+- "How much of turnover is burden-related" radio with Conservative / Research benchmark labels
+- Shanafelt citation
+- The formula showing total turnover cost × attribution % = documentation-attributable exposure
+
+This is one of the strongest levels in the entire tool. Don't touch it.
+
+---
+
+## Level 4: REBUILD — Ambient as a Workforce Strategy
+
+**Current state:** Called "Labor Line Impact." Asks for monthly agency/locum spend reduction and whether it's sustained. This is operational, not strategic. It doesn't feel like a meaningful step up from Level 3.
+
+**New Level 4 name:** Workforce Strategically Managed
+
+**New card text:**
+```
+Workforce Strategically Managed
+Documentation burden reduction is a variable in
+workforce strategy — recruitment, retention
+programs, and staffing decisions.
+```
+
+**New description when selected:**
+"Ambient documentation isn't just reducing burden — it's informing how your organization approaches workforce challenges. Recruitment, retention program design, staffing models, and provider experience strategy are connected to documentation burden data."
+
+**New inputs:**
+```
+Where is documentation burden data informing
+workforce strategy?
+
+☐ Recruitment and hiring — ambient documentation
+  is part of the value proposition to candidates
+☐ Retention program design — burden reduction is
+  a measured component of retention initiatives
+☐ Time-to-fill tracking — positions are filling
+  faster partly attributed to improved work environment
+☐ Provider experience strategy — documentation burden
+  metrics are tracked alongside satisfaction and
+  engagement
+☐ Staffing model decisions — documentation efficiency
+  informs how shifts, panels, or coverage are structured
+☐ Agency/locum spend actively managed against
+  burden reduction trends
+
+Has your organization seen measurable workforce
+outcomes attributed to documentation burden reduction?
+
+○ Not yet — too early to measure
+○ Anecdotally — we believe it's helping but
+  haven't isolated the effect
+○ Yes — we can point to specific outcomes
+  (turnover improvement, time-to-fill changes,
+  agency spend reduction)
+
+[If "Yes" selected, show:]
+Which outcomes have you measured?
+☐ Turnover rate decreased
+☐ Time-to-fill for positions decreased
+☐ Agency or locum reliance decreased
+☐ Provider satisfaction scores improved
+☐ Recruitment acceptance rates improved
+
+Monthly agency or locum spend reduction (if tracking)
+$ [___]
+Organizations at this level have reported $5K-$30K/month
+in agency and locum spend reduction.
+Based on aggregated deployment experience.
+```
+
+**New Estimated Impact card:**
+
+If checkboxes + outcomes measured + agency spend entered:
+```
+ESTIMATED IMPACT
+
+$[annualAgencySavings] in agency/locum reduction
+[strategyCount] strategic integration(s)
+[outcomeCount] workforce outcome(s) measured
+
+Documentation burden reduction is informing workforce
+strategy across [strategyCount] area(s):
+[list of strategy checkboxes checked]
+
+Measured workforce outcomes:
+[list of outcome checkboxes checked]
+
+Agency/locum reduction: $[monthlySpend] × 12
+= $[annualAgencySavings] annually.
+
+Not yet integrated:
+[list of unchecked strategy items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+If checkboxes but no agency spend and no measured outcomes:
+```
+ESTIMATED IMPACT
+
+[strategyCount] strategic integration(s)
+
+Documentation burden reduction is informing workforce
+strategy across [strategyCount] area(s):
+[list of strategy checkboxes checked]
+
+Workforce outcomes have not yet been formally measured.
+Organizations at this level that track outcomes
+typically identify improvements in turnover rate,
+time-to-fill, and provider satisfaction.
+
+Not yet integrated:
+[list of unchecked strategy items]
+
+Estimates based on your inputs. Individual results vary.
+```
+
+**Why this is the right Level 4:**
+
+The jump from Level 3 to Level 4 is clear:
+- Level 3: "We modeled turnover cost against burden." (Analysis)
+- Level 4: "We use burden data to drive workforce strategy." (Action)
+
+Level 3 is about understanding the exposure. Level 4 is about using that understanding to change how the organization approaches recruitment, retention, staffing, and provider experience. That's genuinely strategic.
+
+The checkboxes at Level 4 are things that almost nobody is doing yet:
+- Using ambient as a recruitment selling point
+- Burden reduction as a measured retention intervention
+- Time-to-fill connected to work environment improvements
+- Documentation metrics in provider experience dashboards
+- Staffing decisions informed by documentation efficiency
+
+Most organizations will check 0-1. That gap is the conversation.
+
+The agency/locum spend input is still here but it's ONE of several strategic indicators, not the entire level. It's a financial proof point within a broader strategic framework.
+
+---
+
+## Workforce Summary in Sidebar
+
+Update the summary to reflect Level 4 changes:
+```
+WORKFORCE SUMMARY
+
+After-Hours Returned     [X] hrs/yr
+In-Clinic Returned       [X] hrs/yr or —
+Retention Exposure       $[X] or —
+Strategic Integrations   [X] of 6 or —
+Agency Reduction         $[X] or —
+```
+
+**Also fix the display bug:** Level 1 computes after-hours hours but the summary currently shows "—" for In-Clinic Returned even when Level 2 has been completed with data. Make sure each summary line pulls from the correct level's calculation when data has been entered.
+
+---
+
+## After Implementing
+
+Browse through all four Workforce levels with test data and verify:
+
+1. Level 1 uses 46 clinical weeks and the pre-fill label is visible
+2. Level 2 does NOT show the burden score before/after fields — they should be completely gone
+3. Level 2 survey checkboxes still work correctly when "Structured survey" is selected
+4. Level 3 is unchanged — turnover rate, replacement cost, attribution %, all formulas correct
+5. Level 4 shows the new strategic checkboxes, the outcomes question with conditional reveal, and the optional agency spend input
+6. Level 4 does NOT show agency/locum as the primary/only input — it's one element within a broader strategic framework
+7. The Workforce Summary correctly displays values from all levels that have been completed
+8. The display bug where In-Clinic hours show "—" even after Level 2 data entry is fixed
