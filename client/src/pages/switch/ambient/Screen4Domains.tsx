@@ -343,9 +343,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       const accessDecisionStage = currentState.inputs.accessDecisionStage as string | undefined;
       return (
         <div className="mb-5">
-          <label className="block text-sm font-medium text-black mb-3">
-            Where does your organization stand on converting recovered time to patient access?
-          </label>
           <div className="flex flex-col gap-2.5">
             {[
               { id: 'evaluating', label: 'Evaluating — exploring whether recovered time can drive access' },
