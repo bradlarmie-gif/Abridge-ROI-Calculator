@@ -481,21 +481,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             className="w-full h-12 bg-white border-[#E5E7EB]"
             data-testid="input-l4-additional-patients"
           />
-          <BenchmarkContext text="Confirmed patient volume increase attributed to recovered time." />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Downstream revenue per additional visit</label>
-          <BenchmarkContext text="Referrals, follow-ups, and ancillary services. Typical range: $150–$500+." />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#888888]">$</span>
-            <FormattedNumberInput
-              value={(currentState.inputs.downstreamRevenuePerVisit as number) || 0}
-              onChange={(v) => setDomainInput('downstreamRevenuePerVisit', Math.max(0, v))}
-              placeholder="e.g. 200"
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-downstream-revenue-per-visit"
-            />
-          </div>
+          <BenchmarkContext text="Carries from Level 3 if entered. This is the same input — Level 4 assumes you're still counting visits." />
         </div>
       </div>
     );
@@ -2113,7 +2099,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
                   <p className="text-xs text-white/50 italic leading-relaxed mb-3">
-                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue — direct and downstream, based on confirmed patient volume.` : `Access revenue — based on additional patients seen with recovered time.`) :
+                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue based on confirmed patient volume.` : `Access revenue — based on additional patients seen with recovered time.`) :
                      activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
                      activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
                      ''}
@@ -2298,14 +2284,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const rp = (inp.redesignedProviders as number) || providers;
               const accessRevenue = pts > 0 ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
 
-              const drpv = (inp.downstreamRevenuePerVisit as number) || 0;
-              const downstreamRevenue = pts > 0 && drpv > 0 ? Math.round(pts * rp * 11 * drpv) : null;
+              const outcomesCsv = (inp.accessOutcomes as string) || '';
+              const outcomeCount = outcomesCsv.split(',').filter(Boolean).length;
 
-              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || downstreamRevenue !== null;
+              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || outcomeCount > 0;
               if (!hasAnyValue) return null;
-
-              const totalDollar = (accessRevenue || 0) + (downstreamRevenue || 0);
-              const hasDollarValue = accessRevenue !== null || downstreamRevenue !== null;
 
               return (
                 <>
@@ -2326,19 +2309,21 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                         {accessRevenue !== null ? formatDollar(accessRevenue) : '—'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Downstream Revenue</span>
-                      <span className="text-white font-medium" data-testid="text-capacity-summary-downstream">
-                        {downstreamRevenue !== null ? formatDollar(downstreamRevenue) : '—'}
-                      </span>
-                    </div>
-                    {hasDollarValue && (
+                    {currentState.activationLevel >= 4 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Access Outcomes</span>
+                        <span className="text-white font-medium" data-testid="text-capacity-summary-outcomes">
+                          {outcomeCount > 0 ? `${outcomeCount} of 6 tracked` : '—'}
+                        </span>
+                      </div>
+                    )}
+                    {accessRevenue !== null && (
                       <>
                         <div className="h-px bg-white/10 my-2" />
                         <div className="flex items-center justify-between">
                           <span className="text-white font-semibold">Total Capacity</span>
                           <span className="text-[#EA2C00] font-bold" data-testid="text-capacity-summary-total">
-                            {formatDollar(totalDollar)}
+                            {formatDollar(accessRevenue)}
                           </span>
                         </div>
                       </>

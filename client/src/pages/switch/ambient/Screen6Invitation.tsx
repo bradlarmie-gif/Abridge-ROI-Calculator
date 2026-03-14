@@ -106,7 +106,6 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       const outcomes = resolveChecklist(raw.accessOutcomes as string, ACCESS_OUTCOME_OPTIONS);
       if (outcomes.length) out['Access outcomes tracked'] = outcomes.join(', ');
       if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`;
-      if (raw.downstreamRevenuePerVisit) out['Downstream revenue/visit'] = fmtDollar(Number(raw.downstreamRevenuePerVisit));
     }
   }
 
@@ -207,10 +206,10 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
     },
     3: {
       currentStateLabel: "Additional patients are being seen with recovered time. Access revenue is measured.",
-      nextLevelUnlock: "Tracking of downstream access outcomes — panel growth, same-day access, referral conversion — with direct and downstream revenue attributed to recovered time.",
+      nextLevelUnlock: "Tracking of downstream access outcomes — panel growth, same-day access, referral conversion — attributed to recovered time.",
     },
     4: {
-      currentStateLabel: "Downstream access outcomes are tracked and attributed to recovered time.",
+      currentStateLabel: "Access outcomes are tracked and attributed to recovered time. Revenue reflects confirmed patient volume.",
       nextLevelUnlock: "",
     },
   },

@@ -171,14 +171,12 @@ export function computeCapacityFeedback(
   if (level === 3) {
     const additionalPatients = inputs.additionalPatientsPerMonth as number | undefined;
     if (!additionalPatients || additionalPatients <= 0) {
-      const lowPatients = providers * 3 * 12;
-      const highPatients = providers * 8 * 12;
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: `${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually`,
-        context: `Benchmark: organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At ${providers.toLocaleString()} providers, that is ${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually.`,
+        headlineMetric: 'Enter additional patients per provider per month to calculate access revenue.',
+        context: '',
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
@@ -187,16 +185,30 @@ export function computeCapacityFeedback(
     const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
     const annualAdditionalVisits = additionalPatients * redesignedProviders * 11;
     const accessRevenue = Math.round(annualAdditionalVisits * revenuePerVisit);
-    const confidence = inputs.capacityAccessConfidence as string | undefined;
+    const confidence = (inputs.capacityAccessConfidence as string) || 'estimated';
     const isAspirational = confidence === 'aspirational';
+    const isMeasured = confidence === 'measured';
+
+    const headlineMetric = isMeasured
+      ? `${formatDollar(accessRevenue)} in access revenue annually`
+      : isAspirational
+        ? `${formatDollar(accessRevenue)} access revenue target`
+        : `${formatDollar(accessRevenue)} in access revenue annually (estimated)`;
+
+    const confidenceFraming = isMeasured
+      ? 'Based on your confirmed scheduling data.'
+      : isAspirational
+        ? 'This is a planning target, not confirmed data.'
+        : 'Based on your organization\'s estimate. Validate with scheduling data to confirm.';
+
     return {
       label: 'Estimated Impact',
       value: accessRevenue,
       hasValue: true,
-      headlineMetric: `${formatDollar(accessRevenue)} in access revenue annually`,
-      context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
+      headlineMetric,
+      context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.\n\n${confidenceFraming}`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
-      footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
+      footnote: `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,
       nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
@@ -218,15 +230,16 @@ export function computeCapacityFeedback(
 
   const l4Patients = (inputs.additionalPatientsPerMonth as number) || 0;
   const l4Providers = (inputs.redesignedProviders as number) || providers;
-  const downstreamRevenuePerVisit = (inputs.downstreamRevenuePerVisit as number) || 0;
+
+  const downstreamNarrative = '\n\nEvery additional patient entering your system also generates downstream activity — labs, imaging, referrals, follow-up visits, and procedures. The access revenue above captures the initial visit. The full system value of these patients is significantly higher.';
 
   if (outcomeCount === 0 && l4Patients <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Downstream access impact not yet tracked',
-      context: `Select the access outcomes your organization is measuring, and enter the confirmed additional patients per provider per month to calculate downstream revenue.`,
+      headlineMetric: 'Select access outcomes your organization is tracking',
+      context: 'Check the downstream access outcomes being measured as a result of recovered capacity, and enter confirmed additional patients per provider per month.',
       formula: '',
       footnote: '',
     };
@@ -238,7 +251,7 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked`,
-      context: `Your organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter confirmed additional patients per provider per month to calculate revenue impact.${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
+      context: `Your organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter confirmed additional patients per provider per month to calculate access revenue.${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
       formula: '',
       footnote: '',
     };
@@ -246,17 +259,15 @@ export function computeCapacityFeedback(
 
   const annualVisits = Math.round(l4Patients * l4Providers * 11);
   const accessRevenue = Math.round(annualVisits * revenuePerVisit);
-  const downstreamRevenue = Math.round(annualVisits * downstreamRevenuePerVisit);
-  const totalRevenue = accessRevenue + downstreamRevenue;
 
   return {
     label: 'Estimated Impact',
-    value: totalRevenue,
+    value: accessRevenue,
     hasValue: true,
-    headlineMetric: `${formatDollar(totalRevenue)} in measured access revenue`,
-    context: `${l4Patients} additional patients/provider/month × ${l4Providers} providers × 11 clinical months = ${annualVisits.toLocaleString()} visits.\n\nDirect access: ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${downstreamRevenue > 0 ? `\nDownstream (referrals, ancillaries): ${annualVisits.toLocaleString()} × ${formatDollar(downstreamRevenuePerVisit)} = ${formatDollar(downstreamRevenue)}` : ''}${outcomeCount > 0 ? `\n\nTracked outcomes: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
-    formula: `[annualVisits] = ${l4Patients} patients/mo × ${l4Providers} providers × 11 months = ${annualVisits.toLocaleString()}\n[accessRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${downstreamRevenue > 0 ? `\n[downstreamRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(downstreamRevenuePerVisit)} = ${formatDollar(downstreamRevenue)}` : ''}\n[total] = ${formatDollar(accessRevenue)} + ${formatDollar(downstreamRevenue)} = ${formatDollar(totalRevenue)}`,
-    footnote: `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.${downstreamRevenue > 0 ? ' Downstream revenue includes referrals, follow-ups, and ancillary services generated by additional primary visits.' : ''}`,
+    headlineMetric: `${formatDollar(accessRevenue)} in measured access revenue`,
+    context: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked\n\n${l4Patients} additional patients/provider/month × ${l4Providers} providers × 11 clinical months = ${annualVisits.toLocaleString()} visits.\nDirect access: ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${outcomeCount > 0 ? `\n\nYour organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}${downstreamNarrative}`,
+    formula: `[annualVisits] = ${l4Patients} patients/mo × ${l4Providers} providers × 11 months = ${annualVisits.toLocaleString()}\n[accessRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
+    footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.\nEstimates based on your inputs. Individual results vary.',
   };
 }
 

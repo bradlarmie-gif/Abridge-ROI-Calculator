@@ -113,7 +113,7 @@ function getNextLevelContent(
       base.lowEstimate = low;
       base.highEstimate = high;
     } else {
-      base.narrative = "Downstream access outcomes are confirmed and tracked. The work ahead is expanding the provider footprint, deepening downstream revenue attribution, and sustaining access gains across scheduling cycles.";
+      base.narrative = "Access outcomes are confirmed and tracked. The work ahead is expanding the provider footprint and sustaining access gains across scheduling cycles.";
     }
   } else if (domain === 'revenue') {
     if (level === 1) {
