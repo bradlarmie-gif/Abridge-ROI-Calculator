@@ -39,7 +39,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     1: 'Notes Improving',
     2: 'Actively Monitored',
     3: 'Downstream Connected',
-    4: 'Operationally Embedded',
+    4: 'Documentation as a Strategic Asset',
   },
 };
 
@@ -767,20 +767,21 @@ const QUALITY_ATTRIBUTES = [
 ];
 
 const DOWNSTREAM_WORKFLOWS = [
-  'CDI query volume reduced',
-  'Coding accuracy improved',
-  'Prior auth approvals improved',
-  'Quality measure performance',
-  'Chart abstraction faster',
-  'HCC / risk adjustment capture',
+  'CDI — fewer queries, faster turnaround, or improved capture rates',
+  'Coding accuracy — specificity improvements or denial reduction',
+  'Quality measures — HEDIS, MIPS, or Stars gap closure improved',
+  'Prior authorization — documentation supporting faster or higher approval rates',
+  'Chart abstraction — less manual effort for registries, research, or reporting',
+  'Risk adjustment — HCC capture or RAF accuracy improved for VBC populations',
 ];
 
 const STRATEGIC_INTEGRATIONS = [
-  'Compliance and audit governance',
-  'Quality program strategy',
-  'Clinical documentation review',
-  'Payer contract negotiations',
-  'Value-based care design',
+  'Quality program design — documentation data shapes HEDIS, MIPS, or Stars strategy',
+  'Value-based care — documentation supports risk stratification and population health initiatives',
+  'Compliance governance — documentation quality is a governed metric with executive oversight',
+  'AI and automation readiness — structured documentation is positioned as the foundation for clinical AI, predictive models, or automated reporting',
+  'Payer strategy — documentation quality data informs payer negotiations or contract design',
+  'Clinical research — structured documentation supports research data extraction or registry participation',
 ];
 
 const REVENUE_SIGNALS = [
@@ -820,74 +821,25 @@ export function computeRiskFeedback(
   level: ActivationLevel,
   inputs: Record<string, number | string>,
   documentedEncounters: number = 0,
-  revenuePerVisit: number = 200,
+  _revenuePerVisit: number = 200,
 ): DomainFeedback {
   if (level === 1) {
     const downstreamConnected = inputs.qualityDownstreamConnected as string | undefined;
-    const downstreamAreaStr = inputs.qualityDownstreamArea as string | undefined;
-    const areaCount = downstreamAreaStr ? downstreamAreaStr.split(',').filter(Boolean).length : 0;
-
-    const chartCompletionRate = inputs.chartCompletionRate as number | undefined;
-    const codingAccuracy = inputs.codingAccuracy as number | undefined;
-    const hasChartCompletion = chartCompletionRate !== undefined && chartCompletionRate > 0;
-    const hasCodingAccuracy = codingAccuracy !== undefined && codingAccuracy > 0;
-
-    let qualityNarrative = '';
-    let estimatedValue: number | null = null;
-    let formulaStr = '';
-
-    if (hasChartCompletion || hasCodingAccuracy) {
-      const parts: string[] = [];
-      const formulaParts: string[] = [];
-
-      if (hasChartCompletion) {
-        const completionGap = Math.max(0, 95 - chartCompletionRate!);
-        parts.push(`Chart completion rate: ${chartCompletionRate}%${completionGap > 0 ? ` (${completionGap} points below 95% target)` : ' (at or above target)'}.`);
-        if (completionGap > 0) {
-          const incompletePct = (100 - chartCompletionRate!) / 100;
-          const incompleteCharts = Math.round(documentedEncounters * incompletePct);
-          const recoveryEstimate = Math.round(incompleteCharts * revenuePerVisit * 0.03);
-          parts.push(`${incompleteCharts.toLocaleString()} charts annually with completion gaps — estimated ${formatDollar(recoveryEstimate)} in recoverable value from improved completeness.`);
-          formulaParts.push(`[incompleteCharts] = ${documentedEncounters.toLocaleString()} × ${(incompletePct * 100).toFixed(0)}% = ${incompleteCharts.toLocaleString()}\n[completenessValue] = ${incompleteCharts.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 3% recovery = ${formatDollar(recoveryEstimate)}`);
-          estimatedValue = (estimatedValue || 0) + recoveryEstimate;
-        }
-      }
-
-      if (hasCodingAccuracy) {
-        const accuracyGap = Math.max(0, 92 - codingAccuracy!);
-        parts.push(`Coding accuracy: ${codingAccuracy}%${accuracyGap > 0 ? ` (${accuracyGap} points below 92% benchmark)` : ' (at or above benchmark)'}.`);
-        if (accuracyGap > 0) {
-          const inaccuratePct = (100 - codingAccuracy!) / 100;
-          const inaccurateCharts = Math.round(documentedEncounters * inaccuratePct);
-          const codingRecovery = Math.round(inaccurateCharts * revenuePerVisit * 0.05);
-          parts.push(`${inaccurateCharts.toLocaleString()} charts with potential coding inaccuracies — estimated ${formatDollar(codingRecovery)} in revenue at risk from coding errors.`);
-          formulaParts.push(`[inaccurateCharts] = ${documentedEncounters.toLocaleString()} × ${(inaccuratePct * 100).toFixed(0)}% = ${inaccurateCharts.toLocaleString()}\n[codingRisk] = ${inaccurateCharts.toLocaleString()} × ${formatDollar(revenuePerVisit)} × 5% impact = ${formatDollar(codingRecovery)}`);
-          estimatedValue = (estimatedValue || 0) + codingRecovery;
-        }
-      }
-
-      qualityNarrative = `\n\n${parts.join('\n')}`;
-      formulaStr = formulaParts.join('\n');
-    }
 
     const statusText = downstreamConnected === 'yes'
-      ? (areaCount > 0 ? `${areaCount} downstream area${areaCount !== 1 ? 's' : ''} engaged.` : 'At least one downstream team is formally engaged.')
+      ? 'One downstream team is formally engaged.'
       : downstreamConnected === 'informal'
-        ? 'Downstream teams are informally aware.'
-        : 'Downstream connection not yet started.';
-
-    const headlineMetric = estimatedValue && estimatedValue > 0
-      ? `${formatDollar(estimatedValue)} estimated quality improvement opportunity`
-      : `${documentedEncounters.toLocaleString()} encounters with improved documentation.`;
+        ? 'Informal conversations have started with downstream teams.'
+        : 'Downstream connection not yet started. The value of improved documentation depends on whether coding, quality reporting, compliance, and other teams can see and use the improvement.';
 
     return {
       label: 'Estimated Impact',
-      value: estimatedValue,
-      hasValue: estimatedValue !== null && estimatedValue > 0,
-      headlineMetric,
-      context: `${documentedEncounters.toLocaleString()} encounters with improved documentation. ${statusText}${qualityNarrative}`,
-      formula: formulaStr,
-      footnote: estimatedValue && estimatedValue > 0 ? 'Estimated opportunity based on gap between current rates and industry benchmarks. Actual recoverable value depends on payer mix and clinical context.' : '',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${documentedEncounters.toLocaleString()} encounters with improved documentation.`,
+      context: `${documentedEncounters.toLocaleString()} encounters with improved documentation.\n\n${statusText}`,
+      formula: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 2 establishes systematic quality tracking.',
     };
   }
@@ -899,11 +851,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Select monitoring approach to continue.',
-        context: `${documentedEncounters.toLocaleString()} encounters annually. Select how documentation quality is being tracked.`,
+        headlineMetric: 'Quality monitoring not yet formalized.',
+        context: 'Select how documentation quality metrics are being tracked.',
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
     if (approach === 'not_yet') {
@@ -911,11 +863,11 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'No formal quality tracking in place.',
-        context: `${documentedEncounters.toLocaleString()} encounters annually. No formal documentation quality monitoring established.`,
+        headlineMetric: 'Quality monitoring not yet formalized.',
+        context: 'Without measurement, the value of improved documentation remains invisible to the organization.',
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
     if (approach === 'spot_checks') {
@@ -923,74 +875,40 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Informal quality review in place.',
-        context: `${documentedEncounters.toLocaleString()} encounters annually. Informal spot checks are surfacing issues. Systematic tracking would make patterns measurable.`,
+        headlineMetric: 'Quality monitoring not yet formalized.',
+        context: 'Informal monitoring is a start. Establishing structured tracking creates the baseline needed to measure downstream impact.',
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
     const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
     const count = checked.length;
-
-    const complianceAuditPassRate = inputs.complianceAuditPassRate as number | undefined;
-    const daysToChartClosure = inputs.daysToChartClosure as number | undefined;
-    const hasCompliance = complianceAuditPassRate !== undefined && complianceAuditPassRate > 0;
-    const hasChartClosure = daysToChartClosure !== undefined && daysToChartClosure > 0;
-
-    let l2MetricParts: string[] = [];
-
-    if (hasCompliance) {
-      const complianceGap = Math.max(0, 90 - complianceAuditPassRate!);
-      l2MetricParts.push(`Compliance audit pass rate: ${complianceAuditPassRate}%${complianceGap > 0 ? ` (${complianceGap} points below 90% target)` : ' (at or above target)'}.`);
-    }
-
-    if (hasChartClosure) {
-      const closureGap = Math.max(0, daysToChartClosure! - 3);
-      l2MetricParts.push(`Average days to chart closure: ${daysToChartClosure} day${daysToChartClosure !== 1 ? 's' : ''}${closureGap > 0 ? ` (${closureGap} day${closureGap !== 1 ? 's' : ''} above best practice of <3)` : ' (at or below best practice)'}.`);
-    }
-
-    const l2Narrative = l2MetricParts.length > 0 ? `\n\n${l2MetricParts.join('\n')}` : '';
 
     if (count === 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Quality monitoring approach identified.',
-        context: `Systematic tracking is active. Select which documentation attributes are being tracked.\n\nNo financial estimate at this level — the value is in establishing measurement.${l2Narrative}`,
+        headlineMetric: 'Structured tracking active.',
+        context: 'Your organization is systematically tracking documentation quality. Select which attributes are being tracked.',
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
     const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
     const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
-    const gapRate = inputs.chartGapRate as number | undefined;
-
-    if (gapRate && gapRate > 0) {
-      const chartsWithGaps = Math.round(documentedEncounters * (gapRate / 100));
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `${count} of 5 quality dimensions tracked. ${chartsWithGaps.toLocaleString()} charts with gaps identified annually.`,
-        context: `Quality monitoring approach identified. No financial estimate at this level — the value is in establishing measurement.\n\nTracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}\n\n${chartsWithGaps.toLocaleString()} charts with documentation gaps annually (${gapRate}% gap rate).${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}${l2Narrative}`,
-        formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
-      };
-    }
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${count} of 5 quality dimensions tracked`,
-      context: `Quality monitoring approach identified. No financial estimate at this level — the value is in establishing measurement.\n\nTracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}\n\nEnter chart documentation gap rate to calculate volume of charts with gaps.${l2Narrative}`,
+      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
       formula: '',
-      footnote: '',
-      nextLevelTeaser: 'Level 3 connects documentation quality to a downstream workflow.',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+      nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
     };
   }
 
@@ -999,160 +917,102 @@ export function computeRiskFeedback(
     const count = checked.length;
     const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
     const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const depth = inputs.qualityMeasurementDepth as string | undefined;
+    const noDownstreamValue = inputs.noDownstreamValue === 'true';
+    const downstreamValue = noDownstreamValue ? 0 : ((inputs.downstreamValue as number) || 0);
 
     if (count === 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Select connected workflows to calculate.',
-        context: `Select which downstream workflows have shown measurable change. Benchmark at ${documentedEncounters.toLocaleString()} encounters: $100K–$400K in downstream value.`,
+        headlineMetric: 'Select connected downstream areas.',
+        context: 'Select which downstream areas have been connected to documentation quality improvements.',
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into governance and strategy.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
       };
     }
 
-    const workflowValues: { name: string; value: number; formula: string }[] = [];
+    const depthText = depth === 'measured'
+      ? 'Measured data is available.'
+      : depth === 'partial'
+        ? 'Some areas have measured data.'
+        : depth === 'qualitative'
+          ? 'Impact is visible but not yet quantified.'
+          : '';
 
-    if (checked.some(c => c.includes('CDI'))) {
-      const before = (inputs.cdiQueriesBefore as number) || 0;
-      const after = (inputs.cdiQueriesAfter as number) || 0;
-      const costPerQuery = (inputs.cdiCostPerQuery as number) || 25;
-      if (before > after) {
-        const val = Math.round((before - after) * costPerQuery * 12);
-        workflowValues.push({ name: 'CDI query reduction', value: val, formula: `(${before} - ${after}) × $${costPerQuery} (cost per CDI query) × 12 = ${formatDollar(val)}` });
-      }
-    }
-    if (checked.some(c => c.includes('Coding'))) {
-      const before = (inputs.riskDenialBefore as number) || 0;
-      const after = (inputs.riskDenialAfter as number) || 0;
-      if (before > after) {
-        const val = Math.round((before - after) / 100 * documentedEncounters * revenuePerVisit);
-        workflowValues.push({ name: 'Denial reduction', value: val, formula: `(${before}% - ${after}%) × ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(val)}` });
-      }
-    }
-    if (checked.some(c => c.includes('Quality'))) {
-      const gapsClosed = (inputs.qualityGapsClosed as number) || 0;
-      const qualityGapValue = (inputs.qualityGapValue as number) || 100;
-      if (gapsClosed > 0) {
-        const val = Math.round(gapsClosed * 12 * qualityGapValue);
-        workflowValues.push({ name: 'Quality gap closure', value: val, formula: `${gapsClosed} gaps/mo × 12 × $${qualityGapValue} (quality gap value) = ${formatDollar(val)}` });
-      }
-    }
-    if (checked.some(c => c.includes('Prior'))) {
-      const before = (inputs.priorAuthBefore as number) || 0;
-      const after = (inputs.priorAuthAfter as number) || 0;
-      if (after > before) {
-        const val = Math.round((after - before) / 100 * documentedEncounters * 15);
-        workflowValues.push({ name: 'Prior auth improvement', value: val, formula: `(${after}% - ${before}%) × ${documentedEncounters.toLocaleString()} × $15 = ${formatDollar(val)}` });
-      }
-    }
-    if (checked.some(c => c.includes('abstraction'))) {
-      const hoursSaved = (inputs.abstractionHoursSaved as number) || 0;
-      if (hoursSaved > 0) {
-        const val = Math.round(hoursSaved * 12 * 50);
-        workflowValues.push({ name: 'Abstraction time', value: val, formula: `${hoursSaved} hrs/mo × 12 × $50 = ${formatDollar(val)}` });
-      }
-    }
-    if (checked.some(c => c.includes('Risk adjustment') || c.includes('HCC'))) {
-      const rafChange = (inputs.rafChange as number) || 0;
-      const vbcMembers = (inputs.vbcMembers as number) || 0;
-      const capitationRate = (inputs.capitationRate as number) || 0;
-      if (rafChange > 0 && vbcMembers > 0 && capitationRate > 0) {
-        const val = Math.round(rafChange * vbcMembers * capitationRate);
-        workflowValues.push({ name: 'HCC/RAF capture', value: val, formula: `${rafChange} RAF × ${vbcMembers.toLocaleString()} members × ${formatDollar(capitationRate)} = ${formatDollar(val)}` });
-      }
-    }
-
-    const totalValue = workflowValues.reduce((sum, w) => sum + w.value, 0);
-
-    if (totalValue === 0) {
-      const checkedNames = checked.map(c => shortLabel(c)).join(', ');
+    if (downstreamValue > 0) {
       return {
         label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `${count} downstream workflow${count > 1 ? 's' : ''} connected`,
-        context: `Connected to ${count} downstream workflow${count > 1 ? 's' : ''}: ${checkedNames}.\n\nEnter before/after metrics for each connected workflow to calculate impact.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
-        formula: '',
-        footnote: '',
+        value: downstreamValue,
+        hasValue: true,
+        headlineMetric: `${formatDollar(downstreamValue)} in downstream quality value`,
+        context: `Documentation quality is driving ${formatDollar(downstreamValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+        formula: `[annualValue] = ${formatDollar(downstreamValue)} (organization estimate)`,
+        footnote: 'Based on your organization\'s estimate. Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
       };
     }
 
-    const formulaLines = workflowValues.map(w => `[${w.name}] = ${w.formula}`).join('\n');
-    const uncheckedNames = unchecked.map(c => shortLabel(c)).join(', ');
     return {
       label: 'Estimated Impact',
-      value: totalValue,
-      hasValue: true,
-      headlineMetric: `${formatDollar(totalValue)} in measured downstream improvement across ${count} workflow${count > 1 ? 's' : ''}.`,
-      context: `Measured downstream improvements:\n\n${workflowValues.map(w => `${w.name}: ${formatDollar(w.value)}`).join('\n')}${unchecked.length > 0 ? `\n\nNot yet connected: ${uncheckedNames}` : ''}`,
-      formula: formulaLines,
-      footnote: '',
-      nextLevelTeaser: 'Level 4 embeds documentation quality into governance and strategy.',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} downstream area${count > 1 ? 's' : ''} connected`,
+      context: `Documentation quality is driving improvement across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      formula: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+      nextLevelTeaser: 'Level 4 positions documentation as a strategic organizational asset.',
     };
   }
 
   const { checked, unchecked } = parseCheckedItems(inputs.strategicIntegrations as string, STRATEGIC_INTEGRATIONS);
-  const strategicValue = inputs.strategicValue as number | undefined;
+  const noConfirmedStrategicValue = inputs.noConfirmedStrategicValue === 'true';
+  const strategicValue = noConfirmedStrategicValue ? 0 : ((inputs.strategicValue as number) || 0);
   const executiveOwner = inputs.executiveOwner as string | undefined;
   const count = checked.length;
-  const checkedLabels = checked.map(shortLabel).join(', ');
-  const uncheckedLabels = unchecked.map(shortLabel).join(', ');
+  const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+  const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
 
   const ownerLine = executiveOwner === 'yes'
-    ? `\n\nNamed executive owner${inputs.executiveOwnerRole ? ` (${inputs.executiveOwnerRole})` : ''} for documentation quality strategy.`
+    ? '\n\nExecutive owner: Yes'
     : executiveOwner === 'no'
-      ? '\n\nNo named executive owner for documentation quality.'
+      ? '\n\nExecutive owner: Not yet'
       : '';
 
-  const noConfirmedStrategicValue = inputs.noConfirmedStrategicValue === 'true';
-
-  if (count === 0 && (!strategicValue || strategicValue <= 0) && !noConfirmedStrategicValue) {
+  if (count === 0 && strategicValue <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Enter strategic value to calculate.',
-      context: `At this level, documentation quality is embedded in organizational strategy. Enter the strategic value your organization attributes to documentation quality programs.`,
+      headlineMetric: 'Select strategic areas to continue.',
+      context: 'Select where documentation quality informs organizational strategy.',
       formula: '',
-      footnote: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
     };
   }
 
-  if (noConfirmedStrategicValue && (!strategicValue || strategicValue <= 0)) {
+  if (strategicValue > 0) {
     return {
       label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: 'Enter strategic value to calculate.',
-      context: `At ${documentedEncounters.toLocaleString()} encounters, documentation quality programs typically generate value across compliance, quality reporting, and contract performance. Enter your organization's confirmed strategic value.`,
-      formula: '',
-      footnote: '',
-    };
-  }
-
-  if (count > 0 && (!strategicValue || strategicValue <= 0)) {
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} connected`,
-      context: `Documentation quality is embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\nEnter the strategic value your organization attributes to documentation quality to complete this level.${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
-      formula: '',
-      footnote: '',
+      value: strategicValue,
+      hasValue: true,
+      headlineMetric: `${formatDollar(strategicValue)} in attributed strategic value`,
+      context: `Documentation quality informs organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nYour organization attributes ${formatDollar(strategicValue)} in annual value to documentation quality programs.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      formula: `[strategicValue] = ${formatDollar(strategicValue)} (organization estimate)`,
+      footnote: 'Estimates based on your inputs. Individual results vary.',
     };
   }
 
   return {
     label: 'Estimated Impact',
-    value: strategicValue || 0,
-    hasValue: true,
-    headlineMetric: `${formatDollar(strategicValue || 0)} in recognized annual strategic value.`,
-    context: `Documentation quality embedded in ${count} strategic area${count > 1 ? 's' : ''}: ${checkedLabels}.${ownerLine}\n\n${strategicValue && strategicValue > 0 ? `${formatDollar(strategicValue)} in annual strategic value attributed to documentation quality.` : 'Enter the strategic value your organization attributes to documentation quality.'}${unchecked.length > 0 ? `\n\nNot yet integrated: ${uncheckedLabels}` : ''}`,
+    value: null,
+    hasValue: false,
+    headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} connected`,
+    context: `Documentation quality informs organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nStrategic value not yet quantified. Organizations at this level typically identify significant value across quality, compliance, and VBC programs when they formalize attribution.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
     formula: '',
-    footnote: '',
+    footnote: 'Estimates based on your inputs. Individual results vary.',
   };
 }
 

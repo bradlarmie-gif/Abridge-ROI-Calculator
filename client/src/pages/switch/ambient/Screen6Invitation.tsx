@@ -51,11 +51,11 @@ const QUALITY_ATTRIBUTES_LABELS = [
 ];
 
 const DOWNSTREAM_WORKFLOWS_LABELS = [
-  'CDI queries', 'Denial reduction', 'Quality gap closure', 'Prior auth', 'Chart abstraction', 'RAF / HCC capture',
+  'CDI', 'Coding accuracy', 'Quality measures', 'Prior authorization', 'Chart abstraction', 'Risk adjustment',
 ];
 
 const STRATEGIC_INTEGRATIONS_LABELS = [
-  'VBC contracts', 'Payer strategy', 'Compliance governance', 'Annual quality goals',
+  'Quality program design', 'Value-based care', 'Compliance governance', 'AI and automation readiness', 'Payer strategy', 'Clinical research',
 ];
 
 const REVENUE_INTEGRATIONS_LABELS = [
@@ -182,31 +182,29 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
 
   if (domain === 'risk') {
     if (level === 1) {
-      if (raw.qualityDownstreamConnected) out['Downstream connection'] = raw.qualityDownstreamConnected === 'yes' ? 'One team formally engaged' : raw.qualityDownstreamConnected === 'informal' ? 'Starting informally' : 'Not yet';
-      if (raw.chartCompletionRate) out['Chart completion rate'] = `${raw.chartCompletionRate}%`;
-      if (raw.codingAccuracy) out['Coding accuracy'] = `${raw.codingAccuracy}%`;
+      if (raw.qualityDownstreamConnected) {
+        const labels: Record<string, string> = { yes: 'One team formally engaged', informal: 'Starting informally', no: 'Not yet' };
+        out['Downstream connection'] = labels[String(raw.qualityDownstreamConnected)] || String(raw.qualityDownstreamConnected);
+      }
     }
     if (level === 2) {
       const attrs = resolveChecklist(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS);
       if (attrs.length) out['Quality attributes tracked'] = attrs.join(', ');
-      if (raw.chartGapRate) out['Chart gap rate'] = `${raw.chartGapRate}%`;
-      if (raw.complianceAuditPassRate) out['Compliance audit pass rate'] = `${raw.complianceAuditPassRate}%`;
-      if (raw.daysToChartClosure) out['Days to chart closure'] = `${raw.daysToChartClosure} days`;
     }
     if (level === 3) {
       const wf = resolveChecklist(raw.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS_LABELS);
-      if (wf.length) out['Connected workflows'] = wf.join(', ');
-      if (raw.cdiQueriesBefore || raw.cdiQueriesAfter) out['CDI queries'] = `${raw.cdiQueriesBefore || 0} \u2192 ${raw.cdiQueriesAfter || 0}`;
-      if (raw.riskDenialBefore || raw.riskDenialAfter) out['Risk denials'] = `${raw.riskDenialBefore || 0}% \u2192 ${raw.riskDenialAfter || 0}%`;
-      if (raw.priorAuthBefore || raw.priorAuthAfter) out['Prior auth'] = `${raw.priorAuthBefore || 0} \u2192 ${raw.priorAuthAfter || 0}`;
-      if (raw.qualityGapsClosed) out['Quality gaps closed'] = `${raw.qualityGapsClosed}`;
-      if (raw.abstractionHoursSaved) out['Abstraction hours saved'] = `${raw.abstractionHoursSaved} hrs/month`;
-      if (raw.rafChange) out['RAF score change'] = `+${raw.rafChange}`;
+      if (wf.length) out['Connected areas'] = wf.join(', ');
+      if (raw.qualityMeasurementDepth) {
+        const depthLabels: Record<string, string> = { qualitative: 'Qualitative', partial: 'Partially measured', measured: 'Measured data available' };
+        out['Measurement depth'] = depthLabels[String(raw.qualityMeasurementDepth)] || String(raw.qualityMeasurementDepth);
+      }
+      if (raw.downstreamValue) out['Downstream quality value'] = fmtDollar(Number(raw.downstreamValue));
     }
     if (level === 4) {
       const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);
-      if (si.length) out['Embedded in'] = si.join(', ');
-      if (raw.confirmedQualityValue) out['Confirmed annual quality value'] = fmtDollar(Number(raw.confirmedQualityValue));
+      if (si.length) out['Strategic areas'] = si.join(', ');
+      if (raw.executiveOwner) out['Executive owner'] = raw.executiveOwner === 'yes' ? 'Yes' : 'Not yet';
+      if (raw.strategicValue) out['Strategic value'] = fmtDollar(Number(raw.strategicValue));
     }
   }
 
@@ -254,19 +252,19 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
   },
   risk: {
     1: {
-      currentStateLabel: "Documentation is being captured. Quality dimensions aren't yet tracked.",
-      nextLevelUnlock: "Visibility into documentation completeness, specificity, and accuracy at scale — the foundation that CDI, coding, and compliance workflows all depend on.",
+      currentStateLabel: "Documentation quality has improved. No one has measured how or connected it downstream.",
+      nextLevelUnlock: "Systematic tracking of documentation quality attributes — completeness, specificity, compliance readiness, and risk adjustment capture.",
     },
     2: {
-      currentStateLabel: "Documentation quality is being monitored. It isn't yet connected to the workflows that depend on it.",
-      nextLevelUnlock: "Quality data wired into CDI workflows, coding accuracy, and prior auth — so that documentation intelligence becomes an active input to revenue cycle and compliance operations, not just a report.",
+      currentStateLabel: "Documentation quality attributes are being tracked systematically.",
+      nextLevelUnlock: "Connecting documentation quality to at least one downstream program — CDI, coding, quality measures, prior authorization, chart abstraction, or risk adjustment.",
     },
     3: {
-      currentStateLabel: "Documentation quality is actively improving revenue and compliance workflows.",
-      nextLevelUnlock: "Documentation infrastructure positioned for value-based care — where quality data supports risk adjustment, population health reporting, and payer negotiations.",
+      currentStateLabel: "Documentation quality improvements are connected to at least one downstream program or workflow.",
+      nextLevelUnlock: "Documentation quality positioned as a strategic organizational asset — informing quality program design, value-based care, compliance governance, and AI readiness.",
     },
     4: {
-      currentStateLabel: "Documentation quality is a managed strategic asset across clinical and operational workflows.",
+      currentStateLabel: "Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.",
       nextLevelUnlock: "",
     },
   },
@@ -419,7 +417,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
       revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },
       workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
-      risk: { 1: "Documentation quality improved but nothing downstream has changed.", 2: "Quality monitoring started but downstream workflows aren't connected." },
+      risk: { 1: "Documentation quality improved but no downstream teams have been engaged.", 2: "Quality attributes tracked but not yet connected to downstream programs." },
     };
     const insightLevel = Math.min(lowestLevel, 2) as 1|2;
     const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';

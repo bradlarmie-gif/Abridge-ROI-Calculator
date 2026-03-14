@@ -124,25 +124,25 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   },
   risk: {
     label: 'QUALITY',
-    headline: 'QUALITY',
-    subheadline: 'Better documentation produces more complete clinical records. This measures whether downstream teams — coding, quality, compliance — are seeing the difference.',
-    reframe: 'Improved notes are the starting point. The operational value depends on whether that improvement reaches CDI, coding accuracy, quality reporting, or compliance workflows.',
+    headline: 'WHAT IS YOUR DOCUMENTATION QUALITY UNLOCKING?',
+    subheadline: 'Improved notes are the starting point. The real value depends on whether that improvement reaches CDI, coding, quality reporting, compliance, and future AI initiatives.',
+    reframe: 'Select the level that best describes your organization today.',
     cards: [
-      { level: 1, label: 'Notes Improving', description: 'Documentation quality has improved. Downstream teams have not yet been engaged.' },
-      { level: 2, label: 'Actively Monitored', description: 'Documentation quality metrics are being tracked systematically.' },
-      { level: 3, label: 'Downstream Connected', description: 'At least one downstream workflow shows measurable improvement.' },
-      { level: 4, label: 'Operationally Embedded', description: 'Documentation quality is integrated into governance and strategy.' },
+      { level: 1, label: 'Notes Improving', description: 'Documentation quality has improved. No one has measured how or connected it downstream.' },
+      { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
+      { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
+      { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
     ],
     framingQuestions: {
-      1: 'Have any downstream teams reviewed documentation changes?',
+      1: 'Have any downstream teams reviewed documentation changes from ambient?',
       2: 'How are documentation quality metrics being tracked?',
-      3: 'Which downstream workflows have shown measurable change?',
-      4: 'Where is documentation quality embedded in governance?',
+      3: 'Which downstream areas have been connected to documentation quality improvements?',
+      4: 'Where does documentation quality inform organizational strategy?',
     },
     unlockTeasers: {
-      2: 'Establish systematic tracking of documentation quality metrics.',
-      3: 'Connect documentation improvements to a downstream workflow.',
-      4: 'Embed documentation quality into governance and strategic planning.',
+      2: 'Establish systematic tracking of documentation quality attributes.',
+      3: 'Connect documentation quality to at least one downstream program.',
+      4: 'Position documentation quality as a strategic organizational asset.',
     },
   },
 };
@@ -1211,15 +1211,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const level = currentState.activationLevel;
     if (!level) return null;
 
-    const QUALITY_DOWNSTREAM_AREAS = [
-      'CDI / coding accuracy',
-      'Quality measure performance (HEDIS, MIPS, Stars)',
-      'Compliance and audit readiness',
-      'Prior authorization',
-      'Care management / population health',
-      'HCC / risk adjustment (if value-based contracts apply)',
-    ];
-
     if (level === 1) {
       const downstreamConnected = (currentState.inputs.qualityDownstreamConnected as string) || '';
       return (
@@ -1257,68 +1248,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </label>
               ))}
             </div>
-          </div>
-
-          {downstreamConnected === 'yes' && (
-            <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                Which area has been engaged first?
-              </label>
-              <div className="flex flex-col gap-2">
-                {QUALITY_DOWNSTREAM_AREAS.map((area, i) => {
-                  const checked = isChecked('qualityDownstreamArea', i);
-                  return (
-                    <label
-                      key={i}
-                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
-                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                      }`}
-                      data-testid={`checkbox-downstream-area-${i}`}
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={() => toggleCheckboxItem('qualityDownstreamArea', i)}
-                      />
-                      <span className="text-sm text-black">{area}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Current chart completion rate
-            </label>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.chartCompletionRate as number) || 0}
-                onChange={(v) => setDomainInput('chartCompletionRate', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-chart-completion-rate"
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <BenchmarkContext text="Target: 95%+" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Average coding accuracy
-            </label>
-            <div className="flex items-center gap-2">
-              <FormattedNumberInput
-                value={(currentState.inputs.codingAccuracy as number) || 0}
-                onChange={(v) => setDomainInput('codingAccuracy', Math.min(100, Math.max(0, v)))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-coding-accuracy"
-              />
-              <span className="text-sm text-[#888888]">%</span>
-            </div>
-            <BenchmarkContext text="Industry: 85–92%" />
           </div>
         </div>
       );
@@ -1395,58 +1324,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     );
                   })}
                 </div>
-                <BenchmarkContext text="Abridge benchmark: 15–30% improvement in completeness and specificity" />
-
-                <div className="mt-5">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    What % of reviewed charts have documentation gaps?
-                  </label>
-                  <p className="text-xs text-[#888888] mb-2">Optional. Enter if your monitoring has produced a gap rate.</p>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.chartGapRate as number) || 0}
-                      onChange={(v) => setDomainInput('chartGapRate', Math.min(100, Math.max(0, v)))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-chart-gap-rate"
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Compliance audit pass rate
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.complianceAuditPassRate as number) || 0}
-                      onChange={(v) => setDomainInput('complianceAuditPassRate', Math.min(100, Math.max(0, v)))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-compliance-audit-pass-rate"
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                  <BenchmarkContext text="Target: 90%+" />
-                </div>
-
-                <div className="mt-5">
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Average days to chart closure
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.daysToChartClosure as number) || 0}
-                      onChange={(v) => setDomainInput('daysToChartClosure', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-days-to-chart-closure"
-                    />
-                    <span className="text-sm text-[#888888]">days</span>
-                  </div>
-                  <BenchmarkContext text="Best practice: <3 days" />
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1455,33 +1332,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     }
 
     if (level === 3) {
-      const WORKFLOW_DELTA_FIELDS: Record<number, { fields: { key: string; label: string; suffix?: string; step?: number; sublabel?: string }[] }> = {
-        0: { fields: [
-          { key: 'cdiQueriesBefore', label: 'CDI queries/month before', suffix: '/mo' },
-          { key: 'cdiQueriesAfter', label: 'CDI queries/month after', suffix: '/mo' },
-          { key: 'cdiCostPerQuery', label: 'Cost per CDI query', suffix: '$', sublabel: 'Industry range: $20–$60 per query (default: $25)' },
-        ] },
-        1: { fields: [
-          { key: 'riskDenialBefore', label: 'Denial rate before (%)', suffix: '%', step: 0.1 },
-          { key: 'riskDenialAfter', label: 'Denial rate after (%)', suffix: '%', step: 0.1 },
-        ] },
-        2: { fields: [
-          { key: 'priorAuthBefore', label: 'Prior auth approval rate before (%)', suffix: '%' },
-          { key: 'priorAuthAfter', label: 'Prior auth approval rate after (%)', suffix: '%' },
-        ] },
-        3: { fields: [
-          { key: 'qualityGapsClosed', label: 'Quality gaps closed per month', suffix: '/mo' },
-          { key: 'qualityGapValue', label: 'Value per quality gap closed', suffix: '$', sublabel: 'VBC incentive or penalty per gap (default: $100)' },
-        ] },
-        4: { fields: [
-          { key: 'abstractionHoursSaved', label: 'Abstraction hours saved per month', suffix: 'hrs/mo' },
-        ] },
-        5: { fields: [
-          { key: 'rafChange', label: 'RAF score change', step: 0.01 },
-          { key: 'vbcMembers', label: 'Members in VBC contracts' },
-          { key: 'capitationRate', label: 'Annual capitation rate per member', suffix: '$' },
-        ] },
-      };
+      const depth = currentState.inputs.qualityMeasurementDepth as string || '';
+      const noDownstreamValue = currentState.inputs.noDownstreamValue === 'true';
 
       return (
         <div className="flex flex-col gap-5">
@@ -1490,51 +1342,97 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               {DOWNSTREAM_WORKFLOWS.map((wf, i) => {
                 const checked = isChecked('connectedWorkflows', i);
                 return (
-                  <div key={i}>
-                    <label
-                      htmlFor={`workflow-${i}`}
-                      className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
-                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                      }`}
-                    >
-                      <Checkbox
-                        id={`workflow-${i}`}
-                        checked={checked}
-                        onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
-                        data-testid={`checkbox-workflow-${i}`}
-                        className="mt-0.5"
-                      />
-                      <span className="text-sm text-[#525252] select-none leading-snug">
-                        {wf}
-                      </span>
-                    </label>
-                    {checked && WORKFLOW_DELTA_FIELDS[i] && (
-                      <div className="ml-8 mt-2 mb-1 flex flex-col gap-2">
-                        {WORKFLOW_DELTA_FIELDS[i].fields.map((f) => (
-                          <div key={f.key}>
-                            <div className="flex items-center gap-2">
-                              {f.suffix === '$' && <span className="text-sm text-[#888888]">$</span>}
-                              <FormattedNumberInput
-                                value={(currentState.inputs[f.key] as number) || 0}
-                                onChange={(v) => setDomainInput(f.key, Math.max(0, v))}
-                                placeholder=""
-                                className="w-full h-10 bg-white border-[#E5E7EB] text-sm"
-                                data-testid={`input-${f.key}`}
-                                step={f.step}
-                              />
-                              {f.suffix && f.suffix !== '$' && <span className="text-xs text-[#888888] whitespace-nowrap">{f.suffix}</span>}
-                              <span className="text-xs text-[#888888] whitespace-nowrap min-w-[80px] sm:min-w-[100px]">{f.label}</span>
-                            </div>
-                            {f.sublabel && (
-                              <p className="text-xs text-[#888888] mt-1 ml-0.5">{f.sublabel}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <label
+                    key={i}
+                    htmlFor={`workflow-${i}`}
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                  >
+                    <Checkbox
+                      id={`workflow-${i}`}
+                      checked={checked}
+                      onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
+                      data-testid={`checkbox-workflow-${i}`}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-[#525252] select-none leading-snug">
+                      {wf}
+                    </span>
+                  </label>
                 );
               })}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              For connected areas, has the impact been measured?
+            </label>
+            <div className="flex flex-col gap-2">
+              {[
+                { id: 'qualitative', label: 'Qualitatively — we can see improvement but haven\'t quantified it' },
+                { id: 'partial', label: 'Partially — some areas have before/after data' },
+                { id: 'measured', label: 'Yes — we have measured data for connected workflows' },
+              ].map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                    depth === opt.id
+                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-measurement-depth-${opt.id}`}
+                >
+                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    depth === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {depth === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                  </div>
+                  <span className="text-sm text-[#525252]">{opt.label}</span>
+                  <input
+                    type="radio"
+                    name="qualityMeasurementDepth"
+                    value={opt.id}
+                    checked={depth === opt.id}
+                    onChange={() => setDomainInput('qualityMeasurementDepth', opt.id)}
+                    className="sr-only"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Combined annual value of documentation quality improvements across connected workflows (optional)
+            </label>
+            <p className="text-xs text-[#888888] mb-2">
+              This could include CDI efficiency gains, coding accuracy improvements, quality measure incentives captured, abstraction time saved, or other measurable downstream value.
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={(currentState.inputs.downstreamValue as number) || 0}
+                onChange={(v) => setDomainInput('downstreamValue', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-downstream-value"
+                disabled={noDownstreamValue}
+              />
+            </div>
+            <div className="flex items-center gap-2.5 mt-3">
+              <Checkbox
+                id="no-downstream-value"
+                checked={noDownstreamValue}
+                onCheckedChange={(checked) => {
+                  setDomainInput('noDownstreamValue', checked ? 'true' : 'false');
+                }}
+                data-testid="checkbox-no-downstream-value"
+              />
+              <label htmlFor="no-downstream-value" className="text-sm text-[#525252] cursor-pointer select-none">
+                Don't have a combined number yet
+              </label>
             </div>
           </div>
         </div>
@@ -1544,58 +1442,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
     const executiveOwner = currentState.inputs.executiveOwner as string || '';
     return (
       <div className="flex flex-col gap-5">
-        <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Is there a named executive owner?
-          </label>
-          <div className="flex flex-col gap-2">
-            {[
-              { id: 'yes', label: 'Yes' },
-              { id: 'no', label: 'Not yet' },
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setDomainInput('executiveOwner', opt.id)}
-                className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                  executiveOwner === opt.id
-                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                }`}
-                data-testid={`radio-executive-owner-${opt.id}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${executiveOwner === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                  <span>{opt.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {executiveOwner === 'yes' && (
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Role</label>
-            <div className="flex flex-col gap-2">
-              {['CMO / CMIO', 'VP of Quality', 'CIO / CDO', 'VP of Revenue Cycle', 'Other'].map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setDomainInput('executiveOwnerRole', role)}
-                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    (currentState.inputs.executiveOwnerRole as string) === role
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-owner-role-${role}`}
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div>
           <div className="flex flex-col gap-2.5">
             {STRATEGIC_INTEGRATIONS.map((item, i) => {
@@ -1626,8 +1472,48 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
         <div>
           <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Annual strategic value attributed
+            Is there a named executive owner of documentation quality strategy?
           </label>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'yes', label: 'Yes' },
+              { id: 'no', label: 'Not yet' },
+            ].map((opt) => (
+              <label
+                key={opt.id}
+                className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                  executiveOwner === opt.id
+                    ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                    : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-executive-owner-${opt.id}`}
+              >
+                <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  executiveOwner === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                }`}>
+                  {executiveOwner === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                </div>
+                <span className="text-sm text-black">{opt.label}</span>
+                <input
+                  type="radio"
+                  name="executiveOwner"
+                  value={opt.id}
+                  checked={executiveOwner === opt.id}
+                  onChange={() => setDomainInput('executiveOwner', opt.id)}
+                  className="sr-only"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Annual strategic value attributed to documentation quality programs (optional)
+          </label>
+          <p className="text-xs text-[#888888] mb-2">
+            This is hard to quantify precisely. If your organization can estimate the combined strategic value of documentation-driven quality, compliance, VBC, and AI initiatives — enter it here. If not, leave blank.
+          </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -1652,11 +1538,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               Don't have a confirmed number yet
             </label>
           </div>
-          {currentState.inputs.noConfirmedStrategicValue === 'true' && (
-            <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-              At {documentedEncounters.toLocaleString()} encounters, enter the strategic value your organization attributes to documentation quality programs.
-            </p>
-          )}
         </div>
       </div>
     );
@@ -2064,7 +1945,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 workforce: hoursRecovered > 0
                   ? `${providers} providers, approximately ${hoursRecovered.toLocaleString()} hours of documentation time returned. Select the level that matches your organization.`
                   : `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,
-                risk: `${documentedEncounters.toLocaleString()} encounters with improved documentation. Select the level that describes how far downstream teams have engaged.`,
+                risk: `${documentedEncounters.toLocaleString()} encounters with improved documentation. Select the level that best describes your organization today.`,
               };
               const provocation = domainProvocations[activeDomain] || "Select your organization's maturity level to see estimated impact.";
               return (
@@ -2327,6 +2208,89 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                           <span className="text-white font-semibold">Total Capacity</span>
                           <span className="text-[#EA2C00] font-bold" data-testid="text-capacity-summary-total">
                             {formatDollar(accessRevenue)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+
+            {activeDomain === 'risk' && currentState.activationLevel && (() => {
+              const inp = currentState.inputs;
+              const attrCsv = (inp.qualityAttributes as string) || '';
+              const attrCount = attrCsv.split(',').filter(Boolean).length;
+
+              const wfCsv = (inp.connectedWorkflows as string) || '';
+              const wfCount = wfCsv.split(',').filter(Boolean).length;
+
+              const siCsv = (inp.strategicIntegrations as string) || '';
+              const siCount = siCsv.split(',').filter(Boolean).length;
+
+              const dv = (inp.downstreamValue as number) || 0;
+              const sv = (inp.strategicValue as number) || 0;
+
+              const hasAnyValue = attrCount > 0 || wfCount > 0 || siCount > 0 || dv > 0 || sv > 0;
+              if (!hasAnyValue) return null;
+
+              const totalDollar = dv + sv;
+              const hasDollarValue = dv > 0 || sv > 0;
+
+              return (
+                <>
+                  <div className="h-px bg-white/10 my-5" />
+                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-quality-summary-label">
+                    Quality Summary
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    {currentState.activationLevel >= 2 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Quality Dimensions Tracked</span>
+                        <span className="text-white font-medium" data-testid="text-quality-summary-attributes">
+                          {attrCount > 0 ? `${attrCount} of 5` : '—'}
+                        </span>
+                      </div>
+                    )}
+                    {currentState.activationLevel >= 3 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Downstream Areas Connected</span>
+                          <span className="text-white font-medium" data-testid="text-quality-summary-downstream-count">
+                            {wfCount > 0 ? `${wfCount} of 6` : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Downstream Value</span>
+                          <span className="text-white font-medium" data-testid="text-quality-summary-downstream-value">
+                            {dv > 0 ? formatDollar(dv) : '—'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {currentState.activationLevel >= 4 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Strategic Areas Connected</span>
+                          <span className="text-white font-medium" data-testid="text-quality-summary-strategic-count">
+                            {siCount > 0 ? `${siCount} of 6` : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Strategic Value</span>
+                          <span className="text-white font-medium" data-testid="text-quality-summary-strategic-value">
+                            {sv > 0 ? formatDollar(sv) : '—'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {hasDollarValue && (
+                      <>
+                        <div className="h-px bg-white/10 my-2" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">Total Quality Value</span>
+                          <span className="text-[#EA2C00] font-bold" data-testid="text-quality-summary-total">
+                            {formatDollar(totalDollar)}
                           </span>
                         </div>
                       </>

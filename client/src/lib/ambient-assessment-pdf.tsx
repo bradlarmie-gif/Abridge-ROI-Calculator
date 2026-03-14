@@ -560,16 +560,16 @@ const domainFrame: Record<
       }`,
   },
   risk: {
-    what: "When documentation improves, the clinical record becomes more complete, more specific, and more useful \u2014 to coders, quality teams, compliance officers, and care managers. Whether that improved signal reaches those downstream functions is what this domain measures.",
+    what: "Improved notes are the starting point. The real value depends on whether that improvement reaches CDI, coding, quality reporting, compliance, and future AI initiatives. This domain measures how far downstream the documentation improvement has traveled.",
     atThisLevel: (level: number) =>
       `At Level ${level}, your organization has ${
         level === 1
-          ? "improved its documentation quality. Nothing downstream has changed yet \u2014 not because the value isn't there, but because no one has connected the pipes."
+          ? "improved its documentation quality. Downstream teams have not yet been engaged \u2014 the value of improved documentation depends on whether coding, quality reporting, compliance, and other teams can see and use the improvement."
           : level === 2
-            ? "begun tracking documentation quality. Gaps are becoming visible. The data exists. It isn't yet an active input to the workflows that depend on it."
+            ? "established systematic tracking of documentation quality attributes. The organization is measuring what matters. The next step is connecting that measurement to downstream programs."
             : level === 3
-              ? "connected documentation quality to downstream workflows \u2014 CDI, coding, prior auth, or quality reporting. The improved signal is reaching the teams built to use it."
-              : "made documentation quality a governed strategic asset \u2014 an input to payer strategy, value-based care contracts, and compliance governance."
+              ? "connected documentation quality to downstream programs \u2014 CDI, coding accuracy, quality measures, prior authorization, chart abstraction, or risk adjustment. The improved signal is reaching the teams built to use it."
+              : "positioned structured documentation as a strategic organizational asset \u2014 informing quality program design, value-based care, compliance governance, AI readiness, and payer strategy."
       }`,
   },
 };
@@ -594,9 +594,9 @@ const levelNextUnlock: Record<string, Record<number, string>> = {
     4: "",
   },
   risk: {
-    1: "Visibility into documentation completeness, specificity, and accuracy at scale \u2014 the foundation that CDI, coding, and compliance workflows all depend on.",
-    2: "Quality data wired into CDI workflows, coding accuracy, and prior auth \u2014 so documentation intelligence becomes an active input to revenue cycle and compliance, not just a report.",
-    3: "Documentation infrastructure positioned for value-based care \u2014 where quality data supports risk adjustment, population health reporting, and payer negotiations.",
+    1: "Systematic tracking of documentation quality attributes \u2014 completeness, specificity, compliance readiness, and risk adjustment capture.",
+    2: "Connecting documentation quality to at least one downstream program \u2014 CDI, coding, quality measures, prior authorization, chart abstraction, or risk adjustment.",
+    3: "Documentation quality positioned as a strategic organizational asset \u2014 informing quality program design, value-based care, compliance governance, and AI readiness.",
     4: "",
   },
 };
@@ -615,8 +615,8 @@ function getCoachingNote(domainKey: string, level: number): string {
   if (domainKey === "workforce" && level >= 3)
     return "The transition from Level 3 to Level 4 is a governance decision, not a measurement decision. It's asking: is provider sustainability a formal variable in our FTE model? The organizations that say yes are building a moat.";
   if (domainKey === "risk" && level <= 2)
-    return "The downstream value of better documentation compounds \u2014 but only when someone has built the pipe. CDI, coding, and prior auth teams need to know documentation has changed. That notification, formally structured, is the Level 2 to Level 3 move.";
-  return "Documentation quality as a payer strategy input is where ambient AI's long-term value gets locked in. It's also the domain where most organizations have done the least work. That gap is an opportunity.";
+    return "The downstream value of better documentation compounds \u2014 but only when someone connects the improvement to the teams that depend on it. CDI, coding, quality reporting, and compliance teams need to see the change. That connection, formally structured, is the Level 2 to Level 3 move.";
+  return "Documentation quality as a strategic organizational asset is where ambient AI's long-term value gets locked in. Quality program design, VBC strategy, AI readiness, payer negotiations \u2014 these all depend on structured, complete documentation. Most organizations have done the least work here. That gap is an opportunity.";
 }
 
 function DomainPage({
@@ -794,17 +794,23 @@ function buildDataDrivenInsight(domainKey: string, domain: DomainData, orgContex
   }
 
   if (domainKey === 'risk') {
-    if (level === 1 && inputs['Chart completion rate']) {
-      parts.push(`Chart completion at ${inputs['Chart completion rate']} — closing the gap to 95%+ will improve downstream workflows.`);
+    if (level === 1 && inputs['Downstream connection']) {
+      parts.push(`Downstream engagement: ${inputs['Downstream connection']}.`);
     }
-    if (level === 1 && inputs['Coding accuracy']) {
-      parts.push(`Coding accuracy at ${inputs['Coding accuracy']} — each percentage point improvement impacts revenue integrity.`);
+    if (level === 2 && inputs['Quality attributes tracked']) {
+      parts.push(`Tracking: ${inputs['Quality attributes tracked']}.`);
     }
-    if (level === 2 && inputs['Days to chart closure']) {
-      parts.push(`${inputs['Days to chart closure']} days to chart closure — reducing toward <3 days accelerates collections.`);
+    if (level === 3 && inputs['Connected areas']) {
+      parts.push(`Connected to downstream areas: ${inputs['Connected areas']}.`);
     }
-    if (level === 2 && inputs['Compliance audit pass rate']) {
-      parts.push(`Compliance audit pass rate at ${inputs['Compliance audit pass rate']} — improving toward 90%+ reduces risk exposure.`);
+    if (level === 3 && inputs['Downstream quality value']) {
+      parts.push(`Downstream quality value: ${inputs['Downstream quality value']}.`);
+    }
+    if (level === 4 && inputs['Strategic areas']) {
+      parts.push(`Strategic areas: ${inputs['Strategic areas']}.`);
+    }
+    if (level === 4 && inputs['Strategic value']) {
+      parts.push(`Strategic value: ${inputs['Strategic value']}.`);
     }
   }
 
