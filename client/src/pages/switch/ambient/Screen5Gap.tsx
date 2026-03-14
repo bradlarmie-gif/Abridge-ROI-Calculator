@@ -117,14 +117,14 @@ function getNextLevelContent(
         base.highEstimate = bmkValueHigh;
       }
     } else if (level === 3) {
-      const low = 1 * providerRate * ANNUAL_HOURS;
-      const high = 3 * providerRate * ANNUAL_HOURS;
-      base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured capacity value'} through access redesign. The next level of maturity is using recovered capacity as a planning variable — informing hiring decisions, site expansion, and service line strategy. Organizations at this level report 1-3 FTE equivalent impact in workforce planning.`;
-      base.formula = `1 FTE × $${providerRate.toLocaleString()}/hr × ${ANNUAL_HOURS.toLocaleString()} = ${formatDollar(low)}\n3 FTE × $${providerRate.toLocaleString()}/hr × ${ANNUAL_HOURS.toLocaleString()} = ${formatDollar(high)}`;
+      const low = Math.round(2 * providers * 11 * revenuePerVisit);
+      const high = Math.round(5 * providers * 11 * revenuePerVisit);
+      base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured capacity value'} through access redesign. The next level of maturity is tracking downstream access outcomes — panel growth, same-day access, referral conversion — and attributing them to recovered time. Organizations at this level confirm 2–5 additional patients per provider per month in sustained access gains.`;
+      base.formula = `Low: 2 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(low)}\nHigh: 5 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(high)}`;
       base.lowEstimate = low;
       base.highEstimate = high;
     } else {
-      base.narrative = "Capacity is fully connected to operational decisions. The work here is deepening it — expanding the number of providers in the model, tightening the link between recovered time and financial outcomes, and keeping hiring plans informed by ambient data.";
+      base.narrative = "Downstream access outcomes are confirmed and tracked. The work here is deepening it — expanding the number of providers in the model, adding downstream revenue attribution, and sustaining access gains across scheduling cycles.";
     }
   } else if (domain === 'revenue') {
     if (level === 1) {

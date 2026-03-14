@@ -21,7 +21,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     1: 'Time Recovering',
     2: 'Quantified',
     3: 'Deployed',
-    4: 'Workforce Impact',
+    4: 'Access Impact Measured',
   },
   revenue: {
     1: 'Disconnected',
@@ -232,7 +232,7 @@ export function computeCapacityFeedback(
         context: `Benchmark: organizations that restructure scheduling around ambient see 3–8 additional patients per provider per month. At ${providers.toLocaleString()} providers, that is ${lowPatients.toLocaleString()}–${highPatients.toLocaleString()} additional patients annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 4 incorporates capacity changes into workforce planning.',
+        nextLevelTeaser: 'Level 4 measures downstream access outcomes attributed to recovered time.',
       };
     }
     const redesignedProviders = (inputs.redesignedProviders as number) > 0 ? (inputs.redesignedProviders as number) : providers;
@@ -248,61 +248,66 @@ export function computeCapacityFeedback(
       context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
       footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.',
-      nextLevelTeaser: 'Level 4 incorporates capacity changes into workforce planning.',
+      nextLevelTeaser: 'Level 4 measures downstream access outcomes attributed to recovered time.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };
   }
 
-  const CAPACITY_PLANNING_LABELS = [
-    'Avoided or deferred new hires',
-    'Absorbed volume without adding FTEs',
-    'Redeployed providers',
-    'In the annual staffing model',
-    'In a service line business case',
+  const ACCESS_OUTCOME_LABELS = [
+    'Panel size increased',
+    'New patient slots opened',
+    'Same-day/urgent access expanded',
+    'Referral-to-visit time reduced',
+    'Third-next-available improved',
+    'No-show backfill utilized',
   ];
-  const planningCsv = inputs.capacityPlanningAreas as string | undefined;
-  const fteAvoided = inputs.fteAvoided as number | undefined;
-  const annualCostPerFte = (inputs.annualCostPerFte as number) || 0;
-  const checkedSet = new Set((planningCsv || '').split(',').filter(Boolean));
-  const checkedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => checkedSet.has(String(i)));
-  const uncheckedLabels = CAPACITY_PLANNING_LABELS.filter((_, i) => !checkedSet.has(String(i)));
-  const planCount = checkedLabels.length;
+  const outcomesCsv = inputs.accessOutcomes as string | undefined;
+  const checkedSet = new Set((outcomesCsv || '').split(',').filter(Boolean));
+  const checkedLabels = ACCESS_OUTCOME_LABELS.filter((_, i) => checkedSet.has(String(i)));
+  const uncheckedLabels = ACCESS_OUTCOME_LABELS.filter((_, i) => !checkedSet.has(String(i)));
+  const outcomeCount = checkedLabels.length;
 
-  if (planCount === 0 && (!fteAvoided || fteAvoided <= 0)) {
-    const avoidedLow = 350000;
-    const avoidedHigh = 900000;
+  const l4Patients = (inputs.additionalPatientsPerMonth as number) || 0;
+  const l4Providers = (inputs.redesignedProviders as number) || providers;
+  const downstreamRevenuePerVisit = (inputs.downstreamRevenuePerVisit as number) || 0;
+
+  if (outcomeCount === 0 && l4Patients <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost`,
-      context: `At ${providers.toLocaleString()} providers, 1–2 avoided FTEs represents ${formatDollar(avoidedLow)}–${formatDollar(avoidedHigh)} in avoided annual cost, fully loaded. Select workforce planning areas and enter FTEs avoided to calculate.`,
+      headlineMetric: 'Downstream access impact not yet tracked',
+      context: `Select the access outcomes your organization is measuring, and enter the confirmed additional patients per provider per month to calculate downstream revenue.`,
       formula: '',
       footnote: '',
     };
   }
 
-  if (planCount > 0 && (!fteAvoided || fteAvoided <= 0)) {
+  if (outcomeCount > 0 && l4Patients <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${planCount} planning area${planCount > 1 ? 's' : ''} connected`,
-      context: `Recovered capacity is a variable in ${planCount} workforce planning area${planCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter FTEs avoided or deferred to calculate impact.${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
+      headlineMetric: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked`,
+      context: `Your organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter confirmed additional patients per provider per month to calculate revenue impact.${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
       formula: '',
       footnote: '',
     };
   }
 
-  const capacityValue = Math.round((fteAvoided || 0) * annualCostPerFte);
+  const annualVisits = Math.round(l4Patients * l4Providers * 11);
+  const accessRevenue = Math.round(annualVisits * revenuePerVisit);
+  const downstreamRevenue = Math.round(annualVisits * downstreamRevenuePerVisit);
+  const totalRevenue = accessRevenue + downstreamRevenue;
+
   return {
     label: 'Estimated Impact',
-    value: capacityValue,
+    value: totalRevenue,
     hasValue: true,
-    headlineMetric: `${formatDollar(capacityValue)} in avoided workforce cost`,
-    context: `${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} fully-loaded cost = ${formatDollar(capacityValue)} per year in avoided workforce cost.${planCount > 0 ? `\n\nConnected to ${planCount} planning area${planCount > 1 ? 's' : ''}: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet connected: ${uncheckedLabels.join(', ')}` : ''}`,
-    formula: `[avoidedWorkforceCost] = ${fteAvoided} FTE × ${formatDollar(annualCostPerFte)} / FTE = ${formatDollar(capacityValue)}`,
-    footnote: 'Fully-loaded cost includes salary, benefits, malpractice, and recruitment. AMGA benchmark: $350K–$450K per outpatient physician FTE.',
+    headlineMetric: `${formatDollar(totalRevenue)} in measured access revenue`,
+    context: `${l4Patients} additional patients/provider/month × ${l4Providers} providers × 11 clinical months = ${annualVisits.toLocaleString()} visits.\n\nDirect access: ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${downstreamRevenue > 0 ? `\nDownstream (referrals, ancillaries): ${annualVisits.toLocaleString()} × ${formatDollar(downstreamRevenuePerVisit)} = ${formatDollar(downstreamRevenue)}` : ''}${outcomeCount > 0 ? `\n\nTracked outcomes: ${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
+    formula: `[annualVisits] = ${l4Patients} patients/mo × ${l4Providers} providers × 11 months = ${annualVisits.toLocaleString()}\n[accessRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${downstreamRevenue > 0 ? `\n[downstreamRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(downstreamRevenuePerVisit)} = ${formatDollar(downstreamRevenue)}` : ''}\n[total] = ${formatDollar(accessRevenue)} + ${formatDollar(downstreamRevenue)} = ${formatDollar(totalRevenue)}`,
+    footnote: `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.${downstreamRevenue > 0 ? ' Downstream revenue includes referrals, follow-ups, and ancillary services generated by additional primary visits.' : ''}`,
   };
 }
 

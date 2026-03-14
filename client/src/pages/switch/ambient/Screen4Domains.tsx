@@ -62,18 +62,18 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 1, label: 'Time Recovering', description: 'Providers report reduced documentation time. Not yet aggregated.' },
       { level: 2, label: 'Quantified', description: 'Aggregate hours are calculated and reviewed by leadership.' },
       { level: 3, label: 'Deployed', description: 'Recovered time is allocated to patient access or other priorities.' },
-      { level: 4, label: 'Workforce Impact', description: 'Capacity changes are reflected in hiring or staffing plans.' },
+      { level: 4, label: 'Access Impact Measured', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
     ],
     framingQuestions: {
       1: undefined as any,
       2: 'Has leadership reviewed the aggregate hours recovered?',
       3: 'How many additional patients are being seen with recovered time?',
-      4: 'Which workforce planning areas have changed as a result?',
+      4: 'Which downstream access outcomes are you tracking?',
     },
     unlockTeasers: {
       2: 'Aggregate hours and present to leadership.',
       3: 'Allocate recovered time to scheduling or patient access.',
-      4: 'Incorporate capacity data into staffing and hiring plans.',
+      4: 'Measure downstream access impact from recovered time.',
     },
   },
   revenue: {
@@ -559,36 +559,37 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       );
     }
 
-    const CAPACITY_PLANNING_OPTIONS = [
-      'Avoided or deferred new hires',
-      'Absorbed volume without adding FTEs',
-      'Redeployed providers',
-      'In the annual staffing model',
-      'In a service line business case',
+    const ACCESS_OUTCOME_OPTIONS = [
+      'Panel size increased',
+      'New patient slots opened',
+      'Same-day/urgent access expanded',
+      'Referral-to-visit time reduced',
+      'Third-next-available improved',
+      'No-show backfill utilized',
     ];
 
     return (
       <div className="flex flex-col gap-5">
         <div>
           <label className="block text-sm font-medium text-black mb-3">
-            What's changed in planning?
+            Which downstream access outcomes are you tracking?
           </label>
           <div className="flex flex-col gap-2.5">
-            {CAPACITY_PLANNING_OPTIONS.map((item, i) => {
-              const checked = isChecked('capacityPlanningAreas', i);
+            {ACCESS_OUTCOME_OPTIONS.map((item, i) => {
+              const checked = isChecked('accessOutcomes', i);
               return (
                 <label
                   key={i}
-                  htmlFor={`capacity-planning-${i}`}
+                  htmlFor={`access-outcome-${i}`}
                   className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
                     checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                   }`}
                 >
                   <Checkbox
-                    id={`capacity-planning-${i}`}
+                    id={`access-outcome-${i}`}
                     checked={checked}
-                    onCheckedChange={() => toggleCheckboxItem('capacityPlanningAreas', i)}
-                    data-testid={`checkbox-capacity-planning-${i}`}
+                    onCheckedChange={() => toggleCheckboxItem('accessOutcomes', i)}
+                    data-testid={`checkbox-access-outcome-${i}`}
                     className="mt-0.5"
                   />
                   <span className="text-sm text-[#525252] select-none leading-snug">
@@ -600,27 +601,27 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">FTEs avoided or deferred</label>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Confirmed additional patients per provider per month</label>
           <FormattedNumberInput
-            value={(currentState.inputs.fteAvoided as number) || 0}
-            onChange={(v) => setDomainInput('fteAvoided', Math.max(0, v))}
+            value={(currentState.inputs.additionalPatientsPerMonth as number) || 0}
+            onChange={(v) => setDomainInput('additionalPatientsPerMonth', Math.max(0, v))}
             placeholder=""
             className="w-full h-12 bg-white border-[#E5E7EB]"
-            data-testid="input-fte-avoided"
+            data-testid="input-l4-additional-patients"
           />
-          <BenchmarkContext text="Organizations at this level report 1–2 FTE equivalent." />
+          <BenchmarkContext text="Confirmed patient volume increase attributed to recovered time." />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Fully-loaded cost per FTE</label>
-          <BenchmarkContext text="AMGA benchmark: $350K–$450K" />
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">Downstream revenue per additional visit</label>
+          <BenchmarkContext text="Referrals, follow-ups, and ancillary services. Typical range: $50–$150." />
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#888888]">$</span>
             <FormattedNumberInput
-              value={(currentState.inputs.annualCostPerFte as number) || 0}
-              onChange={(v) => setDomainInput('annualCostPerFte', Math.max(0, v))}
-              placeholder="e.g. 350000"
+              value={(currentState.inputs.downstreamRevenuePerVisit as number) || 0}
+              onChange={(v) => setDomainInput('downstreamRevenuePerVisit', Math.max(0, v))}
+              placeholder="e.g. 75"
               className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-annual-cost-per-fte"
+              data-testid="input-downstream-revenue-per-visit"
             />
           </div>
         </div>
@@ -2243,7 +2244,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
                 {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
                   <p className="text-xs text-white/50 italic leading-relaxed mb-3">
-                    {activeDomain === 'capacity' ? `Recoverable capacity value — based on your ${documentedEncounters.toLocaleString()} encounters and industry time estimates.` :
+                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue — direct and downstream, based on confirmed patient volume.` : `Recoverable capacity value — based on your ${documentedEncounters.toLocaleString()} encounters and industry time estimates.`) :
                      activeDomain === 'revenue' ? `Revenue signal — based on your ${documentedEncounters.toLocaleString()} encounters at industry-observed coding improvement rates.` :
                      activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
                      ''}
@@ -2428,15 +2429,14 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               const rp = (inp.redesignedProviders as number) || providers;
               const accessRevenue = pts > 0 ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
 
-              const fteAvoided = (inp.fteAvoided as number) || 0;
-              const annualCostPerFte = (inp.annualCostPerFte as number) || 0;
-              const avoidedCost = fteAvoided > 0 && annualCostPerFte > 0 ? Math.round(fteAvoided * annualCostPerFte) : null;
+              const drpv = (inp.downstreamRevenuePerVisit as number) || 0;
+              const downstreamRevenue = pts > 0 && drpv > 0 ? Math.round(pts * rp * 11 * drpv) : null;
 
-              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || avoidedCost !== null;
+              const hasAnyValue = recoveredHours > 0 || accessRevenue !== null || downstreamRevenue !== null;
               if (!hasAnyValue) return null;
 
-              const totalDollar = (accessRevenue || 0) + (avoidedCost || 0);
-              const hasDollarValue = accessRevenue !== null || avoidedCost !== null;
+              const totalDollar = (accessRevenue || 0) + (downstreamRevenue || 0);
+              const hasDollarValue = accessRevenue !== null || downstreamRevenue !== null;
 
               return (
                 <>
@@ -2458,9 +2458,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/60">Avoided Cost</span>
-                      <span className="text-white font-medium" data-testid="text-capacity-summary-avoided">
-                        {avoidedCost !== null ? formatDollar(avoidedCost) : '—'}
+                      <span className="text-white/60">Downstream Revenue</span>
+                      <span className="text-white font-medium" data-testid="text-capacity-summary-downstream">
+                        {downstreamRevenue !== null ? formatDollar(downstreamRevenue) : '—'}
                       </span>
                     </div>
                     {hasDollarValue && (

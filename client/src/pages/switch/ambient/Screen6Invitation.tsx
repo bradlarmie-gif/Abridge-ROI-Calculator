@@ -37,12 +37,13 @@ const parseDomainInputs = (json: string): Record<string, number | string> => {
   try { return JSON.parse(json); } catch { return {}; }
 };
 
-const CAPACITY_PLANNING_OPTIONS = [
-  'Avoided or deferred new hires',
-  'Absorbed volume without adding FTEs',
-  'Redeployed providers',
-  'In the annual staffing model',
-  'In a service line business case',
+const ACCESS_OUTCOME_OPTIONS = [
+  'Panel size increased',
+  'New patient slots opened',
+  'Same-day/urgent access expanded',
+  'Referral-to-visit time reduced',
+  'Third-next-available improved',
+  'No-show backfill utilized',
 ];
 
 const QUALITY_ATTRIBUTES_LABELS = [
@@ -98,10 +99,10 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       if (raw.redesignedProviders) out['Providers in redesign'] = `${raw.redesignedProviders}`;
     }
     if (level === 4) {
-      const areas = resolveChecklist(raw.capacityPlanningAreas as string, CAPACITY_PLANNING_OPTIONS);
-      if (areas.length) out['Planning changes'] = areas.join(', ');
-      if (raw.fteAvoided) out['FTEs avoided/deferred'] = `${raw.fteAvoided}`;
-      if (raw.annualCostPerFte) out['Cost per FTE'] = fmtDollar(Number(raw.annualCostPerFte));
+      const outcomes = resolveChecklist(raw.accessOutcomes as string, ACCESS_OUTCOME_OPTIONS);
+      if (outcomes.length) out['Access outcomes tracked'] = outcomes.join(', ');
+      if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`;
+      if (raw.downstreamRevenuePerVisit) out['Downstream revenue/visit'] = fmtDollar(Number(raw.downstreamRevenuePerVisit));
     }
   }
 
@@ -201,11 +202,11 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
       nextLevelUnlock: "A documented redeployment strategy — whether that's access expansion, administrative offload, or revenue-generating visits — that turns recovered hours into a planned organizational outcome.",
     },
     3: {
-      currentStateLabel: "A redeployment plan is in place. Optimization is the next frontier.",
-      nextLevelUnlock: "Continuous monitoring of recovered capacity and redeployment efficiency — so the value stays captured, not just planned.",
+      currentStateLabel: "A redeployment plan is in place. Downstream access outcomes are the next frontier.",
+      nextLevelUnlock: "Confirmed tracking of downstream access impact — panel growth, same-day access, referral conversion — attributed to recovered time, with direct and downstream revenue measured.",
     },
     4: {
-      currentStateLabel: "Capacity recovery is fully operationalized across the deployment.",
+      currentStateLabel: "Downstream access outcomes are tracked and attributed to recovered time.",
       nextLevelUnlock: "",
     },
   },
