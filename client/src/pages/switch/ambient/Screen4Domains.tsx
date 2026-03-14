@@ -2130,13 +2130,13 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </div>
                 )}
 
+                <FormulaDisplay formula={feedback.formula} />
+
                 {feedback.footnote && (
                   <p className="text-xs text-white/40 italic leading-relaxed">
                     {feedback.footnote}
                   </p>
                 )}
-
-                <FormulaDisplay formula={feedback.formula} />
 
                 {feedback.nextLevelTeaser && (
                   <p className="text-xs text-white/70 italic leading-relaxed mt-3 pl-3 border-l border-[#EA2C00]/40" data-testid="text-next-level-teaser">
