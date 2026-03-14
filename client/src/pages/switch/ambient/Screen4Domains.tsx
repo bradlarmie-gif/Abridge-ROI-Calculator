@@ -619,7 +619,7 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
             <FormattedNumberInput
               value={(currentState.inputs.downstreamRevenuePerVisit as number) || 0}
               onChange={(v) => setDomainInput('downstreamRevenuePerVisit', Math.max(0, v))}
-              placeholder="e.g. 75"
+              placeholder="e.g. 200"
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-downstream-revenue-per-visit"
             />
