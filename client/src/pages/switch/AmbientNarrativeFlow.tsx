@@ -19,7 +19,7 @@ const TOTAL_SCREENS = 5;
 
 const STEP_NAMES = [
   "Your Deployment",
-  "Four Lenses",
+  "Four Domains",
   "The Reveal",
   "Your Trajectory",
   "Your Roadmap",
