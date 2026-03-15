@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, Building2 } from "lucide-react";
+import { ChevronDown, Building2, Calculator } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Button } from "@/components/ui/button";
@@ -217,6 +217,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 className="flex items-center gap-2 cursor-pointer bg-transparent border-none text-sm font-medium text-[#888888] hover:text-black transition-colors"
                 data-testid="button-advanced-toggle"
               >
+                <Calculator size={14} />
                 <ChevronDown
                   size={14}
                   className="transition-transform duration-200"
