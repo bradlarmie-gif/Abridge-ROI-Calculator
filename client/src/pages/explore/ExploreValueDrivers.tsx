@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, AlertTriangle, ChevronDown, Check, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, AlertTriangle, ChevronDown, Check, Plus, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -566,7 +566,7 @@ export default function ExploreValueDrivers({
                       
                       <div className="flex justify-between items-center gap-2">
                         <div>
-                          <span className="text-[#666666]">× Realization rate</span>
+                          <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></span>
                           <p className="text-xs text-[#888888]">(Not all recovered patients complete visits)</p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -661,7 +661,7 @@ export default function ExploreValueDrivers({
                             
                             <div className="flex justify-between items-center gap-2">
                               <div>
-                                <span className="text-[#666666]">× Realization rate</span>
+                                <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></span>
                                 <p className="text-xs text-[#888888]">(Bed availability, payer mix)</p>
                               </div>
                               <div className="flex items-center gap-2">

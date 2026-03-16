@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -908,7 +908,7 @@ export default function ExploreDocQuality({
                         </div>
                         <span className="text-[#888888] text-xl hidden sm:block">×</span>
                         <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate</label>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></label>
                           <div className="relative">
                             <input
                               type="number"
@@ -1449,7 +1449,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">× Realization rate</span>
+                        <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></span>
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
@@ -1688,7 +1688,7 @@ export default function ExploreDocQuality({
 
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-[#666666]">× Realization rate</span>
+                          <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></span>
                           <p className="text-xs text-[#888888]">(RADV audits, payment delays, rejections)</p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -1892,7 +1892,7 @@ export default function ExploreDocQuality({
 
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-[#666666]">× Realization rate</span>
+                          <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption. 75% means you capture 75 cents of every dollar the gross calculation shows." /></span>
                           <p className="text-xs text-[#888888]">(collection timing, adjustments)</p>
                         </div>
                         <div className="flex items-center gap-1">
