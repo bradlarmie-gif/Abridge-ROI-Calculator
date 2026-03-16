@@ -624,6 +624,15 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                       <li>HCAHPS scores (directional, not attributable)</li>
                     </ul>
                   </div>
+                  <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 18+ Months</h4>
+                    <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                      <li>Year-over-year turnover rates on Abridge-enabled units vs. rest of system</li>
+                      <li>Agency spend: compare against 18-month pre-implementation baseline</li>
+                      <li>Exit interview data: is documentation burden still cited as a departure factor?</li>
+                      <li>Retention intent surveys: are nurses in Abridge units reporting higher intent to stay?</li>
+                    </ul>
+                  </div>
                 </div>
 
                 <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-5">
