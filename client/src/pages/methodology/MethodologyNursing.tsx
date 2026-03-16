@@ -644,6 +644,41 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                 </div>
               </div>
             </CollapsibleSection>
+
+            <CollapsibleSection
+              sectionId="connected-value"
+              title="Connected Value"
+              subtitle="How nursing documentation supports the broader care system"
+            >
+              <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                <p>
+                  Nursing is often framed as a cost center. The documentation picture changes that framing.
+                </p>
+                <div className="space-y-4 mt-4">
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Nursing → Inpatient (CC/MCC support)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      Nursing documentation captures clinical observations that CDI teams use to support CC/MCC coding — skin assessments, fall risk factors, nutritional status, wound care. When nursing notes are complete and real-time, CDI specialists have stronger evidence to defend appropriate DRG assignment. This is quantified in the inpatient methodology rather than here, to avoid double-counting.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Nursing → Patient Experience (HCAHPS signal)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      When nurses spend less time on documentation, they spend more time at the bedside. Research consistently shows bedside time correlates with patient satisfaction scores. We don't attribute HCAHPS improvement directly to documentation — too many variables — but it's a directional signal worth tracking as a leading indicator after implementation.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Nursing → Workforce Stability (system-level)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      Nursing turnover creates ripple effects: remaining staff absorb heavier loads, burnout accelerates, and the cycle continues. When documentation burden is reduced and retention improves even modestly, the stabilization effect compounds. The system-level value of a stable nursing workforce exceeds what any single-unit retention calculation shows.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[#666666] italic mt-4">
+                  We don't sum cross-setting values into the nursing model — attribution gets complex when value flows through multiple teams. But when building a system-level business case, these connections are part of the story.
+                </p>
+              </div>
+            </CollapsibleSection>
           </div>
         </div>
 
