@@ -54,10 +54,33 @@ function CollapsibleSection({ title, subtitle, children, defaultOpen = false, se
 }
 
 function MechanismCard({ title, children }: { title: string; children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-lg p-6 mb-4">
-      <h4 className="font-semibold text-black mb-4 uppercase tracking-wide text-sm">{title}</h4>
-      {children}
+    <div className="bg-white border border-[#E5E5E5] rounded-lg mb-4 overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-6 flex items-center justify-between text-left hover:bg-[#F9FAFB] transition-colors"
+        data-testid={`button-mechanism-${title.toLowerCase().replace(/\s+/g, '-')}`}
+      >
+        <h4 className="font-semibold text-black uppercase tracking-wide text-sm">{title}</h4>
+        <div className="ml-4 flex-shrink-0">
+          {isOpen ? (
+            <ChevronUp className="w-4 h-4 text-[#888888]" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-[#888888]" />
+          )}
+        </div>
+      </button>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="px-6 pb-6"
+        >
+          {children}
+        </motion.div>
+      )}
     </div>
   );
 }
