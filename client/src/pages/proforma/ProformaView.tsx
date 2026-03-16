@@ -486,7 +486,7 @@ export default function ProformaView({
                 <p className="text-xl font-bold text-[#E8350A]" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
                 {hasInvestment && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
-                    Typical: 3–7x
+                    Abridge benchmark: 3–7x
                   </p>
                 )}
               </div>
@@ -495,7 +495,7 @@ export default function ProformaView({
                 <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
                 {summary.paybackMonth && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
-                    Typical: 4–12 mo
+                    Abridge benchmark: 4–12 mo
                   </p>
                 )}
               </div>
@@ -503,7 +503,7 @@ export default function ProformaView({
                 <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
                 <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
                 <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
-                  Typical: 200–600%
+                  Abridge benchmark: 200–600%
                 </p>
               </div>
               <div>
@@ -532,7 +532,7 @@ export default function ProformaView({
               <p className="text-2xl font-bold text-[#E8350A]">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
               {hasInvestment && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
-                  Typical: 3–7x
+                  Abridge benchmark: 3–7x
                 </p>
               )}
             </div>
@@ -541,7 +541,7 @@ export default function ProformaView({
               <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
               {summary.paybackMonth && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-payback-benchmark">
-                  Typical: 4–12 mo
+                  Abridge benchmark: 4–12 mo
                 </p>
               )}
             </div>
@@ -549,7 +549,7 @@ export default function ProformaView({
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
               <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
-                Typical: 200–600%
+                Abridge benchmark: 200–600%
               </p>
             </div>
             <div>
