@@ -756,7 +756,6 @@ export default function ExploreModel({
         qualitativeDrivers,
         fullScaleProviders: expandedProviders,
         fullScaleUtilization: expandedUtilization,
-        fullScaleValue,
         implementationCost: state.includeImplementation ? state.implementationFee : 0,
         minutesSavedPerEncounter: state.minutesSavedPerEncounter,
 

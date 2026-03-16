@@ -162,7 +162,6 @@ export interface ExplorePDFData {
 
   fullScaleProviders: number;
   fullScaleUtilization: number;
-  fullScaleValue: number;
   implementationCost: number;
 
   minutesSavedPerEncounter: number;
@@ -1128,7 +1127,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        You chose to quantify the retention value of that time. Based on a {safe(data.annualTurnoverRate)}% annual turnover rate, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually. That{"\u2019"}s {safe(data.providersRetained)?.toFixed(2)} providers retained per year at the {data.abridgeRetentionImpactLabel || "typical"} impact scenario.
+                        You chose to quantify the retention value of that time. Based on a {safe(data.annualTurnoverRate)}% annual turnover rate, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually. That{"\u2019"}s {Math.round(safe(data.providersRetained) ?? 0)} providers retained per year at the {data.abridgeRetentionImpactLabel || "typical"} impact scenario.
                       </Text>
                     ) : (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
@@ -1844,7 +1843,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualAdmissionCaptureValue))}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Of the {fmtNum(safe(data.recoveredEdPatients))} patients recovered through LWBS reduction, {safe(data.admissionRate)}% require inpatient admission. That{"\u2019"}s {safe(data.potentialAdmissions)?.toFixed(1)} additional admissions {"\u2014"} each one generating {fmtCurrency(safe(data.avgAdmissionRevenue))} in admission revenue. At a {safe(data.admissionRealizationRate)}% realization rate accounting for bed availability and payer mix, the annual value is {fmtCurrency(safe(data.annualAdmissionCaptureValue))}.
+                      Of the {fmtNum(safe(data.recoveredEdPatients))} patients recovered through LWBS reduction, {safe(data.admissionRate)}% require inpatient admission. That{"\u2019"}s {Math.round(safe(data.potentialAdmissions) ?? 0)} additional admissions {"\u2014"} each one generating {fmtCurrency(safe(data.avgAdmissionRevenue))} in admission revenue. At a {safe(data.admissionRealizationRate)}% realization rate accounting for bed availability and payer mix, the annual value is {fmtCurrency(safe(data.annualAdmissionCaptureValue))}.
                     </Text>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                       These are not speculative admissions. They are patients who were already sick enough to admit {"\u2014"} they just left before the decision was made.
@@ -1870,7 +1869,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        At {safe(data.annualTurnoverRate)}% annual turnover, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} to replace a departing physician, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually {"\u2014"} {safe(data.providersRetained)?.toFixed(2)} physicians retained at the {data.abridgeRetentionImpactLabel || "typical"} scenario.
+                        At {safe(data.annualTurnoverRate)}% annual turnover, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} to replace a departing physician, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually {"\u2014"} {Math.round(safe(data.providersRetained) ?? 0)} physicians retained at the {data.abridgeRetentionImpactLabel || "typical"} scenario.
                       </Text>
                     ) : (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
@@ -3229,7 +3228,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(retVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. Reclaimed documentation time reduces the end-of-shift pressure that drives burnout {"\u2014"} the primary mechanism behind retention impact. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
+                      Documentation burden is among the most frequently cited contributors to nurse burnout. At a {safe(data.nursingTurnoverRate)}% annual turnover rate, your program loses roughly {safe(data.nursingNursesLeaving)?.toFixed(1)} nurses per year {"\u2014"} and about {safe(data.nursingBurnoutDepartures)?.toFixed(1)} of those departures are burnout-related. Reclaimed documentation time reduces the end-of-shift pressure that drives burnout {"\u2014"} the primary mechanism behind retention impact. Modeled at a {safe(data.nursingRetentionImpactPct)}% impact on burnout-driven departures, {Math.round(safe(data.nursingNursesRetained) ?? 0)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost))} each yields {fmtCurrency(retVal)} annually.
                     </Text>
                   </View>
                 </View>
@@ -3246,7 +3245,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(agencyVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Every nursing vacancy filled with travel agency staff costs roughly {fmtCurrency(safe(data.nursingAgencyPremium))}/week in labor premium above base {"\u2014"} over and above replacement cost. That {safe(data.nursingAgencyWeeks)}-week gap at full premium adds up. With {safe(data.nursingNursesRetained)?.toFixed(2)} nurses retained, the avoided agency premium is {fmtCurrency(agencyVal)} per year. This is separate from the retention value above {"\u2014"} retention captures the replacement cost of recruiting and onboarding; agency captures the premium labor spend during the vacancy window.
+                      Every nursing vacancy filled with travel agency staff costs roughly {fmtCurrency(safe(data.nursingAgencyPremium))}/week in labor premium above base {"\u2014"} over and above replacement cost. That {safe(data.nursingAgencyWeeks)}-week gap at full premium adds up. With {Math.round(safe(data.nursingNursesRetained) ?? 0)} nurses retained, the avoided agency premium is {fmtCurrency(agencyVal)} per year. This is separate from the retention value above {"\u2014"} retention captures the replacement cost of recruiting and onboarding; agency captures the premium labor spend during the vacancy window.
                     </Text>
                   </View>
                 </View>
