@@ -54,6 +54,7 @@ export interface AmbientAssessmentPDFData {
   providerRate?: number;
   conversionFactor?: number;
   assessmentNarrative: string;
+  deploymentTenure?: string;
   orgContext?: OrgContext;
   domains: {
     capacity: DomainData;

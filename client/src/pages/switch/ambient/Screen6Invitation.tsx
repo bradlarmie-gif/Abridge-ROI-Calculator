@@ -23,6 +23,9 @@ import {
   scoreToActivationLevel,
   DOMAIN_ORDER,
   DOMAIN_LABELS,
+  tenureLabel,
+  tenureIsLong,
+  tenureScoreBand,
   type Domain,
   type ActivationLevel,
 } from "./domainCalculations";
@@ -518,6 +521,33 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';
   }, [domainData, totalScore]);
 
+  const invitationCopy = useMemo(() => {
+    const tenure = inputs.deploymentTenure || '';
+    const band = tenureScoreBand(totalScore);
+    const archetypeName = scoreBandLabel;
+
+    const opening = `The organizations that move from ${archetypeName} to Level 3+ across multiple domains in under 12 months don't do it alone.`;
+
+    const bodies: Record<'low' | 'mid' | 'high', string> = {
+      low: `What they have in common isn't a better deployment — it's a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile — ${archetypeName} — is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+      mid: `What they have in common is that the domains they've measured have given them leverage. The signal you've built is real. The organizations that move quickly from here use that signal to accelerate the unmeasured domains — not one at a time, but as a connected program. The measurement infrastructure you've started is the hardest part to build from scratch. You're not starting from scratch.`,
+      high: `What they have in common is governance — ensuring the measurement capability is institutional, not dependent on champions, and that it scales as the deployment grows. Your profile suggests you're closer to that frontier than most. The question is whether it's owned by the organization or by a few people inside it.`,
+    };
+
+    const tenureAppends: Record<string, string> = {
+      '0-6': "At less than 6 months, you're in the window where the measurement habits get set. The organizations that build them now don't have to rebuild them at 24 months.",
+      '6-12': "At 6–12 months, you're at the decision point. The deployment is stable. The question is whether measurement becomes a program or stays informal.",
+      '12-24': "At 1–2 years, the urgency is real. Every month the measurement infrastructure doesn't exist, value that's already there goes uncounted.",
+      '24+': "At 2+ years, the conversation is different. It's not about building measurement habits. It's about what's been sitting on the table — and what it takes to count it this year.",
+    };
+
+    return {
+      opening,
+      body: bodies[band],
+      tenureAppend: tenure ? tenureAppends[tenure] || '' : '',
+    };
+  }, [inputs.deploymentTenure, totalScore, scoreBandLabel]);
+
   const handleExport = async () => {
     setIsExporting(true);
     setExportError(false);
@@ -546,6 +576,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         providerRate: inputs.providerRate || 150,
         conversionFactor: inputs.conversionFactor || 33,
         assessmentNarrative,
+        deploymentTenure: inputs.deploymentTenure || '',
         orgContext: {
           systemSize: (inputs as any).systemSize || 0,
           orgType: (inputs as any).orgType || '',
@@ -661,6 +692,14 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                     </div>
                     <p className="text-sm text-[#444444] leading-relaxed mb-3">
                       {contrast.currentState}
+                      {level === 1 && tenureIsLong(inputs.deploymentTenure || '') && (
+                        <span className="block mt-1.5 text-sm text-[#C8372D] italic">
+                          {inputs.deploymentTenure === '12-24'
+                            ? ` After 1–2 years in deployment, ${DOMAIN_LABELS[domain as Domain]} is still in the unmeasured state. Organizations your size that have moved through this typically look like the picture on the right.`
+                            : ` After 2+ years in deployment, ${DOMAIN_LABELS[domain as Domain]} hasn't been formally measured. The organization on the right isn't hypothetical — it's what's possible when the measurement program is built.`
+                          }
+                        </span>
+                      )}
                     </p>
                     {!isAtCeiling && (
                       <div className="border-l-2 border-[#1A1A1A]/20 pl-3">
@@ -688,23 +727,53 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.42, duration: 0.5 }}
+          >
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 mb-8" data-testid="card-data-shows">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                What the Data Shows
+              </p>
+              <div className="h-px bg-[#E5E7EB] mb-5" />
+              <div className="space-y-4">
+                <div className="bg-white/70 rounded-lg p-4">
+                  <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">Level 3 Revenue within 12 months</p>
+                  <p className="text-sm text-[#444444] leading-relaxed">Organizations that get there have a structured CDI and coding review process connected to their ambient documentation — not a one-time study, but an ongoing program.</p>
+                </div>
+                <div className="bg-white/70 rounded-lg p-4">
+                  <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">Level 3 Workforce within 12 months</p>
+                  <p className="text-sm text-[#444444] leading-relaxed">Organizations that get there have a formal provider satisfaction measurement program running on a cadence — explicitly connected to ambient data, not running in parallel to it.</p>
+                </div>
+                <div className="bg-white/70 rounded-lg p-4">
+                  <p className="text-[11px] font-semibold text-black uppercase tracking-[1px] mb-1.5">The common thread</p>
+                  <p className="text-sm text-[#444444] leading-relaxed">Measurement infrastructure that was built, not discovered. The organizations that close the gap quickly don't stumble into it — they built a program.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
             <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
               <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
-                The Conversation Worth Having
+                What Comes Next
               </p>
               <div className="h-px bg-white/10 mb-6" />
 
-              <h2 className="text-xl md:text-2xl font-bold text-white font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
-                The gap isn't about the tool.
-              </h2>
-              <p className="text-sm text-white/60 leading-relaxed mb-3">
-                Most health systems deploying ambient arrive at a similar pattern — the technology is working, and value is being created. What hasn't been built yet is the strategy around it: the measurement, the operational connections, the executive visibility that turns a clinical workflow into a business capability.
+              <p className="text-base font-semibold text-white leading-snug mb-4" data-testid="text-invitation-opening">
+                {invitationCopy.opening}
               </p>
-              <p className="text-sm text-white/60 leading-relaxed mb-6">
-                The organizations capturing full value across all four domains didn't get there because of a better tool. They got there because someone helped them treat ambient as a strategic initiative. That's the conversation worth having.
+              <p className="text-sm text-white/60 leading-relaxed mb-4" data-testid="text-invitation-body">
+                {invitationCopy.body}
               </p>
+              {invitationCopy.tenureAppend && (
+                <p className="text-sm text-white/40 italic leading-relaxed mb-6" data-testid="text-invitation-tenure">
+                  {invitationCopy.tenureAppend}
+                </p>
+              )}
+              {!invitationCopy.tenureAppend && <div className="mb-6" />}
 
               <div className="flex flex-col items-start gap-3">
                 <Button
@@ -715,6 +784,9 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                   Request a Working Session
                   <ArrowRight size={16} />
                 </Button>
+                <p className="text-xs text-white/30 leading-relaxed max-w-[440px]">
+                  A working session is not a product walkthrough. It's a 45-minute conversation built around your specific profile — what the domains that haven't been measured are worth at your scale, and what organizations your size have done to move in the first 90 days.
+                </p>
                 <button
                   onClick={openExportModal}
                   className="text-sm text-white/40 underline underline-offset-2 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
@@ -823,6 +895,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 <span className="text-white/50">Utilization</span>
                 <span className="text-white/80 font-medium">{utilization}%</span>
               </div>
+              {inputs.deploymentTenure && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/50">In deployment</span>
+                  <span className="text-white/80 font-medium text-xs">{tenureLabel(inputs.deploymentTenure)}</span>
+                </div>
+              )}
             </div>
 
             <div className="h-px bg-white/10 my-5" />
