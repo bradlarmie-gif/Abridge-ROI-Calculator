@@ -309,7 +309,7 @@ export default function ProformaHub({
                             className="h-8 w-full rounded-lg border border-[#DDD6CC] bg-white px-2 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                             data-testid={`select-golive-${setting.careSetting}`}
                           >
-                            {Array.from({ length: 36 }, (_, i) => (
+                            {Array.from({ length: config.contractTermMonths }, (_, i) => (
                               <option key={i + 1} value={i + 1}>Month {i + 1}</option>
                             ))}
                           </select>
