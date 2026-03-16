@@ -88,10 +88,11 @@ const fmt = (n: number): string => {
 };
 
 const scoreBand = (score: number): string => {
-  if (score <= 50) return "Foundation building";
-  if (score <= 64) return "Value in motion";
-  if (score <= 79) return "Strategically managed";
-  return "Leading practice";
+  if (score <= 16) return "Quantifying";
+  if (score <= 38) return "Measuring";
+  if (score <= 60) return "Acting";
+  if (score <= 79) return "Managing";
+  return "Full Capture";
 };
 
 const domainDisplayName: Record<string, string> = {
@@ -479,10 +480,11 @@ function MaturityPositionPage({ data }: { data: AmbientAssessmentPDFData }) {
         style={[pdfStyles.beigeBox, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}
       >
         {[
-          { label: "Foundation building", range: "0\u201350" },
-          { label: "Value in motion", range: "51\u201364" },
-          { label: "Strategically managed", range: "65\u201379" },
-          { label: "Leading practice", range: "80\u2013100" },
+          { label: "Quantifying", range: "\u226416" },
+          { label: "Measuring", range: "17\u201338" },
+          { label: "Acting", range: "39\u201360" },
+          { label: "Managing", range: "61\u201379" },
+          { label: "Full Capture", range: "80\u2013100" },
         ].map((b, i) => {
           const isCurrent = scoreBand(e.documentationScore) === b.label;
           return (
@@ -683,7 +685,9 @@ function DomainPage({
           ) : null}
         </View>
         <View style={[pdfStyles.darkTile, { flex: 0.95, padding: 20 }]}>
-          <Text style={[pdfStyles.eyebrow, { color: "rgba(255,255,255,0.4)" }]}>ESTIMATED IMPACT</Text>
+          <Text style={[pdfStyles.eyebrow, { color: level === 1 && !hasValue ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.4)" }]}>
+            {level === 1 && !hasValue ? "NOT YET MEASURED" : "ESTIMATED IMPACT"}
+          </Text>
           {hasValue && value > 0 ? (
             <Text style={{ fontSize: 32, fontWeight: 800, color: "#EA2C00", lineHeight: 1.1, marginBottom: 4 }}>
               {fmt(value)}
@@ -712,12 +716,19 @@ function DomainPage({
           {formula ? (
             <>
               <View style={pdfStyles.darkDivider} />
-              <Text style={[pdfStyles.coachLabel, { marginBottom: 4 }]}>FORMULA</Text>
+              <Text style={[pdfStyles.coachLabel, { marginBottom: 4 }]}>
+                {level === 1 && !hasValue ? "BENCHMARK RANGE FORMULA" : "HOW WE GOT HERE"}
+              </Text>
               {formula.split('\n').map((line, i) => (
                 <Text key={i} style={{ fontSize: 8, fontWeight: 400, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, fontStyle: "italic" }}>
                   {line}
                 </Text>
               ))}
+              {level === 1 && !hasValue && (
+                <Text style={{ fontSize: 7.5, color: "rgba(255,255,255,0.3)", lineHeight: 1.5, fontStyle: "italic", marginTop: 4 }}>
+                  Benchmark range — reflects what organizations at your scale typically find. Not a projection for your organization.
+                </Text>
+              )}
             </>
           ) : null}
           <View style={pdfStyles.darkDivider} />
@@ -993,7 +1004,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
       })}
       <View style={{ marginTop: "auto" }}>
         <Text style={pdfStyles.disclaimer}>
-          All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
+          All dollar figures apply conservative conversion rates — typically 15–25% of the theoretical maximum — to account for implementation variability, organizational lag, and partial capture. For domains not yet measured (Level 1), figures represent benchmark ranges from similar organizations, not projections for your organization. The full formula and assumptions for each domain are shown in the domain detail pages. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary.
         </Text>
       </View>
       <PageFooter pageNum={7} orgName={e.organizationName} />

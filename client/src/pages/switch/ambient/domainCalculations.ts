@@ -24,7 +24,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Access Impact Tracked',
   },
   revenue: {
-    1: 'Disconnected',
+    1: 'Not Yet Analyzed',
     2: 'Directional Signal',
     3: 'Impact Measured',
     4: 'Documentation as a Revenue Lever',
@@ -36,19 +36,13 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Workforce Strategically Managed',
   },
   risk: {
-    1: 'Notes Improving',
+    1: 'Improvement Untracked',
     2: 'Actively Monitored',
     3: 'Downstream Connected',
     4: 'Documentation as a Strategic Asset',
   },
 };
 
-export const DOMAIN_WEIGHTS: Record<Domain, number> = {
-  capacity: 0.30,
-  revenue: 0.25,
-  workforce: 0.25,
-  risk: 0.20,
-};
 
 export interface DomainFeedback {
   label: string;
@@ -210,7 +204,9 @@ export function computeCapacityFeedback(
       headlineMetric,
       context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.\n\n${confidenceFraming}`,
       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
-      footnote: `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,
+      footnote: isAspirational
+        ? `⚠ Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations. Uses 11 clinical months. Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}.`
+        : `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,
       nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
     };

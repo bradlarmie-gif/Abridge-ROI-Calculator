@@ -1,0 +1,819 @@
+From d293d581329a614269f99249ea52d9446c3170c4 Mon Sep 17 00:00:00 2001
+From: Brad Larmie <brad@abridge.com>
+Date: Sun, 15 Mar 2026 17:34:08 -0700
+Subject: [PATCH] Ambient Assessment: UX and copy elevation
+
+- Screen2Baseline: remove time saved question (captured in capacity domain)
+- Screen4Domains: rewrite all domain headlines/subheadlines/reframes; fix level labels and descriptions; fix CTA copy; remove duplicate instruction text
+- Screen3Score: domain-aware verdict, floor framing, unified score labels
+- Screen5Gap: measured vs unmeasured layout, benchmark ranges, formula transparency
+- Screen6Invitation: benchmark contrast cards replacing roadmap, rewritten invitation copy
+- domainCalculations.ts: aspirational footnote warning
+- ambient-assessment-pdf.tsx: unified score labels, NOT YET MEASURED treatment, formula differentiation
+---
+ client/src/lib/ambient-assessment-pdf.tsx     |  33 ++--
+ .../pages/switch/ambient/Screen2Baseline.tsx  |  32 ----
+ .../src/pages/switch/ambient/Screen3Score.tsx |   9 +-
+ .../pages/switch/ambient/Screen4Domains.tsx   |  31 ++-
+ .../src/pages/switch/ambient/Screen5Gap.tsx   | 154 ++++++++++++---
+ .../switch/ambient/Screen6Invitation.tsx      | 181 ++++++++++++++----
+ .../switch/ambient/domainCalculations.ts      |  10 +-
+ 7 files changed, 309 insertions(+), 141 deletions(-)
+
+diff --git a/client/src/lib/ambient-assessment-pdf.tsx b/client/src/lib/ambient-assessment-pdf.tsx
+index f2cee208..d34cb600 100644
+--- a/client/src/lib/ambient-assessment-pdf.tsx
++++ b/client/src/lib/ambient-assessment-pdf.tsx
+@@ -88,10 +88,11 @@ const fmt = (n: number): string => {
+ };
+ 
+ const scoreBand = (score: number): string => {
+-  if (score <= 50) return "Foundation building";
+-  if (score <= 64) return "Value in motion";
+-  if (score <= 79) return "Strategically managed";
+-  return "Leading practice";
++  if (score <= 16) return "Quantifying";
++  if (score <= 38) return "Measuring";
++  if (score <= 60) return "Acting";
++  if (score <= 79) return "Managing";
++  return "Full Capture";
+ };
+ 
+ const domainDisplayName: Record<string, string> = {
+@@ -479,10 +480,11 @@ function MaturityPositionPage({ data }: { data: AmbientAssessmentPDFData }) {
+         style={[pdfStyles.beigeBox, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}
+       >
+         {[
+-          { label: "Foundation building", range: "0\u201350" },
+-          { label: "Value in motion", range: "51\u201364" },
+-          { label: "Strategically managed", range: "65\u201379" },
+-          { label: "Leading practice", range: "80\u2013100" },
++          { label: "Quantifying", range: "\u226416" },
++          { label: "Measuring", range: "17\u201338" },
++          { label: "Acting", range: "39\u201360" },
++          { label: "Managing", range: "61\u201379" },
++          { label: "Full Capture", range: "80\u2013100" },
+         ].map((b, i) => {
+           const isCurrent = scoreBand(e.documentationScore) === b.label;
+           return (
+@@ -683,7 +685,9 @@ function DomainPage({
+           ) : null}
+         </View>
+         <View style={[pdfStyles.darkTile, { flex: 0.95, padding: 20 }]}>
+-          <Text style={[pdfStyles.eyebrow, { color: "rgba(255,255,255,0.4)" }]}>ESTIMATED IMPACT</Text>
++          <Text style={[pdfStyles.eyebrow, { color: level === 1 && !hasValue ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.4)" }]}>
++            {level === 1 && !hasValue ? "NOT YET MEASURED" : "ESTIMATED IMPACT"}
++          </Text>
+           {hasValue && value > 0 ? (
+             <Text style={{ fontSize: 32, fontWeight: 800, color: "#EA2C00", lineHeight: 1.1, marginBottom: 4 }}>
+               {fmt(value)}
+@@ -712,12 +716,19 @@ function DomainPage({
+           {formula ? (
+             <>
+               <View style={pdfStyles.darkDivider} />
+-              <Text style={[pdfStyles.coachLabel, { marginBottom: 4 }]}>FORMULA</Text>
++              <Text style={[pdfStyles.coachLabel, { marginBottom: 4 }]}>
++                {level === 1 && !hasValue ? "BENCHMARK RANGE FORMULA" : "HOW WE GOT HERE"}
++              </Text>
+               {formula.split('\n').map((line, i) => (
+                 <Text key={i} style={{ fontSize: 8, fontWeight: 400, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, fontStyle: "italic" }}>
+                   {line}
+                 </Text>
+               ))}
++              {level === 1 && !hasValue && (
++                <Text style={{ fontSize: 7.5, color: "rgba(255,255,255,0.3)", lineHeight: 1.5, fontStyle: "italic", marginTop: 4 }}>
++                  Benchmark range — reflects what organizations at your scale typically find. Not a projection for your organization.
++                </Text>
++              )}
+             </>
+           ) : null}
+           <View style={pdfStyles.darkDivider} />
+@@ -993,7 +1004,7 @@ function RoadmapPage({ data }: { data: AmbientAssessmentPDFData }) {
+       })}
+       <View style={{ marginTop: "auto" }}>
+         <Text style={pdfStyles.disclaimer}>
+-          All projections are estimates based on industry benchmarks and self-reported organizational data. Actual results depend on deployment quality, provider adoption rates, and operational decisions. Abridge does not guarantee specific financial outcomes. Individual results vary.
++          All dollar figures apply conservative conversion rates — typically 15–25% of the theoretical maximum — to account for implementation variability, organizational lag, and partial capture. For domains not yet measured (Level 1), figures represent benchmark ranges from similar organizations, not projections for your organization. The full formula and assumptions for each domain are shown in the domain detail pages. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary.
+         </Text>
+       </View>
+       <PageFooter pageNum={7} orgName={e.organizationName} />
+diff --git a/client/src/pages/switch/ambient/Screen2Baseline.tsx b/client/src/pages/switch/ambient/Screen2Baseline.tsx
+index c6cce020..3a61dd36 100644
+--- a/client/src/pages/switch/ambient/Screen2Baseline.tsx
++++ b/client/src/pages/switch/ambient/Screen2Baseline.tsx
+@@ -192,22 +192,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
+                 </AnimatePresence>
+               </div>
+ 
+-              <div>
+-                <label className="block text-sm font-medium text-black mb-1">
+-                  How much time does ambient return per encounter?
+-                </label>
+-                <div className="flex items-center gap-2">
+-                  <FormattedNumberInput
+-                    value={inputs.timeSavedPerEncounter || 0}
+-                    onChange={(v) => updateInput("timeSavedPerEncounter", Math.min(10, Math.max(0, v)))}
+-                    placeholder="e.g. 3"
+-                    className="w-full h-12 bg-white border-[#E5E7EB]"
+-                    data-testid="input-time-saved-per-encounter"
+-                    step={0.5}
+-                  />
+-                  <span className="text-sm text-[#888888]">min</span>
+-                </div>
+-              </div>
+             </div>
+ 
+             <div className="mt-8">
+@@ -465,22 +449,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
+                     )}
+                   </div>
+ 
+-                  <div>
+-                    <p className="text-xs text-white/40 mb-1">Hours recovered / yr</p>
+-                    {(inputs.timeSavedPerEncounter || 0) > 0 ? (
+-                      <>
+-                        <p className="text-lg font-bold text-white leading-none" data-testid="text-rail-hours-recovered">
+-                          {Math.round((inputs.timeSavedPerEncounter * documentedEncounters) / 60).toLocaleString()} hrs
+-                        </p>
+-                        <p className="text-xs text-white/30 italic mt-1">
+-                          {inputs.timeSavedPerEncounter} min × {documentedEncounters.toLocaleString()} / 60
+-                        </p>
+-                      </>
+-                    ) : (
+-                      <p className="text-lg font-bold text-white leading-none" data-testid="text-rail-hours-recovered">—</p>
+-                    )}
+-                  </div>
+-
+                   <div>
+                     <p className="text-xs text-white/40 mb-1">Encounters per Provider per Day</p>
+                     <p className="text-lg font-bold text-white leading-none" data-testid="text-rail-epd">
+diff --git a/client/src/pages/switch/ambient/Screen3Score.tsx b/client/src/pages/switch/ambient/Screen3Score.tsx
+index 8dd0547c..0765160f 100644
+--- a/client/src/pages/switch/ambient/Screen3Score.tsx
++++ b/client/src/pages/switch/ambient/Screen3Score.tsx
+@@ -127,29 +127,30 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
+     const lowestLevel = domainLevels[lowestDomain];
+     const insightLevel = Math.min(lowestLevel, 2) as 1 | 2;
+     const domainInsight = DOMAIN_INSIGHTS[lowestDomain][insightLevel];
++    const lowestLabel = DOMAIN_LABELS[lowestDomain];
+ 
+     if (score <= 16) {
+       return {
+         headline: 'The deployment is live. The value isn\'t captured yet.',
+-        body: 'Ambient is running, but the organization hasn\'t started measuring what it\'s returning. The gap between running and capturing is where most organizations stay longest — and it\'s the most expensive place to be.',
++        body: 'A score of 16 is where every ambient deployment begins — all four domains are at awareness. The gap between running and capturing is where most organizations stay longest. It\'s also the most expensive place to be.',
+       };
+     }
+     if (score <= 38) {
+       return {
+         headline: 'Something is being measured. Not enough is acting on it.',
+-        body: 'At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct — that\'s where the next layer of value is sitting unmeasured.',
++        body: `At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct. Your ${lowestLabel} domain is the most significant gap — ${domainInsight}`,
+       };
+     }
+     if (score <= 60) {
+       return {
+         headline: 'Value is moving. Not all of it has a destination yet.',
+-        body: 'At least one domain is producing a real number. The others haven\'t caught up. That gap — between where you are and where the tool could take you — is the strategic opportunity.',
++        body: `At least one domain is producing a real number. The others haven't caught up. Your ${lowestLabel} domain has the most room — ${domainInsight}`,
+       };
+     }
+     if (score <= 79) {
+       return {
+         headline: 'Most of the value is captured. The last piece is the hardest.',
+-        body: 'Your organization is operating at a level most ambient deployments never reach. What\'s left tends to be the domain that requires the most organizational will — but it carries some of the highest returns.',
++        body: `Your organization is operating at a level most ambient deployments never reach. ${lowestLabel} is the remaining gap — ${domainInsight} — and it typically carries some of the highest returns.`,
+       };
+     }
+     return {
+diff --git a/client/src/pages/switch/ambient/Screen4Domains.tsx b/client/src/pages/switch/ambient/Screen4Domains.tsx
+index 6acbeadb..86bc1005 100644
+--- a/client/src/pages/switch/ambient/Screen4Domains.tsx
++++ b/client/src/pages/switch/ambient/Screen4Domains.tsx
+@@ -26,7 +26,7 @@ interface Screen4Props {
+ const DOMAIN_CTA: Record<Domain, string> = {
+   capacity: 'See Revenue Impact →',
+   revenue: 'See Workforce Impact →',
+-  workforce: 'See Quality Exposure →',
++  workforce: 'See Quality Impact →',
+   risk: 'See My Score →',
+ };
+ 
+@@ -56,8 +56,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
+   capacity: {
+     label: 'CAPACITY',
+     headline: 'CAPACITY',
+-    subheadline: 'Ambient reduces documentation time. This section measures how that time is being used.',
+-    reframe: 'Recovered time can stay unmeasured, or it can be tracked, allocated, and converted into patient access. Each level reflects a different degree of organizational follow-through.',
++    subheadline: 'Every ambient deployment recovers time. The question is what your organization decided to do with it.',
++    reframe: 'Time savings are ambient\'s most visible output — and the most commonly wasted. The organizations capturing the most value don\'t just measure hours returned. They assign those hours a destination. Each level reflects how deliberate that decision has been.',
+     cards: [
+       { level: 1, label: 'Time Recovered', description: 'Providers report reduced documentation time. No operational decision made yet.' },
+       { level: 2, label: 'Access Decision Made', description: 'Organization has decided to convert recovered time into patient access.' },
+@@ -79,17 +79,17 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
+   revenue: {
+     label: 'REVENUE',
+     headline: 'REVENUE',
+-    subheadline: 'Improved documentation can affect coding accuracy, denials, and reimbursement. This measures whether your organization is tracking it.',
+-    reframe: 'Select the level that best describes your organization today.',
++    subheadline: 'Documentation quality has changed. Whether that change is affecting reimbursement is a different question — one most organizations haven\'t formally answered yet.',
++    reframe: 'Every encounter gets coded. Whether that coding now reflects the documentation quality your deployment is producing — and whether your organization has looked — is what separates Level 1 from Level 3. Each level reflects how far that analysis has gone.',
+     cards: [
+-      { level: 1, label: 'Disconnected', description: 'Documentation-driven revenue impact has not been analyzed.' },
++      { level: 1, label: 'Not Yet Analyzed', description: 'Documentation-driven revenue impact has not been analyzed.' },
+       { level: 2, label: 'Directional Signal', description: 'Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.' },
+       { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue impact quantified.' },
+       { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
+     ],
+     framingQuestions: {
+       1: 'Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?',
+-      2: 'What has your organization observed?',
++      2: 'What movement has your team observed since deployment?',
+       3: undefined,
+       4: 'How is documentation quality being used strategically in revenue decisions?',
+     },
+@@ -102,8 +102,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
+   workforce: {
+     label: 'WORKFORCE',
+     headline: 'WORKFORCE',
+-    subheadline: 'Reduced documentation burden affects provider time, satisfaction, and retention. This measures how far those effects have been tracked.',
+-    reframe: 'After-hours time returned is the starting point. Organizations further along are measuring in-clinic burden reduction, surveying providers, and connecting the data to turnover and labor costs.',
++    subheadline: 'Providers are experiencing meaningful relief from documentation burden. Whether that relief has been measured and connected to workforce strategy is a separate question.',
++    reframe: 'After-hours time returned is where most organizations start. The ones extracting full value don\'t stop there — they quantify in-clinic savings, survey providers, and connect the data to what turnover actually costs. Each level reflects how far that work has gone.',
+     cards: [
+       { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
+       { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
+@@ -125,16 +125,16 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
+   risk: {
+     label: 'QUALITY',
+     headline: 'QUALITY',
+-    subheadline: 'Improved notes are the starting point. The real value depends on whether that improvement reaches coding, quality reporting, compliance, and future AI initiatives.',
+-    reframe: 'Select the level that best describes your organization today.',
++    subheadline: 'Documentation quality has improved. The question is how far downstream that improvement has traveled — into coding, quality reporting, compliance, and the programs that depend on structured data.',
++    reframe: 'Better notes are the starting point. The value compounds when that improvement reaches the teams and programs that depend on it. Most organizations have done the least work in this domain — and it carries some of the highest long-term returns. Each level reflects how far downstream the improvement has traveled.',
+     cards: [
+-      { level: 1, label: 'Notes Improving', description: 'Documentation quality has improved. No one has measured how or connected it downstream.' },
++      { level: 1, label: 'Improvement Untracked', description: 'Documentation quality has improved. The downstream teams that could benefit from it — coding, CDI, compliance — haven\'t been formally engaged yet.' },
+       { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
+       { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
+       { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
+     ],
+     framingQuestions: {
+-      1: 'Have any downstream teams reviewed documentation changes from ambient?',
++      1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
+       2: 'How are documentation quality metrics being tracked?',
+       3: 'Which downstream areas have been connected to documentation quality improvements?',
+       4: 'Where does documentation quality inform organizational strategy?',
+@@ -1684,12 +1684,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
+       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+         <div className="flex-1 max-w-[700px]">
+           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
+-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
++            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
+               Where is your organization today?
+             </p>
+-            <p className="text-sm text-[#525252] mb-4" data-testid="text-level-instruction">
+-              Select the level that best describes your organization today.
+-            </p>
+ 
+             <div className="flex flex-col">
+               {config.cards.map((card, cardIdx) => {
+diff --git a/client/src/pages/switch/ambient/Screen5Gap.tsx b/client/src/pages/switch/ambient/Screen5Gap.tsx
+index 9683219f..4d1580bb 100644
+--- a/client/src/pages/switch/ambient/Screen5Gap.tsx
++++ b/client/src/pages/switch/ambient/Screen5Gap.tsx
+@@ -117,7 +117,16 @@ function getNextLevelContent(
+     }
+   } else if (domain === 'revenue') {
+     if (level === 1) {
+-      base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
++      if (documentedEncounters > 0) {
++        const revL1Low = Math.round(documentedEncounters * revenuePerVisit * 0.008);
++        const revL1High = Math.round(documentedEncounters * revenuePerVisit * 0.025);
++        base.narrative = `No one has analyzed whether documentation changes are affecting reimbursement. Organizations your size that run this analysis for the first time typically find ${formatDollar(revL1Low)}–${formatDollar(revL1High)} in documentation-driven revenue impact annually — from improved wRVU capture and reduced coding-related denials. You haven't looked yet.\n\nOPPORTUNITY AHEAD: The first step is asking your coding or CDI team whether they've noticed a difference since ambient went live. Most organizations are surprised by what surfaces.`;
++        base.formula = `${documentedEncounters.toLocaleString()} documented encounters × $${revenuePerVisit.toLocaleString()} revenue per visit × 0.8–2.5% improvement range\nLow: ${formatDollar(revL1Low)} / High: ${formatDollar(revL1High)}\nRange reflects initial wRVU capture + denial reduction. Organizations with more complete documentation typically land in the mid-to-high range.`;
++        base.lowEstimate = revL1Low;
++        base.highEstimate = revL1High;
++      } else {
++        base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
++      }
+     } else if (level === 2) {
+       base.narrative = `Your organization has observed directional signals but hasn't done a formal before/after analysis. A formal measurement (Level 3) would validate the estimate and give you a number leadership can stand behind.`;
+     } else if (level === 3) {
+@@ -127,7 +136,12 @@ function getNextLevelContent(
+     }
+   } else if (domain === 'workforce') {
+     if (level === 1) {
+-      base.narrative = "Providers report less after-hours work. The next step is quantifying it — in-clinic time plus a structured provider survey turns that anecdotal relief into a retention-relevant data point.";
++      const wfL1Low = Math.round(providers * 1.0 * 46 * providerRate * 0.15);
++      const wfL1High = Math.round(providers * 2.0 * 46 * providerRate * 0.25);
++      base.narrative = `Providers are reporting less after-hours documentation time. That burden reduction has measurable value — but it hasn't been quantified or connected to retention or labor costs yet. At your scale, organizations that first measure this typically find ${formatDollar(wfL1Low)}–${formatDollar(wfL1High)} in quantifiable burden reduction annually.\n\nOPPORTUNITY AHEAD: The next step is a structured survey and in-clinic time tracking — turning what providers are feeling into a number your leadership can use.`;
++      base.formula = `${providers.toLocaleString()} providers × 1.0–2.0 hrs/week after-hours reduction × 46 clinical weeks × $${providerRate.toLocaleString()}/hr × 15–25% conversion\nLow: ${providers} × 1.0 × 46 × $${providerRate} × 15% = ${formatDollar(wfL1Low)}\nHigh: ${providers} × 2.0 × 46 × $${providerRate} × 25% = ${formatDollar(wfL1High)}`;
++      base.lowEstimate = wfL1Low;
++      base.highEstimate = wfL1High;
+     } else if (level === 2) {
+       const midpoint = Math.round(providers * 0.07 * 350000);
+       const attributionLow = Math.round(midpoint * 0.20);
+@@ -223,6 +237,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+   const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
+   const allAtLevel4 = DOMAIN_ORDER.every(d => domainLevels[d] === 4);
+ 
++  // Separate Level 1 (unmeasured) from Level 2+ (at least started measuring)
++  const hasUnmeasuredDomains = DOMAIN_ORDER.some(d => domainLevels[d] === 1);
++
+   const nextLevelContents = useMemo(() => {
+     const result: Record<Domain, NextLevelContent> = {} as any;
+     for (const d of DOMAIN_ORDER) {
+@@ -237,6 +254,25 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+     return result;
+   }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh, annualEncounters]);
+ 
++  // Dollar ranges for Level 1 (unmeasured) domains — benchmark ranges, not projections
++  const unmeasuredLow = useMemo(() => {
++    let sum = 0;
++    for (const d of DOMAIN_ORDER) {
++      if (domainLevels[d] === 1) sum += nextLevelContents[d].lowEstimate ?? 0;
++    }
++    return sum;
++  }, [domainLevels, nextLevelContents]);
++
++  const unmeasuredHigh = useMemo(() => {
++    let sum = 0;
++    for (const d of DOMAIN_ORDER) {
++      if (domainLevels[d] === 1) {
++        sum += nextLevelContents[d].highEstimate ?? nextLevelContents[d].lowEstimate ?? 0;
++      }
++    }
++    return sum;
++  }, [domainLevels, nextLevelContents]);
++
+   const estimatedTotal = useMemo(() => {
+     let sum = 0;
+     for (const d of DOMAIN_ORDER) {
+@@ -315,6 +351,39 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+         <div className="flex-1 max-w-[700px]">
+ 
++          {/* Two-tile summary: measured vs unmeasured */}
++          {(totalMeasured > 0 || unmeasuredLow > 0) && (
++            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
++              <div className="grid grid-cols-2 gap-4 mb-4" data-testid="card-measured-split">
++                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
++                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
++                    What the Math Shows
++                  </p>
++                  <p className="text-2xl sm:text-3xl font-bold text-[#EA2C00] leading-none" data-testid="tile-measured-value">
++                    {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
++                  </p>
++                  <p className="text-xs text-[#888888] mt-1.5">per year · from measured domains</p>
++                </div>
++                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
++                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
++                    What Hasn't Been Measured
++                  </p>
++                  <p className="text-2xl sm:text-3xl font-bold text-black leading-none" data-testid="tile-unmeasured-range">
++                    {unmeasuredLow > 0
++                      ? unmeasuredHigh > unmeasuredLow
++                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
++                        : formatDollar(unmeasuredLow)
++                      : '—'}
++                  </p>
++                  <p className="text-xs text-[#888888] mt-1.5">per year · benchmark range</p>
++                </div>
++              </div>
++              <p className="text-sm text-[#888888] leading-relaxed mb-8" data-testid="text-split-framing">
++                The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range — what organizations your size typically find when they analyze domains they haven't measured yet.
++              </p>
++            </motion.div>
++          )}
++
+           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
+             <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
+               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+@@ -441,12 +510,23 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+                     >
+                       <div className="flex items-center justify-between">
+                         <div>
+-                          <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
+-                            {content.domainLabel} — Level {domainLevels[domain]}
+-                          </p>
++                          <div className="flex items-center gap-2 mb-0.5">
++                            <p className={`text-xs font-semibold uppercase tracking-[1px] ${domainLevels[domain] === 1 ? 'text-[#888888]' : 'text-[#EA2C00]'}`}>
++                              {content.domainLabel}
++                            </p>
++                            {domainLevels[domain] === 1 ? (
++                              <span className="text-[10px] font-semibold text-[#888888] border border-[#D1D5DB] rounded px-1.5 py-0.5 uppercase tracking-[1px]">
++                                Not Yet Measured
++                              </span>
++                            ) : (
++                              <span className="text-xs text-[#EA2C00]">— Level {domainLevels[domain]}</span>
++                            )}
++                          </div>
+                           {content.nextLevelLabel && (
+-                            <p className="text-xs text-[#888888] mt-0.5">
+-                              Next level: {content.nextLevelLabel}
++                            <p className="text-xs text-[#888888]">
++                              {domainLevels[domain] === 1
++                                ? `First step: ${ACTIVATION_LABELS[domain][2]}`
++                                : `Next level: ${content.nextLevelLabel}`}
+                             </p>
+                           )}
+                         </div>
+@@ -478,10 +558,27 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+                           </p>
+                         )}
+                         {content.formula && (
+-                          <div className="bg-white/50 rounded-md p-3">
++                          <div className="bg-white/50 rounded-md p-3 mt-3">
++                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">
++                              {domainLevels[domain] === 1 ? 'Benchmark range formula' : 'How we got here'}
++                            </p>
+                             <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
+                               {content.formula}
+                             </pre>
++                            {domainLevels[domain] === 1 && (
++                              <p className="text-[11px] text-[#888888] italic mt-2 pt-2 border-t border-[#E5E7EB]/50">
++                                Benchmark range — reflects what organizations at your scale typically find when they first run this analysis. Not a projection for your specific organization.
++                              </p>
++                            )}
++                          </div>
++                        )}
++                        {/* Aspirational confidence warning for Capacity L3+ */}
++                        {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
++                          <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50 flex gap-2" data-testid="warning-aspirational-capacity">
++                            <span className="text-[#888888] text-sm flex-shrink-0">⚠</span>
++                            <p className="text-xs text-[#888888] italic leading-relaxed">
++                              Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations.
++                            </p>
+                           </div>
+                         )}
+                       </div>
+@@ -501,7 +598,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+ 
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.5 }}>
+             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-gap-disclaimer">
+-              Projections are directional estimates based on your inputs and published benchmark data. Ranges reflect next-level maturity modeling using conservative assumptions. Actual results depend on organizational execution and market conditions. Individual results vary.
++              All dollar figures apply conservative conversion rates — typically 15–25% of the theoretical maximum — to account for implementation variability, organizational lag, and partial capture. The full formula and assumptions for each domain are shown in the detail cards above. Benchmark ranges reflect what similar organizations find when they first measure a domain; they are not projections for your organization. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary.
+             </p>
+           </motion.div>
+ 
+@@ -532,30 +629,27 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
+               </>
+             ) : (
+               <>
++                {/* Measured value */}
++                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What the Math Shows</p>
+                 <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
+-                  {formatDollar(estimatedTotal)}
++                  {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
+                 </p>
+-                <p className="text-xs text-white/40 mb-5">estimated annually (benchmark low-end)</p>
+-                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+-                  <div>
+-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-monthly">
+-                      ${Math.round(estimatedTotal / 12).toLocaleString()}
++                <p className="text-xs text-white/40 mb-4">per year · from your data</p>
++
++                {/* Unmeasured range */}
++                {unmeasuredLow > 0 && (
++                  <>
++                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What Hasn't Been Measured</p>
++                    <p className="font-bold text-xl text-white/70 leading-none mb-1" data-testid="panel-unmeasured-range">
++                      {unmeasuredHigh > unmeasuredLow
++                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
++                        : formatDollar(unmeasuredLow)}
+                     </p>
+-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
+-                  </div>
+-                  <div>
+-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-weekly">
+-                      ${Math.round(estimatedTotal / 52).toLocaleString()}
+-                    </p>
+-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
+-                  </div>
+-                  <div>
+-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-daily">
+-                      ${Math.round(estimatedTotal / 365).toLocaleString()}
+-                    </p>
+-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
+-                  </div>
+-                </div>
++                    <p className="text-xs text-white/40 mb-4">per year · benchmark range</p>
++                  </>
++                )}
++
++                <div className="h-px bg-white/10 mb-4" />
+               </>
+             )}
+ 
+diff --git a/client/src/pages/switch/ambient/Screen6Invitation.tsx b/client/src/pages/switch/ambient/Screen6Invitation.tsx
+index 327ad681..82434300 100644
+--- a/client/src/pages/switch/ambient/Screen6Invitation.tsx
++++ b/client/src/pages/switch/ambient/Screen6Invitation.tsx
+@@ -211,6 +211,89 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
+   return out;
+ }
+ 
++function getScoreBandLabel(score: number): string {
++  if (score <= 16) return "Quantifying";
++  if (score <= 38) return "Measuring";
++  if (score <= 60) return "Acting";
++  if (score <= 79) return "Managing";
++  return "Full Capture";
++}
++
++const BENCHMARK_CONTRAST: Record<Domain, Record<ActivationLevel, { currentState: string; benchmarkPicture: string }>> = {
++  capacity: {
++    1: {
++      currentState: "Time is being recovered across your deployment. What happens to that time operationally is still an open question.",
++      benchmarkPicture: "Recovered time has a documented destination — additional patients, panel expansion, or administrative redesign. The hours are accounted for and the access revenue is confirmed.",
++    },
++    2: {
++      currentState: "Your organization has committed to converting recovered time into patient access. The measurement is beginning.",
++      benchmarkPicture: "Additional patient volume is confirmed and attributed. Recovered capacity is a variable in hiring models and growth planning — a strategic asset, not just a clinical metric.",
++    },
++    3: {
++      currentState: "Additional patients are being seen with recovered time. Access revenue is measured.",
++      benchmarkPicture: "Recovered capacity feeds the annual operating plan. Hiring decisions, panel targets, and access strategy all reflect what ambient has made possible.",
++    },
++    4: {
++      currentState: "Recovered capacity is fully integrated into your organization's operating model.",
++      benchmarkPicture: "This is the ceiling. The opportunity now is sustaining the measurement discipline and deepening integration as the deployment scales.",
++    },
++  },
++  revenue: {
++    1: {
++      currentState: "Documentation quality has improved. Whether that improvement is changing coding accuracy, denial rates, or wRVU capture is still an open question.",
++      benchmarkPicture: "A confirmed before/after number exists. The revenue cycle team is part of the ambient conversation. Documentation quality is a managed revenue lever — not incidental, but engineered.",
++    },
++    2: {
++      currentState: "Directional signals suggest documentation is affecting reimbursement. The formal analysis is in progress.",
++      benchmarkPicture: "Documentation intelligence drives payer strategy and financial planning. Coding accuracy data informs contract negotiations. The revenue impact is a standing organizational metric.",
++    },
++    3: {
++      currentState: "Before/after analysis is complete. A confirmed revenue impact exists and is in front of leadership.",
++      benchmarkPicture: "Documentation quality is integrated into revenue cycle operations as a continuous input — proactive denial prevention, payer positioning, and financial planning all depend on it.",
++    },
++    4: {
++      currentState: "Documentation intelligence is driving revenue strategy across your organization.",
++      benchmarkPicture: "The opportunity is governance — ensuring this capability is institutional, not dependent on individual champions, and scales as the deployment grows.",
++    },
++  },
++  workforce: {
++    1: {
++      currentState: "Providers are experiencing meaningful relief from documentation burden. That signal is real — it just hasn't been formally measured yet.",
++      benchmarkPicture: "Burden reduction is a variable in retention modeling and provider contracts. The organizations that measure this consistently find it's worth more than they expected — and it changes how they compete for talent.",
++    },
++    2: {
++      currentState: "Burden reduction is measured. In-clinic and after-hours time savings are quantified.",
++      benchmarkPicture: "Provider experience data informs staffing decisions, recruitment positioning, and FTE modeling. Documentation sustainability is an organizational capability, not a provider amenity.",
++    },
++    3: {
++      currentState: "Documentation burden is connected to turnover risk. The workforce economics are being understood.",
++      benchmarkPicture: "Provider sustainability is a formal variable in the operating model — measurably influencing labor costs, recruitment outcomes, and long-term staffing strategy.",
++    },
++    4: {
++      currentState: "Provider sustainability is fully integrated into workforce strategy.",
++      benchmarkPicture: "The opportunity is sustaining the measurement and connecting it to the next wave of workforce challenges as the deployment evolves.",
++    },
++  },
++  risk: {
++    1: {
++      currentState: "Notes have measurably improved. The downstream value of that improvement — in coding accuracy, quality reporting, compliance, and risk adjustment — is still untapped.",
++      benchmarkPicture: "Structured documentation is organizational infrastructure. CDI, quality programs, value-based care strategy, and AI readiness all build on it — and it's governed accordingly.",
++    },
++    2: {
++      currentState: "Documentation quality attributes are being tracked systematically. The signal is there and starting to reach the teams that depend on it.",
++      benchmarkPicture: "Documentation quality informs quality program design, payer negotiations, and compliance governance. It's infrastructure for the organization's clinical and strategic agenda.",
++    },
++    3: {
++      currentState: "Documentation quality improvements are connected to downstream workflows. The value is flowing.",
++      benchmarkPicture: "Structured documentation positions the organization for value-based care, AI readiness, and clinical research. These are the compounding returns — the hardest to replicate.",
++    },
++    4: {
++      currentState: "Structured documentation is a strategic organizational asset.",
++      benchmarkPicture: "The opportunity is governance and future-proofing — ensuring the documentation infrastructure scales with AI initiatives and evolving payer models.",
++    },
++  },
++};
++
+ const ROADMAP_STRATEGIC_ORDER: Domain[] = ['capacity', 'workforce', 'risk', 'revenue'];
+ 
+ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel: string; nextLevelUnlock: string }>> = {
+@@ -391,6 +474,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+     setExportModalOpen(true);
+   };
+ 
++  const unmeasuredCount = useMemo(() =>
++    DOMAIN_ORDER.filter(d => (domainData[d]?.activationLevel || 1) === 1).length
++  , [domainData]);
++
++  const scoreBandLabel = getScoreBandLabel(totalScore);
++
+   const heroNarrative = useMemo(() => {
+     const domainLevels: Record<string, number> = {};
+     for (const d of DOMAIN_ORDER) {
+@@ -495,19 +584,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+             Your Ambient AI Assessment
+           </p>
+ 
+-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-8">
++          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-6">
+             <div>
+-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
++              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Maturity Score</p>
+               <p className="text-[40px] sm:text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
+                 {totalScore}
+               </p>
+               <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
++              <p className="text-sm font-semibold text-[#EA2C00] mt-2 uppercase tracking-wide">{scoreBandLabel}</p>
+             </div>
+ 
+-            <div className="hidden sm:block w-px h-20 bg-white/10" />
++            <div className="hidden sm:block w-px h-24 bg-white/10" />
+ 
+             <div>
+-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
++              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">What the Math Shows</p>
+               {hasMeasuredDomains ? (
+                 <>
+                   <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+@@ -521,11 +611,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+                 </p>
+               )}
+             </div>
+-          </div>
+ 
+-          <p className="text-sm text-white/50 leading-relaxed max-w-[500px] mx-auto" data-testid="text-capture-line">
+-            {heroNarrative}
+-          </p>
++            {unmeasuredCount > 0 && (
++              <>
++                <div className="hidden sm:block w-px h-24 bg-white/10" />
++                <div>
++                  <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Not Yet Measured</p>
++                  <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-white/30 leading-none" data-testid="hero-unmeasured-count">
++                    {unmeasuredCount}
++                  </p>
++                  <p className="text-lg text-white/30 font-normal mt-1">{unmeasuredCount === 1 ? 'domain' : 'domains'}</p>
++                </div>
++              </>
++            )}
++          </div>
+         </div>
+       </motion.div>
+ 
+@@ -537,46 +636,49 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.3, duration: 0.5 }}
+           >
+-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-roadmap">
++            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-benchmark">
+               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+-                Your Roadmap to Full Scale
++                Where You Are — And What's Ahead
+               </p>
+               <div className="h-px bg-[#E5E7EB] mb-2" />
+               <p className="text-sm text-[#888888] leading-relaxed mb-6">
+-                Each domain has a defined next level. Here's what unlocking it looks like — and what it makes possible.
++                Each domain has a picture of what full capture looks like. Here's where your organization stands — and what becomes visible when you get there.
+               </p>
+ 
+-              {ROADMAP_STRATEGIC_ORDER.map((domain) => {
++              {DOMAIN_ORDER.map((domain) => {
+                 const d = domainData[domain];
+                 const level = (d?.activationLevel || 1) as ActivationLevel;
+-                const cardCopy = ROADMAP_CARDS[domain as Domain][level];
++                const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
++                const isAtCeiling = level === 4;
+                 return (
+-                  <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60" data-testid={`roadmap-${domain}`}>
++                  <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60" data-testid={`benchmark-${domain}`}>
+                     <div className="flex items-center justify-between mb-3">
+                       <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
+                         {DOMAIN_LABELS[domain as Domain]}
+                       </p>
+-                      <span className="text-[11px] font-medium text-[#888888] bg-[#F5F0EB] rounded-full px-2.5 py-0.5">
++                      <span className={`text-[11px] font-medium rounded-full px-2.5 py-0.5 ${level === 1 ? 'bg-[#E5E7EB] text-[#888888]' : 'bg-[#F5F0EB] text-[#888888]'}`}>
+                         Level {level} of 4
+                       </span>
+                     </div>
+-                    <p className="text-sm font-semibold text-black leading-snug mb-2">
+-                      {cardCopy.currentStateLabel}
++                    <p className="text-sm text-[#444444] leading-relaxed mb-3">
++                      {contrast.currentState}
+                     </p>
+-                    {level < 4 && (
+-                      <div className="border-l-2 border-[#EA2C00] pl-3 mt-3">
+-                        <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1">
+-                          Next level unlocks
++                    {!isAtCeiling && (
++                      <div className="border-l-2 border-[#1A1A1A]/20 pl-3">
++                        <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1px] mb-1">
++                          At full capture
+                         </p>
+-                        <p className="text-sm text-[#444444] leading-relaxed">
+-                          {cardCopy.nextLevelUnlock}
++                        <p className="text-sm text-black font-medium leading-relaxed">
++                          {contrast.benchmarkPicture}
+                         </p>
+                       </div>
+                     )}
+-                    {level === 4 && (
+-                      <p className="text-sm text-[#888888] leading-relaxed italic mt-1">
+-                        Leading practice. Continue deepening integration and governance.
+-                      </p>
++                    {isAtCeiling && (
++                      <div className="border-l-2 border-[#EA2C00] pl-3">
++                        <p className="text-sm text-[#444444] leading-relaxed italic">
++                          {contrast.benchmarkPicture}
++                        </p>
++                      </div>
+                     )}
+                   </div>
+                 );
+@@ -589,17 +691,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.45, duration: 0.5 }}
+           >
+-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
+-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
++            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
++              <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
+                 The Conversation Worth Having
+               </p>
+-              <div className="h-px bg-[#E5E7EB] mb-6" />
++              <div className="h-px bg-white/10 mb-6" />
+ 
+-              <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
+-                Let's walk through your roadmap together.
++              <h2 className="text-xl md:text-2xl font-bold text-white font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
++                The gap isn't about the tool.
+               </h2>
+-              <p className="text-sm text-[#888888] leading-relaxed mb-6">
+-                Bring this assessment to a working session with Abridge. We'll walk each domain's next level against your operational realities — and map a sequenced plan that fits where you actually are.
++              <p className="text-sm text-white/60 leading-relaxed mb-3">
++                Most health systems deploying ambient arrive at a similar pattern — the technology is working, and value is being created. What hasn't been built yet is the strategy around it: the measurement, the operational connections, the executive visibility that turns a clinical workflow into a business capability.
++              </p>
++              <p className="text-sm text-white/60 leading-relaxed mb-6">
++                The organizations capturing full value across all four domains didn't get there because of a better tool. They got there because someone helped them treat ambient as a strategic initiative. That's the conversation worth having.
+               </p>
+ 
+               <div className="flex flex-col items-start gap-3">
+@@ -608,12 +713,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+                   className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                   data-testid="button-explore-value"
+                 >
+-                  Explore Value with Abridge →
++                  Request a Working Session
+                   <ArrowRight size={16} />
+                 </Button>
+                 <button
+                   onClick={openExportModal}
+-                  className="text-sm text-[#888888] underline underline-offset-2 hover:text-black transition-colors bg-transparent border-none cursor-pointer"
++                  className="text-sm text-white/40 underline underline-offset-2 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
+                   data-testid="button-export"
+                 >
+                   Download Your Assessment
+@@ -719,10 +824,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
+                 <span className="text-white/50">Utilization</span>
+                 <span className="text-white/80 font-medium">{utilization}%</span>
+               </div>
+-              <div className="flex items-center justify-between text-sm">
+-                <span className="text-white/50">Time saved</span>
+-                <span className="text-white/80 font-medium">{timeSavings > 0 ? `${timeSavings} min` : '—'}</span>
+-              </div>
+             </div>
+ 
+             <div className="h-px bg-white/10 my-5" />
+diff --git a/client/src/pages/switch/ambient/domainCalculations.ts b/client/src/pages/switch/ambient/domainCalculations.ts
+index 6153f25f..d539e921 100644
+--- a/client/src/pages/switch/ambient/domainCalculations.ts
++++ b/client/src/pages/switch/ambient/domainCalculations.ts
+@@ -43,12 +43,6 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>>
+   },
+ };
+ 
+-export const DOMAIN_WEIGHTS: Record<Domain, number> = {
+-  capacity: 0.30,
+-  revenue: 0.25,
+-  workforce: 0.25,
+-  risk: 0.20,
+-};
+ 
+ export interface DomainFeedback {
+   label: string;
+@@ -210,7 +204,9 @@ export function computeCapacityFeedback(
+       headlineMetric,
+       context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.\n\n${confidenceFraming}`,
+       formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
+-      footnote: `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,
++      footnote: isAspirational
++        ? `⚠ Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations. Uses 11 clinical months. Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}.`
++        : `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,
+       nextLevelTeaser: 'Level 4 tracks downstream access outcomes — panel growth, referral conversion, same-day access — attributed to recovered time.',
+       warningBanner: isAspirational ? 'Planning scenario — based on your stated target, not confirmed scheduling data. Treat as a goal, not an actuals figure.' : undefined,
+     };
+-- 
+2.50.1 (Apple Git-155)
+

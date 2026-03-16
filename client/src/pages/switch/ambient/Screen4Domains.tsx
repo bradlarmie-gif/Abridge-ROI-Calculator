@@ -26,7 +26,7 @@ interface Screen4Props {
 const DOMAIN_CTA: Record<Domain, string> = {
   capacity: 'See Revenue Impact →',
   revenue: 'See Workforce Impact →',
-  workforce: 'See Quality Exposure →',
+  workforce: 'See Quality Impact →',
   risk: 'See My Score →',
 };
 
@@ -56,8 +56,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
     headline: 'CAPACITY',
-    subheadline: 'Ambient reduces documentation time. This section measures how that time is being used.',
-    reframe: 'Recovered time can stay unmeasured, or it can be tracked, allocated, and converted into patient access. Each level reflects a different degree of organizational follow-through.',
+    subheadline: 'Every ambient deployment recovers time. The question is what your organization decided to do with it.',
+    reframe: 'Time savings are ambient\'s most visible output — and the most commonly wasted. The organizations capturing the most value don\'t just measure hours returned. They assign those hours a destination. Each level reflects how deliberate that decision has been.',
     cards: [
       { level: 1, label: 'Time Recovered', description: 'Providers report reduced documentation time. No operational decision made yet.' },
       { level: 2, label: 'Access Decision Made', description: 'Organization has decided to convert recovered time into patient access.' },
@@ -79,17 +79,17 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   revenue: {
     label: 'REVENUE',
     headline: 'REVENUE',
-    subheadline: 'Improved documentation can affect coding accuracy, denials, and reimbursement. This measures whether your organization is tracking it.',
-    reframe: 'Select the level that best describes your organization today.',
+    subheadline: 'Documentation quality has changed. Whether that change is affecting reimbursement is a different question — one most organizations haven\'t formally answered yet.',
+    reframe: 'Every encounter gets coded. Whether that coding now reflects the documentation quality your deployment is producing — and whether your organization has looked — is what separates Level 1 from Level 3. Each level reflects how far that analysis has gone.',
     cards: [
-      { level: 1, label: 'Disconnected', description: 'Documentation-driven revenue impact has not been analyzed.' },
+      { level: 1, label: 'Not Yet Analyzed', description: 'Documentation-driven revenue impact has not been analyzed.' },
       { level: 2, label: 'Directional Signal', description: 'Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.' },
       { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue impact quantified.' },
       { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
     ],
     framingQuestions: {
       1: 'Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?',
-      2: 'What has your organization observed?',
+      2: 'What movement has your team observed since deployment?',
       3: undefined,
       4: 'How is documentation quality being used strategically in revenue decisions?',
     },
@@ -102,8 +102,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   workforce: {
     label: 'WORKFORCE',
     headline: 'WORKFORCE',
-    subheadline: 'Reduced documentation burden affects provider time, satisfaction, and retention. This measures how far those effects have been tracked.',
-    reframe: 'After-hours time returned is the starting point. Organizations further along are measuring in-clinic burden reduction, surveying providers, and connecting the data to turnover and labor costs.',
+    subheadline: 'Providers are experiencing meaningful relief from documentation burden. Whether that relief has been measured and connected to workforce strategy is a separate question.',
+    reframe: 'After-hours time returned is where most organizations start. The ones extracting full value don\'t stop there — they quantify in-clinic savings, survey providers, and connect the data to what turnover actually costs. Each level reflects how far that work has gone.',
     cards: [
       { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
       { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
@@ -125,16 +125,16 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   risk: {
     label: 'QUALITY',
     headline: 'QUALITY',
-    subheadline: 'Improved notes are the starting point. The real value depends on whether that improvement reaches coding, quality reporting, compliance, and future AI initiatives.',
-    reframe: 'Select the level that best describes your organization today.',
+    subheadline: 'Documentation quality has improved. The question is how far downstream that improvement has traveled — into coding, quality reporting, compliance, and the programs that depend on structured data.',
+    reframe: 'Better notes are the starting point. The value compounds when that improvement reaches the teams and programs that depend on it. Most organizations have done the least work in this domain — and it carries some of the highest long-term returns. Each level reflects how far downstream the improvement has traveled.',
     cards: [
-      { level: 1, label: 'Notes Improving', description: 'Documentation quality has improved. No one has measured how or connected it downstream.' },
+      { level: 1, label: 'Improvement Untracked', description: 'Documentation quality has improved. The downstream teams that could benefit from it — coding, CDI, compliance — haven\'t been formally engaged yet.' },
       { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
       { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
       { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
     ],
     framingQuestions: {
-      1: 'Have any downstream teams reviewed documentation changes from ambient?',
+      1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
       2: 'How are documentation quality metrics being tracked?',
       3: 'Which downstream areas have been connected to documentation quality improvements?',
       4: 'Where does documentation quality inform organizational strategy?',
@@ -1684,11 +1684,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
               Where is your organization today?
-            </p>
-            <p className="text-sm text-[#525252] mb-4" data-testid="text-level-instruction">
-              Select the level that best describes your organization today.
             </p>
 
             <div className="flex flex-col">

@@ -127,29 +127,30 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     const lowestLevel = domainLevels[lowestDomain];
     const insightLevel = Math.min(lowestLevel, 2) as 1 | 2;
     const domainInsight = DOMAIN_INSIGHTS[lowestDomain][insightLevel];
+    const lowestLabel = DOMAIN_LABELS[lowestDomain];
 
     if (score <= 16) {
       return {
         headline: 'The deployment is live. The value isn\'t captured yet.',
-        body: 'Ambient is running, but the organization hasn\'t started measuring what it\'s returning. The gap between running and capturing is where most organizations stay longest — and it\'s the most expensive place to be.',
+        body: 'A score of 16 is where every ambient deployment begins — all four domains are at awareness. The gap between running and capturing is where most organizations stay longest. It\'s also the most expensive place to be.',
       };
     }
     if (score <= 38) {
       return {
         headline: 'Something is being measured. Not enough is acting on it.',
-        body: 'At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct — that\'s where the next layer of value is sitting unmeasured.',
+        body: `At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct. Your ${lowestLabel} domain is the most significant gap — ${domainInsight}`,
       };
     }
     if (score <= 60) {
       return {
         headline: 'Value is moving. Not all of it has a destination yet.',
-        body: 'At least one domain is producing a real number. The others haven\'t caught up. That gap — between where you are and where the tool could take you — is the strategic opportunity.',
+        body: `At least one domain is producing a real number. The others haven't caught up. Your ${lowestLabel} domain has the most room — ${domainInsight}`,
       };
     }
     if (score <= 79) {
       return {
         headline: 'Most of the value is captured. The last piece is the hardest.',
-        body: 'Your organization is operating at a level most ambient deployments never reach. What\'s left tends to be the domain that requires the most organizational will — but it carries some of the highest returns.',
+        body: `Your organization is operating at a level most ambient deployments never reach. ${lowestLabel} is the remaining gap — ${domainInsight} — and it typically carries some of the highest returns.`,
       };
     }
     return {

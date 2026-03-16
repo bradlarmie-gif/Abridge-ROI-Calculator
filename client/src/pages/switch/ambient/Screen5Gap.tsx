@@ -117,7 +117,16 @@ function getNextLevelContent(
     }
   } else if (domain === 'revenue') {
     if (level === 1) {
-      base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
+      if (documentedEncounters > 0) {
+        const revL1Low = Math.round(documentedEncounters * revenuePerVisit * 0.008);
+        const revL1High = Math.round(documentedEncounters * revenuePerVisit * 0.025);
+        base.narrative = `No one has analyzed whether documentation changes are affecting reimbursement. Organizations your size that run this analysis for the first time typically find ${formatDollar(revL1Low)}–${formatDollar(revL1High)} in documentation-driven revenue impact annually — from improved wRVU capture and reduced coding-related denials. You haven't looked yet.\n\nOPPORTUNITY AHEAD: The first step is asking your coding or CDI team whether they've noticed a difference since ambient went live. Most organizations are surprised by what surfaces.`;
+        base.formula = `${documentedEncounters.toLocaleString()} documented encounters × $${revenuePerVisit.toLocaleString()} revenue per visit × 0.8–2.5% improvement range\nLow: ${formatDollar(revL1Low)} / High: ${formatDollar(revL1High)}\nRange reflects initial wRVU capture + denial reduction. Organizations with more complete documentation typically land in the mid-to-high range.`;
+        base.lowEstimate = revL1Low;
+        base.highEstimate = revL1High;
+      } else {
+        base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
+      }
     } else if (level === 2) {
       base.narrative = `Your organization has observed directional signals but hasn't done a formal before/after analysis. A formal measurement (Level 3) would validate the estimate and give you a number leadership can stand behind.`;
     } else if (level === 3) {
@@ -127,7 +136,12 @@ function getNextLevelContent(
     }
   } else if (domain === 'workforce') {
     if (level === 1) {
-      base.narrative = "Providers report less after-hours work. The next step is quantifying it — in-clinic time plus a structured provider survey turns that anecdotal relief into a retention-relevant data point.";
+      const wfL1Low = Math.round(providers * 1.0 * 46 * providerRate * 0.15);
+      const wfL1High = Math.round(providers * 2.0 * 46 * providerRate * 0.25);
+      base.narrative = `Providers are reporting less after-hours documentation time. That burden reduction has measurable value — but it hasn't been quantified or connected to retention or labor costs yet. At your scale, organizations that first measure this typically find ${formatDollar(wfL1Low)}–${formatDollar(wfL1High)} in quantifiable burden reduction annually.\n\nOPPORTUNITY AHEAD: The next step is a structured survey and in-clinic time tracking — turning what providers are feeling into a number your leadership can use.`;
+      base.formula = `${providers.toLocaleString()} providers × 1.0–2.0 hrs/week after-hours reduction × 46 clinical weeks × $${providerRate.toLocaleString()}/hr × 15–25% conversion\nLow: ${providers} × 1.0 × 46 × $${providerRate} × 15% = ${formatDollar(wfL1Low)}\nHigh: ${providers} × 2.0 × 46 × $${providerRate} × 25% = ${formatDollar(wfL1High)}`;
+      base.lowEstimate = wfL1Low;
+      base.highEstimate = wfL1High;
     } else if (level === 2) {
       const midpoint = Math.round(providers * 0.07 * 350000);
       const attributionLow = Math.round(midpoint * 0.20);
@@ -223,6 +237,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
   const allAtLevel4 = DOMAIN_ORDER.every(d => domainLevels[d] === 4);
 
+  // Separate Level 1 (unmeasured) from Level 2+ (at least started measuring)
+  const hasUnmeasuredDomains = DOMAIN_ORDER.some(d => domainLevels[d] === 1);
+
   const nextLevelContents = useMemo(() => {
     const result: Record<Domain, NextLevelContent> = {} as any;
     for (const d of DOMAIN_ORDER) {
@@ -236,6 +253,25 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     }
     return result;
   }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh, annualEncounters]);
+
+  // Dollar ranges for Level 1 (unmeasured) domains — benchmark ranges, not projections
+  const unmeasuredLow = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainLevels[d] === 1) sum += nextLevelContents[d].lowEstimate ?? 0;
+    }
+    return sum;
+  }, [domainLevels, nextLevelContents]);
+
+  const unmeasuredHigh = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainLevels[d] === 1) {
+        sum += nextLevelContents[d].highEstimate ?? nextLevelContents[d].lowEstimate ?? 0;
+      }
+    }
+    return sum;
+  }, [domainLevels, nextLevelContents]);
 
   const estimatedTotal = useMemo(() => {
     let sum = 0;
@@ -315,6 +351,39 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
+          {/* Two-tile summary: measured vs unmeasured */}
+          {(totalMeasured > 0 || unmeasuredLow > 0) && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
+              <div className="grid grid-cols-2 gap-4 mb-4" data-testid="card-measured-split">
+                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
+                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                    What the Math Shows
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#EA2C00] leading-none" data-testid="tile-measured-value">
+                    {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
+                  </p>
+                  <p className="text-xs text-[#888888] mt-1.5">per year · from measured domains</p>
+                </div>
+                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
+                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                    What Hasn't Been Measured
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-bold text-black leading-none" data-testid="tile-unmeasured-range">
+                    {unmeasuredLow > 0
+                      ? unmeasuredHigh > unmeasuredLow
+                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
+                        : formatDollar(unmeasuredLow)
+                      : '—'}
+                  </p>
+                  <p className="text-xs text-[#888888] mt-1.5">per year · benchmark range</p>
+                </div>
+              </div>
+              <p className="text-sm text-[#888888] leading-relaxed mb-8" data-testid="text-split-framing">
+                The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range — what organizations your size typically find when they analyze domains they haven't measured yet.
+              </p>
+            </motion.div>
+          )}
+
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
             <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
@@ -340,11 +409,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                     <tr className="border-b border-[#E5E7EB]/50">
                       <td className="py-3 font-semibold text-black">Time saved / encounter</td>
                       <td className="py-3 text-right font-bold text-black" data-testid="reality-time-you">
-                        {userTimeSaved > 0 ? `${userTimeSaved} min` : (
-                          onNavigateToBaseline ? (
-                            <button type="button" onClick={onNavigateToBaseline} className="text-xs text-[#E8350A] underline cursor-pointer bg-transparent border-none p-0" data-testid="link-add-time-saved">Add in baseline →</button>
-                          ) : '—'
-                        )}
+                        {userTimeSaved > 0 ? `${userTimeSaved} min` : '—'}
                       </td>
                       <td className="py-3 text-right text-[#888888]">{benchmarkTimeSavedLow}–{benchmarkTimeSavedHigh} min</td>
                     </tr>
@@ -356,11 +421,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                     <tr>
                       <td className="py-3 font-semibold text-black">Hours recovered annually</td>
                       <td className="py-3 text-right font-bold text-black" data-testid="reality-hours-you">
-                        {userHoursRecovered > 0 ? `${userHoursRecovered.toLocaleString()} hrs` : (
-                          userTimeSaved <= 0 && onNavigateToBaseline ? (
-                            <button type="button" onClick={onNavigateToBaseline} className="text-xs text-[#E8350A] underline cursor-pointer bg-transparent border-none p-0" data-testid="link-add-hours-recovered">Add in baseline →</button>
-                          ) : '—'
-                        )}
+                        {userHoursRecovered > 0 ? `${userHoursRecovered.toLocaleString()} hrs` : '—'}
                       </td>
                       <td className="py-3 text-right text-[#888888]">{benchmarkHoursRecovered.toLocaleString()}</td>
                     </tr>
@@ -441,12 +502,23 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
-                            {content.domainLabel} — Level {domainLevels[domain]}
-                          </p>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className={`text-xs font-semibold uppercase tracking-[1px] ${domainLevels[domain] === 1 ? 'text-[#888888]' : 'text-[#EA2C00]'}`}>
+                              {content.domainLabel}
+                            </p>
+                            {domainLevels[domain] === 1 ? (
+                              <span className="text-[10px] font-semibold text-[#888888] border border-[#D1D5DB] rounded px-1.5 py-0.5 uppercase tracking-[1px]">
+                                Not Yet Measured
+                              </span>
+                            ) : (
+                              <span className="text-xs text-[#EA2C00]">— Level {domainLevels[domain]}</span>
+                            )}
+                          </div>
                           {content.nextLevelLabel && (
-                            <p className="text-xs text-[#888888] mt-0.5">
-                              Next level: {content.nextLevelLabel}
+                            <p className="text-xs text-[#888888]">
+                              {domainLevels[domain] === 1
+                                ? `First step: ${ACTIVATION_LABELS[domain][2]}`
+                                : `Next level: ${content.nextLevelLabel}`}
                             </p>
                           )}
                         </div>
@@ -478,10 +550,27 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                           </p>
                         )}
                         {content.formula && (
-                          <div className="bg-white/50 rounded-md p-3">
+                          <div className="bg-white/50 rounded-md p-3 mt-3">
+                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">
+                              {domainLevels[domain] === 1 ? 'Benchmark range formula' : 'How we got here'}
+                            </p>
                             <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
                               {content.formula}
                             </pre>
+                            {domainLevels[domain] === 1 && (
+                              <p className="text-[11px] text-[#888888] italic mt-2 pt-2 border-t border-[#E5E7EB]/50">
+                                Benchmark range — reflects what organizations at your scale typically find when they first run this analysis. Not a projection for your specific organization.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {/* Aspirational confidence warning for Capacity L3+ */}
+                        {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50 flex gap-2" data-testid="warning-aspirational-capacity">
+                            <span className="text-[#888888] text-sm flex-shrink-0">⚠</span>
+                            <p className="text-xs text-[#888888] italic leading-relaxed">
+                              Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -501,7 +590,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.5 }}>
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-gap-disclaimer">
-              Projections are directional estimates based on your inputs and published benchmark data. Ranges reflect next-level maturity modeling using conservative assumptions. Actual results depend on organizational execution and market conditions. Individual results vary.
+              All dollar figures apply conservative conversion rates — typically 15–25% of the theoretical maximum — to account for implementation variability, organizational lag, and partial capture. The full formula and assumptions for each domain are shown in the detail cards above. Benchmark ranges reflect what similar organizations find when they first measure a domain; they are not projections for your organization. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary.
             </p>
           </motion.div>
 
@@ -532,30 +621,27 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               </>
             ) : (
               <>
+                {/* Measured value */}
+                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What the Math Shows</p>
                 <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
-                  {formatDollar(estimatedTotal)}
+                  {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
                 </p>
-                <p className="text-xs text-white/40 mb-5">estimated annually (benchmark low-end)</p>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
-                  <div>
-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-monthly">
-                      ${Math.round(estimatedTotal / 12).toLocaleString()}
+                <p className="text-xs text-white/40 mb-4">per year · from your data</p>
+
+                {/* Unmeasured range */}
+                {unmeasuredLow > 0 && (
+                  <>
+                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What Hasn't Been Measured</p>
+                    <p className="font-bold text-xl text-white/70 leading-none mb-1" data-testid="panel-unmeasured-range">
+                      {unmeasuredHigh > unmeasuredLow
+                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
+                        : formatDollar(unmeasuredLow)}
                     </p>
-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-weekly">
-                      ${Math.round(estimatedTotal / 52).toLocaleString()}
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ week</p>
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="value-daily">
-                      ${Math.round(estimatedTotal / 365).toLocaleString()}
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
-                  </div>
-                </div>
+                    <p className="text-xs text-white/40 mb-4">per year · benchmark range</p>
+                  </>
+                )}
+
+                <div className="h-px bg-white/10 mb-4" />
               </>
             )}
 

@@ -211,6 +211,89 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
   return out;
 }
 
+function getScoreBandLabel(score: number): string {
+  if (score <= 16) return "Quantifying";
+  if (score <= 38) return "Measuring";
+  if (score <= 60) return "Acting";
+  if (score <= 79) return "Managing";
+  return "Full Capture";
+}
+
+const BENCHMARK_CONTRAST: Record<Domain, Record<ActivationLevel, { currentState: string; benchmarkPicture: string }>> = {
+  capacity: {
+    1: {
+      currentState: "Time is being recovered across your deployment. What happens to that time operationally is still an open question.",
+      benchmarkPicture: "Recovered time has a documented destination — additional patients, panel expansion, or administrative redesign. The hours are accounted for and the access revenue is confirmed.",
+    },
+    2: {
+      currentState: "Your organization has committed to converting recovered time into patient access. The measurement is beginning.",
+      benchmarkPicture: "Additional patient volume is confirmed and attributed. Recovered capacity is a variable in hiring models and growth planning — a strategic asset, not just a clinical metric.",
+    },
+    3: {
+      currentState: "Additional patients are being seen with recovered time. Access revenue is measured.",
+      benchmarkPicture: "Recovered capacity feeds the annual operating plan. Hiring decisions, panel targets, and access strategy all reflect what ambient has made possible.",
+    },
+    4: {
+      currentState: "Recovered capacity is fully integrated into your organization's operating model.",
+      benchmarkPicture: "This is the ceiling. The opportunity now is sustaining the measurement discipline and deepening integration as the deployment scales.",
+    },
+  },
+  revenue: {
+    1: {
+      currentState: "Documentation quality has improved. Whether that improvement is changing coding accuracy, denial rates, or wRVU capture is still an open question.",
+      benchmarkPicture: "A confirmed before/after number exists. The revenue cycle team is part of the ambient conversation. Documentation quality is a managed revenue lever — not incidental, but engineered.",
+    },
+    2: {
+      currentState: "Directional signals suggest documentation is affecting reimbursement. The formal analysis is in progress.",
+      benchmarkPicture: "Documentation intelligence drives payer strategy and financial planning. Coding accuracy data informs contract negotiations. The revenue impact is a standing organizational metric.",
+    },
+    3: {
+      currentState: "Before/after analysis is complete. A confirmed revenue impact exists and is in front of leadership.",
+      benchmarkPicture: "Documentation quality is integrated into revenue cycle operations as a continuous input — proactive denial prevention, payer positioning, and financial planning all depend on it.",
+    },
+    4: {
+      currentState: "Documentation intelligence is driving revenue strategy across your organization.",
+      benchmarkPicture: "The opportunity is governance — ensuring this capability is institutional, not dependent on individual champions, and scales as the deployment grows.",
+    },
+  },
+  workforce: {
+    1: {
+      currentState: "Providers are experiencing meaningful relief from documentation burden. That signal is real — it just hasn't been formally measured yet.",
+      benchmarkPicture: "Burden reduction is a variable in retention modeling and provider contracts. The organizations that measure this consistently find it's worth more than they expected — and it changes how they compete for talent.",
+    },
+    2: {
+      currentState: "Burden reduction is measured. In-clinic and after-hours time savings are quantified.",
+      benchmarkPicture: "Provider experience data informs staffing decisions, recruitment positioning, and FTE modeling. Documentation sustainability is an organizational capability, not a provider amenity.",
+    },
+    3: {
+      currentState: "Documentation burden is connected to turnover risk. The workforce economics are being understood.",
+      benchmarkPicture: "Provider sustainability is a formal variable in the operating model — measurably influencing labor costs, recruitment outcomes, and long-term staffing strategy.",
+    },
+    4: {
+      currentState: "Provider sustainability is fully integrated into workforce strategy.",
+      benchmarkPicture: "The opportunity is sustaining the measurement and connecting it to the next wave of workforce challenges as the deployment evolves.",
+    },
+  },
+  risk: {
+    1: {
+      currentState: "Notes have measurably improved. The downstream value of that improvement — in coding accuracy, quality reporting, compliance, and risk adjustment — is still untapped.",
+      benchmarkPicture: "Structured documentation is organizational infrastructure. CDI, quality programs, value-based care strategy, and AI readiness all build on it — and it's governed accordingly.",
+    },
+    2: {
+      currentState: "Documentation quality attributes are being tracked systematically. The signal is there and starting to reach the teams that depend on it.",
+      benchmarkPicture: "Documentation quality informs quality program design, payer negotiations, and compliance governance. It's infrastructure for the organization's clinical and strategic agenda.",
+    },
+    3: {
+      currentState: "Documentation quality improvements are connected to downstream workflows. The value is flowing.",
+      benchmarkPicture: "Structured documentation positions the organization for value-based care, AI readiness, and clinical research. These are the compounding returns — the hardest to replicate.",
+    },
+    4: {
+      currentState: "Structured documentation is a strategic organizational asset.",
+      benchmarkPicture: "The opportunity is governance and future-proofing — ensuring the documentation infrastructure scales with AI initiatives and evolving payer models.",
+    },
+  },
+};
+
 const ROADMAP_STRATEGIC_ORDER: Domain[] = ['capacity', 'workforce', 'risk', 'revenue'];
 
 const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel: string; nextLevelUnlock: string }>> = {
@@ -391,6 +474,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     setExportModalOpen(true);
   };
 
+  const unmeasuredCount = useMemo(() =>
+    DOMAIN_ORDER.filter(d => (domainData[d]?.activationLevel || 1) === 1).length
+  , [domainData]);
+
+  const scoreBandLabel = getScoreBandLabel(totalScore);
+
   const heroNarrative = useMemo(() => {
     const domainLevels: Record<string, number> = {};
     for (const d of DOMAIN_ORDER) {
@@ -495,19 +584,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             Your Ambient AI Assessment
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-6">
             <div>
-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Your Score</p>
+              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Maturity Score</p>
               <p className="text-[40px] sm:text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
                 {totalScore}
               </p>
               <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
+              <p className="text-sm font-semibold text-[#EA2C00] mt-2 uppercase tracking-wide">{scoreBandLabel}</p>
             </div>
 
-            <div className="hidden sm:block w-px h-20 bg-white/10" />
+            <div className="hidden sm:block w-px h-24 bg-white/10" />
 
             <div>
-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Measured Value</p>
+              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">What the Math Shows</p>
               {hasMeasuredDomains ? (
                 <>
                   <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
@@ -521,11 +611,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 </p>
               )}
             </div>
-          </div>
 
-          <p className="text-sm text-white/50 leading-relaxed max-w-[500px] mx-auto" data-testid="text-capture-line">
-            {heroNarrative}
-          </p>
+            {unmeasuredCount > 0 && (
+              <>
+                <div className="hidden sm:block w-px h-24 bg-white/10" />
+                <div>
+                  <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Not Yet Measured</p>
+                  <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-white/30 leading-none" data-testid="hero-unmeasured-count">
+                    {unmeasuredCount}
+                  </p>
+                  <p className="text-lg text-white/30 font-normal mt-1">{unmeasuredCount === 1 ? 'domain' : 'domains'}</p>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </motion.div>
 
@@ -537,46 +636,49 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-roadmap">
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-benchmark">
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Your Roadmap to Full Scale
+                Where You Are — And What's Ahead
               </p>
               <div className="h-px bg-[#E5E7EB] mb-2" />
               <p className="text-sm text-[#888888] leading-relaxed mb-6">
-                Each domain has a defined next level. Here's what unlocking it looks like — and what it makes possible.
+                Each domain has a picture of what full capture looks like. Here's where your organization stands — and what becomes visible when you get there.
               </p>
 
-              {ROADMAP_STRATEGIC_ORDER.map((domain) => {
+              {DOMAIN_ORDER.map((domain) => {
                 const d = domainData[domain];
                 const level = (d?.activationLevel || 1) as ActivationLevel;
-                const cardCopy = ROADMAP_CARDS[domain as Domain][level];
+                const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
+                const isAtCeiling = level === 4;
                 return (
-                  <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60" data-testid={`roadmap-${domain}`}>
+                  <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60" data-testid={`benchmark-${domain}`}>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
                         {DOMAIN_LABELS[domain as Domain]}
                       </p>
-                      <span className="text-[11px] font-medium text-[#888888] bg-[#F5F0EB] rounded-full px-2.5 py-0.5">
+                      <span className={`text-[11px] font-medium rounded-full px-2.5 py-0.5 ${level === 1 ? 'bg-[#E5E7EB] text-[#888888]' : 'bg-[#F5F0EB] text-[#888888]'}`}>
                         Level {level} of 4
                       </span>
                     </div>
-                    <p className="text-sm font-semibold text-black leading-snug mb-2">
-                      {cardCopy.currentStateLabel}
+                    <p className="text-sm text-[#444444] leading-relaxed mb-3">
+                      {contrast.currentState}
                     </p>
-                    {level < 4 && (
-                      <div className="border-l-2 border-[#EA2C00] pl-3 mt-3">
-                        <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1">
-                          Next level unlocks
+                    {!isAtCeiling && (
+                      <div className="border-l-2 border-[#1A1A1A]/20 pl-3">
+                        <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1px] mb-1">
+                          At full capture
                         </p>
-                        <p className="text-sm text-[#444444] leading-relaxed">
-                          {cardCopy.nextLevelUnlock}
+                        <p className="text-sm text-black font-medium leading-relaxed">
+                          {contrast.benchmarkPicture}
                         </p>
                       </div>
                     )}
-                    {level === 4 && (
-                      <p className="text-sm text-[#888888] leading-relaxed italic mt-1">
-                        Leading practice. Continue deepening integration and governance.
-                      </p>
+                    {isAtCeiling && (
+                      <div className="border-l-2 border-[#EA2C00] pl-3">
+                        <p className="text-sm text-[#444444] leading-relaxed italic">
+                          {contrast.benchmarkPicture}
+                        </p>
+                      </div>
                     )}
                   </div>
                 );
@@ -589,17 +691,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
+              <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
                 The Conversation Worth Having
               </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
+              <div className="h-px bg-white/10 mb-6" />
 
-              <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
-                Let's walk through your roadmap together.
+              <h2 className="text-xl md:text-2xl font-bold text-white font-abridge uppercase tracking-tight leading-[1.3] mb-4" data-testid="text-invitation-headline">
+                The gap isn't about the tool.
               </h2>
-              <p className="text-sm text-[#888888] leading-relaxed mb-6">
-                Bring this assessment to a working session with Abridge. We'll walk each domain's next level against your operational realities — and map a sequenced plan that fits where you actually are.
+              <p className="text-sm text-white/60 leading-relaxed mb-3">
+                Most health systems deploying ambient arrive at a similar pattern — the technology is working, and value is being created. What hasn't been built yet is the strategy around it: the measurement, the operational connections, the executive visibility that turns a clinical workflow into a business capability.
+              </p>
+              <p className="text-sm text-white/60 leading-relaxed mb-6">
+                The organizations capturing full value across all four domains didn't get there because of a better tool. They got there because someone helped them treat ambient as a strategic initiative. That's the conversation worth having.
               </p>
 
               <div className="flex flex-col items-start gap-3">
@@ -608,12 +713,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                   className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
                   data-testid="button-explore-value"
                 >
-                  Explore Value with Abridge →
+                  Request a Working Session
                   <ArrowRight size={16} />
                 </Button>
                 <button
                   onClick={openExportModal}
-                  className="text-sm text-[#888888] underline underline-offset-2 hover:text-black transition-colors bg-transparent border-none cursor-pointer"
+                  className="text-sm text-white/40 underline underline-offset-2 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
                   data-testid="button-export"
                 >
                   Download Your Assessment
@@ -718,10 +823,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/50">Utilization</span>
                 <span className="text-white/80 font-medium">{utilization}%</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/50">Time saved</span>
-                <span className="text-white/80 font-medium">{timeSavings > 0 ? `${timeSavings} min` : '—'}</span>
               </div>
             </div>
 
