@@ -1,0 +1,150 @@
+ I need you to make 4 file changes to add a "deployment tenure" field throughout the ambient assessment flow. Make all 4 changes exactly as specified.
+
+  ---
+
+  CHANGE 1: client/src/lib/switchGapCalculator.ts
+  Find the SwitchInputs interface. After the line:
+    payerMixCommercial: number;
+  Add this line:
+    deploymentTenure: '0-6' | '6-12' | '12-24' | '24+' | '';
+
+  ---
+
+  CHANGE 2: client/src/lib/assessment/assessmentTypes.ts
+  Find the DEFAULT_SWITCH_INPUTS object. After the line:
+    payerMixCommercial: 0,
+  Add this line:
+    deploymentTenure: '' as const,
+
+  ---
+
+  CHANGE 3: client/src/pages/switch/ambient/domainCalculations.ts
+  At the very end of the file, after the last export, append this entire block:
+
+  // ============================================================================
+  // DEPLOYMENT TENURE — utilities and benchmark ranges
+  // ============================================================================
+
+  export type DeploymentTenure = '0-6' | '6-12' | '12-24' | '24+';
+
+  export function tenureLabel(tenure: string): string {
+    const map: Record<string, string> = {
+      '0-6': 'Less than 6 months',
+      '6-12': '6–12 months',
+      '12-24': '1–2 years',
+      '24+': '2+ years',
+    };
+    return map[tenure] || '';
+  }
+
+  export function tenureMonthsMidpoint(tenure: string): number {
+    const map: Record<string, number> = {
+      '0-6': 3,
+      '6-12': 9,
+      '12-24': 18,
+      '24+': 30,
+    };
+    return map[tenure] || 0;
+  }
+
+  export function tenureIsLong(tenure: string): boolean {
+    return tenure === '12-24' || tenure === '24+';
+  }
+
+  export function tenureScoreBand(totalScore: number): 'low' | 'mid' | 'high' {
+    if (totalScore <= 30) return 'low';
+    if (totalScore <= 60) return 'mid';
+    return 'high';
+  }
+
+  export function isLevelMeasured(level: number): boolean {
+    return level >= 2;
+  }
+
+  export function getWeakestDomain(domainScores: Record<Domain, number>): Domain {
+    return DOMAIN_ORDER.reduce((weakest, domain) =>
+      domainScores[domain] < domainScores[weakest] ? domain : weakest
+    );
+  }
+
+  export const BENCHMARK_RANGES: Record<Domain, {
+    low: (providers: number) => number;
+    high: (providers: number) => number;
+    description: string;
+  }> = {
+    capacity: {
+      low: (providers: number) => Math.round(providers * 1000),
+      high: (providers: number) => Math.round(providers * 3000),
+      description: 'in access revenue from recovered time, annually',
+    },
+    revenue: {
+      low: (providers: number) => Math.round(providers * 4000),
+      high: (providers: number) => Math.round(providers * 12000),
+      description: 'from documentation-driven coding and denial impact, annually',
+    },
+    workforce: {
+      low: (providers: number) => Math.round(providers * 1500),
+      high: (providers: number) => Math.round(providers * 4000),
+      description: 'in avoided turnover and reduced burden costs, annually',
+    },
+    risk: {
+      low: (providers: number) => Math.round(providers * 1000),
+      high: (providers: number) => Math.round(providers * 3000),
+      description: 'in downstream quality and compliance value, annually',
+    },
+  };
+
+  ---
+
+  CHANGE 4: client/src/pages/switch/ambient/Screen2Baseline.tsx
+
+  4a. Find this line:
+    const canProceed = hasBothInputs && utilSet;
+  Replace it with:
+    const canProceed = hasBothInputs && utilSet && !!inputs.deploymentTenure;
+
+  4b. Find the closing </div> of the utilization section — it ends right after the AnimatePresence block for utilInsight. After that closing </div>, add this new section:
+
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    How long has your organization been using ambient documentation?
+                  </label>
+                  <p className="text-xs text-[#888888] italic mb-2">
+                    This changes how we interpret your score and calculate what may already be sitting on the table.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { value: '0-6', label: 'Less than 6 months' },
+                      { value: '6-12', label: '6–12 months' },
+                      { value: '12-24', label: '1–2 years' },
+                      { value: '24+', label: '2+ years' },
+                    ] as const).map(({ value, label }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => updateInput('deploymentTenure', value)}
+                        className={`h-11 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
+                          inputs.deploymentTenure === value
+                            ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                            : 'bg-white text-black border-[#E5E7EB] hover:border-[#999]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+  4c. In the dark sidebar panel on the right, find the Utilization row (the last row in the space-y-4 div). After it, add:
+                {inputs.deploymentTenure && (
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Deployment</span>
+                    <span className="text-white font-semibold text-xs">
+                      {inputs.deploymentTenure === '0-6' ? '<6 mo' :
+                       inputs.deploymentTenure === '6-12' ? '6–12 mo' :
+                       inputs.deploymentTenure === '12-24' ? '1–2 yr' : '2+ yr'}
+                    </span>
+                  </div>
+                )}
+
+  Do not change anything else. Make only these 4 changes.

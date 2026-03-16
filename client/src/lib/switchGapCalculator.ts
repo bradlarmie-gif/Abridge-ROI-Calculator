@@ -85,6 +85,7 @@ export interface SwitchInputs {
   payerMixMedicare: number;
   payerMixMedicaid: number;
   payerMixCommercial: number;
+  deploymentTenure: '0-6' | '6-12' | '12-24' | '24+' | '';
 }
 
 export interface GapItem {

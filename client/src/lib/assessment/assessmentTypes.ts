@@ -114,6 +114,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   payerMixMedicare: 0,
   payerMixMedicaid: 0,
   payerMixCommercial: 0,
+  deploymentTenure: '' as const,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

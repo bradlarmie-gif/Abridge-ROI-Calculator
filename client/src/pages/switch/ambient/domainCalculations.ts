@@ -1034,3 +1034,76 @@ export function scoreToActivationLevel(_domain: Domain, score: number): Activati
   if (score >= 4) return 1;
   return 1;
 }
+
+// ============================================================================
+// DEPLOYMENT TENURE — utilities and benchmark ranges
+// ============================================================================
+
+export type DeploymentTenure = '0-6' | '6-12' | '12-24' | '24+';
+
+export function tenureLabel(tenure: string): string {
+  const map: Record<string, string> = {
+    '0-6': 'Less than 6 months',
+    '6-12': '6–12 months',
+    '12-24': '1–2 years',
+    '24+': '2+ years',
+  };
+  return map[tenure] || '';
+}
+
+export function tenureMonthsMidpoint(tenure: string): number {
+  const map: Record<string, number> = {
+    '0-6': 3,
+    '6-12': 9,
+    '12-24': 18,
+    '24+': 30,
+  };
+  return map[tenure] || 0;
+}
+
+export function tenureIsLong(tenure: string): boolean {
+  return tenure === '12-24' || tenure === '24+';
+}
+
+export function tenureScoreBand(totalScore: number): 'low' | 'mid' | 'high' {
+  if (totalScore <= 30) return 'low';
+  if (totalScore <= 60) return 'mid';
+  return 'high';
+}
+
+export function isLevelMeasured(level: number): boolean {
+  return level >= 2;
+}
+
+export function getWeakestDomain(domainScores: Record<Domain, number>): Domain {
+  return DOMAIN_ORDER.reduce((weakest, domain) =>
+    domainScores[domain] < domainScores[weakest] ? domain : weakest
+  );
+}
+
+export const BENCHMARK_RANGES: Record<Domain, {
+  low: (providers: number) => number;
+  high: (providers: number) => number;
+  description: string;
+}> = {
+  capacity: {
+    low: (providers: number) => Math.round(providers * 1000),
+    high: (providers: number) => Math.round(providers * 3000),
+    description: 'in access revenue from recovered time, annually',
+  },
+  revenue: {
+    low: (providers: number) => Math.round(providers * 4000),
+    high: (providers: number) => Math.round(providers * 12000),
+    description: 'from documentation-driven coding and denial impact, annually',
+  },
+  workforce: {
+    low: (providers: number) => Math.round(providers * 1500),
+    high: (providers: number) => Math.round(providers * 4000),
+    description: 'in avoided turnover and reduced burden costs, annually',
+  },
+  risk: {
+    low: (providers: number) => Math.round(providers * 1000),
+    high: (providers: number) => Math.round(providers * 3000),
+    description: 'in downstream quality and compliance value, annually',
+  },
+};

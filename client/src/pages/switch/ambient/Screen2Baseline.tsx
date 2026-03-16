@@ -26,7 +26,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
   const hasBothInputs = inputs.providers > 0 && inputs.annualEncounters > 0;
   const hasFirstInput = inputs.providers > 0;
-  const canProceed = hasBothInputs && utilSet;
+  const canProceed = hasBothInputs && utilSet && !!inputs.deploymentTenure;
 
   const utilization = inputs.utilization || 0;
   const revenuePerVisit = inputs.revenuePerVisit || 200;
@@ -190,6 +190,36 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                     </motion.p>
                   )}
                 </AnimatePresence>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">
+                  How long has your organization been using ambient documentation?
+                </label>
+                <p className="text-xs text-[#888888] italic mb-2">
+                  This changes how we interpret your score and calculate what may already be sitting on the table.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: '0-6', label: 'Less than 6 months' },
+                    { value: '6-12', label: '6–12 months' },
+                    { value: '12-24', label: '1–2 years' },
+                    { value: '24+', label: '2+ years' },
+                  ] as const).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateInput('deploymentTenure', value)}
+                      className={`h-11 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
+                        inputs.deploymentTenure === value
+                          ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                          : 'bg-white text-black border-[#E5E7EB] hover:border-[#999]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
             </div>
@@ -427,6 +457,16 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                   {utilSet ? `${utilization}%` : "—"}
                 </span>
               </div>
+                {inputs.deploymentTenure && (
+                  <div className="flex justify-between">
+                    <span className="text-white/50">Deployment</span>
+                    <span className="text-white font-semibold text-xs">
+                      {inputs.deploymentTenure === '0-6' ? '<6 mo' :
+                       inputs.deploymentTenure === '6-12' ? '6–12 mo' :
+                       inputs.deploymentTenure === '12-24' ? '1–2 yr' : '2+ yr'}
+                    </span>
+                  </div>
+                )}
             </div>
 
             {hasBothInputs && utilSet && (
