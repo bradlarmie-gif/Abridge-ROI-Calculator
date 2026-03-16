@@ -1,0 +1,78 @@
+In client/src/pages/proforma/ProformaView.tsx, the scenario comparison
+  feature exists but is not discoverable or usable. Fix the following issues:
+
+  ---
+
+  ISSUE 1 — Move Compare panel to top, below the hero KPIs
+
+  Currently the comparison panel (data-testid="panel-scenario-comparison")
+  renders near line 1694, well below the P&L table, sensitivity panel, and
+  methodology accordion. Move it to appear immediately after the chart/view
+  mode controls section (around line 420, after the scenario tabs row).
+  Users who click Compare should see the result without scrolling.
+
+  ---
+
+  ISSUE 2 — Show "Compare" button always, not just when scenarios exist
+
+  Currently the Compare button only renders when `scenarios.length > 0`:
+    {scenarios.length > 0 && (
+      <button onClick={() => setCompareMode(!compareMode)} ...>
+
+  Change this: always show the Compare button. When `scenarios.length === 0`,
+  clicking it should instead trigger `setShowSaveDialog(true)` with a prefilled
+  name of "Scenario 1" and show an explanatory toast:
+    toast({ title: "Save your first scenario", description: "Name this configuration, then change your deal settings to create a second one to compare." })
+
+  This makes the button discoverable even on first visit.
+
+  ---
+
+  ISSUE 3 — Add a "How to use" hint under the scenario tabs row
+
+  When `scenarios.length > 0` and `scenarios.length < MAX_SCENARIOS`, add
+  a single line below the saved scenario pills:
+    <p className="text-[11px] text-white/40 mt-1">
+      Change your deal settings above, then save another scenario to compare.
+    </p>
+
+  This disappears once you hit MAX_SCENARIOS.
+
+  ---
+
+  ISSUE 4 — Fix the dashed line legend in the overlay chart
+
+  At line ~1803, the legend items for saved scenarios use:
+    style={{ borderTop: "2px dashed" }}
+  This does not render a visible dashed line. Replace with an SVG line:
+    <svg width="16" height="2" className="inline-block">
+      <line x1="0" y1="1" x2="16" y2="1"
+        stroke={SCENARIO_COLORS[idx % SCENARIO_COLORS.length]}
+        strokeWidth="2"
+        strokeDasharray={SCENARIO_DASHES[idx % SCENARIO_DASHES.length] || "none"}
+      />
+    </svg>
+
+  Apply the same SVG approach to the "Current" legend item (solid line,
+  stroke="#1A1A1A").
+
+  ---
+
+  ISSUE 5 — Add a Legend to the ComposedChart
+
+  After the Tooltip component inside the ComposedChart, add:
+    <Legend
+      verticalAlign="top"
+      height={28}
+      formatter={(value) => <span style={{ fontSize: 12, color: '#555' }}>{value}</span>}
+    />
+
+  Import Legend from recharts (it is already available in the package).
+  Remove the manual DIY legend div below the chart (lines ~1797–1808) since
+  recharts Legend will replace it.
+
+  ---
+
+  Do not change any math, any other section of the page, or any file other
+  than ProformaView.tsx.
+

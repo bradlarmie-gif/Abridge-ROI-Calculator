@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X, GitCompare, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid } from "recharts";
+import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid, Legend } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
@@ -390,16 +390,22 @@ export default function ProformaView({
                   Years
                 </button>
               </div>
-              {scenarios.length > 0 && (
-                <button
-                  onClick={() => setCompareMode(!compareMode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${compareMode ? "bg-white text-black" : "bg-white/10 text-white/70 hover:text-white"}`}
-                  data-testid="toggle-compare"
-                >
-                  <GitCompare className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Compare</span>
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (scenarios.length === 0) {
+                    setScenarioName("Scenario 1");
+                    setShowSaveDialog(true);
+                    toast({ title: "Save your first scenario", description: "Name this configuration, then change your deal settings to create a second one to compare." });
+                  } else {
+                    setCompareMode(!compareMode);
+                  }
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${compareMode ? "bg-white text-black" : "bg-white/10 text-white/70 hover:text-white"}`}
+                data-testid="toggle-compare"
+              >
+                <GitCompare className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Compare</span>
+              </button>
               <button
                 onClick={() => {
                   if (scenarios.length >= MAX_SCENARIOS) {
@@ -420,54 +426,173 @@ export default function ProformaView({
           </div>
 
           {scenarios.length > 0 && (
-            <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="scenario-tabs">
-              <span className="text-[12px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
-              {scenarios.map((sc, idx) => (
-                <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
-                  {editingScenarioId === sc.id ? (
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="text"
-                        value={editingScenarioName}
-                        onChange={(e) => setEditingScenarioName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleRenameScenario(sc.id, editingScenarioName);
-                          if (e.key === "Escape") setEditingScenarioId(null);
-                        }}
-                        onBlur={() => handleRenameScenario(sc.id, editingScenarioName)}
-                        className="bg-white/20 text-white text-xs px-2 py-1 rounded w-28 outline-none"
-                        autoFocus
-                        data-testid={`input-rename-scenario-${idx}`}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
-                      <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
-                      <button
-                        onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
-                        className="p-1.5 text-white/40 hover:text-white transition-colors"
-                        title="Rename scenario"
-                        data-testid={`button-rename-scenario-${idx}`}
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          onDeleteScenario?.(sc.id);
-                          if (scenarios.length <= 1) setCompareMode(false);
-                        }}
-                        className="p-1.5 text-white/40 hover:text-red-400 transition-colors"
-                        title="Delete scenario"
-                        data-testid={`button-delete-scenario-${idx}`}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
+            <>
+              <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="scenario-tabs">
+                <span className="text-[12px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
+                {scenarios.map((sc, idx) => (
+                  <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
+                    {editingScenarioId === sc.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={editingScenarioName}
+                          onChange={(e) => setEditingScenarioName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleRenameScenario(sc.id, editingScenarioName);
+                            if (e.key === "Escape") setEditingScenarioId(null);
+                          }}
+                          onBlur={() => handleRenameScenario(sc.id, editingScenarioName)}
+                          className="bg-white/20 text-white text-xs px-2 py-1 rounded w-28 outline-none"
+                          autoFocus
+                          data-testid={`input-rename-scenario-${idx}`}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
+                        <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
+                        <button
+                          onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
+                          className="p-1.5 text-white/40 hover:text-white transition-colors"
+                          title="Rename scenario"
+                          data-testid={`button-rename-scenario-${idx}`}
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            onDeleteScenario?.(sc.id);
+                            if (scenarios.length <= 1) setCompareMode(false);
+                          }}
+                          className="p-1.5 text-white/40 hover:text-red-400 transition-colors"
+                          title="Delete scenario"
+                          data-testid={`button-delete-scenario-${idx}`}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {scenarios.length < MAX_SCENARIOS && (
+                <p className="text-[11px] text-white/40 mt-1">
+                  Change your deal settings above, then save another scenario to compare.
+                </p>
+              )}
+            </>
+          )}
+
+          {compareMode && scenarioSummaries.length > 0 && (
+            <motion.div
+              className="mb-8 sm:mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              data-testid="panel-scenario-comparison"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <GitCompare className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
+                <h2 className="text-base sm:text-lg font-bold text-neutral-900">Scenario Comparison</h2>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 mb-4">Current configuration vs. saved scenarios side-by-side</p>
+
+              <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-4">
+                <div className="overflow-x-auto -mx-2 px-2 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="comparison-table">
+                  <table className="w-full text-xs sm:text-sm">
+                    <thead>
+                      <tr className="border-b-2 border-neutral-300">
+                        <th className="text-left py-2 sm:py-3 font-medium text-neutral-500 pr-4 min-w-[120px]">Metric</th>
+                        <th className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-[#1A1A1A]" />
+                            Current
+                          </div>
+                        </th>
+                        {scenarioSummaries.map((sc, idx) => (
+                          <th key={sc.id} className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
+                              <span className="truncate max-w-[80px]">{sc.name}</span>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
+                        { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
+                        { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.termValue), values: scenarioSummaries.map(s => fmt(s.summary.termValue)) },
+                        { label: "Total Investment", current: fmt(summary.termInvestment), values: scenarioSummaries.map(s => fmt(s.summary.termInvestment)) },
+                        { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
+                        { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
+                        { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
+                        { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
+                        { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
+                      ].map((row, ri) => (
+                        <tr key={row.label} className={`border-b ${ri === 4 ? "border-neutral-300 bg-neutral-50" : ri === 0 ? "border-neutral-200 bg-amber-50/50" : "border-neutral-100"}`}>
+                          <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
+                          <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-xs" : "text-neutral-700"}`}>{row.current}</td>
+                          {row.values.map((v, i) => (
+                            <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % SCENARIO_COLORS.length] : undefined }}>{v}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="comparison-chart">
+                <p className="text-xs sm:text-sm font-medium text-neutral-600 mb-3">Value Trajectory Overlay</p>
+                <ResponsiveContainer width="100%" height={isMobile ? 260 : 360}>
+                  <ComposedChart margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 10 } : { top: 20, right: 40, left: 10, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                      allowDuplicatedCategory={false}
+                      axisLine={{ stroke: "#D5D0CB" }}
+                    />
+                    <YAxis
+                      tickFormatter={(v: number) => fmt(v)}
+                      tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+                      width={isMobile ? 55 : 80}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip formatter={(v: number) => fmt(v)} />
+                    <Legend
+                      verticalAlign="top"
+                      height={28}
+                      formatter={(value: string) => <span style={{ fontSize: 12, color: '#555' }}>{value}</span>}
+                    />
+                    <Line
+                      data={chartData}
+                      type="monotone"
+                      dataKey="total"
+                      stroke="#1A1A1A"
+                      strokeWidth={2.5}
+                      dot={false}
+                      name="Current"
+                    />
+                    {scenarioSummaries.map((sc, idx) => (
+                      <Line
+                        key={sc.id}
+                        data={sc.chartData}
+                        type="monotone"
+                        dataKey="total"
+                        stroke={SCENARIO_COLORS[idx % SCENARIO_COLORS.length]}
+                        strokeWidth={2}
+                        strokeDasharray={SCENARIO_DASHES[idx % SCENARIO_DASHES.length]}
+                        dot={false}
+                        name={sc.name}
+                      />
+                    ))}
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
           )}
 
           {/* Mobile: Annual Value on top, then 2x2 grid */}
@@ -1690,124 +1815,6 @@ export default function ProformaView({
           </Button>
         </div>
 
-        {compareMode && scenarioSummaries.length > 0 && (
-          <motion.div
-            className="mb-8 sm:mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            data-testid="panel-scenario-comparison"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <GitCompare className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900">Scenario Comparison</h2>
-            </div>
-            <p className="text-xs sm:text-sm text-neutral-500 mb-4">Current configuration vs. saved scenarios side-by-side</p>
-
-            <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-4">
-              <div className="overflow-x-auto -mx-2 px-2 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="comparison-table">
-                <table className="w-full text-xs sm:text-sm">
-                  <thead>
-                    <tr className="border-b-2 border-neutral-300">
-                      <th className="text-left py-2 sm:py-3 font-medium text-neutral-500 pr-4 min-w-[120px]">Metric</th>
-                      <th className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-[#1A1A1A]" />
-                          Current
-                        </div>
-                      </th>
-                      {scenarioSummaries.map((sc, idx) => (
-                        <th key={sc.id} className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
-                            <span className="truncate max-w-[80px]">{sc.name}</span>
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
-                      { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
-                      { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.termValue), values: scenarioSummaries.map(s => fmt(s.summary.termValue)) },
-                      { label: "Total Investment", current: fmt(summary.termInvestment), values: scenarioSummaries.map(s => fmt(s.summary.termInvestment)) },
-                      { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
-                      { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
-                      { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
-                      { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
-                      { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
-                    ].map((row, ri) => (
-                      <tr key={row.label} className={`border-b ${ri === 4 ? "border-neutral-300 bg-neutral-50" : ri === 0 ? "border-neutral-200 bg-amber-50/50" : "border-neutral-100"}`}>
-                        <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
-                        <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-xs" : "text-neutral-700"}`}>{row.current}</td>
-                        {row.values.map((v, i) => (
-                          <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % SCENARIO_COLORS.length] : undefined }}>{v}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="comparison-chart">
-              <p className="text-xs sm:text-sm font-medium text-neutral-600 mb-3">Value Trajectory Overlay</p>
-              <ResponsiveContainer width="100%" height={isMobile ? 260 : 360}>
-                <ComposedChart margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 10 } : { top: 20, right: 40, left: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                    allowDuplicatedCategory={false}
-                    axisLine={{ stroke: "#D5D0CB" }}
-                  />
-                  <YAxis
-                    tickFormatter={(v: number) => fmt(v)}
-                    tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                    width={isMobile ? 55 : 80}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip formatter={(v: number) => fmt(v)} />
-                  <Line
-                    data={chartData}
-                    type="monotone"
-                    dataKey="total"
-                    stroke="#1A1A1A"
-                    strokeWidth={2.5}
-                    dot={false}
-                    name="Current"
-                  />
-                  {scenarioSummaries.map((sc, idx) => (
-                    <Line
-                      key={sc.id}
-                      data={sc.chartData}
-                      type="monotone"
-                      dataKey="total"
-                      stroke={SCENARIO_COLORS[idx % SCENARIO_COLORS.length]}
-                      strokeWidth={2}
-                      strokeDasharray={SCENARIO_DASHES[idx % SCENARIO_DASHES.length]}
-                      dot={false}
-                      name={sc.name}
-                    />
-                  ))}
-                </ComposedChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-3 text-[12px] sm:text-xs">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-0.5 bg-[#1A1A1A] inline-block rounded-full" />
-                  <span className="text-neutral-600">Current</span>
-                </span>
-                {scenarioSummaries.map((sc, idx) => (
-                  <span key={sc.id} className="flex items-center gap-1.5">
-                    <span className="w-4 h-0.5 inline-block rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length], borderTop: SCENARIO_DASHES[idx % SCENARIO_DASHES.length] ? "2px dashed" : undefined }} />
-                    <span className="text-neutral-600">{sc.name}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         <p className="text-[12px] sm:text-xs text-neutral-400 leading-relaxed mt-3 sm:mt-4 mb-6 sm:mb-8 text-center max-w-2xl mx-auto">
           Projections are modeled estimates based on user-provided inputs and published benchmarks. Retention benefits are conservatively phased. Driver onset timing reflects typical healthcare implementation timelines. This does not constitute a guarantee of financial outcomes.
