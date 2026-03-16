@@ -1,0 +1,52 @@
+ PROMPT A — Fix Screen 3 sidebar: surface the cost-of-time number                                                                                                                                             
+                                                                                                                                                                                                               
+  In client/src/pages/switch/ambient/Screen5Gap.tsx, make the following change to the right sidebar panel.                                                                                                     
+                                                                                                                                                                                                             
+  Find this block in the sidebar (inside the dark panel, after the "Not Yet Measured" section):
+
+              {inputs.deploymentTenure && (
+                <>
+                  <div className="h-px bg-white/10 mb-4 mt-5" />
+                  <div>
+                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Time in Deployment</p>
+                    <p className="font-medium text-sm text-white/70">{tenureLabel(inputs.deploymentTenure)}</p>
+                  </div>
+                </>
+              )}
+
+  Replace it with this:
+
+              {inputs.deploymentTenure && (
+                <>
+                  <div className="h-px bg-white/10 mb-4 mt-5" />
+                  <div>
+                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Time in Deployment</p>
+                    <p className="font-medium text-sm text-white/70">{tenureLabel(inputs.deploymentTenure)}</p>
+                  </div>
+                </>
+              )}
+
+              {tenureIsLong(inputs.deploymentTenure || '') && unmeasuredLow > 0 && (() => {
+                const months = tenureMonthsMidpoint(inputs.deploymentTenure || '');
+                const years = months / 12;
+                const accLow = Math.round(unmeasuredLow * years);
+                const accHigh = Math.round(unmeasuredHigh * years);
+                return (
+                  <>
+                    <div className="h-px bg-white/10 mb-4 mt-4" />
+                    <div>
+                      <p className="text-[11px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-1">Already On The Table</p>
+                      <p className="font-bold text-lg text-[#EA2C00] leading-none">
+                        {accHigh > accLow
+                          ? `${formatDollar(accLow)}–${formatDollar(accHigh)}`
+                          : formatDollar(accLow)}
+                      </p>
+                      <p className="text-xs text-white/30 mt-0.5 leading-relaxed">
+                        Est. value that has been generating unmeasured for ~{months} months
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
+
+  Do not change anything else.
