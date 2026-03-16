@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useAssessment } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
-import { DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, SCORE_MAP, scoreToActivationLevel, type Domain } from "./domainCalculations";
+import { DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, scoreToActivationLevel, tenureScoreBand, type Domain, type ActivationLevel } from "./domainCalculations";
 
 interface Screen3Props {
   onNext: () => void;
@@ -83,8 +83,6 @@ function AnimatedBar({ percent, delay = 0, height = 5 }: { percent: number; dela
 export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Screen3Props) {
   const { state } = useAssessment();
   const { inputs } = state;
-  const [methodologyOpen, setMethodologyOpen] = useState(false);
-
   const domainScores: Record<DomainKey, number> = useMemo(() => ({
     capacity: inputs.capacityScore || 0,
     revenue: inputs.revenueScore || 0,
@@ -115,51 +113,152 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     return lowest;
   }, [domainLevels]);
 
-  const strongDomains = useMemo(() =>
-    DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d])
-  , [domainLevels]);
+  const strongestDomain = useMemo(() => {
+    return DOMAIN_ORDER.reduce((best, d) =>
+      domainLevels[d] > domainLevels[best] ? d : best
+    , DOMAIN_ORDER[0]);
+  }, [domainLevels]);
 
-  const weakDomains = useMemo(() =>
-    DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d])
-  , [domainLevels]);
+  const providers = inputs.providers || 0;
 
-  const getVerdict = (score: number) => {
-    const lowestLevel = domainLevels[lowestDomain];
-    const insightLevel = Math.min(lowestLevel, 2) as 1 | 2;
-    const domainInsight = DOMAIN_INSIGHTS[lowestDomain][insightLevel];
-    const lowestLabel = DOMAIN_LABELS[lowestDomain];
+  const archetype = useMemo(() => {
+    const high = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+    const unmeasured = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+    const allL1 = unmeasured.length === 4;
+    const allHigh = DOMAIN_ORDER.every(d => domainLevels[d] >= 3);
 
-    if (score <= 16) {
-      return {
-        headline: 'The deployment is live. The value isn\'t captured yet.',
-        body: 'A score of 16 is where every ambient deployment begins — all four domains are at awareness. The gap between running and capturing is where most organizations stay longest. It\'s also the most expensive place to be.',
-      };
-    }
-    if (score <= 38) {
-      return {
-        headline: 'Something is being measured. Not enough is acting on it.',
-        body: `At least one domain has moved from awareness to data. The opportunity is in the domains still running on instinct. Your ${lowestLabel} domain is the most significant gap — ${domainInsight}`,
-      };
-    }
-    if (score <= 60) {
-      return {
-        headline: 'Value is moving. Not all of it has a destination yet.',
-        body: `At least one domain is producing a real number. The others haven't caught up. Your ${lowestLabel} domain has the most room — ${domainInsight}`,
-      };
-    }
-    if (score <= 79) {
-      return {
-        headline: 'Most of the value is captured. The last piece is the hardest.',
-        body: `Your organization is operating at a level most ambient deployments never reach. ${lowestLabel} is the remaining gap — ${domainInsight} — and it typically carries some of the highest returns.`,
-      };
-    }
-    return {
-      headline: 'You\'re running ambient the way it was meant to be run.',
-      body: 'All four domains are connected. Value is being captured, measured, and managed. This is what full ambient maturity looks like — and most organizations are years away from it.',
+    const joinNames = (arr: DomainKey[]) => {
+      const names = arr.map(d => DOMAIN_LABELS[d]);
+      if (names.length === 0) return '';
+      if (names.length === 1) return names[0];
+      return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
     };
-  };
 
-  const verdict = getVerdict(totalScore);
+    if (allL1) {
+      return {
+        name: 'Live. Not Yet Measured.',
+        body: `The deployment is running across ${providers > 0 ? providers.toLocaleString() + ' providers' : 'your organization'}. What it's returning — in revenue, workforce, and quality terms — hasn't been formally analyzed yet. That's where most organizations begin. It's also where most stay longest.`,
+      };
+    }
+
+    if (allHigh) {
+      return {
+        name: 'Strategic Maturity.',
+        body: 'Four domains measured, connected, and managed. This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration — not building the measurement foundation.',
+      };
+    }
+
+    if (high.length === 0) {
+      const l2count = DOMAIN_ORDER.filter(d => domainLevels[d] === 2).length;
+      if (l2count >= 3) {
+        return {
+          name: 'Early Measurement Across All Domains.',
+          body: 'Every domain has moved from awareness to data. None has been pushed to validated, actionable impact yet. The measurement foundation is in place — the question is which domain gets pushed first, and what it unlocks.',
+        };
+      }
+      return {
+        name: 'Measuring the Basics. Opportunity Ahead.',
+        body: `Some domains have moved from awareness to data. Most of the ambient value story hasn't been told yet.${providers > 0 ? ` At ${providers.toLocaleString()} providers, the confirmed value is a starting point — not the ceiling.` : ''}`,
+      };
+    }
+
+    if (high.length === 1) {
+      const d = high[0];
+      const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
+      const uVerb = unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t';
+      const profiles: Record<DomainKey, { name: string; body: string }> = {
+        capacity: {
+          name: 'Time Captured. Financial Story Unwritten.',
+          body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision — what it's producing beyond the time itself — haven't been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been measured yet.` : ''}`,
+        },
+        revenue: {
+          name: 'Revenue Signal Measured. Ecosystem Unmeasured.',
+          body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
+        },
+        workforce: {
+          name: 'Provider Experience Quantified. Broader Picture Unmeasured.',
+          body: `You've quantified what ambient is doing for your providers. The organizational implications — what that relief means for access capacity, revenue, and downstream quality — ${uVerb} been formally connected yet.`,
+        },
+        risk: {
+          name: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
+          body: `Documentation quality is being tracked and monitored. The connection from that quality improvement to coding accuracy, CDI, and compliance programs ${uVerb} been formalized yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
+        },
+      };
+      return profiles[d];
+    }
+
+    if (high.length >= 3) {
+      const gap = DOMAIN_ORDER.filter(d => domainLevels[d] < 3);
+      const gapStr = joinNames(gap);
+      return {
+        name: 'Measuring Across Most Domains.',
+        body: `Three or more domains are generating confirmed, validated value.${gapStr ? ` ${gapStr} is the remaining gap — and at your scale, it's worth closing before the next planning cycle.` : ' The work ahead is deepening each domain, not widening the foundation.'}`,
+      };
+    }
+
+    const pair = [...high].sort().join('+') as string;
+    const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
+    const pairMap: Record<string, { name: string; body: string }> = {
+      'capacity+revenue': {
+        name: 'Operational and Financial Capture Underway.',
+        body: `Time recovery is in action and revenue impact is measured.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured — and at your scale, those domains typically carry significant additional value.` : ''}`,
+      },
+      'capacity+workforce': {
+        name: 'Provider and Operational Value Captured.',
+        body: `The time recovery and workforce dimensions are measured and connected. Revenue impact and quality downstream effects — often the highest-value domains per provider — haven't been formally analyzed yet.`,
+      },
+      'capacity+risk': {
+        name: 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
+        body: `Time conversion and quality monitoring are in place. Revenue impact and workforce implications — which typically represent the largest financial returns at scale — haven't been formally measured.`,
+      },
+      'revenue+workforce': {
+        name: 'Financial and Provider Value Both Measured.',
+        body: `Revenue impact and workforce implications are both on the table. Capacity conversion strategy and quality downstream effects haven't been connected yet — and they compound the value of what you've already built.`,
+      },
+      'revenue+risk': {
+        name: 'Financial and Clinical Intelligence Present.',
+        body: `Revenue and quality dimensions are measured. Capacity conversion and workforce implications — often where the largest per-provider ROI lives — haven't been formally analyzed yet.`,
+      },
+      'risk+workforce': {
+        name: 'Clinical Quality and Provider Experience Measured.',
+        body: `Documentation quality and workforce impact are tracked. The capacity and revenue dimensions — what recovered time produces and what documentation quality is worth in billing — remain unmeasured.`,
+      },
+    };
+
+    return pairMap[pair] || {
+      name: 'Multiple Domains Measured.',
+      body: `Multiple dimensions of ambient value are being captured.${uStr ? ` ${uStr} ${unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t'} been formally analyzed yet.` : ' The work ahead is connecting the measured domains into a unified strategic picture.'}`,
+    };
+  }, [domainLevels, providers]);
+
+  const tenureModifier = useMemo(() => {
+    const tenure = inputs.deploymentTenure;
+    if (!tenure) return null;
+    const band = tenureScoreBand(totalScore);
+    const matrix: Record<string, Record<'low' | 'mid' | 'high', string>> = {
+      '0-6': {
+        low: "You're early. Most organizations at this stage are still stabilizing adoption — this profile is expected. The question at 6 months isn't your score. It's whether you're building the measurement habits now.",
+        mid: "Six months in with meaningful measurement already underway. You're ahead of the typical adoption curve.",
+        high: "Less than 6 months in with strong measurement across multiple domains. That's unusual — it typically signals a pre-existing measurement culture or a focused implementation team.",
+      },
+      '6-12': {
+        low: "A year in, and the measurement infrastructure is still forming. This is common — and also when the pattern gets set. Organizations that build measurement habits at 12 months don't usually have to rebuild them at 24.",
+        mid: "A year in with several domains measured. You're past early adoption and moving into deliberate value realization. The next 12 months determine whether this becomes a strategic capability or stays informal.",
+        high: "One year in with strong maturity. This pace is uncommon. Organizations that move this fast typically have explicit executive sponsorship of the measurement work — not just the deployment.",
+      },
+      '12-24': {
+        low: "One to two years in, and most of the value story hasn't been told yet. The window to build measurement infrastructure is narrowing — not because it closes, but because every month without it is a month of value sitting uncounted.",
+        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven't been analyzed. At this stage, the gap isn't about adoption — it's about whether there's a structured program to capture what's already generating returns.",
+        high: "One to two years in with strong maturity. You've used the deployment period to build real infrastructure. The work ahead is integration and depth.",
+      },
+      '24+': {
+        low: "Two or more years live, and the measurement foundation hasn't been built. This is the highest-urgency profile in this assessment — not because the deployment has failed, but because value has been generating without being counted for a long time. What you find when you look will be surprising.",
+        mid: "Two or more years live with mixed maturity. Some domains are yielding confirmed value; others have been generating returns that no one has looked at yet. At this tenure, that's a prioritization problem, not a knowledge problem.",
+        high: "Two or more years live with strong maturity. This is where few organizations arrive. The deployment isn't just generating value — it's being managed as a strategic asset.",
+      },
+    };
+    return matrix[tenure]?.[band] ?? null;
+  }, [inputs.deploymentTenure, totalScore]);
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -262,113 +361,26 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2.4, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-verdict">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Assessment
+            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-verdict">
+              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-4">
+                Your Ambient Profile
               </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
-              <p className="text-lg font-bold text-black mb-2" data-testid="text-verdict-headline">
-                {verdict.headline}
+              <p className="text-xl sm:text-2xl font-bold text-white leading-tight mb-4" data-testid="text-verdict-headline">
+                {archetype.name}
               </p>
-              <p className="text-sm text-[#888888] leading-relaxed" data-testid="text-verdict-body">
-                {verdict.body}
+              <div className="h-px bg-white/10 mb-4" />
+              <p className="text-sm text-white/60 leading-relaxed" data-testid="text-verdict-body">
+                {archetype.body}
               </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.8, duration: 0.5 }}
-          >
-            <button
-              type="button"
-              onClick={() => setMethodologyOpen(!methodologyOpen)}
-              className="text-sm text-[#888888] italic underline underline-offset-2 cursor-pointer bg-transparent border-none mb-6 hover:text-[#666666] transition-colors"
-              data-testid="button-methodology-toggle"
-            >
-              {methodologyOpen ? 'How Points Are Awarded ↑' : 'How points are awarded →'}
-            </button>
-
-            <AnimatePresence>
-              {methodologyOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 sm:p-6 md:p-8 mb-8" data-testid="panel-methodology">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      How Points Are Awarded
-                    </p>
-                    <div className="h-px bg-[#E5E7EB] mb-4" />
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm" data-testid="table-methodology">
-                        <thead>
-                          <tr className="border-b border-[#E5E7EB]">
-                            <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Domain</th>
-                            <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Your Level</th>
-                            <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Points</th>
-                            <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Max</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {DOMAIN_ORDER.map((domain) => {
-                            const level = scoreToActivationLevel(domain, domainScores[domain]) as 1 | 2 | 3 | 4;
-                            return (
-                              <tr key={domain} className="border-b border-[#E5E7EB]/50" data-testid={`methodology-row-${domain}`}>
-                                <td className="py-2.5 font-semibold text-black align-top">{DOMAIN_LABELS[domain]}</td>
-                                <td className="py-2.5 text-[#888888] align-top">
-                                  <span className="text-black font-medium">L{level}</span>
-                                  <span className="text-[#888888] ml-1.5 hidden sm:inline">— {ACTIVATION_LABELS[domain][level]}</span>
-                                  {level < 4 && (
-                                    <p className="text-[11px] text-[#888888] mt-0.5 leading-snug">
-                                      L4: {ACTIVATION_LABELS[domain][4]}
-                                    </p>
-                                  )}
-                                </td>
-                                <td className="py-2.5 text-right font-bold text-black align-top">{domainScores[domain]}</td>
-                                <td className="py-2.5 text-right text-[#888888] align-top">25</td>
-                              </tr>
-                            );
-                          })}
-                          <tr data-testid="methodology-row-total">
-                            <td className="py-3 font-bold text-black" colSpan={2}>Total</td>
-                            <td className="py-3 text-right font-bold text-[#C8372D] text-lg">{totalScore}</td>
-                            <td className="py-3 text-right font-bold text-[#888888]">100</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                        Point Scale
-                      </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {([1, 2, 3, 4] as const).map((lvl) => (
-                          <div key={lvl} className="bg-white/60 rounded-md px-3 py-2 text-center">
-                            <p className="text-xs text-[#888888]">Level {lvl}</p>
-                            <p className="font-bold text-sm text-black">{SCORE_MAP[lvl]} pts</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <p className="text-sm font-semibold text-black mb-1">How the score works</p>
-                    <p className="text-xs text-[#888888] leading-relaxed mb-3">
-                      Each of the four domains — Capacity, Revenue, Workforce, and Quality — is worth 25 points. Points reflect how far your organization has moved from awareness to managed outcomes within each domain. Level 1 = awareness. Level 4 = a managed, measured system. The score is not a performance grade. It's a map of where value is being captured and where it isn't.
-                    </p>
-                    <p className="text-xs text-[#888888] italic leading-relaxed">
-                      This is a self-assessment — it does not guarantee specific financial outcomes.
-                    </p>
-                  </div>
-                </motion.div>
+              {tenureModifier && (
+                <>
+                  <div className="h-px bg-white/10 mt-4" />
+                  <p className="text-xs text-white/40 italic leading-relaxed mt-4" data-testid="text-tenure-modifier">
+                    {tenureModifier}
+                  </p>
+                </>
               )}
-            </AnimatePresence>
+            </div>
           </motion.div>
 
           <motion.div
@@ -376,7 +388,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 3.0, duration: 0.5 }}
           >
-            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Is Costing You →" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" />
           </motion.div>
 
           <motion.div
@@ -385,7 +397,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             transition={{ delay: 3.2, duration: 0.5 }}
           >
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
-              This score reflects organizational self-assessment across four domains. It does not guarantee specific financial outcomes. Individual results vary.
+              Self-assessment across four domains. Each domain scores 0–25 based on activation level (L1=4, L2=12, L3=19, L4=25). Does not guarantee specific financial outcomes.
             </p>
           </motion.div>
 
@@ -400,80 +412,41 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
-              Your Maturity Score
-            </p>
-            <p className="text-xs text-white/40 leading-relaxed mb-4">
-              Measures how far your organization has moved from running ambient to capturing what it returns — across four domains.
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-5">
+              Strategic Snapshot
             </p>
 
-            <div className="text-center mb-2">
-              <span className="text-white font-bold text-[52px] sm:text-[72px] leading-none" data-testid="hero-score">
-                <AnimatedCounter target={totalScore} duration={800} delay={2400} />
-              </span>
-              <p className="text-lg text-white/40 font-normal mt-1">/ 100</p>
+            <div className="mb-5">
+              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
+                Where You're Measuring
+              </p>
+              <p className="font-bold text-white text-base leading-tight mb-1.5" data-testid="snapshot-strongest-domain">
+                {DOMAIN_LABELS[strongestDomain]}
+              </p>
+              <p className="text-xs text-white/50 leading-relaxed">
+                Level {domainLevels[strongestDomain]} — {ACTIVATION_LABELS[strongestDomain][domainLevels[strongestDomain] as ActivationLevel]}
+              </p>
             </div>
 
-            <div className="relative my-6">
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#EA2C00] rounded-full transition-all duration-700"
-                  style={{ width: `${totalScore}%` }}
-                  data-testid="verdict-score-bar"
-                />
-              </div>
+            <div className="h-px bg-white/10 mb-5" />
 
-              {[16, 38, 60, 79].map((threshold) => (
-                <div key={threshold} className="absolute -top-0.5" style={{ left: `${threshold}%`, transform: 'translateX(-50%)' }}>
-                  <div className="w-px h-3 bg-white/30" />
-                </div>
-              ))}
+            <div className="mb-5">
+              <p className="text-[11px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-2">
+                Biggest Opportunity
+              </p>
+              <p className="font-bold text-white text-base leading-tight mb-1.5" data-testid="snapshot-weakest-domain">
+                {DOMAIN_LABELS[lowestDomain]}
+              </p>
+              <p className="text-xs text-white/50 leading-relaxed">
+                {DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 2) as 1 | 2]}
+              </p>
             </div>
 
-            <div className="space-y-1.5 mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Quantifying</span>
-                <span className="text-sm font-bold text-white/50">16</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Measuring</span>
-                <span className="text-sm font-bold text-white/50">38</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Acting</span>
-                <span className="text-sm font-bold text-white/50">60</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Managing</span>
-                <span className="text-sm font-bold text-white/70">79</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/50">Full Capture</span>
-                <span className="text-sm font-bold text-white">100</span>
-              </div>
-            </div>
+            <div className="h-px bg-white/10 mb-5" />
 
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              Domain Scores
+            <p className="text-xs text-white/30 leading-relaxed italic">
+              The next screen translates each domain into dollar terms — what's confirmed, and what hasn't been looked at yet.
             </p>
-            <div className="space-y-2.5">
-              {DOMAIN_ORDER.map((domain) => (
-                <div key={domain}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-white/70">{DOMAIN_LABELS[domain]}</span>
-                    <span className="text-white font-semibold" data-testid={`sidebar-score-${domain}`}>{domainScores[domain]}</span>
-                  </div>
-                  <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
-                      style={{ width: `${(domainScores[domain] / 25) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
 
           </div>
         </motion.div>
