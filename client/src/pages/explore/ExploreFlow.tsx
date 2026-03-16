@@ -8,6 +8,7 @@ import ExploreDocQuality from "./ExploreDocQuality";
 import ExploreCareQuality from "./ExploreCareQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
+import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -820,9 +821,28 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
 
+  const phaseToStep: Record<ExplorePhase, number> = {
+    careSetting: 1,
+    practice: 2,
+    timeSavings: 3,
+    valueDrivers: 4,
+    docQuality: 5,
+    careQuality: 5,
+    investment: 6,
+    model: 7,
+  };
+
+  const progressBar = (
+    <div className="px-4 pt-4 max-w-2xl mx-auto w-full">
+      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={7} />
+    </div>
+  );
+
+  let content: React.ReactNode = null;
+
   switch (phase) {
     case 'careSetting':
-      return (
+      content = (
         <ExploreCareSettings
           selectedSetting={disabledCareSettings.includes(state.careSetting as ExploreCareSetting) ? null : state.careSetting}
           onSelectSetting={(setting: ExploreCareSetting) => {
@@ -835,9 +855,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           disabledSettings={disabledCareSettings}
         />
       );
+      break;
     
     case 'practice':
-      return (
+      content = (
         <ExploreOpportunity
           state={state}
           updateState={updateState}
@@ -846,9 +867,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'timeSavings':
-      return (
+      content = (
         <ExploreTimeSavings
           state={state}
           updateState={updateState}
@@ -901,9 +923,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'valueDrivers':
-      return (
+      content = (
         <ExploreValueDrivers
           state={state}
           updateState={updateState}
@@ -913,9 +936,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'careQuality':
-      return (
+      content = (
         <ExploreCareQuality
           state={state}
           updateState={updateState}
@@ -928,9 +952,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'docQuality':
-      return (
+      content = (
         <ExploreDocQuality
           state={state}
           updateState={updateState}
@@ -940,9 +965,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'investment':
-      return (
+      content = (
         <ExploreInvestment
           state={state}
           updateState={updateState}
@@ -954,6 +980,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onHome={goHome}
         />
       );
+      break;
     
     case 'model': {
       const stepPhaseMap: ExplorePhase[] = isNursing
@@ -962,7 +989,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       const stepLabels = isNursing
         ? ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
         : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
-      return (
+      content = (
         <ExploreModel
           state={state}
           updateState={updateState}
@@ -978,11 +1005,16 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           stepLabels={stepLabels}
         />
       );
+      break;
     }
-    
-    default:
-      return null;
   }
+
+  return (
+    <>
+      {progressBar}
+      {content}
+    </>
+  );
 }
 
 export { ExploreFlow };
