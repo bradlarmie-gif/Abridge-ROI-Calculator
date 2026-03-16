@@ -298,14 +298,13 @@ export default function ProformaView({
   }, [displayData, settings]);
 
   const legendTotals = useMemo(() => {
-    const allMonths = buildMonthlyCashFlows(settings, config);
-    const doc = allMonths.reduce((s, r) => s + r.docValue, 0);
-    const time = allMonths.reduce((s, r) => s + r.timeValue, 0);
-    const retention = allMonths.reduce((s, r) => s + r.retentionValue, 0);
-    const inv = allMonths.reduce((s, r) => s + r.investment, 0);
+    const doc = cashFlows.reduce((s, r) => s + r.docValue, 0);
+    const time = cashFlows.reduce((s, r) => s + r.timeValue, 0);
+    const retention = cashFlows.reduce((s, r) => s + r.retentionValue, 0);
+    const inv = cashFlows.reduce((s, r) => s + r.investment, 0);
     const total = doc + time + retention;
     return { doc, time, retention, inv, total };
-  }, [settings, config]);
+  }, [cashFlows]);
 
   const lastChartPoint = useMemo(() => {
     if (chartData.length === 0) return null;
