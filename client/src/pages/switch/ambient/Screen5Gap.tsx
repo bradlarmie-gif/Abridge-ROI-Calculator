@@ -632,6 +632,12 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             </motion.div>
           )}
 
+          <div className="mt-10 pt-6 border-t border-[#E5E5E5]">
+            <p className="text-xs text-[#AAAAAA] leading-relaxed">
+              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+            </p>
+          </div>
+
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
             <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" />
           </motion.div>

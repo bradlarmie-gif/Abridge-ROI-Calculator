@@ -1,0 +1,35 @@
+ Prompt — Add System-Wide Disclaimer to Screen5Gap and PDF 
+                                                                                                                                                                                                               
+  Files: client/src/pages/switch/ambient/Screen5Gap.tsx and client/src/lib/ambient-assessment-pdf.tsx
+
+  Part 1 — Screen5Gap.tsx
+
+  Find the bottom of the main content area in Screen5Gap, just before the closing </div> of the page wrapper. Add this disclaimer block after the 36-month chart section and before any existing footer:
+
+  <div className="mt-10 pt-6 border-t border-[#E5E5E5]">
+    <p className="text-xs text-[#AAAAAA] leading-relaxed">
+      Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of
+  actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+    </p>
+  </div>
+
+  Part 2 — ambient-assessment-pdf.tsx
+
+  Find the ConversationAheadPage component (the last page of the PDF). At the bottom of that page's content, add a disclaimer text element using the react-pdf Text style. Place it after the main content
+  blocks, using a small muted style consistent with the rest of the PDF:
+
+  <Text style={{
+    fontSize: 7,
+    color: '#999999',
+    lineHeight: 1.5,
+    marginTop: 24,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    borderTopStyle: 'solid',
+  }}>
+    Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of 
+  actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+  </Text>
+
+  No other changes to either file.

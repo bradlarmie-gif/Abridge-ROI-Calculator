@@ -1155,6 +1155,18 @@ scale, and what organizations your size have done to move in the first 90 days.
 from similar organizations \u2014 not projections for your organization. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary. Assessment date:
 {data.assessmentDate}.
         </Text>
+        <Text style={{
+          fontSize: 7,
+          color: '#999999',
+          lineHeight: 1.5,
+          marginTop: 24,
+          paddingTop: 12,
+          borderTopWidth: 1,
+          borderTopColor: '#E5E5E5',
+          borderTopStyle: 'solid' as const,
+        }}>
+          Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+        </Text>
       </View>
 
       <PageFooter pageNum={7} orgName={data.organizationName} />
