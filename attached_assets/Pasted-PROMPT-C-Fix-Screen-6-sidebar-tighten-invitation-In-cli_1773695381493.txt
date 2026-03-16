@@ -1,0 +1,65 @@
+PROMPT C — Fix Screen 6 sidebar + tighten invitation
+
+  In client/src/pages/switch/ambient/Screen6Invitation.tsx, make two targeted changes.
+
+  CHANGE 1 — Fix the sidebar hero numbers.
+  The sidebar currently shows a large monthly dollar figure and daily dollar figure at the top. Find this section near the top of the right sidebar panel — it will look something like:
+
+                <p className="font-bold text-2xl sm:text-3xl text-white">
+                  {formatDollar(displayedMonthly)}
+                </p>
+                ...
+                <p ...>/ MONTH</p>
+                ...
+                {formatDollar(displayedDaily)}
+                ...
+                / DAY
+
+  Remove these monthly/daily hero numbers entirely. Replace that entire section with:
+
+                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Confirmed Annual Value</p>
+                <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1">{formatDollar(totalMeasured > 0 ? totalMeasured : dt)}</p>
+                <p className="text-xs text-white/30 mb-5">per year · from your data</p>
+
+                {unmeasuredLow > 0 && (
+                  <>
+                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Not Yet Measured</p>
+                    <p className="font-bold text-lg text-white/60 leading-none mb-1">{formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}</p>
+                    <p className="text-xs text-white/30 mb-5">per year · benchmark range</p>
+                  </>
+                )}
+
+  Note: you will need to compute unmeasuredLow and unmeasuredHigh in this component. Add this code near the other useMemo blocks:
+
+    const unmeasuredLow = useMemo(() => {
+      let sum = 0;
+      for (const d of DOMAIN_ORDER) {
+        const level = domainData[d]?.activationLevel || 1;
+        if (level === 1) {
+          sum += (inputs.providers || 0) * (d === 'revenue' ? 4000 : d === 'workforce' ? 1500 : 1000);
+        }
+      }
+      return sum;
+    }, [domainData, inputs.providers]);
+
+    const unmeasuredHigh = useMemo(() => {
+      let sum = 0;
+      for (const d of DOMAIN_ORDER) {
+        const level = domainData[d]?.activationLevel || 1;
+        if (level === 1) {
+          sum += (inputs.providers || 0) * (d === 'revenue' ? 12000 : d === 'workforce' ? 4000 : 3000);
+        }
+      }
+      return sum;
+    }, [domainData, inputs.providers]);
+
+  CHANGE 2 — Make the invitation card the visual anchor.
+  Find the invitation card (data-testid="card-invitation"). It currently has the opening/body/tenureAppend and then the CTA button. Add a visual separator and make the CTA more prominent by adding a subtle
+  background highlight to the button row:
+
+  Find the Button that says "Request a Working Session" and update its className to include a slightly larger size. Change:
+    className="rounded-full bg-white text-black hover:bg-white/90"
+  to:
+    className="rounded-full bg-white text-black hover:bg-white/90 text-base px-8 py-6 h-auto"
+
+  Do not change anything else.

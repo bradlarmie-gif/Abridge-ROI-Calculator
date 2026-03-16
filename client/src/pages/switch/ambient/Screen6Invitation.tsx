@@ -465,6 +465,28 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     });
   }, []);
 
+  const unmeasuredLow = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      const level = domainData[d]?.activationLevel || 1;
+      if (level === 1) {
+        sum += (inputs.providers || 0) * (d === 'revenue' ? 4000 : d === 'workforce' ? 1500 : 1000);
+      }
+    }
+    return sum;
+  }, [domainData, inputs.providers]);
+
+  const unmeasuredHigh = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      const level = domainData[d]?.activationLevel || 1;
+      if (level === 1) {
+        sum += (inputs.providers || 0) * (d === 'revenue' ? 12000 : d === 'workforce' ? 4000 : 3000);
+      }
+    }
+    return sum;
+  }, [domainData, inputs.providers]);
+
   const dt = displayedTotal;
   const actNow3yr = Math.round(dt * 3.45);
   const permanentlyLost6mo = Math.round(dt * 0.42);
@@ -778,7 +800,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               <div className="flex flex-col items-start gap-3">
                 <Button
                   onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
-                  className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                  className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
                   data-testid="button-explore-value"
                 >
                   Request a Working Session
@@ -826,38 +848,15 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
             <div className="h-px bg-white/10 my-4" />
 
-            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Measured Value
-            </p>
+            <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Confirmed Annual Value</p>
+            <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">{formatDollar(displayedTotal > 0 ? displayedTotal : dt)}</p>
+            <p className="text-xs text-white/30 mb-5">per year · from your data</p>
 
-            {hasMeasuredDomains ? (
+            {unmeasuredLow > 0 && (
               <>
-                <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">
-                  {formatDollar(displayedTotal)}
-                </p>
-                <p className="text-xs text-white/40 mb-4">annually</p>
-
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-5">
-                  <div>
-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="panel-monthly">
-                      ${displayedMonthly.toLocaleString()}
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ month</p>
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-base sm:text-lg leading-none" data-testid="panel-daily">
-                      ${displayedDaily.toLocaleString()}
-                    </p>
-                    <p className="text-[11px] sm:text-[12px] text-white/40 uppercase tracking-wide mt-1">/ day</p>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="font-bold text-xl text-white/30 leading-none mb-1" data-testid="panel-total-value">
-                  Not yet measured
-                </p>
-                <p className="text-xs text-white/40 mb-4">complete domain inputs to see value</p>
+                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Not Yet Measured</p>
+                <p className="font-bold text-lg text-white/60 leading-none mb-1">{formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}</p>
+                <p className="text-xs text-white/30 mb-5">per year · benchmark range</p>
               </>
             )}
 
