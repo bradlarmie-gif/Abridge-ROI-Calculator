@@ -87,7 +87,7 @@ export interface DomainData {
 // CONSTANTS & UTILITIES
 // ============================================================================
 
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 7;
 const DOMAIN_ORDER = ["capacity", "revenue", "workforce", "risk"];
 
 const fmt = (n: number): string => {
