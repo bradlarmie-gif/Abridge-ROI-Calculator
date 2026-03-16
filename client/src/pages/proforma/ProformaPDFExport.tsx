@@ -1442,7 +1442,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabelGray}>DATA SOURCES</Text>
           <View style={[styles.cardBg, { marginBottom: 8 }]}>
             <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
-              {"\u2022"} Capacity & efficiency: Validated across 200+ Abridge health system deployments{"\n"}
+              {"\u2022"} Capacity & efficiency: Informed by Abridge health system deployment experience and published time-motion research{"\n"}
               {"\u2022"} Industry benchmarks: MGMA, CMS, proprietary health system datasets{"\n"}
               {"\u2022"} Conservative design: Where uncertainty exists, conservative assumptions applied{"\n"}
               {"\u2022"} Retention: Delayed-onset, phased conservatively over {contractYears > 1 ? `${contractYears} years` : "the contract term"}
