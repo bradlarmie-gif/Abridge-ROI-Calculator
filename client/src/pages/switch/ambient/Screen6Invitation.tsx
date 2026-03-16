@@ -862,7 +862,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 </p>
                 <button
                   onClick={openExportModal}
-                  className="text-sm text-white/40 underline underline-offset-2 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
+                  className="text-sm text-white/60 border border-white/20 hover:border-white/40 hover:text-white/80 transition-all bg-transparent cursor-pointer rounded-full px-5 py-2"
                   data-testid="button-export"
                 >
                   Download Your Assessment
