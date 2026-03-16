@@ -2308,9 +2308,10 @@ export default function ExploreModel({
                   onClick={handleAddToProforma}
                   className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white sm:bg-transparent sm:text-[#EA2C00] sm:border sm:border-[#EA2C00] sm:hover:bg-[#EA2C00]/5 order-1 h-11 sm:h-9 text-sm font-semibold"
                   data-testid="button-add-proforma"
+                  title="Saves this model to your multi-setting pricing proposal"
                 >
                   <Layers className="w-4 h-4" />
-                  Add to Proforma
+                  Add to Pricing Proposal
                 </Button>
               )}
               <Button
