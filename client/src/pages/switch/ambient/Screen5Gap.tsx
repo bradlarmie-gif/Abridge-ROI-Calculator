@@ -11,6 +11,7 @@ import {
   DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
   scoreToActivationLevel,
   ANNUAL_HOURS,
+  tenureLabel, tenureMonthsMidpoint, tenureIsLong,
 } from "./domainCalculations";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
@@ -48,136 +49,13 @@ function CustomTooltip({ active, payload, label }: any) {
   const current = payload.find((p: any) => p.dataKey === 'current');
   const gap = (strategic?.value || 0) - (current?.value || 0);
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-sm">
-      <p className="text-xs font-semibold text-black mb-1.5">{label}</p>
-      {strategic && <p className="text-xs text-[#EA2C00]">With strategic action: {formatDollarFull(strategic.value)}</p>}
-      {current && <p className="text-xs text-[#888888]">Current trajectory: {formatDollarFull(current.value)}</p>}
-      <p className="text-xs font-bold text-[#EA2C00] mt-1">Gap: {formatDollarFull(gap)}</p>
+    <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-sm text-xs">
+      <p className="font-semibold text-black mb-1">Month {label}</p>
+      {strategic && <p className="text-[#EA2C00]">Full maturity: {formatDollar(strategic.value)}</p>}
+      {current && <p className="text-[#888888]">Current path: {formatDollar(current.value)}</p>}
+      {gap > 0 && <p className="text-black font-semibold mt-1">Gap: {formatDollar(gap)}</p>}
     </div>
   );
-}
-
-interface NextLevelContent {
-  domainLabel: string;
-  currentLevelLabel: string;
-  nextLevelLabel: string | null;
-  narrative: string;
-  formula?: string;
-  lowEstimate?: number;
-  highEstimate?: number;
-}
-
-function getNextLevelContent(
-  domain: Domain,
-  level: ActivationLevel,
-  providers: number,
-  documentedEncounters: number,
-  revenuePerVisit: number,
-  providerRate: number,
-  currentValue: number,
-  hasValue: boolean,
-  recoveredHours: number = 0,
-  netTimeSaved: number = 3,
-  annualEncounters: number = 0,
-): NextLevelContent {
-  const base: NextLevelContent = {
-    domainLabel: DOMAIN_LABELS[domain].toUpperCase(),
-    currentLevelLabel: ACTIVATION_LABELS[domain][level],
-    nextLevelLabel: level < 4 ? ACTIVATION_LABELS[domain][(level + 1) as ActivationLevel] : null,
-    narrative: '',
-  };
-
-  if (domain === 'capacity') {
-    if (level === 1) {
-      const hoursFromUserInput = Math.round((netTimeSaved * annualEncounters) / 60);
-      const bmkValueLow = Math.round(hoursFromUserInput * providerRate * 0.20);
-      const bmkValueHigh = Math.round(hoursFromUserInput * providerRate * 0.35);
-      base.narrative = `Time is being recovered. No operational decision has been made about how to use it — that's the gap. The hours exist, but without a decision to convert them into patient access, they remain undeployed capacity.${annualEncounters > 0 ? `\n\nOPPORTUNITY AHEAD: When your organization decides to convert recovered time into access, the typical range is ${formatDollar(bmkValueLow)}–${formatDollar(bmkValueHigh)} annually at your scale.` : ''}`;
-      if (annualEncounters > 0) {
-        base.formula = `${netTimeSaved} min × ${annualEncounters.toLocaleString()} encounters / 60 = ${hoursFromUserInput.toLocaleString()} hrs\nLow: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 20% = ${formatDollar(bmkValueLow)}\nHigh: ${hoursFromUserInput.toLocaleString()} hrs × $${providerRate.toLocaleString()}/hr × 35% = ${formatDollar(bmkValueHigh)}`;
-        base.lowEstimate = bmkValueLow;
-        base.highEstimate = bmkValueHigh;
-      }
-    } else if (level === 2) {
-      const bmkLow = Math.round(3 * providers * 11 * revenuePerVisit);
-      const bmkHigh = Math.round(8 * providers * 11 * revenuePerVisit);
-      base.narrative = `Your organization has decided to convert recovered time into patient access. The next step is measuring how many additional patients are actually being seen. Organizations that restructure scheduling around ambient typically see 3–8 additional patients per provider per month — ${formatDollar(bmkLow)}–${formatDollar(bmkHigh)} annually at your scale.`;
-      base.formula = `Low: 3 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(bmkLow)}\nHigh: 8 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(bmkHigh)}`;
-      base.lowEstimate = bmkLow;
-      base.highEstimate = bmkHigh;
-    } else if (level === 3) {
-      const low = Math.round(2 * providers * 11 * revenuePerVisit);
-      const high = Math.round(5 * providers * 11 * revenuePerVisit);
-      base.narrative = `You're generating ${hasValue ? formatDollar(currentValue) : 'measured access revenue'} through additional patients seen with recovered time. The next level tracks downstream access outcomes — panel growth, same-day access, referral conversion — attributed to recovered time.`;
-      base.formula = `Low: 2 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(low)}\nHigh: 5 patients/mo × ${providers.toLocaleString()} providers × 11 months × $${revenuePerVisit.toLocaleString()} = ${formatDollar(high)}`;
-      base.lowEstimate = low;
-      base.highEstimate = high;
-    } else {
-      base.narrative = "Access outcomes are confirmed and tracked. The work ahead is expanding the provider footprint and sustaining access gains across scheduling cycles.";
-    }
-  } else if (domain === 'revenue') {
-    if (level === 1) {
-      if (documentedEncounters > 0) {
-        const revL1Low = Math.round(documentedEncounters * revenuePerVisit * 0.008);
-        const revL1High = Math.round(documentedEncounters * revenuePerVisit * 0.025);
-        base.narrative = `No one has analyzed whether documentation changes are affecting reimbursement. Organizations your size that run this analysis for the first time typically find ${formatDollar(revL1Low)}–${formatDollar(revL1High)} in documentation-driven revenue impact annually — from improved wRVU capture and reduced coding-related denials. You haven't looked yet.\n\nOPPORTUNITY AHEAD: The first step is asking your coding or CDI team whether they've noticed a difference since ambient went live. Most organizations are surprised by what surfaces.`;
-        base.formula = `${documentedEncounters.toLocaleString()} documented encounters × $${revenuePerVisit.toLocaleString()} revenue per visit × 0.8–2.5% improvement range\nLow: ${formatDollar(revL1Low)} / High: ${formatDollar(revL1High)}\nRange reflects initial wRVU capture + denial reduction. Organizations with more complete documentation typically land in the mid-to-high range.`;
-        base.lowEstimate = revL1Low;
-        base.highEstimate = revL1High;
-      } else {
-        base.narrative = "No one has analyzed whether documentation changes are affecting reimbursement. The first step is asking whether coding or CDI teams have noticed a difference — most organizations are surprised by what surfaces.";
-      }
-    } else if (level === 2) {
-      base.narrative = `Your organization has observed directional signals but hasn't done a formal before/after analysis. A formal measurement (Level 3) would validate the estimate and give you a number leadership can stand behind.`;
-    } else if (level === 3) {
-      base.narrative = `You've measured ${hasValue ? formatDollar(currentValue) : 'documentation-driven revenue impact'}. The next level of maturity is making documentation intelligence an ongoing input to revenue strategy — not a one-time study. Organizations at this level treat documentation quality the way they treat charge capture: continuously monitored and optimized.`;
-    } else {
-      base.narrative = "Documentation intelligence drives revenue cycle strategy. The work here is deepening it — payer negotiations, financial planning, and the strategic story that comes with it.";
-    }
-  } else if (domain === 'workforce') {
-    if (level === 1) {
-      const wfL1Low = Math.round(providers * 1.0 * 46 * providerRate * 0.15);
-      const wfL1High = Math.round(providers * 2.0 * 46 * providerRate * 0.25);
-      base.narrative = `Providers are reporting less after-hours documentation time. That burden reduction has measurable value — but it hasn't been quantified or connected to retention or labor costs yet. At your scale, organizations that first measure this typically find ${formatDollar(wfL1Low)}–${formatDollar(wfL1High)} in quantifiable burden reduction annually.\n\nOPPORTUNITY AHEAD: The next step is a structured survey and in-clinic time tracking — turning what providers are feeling into a number your leadership can use.`;
-      base.formula = `${providers.toLocaleString()} providers × 1.0–2.0 hrs/week after-hours reduction × 46 clinical weeks × $${providerRate.toLocaleString()}/hr × 15–25% conversion\nLow: ${providers} × 1.0 × 46 × $${providerRate} × 15% = ${formatDollar(wfL1Low)}\nHigh: ${providers} × 2.0 × 46 × $${providerRate} × 25% = ${formatDollar(wfL1High)}`;
-      base.lowEstimate = wfL1Low;
-      base.highEstimate = wfL1High;
-    } else if (level === 2) {
-      const midpoint = Math.round(providers * 0.07 * 350000);
-      const attributionLow = Math.round(midpoint * 0.20);
-      const attributionHigh = Math.round(midpoint * 0.30);
-      base.narrative = `Effort reduction is measured. What hasn't been asked yet is what turnover is costing — and how much of it traces back to documentation burden. At industry-average rates, that exposure is significant at your scale.`;
-      base.formula = `At ${providers.toLocaleString()} providers, industry midpoints put total annual turnover cost at ${formatDollar(midpoint)}. Burden-driven attribution of 20–30% puts the ambient-connected exposure at ${formatDollar(attributionLow)}–${formatDollar(attributionHigh)}.`;
-      base.lowEstimate = midpoint;
-    } else if (level === 3) {
-      base.narrative = `You've quantified ${hasValue ? formatDollar(currentValue) : 'turnover exposure'}. The next level of maturity is connecting documentation burden reduction to workforce strategy — recruitment, retention programs, staffing decisions, and provider experience. Organizations at this level that also track agency/locum spend report $5K–$30K/month in reductions.`;
-      base.lowEstimate = 60000;
-      base.highEstimate = 360000;
-    } else {
-      base.narrative = "Documentation burden reduction is informing workforce strategy. Continue expanding strategic integrations and tracking measured outcomes across recruitment, retention, and staffing.";
-    }
-  } else if (domain === 'risk') {
-    if (level === 1) {
-      const riskL1Low = Math.round(documentedEncounters * revenuePerVisit * 0.02 / 1000);
-      const riskL1High = Math.round(documentedEncounters * revenuePerVisit * 0.05 / 1000);
-      base.narrative = `Documentation quality is improving across every encounter. Without systematic monitoring, that signal never reaches coding, CDI, or quality teams — and the risk-adjusted revenue it represents stays invisible. Year 1 of quality monitoring typically surfaces the highest-impact gaps first.\n\nTHE NEXT LEVEL UNLOCKS: Organizations that move from informal to structured quality monitoring in Year 1 typically capture an initial 2–5% improvement in coding accuracy across ambient-documented encounters. At your scale, that translates to $${riskL1Low.toLocaleString()}K–$${riskL1High.toLocaleString()}K in Year 1 uplift — before deepening downstream integration.`;
-      base.formula = `${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 2% = $${riskL1Low.toLocaleString()}K (low)\n${documentedEncounters.toLocaleString()} encounters × $${revenuePerVisit.toLocaleString()} × 5% = $${riskL1High.toLocaleString()}K (high)\nFirst-year capture rate: 2–5% of documentation-driven revenue uplift`;
-      base.lowEstimate = riskL1Low * 1000;
-      base.highEstimate = riskL1High * 1000;
-    } else if (level === 2) {
-      const riskLow = Math.round(documentedEncounters * 0.15 * 75 / 1000) * 1000;
-      const riskHigh = Math.round(documentedEncounters * 0.15 * 200 / 1000) * 1000;
-      base.narrative = `You're tracking quality dimensions. The next step is connecting documentation quality to the workflows that depend on it — CDI, coding, quality reporting, chart abstraction. Each connection unlocks operational efficiency and positions your documentation infrastructure for what's coming: AI-driven CDI, automated quality reporting, and structured data for payer negotiations.\n\nOPPORTUNITY AHEAD: Active monitoring at this level supports documentation accuracy. Organizations advancing to Level 3–4 with closed-loop correction typically capture an additional $75–$200 per patient in HCC/risk-adjustment accuracy. At ${documentedEncounters.toLocaleString()} encounters, that's a ${formatDollar(riskLow)}–${formatDollar(riskHigh)} annual opportunity at the next level.`;
-    } else if (level === 3) {
-      const riskL3Low = Math.round(documentedEncounters * 0.15 * 125 / 1000) * 1000;
-      const riskL3High = Math.round(documentedEncounters * 0.15 * 300 / 1000) * 1000;
-      base.narrative = `You've connected downstream workflows${hasValue ? `, saving an estimated ${formatDollar(currentValue)} annually` : ''}. The next level is making documentation quality a strategic input — informing payer strategy, value-based care design, and compliance governance. This is where documentation stops being a clinical byproduct and becomes organizational intelligence.\n\nOPPORTUNITY AHEAD: With correction workflows in place, your organization is positioned to quantify risk-adjustment accuracy. Benchmark: $125–$300 per relevant encounter at 15% risk-adjustment relevance = ${formatDollar(riskL3Low)}–${formatDollar(riskL3High)} annual opportunity.`;
-    } else {
-      base.narrative = "You're at the highest maturity level. Your documentation infrastructure supports strategic use cases — from automated prior authorization to predictive quality reporting. Continue expanding the data asset across organizational strategy.";
-    }
-  }
-
-  return base;
 }
 
 export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
@@ -187,37 +65,23 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
   const utilization = inputs.utilization || 0;
-  const revenuePerVisit = inputs.revenuePerVisit || 200;
-  const providerRate = inputs.providerRate || 150;
-  const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
+  const userTimeSaved = (inputs as any).timeSavedPerEncounter || 0;
+
   const benchmarkUtilization = 76;
-  const benchmarkTimeSavedLow = 2.0;
-  const benchmarkTimeSavedHigh = 3.0;
+  const benchmarkTimeSavedLow = 2;
+  const benchmarkTimeSavedHigh = 4;
+
+  const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
   const benchmarkDocumentedEncounters = Math.round(annualEncounters * (benchmarkUtilization / 100));
-  const benchmarkHoursRecovered = Math.round((benchmarkDocumentedEncounters * benchmarkTimeSavedHigh) / 60);
-  const userTimeSaved = inputs.timeSavedPerEncounter || 0;
-  const userHoursRecovered = userTimeSaved > 0 ? Math.round((documentedEncounters * userTimeSaved) / 60) : 0;
+  const userHoursRecovered = Math.round((documentedEncounters * userTimeSaved) / 60);
+  const benchmarkHoursRecovered = Math.round((benchmarkDocumentedEncounters * 3) / 60);
 
-  const domainScores: Record<Domain, number> = useMemo(() => ({
-    capacity: inputs.capacityScore || 0,
-    revenue: inputs.revenueScore || 0,
-    workforce: inputs.workforceScore || 0,
-    risk: inputs.riskScore || 0,
+  const domainLevels: Record<Domain, number> = useMemo(() => ({
+    capacity: scoreToActivationLevel('capacity', inputs.capacityScore || 0),
+    revenue: scoreToActivationLevel('revenue', inputs.revenueScore || 0),
+    workforce: scoreToActivationLevel('workforce', inputs.workforceScore || 0),
+    risk: scoreToActivationLevel('risk', inputs.riskScore || 0),
   }), [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
-
-  const domainLevels: Record<Domain, ActivationLevel> = useMemo(() => ({
-    capacity: scoreToActivationLevel('capacity', domainScores.capacity),
-    revenue: scoreToActivationLevel('revenue', domainScores.revenue),
-    workforce: scoreToActivationLevel('workforce', domainScores.workforce),
-    risk: scoreToActivationLevel('risk', domainScores.risk),
-  }), [domainScores]);
-
-  const domainGaps: Record<Domain, number> = useMemo(() => ({
-    capacity: inputs.capacityGap || 0,
-    revenue: inputs.revenueGap || 0,
-    workforce: inputs.workforceGap || 0,
-    risk: inputs.riskGap || 0,
-  }), [inputs.capacityGap, inputs.revenueGap, inputs.workforceGap, inputs.riskGap]);
 
   const domainHasValue: Record<Domain, boolean> = useMemo(() => ({
     capacity: inputs.capacityHasValue || false,
@@ -226,503 +90,634 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     risk: inputs.riskHasValue || false,
   }), [inputs.capacityHasValue, inputs.revenueHasValue, inputs.workforceHasValue, inputs.riskHasValue]);
 
+  const domainGaps: Record<Domain, number> = useMemo(() => ({
+    capacity: inputs.capacityGap || 0,
+    revenue: inputs.revenueGap || 0,
+    workforce: inputs.workforceGap || 0,
+    risk: inputs.riskGap || 0,
+  }), [inputs.capacityGap, inputs.revenueGap, inputs.workforceGap, inputs.riskGap]);
+
+  const nextLevelContents: Record<Domain, {
+    domainLabel: string;
+    currentLevelLabel: string;
+    nextLevelLabel: string | null;
+    narrative: string;
+    formula: string | null;
+    lowEstimate: number | null;
+    highEstimate: number | null;
+  }> = useMemo(() => {
+    const result = {} as Record<Domain, any>;
+    for (const domain of DOMAIN_ORDER) {
+      const level = domainLevels[domain] as ActivationLevel;
+      const nextLevel = Math.min(level + 1, 4) as ActivationLevel;
+      const domainLabel = DOMAIN_LABELS[domain];
+      const currentLevelLabel = ACTIVATION_LABELS[domain][level];
+      const nextLevelLabel = level < 4 ? ACTIVATION_LABELS[domain][nextLevel] : null;
+
+      let narrative = '';
+      let formula: string | null = null;
+      let lowEstimate: number | null = null;
+      let highEstimate: number | null = null;
+
+      if (domainHasValue[domain] && inputs[`${domain}Context` as keyof typeof inputs]) {
+        narrative = inputs[`${domain}Context` as keyof typeof inputs] as string || '';
+        formula = inputs[`${domain}Formula` as keyof typeof inputs] as string || null;
+        lowEstimate = domainGaps[domain];
+        highEstimate = domainGaps[domain];
+      } else {
+        const domainInputsStr = inputs[`${domain}DomainInputs` as keyof typeof inputs] as string || '{}';
+        let domainInputs: any = {};
+        try { domainInputs = JSON.parse(domainInputsStr); } catch {}
+
+        if (domain === 'capacity') {
+          if (level === 1) {
+            lowEstimate = Math.round(providers * 1000);
+            highEstimate = Math.round(providers * 3000);
+            narrative = `Ambient has been running, but recovered time hasn't been formally tracked or redeployed. Organizations at your scale (${providers > 0 ? providers.toLocaleString() + ' providers' : 'similar size'}) typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in access revenue when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a time-tracking study across a cohort of providers. Even a 30-day pilot generates the data needed to confirm or refute the benchmark range.`;
+            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+          } else if (level === 2) {
+            const minsPerEncounter = domainInputs.minsPerEncounter || 3;
+            const conversionRate = domainInputs.conversionRate || 0.25;
+            const providerRate = inputs.providerRate || 150;
+            const calculated = Math.round((documentedEncounters * minsPerEncounter / 60) * conversionRate * providerRate);
+            lowEstimate = calculated;
+            highEstimate = Math.round(calculated * 1.5);
+            narrative = `Time savings are measured. Now the question is whether that time is being actively redeployed into clinical revenue.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in access revenue is accessible if recovered time converts to additional appointments.`;
+            formula = `${documentedEncounters.toLocaleString()} encounters × ${minsPerEncounter} min saved ÷ 60 × ${Math.round(conversionRate * 100)}% conversion × $${providerRate}/hr = ${formatDollarFull(calculated)}`;
+          } else if (level === 3) {
+            const accessRevenue = domainInputs.accessRevenue || 0;
+            const revenuePerVisit = inputs.revenuePerVisit || 200;
+            lowEstimate = Math.round(accessRevenue * revenuePerVisit * 0.8);
+            highEstimate = Math.round(accessRevenue * revenuePerVisit);
+            narrative = `Access is expanding. The next level tracks the downstream impact on scheduling efficiency and care team capacity — not just appointment volume.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually from optimized scheduling and care team capacity.`;
+            formula = `${accessRevenue} additional visits × $${revenuePerVisit} revenue per visit = ${formatDollarFull(highEstimate)}`;
+          } else {
+            narrative = 'Your capacity domain is at full maturity. Time recovery is tracked, converted to access, and integrated into scheduling and workforce planning.';
+          }
+        } else if (domain === 'revenue') {
+          if (level === 1) {
+            lowEstimate = Math.round(providers * 4000);
+            highEstimate = Math.round(providers * 12000);
+            narrative = `Documentation quality has likely improved — but no one has analyzed whether reimbursement has followed. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
+            formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+          } else if (level === 2) {
+            const wrvuLift = domainInputs.wrvuLift || 0.05;
+            const conversionFactor = inputs.conversionFactor || 33;
+            const calculated = Math.round(documentedEncounters * wrvuLift * conversionFactor);
+            lowEstimate = calculated;
+            highEstimate = Math.round(calculated * 1.4);
+            narrative = `Coding signals are showing up in the data. Formalizing that signal into a validated reimbursement metric is the next step.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in confirmed coding impact once the metric is validated.`;
+            formula = `${documentedEncounters.toLocaleString()} encounters × ${wrvuLift} wRVU lift × $${conversionFactor} conversion = ${formatDollarFull(calculated)}`;
+          } else if (level === 3) {
+            const codingGain = domainInputs.codingGain || 0;
+            lowEstimate = Math.round(codingGain * 0.85);
+            highEstimate = Math.round(codingGain * 1.15);
+            narrative = `Revenue impact is confirmed and validated. The next level integrates CDI workflows and denial management into a unified reimbursement optimization program.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in additional reimbursement from integrated CDI and denial management.`;
+            formula = `Validated coding gain: $${codingGain.toLocaleString()} (±15% range)`;
+          } else {
+            narrative = 'Your revenue domain is at full maturity. Documentation-driven coding, CDI, and denial management are integrated and generating confirmed value.';
+          }
+        } else if (domain === 'workforce') {
+          if (level === 1) {
+            lowEstimate = Math.round(providers * 1500);
+            highEstimate = Math.round(providers * 4000);
+            narrative = `Provider burden has likely decreased — but the workforce and retention impact hasn't been formally measured. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
+            formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+          } else if (level === 2) {
+            const satisfactionLift = domainInputs.satisfactionLift || 10;
+            const turnoverCost = domainInputs.turnoverCost || 50000;
+            const turnoverReduction = Math.round(providers * (satisfactionLift / 100) * 0.3);
+            const calculated = Math.round(turnoverReduction * turnoverCost);
+            lowEstimate = Math.round(calculated * 0.7);
+            highEstimate = calculated;
+            narrative = `Provider satisfaction data exists. The next step is connecting that satisfaction signal to retention outcomes and modeling the avoided turnover value.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in avoided turnover costs once the satisfaction-retention connection is validated.`;
+            formula = `${providers} providers × ${satisfactionLift}% satisfaction lift × 30% retention effect × $${turnoverCost.toLocaleString()} replacement cost = ${formatDollarFull(calculated)}`;
+          } else if (level === 3) {
+            const retentionValue = domainInputs.retentionValue || 0;
+            lowEstimate = Math.round(retentionValue * 0.9);
+            highEstimate = Math.round(retentionValue * 1.1);
+            narrative = `Workforce ROI is confirmed and tracked. The next level integrates workforce planning — using the data to inform hiring, scheduling, and load balancing decisions.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from workforce planning optimization on top of confirmed retention value.`;
+            formula = `Validated retention value: $${retentionValue.toLocaleString()} (±10% range)`;
+          } else {
+            narrative = 'Your workforce domain is at full maturity. Provider satisfaction, retention, and workforce planning are integrated and generating confirmed value.';
+          }
+        } else if (domain === 'risk') {
+          if (level === 1) {
+            lowEstimate = Math.round(providers * 1000);
+            highEstimate = Math.round(providers * 3000);
+            narrative = `Documentation quality has improved — but no downstream quality program has been connected to it. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in quality and compliance value when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a documentation completeness audit. It typically generates the baseline data needed to build the quality program.`;
+            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+          } else if (level === 2) {
+            const qualityScore = domainInputs.qualityScore || 70;
+            const complianceRisk = domainInputs.complianceRisk || 0.02;
+            const calculated = Math.round(annualEncounters * complianceRisk * 500);
+            lowEstimate = Math.round(calculated * 0.8);
+            highEstimate = calculated;
+            narrative = `Quality monitoring is in place. The next step is connecting that monitoring to payer contracts and compliance programs.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in confirmed quality and compliance value once connected to payer programs.`;
+            formula = `${annualEncounters.toLocaleString()} encounters × ${Math.round(complianceRisk * 100)}% risk rate × $500 avg impact = ${formatDollarFull(calculated)}`;
+          } else if (level === 3) {
+            const qualityValue = domainInputs.qualityValue || 0;
+            lowEstimate = Math.round(qualityValue * 0.9);
+            highEstimate = Math.round(qualityValue * 1.2);
+            narrative = `Quality infrastructure is built and connected to payer programs. The next level integrates population health management and value-based care metrics.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from value-based care program integration.`;
+            formula = `Validated quality value: $${qualityValue.toLocaleString()} (range ±10–20%)`;
+          } else {
+            narrative = 'Your quality domain is at full maturity. Documentation quality, compliance programs, and value-based care metrics are integrated and generating confirmed value.';
+          }
+        }
+
+        result[domain] = { domainLabel, currentLevelLabel, nextLevelLabel, narrative, formula, lowEstimate, highEstimate };
+      }
+
+      if (!result[domain]) {
+        result[domain] = {
+          domainLabel: DOMAIN_LABELS[domain],
+          currentLevelLabel: ACTIVATION_LABELS[domain][domainLevels[domain] as ActivationLevel],
+          nextLevelLabel: domainLevels[domain] < 4 ? ACTIVATION_LABELS[domain][Math.min(domainLevels[domain] + 1, 4) as ActivationLevel] : null,
+          narrative: inputs[`${domain}Context` as keyof typeof inputs] as string || '',
+          formula: inputs[`${domain}Formula` as keyof typeof inputs] as string || null,
+          lowEstimate: domainGaps[domain] || null,
+          highEstimate: domainGaps[domain] || null,
+        };
+      }
+    }
+    return result;
+  }, [domainLevels, domainHasValue, domainGaps, inputs, providers, annualEncounters, documentedEncounters]);
+
   const totalMeasured = useMemo(() => {
     let sum = 0;
     for (const d of DOMAIN_ORDER) {
       if (domainHasValue[d]) sum += domainGaps[d];
     }
     return sum;
-  }, [domainGaps, domainHasValue]);
+  }, [domainHasValue, domainGaps]);
 
-  const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
-  const allAtLevel4 = DOMAIN_ORDER.every(d => domainLevels[d] === 4);
-
-  // Separate Level 1 (unmeasured) from Level 2+ (at least started measuring)
-  const hasUnmeasuredDomains = DOMAIN_ORDER.some(d => domainLevels[d] === 1);
-
-  const nextLevelContents = useMemo(() => {
-    const result: Record<Domain, NextLevelContent> = {} as any;
-    for (const d of DOMAIN_ORDER) {
-      result[d] = getNextLevelContent(
-        d, domainLevels[d], providers, documentedEncounters,
-        revenuePerVisit, providerRate, domainGaps[d], domainHasValue[d],
-        userHoursRecovered,
-        userTimeSaved > 0 ? userTimeSaved : benchmarkTimeSavedHigh,
-        annualEncounters
-      );
-    }
-    return result;
-  }, [domainLevels, providers, documentedEncounters, revenuePerVisit, providerRate, domainGaps, domainHasValue, userHoursRecovered, userTimeSaved, benchmarkTimeSavedHigh, annualEncounters]);
-
-  // Dollar ranges for Level 1 (unmeasured) domains — benchmark ranges, not projections
   const unmeasuredLow = useMemo(() => {
     let sum = 0;
     for (const d of DOMAIN_ORDER) {
-      if (domainLevels[d] === 1) sum += nextLevelContents[d].lowEstimate ?? 0;
-    }
-    return sum;
-  }, [domainLevels, nextLevelContents]);
-
-  const unmeasuredHigh = useMemo(() => {
-    let sum = 0;
-    for (const d of DOMAIN_ORDER) {
-      if (domainLevels[d] === 1) {
-        sum += nextLevelContents[d].highEstimate ?? nextLevelContents[d].lowEstimate ?? 0;
-      }
-    }
-    return sum;
-  }, [domainLevels, nextLevelContents]);
-
-  const estimatedTotal = useMemo(() => {
-    let sum = 0;
-    for (const d of DOMAIN_ORDER) {
-      if (domainLevels[d] >= 4) continue;
-      if (domainHasValue[d]) {
-        sum += domainGaps[d];
-      } else {
+      if (domainLevels[d] === 1 && !domainHasValue[d]) {
         sum += nextLevelContents[d].lowEstimate ?? 0;
       }
     }
     return sum;
-  }, [domainLevels, domainHasValue, domainGaps, nextLevelContents]);
+  }, [domainLevels, domainHasValue, nextLevelContents]);
+
+  const unmeasuredHigh = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainLevels[d] === 1 && !domainHasValue[d]) {
+        sum += nextLevelContents[d].highEstimate ?? nextLevelContents[d].lowEstimate ?? 0;
+      }
+    }
+    return sum;
+  }, [domainLevels, domainHasValue, nextLevelContents]);
+
+  const allAtLevel4 = DOMAIN_ORDER.every(d => domainLevels[d] >= 4);
+
+  const totalNextLevel = useMemo(() => {
+    let sum = 0;
+    for (const d of DOMAIN_ORDER) {
+      if (domainLevels[d] >= 4) continue;
+      sum += nextLevelContents[d].lowEstimate ?? 0;
+    }
+    return sum;
+  }, [domainLevels, nextLevelContents]);
 
   const strategicAnnual = useMemo(() => {
     let sum = totalMeasured;
     for (const d of DOMAIN_ORDER) {
-      const content = nextLevelContents[d];
-      if (content.lowEstimate && domainLevels[d] < 4) {
-        sum += content.lowEstimate;
+      if (domainLevels[d] >= 4) continue;
+      if (!domainHasValue[d]) {
+        sum += nextLevelContents[d].lowEstimate ?? 0;
       }
     }
     return sum;
-  }, [totalMeasured, nextLevelContents, domainLevels]);
+  }, [totalMeasured, nextLevelContents, domainLevels, domainHasValue]);
 
   const annualGap = strategicAnnual - totalMeasured;
-  const monthlyGap = Math.round(annualGap / 12);
-
-  const displayedMonthly = Math.round(totalMeasured / 12);
-  const displayedWeekly = Math.round(totalMeasured / 52);
-  const displayedDaily = Math.round(totalMeasured / 365);
 
   const chartData = useMemo(() => {
     const points = [
-      { months: 0, label: 'Today' },
-      { months: 6, label: '6mo' },
-      { months: 12, label: '12mo' },
-      { months: 18, label: '18mo' },
-      { months: 24, label: '24mo' },
-      { months: 36, label: '36mo' },
+      { month: 0, strategic: 0, current: 0 },
+      { month: 12, strategic: Math.round(strategicAnnual * 0.90), current: Math.round(totalMeasured * 0.95) },
+      { month: 24, strategic: Math.round(strategicAnnual * 1.95), current: Math.round(totalMeasured * 1.95) },
+      { month: 36, strategic: Math.round(strategicAnnual * 3.0), current: Math.round(totalMeasured * 3.0) },
     ];
-    return points.map(p => ({
-      label: p.label,
-      strategic: Math.round(totalMeasured + strategicAnnual * (p.months / 12)),
-      current: Math.round(totalMeasured + totalMeasured * (p.months / 12)),
-    }));
+    return points;
   }, [strategicAnnual, totalMeasured]);
 
   const gap36mo = chartData[chartData.length - 1].strategic - chartData[chartData.length - 1].current;
-  const sixMonthGap = Math.round(annualGap / 2);
-  const wait12mo = annualGap;
+
+  const measuredDomainsList = useMemo(() =>
+    DOMAIN_ORDER.filter(d => domainLevels[d] >= 2)
+  , [domainLevels]);
+
+  const unmeasuredDomainsList = useMemo(() =>
+    DOMAIN_ORDER.filter(d => domainLevels[d] === 1)
+  , [domainLevels]);
+
+  const reframeText = useMemo(() => {
+    const tenure = inputs.deploymentTenure || '';
+    const mNames = measuredDomainsList.map(d => DOMAIN_LABELS[d]);
+    const uNames = unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]);
+    const join = (arr: string[]) =>
+      arr.length === 1 ? arr[0] : arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+    const mVerb = mNames.length === 1 ? 'is' : 'are';
+    const uVerb = uNames.length === 1 ? "hasn't" : "haven't";
+
+    if (uNames.length === 0) {
+      return "You're measuring across all four domains. The gap ahead is in deepening each one — not widening the foundation.";
+    }
+
+    const tLabel = tenureLabel(tenure);
+
+    if (mNames.length === 0) {
+      if (!tenure || tenure === '0-6') {
+        return `The deployment is live. At this stage — less than 6 months in — it's expected that none of the four domains have formal measurement in place yet. The figures below are benchmark ranges from organizations your size that have run this analysis. They're not what you've captured. They're what will be on the table once you start looking.`;
+      }
+      if (tenure === '6-12' || tenure === '12-24') {
+        return `The deployment has been running ${tLabel}. Across all four domains, the value generating from your deployment hasn't been formally analyzed yet. That's the most common pattern at this stage. It's also where the gap between organizations that move and organizations that don't begins to compound.`;
+      }
+      if (tenure === '24+') {
+        return `Two or more years live across ${providers > 0 ? providers.toLocaleString() : 'your'} providers, and no domain has been formally measured. The value has been there. The benchmark ranges below reflect what organizations your size typically find when they first run this analysis. At 2+ years, 'finding it' is no longer the question. The question is how much longer it sits uncounted.`;
+      }
+    }
+
+    const mStr = join(mNames);
+    const uStr = join(uNames);
+
+    if (!tenure || tenure === '0-6' || tenure === '6-12') {
+      return `${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The ranges below reflect what organizations your size typically find when they first analyze those domains — not projections, but what gets found when you look.`;
+    }
+    if (tenure === '12-24') {
+      return `${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet — and at 1–2 years in deployment, the question isn't whether that value exists. It's how long it's been there.`;
+    }
+    if (tenure === '24+') {
+      return `${mStr} ${mVerb} generating confirmed value. ${uStr} ${uVerb} been measured — and at 2+ years, that's a long time for value to be generating without being counted. The ranges below are benchmarks. At your tenure, the more useful question is: what has the cost of not measuring been?`;
+    }
+
+    return `Your score reflects what your organization has chosen to analyze. ${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The range sitting in those domains — based on what organizations your size typically find — is significant.`;
+  }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure, providers]);
 
   const [expandedDomains, setExpandedDomains] = useState<Record<Domain, boolean>>({
     capacity: true, revenue: true, workforce: true, risk: true,
   });
-
-  const toggleDomain = (d: Domain) => {
-    setExpandedDomains(prev => ({ ...prev, [d]: !prev[d] }));
-  };
+  const toggleDomain = (domain: Domain) => setExpandedDomains(prev => ({ ...prev, [domain]: !prev[domain] }));
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
-
       <motion.div
         className="text-center mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          What staying here costs you.
+          Here's what that score means.
         </h1>
         <p className="text-base text-[#888888]">
-          The gap between your current trajectory and full deployment — modeled across 36 months.
+          What you're capturing — and what you haven't analyzed yet.
         </p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
-          {/* Two-tile summary: measured vs unmeasured */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.5 }}>
+            <p className="text-sm text-[#525252] leading-relaxed mb-6" data-testid="text-reframe">
+              {reframeText}
+            </p>
+          </motion.div>
+
           {(totalMeasured > 0 || unmeasuredLow > 0) && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
-              <div className="grid grid-cols-2 gap-4 mb-4" data-testid="card-measured-split">
-                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
-                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
-                    What the Math Shows
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-[#FFF0ED] rounded-lg p-4" data-testid="tile-measured">
+                  <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">What the Math Shows</p>
+                  <p className="font-bold text-xl text-[#EA2C00] leading-none mb-1" data-testid="value-measured">
+                    {totalMeasured > 0 ? <CountUpNumber target={totalMeasured} /> : '—'}
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-[#EA2C00] leading-none" data-testid="tile-measured-value">
-                    {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
-                  </p>
-                  <p className="text-xs text-[#888888] mt-1.5">per year · from measured domains</p>
+                  <p className="text-xs text-[#888888]">per year · from your data</p>
                 </div>
-                <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6">
-                  <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
-                    What Hasn't Been Measured
-                  </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-black leading-none" data-testid="tile-unmeasured-range">
-                    {unmeasuredLow > 0
-                      ? unmeasuredHigh > unmeasuredLow
-                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
-                        : formatDollar(unmeasuredLow)
-                      : '—'}
-                  </p>
-                  <p className="text-xs text-[#888888] mt-1.5">per year · benchmark range</p>
+                <div className="bg-[#F5F0EB] rounded-lg p-4" data-testid="tile-unmeasured">
+                  <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">What Hasn't Been Measured</p>
+                  {unmeasuredLow > 0 ? (
+                    <>
+                      <p className="font-bold text-xl text-[#888888] leading-none mb-1" data-testid="value-unmeasured">
+                        {unmeasuredHigh > unmeasuredLow
+                          ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
+                          : `$${unmeasuredLow.toLocaleString()}`}
+                      </p>
+                      <p className="text-xs text-[#888888]">per year · benchmark range</p>
+                    </>
+                  ) : (
+                    <p className="font-bold text-xl text-[#888888] leading-none mb-1">—</p>
+                  )}
                 </div>
               </div>
-              <p className="text-sm text-[#888888] leading-relaxed mb-8" data-testid="text-split-framing">
-                The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range — what organizations your size typically find when they analyze domains they haven't measured yet.
+              <p className="text-xs text-[#888888] italic leading-relaxed mb-8">
+                The first number is what the math shows based on your data. The second is a benchmark range — what organizations your size typically find when they analyze domains you haven't measured yet.
               </p>
             </motion.div>
           )}
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-deployment-reality">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                Where You Stand Today
-              </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-next-level">
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#E5E7EB]">
-                      <th className="text-left py-2 font-medium text-[#888888] text-xs uppercase tracking-wide"></th>
-                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">You</th>
-                      <th className="text-right py-2 font-medium text-[#888888] text-xs uppercase tracking-wide">Peer Benchmark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-[#E5E7EB]/50">
-                      <td className="py-3 font-semibold text-black">Utilization</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-util-you">{utilization > 0 ? `${utilization}%` : '—'}</td>
-                      <td className="py-3 text-right text-[#888888]">{benchmarkUtilization}%</td>
-                    </tr>
-                    <tr className="border-b border-[#E5E7EB]/50">
-                      <td className="py-3 font-semibold text-black">Time saved / encounter</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-time-you">
-                        {userTimeSaved > 0 ? `${userTimeSaved} min` : '—'}
-                      </td>
-                      <td className="py-3 text-right text-[#888888]">{benchmarkTimeSavedLow}–{benchmarkTimeSavedHigh} min</td>
-                    </tr>
-                    <tr className="border-b border-[#E5E7EB]/50">
-                      <td className="py-3 font-semibold text-black">Documented encounters</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-encounters-you">{documentedEncounters > 0 ? documentedEncounters.toLocaleString() : '—'}</td>
-                      <td className="py-3 text-right text-[#888888]">{benchmarkDocumentedEncounters.toLocaleString()}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 font-semibold text-black">Hours recovered annually</td>
-                      <td className="py-3 text-right font-bold text-black" data-testid="reality-hours-you">
-                        {userHoursRecovered > 0 ? `${userHoursRecovered.toLocaleString()} hrs` : '—'}
-                      </td>
-                      <td className="py-3 text-right text-[#888888]">{benchmarkHoursRecovered.toLocaleString()}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {measuredDomainsList.length > 0 && (
+                <div className={unmeasuredDomainsList.length > 0 ? 'mb-8' : ''}>
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className="w-2 h-2 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                    <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+                      What You're Capturing
+                    </p>
+                  </div>
+                  {measuredDomainsList.map((domain, idx) => {
+                    const content = nextLevelContents[domain];
+                    const isExpanded = expandedDomains[domain];
+                    return (
+                      <div key={domain} data-testid={`next-level-${domain}`}>
+                        <button
+                          type="button"
+                          className="w-full text-left py-4 cursor-pointer bg-transparent border-none hover:bg-white/30 rounded-lg transition-colors px-2 -mx-2"
+                          onClick={() => toggleDomain(domain)}
+                          data-testid={`toggle-next-level-${domain}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p className="text-xs font-semibold uppercase tracking-[1px] text-[#EA2C00]">
+                                  {content.domainLabel}
+                                </p>
+                                <span className="text-xs text-[#EA2C00]">— Level {domainLevels[domain]}</span>
+                              </div>
+                              {content.nextLevelLabel && (
+                                <p className="text-xs text-[#888888]">Next level: {content.nextLevelLabel}</p>
+                              )}
+                            </div>
+                            <span className="text-[#888888] text-lg transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                          </div>
+                        </button>
 
-              <p className="text-xs text-[#888888] italic mt-4 leading-relaxed">
-                Peer benchmark reflects top-performing Abridge deployments.
-              </p>
+                        {isExpanded && (
+                          <div className="px-2 pb-4">
+                            {content.narrative.includes('OPPORTUNITY AHEAD:') ? (
+                              <div data-testid={`narrative-${domain}`}>
+                                <p className="text-sm text-[#888888] leading-relaxed mb-3">
+                                  {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                                </p>
+                                <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50">
+                                  <p className="text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5">The Next Level Unlocks</p>
+                                  <p className="text-sm text-[#888888] italic leading-relaxed">
+                                    {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
+                                {content.narrative}
+                              </p>
+                            )}
+                            {content.formula && (
+                              <div className="bg-white/50 rounded-md p-3 mt-3">
+                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">How We Got Here</p>
+                                <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
+                                  {content.formula}
+                                </pre>
+                              </div>
+                            )}
+                            {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
+                              <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50 flex gap-2" data-testid="warning-aspirational-capacity">
+                                <span className="text-[#888888] text-sm flex-shrink-0">⚠</span>
+                                <p className="text-xs text-[#888888] italic leading-relaxed">
+                                  Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {idx < measuredDomainsList.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {measuredDomainsList.length > 0 && unmeasuredDomainsList.length > 0 && (
+                <div className="h-px bg-[#E5E7EB] mb-8" />
+              )}
+
+              {unmeasuredDomainsList.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className="w-2 h-2 rounded-full bg-[#888888] flex-shrink-0" />
+                    <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px]">
+                      What You Haven't Measured Yet
+                    </p>
+                  </div>
+                  {unmeasuredDomainsList.map((domain, idx) => {
+                    const content = nextLevelContents[domain];
+                    const isExpanded = expandedDomains[domain];
+                    const isLongTenure = tenureIsLong(inputs.deploymentTenure || '');
+                    const months = tenureMonthsMidpoint(inputs.deploymentTenure || '');
+                    const years = months / 12;
+                    const costLow = isLongTenure && content.lowEstimate ? Math.round(content.lowEstimate * years) : 0;
+                    const costHigh = isLongTenure && content.highEstimate ? Math.round(content.highEstimate * years) : 0;
+                    return (
+                      <div key={domain} data-testid={`next-level-${domain}`}>
+                        <button
+                          type="button"
+                          className="w-full text-left py-4 cursor-pointer bg-transparent border-none hover:bg-white/30 rounded-lg transition-colors px-2 -mx-2"
+                          onClick={() => toggleDomain(domain)}
+                          data-testid={`toggle-next-level-${domain}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p className="text-xs font-semibold uppercase tracking-[1px] text-[#888888]">
+                                  {content.domainLabel}
+                                </p>
+                                <span className="text-[10px] font-semibold text-[#888888] border border-[#D1D5DB] rounded px-1.5 py-0.5 uppercase tracking-[1px]">
+                                  Not Yet Measured
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#888888]">
+                                First step: {ACTIVATION_LABELS[domain][2]}
+                              </p>
+                            </div>
+                            <span className="text-[#888888] text-lg transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="px-2 pb-4">
+                            <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
+                              {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                            </p>
+                            {content.formula && (
+                              <div className="bg-white/50 rounded-md p-3 mt-3">
+                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">Benchmark Range Formula</p>
+                                <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
+                                  {content.formula}
+                                </pre>
+                                <p className="text-[11px] text-[#888888] italic mt-2 pt-2 border-t border-[#E5E7EB]/50">
+                                  Benchmark range — reflects what organizations at your scale typically find when they first run this analysis. Not a projection.
+                                </p>
+                              </div>
+                            )}
+                            {isLongTenure && costLow > 0 && (
+                              <div className="mt-4 bg-white/70 rounded-lg p-4" data-testid={`cost-of-time-${domain}`}>
+                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">What May Already Be On The Table</p>
+                                <p className="text-sm text-[#525252] leading-relaxed">
+                                  If the benchmark range applies to your organization, and you've been deployed for approximately {months} months, the value that has been generating without being counted could be in the range of{' '}
+                                  <span className="font-semibold text-black">
+                                    ${costLow.toLocaleString()}–${costHigh.toLocaleString()}
+                                  </span>
+                                  {' '}over that period.
+                                </p>
+                                <p className="text-xs text-[#888888] italic mt-2">
+                                  This is illustrative, not a confirmed figure. It uses the benchmark range multiplied by your approximate deployment tenure.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {idx < unmeasuredDomainsList.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </motion.div>
 
-          {(hasMeasuredDomains || annualGap > 0) && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+          {(strategicAnnual > 0 || totalMeasured > 0) && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
               <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   36-Month Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
-                  Your current path vs. what full maturity unlocks.
+                  Your current path vs. what full maturity unlocks — at your scale.
                 </p>
                 <div className="h-[220px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 10, right: 5, left: 5, bottom: 10 }}>
+                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
+                      <XAxis
+                        dataKey="month"
+                        tickFormatter={(v) => `Mo ${v}`}
+                        tick={{ fontSize: 11, fill: '#888888' }}
+                      />
                       <YAxis
-                        tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
-                        tick={{ fontSize: 12, fill: '#888888' }}
+                        tickFormatter={(v) => formatDollar(v)}
+                        tick={{ fontSize: 11, fill: '#888888' }}
                         width={70}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
-                        formatter={(value: string) => (
-                          <span className="text-xs text-black">
-                            {value === 'strategic' ? 'With strategic action' : 'Status quo (current path)'}
-                          </span>
-                        )}
-                        wrapperStyle={{ paddingTop: 12 }}
+                        formatter={(value) => value === 'strategic' ? 'Full maturity' : 'Current path'}
+                        wrapperStyle={{ fontSize: 12 }}
                       />
-                      <Line type="monotone" dataKey="strategic" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="strategic" />
-                      <Line type="monotone" dataKey="current" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="current" />
+                      <Line
+                        type="monotone"
+                        dataKey="strategic"
+                        stroke="#EA2C00"
+                        strokeWidth={2.5}
+                        dot={{ fill: '#EA2C00', r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="current"
+                        stroke="#D1D5DB"
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#D1D5DB', r: 3 }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-
                 <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
                   The 36-month gap between your current path and full maturity: approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
                 </p>
                 <p className="text-xs text-[#888888] italic mt-2">
-                  Year 1 includes a 90-day ramp. Years 2–3 project at maintained optimization.
-                </p>
-                <p className="text-xs text-[#888888] italic mt-1">
-                  Projections based on your inputs and next-level benchmark ranges (low end). Actual results depend on organizational execution. Individual results vary.
+                  Year 1 includes a 90-day ramp. Years 2–3 project at maintained optimization. Based on your inputs and next-level benchmark ranges (low end). Individual results vary.
                 </p>
               </div>
             </motion.div>
           )}
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-next-level">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                What Drives the Gap
-              </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
-
-              {DOMAIN_ORDER.map((domain, idx) => {
-                const content = nextLevelContents[domain];
-                const isExpanded = expandedDomains[domain];
-                return (
-                  <div key={domain} data-testid={`next-level-${domain}`}>
-                    <button
-                      type="button"
-                      className="w-full text-left py-4 cursor-pointer bg-transparent border-none hover:bg-white/30 rounded-lg transition-colors px-2 -mx-2"
-                      onClick={() => toggleDomain(domain)}
-                      data-testid={`toggle-next-level-${domain}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <p className={`text-xs font-semibold uppercase tracking-[1px] ${domainLevels[domain] === 1 ? 'text-[#888888]' : 'text-[#EA2C00]'}`}>
-                              {content.domainLabel}
-                            </p>
-                            {domainLevels[domain] === 1 ? (
-                              <span className="text-[10px] font-semibold text-[#888888] border border-[#D1D5DB] rounded px-1.5 py-0.5 uppercase tracking-[1px]">
-                                Not Yet Measured
-                              </span>
-                            ) : (
-                              <span className="text-xs text-[#EA2C00]">— Level {domainLevels[domain]}</span>
-                            )}
-                          </div>
-                          {content.nextLevelLabel && (
-                            <p className="text-xs text-[#888888]">
-                              {domainLevels[domain] === 1
-                                ? `First step: ${ACTIVATION_LABELS[domain][2]}`
-                                : `Next level: ${content.nextLevelLabel}`}
-                            </p>
-                          )}
-                        </div>
-                        <span className="text-[#888888] text-lg transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                          ▾
-                        </span>
-                      </div>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="px-2 pb-4">
-                        {content.narrative.includes('OPPORTUNITY AHEAD:') ? (
-                          <div data-testid={`narrative-${domain}`}>
-                            <p className="text-sm text-[#888888] leading-relaxed mb-3">
-                              {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
-                            </p>
-                            <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50">
-                              <p className="text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5">
-                                The Next Level Unlocks
-                              </p>
-                              <p className="text-sm text-[#888888] italic leading-relaxed">
-                                {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
-                            {content.narrative}
-                          </p>
-                        )}
-                        {content.formula && (
-                          <div className="bg-white/50 rounded-md p-3 mt-3">
-                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">
-                              {domainLevels[domain] === 1 ? 'Benchmark range formula' : 'How we got here'}
-                            </p>
-                            <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
-                              {content.formula}
-                            </pre>
-                            {domainLevels[domain] === 1 && (
-                              <p className="text-[11px] text-[#888888] italic mt-2 pt-2 border-t border-[#E5E7EB]/50">
-                                Benchmark range — reflects what organizations at your scale typically find when they first run this analysis. Not a projection for your specific organization.
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {/* Aspirational confidence warning for Capacity L3+ */}
-                        {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50 flex gap-2" data-testid="warning-aspirational-capacity">
-                            <span className="text-[#888888] text-sm flex-shrink-0">⚠</span>
-                            <p className="text-xs text-[#888888] italic leading-relaxed">
-                              Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
-                  </div>
-                );
-              })}
-            </div>
-
-          </motion.div>
-
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
             <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" />
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.5 }}>
-            <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-gap-disclaimer">
-              All dollar figures apply conservative conversion rates — typically 15–25% of the theoretical maximum — to account for implementation variability, organizational lag, and partial capture. The full formula and assumptions for each domain are shown in the detail cards above. Benchmark ranges reflect what similar organizations find when they first measure a domain; they are not projections for your organization. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary.
-            </p>
           </motion.div>
 
           <div className={STEP_FOOTER_SPACER_CLASS} />
         </div>
 
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="w-full lg:w-[280px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+          transition={{ delay: 0.3, duration: 0.5 }}
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
-              Value at a Glance
+            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+              Full Potential
             </p>
-            <p className="text-xs text-white/40 leading-relaxed mb-4">
-              Based on your inputs and maturity levels across all four domains:
+            <p className="text-xs text-white/30 leading-relaxed mb-5">
+              If every domain reached next-level maturity — low-end estimate.
             </p>
 
             {allAtLevel4 ? (
-              <>
-                <p className="font-bold text-xl text-white leading-none mb-1" data-testid="panel-hero-value">
-                  Full value captured
-                </p>
-                <p className="text-xs text-white/40 mb-5">Your deployment is at strategic maturity across all four domains.</p>
-              </>
+              <p className="font-bold text-2xl text-white leading-none mb-1" data-testid="panel-hero-value">
+                Full value captured
+              </p>
             ) : (
-              <>
-                {/* Measured value */}
-                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What the Math Shows</p>
-                <p className="font-bold text-2xl sm:text-3xl text-[#EA2C00] leading-none mb-1" data-testid="panel-hero-value">
+              <p className="font-bold text-[44px] sm:text-[52px] text-white leading-none mb-1" data-testid="panel-hero-value">
+                {formatDollar(strategicAnnual)}
+              </p>
+            )}
+            <p className="text-xs text-white/30 mb-6">per year</p>
+
+            <div className="h-px bg-white/10 mb-5" />
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Confirmed Today</p>
+                <p className="font-bold text-xl text-[#EA2C00] leading-none" data-testid="panel-confirmed-value">
                   {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
                 </p>
-                <p className="text-xs text-white/40 mb-4">per year · from your data</p>
+                <p className="text-xs text-white/30 mt-0.5">per year · from your data</p>
+              </div>
 
-                {/* Unmeasured range */}
-                {unmeasuredLow > 0 && (
-                  <>
-                    <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">What Hasn't Been Measured</p>
-                    <p className="font-bold text-xl text-white/70 leading-none mb-1" data-testid="panel-unmeasured-range">
-                      {unmeasuredHigh > unmeasuredLow
-                        ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
-                        : formatDollar(unmeasuredLow)}
-                    </p>
-                    <p className="text-xs text-white/40 mb-4">per year · benchmark range</p>
-                  </>
-                )}
+              {unmeasuredLow > 0 && (
+                <div>
+                  <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Not Yet Measured</p>
+                  <p className="font-bold text-xl text-white/60 leading-none" data-testid="panel-unmeasured-range">
+                    {unmeasuredHigh > unmeasuredLow
+                      ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
+                      : formatDollar(unmeasuredLow)}
+                  </p>
+                  <p className="text-xs text-white/30 mt-0.5">per year · benchmark range</p>
+                </div>
+              )}
+            </div>
 
-                <div className="h-px bg-white/10 mb-4" />
+            {inputs.deploymentTenure && (
+              <>
+                <div className="h-px bg-white/10 mb-4 mt-5" />
+                <div>
+                  <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Time in Deployment</p>
+                  <p className="font-medium text-sm text-white/70">{tenureLabel(inputs.deploymentTenure)}</p>
+                </div>
               </>
             )}
 
             <div className="h-px bg-white/10 my-5" />
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              With Strategic Action
-            </p>
-            <p className="font-bold text-xl sm:text-2xl text-white leading-none mb-1" data-testid="panel-strategic-value">
-              {formatDollar(strategicAnnual)}
-            </p>
-            <p className="text-xs text-white/40 mb-2">projected annually (low-end estimates)</p>
-            {estimatedTotal > 0 && (
-              <p className="text-sm text-[#EA2C00] font-bold" data-testid="panel-gap-amount">
-                Gap: +{formatDollar(estimatedTotal)} / year
-              </p>
-            )}
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              The Trajectory Gap
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Monthly momentum gap</span>
-                <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-monthly">
-                  {formatDollar(monthlyGap)}
-                </span>
-              </div>
-              <p className="text-[11px] text-white/40 italic leading-relaxed">
-                Value your deployment is positioned to capture as each domain matures.
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">6-month trajectory gap</span>
-                <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-6mo">
-                  {formatDollar(sixMonthGap)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">Annual trajectory gap</span>
-                <span className="font-bold text-sm text-[#EA2C00]" data-testid="value-wait-12mo">
-                  {formatDollar(wait12mo)}
-                </span>
-              </div>
-              <p className="text-[11px] text-white/30 italic leading-relaxed mt-1" data-testid="text-ramp-note">
-                Reflects projected run-rate value at next-level maturity. First 3–6 months include a ramp period.
-              </p>
-            </div>
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              Domain Values
-            </p>
-            <div className="space-y-2">
-              {DOMAIN_ORDER.map((domain) => {
-                const isAtL4 = domainLevels[domain] >= 4;
-                const hasConfirmed = domainHasValue[domain];
-                const displayValue = hasConfirmed
-                  ? domainGaps[domain]
-                  : (isAtL4 ? 0 : (nextLevelContents[domain].lowEstimate ?? 0));
-                return (
-                  <div key={domain} className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">{DOMAIN_LABELS[domain]}</span>
-                    <span className={hasConfirmed ? "text-white font-semibold" : "text-white/50 text-xs"} data-testid={`sidebar-domain-${domain}`}>
-                      {isAtL4 ? 'Captured' : formatDollar(displayValue)}
-                      {!hasConfirmed && !isAtL4 && displayValue > 0 ? ' *' : ''}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            {DOMAIN_ORDER.some(d => !domainHasValue[d] && domainLevels[d] < 4) && (
-              <p className="text-[10px] text-white/30 mt-2">* benchmark low-end estimate</p>
-            )}
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-xs text-white/60 leading-relaxed italic">
-              Based on your inputs and next-level projections. Individual results vary.
+            <p className="text-xs text-white/30 leading-relaxed italic">
+              The gap between confirmed and potential is the conversation ahead. The organizations measuring all of this don't get there alone.
             </p>
 
           </div>
