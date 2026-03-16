@@ -291,17 +291,16 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     return sum;
   }, [totalMeasured, nextLevelContents, domainLevels, domainHasValue]);
 
-  const annualGap = strategicAnnual - totalMeasured;
+  const annualGap = unmeasuredLow;
 
   const chartData = useMemo(() => {
-    const annualGapOnly = strategicAnnual - totalMeasured;
     return [
       { month: 0, gap: 0 },
-      { month: 12, gap: Math.round(annualGapOnly * 1) },
-      { month: 24, gap: Math.round(annualGapOnly * 2) },
-      { month: 36, gap: Math.round(annualGapOnly * 3) },
+      { month: 12, gap: Math.round(unmeasuredLow * 1) },
+      { month: 24, gap: Math.round(unmeasuredLow * 2) },
+      { month: 36, gap: Math.round(unmeasuredLow * 3) },
     ];
-  }, [strategicAnnual, totalMeasured]);
+  }, [unmeasuredLow]);
 
   const gap36mo = chartData[chartData.length - 1].gap;
 
