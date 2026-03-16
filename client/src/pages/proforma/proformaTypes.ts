@@ -115,8 +115,6 @@ export interface ProformaCashFlowRow {
 
 export interface ProformaSummary {
   totalSystemValue: number;
-  totalInvestment: number;
-  combinedROI: number;
   simpleROI: number;
   valueToCost: number;
   totalHours: number;

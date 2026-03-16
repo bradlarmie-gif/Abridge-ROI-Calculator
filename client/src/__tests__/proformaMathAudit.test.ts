@@ -710,14 +710,6 @@ describe("Annual Flat License Pricing", () => {
     expect(puM36).toBeGreaterThan(puM1);
   });
 
-  it("summary totalInvestment uses annualLicenseFee for flat settings", () => {
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows([flatSetting], config);
-    const summary = calculateProformaSummary([flatSetting], config, cashFlows);
-
-    expect(summary.totalInvestment).toBe(annualFee);
-  });
-
   it("mixed scenario: one perUnit + one annualFlat", () => {
     const perUnitSetting = makeSetting({
       id: "per-unit-setting",
@@ -739,9 +731,6 @@ describe("Annual Flat License Pricing", () => {
     const expectedPerUnit = 200 * 10;
     const expectedFlat = Math.round(300000 / 12);
     expect(m1.investment).toBe(expectedPerUnit + expectedFlat);
-
-    const summary = calculateProformaSummary([perUnitSetting, flatSettingB], config, cashFlows);
-    expect(summary.totalInvestment).toBe(200 * 10 * 12 + 300000);
   });
 
   it("default pricingModel (undefined) behaves as perUnit", () => {
@@ -786,22 +775,7 @@ describe("Annual Flat License Pricing", () => {
     expect(month13.investment).toBeGreaterThan(month1Inv);
   });
 
-  it("encounter-based summary totalInvestment uses costPerEncounter × encounters", () => {
-    const setting = makeSetting({
-      pricingModel: "perEncounter",
-      costPerEncounter: 15,
-      encounters: 20000,
-      providerCount: 10,
-      costPerUnit: 0,
-    });
-    const config = makeConfig();
-    const cashFlows = buildMonthlyCashFlows([setting], config);
-    const summary = calculateProformaSummary([setting], config, cashFlows);
-
-    expect(summary.totalInvestment).toBe(15 * 20000);
-  });
-
-  it("three-model mixed scenario produces correct combined investment", () => {
+  it("three-model mixed scenario produces correct monthly investment", () => {
     const perUnitS = makeSetting({
       id: "pu",
       costPerUnit: 200,
@@ -830,9 +804,6 @@ describe("Annual Flat License Pricing", () => {
     const expectedFlat = Math.round(240000 / 12);
     const expectedEnc = 10 * (30000 / 12);
     expect(m1.investment).toBe(expectedPerUnit + expectedFlat + expectedEnc);
-
-    const summary = calculateProformaSummary([perUnitS, flatS, encS], config, cashFlows);
-    expect(summary.totalInvestment).toBe(200 * 10 * 12 + 240000 + 10 * 30000);
   });
 });
 

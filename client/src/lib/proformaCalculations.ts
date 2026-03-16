@@ -602,13 +602,7 @@ export function calculateProformaSummary(
   cashFlows: ProformaCashFlowRow[]
 ): ProformaSummary {
   const totalSystemValue = settings.reduce((s, v) => s + v.annualValue, 0);
-  const totalInvestment = settings.reduce((s, v) => {
-    if (v.pricingModel === "annualFlat") return s + (v.annualLicenseFee || 0);
-    if (v.pricingModel === "perEncounter") return s + (v.costPerEncounter || 0) * (v.yearlyEncounters?.year1 ?? v.encounters);
-    return s + v.costPerUnit * v.providerCount * 12;
-  }, 0);
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
-  const combinedROI = totalInvestment > 0 ? totalSystemValue / totalInvestment : 0;
 
   let paybackMonth: number | null = null;
   for (const row of cashFlows) {
@@ -631,8 +625,6 @@ export function calculateProformaSummary(
 
   return {
     totalSystemValue,
-    totalInvestment,
-    combinedROI,
     simpleROI,
     valueToCost,
     totalHours,
