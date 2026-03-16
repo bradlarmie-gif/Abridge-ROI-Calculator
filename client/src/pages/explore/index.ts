@@ -2,7 +2,4 @@ export { default as ExploreFlow, type ExploreState, type ExploreCareSetting, typ
 export type ExplorePhase = 'careSetting' | 'practice' | 'timeSavings' | 'valueDrivers' | 'docQuality' | 'investment' | 'model';
 export { default as ExploreCareSettings } from './ExploreCareSettings';
 export { default as ExploreOpportunity } from './ExploreOpportunity';
-export { default as ExploreTimePath } from './ExploreTimePath';
-export { default as ExploreTimeAllocation } from './ExploreTimeAllocation';
 export { default as ExploreDocDrivers } from './ExploreDocDrivers';
-export { default as ExploreReview } from './ExploreReview';
