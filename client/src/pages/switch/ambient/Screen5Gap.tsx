@@ -4,7 +4,7 @@ import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
-  Legend, Tooltip,
+  Tooltip,
 } from "recharts";
 import {
   type Domain, type ActivationLevel,
@@ -45,15 +45,12 @@ function CountUpNumber({ target, duration = 1400, prefix = "$" }: { target: numb
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-  const strategic = payload.find((p: any) => p.dataKey === 'strategic');
-  const current = payload.find((p: any) => p.dataKey === 'current');
-  const gap = (strategic?.value || 0) - (current?.value || 0);
+  const gap = payload.find((p: any) => p.dataKey === 'gap');
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-sm text-xs">
       <p className="font-semibold text-black mb-1">Month {label}</p>
-      {strategic && <p className="text-[#EA2C00]">Full maturity: {formatDollar(strategic.value)}</p>}
-      {current && <p className="text-[#888888]">Current path: {formatDollar(current.value)}</p>}
-      {gap > 0 && <p className="text-black font-semibold mt-1">Gap: {formatDollar(gap)}</p>}
+      {gap && <p className="text-[#EA2C00] font-bold">Unmeasured value: {formatDollar(gap.value)}</p>}
+      <p className="text-[#888888] mt-1">accumulated since deployment</p>
     </div>
   );
 }
@@ -297,16 +294,16 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   const annualGap = strategicAnnual - totalMeasured;
 
   const chartData = useMemo(() => {
-    const points = [
-      { month: 0, strategic: 0, current: 0 },
-      { month: 12, strategic: Math.round(strategicAnnual * 0.90), current: Math.round(totalMeasured * 0.95) },
-      { month: 24, strategic: Math.round(strategicAnnual * 1.95), current: Math.round(totalMeasured * 1.95) },
-      { month: 36, strategic: Math.round(strategicAnnual * 3.0), current: Math.round(totalMeasured * 3.0) },
+    const annualGapOnly = strategicAnnual - totalMeasured;
+    return [
+      { month: 0, gap: 0 },
+      { month: 12, gap: Math.round(annualGapOnly * 0.9) },
+      { month: 24, gap: Math.round(annualGapOnly * 1.9) },
+      { month: 36, gap: Math.round(annualGapOnly * 2.9) },
     ];
-    return points;
   }, [strategicAnnual, totalMeasured]);
 
-  const gap36mo = chartData[chartData.length - 1].strategic - chartData[chartData.length - 1].current;
+  const gap36mo = chartData[chartData.length - 1].gap;
 
   const measuredDomainsList = useMemo(() =>
     DOMAIN_ORDER.filter(d => domainLevels[d] >= 2)
@@ -590,16 +587,16 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             </div>
           </motion.div>
 
-          {(strategicAnnual > 0 || totalMeasured > 0) && (
+          {annualGap > 0 && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
               <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                  36-Month Trajectory
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                  Cost of Inaction
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
-                  Your current path vs. what full maturity unlocks — at your scale.
+                  Value accumulating unmeasured each year you don't act — at your scale.
                 </p>
-                <div className="h-[220px] sm:h-[280px]">
+                <div className="h-[220px] sm:h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -614,34 +611,23 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                         width={70}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend
-                        formatter={(value) => value === 'strategic' ? 'Full maturity' : 'Current path'}
-                        wrapperStyle={{ fontSize: 12 }}
-                      />
                       <Line
                         type="monotone"
-                        dataKey="strategic"
+                        dataKey="gap"
                         stroke="#EA2C00"
-                        strokeWidth={2.5}
-                        dot={{ fill: '#EA2C00', r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="current"
-                        stroke="#D1D5DB"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={{ fill: '#D1D5DB', r: 3 }}
+                        strokeWidth={3}
+                        dot={{ fill: '#EA2C00', r: 5 }}
+                        activeDot={{ r: 7 }}
+                        name="Unmeasured value accumulating"
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
                 <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
-                  The 36-month gap between your current path and full maturity: approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span>.
+                  At your current measurement pace, approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span> in value will have accumulated unmeasured over 36 months.
                 </p>
                 <p className="text-xs text-[#888888] italic mt-2">
-                  Year 1 includes a 90-day ramp. Years 2–3 project at maintained optimization. Based on your inputs and next-level benchmark ranges (low end). Individual results vary.
+                  Based on low-end benchmark ranges for unmeasured domains at your scale. Individual results vary.
                 </p>
               </div>
             </motion.div>
