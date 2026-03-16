@@ -280,8 +280,6 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
   const activeIdx = DOMAIN_ORDER.indexOf(activeDomain);
 
-  const unmeasuredTimeChecked = currentState.inputs.unmeasuredTime === 'true';
-
   const toggleCheckboxItem = (key: string, index: number) => {
     const current = (currentState.inputs[key] as string) || '';
     const set = new Set(current.split(',').filter(Boolean));
@@ -301,56 +299,22 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
 
     const timeSavedValue = (currentState.inputs.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
 
-    const showUnmeasuredCheckbox = level === 1;
-
     const timeSavedSection = (
       <div className="mb-6" key="time-saved">
         <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
           Minutes returned per encounter
         </label>
 
-        {!(showUnmeasuredCheckbox && unmeasuredTimeChecked) && (
-          <div className="flex items-center gap-2 mb-1">
-            <FormattedNumberInput
-              value={timeSavedValue}
-              onChange={(v) => setDomainInput('timeSaved', Math.min(8, Math.max(0, v)))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-time-saved"
-            />
-            <span className="text-sm text-[#888888]">min</span>
-          </div>
-        )}
-        <BenchmarkContext text="Abridge observed benchmark: 2–3 min" />
-
-
-        {showUnmeasuredCheckbox && (
-          <>
-            <div className="flex items-center gap-2.5 mt-4">
-              <Checkbox
-                id="unmeasured-time"
-                checked={unmeasuredTimeChecked}
-                onCheckedChange={(checked) => {
-                  if (checked === true) {
-                    setDomainInput('unmeasuredTime', 'true');
-                  } else {
-                    setDomainInput('unmeasuredTime', 'false');
-                  }
-                }}
-                data-testid="checkbox-unmeasured-time"
-              />
-              <label htmlFor="unmeasured-time" className="text-sm text-[#525252] cursor-pointer select-none">
-                Use benchmark (2–3 min)
-              </label>
-            </div>
-
-            {unmeasuredTimeChecked && (
-              <p className="text-sm text-[#888888] italic mt-2">
-                Time savings not yet measured. This is the first metric to establish.
-              </p>
-            )}
-          </>
-        )}
+        <div className="flex items-center gap-2 mb-1">
+          <FormattedNumberInput
+            value={timeSavedValue}
+            onChange={(v) => setDomainInput('timeSaved', Math.min(8, Math.max(0, v)))}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-time-saved"
+          />
+          <span className="text-sm text-[#888888]">min</span>
+        </div>
       </div>
     );
 

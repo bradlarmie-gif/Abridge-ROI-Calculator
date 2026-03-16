@@ -91,23 +91,8 @@ export function computeCapacityFeedback(
 ): DomainFeedback {
   const timeSaved = inputs.timeSaved as number | undefined;
   const hasTimeSaved = timeSaved !== undefined && timeSaved > 0;
-  const unmeasuredChecked = inputs.unmeasuredTime === 'true';
 
   if (level === 1) {
-    if (!hasTimeSaved && !unmeasuredChecked) {
-      const benchLow = Math.round(documentedEncounters * 2 / 60);
-      const benchHigh = Math.round(documentedEncounters * 3 / 60);
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours recoverable annually`,
-        context: `At ${documentedEncounters.toLocaleString()} encounters, 2–3 minutes returned per encounter yields ${benchLow.toLocaleString()}–${benchHigh.toLocaleString()} hours annually. Enter your observed value or use the benchmark.`,
-        formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 2 aggregates these hours for leadership review and operational decisions.',
-      };
-    }
     const ts = hasTimeSaved ? timeSaved! : 0;
     const recoveredHours = Math.round(documentedEncounters * ts / 60);
     if (recoveredHours === 0) {

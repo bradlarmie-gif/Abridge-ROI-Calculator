@@ -85,7 +85,6 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
 
   if (domain === 'capacity') {
     if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;
-    if (raw.unmeasuredTime === 'true') out['Time savings'] = 'Using benchmark (2\u20133 min)';
     if (level === 2) {
       if (raw.accessDecisionStage) {
         const stageLabels: Record<string, string> = {
