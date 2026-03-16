@@ -297,9 +297,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     const annualGapOnly = strategicAnnual - totalMeasured;
     return [
       { month: 0, gap: 0 },
-      { month: 12, gap: Math.round(annualGapOnly * 0.9) },
-      { month: 24, gap: Math.round(annualGapOnly * 1.9) },
-      { month: 36, gap: Math.round(annualGapOnly * 2.9) },
+      { month: 12, gap: Math.round(annualGapOnly * 1) },
+      { month: 24, gap: Math.round(annualGapOnly * 2) },
+      { month: 36, gap: Math.round(annualGapOnly * 3) },
     ];
   }, [strategicAnnual, totalMeasured]);
 
