@@ -1,0 +1,114 @@
+Prompt 4 — "What the Data Shows" Card Adapts to Actual Domain Levels
+
+  Paste into Replit Agent:
+
+  ---
+  In client/src/pages/switch/ambient/Screen6Invitation.tsx, the "What the Data Shows" section (approximately lines 753-773) has three hardcoded cards that always say "Level 3 Revenue within 12 months,"
+  "Level 3 Workforce within 12 months," and "The common thread" — regardless of the org's actual domain levels.
+
+  Replace the hardcoded card array with dynamic content based on the org's actual lowest-level domains. Make this change:
+
+  Step 1: Add a new dataShowsCards useMemo after the heroNarrative useMemo (approximately after line 513):
+
+  const dataShowsCards = useMemo(() => {
+    const domainLevels: Record<string, number> = {};
+    for (const d of DOMAIN_ORDER) {
+      domainLevels[d] = domainData[d]?.activationLevel || 1;
+    }
+
+    // Sort domains by level ascending (lowest first)
+    const sorted = [...DOMAIN_ORDER].sort((a, b) => domainLevels[a] - domainLevels[b]);
+    const lowest = sorted[0];
+    const secondLowest = sorted[1];
+
+    const nextStepMap: Record<string, Record<number, { title: string; body: string }>> = {
+      capacity: {
+        1: { title: "Capacity: the first move", body: "Schedule the operational conversation about converting recovered time. Organizations that reach Level 3 Capacity within 12 months make this decision
+  before they think they're ready — not after." },
+        2: { title: "Capacity: confirm the number", body: "A provider volume measurement — even a 30-day pilot — is what separates directional intent from a confirmed access revenue figure leadership can
+  stand behind." },
+        3: { title: "Capacity: wire it into the model", body: "Connecting recovered capacity to the annual FTE and growth plan is the Level 4 move. The organizations that do this use ambient as a staffing
+  variable, not just a documentation tool." },
+      },
+      revenue: {
+        1: { title: "Revenue: ask the revenue cycle team", body: "Most organizations are surprised by what surfaces when they formally ask. A structured CDI and coding review connected to ambient
+  documentation — not a one-time study, but an ongoing program — is what gets organizations to Level 3 within 12 months." },
+        2: { title: "Revenue: formalize the signal", body: "A formal before/after analysis that produces a number revenue cycle leadership can stand behind is the Level 2 to Level 3 move. The data is already
+   there — it hasn't been looked at formally yet." },
+        3: { title: "Revenue: tie it to strategy", body: "Documentation governance tied to payer strategy — where coding accuracy data informs contract negotiations — is where Revenue becomes a strategic
+  asset, not just a confirmed metric." },
+      },
+      workforce: {
+        1: { title: "Workforce: formalize the signal", body: "Organizations that reach Level 3 Workforce within 12 months have a formal provider satisfaction measurement program running on a cadence —
+  explicitly connected to ambient data, not running in parallel to it." },
+        2: { title: "Workforce: model the economics", body: "Connecting provider satisfaction data to turnover modeling is the Level 3 move. The organizations that do this find it changes how they frame
+  ambient to their board — not just documentation, but labor cost management." },
+        3: { title: "Workforce: make it a planning variable", body: "Provider sustainability as a formal input to the FTE model — influencing recruitment, retention programs, and staffing decisions — is
+  Level 4. It's a governance decision, not a measurement decision." },
+      },
+      risk: {
+        1: { title: "Quality: start tracking downstream", body: "Documentation completeness, specificity, and compliance readiness tracked systematically is the Level 1 to Level 2 move. CDI, coding, and
+  quality teams need to see the improvement — that connection, formally structured, is what unlocks the downstream value." },
+        2: { title: "Quality: connect to programs", body: "Wiring quality data into CDI workflows, coding accuracy, and prior auth so documentation intelligence becomes an active operational input — that's
+  the Level 3 move. The infrastructure already exists; the connection hasn't been built." },
+        3: { title: "Quality: position for strategic value", body: "Documentation quality as a strategic organizational asset — informing value-based care, compliance governance, and AI readiness — is where
+  the compounding returns live. This is what Level 4 organizations have that most don't." },
+      },
+    };
+
+    const lowestLevel = domainLevels[lowest] as 1 | 2 | 3;
+    const secondLevel = domainLevels[secondLowest] as 1 | 2 | 3;
+
+    const card1 = nextStepMap[lowest]?.[Math.min(lowestLevel, 3) as 1|2|3] || {
+      title: "Focus on your lowest domain",
+      body: "The domains you haven't fully measured are where the next layer of value is sitting."
+    };
+    const card2 = nextStepMap[secondLowest]?.[Math.min(secondLevel, 3) as 1|2|3] || {
+      title: "Your second opportunity",
+      body: "Moving two domains forward simultaneously is how organizations reach managing-level maturity inside 18 months."
+    };
+
+    return [
+      card1,
+      card2,
+      {
+        title: "The common thread",
+        body: "Measurement infrastructure that was built, not discovered. The organizations that close the gap quickly don't stumble into it — they built a program.",
+      },
+    ];
+  }, [domainData]);
+
+  Step 2: In the render, find the hardcoded "What the Data Shows" card section (approximately lines 753-773) and replace the three hardcoded card objects with the dynamic dataShowsCards array:
+
+  Replace:
+  <div className="space-y-4">
+    <div className="bg-white/70 rounded-lg p-4">
+      <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">Level 3 Revenue within 12 months</p>
+      <p className="text-sm text-[#444444] leading-relaxed">Organizations that get there have a structured CDI and coding review process connected to their ambient documentation — not a one-time study, but
+  an ongoing program.</p>
+    </div>
+    <div className="bg-white/70 rounded-lg p-4">
+      <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">Level 3 Workforce within 12 months</p>
+      <p className="text-sm text-[#444444] leading-relaxed">Organizations that get there have a formal provider satisfaction measurement program running on a cadence — explicitly connected to ambient data,
+  not running in parallel to it.</p>
+    </div>
+    <div className="bg-white/70 rounded-lg p-4">
+      <p className="text-[11px] font-semibold text-black uppercase tracking-[1px] mb-1.5">The common thread</p>
+      <p className="text-sm text-[#444444] leading-relaxed">Measurement infrastructure that was built, not discovered. The organizations that close the gap quickly don't stumble into it — they built a
+  program.</p>
+    </div>
+  </div>
+
+  With:
+  <div className="space-y-4">
+    {dataShowsCards.map((card, i) => (
+      <div key={i} className="bg-white/70 rounded-lg p-4">
+        <p className={`text-[11px] font-semibold uppercase tracking-[1px] mb-1.5 ${i < 2 ? 'text-[#EA2C00]' : 'text-black'}`}>
+          {card.title}
+        </p>
+        <p className="text-sm text-[#444444] leading-relaxed">{card.body}</p>
+      </div>
+    ))}
+  </div>
+
+  These are the only changes. Do not modify any other logic.

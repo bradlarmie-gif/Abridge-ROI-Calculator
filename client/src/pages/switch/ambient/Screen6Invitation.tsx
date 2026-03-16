@@ -664,15 +664,15 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               )}
             </div>
 
-            {unmeasuredCount > 0 && (
+            {unmeasuredLow > 0 && (
               <>
                 <div className="hidden sm:block w-px h-24 bg-white/10" />
                 <div>
                   <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Not Yet Measured</p>
-                  <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-white/30 leading-none" data-testid="hero-unmeasured-count">
-                    {unmeasuredCount}
+                  <p className="text-[22px] sm:text-[32px] md:text-[38px] font-bold text-white/30 leading-none" data-testid="hero-unmeasured-range">
+                    {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
                   </p>
-                  <p className="text-lg text-white/30 font-normal mt-1">{unmeasuredCount === 1 ? 'domain' : 'domains'}</p>
+                  <p className="text-lg text-white/30 font-normal mt-1">per year · benchmark range</p>
                 </div>
               </>
             )}
