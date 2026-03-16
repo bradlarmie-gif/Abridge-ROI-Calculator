@@ -398,6 +398,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 </button>
               ))}
             </div>
+            <p className="text-xs text-[#888888] mt-2 leading-relaxed">
+              <span className="font-semibold">Measured</span> — confirmed with scheduling data. <span className="font-semibold">Estimated</span> — your team's best assessment. <span className="font-semibold">Aspirational</span> — a planning target, not yet confirmed. Your choice here affects how this figure is labeled in your results.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
