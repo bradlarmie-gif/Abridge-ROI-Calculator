@@ -298,7 +298,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                     <motion.div
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 + idx * 0.15, duration: 0.5 }}
+                      transition={{ delay: 0.15 + idx * 0.1, duration: 0.5 }}
                     >
                       <button
                         type="button"
@@ -334,7 +334,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4, duration: 0.5 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
               >
                 <div
                   className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between gap-4"
@@ -345,11 +345,11 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   </p>
 
                   <div className="flex-1 max-w-[200px]" style={{ height: 8 }}>
-                    <AnimatedBar percent={(totalScore / 100) * 100} delay={1600} height={8} />
+                    <AnimatedBar percent={(totalScore / 100) * 100} delay={900} height={8} />
                   </div>
 
                   <p className="font-bold text-xl sm:text-2xl text-black min-w-[60px] sm:min-w-[80px] text-right" data-testid="text-composite-score">
-                    <AnimatedCounter target={totalScore} duration={800} delay={2000} /> / 100
+                    <AnimatedCounter target={totalScore} duration={800} delay={800} /> / 100
                   </p>
                 </div>
               </motion.div>
@@ -359,7 +359,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.4, duration: 0.5 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
           >
             <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-verdict">
               <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-4">
@@ -386,7 +386,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 3.0, duration: 0.5 }}
+            transition={{ delay: 1.4, duration: 0.5 }}
           >
             <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" />
           </motion.div>
@@ -394,7 +394,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 3.2, duration: 0.5 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
           >
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
               Self-assessment across four domains. Each domain scores 0–25 based on activation level (L1=4, L2=12, L3=19, L4=25). Does not guarantee specific financial outcomes.
