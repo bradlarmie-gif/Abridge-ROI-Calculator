@@ -693,14 +693,14 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
           <p className="text-[#999999] mb-6 text-sm">
             Use these methodology principles to create a customized ROI model for your nursing program.
           </p>
-          <a
-            href="/?explore=nursing"
+          <button
+            onClick={onBack}
             className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
             data-testid="button-build-model"
           >
             Build a Nursing Model
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </button>
         </motion.div>
 
         <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">
