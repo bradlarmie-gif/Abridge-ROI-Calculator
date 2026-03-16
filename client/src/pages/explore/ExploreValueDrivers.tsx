@@ -607,6 +607,13 @@ export default function ExploreValueDrivers({
                       </button>
                     </div>
 
+                    {timeDriverInputs.edThroughputEnabled && !timeDriverInputs.edLwbsEnabled && (
+                      <div className="mx-4 mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                        Admission Capture uses LWBS recovered patients as its base.
+                        Enable LWBS Recovery above to see this value.
+                      </div>
+                    )}
+
                     {timeDriverInputs.edThroughputEnabled && (
                       <div className="px-4 pb-4">
                         <p className="text-xs text-[#666666] mb-3">
