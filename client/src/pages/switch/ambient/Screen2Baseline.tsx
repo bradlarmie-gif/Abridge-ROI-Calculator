@@ -20,7 +20,7 @@ const INDUSTRY_UTIL = 45;
 
 export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }: Screen2Props) {
   const [showEstimator, setShowEstimator] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showOrgProfile, setShowOrgProfile] = useState(false);
   const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
 
