@@ -1,5 +1,7 @@
+import { useState } from "react";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import type { Domain } from "./ambient/domainCalculations";
 import { PageTransition } from "@/components/PageTransition";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
@@ -30,6 +32,7 @@ export default function AmbientNarrativeFlow({
   onBackToJourney,
   onNavigateToExplore,
 }: AmbientNarrativeFlowProps) {
+  const [initialDomain, setInitialDomain] = useState<Domain>('capacity');
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
   const currentStep = state.navigation.currentStep;
@@ -71,9 +74,9 @@ export default function AmbientNarrativeFlow({
       case 1:
         return <Screen2Baseline inputs={inputs} updateInput={updateInput} onNext={handleNext} onBack={handleBack} />;
       case 2:
-        return <Screen3Domains onNext={handleNext} onBack={handleBack} />;
+        return <Screen3Domains onNext={handleNext} onBack={handleBack} initialDomain={initialDomain} />;
       case 3:
-        return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={() => goToStep(2)} />;
+        return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={(domain) => { setInitialDomain(domain); goToStep(2); }} />;
       case 4:
         return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;
       case 5:

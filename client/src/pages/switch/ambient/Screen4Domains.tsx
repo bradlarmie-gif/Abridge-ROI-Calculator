@@ -21,6 +21,7 @@ import {
 interface Screen4Props {
   onNext: () => void;
   onBack: () => void;
+  initialDomain?: Domain;
 }
 
 const DOMAIN_CTA: Record<Domain, string> = {
@@ -182,10 +183,10 @@ function FormulaDisplay({ formula }: { formula: string }) {
   );
 }
 
-export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
+export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen4Props) {
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
-  const [activeDomain, setActiveDomain] = useState<Domain>('capacity');
+  const [activeDomain, setActiveDomain] = useState<Domain>(initialDomain || 'capacity');
 
   const parseDomainInputs = (json: string): Record<string, number | string> => {
     try { return JSON.parse(json); } catch { return {}; }

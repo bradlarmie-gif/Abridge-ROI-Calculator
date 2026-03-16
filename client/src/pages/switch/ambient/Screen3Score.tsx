@@ -7,7 +7,7 @@ import { DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, scoreToActivationLevel,
 interface Screen3Props {
   onNext: () => void;
   onBack: () => void;
-  onNavigateToDomain?: () => void;
+  onNavigateToDomain?: (domain: Domain) => void;
 }
 
 type DomainKey = Domain;
@@ -303,7 +303,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                       <button
                         type="button"
                         className="w-full flex items-center gap-4 h-14 cursor-pointer bg-transparent border-none hover:bg-white/40 rounded-lg transition-colors px-2 -mx-2"
-                        onClick={onNavigateToDomain}
+                        onClick={() => onNavigateToDomain?.(domain)}
                         data-testid={`domain-row-${domain}`}
                       >
                         <div className="w-[40%] sm:w-[35%] text-left">
