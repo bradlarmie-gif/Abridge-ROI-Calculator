@@ -1,0 +1,151 @@
+ SCREEN3SCORE — PREMIUM VISUAL POLISH
+
+  FILE: client/src/pages/switch/ambient/Screen3Score.tsx
+
+  ─── FIX 1: Score number — make 48 the hero, shrink the denominator ───
+
+  Find the composite score display. Replace the score number rendering so
+  the number is massive and the "/100" is a tiny superscript-style aside:
+
+  In the white/60 score row at the bottom of the buildup card, replace:
+    <AnimatedCounter target={totalScore} duration={800} delay={2000} /> / 100
+
+  With this layout (score huge, /100 tiny and muted):
+    <span className="font-bold text-4xl sm:text-5xl text-black leading-none tracking-tight">
+      <AnimatedCounter target={totalScore} duration={800} delay={2000} />
+    </span>
+    <span className="text-base font-normal text-[#9CA3AF] ml-1">/100</span>
+
+  Also increase the AnimatedBar height for this score row from 8 to 10.
+
+  ─── FIX 2: Replace the 5-band strip with 5 minimal dots ───
+
+  The 5-band strip (Quantifying · Measuring · Acting · Managing · Full Capture
+  with the orange filled bar) looks like a broken nav bar. Replace it entirely.
+
+  Find wherever the band strip is rendered (likely in the header section of
+  the buildup card, below "ACTING" label). Replace the entire strip with:
+
+    {/* 5-dot band indicator */}
+    {(() => {
+      const bands = ['Quantifying', 'Measuring', 'Acting', 'Managing', 'Full Capture'];
+      const activeBand = totalScore <= 16 ? 0 : totalScore <= 38 ? 1 : totalScore <= 60 ? 2 : totalScore <= 79 ? 3 : 4;
+      return (
+        <div className="flex items-center gap-2 mt-3">
+          {bands.map((band, i) => (
+            <div key={band} className="flex items-center gap-2">
+              <div
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i === activeBand ? 10 : 6,
+                  height: i === activeBand ? 10 : 6,
+                  backgroundColor: i === activeBand ? '#EA2C00' : i < activeBand ? '#EA2C00' : '#D1D5DB',
+                  opacity: i < activeBand ? 0.35 : 1,
+                }}
+              />
+              {i === activeBand && (
+                <span className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+                  {band}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    })()}
+
+  This gives: ●● ● ACTING ○ ○ — clean, minimal, premium. The active dot is
+  slightly larger. Past dots are faint orange. Future dots are gray.
+  No bars. No text on inactive dots.
+
+  ─── FIX 3: Domain rows — remove the arrow, increase bar height ───
+
+  In each domain row button, find:
+    <p className="text-[11px] sm:text-xs text-[#888888] italic">
+      → {ACTIVATION_LABELS[domain][level]}
+    </p>
+
+  Remove the "→ " prefix. The arrow implies navigation, not status:
+    <p className="text-[11px] sm:text-xs text-[#888888]">
+      {ACTIVATION_LABELS[domain][level]}
+    </p>
+
+  Also change AnimatedBar height from 5 to 3. At height 5 the bars look
+  like fat loading skeletons. At height 3 they're a clean accent line,
+  not the main visual element — the typography carries the weight.
+
+  Actually — reconsider the bars entirely. If all domains are at the same
+  level they all render identically and the bars add no information.
+  Change AnimatedBar height to 3 AND reduce opacity:
+    <div className="flex-1 bg-[#E5E7EB] rounded-full overflow-hidden" style={{ height: 3, opacity: 0.7 }}>
+
+  ─── FIX 4: Remove the redundant subheadline ───
+
+  Find:
+    <p className="text-base text-[#888888]">
+      Four domains. One score. Here's where your organization actually is.
+    </p>
+
+  Delete it. The heading "HERE'S WHERE YOU STAND." already says this.
+  The subheadline is restating the headline and adds visual noise.
+
+  ─── FIX 5: The score row — clean up the layout ───
+
+  The bottom row of the buildup card ("Your Maturity Score / [bar] / XX/100")
+  currently has the label on the left, the bar in the middle, and the number
+  on the right — like a spreadsheet row. This is redundant since the score
+  number is already the hero above it.
+
+  Replace the entire white/60 score summary row with a cleaner version:
+    <div
+      className="rounded-lg px-5 py-4 mt-3 flex items-center justify-between gap-4 bg-white/60"
+      data-testid="card-composite-score"
+    >
+      <div>
+        <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
+          Ambient Maturity Score
+        </p>
+        <div className="flex items-baseline gap-1">
+          <span className="font-bold text-4xl sm:text-5xl text-black leading-none tracking-tight">
+            <AnimatedCounter target={totalScore} duration={800} delay={2000} />
+          </span>
+          <span className="text-sm font-normal text-[#9CA3AF]">/100</span>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
+          Band
+        </p>
+        <p className="font-bold text-sm text-[#EA2C00]">
+          {totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture'}
+        </p>
+      </div>
+    </div>
+
+  Remove the AnimatedBar from this row — the domain bars above already show
+  the breakdown. The score summary row should be number + band label only.
+
+  ─── FIX 6: Remove "Score Breakdown" label ───
+
+  Find:
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-buildup-label">
+      Score Breakdown
+    </p>
+    <div className="h-px bg-[#E5E7EB] mb-6" />
+
+  Delete both lines. The card IS the score breakdown — labeling it as such
+  is like labeling a photograph "photograph".
+
+  ─── FIX 7: Fix the disclaimer ───
+
+  Find:
+    Self-assessment across four domains. Each domain scores 0–25 based on
+    activation level (L1=4, L2=12, L3=19, L4=25). Does not guarantee
+    specific financial outcomes.
+
+  Replace with:
+    Self-reported maturity assessment across four domains. Scores reflect
+    activation level, not guaranteed financial outcomes.
+
+  Remove the "(L1=4, L2=12, L3=19, L4=25)" — this exposes the algorithm
+  and reads as a developer comment, not executive copy.

@@ -299,42 +299,49 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           >
             <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-buildup">
 
-              <div className="text-center mb-6" data-testid="card-composite-score">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3" data-testid="text-buildup-label">
-                  Ambient Maturity Score
-                </p>
-                <div className="flex items-end justify-center gap-1 mb-2">
-                  <p className="text-5xl sm:text-6xl font-bold text-[#EA2C00] leading-none" data-testid="text-composite-score">
-                    <AnimatedCounter target={totalScore} duration={800} delay={800} />
+              <div
+                className="rounded-lg px-5 py-4 mb-6 flex items-center justify-between gap-4 bg-white/60"
+                data-testid="card-composite-score"
+              >
+                <div>
+                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
+                    Ambient Maturity Score
                   </p>
-                  <p className="text-xl text-[#888888] leading-none pb-1">/ 100</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-bold text-4xl sm:text-5xl text-black leading-none tracking-tight" data-testid="text-composite-score">
+                      <AnimatedCounter target={totalScore} duration={800} delay={800} />
+                    </span>
+                    <span className="text-sm font-normal text-[#9CA3AF]">/100</span>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide mb-3">
-                  {scoreBandLabel}
-                </p>
-
-                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4">
-                  {SCORE_BANDS.map((band) => {
-                    const isActive = scoreBandLabel === band.label;
+                <div className="text-right">
+                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
+                    Band
+                  </p>
+                  <p className="font-bold text-sm text-[#EA2C00]">
+                    {scoreBandLabel}
+                  </p>
+                  {(() => {
+                    const bands = ['Quantifying', 'Measuring', 'Acting', 'Managing', 'Full Capture'];
+                    const activeBand = totalScore <= 16 ? 0 : totalScore <= 38 ? 1 : totalScore <= 60 ? 2 : totalScore <= 79 ? 3 : 4;
                     return (
-                      <div key={band.label} className="flex flex-col items-center gap-1">
-                        <div
-                          className={`w-2.5 h-2.5 rounded-full transition-all ${
-                            isActive ? 'bg-[#EA2C00] scale-125' : 'bg-[#D1D5DB]'
-                          }`}
-                        />
-                        <span className={`text-[9px] sm:text-[10px] leading-tight ${
-                          isActive ? 'text-[#EA2C00] font-semibold' : 'text-[#AAAAAA]'
-                        }`}>
-                          {band.label}
-                        </span>
+                      <div className="flex items-center gap-2 mt-2 justify-end">
+                        {bands.map((band, i) => (
+                          <div key={band} className="flex items-center gap-2">
+                            <div
+                              className="rounded-full transition-all duration-300"
+                              style={{
+                                width: i === activeBand ? 10 : 6,
+                                height: i === activeBand ? 10 : 6,
+                                backgroundColor: i === activeBand ? '#EA2C00' : i < activeBand ? '#EA2C00' : '#D1D5DB',
+                                opacity: i < activeBand ? 0.35 : 1,
+                              }}
+                            />
+                          </div>
+                        ))}
                       </div>
                     );
-                  })}
-                </div>
-
-                <div className="max-w-[300px] mx-auto" style={{ height: 8 }}>
-                  <AnimatedBar percent={(totalScore / 100) * 100} delay={900} height={8} />
+                  })()}
                 </div>
               </div>
 
@@ -361,12 +368,12 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                           <p className="font-semibold text-xs sm:text-sm text-black leading-tight">
                             {DOMAIN_LABELS[domain]}
                           </p>
-                          <p className="text-[11px] sm:text-xs text-[#888888] italic">
+                          <p className="text-[11px] sm:text-xs text-[#888888]">
                             {ACTIVATION_LABELS[domain][level]}
                           </p>
                         </div>
-                        <div className="hidden sm:block w-[45%]">
-                          <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={5} />
+                        <div className="hidden sm:block w-[45%]" style={{ opacity: 0.7 }}>
+                          <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={3} />
                         </div>
                         <p className="font-bold text-sm text-black w-[60%] sm:w-[20%] text-right" data-testid={`domain-score-${domain}`}>
                           {domainScore} / 25
@@ -423,7 +430,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             transition={{ delay: 1.5, duration: 0.5 }}
           >
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
-              Based on your self-assessment across four domains. Scores reflect activation level in each area. Actual outcomes depend on execution and organizational context.
+              Self-reported maturity assessment across four domains. Scores reflect activation level, not guaranteed financial outcomes.
             </p>
           </motion.div>
 
