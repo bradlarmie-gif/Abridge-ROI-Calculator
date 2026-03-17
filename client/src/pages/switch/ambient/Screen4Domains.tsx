@@ -57,8 +57,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   capacity: {
     label: 'CAPACITY',
     headline: 'CAPACITY',
-    subheadline: 'Every ambient deployment recovers time. The question is what your organization decided to do with it.',
-    reframe: 'Time savings are ambient\'s most visible output — and the most commonly wasted. The organizations capturing the most value don\'t just measure hours returned. They assign those hours a destination. Each level reflects how deliberate that decision has been.',
+    subheadline: 'What happened to the recovered time?',
+    reframe: '',
     cards: [
       { level: 1, label: 'Time Recovered', description: 'Providers report reduced documentation time. No operational decision made yet.' },
       { level: 2, label: 'Access Decision Made', description: 'Organization has decided to convert recovered time into patient access.' },
@@ -80,8 +80,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   revenue: {
     label: 'REVENUE',
     headline: 'REVENUE',
-    subheadline: 'Documentation quality has changed. Whether that change is affecting reimbursement is a different question — one most organizations haven\'t formally answered yet.',
-    reframe: 'Every encounter gets coded. Whether that coding now reflects the documentation quality your deployment is producing — and whether your organization has looked — is what separates Level 1 from Level 3. Each level reflects how far that analysis has gone.',
+    subheadline: 'Has better documentation shown up in reimbursement?',
+    reframe: '',
     cards: [
       { level: 1, label: 'Not Yet Analyzed', description: 'Documentation-driven revenue impact has not been analyzed.' },
       { level: 2, label: 'Directional Signal', description: 'Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.' },
@@ -103,8 +103,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   workforce: {
     label: 'WORKFORCE',
     headline: 'WORKFORCE',
-    subheadline: 'Providers are experiencing meaningful relief from documentation burden. Whether that relief has been measured and connected to workforce strategy is a separate question.',
-    reframe: 'After-hours time returned is where most organizations start. The ones extracting full value don\'t stop there — they quantify in-clinic savings, survey providers, and connect the data to what turnover actually costs. Each level reflects how far that work has gone.',
+    subheadline: 'Has reduced burden been connected to what turnover costs?',
+    reframe: '',
     cards: [
       { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
       { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
@@ -126,8 +126,8 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
   risk: {
     label: 'QUALITY',
     headline: 'QUALITY',
-    subheadline: 'Documentation quality has improved. The question is how far downstream that improvement has traveled — into coding, quality reporting, compliance, and the programs that depend on structured data.',
-    reframe: 'Better notes are the starting point. The value compounds when that improvement reaches the teams and programs that depend on it. Most organizations have done the least work in this domain — and it carries some of the highest long-term returns. Each level reflects how far downstream the improvement has traveled.',
+    subheadline: 'How far has documentation quality traveled downstream?',
+    reframe: '',
     cards: [
       { level: 1, label: 'Improvement Untracked', description: 'Documentation quality has improved. The downstream teams that could benefit from it — coding, CDI, compliance — haven\'t been formally engaged yet.' },
       { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
@@ -1575,14 +1575,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-domain-headline">
           {config.headline}
         </h1>
-        {config.subheadline ? (
-          <p className="text-lg text-black/80 font-medium max-w-[560px] mx-auto mb-2" data-testid="text-domain-subheadline">
+        {config.subheadline && (
+          <p className="text-lg sm:text-xl text-[#333333] max-w-[480px] mx-auto mb-8 text-center leading-snug" data-testid="text-domain-subheadline">
             {config.subheadline}
           </p>
-        ) : null}
-        <p className="text-base text-[#888888] max-w-[520px] mx-auto" data-testid="text-domain-reframe">
-          {config.reframe}
-        </p>
+        )}
       </motion.div>
 
       <motion.div

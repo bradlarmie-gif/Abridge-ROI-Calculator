@@ -1,0 +1,58 @@
+SCREEN4DOMAINS — REPLACE DOMAIN INTRO COPY
+
+  FILE: client/src/pages/switch/ambient/Screen4Domains.tsx
+
+  ─── STEP 1: Replace the copy in the domain configs ───
+
+  Line 59 — replace the capacity subheadline value:
+    FROM: 'Every ambient deployment recovers time. The question is what your organization decided to do with it.'
+    TO:   'What happened to the recovered time?'
+
+  Line 60 — replace the capacity reframe value:
+    FROM: 'Time savings are ambient\'s most visible output...[full string]'
+    TO:   ''
+
+  Line 82 — replace the revenue subheadline value:
+    FROM: 'Documentation quality has changed. Whether that change is affecting reimbursement is a different question — one most organizations haven\'t formally answered yet.'
+    TO:   'Has better documentation shown up in reimbursement?'
+
+  Line 83 — replace the revenue reframe value:
+    FROM: 'Every encounter gets coded...[full string]'
+    TO:   ''
+
+  Line 105 — replace the workforce subheadline value:
+    FROM: 'Providers are experiencing meaningful relief from documentation burden. Whether that relief has been measured and connected to workforce strategy is a separate question.'
+    TO:   'Has reduced burden been connected to what turnover costs?'
+
+  Line 106 — replace the workforce reframe value:
+    FROM: 'After-hours time returned is where most organizations start...[full string]'
+    TO:   ''
+
+  Line 128 — replace the quality subheadline value:
+    FROM: 'Documentation quality has improved. The question is how far downstream that improvement has traveled — into coding, quality reporting, compliance, and the programs that depend on structured data.'
+    TO:   'How far has documentation quality traveled downstream?'
+
+  Line 129 — replace the quality reframe value:
+    FROM: 'Better notes are the starting point...[full string]'
+    TO:   ''
+
+  ─── STEP 2: Update the rendering — remove the reframe paragraph ───
+
+  Around line 1619–1625, find this block:
+    {config.subheadline ? (
+      <p className="text-lg text-black/80 font-medium max-w-[560px] mx-auto mb-2" data-testid="text-domain-subheadline">
+        {config.subheadline}
+      </p>
+    ) : null}
+    <p className="text-base text-[#888888] max-w-[520px] mx-auto" data-testid="text-domain-reframe">
+      {config.reframe}
+    </p>
+
+  Replace the entire block with:
+    {config.subheadline && (
+      <p className="text-lg sm:text-xl text-[#333333] max-w-[480px] mx-auto mb-8 text-center leading-snug" data-testid="text-domain-subheadline">
+        {config.subheadline}
+      </p>
+    )}
+
+  Delete the reframe <p> entirely. One line. That's all this section needs.
