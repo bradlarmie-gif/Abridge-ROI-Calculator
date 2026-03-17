@@ -1,0 +1,66 @@
+  BUG FIXES (these cause literal "u2013" / "u2019" text to appear in the PDF):
+
+  1. Line 90: change `const TOTAL_PAGES = 8;` to `const TOTAL_PAGES = 7;`
+
+  2. Find this JSX text (around line 499):
+     WHAT HASN\u2019T BEEN MEASURED
+     Replace with: WHAT HASN'T BEEN MEASURED
+
+  3. Find this JSX text (around line 502):
+     {fmt(unmeasuredLow)}\u2013{fmt(unmeasuredHigh)}
+     Replace with: {fmt(unmeasuredLow)}{"–"}{fmt(unmeasuredHigh)}
+
+  4. Find this JSX text block (around lines 528–530) — it also has a line break mid-sentence:
+     The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range \u2014 what organizations your size typically find when they analyze domains
+     they haven\u2019t measured yet. Not a projection for your organization.
+     Replace with a single unbroken line using actual characters:
+     The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range — what organizations your size typically find when they analyze domains they haven't
+  measured yet. Not a projection for your organization.
+
+  5. Find this JSX text (around line 844):
+     {fmt(benchLow)}\u2013{fmt(benchHigh)}
+     Replace with: {fmt(benchLow)}{"–"}{fmt(benchHigh)}
+
+  6. Find this JSX text (around line 906):
+     {fmt(benchLow)}\u2013{fmt(benchHigh)}
+     Replace with: {fmt(benchLow)}{"–"}{fmt(benchHigh)}
+
+  7. Find this JSX text (around line 909):
+     typical range at your scale \u00B7 not a projection
+     Replace with: typical range at your scale {"·"} not a projection
+
+  8. Find this broken template literal (around lines 860–861) — it wraps across two source lines:
+     `At your scale, ${name} has been generating approximately ${fmt(benchLow)}\u2013${fmt(benchHigh)} per year for ${tenureDesc}. That\u2019s approximately
+  ${fmt(costLow)}\u2013${fmt(costHigh)} in value over 18 months that hasn\u2019t been formally measured. The first step is measuring it \u2014 which takes weeks, not quarters.`
+     Join it to a single line:
+     `At your scale, ${name} has been generating approximately ${fmt(benchLow)}–${fmt(benchHigh)} per year for ${tenureDesc}. That's approximately ${fmt(costLow)}–${fmt(costHigh)} in value over 18 months
+  that hasn't been formally measured. The first step is measuring it — which takes weeks, not quarters.`
+
+  9. Find this broken template literal (around lines 862–863):
+     `At your scale, ${name} has been generating approximately ${fmt(benchLow)}\u2013${fmt(benchHigh)} per year for 2+ years. That\u2019s approximately ${fmt(costLow)}\u2013${fmt(costHigh)}
+  in cumulative value that has existed, at minimum, without being formally counted.`
+     Join it to a single line:
+     `At your scale, ${name} has been generating approximately ${fmt(benchLow)}–${fmt(benchHigh)} per year for 2+ years. That's approximately ${fmt(costLow)}–${fmt(costHigh)} in cumulative value that has
+  existed, at minimum, without being formally counted.`
+
+  ---
+
+  PREMIUM DESIGN UPGRADES:
+
+  10. Increase the global body font size. Find the `body:` style definition in the StyleSheet.create block and change fontSize from 10 to 11. Also change `bodyMuted` fontSize from 9.5 to 10.5.
+
+  11. On the domain pages, the benchmark range number in the beige box (around line 843) is too small. Find:
+      fontSize: 18, fontWeight: 800, color: "#555555"  (the one right above the bench.desc text)
+      Change fontSize from 18 to 26.
+
+  12. On the strategic profile page (page 2), the "WHAT THE MATH SHOWS" tile shows the confirmed value. Find:
+      fontSize: 28, fontWeight: 800, color: "#EA2C00"  (the measuredTotal number)
+      Change fontSize from 28 to 36.
+
+  13. On the strategic profile page, the "WHAT HASN'T BEEN MEASURED" tile shows the unmeasured range. Find:
+      fontSize: 22, fontWeight: 800, color: "#555555"  (the unmeasured range number, right before "per year · benchmark range")
+      Change fontSize from 22 to 28.
+
+  14. In the styles block, find `redRule: { height: 2 ... }` and change height from 2 to 3. This is a small accent line — it should have more presence.
+
+  15. In the styles block, find `divider: { height: 1 ... }` and change to height: 1 (keep) but increase `marginVertical` from 14 to 18 for more breathing room between sections.

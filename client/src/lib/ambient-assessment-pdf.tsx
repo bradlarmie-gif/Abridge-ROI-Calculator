@@ -354,17 +354,17 @@ const s = StyleSheet.create({
   headline: { fontSize: 26, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.15, textTransform: "uppercase", marginBottom: 14 },
   headlineDark: { fontSize: 28, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.15, marginBottom: 12 },
   subhead: { fontSize: 13, fontWeight: 700, color: "#1A1A1A", marginBottom: 6 },
-  body: { fontSize: 10, fontWeight: 400, color: "#555555", lineHeight: 1.65, marginBottom: 10 },
-  bodyDark: { fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 },
-  bodyMuted: { fontSize: 9.5, fontWeight: 400, color: "#888888", lineHeight: 1.6 },
+  body: { fontSize: 11, fontWeight: 400, color: "#555555", lineHeight: 1.65, marginBottom: 10 },
+  bodyDark: { fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 },
+  bodyMuted: { fontSize: 10.5, fontWeight: 400, color: "#888888", lineHeight: 1.6 },
   italic: { fontSize: 9, fontWeight: 400, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, fontStyle: "italic" },
   disclaimer: { fontSize: 8, color: "#999999", lineHeight: 1.5 },
   bigNum: { fontSize: 48, fontWeight: 800, color: "#EA2C00", lineHeight: 1 },
   bigNumDark: { fontSize: 40, fontWeight: 800, color: "#FFFFFF", lineHeight: 1 },
   bigNumGray: { fontSize: 32, fontWeight: 800, color: "rgba(255,255,255,0.3)", lineHeight: 1 },
   medNum: { fontSize: 22, fontWeight: 800, color: "#EA2C00", lineHeight: 1 },
-  redRule: { height: 2, backgroundColor: "#EA2C00", width: 48, marginBottom: 14 },
-  divider: { height: 1, backgroundColor: "#E5E0D9", marginVertical: 14 },
+  redRule: { height: 3, backgroundColor: "#EA2C00", width: 48, marginBottom: 14 },
+  divider: { height: 1, backgroundColor: "#E5E0D9", marginVertical: 18 },
   darkDivider: { height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginVertical: 12 },
   redAccentBar: { width: 3, backgroundColor: "#EA2C00", marginRight: 14, borderRadius: 2 },
   tile: { backgroundColor: "#FFFFFF", borderRadius: 4, padding: 16, borderWidth: 1, borderColor: "#E5E0D9" },
@@ -490,7 +490,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
           </Text>
           {measuredTotal > 0 ? (
             <>
-              <Text style={{ fontSize: 28, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 }}>
+              <Text style={{ fontSize: 36, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 }}>
                 {fmt(measuredTotal)}
               </Text>
               <Text style={{ fontSize: 8.5, color: "#888888" }}>per year \u00B7 from measured domains</Text>
@@ -510,10 +510,10 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
         {unmeasuredLow > 0 && (
           <View style={{ flex: 1, backgroundColor: "#F5F0EB", borderRadius: 4, padding: 16, borderWidth: 1, borderColor: "#E5E0D9" }}>
             <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-              WHAT HASN\u2019T BEEN MEASURED
+              WHAT HASN'T BEEN MEASURED
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: 800, color: "#555555", lineHeight: 1, marginBottom: 4 }}>
-              {fmt(unmeasuredLow)}\u2013{fmt(unmeasuredHigh)}
+            <Text style={{ fontSize: 28, fontWeight: 800, color: "#555555", lineHeight: 1, marginBottom: 4 }}>
+              {fmt(unmeasuredLow)}{"–"}{fmt(unmeasuredHigh)}
             </Text>
             <Text style={{ fontSize: 8.5, color: "#888888" }}>per year \u00B7 benchmark range</Text>
           </View>
@@ -540,8 +540,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
 
       {unmeasuredLow > 0 && (
         <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.6, fontStyle: "italic" }}>
-          The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range \u2014 what organizations your size typically find when they analyze domains
-they haven\u2019t measured yet. Not a projection for your organization.
+          The first number is what the math shows based on your data and stated assumptions. The second is a benchmark range — what organizations your size typically find when they analyze domains they haven't measured yet. Not a projection for your organization.
         </Text>
       )}
 
@@ -860,8 +859,8 @@ function DomainPage({
           {isUnmeasured && benchLow > 0 && (
             <View style={[s.beigeBox, { marginBottom: 10 }]}>
               <Text style={s.eyebrowGray}>BENCHMARK RANGE</Text>
-              <Text style={{ fontSize: 18, fontWeight: 800, color: "#555555", lineHeight: 1.1, marginBottom: 4 }}>
-                {fmt(benchLow)}\u2013{fmt(benchHigh)}
+              <Text style={{ fontSize: 26, fontWeight: 800, color: "#555555", lineHeight: 1.1, marginBottom: 4 }}>
+                {fmt(benchLow)}{"–"}{fmt(benchHigh)}
               </Text>
               <Text style={{ fontSize: 8.5, color: "#888888" }}>{bench.desc}</Text>
               <Text style={{ fontSize: 8, color: "#AAAAAA", marginTop: 4, fontStyle: "italic" }}>
@@ -877,10 +876,8 @@ function DomainPage({
               </Text>
               <Text style={{ fontSize: 10, fontWeight: 400, color: "#555555", lineHeight: 1.6 }}>
                 {tenure === "12-24"
-                  ? `At your scale, ${name} has been generating approximately ${fmt(benchLow)}\u2013${fmt(benchHigh)} per year for ${tenureDesc}. That\u2019s approximately
-${fmt(costLow)}\u2013${fmt(costHigh)} in value over 18 months that hasn\u2019t been formally measured. The first step is measuring it \u2014 which takes weeks, not quarters.`
-                  : `At your scale, ${name} has been generating approximately ${fmt(benchLow)}\u2013${fmt(benchHigh)} per year for 2+ years. That\u2019s approximately ${fmt(costLow)}\u2013${fmt(costHigh)}
-in cumulative value that has existed, at minimum, without being formally counted.`
+                  ? `At your scale, ${name} has been generating approximately ${fmt(benchLow)}–${fmt(benchHigh)} per year for ${tenureDesc}. That's approximately ${fmt(costLow)}–${fmt(costHigh)} in value over 18 months that hasn't been formally measured. The first step is measuring it — which takes weeks, not quarters.`
+                  : `At your scale, ${name} has been generating approximately ${fmt(benchLow)}–${fmt(benchHigh)} per year for 2+ years. That's approximately ${fmt(costLow)}–${fmt(costHigh)} in cumulative value that has existed, at minimum, without being formally counted.`
                 }
               </Text>
               <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginTop: 5, fontStyle: "italic" }}>
@@ -923,10 +920,10 @@ in cumulative value that has existed, at minimum, without being formally counted
                 BENCHMARK RANGE
               </Text>
               <Text style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.4)", lineHeight: 1, marginBottom: 3 }}>
-                {fmt(benchLow)}\u2013{fmt(benchHigh)}
+                {fmt(benchLow)}{"–"}{fmt(benchHigh)}
               </Text>
               <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.25)", marginBottom: 12 }}>
-                typical range at your scale \u00B7 not a projection
+                typical range at your scale {"·"} not a projection
               </Text>
             </>
           ) : (
