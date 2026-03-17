@@ -1,0 +1,46 @@
+Make the following exact changes to two files. Do not change anything else.
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  FILE 1: client/src/pages/switch/ambient/domainCalculations.ts
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CHANGE 1 — Around line 303, find:
+          value: highEstimate,
+          hasValue: true,
+          headlineMetric: `${formatDollar(lowEstimate)}–${formatDollar(highEstimate)} directional estimate`,
+
+  Replace with:
+          value: Math.round((lowEstimate + highEstimate) / 2),
+          hasValue: true,
+          headlineMetric: `${formatDollar(lowEstimate)}–${formatDollar(highEstimate)} directional estimate`,
+
+  CHANGE 2 — Around line 626, find:
+      const docBurdenShare = (inputs.docBurdenShare as number) || 0;
+
+  Replace with:
+      const rawDocBurdenShare = (inputs.docBurdenShare as number) || 0;
+      const docBurdenShare = Math.min(rawDocBurdenShare, 40);
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  FILE 2: client/src/lib/ambient-assessment-pdf.tsx
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CHANGE 3 — Around line 321, find this template literal that wraps across three source lines:
+      low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider
+  satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common
+  starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+
+  Join it into a single line:
+      low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider
+  satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common
+  starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+
+  CHANGE 4 — Around line 324, find this template literal that wraps across three source lines:
+      mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to
+   accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not
+  starting from scratch.`,
+
+  Join it into a single line:
+      mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to
+   accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not
+  starting from scratch.`,

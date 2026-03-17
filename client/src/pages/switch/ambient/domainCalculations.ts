@@ -300,7 +300,7 @@ export function computeRevenueFeedback(
 
       return {
         label: 'Estimated Impact',
-        value: highEstimate,
+        value: Math.round((lowEstimate + highEstimate) / 2),
         hasValue: true,
         headlineMetric: `${formatDollar(lowEstimate)}–${formatDollar(highEstimate)} directional estimate`,
         context,
@@ -623,7 +623,8 @@ export function computeWorkforceFeedback(
     const turnoverRate = inputs.turnoverRate as number | undefined;
     const replacementCostRaw = inputs.replacementCost as number | undefined;
     const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
-    const docBurdenShare = (inputs.docBurdenShare as number) || 0;
+    const rawDocBurdenShare = (inputs.docBurdenShare as number) || 0;
+    const docBurdenShare = Math.min(rawDocBurdenShare, 40);
     if (!turnoverRate || turnoverRate <= 0) {
       return {
         label: 'Estimated Impact',
