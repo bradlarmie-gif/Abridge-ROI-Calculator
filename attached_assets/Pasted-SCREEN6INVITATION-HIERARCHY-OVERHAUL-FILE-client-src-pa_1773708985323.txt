@@ -1,0 +1,223 @@
+SCREEN6INVITATION — HIERARCHY OVERHAUL
+
+  FILE: client/src/pages/switch/ambient/Screen6Invitation.tsx
+
+  ─── CHANGE 1: Dark banner — give the confirmed number clear dominance ───
+
+  Replace the entire three-column flex layout inside the dark banner
+  (the div with className containing "flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16") with:
+
+    <div className="max-w-[680px] mx-auto">
+      {/* The one number that matters most */}
+      <div className="text-center mb-8">
+        {hasMeasuredDomains ? (
+          <>
+            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
+              Confirmed Annually
+            </p>
+            <p className="text-[72px] sm:text-[88px] md:text-[104px] font-bold text-[#EA2C00] leading-none tracking-tight" data-testid="hero-total-value">
+              {formatDollar(displayedTotal)}
+            </p>
+            <p className="text-base text-white/25 mt-3">per year · from your inputs</p>
+          </>
+        ) : (
+          <>
+            <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
+              No Domains Measured Yet
+            </p>
+            <p className="text-[40px] font-bold text-white/30 leading-none">
+              —
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Score + unmeasured as secondary context */}
+      <div className="flex items-center justify-center gap-8 pt-6 border-t border-white/8">
+        <div className="text-center">
+          <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1.5">
+            Maturity Score
+          </p>
+          <p className="font-bold text-2xl text-white leading-none" data-testid="hero-score-value">
+            {totalScore}
+            <span className="text-sm font-normal text-white/25 ml-1">/100</span>
+          </p>
+          <p className="text-xs font-semibold text-[#EA2C00] mt-1 uppercase tracking-wide">
+            {scoreBandLabel}
+          </p>
+        </div>
+
+        {unmeasuredLow > 0 && (
+          <>
+            <div className="w-px h-10 bg-white/8" />
+            <div className="text-center">
+              <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1.5">
+                Not Yet Measured
+              </p>
+              <p className="font-bold text-2xl text-white/35 leading-none">
+                {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+              </p>
+              <p className="text-xs text-white/20 mt-1">benchmark range</p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+
+  The hierarchy is now: $480K (massive, orange) → score + band + unmeasured (small, secondary, below a divider).
+  The eye lands on the confirmed number and nothing else competes.
+
+  ─── CHANGE 2: Domain cards — cut currentState, show only AT FULL CAPTURE, 2×2 grid ───
+
+  The currentState description repeats what the exec just saw on Screen5Gap.
+  Cut it. Show only the destination.
+
+  Replace the DOMAIN_ORDER.map inside the benchmark card with a 2×2 grid:
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {DOMAIN_ORDER.map((domain) => {
+        const d = domainData[domain];
+        const level = (d?.activationLevel || 1) as ActivationLevel;
+        const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
+        const isAtCeiling = level === 4;
+        return (
+          <div key={domain} className="border border-[#E5E7EB] rounded-lg p-4 bg-white/60" data-testid={`benchmark-${domain}`}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+                {DOMAIN_LABELS[domain as Domain]}
+              </p>
+              <span className="text-[10px] text-[#9CA3AF] border border-[#E5E7EB] rounded-full px-2 py-0.5">
+                Level {level} of 4
+              </span>
+            </div>
+            {isAtCeiling ? (
+              <p className="text-sm text-[#444444] leading-relaxed italic">
+                {contrast.benchmarkPicture}
+              </p>
+            ) : (
+              <>
+                <p className="text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1.5">
+                  At full capture
+                </p>
+                <p className="text-sm text-black font-medium leading-relaxed">
+                  {contrast.benchmarkPicture}
+                </p>
+              </>
+            )}
+          </div>
+        );
+      })}
+    </div>
+
+  Also update the section header copy — change:
+    "Each domain has a picture of what full capture looks like. Here's where your organization stands — and what becomes visible when you get there."
+  To:
+    "What becomes visible when each domain reaches full capture."
+
+  ─── CHANGE 3: Elevate the CTA headline — this is the close ───
+
+  The opening line of invitationCopy is the single most important sentence.
+  It's currently at text-base font-semibold. That's a supporting paragraph size.
+
+  Replace:
+    <p className="text-base font-semibold text-white leading-snug mb-4" data-testid="text-invitation-opening">
+      {invitationCopy.opening}
+    </p>
+
+  With:
+    <p className="text-xl sm:text-2xl font-bold text-white leading-snug mb-5" data-testid="text-invitation-opening">
+      {invitationCopy.opening}
+    </p>
+
+  ─── CHANGE 4: Fix "Download Your Assessment" — invisible button ───
+
+  Replace:
+    <button
+      onClick={openExportModal}
+      className="text-sm text-white/40 underline underline-offset-2 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
+      data-testid="button-export"
+    >
+      Download Your Assessment
+    </button>
+
+  With:
+    <button
+      onClick={openExportModal}
+      className="flex items-center gap-2 text-sm font-medium text-white/60 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent
+  cursor-pointer"
+      data-testid="button-export"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0
+  1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Your Assessment
+    </button>
+
+  ─── CHANGE 5: Simplify the sidebar — cut the receipt, keep the essentials ───
+
+  Replace the entire contents of the panel-summary div with:
+
+    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-6">
+      Your Assessment
+    </p>
+
+    {/* Score */}
+    <div className="mb-5">
+      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Maturity Score</p>
+      <div className="flex items-baseline gap-1.5">
+        <span className="font-bold text-[42px] leading-none text-white" data-testid="panel-score">{totalScore}</span>
+        <span className="text-white/25 text-sm">/100</span>
+      </div>
+      <p className="text-xs font-semibold text-[#EA2C00] mt-1.5 uppercase tracking-wide">{scoreBandLabel}</p>
+    </div>
+
+    <div className="h-px bg-white/8 mb-5" />
+
+    {/* Confirmed */}
+    <div className="mb-4">
+      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annually</p>
+      <p className="font-bold text-2xl text-[#EA2C00] leading-none" data-testid="panel-total-value">
+        {formatDollar(displayedTotal > 0 ? displayedTotal : dt)}
+      </p>
+      <p className="text-[10px] text-white/25 mt-1">from your inputs</p>
+    </div>
+
+    {unmeasuredLow > 0 && (
+      <div className="mb-4">
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet Measured</p>
+        <p className="font-bold text-lg text-white/45 leading-none">
+          {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+        </p>
+        <p className="text-[10px] text-white/25 mt-1">benchmark range</p>
+      </div>
+    )}
+
+    <div className="h-px bg-white/8 mb-5" />
+
+    {/* Org inputs — compact, no section header */}
+    <div className="space-y-2 mb-5">
+      <div className="flex justify-between text-xs">
+        <span className="text-white/30">Providers</span>
+        <span className="text-white/60 font-medium">{providers}</span>
+      </div>
+      <div className="flex justify-between text-xs">
+        <span className="text-white/30">Encounters / yr</span>
+        <span className="text-white/60 font-medium">{annualEncounters.toLocaleString()}</span>
+      </div>
+      {inputs.deploymentTenure && (
+        <div className="flex justify-between text-xs">
+          <span className="text-white/30">In deployment</span>
+          <span className="text-white/60 font-medium">{tenureLabel(inputs.deploymentTenure)}</span>
+        </div>
+      )}
+    </div>
+
+    <div className="h-px bg-white/8 mb-4" />
+
+    <p className="text-[10px] text-white/25 leading-relaxed italic">
+      Completed {assessmentDate}. Estimates directional. Individual results vary.
+    </p>
+
+  Removed: domain scores as bare numbers (4/12/4/4) — they look like dev debug output
+  Removed: "DOMAIN SCORES" and "YOUR INPUTS" section headers — visual clutter
+  Removed: Utilization row — least interesting input to show at this point
+

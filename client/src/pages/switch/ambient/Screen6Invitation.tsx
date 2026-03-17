@@ -691,46 +691,59 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             Your Ambient AI Assessment
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-16 mb-6">
-            <div>
-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Maturity Score</p>
-              <p className="text-[40px] sm:text-[56px] md:text-[64px] font-bold text-white leading-none" data-testid="hero-score-value">
-                {totalScore}
-              </p>
-              <p className="text-lg text-white/30 font-normal mt-1">/ 100</p>
-              <p className="text-sm font-semibold text-[#EA2C00] mt-2 uppercase tracking-wide">{scoreBandLabel}</p>
-            </div>
-
-            <div className="hidden sm:block w-px h-24 bg-white/10" />
-
-            <div>
-              <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">What the Math Shows</p>
+          <div className="max-w-[680px] mx-auto">
+            <div className="text-center mb-8">
               {hasMeasuredDomains ? (
                 <>
-                  <p className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-[#EA2C00] leading-none" data-testid="hero-total-value">
+                  <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
+                    Confirmed Annually
+                  </p>
+                  <p className="text-[72px] sm:text-[88px] md:text-[104px] font-bold text-[#EA2C00] leading-none tracking-tight" data-testid="hero-total-value">
                     {formatDollar(displayedTotal)}
                   </p>
-                  <p className="text-lg text-white/30 font-normal mt-1">annually</p>
+                  <p className="text-base text-white/25 mt-3">per year · from your inputs</p>
                 </>
               ) : (
-                <p className="text-[28px] font-bold text-white/30 leading-none" data-testid="hero-total-value">
-                  Not yet measured
-                </p>
+                <>
+                  <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
+                    No Domains Measured Yet
+                  </p>
+                  <p className="text-[40px] font-bold text-white/30 leading-none">
+                    —
+                  </p>
+                </>
               )}
             </div>
 
-            {unmeasuredLow > 0 && (
-              <>
-                <div className="hidden sm:block w-px h-24 bg-white/10" />
-                <div>
-                  <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Not Yet Measured</p>
-                  <p className="text-[22px] sm:text-[32px] md:text-[38px] font-bold text-white/30 leading-none" data-testid="hero-unmeasured-range">
-                    {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
-                  </p>
-                  <p className="text-lg text-white/30 font-normal mt-1">per year · benchmark range</p>
-                </div>
-              </>
-            )}
+            <div className="flex items-center justify-center gap-8 pt-6 border-t border-white/[0.08]">
+              <div className="text-center">
+                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1.5">
+                  Maturity Score
+                </p>
+                <p className="font-bold text-2xl text-white leading-none" data-testid="hero-score-value">
+                  {totalScore}
+                  <span className="text-sm font-normal text-white/25 ml-1">/100</span>
+                </p>
+                <p className="text-xs font-semibold text-[#EA2C00] mt-1 uppercase tracking-wide">
+                  {scoreBandLabel}
+                </p>
+              </div>
+
+              {unmeasuredLow > 0 && (
+                <>
+                  <div className="w-px h-10 bg-white/[0.08]" />
+                  <div className="text-center">
+                    <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1.5">
+                      Not Yet Measured
+                    </p>
+                    <p className="font-bold text-2xl text-white/35 leading-none">
+                      {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+                    </p>
+                    <p className="text-xs text-white/20 mt-1">benchmark range</p>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -749,55 +762,43 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               </p>
               <div className="h-px bg-[#E5E7EB] mb-2" />
               <p className="text-sm text-[#888888] leading-relaxed mb-6">
-                Each domain has a picture of what full capture looks like. Here's where your organization stands — and what becomes visible when you get there.
+                What becomes visible when each domain reaches full capture.
               </p>
 
-              {DOMAIN_ORDER.map((domain) => {
-                const d = domainData[domain];
-                const level = (d?.activationLevel || 1) as ActivationLevel;
-                const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
-                const isAtCeiling = level === 4;
-                return (
-                  <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 mb-3 bg-white/60" data-testid={`benchmark-${domain}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1px]">
-                        {DOMAIN_LABELS[domain as Domain]}
-                      </p>
-                      <span className={`text-[11px] font-medium rounded-full px-2.5 py-0.5 ${level === 1 ? 'bg-[#E5E7EB] text-[#888888]' : 'bg-[#F5F0EB] text-[#888888]'}`}>
-                        Level {level} of 4
-                      </span>
-                    </div>
-                    <p className="text-sm text-[#444444] leading-relaxed mb-3">
-                      {contrast.currentState}
-                      {level === 1 && tenureIsLong(inputs.deploymentTenure || '') && (
-                        <span className="block mt-1.5 text-sm text-[#C8372D] italic">
-                          {inputs.deploymentTenure === '12-24'
-                            ? ` After 1–2 years in deployment, ${DOMAIN_LABELS[domain as Domain]} is still in the unmeasured state. Organizations your size that have moved through this typically look like the picture on the right.`
-                            : ` After 2+ years in deployment, ${DOMAIN_LABELS[domain as Domain]} hasn't been formally measured. The organization on the right isn't hypothetical — it's what's possible when the measurement program is built.`
-                          }
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {DOMAIN_ORDER.map((domain) => {
+                  const d = domainData[domain];
+                  const level = (d?.activationLevel || 1) as ActivationLevel;
+                  const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
+                  const isAtCeiling = level === 4;
+                  return (
+                    <div key={domain} className="border border-[#E5E7EB] rounded-lg p-4 bg-white/60" data-testid={`benchmark-${domain}`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+                          {DOMAIN_LABELS[domain as Domain]}
+                        </p>
+                        <span className="text-[10px] text-[#9CA3AF] border border-[#E5E7EB] rounded-full px-2 py-0.5">
+                          Level {level} of 4
                         </span>
-                      )}
-                    </p>
-                    {!isAtCeiling && (
-                      <div className="border-l-2 border-[#1A1A1A]/20 pl-3">
-                        <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1px] mb-1">
-                          At full capture
-                        </p>
-                        <p className="text-sm text-black font-medium leading-relaxed">
-                          {contrast.benchmarkPicture}
-                        </p>
                       </div>
-                    )}
-                    {isAtCeiling && (
-                      <div className="border-l-2 border-[#EA2C00] pl-3">
+                      {isAtCeiling ? (
                         <p className="text-sm text-[#444444] leading-relaxed italic">
                           {contrast.benchmarkPicture}
                         </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      ) : (
+                        <>
+                          <p className="text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1.5">
+                            At full capture
+                          </p>
+                          <p className="text-sm text-black font-medium leading-relaxed">
+                            {contrast.benchmarkPicture}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
 
@@ -835,7 +836,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               </p>
               <div className="h-px bg-white/10 mb-6" />
 
-              <p className="text-base font-semibold text-white leading-snug mb-4" data-testid="text-invitation-opening">
+              <p className="text-xl sm:text-2xl font-bold text-white leading-snug mb-5" data-testid="text-invitation-opening">
                 {invitationCopy.opening}
               </p>
               <p className="text-sm text-white/60 leading-relaxed mb-4" data-testid="text-invitation-body">
@@ -862,9 +863,10 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 </p>
                 <button
                   onClick={openExportModal}
-                  className="text-sm text-white/60 border border-white/20 hover:border-white/40 hover:text-white/80 transition-all bg-transparent cursor-pointer rounded-full px-5 py-2"
+                  className="flex items-center gap-2 text-sm font-medium text-white/60 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent cursor-pointer"
                   data-testid="button-export"
                 >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Download Your Assessment
                 </button>
               </div>
@@ -885,79 +887,62 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-summary">
 
-            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[2px] mb-4">
-              Assessment Summary
+            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-6">
+              Your Assessment
             </p>
 
-            <div className="flex items-end gap-3 mb-1">
-              <span className="text-white font-bold text-[36px] sm:text-[48px] leading-none" data-testid="panel-score">
-                {totalScore}
-              </span>
-              <span className="text-white/30 text-lg mb-1">/ 100</span>
+            <div className="mb-5">
+              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Maturity Score</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-[42px] leading-none text-white" data-testid="panel-score">{totalScore}</span>
+                <span className="text-white/25 text-sm">/100</span>
+              </div>
+              <p className="text-xs font-semibold text-[#EA2C00] mt-1.5 uppercase tracking-wide">{scoreBandLabel}</p>
             </div>
-            <p className="text-xs text-white/40 mb-5">Ambient Assessment Score</p>
 
-            <div className="h-px bg-white/10 my-4" />
+            <div className="h-px bg-white/[0.08] mb-5" />
 
-            <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Confirmed Annual Value</p>
-            <p className="font-bold text-2xl text-[#EA2C00] leading-none mb-1" data-testid="panel-total-value">{formatDollar(displayedTotal > 0 ? displayedTotal : dt)}</p>
-            <p className="text-xs text-white/30 mb-5">per year · from your data</p>
+            <div className="mb-4">
+              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annually</p>
+              <p className="font-bold text-2xl text-[#EA2C00] leading-none" data-testid="panel-total-value">
+                {formatDollar(displayedTotal > 0 ? displayedTotal : dt)}
+              </p>
+              <p className="text-[10px] text-white/25 mt-1">from your inputs</p>
+            </div>
 
             {unmeasuredLow > 0 && (
-              <>
-                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Not Yet Measured</p>
-                <p className="font-bold text-lg text-white/60 leading-none mb-1">{formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}</p>
-                <p className="text-xs text-white/30 mb-5">per year · benchmark range</p>
-              </>
+              <div className="mb-4">
+                <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet Measured</p>
+                <p className="font-bold text-lg text-white/45 leading-none">
+                  {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+                </p>
+                <p className="text-[10px] text-white/25 mt-1">benchmark range</p>
+              </div>
             )}
 
-            <div className="h-px bg-white/10 my-5" />
+            <div className="h-px bg-white/[0.08] mb-5" />
 
-            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Domain Scores
-            </p>
-            <div className="space-y-2">
-              {DOMAIN_ORDER.map((domain) => (
-                <div key={domain} className="flex items-center justify-between text-sm">
-                  <span className="text-white/60">{DOMAIN_LABELS[domain]}</span>
-                  <span className="text-white font-semibold" data-testid={`panel-domain-score-${domain}`}>
-                    {domainData[domain]?.score || 0}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-              Your Inputs
-            </p>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/50">Providers</span>
-                <span className="text-white/80 font-medium">{providers}</span>
+            <div className="space-y-2 mb-5">
+              <div className="flex justify-between text-xs">
+                <span className="text-white/30">Providers</span>
+                <span className="text-white/60 font-medium">{providers}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/50">Encounters / yr</span>
-                <span className="text-white/80 font-medium">{annualEncounters.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/50">Utilization</span>
-                <span className="text-white/80 font-medium">{utilization}%</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-white/30">Encounters / yr</span>
+                <span className="text-white/60 font-medium">{annualEncounters.toLocaleString()}</span>
               </div>
               {inputs.deploymentTenure && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/50">In deployment</span>
-                  <span className="text-white/80 font-medium text-xs">{tenureLabel(inputs.deploymentTenure)}</span>
+                <div className="flex justify-between text-xs">
+                  <span className="text-white/30">In deployment</span>
+                  <span className="text-white/60 font-medium">{tenureLabel(inputs.deploymentTenure)}</span>
                 </div>
               )}
             </div>
 
-            <div className="h-px bg-white/10 my-5" />
+            <div className="h-px bg-white/[0.08] mb-4" />
 
-            <p className="text-xs text-white/40 mb-2">Completed {assessmentDate}</p>
-            <p className="text-xs text-white/40 leading-relaxed italic">
-              Based on organizational self-assessment. Estimates are directional. Individual results vary.
+            <p className="text-[10px] text-white/25 leading-relaxed italic">
+              Completed {assessmentDate}. Estimates directional. Individual results vary.
             </p>
 
           </div>
