@@ -526,37 +526,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               ))}
             </div>
           </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Average E&M complexity level distribution
-            </label>
-            <div className="flex flex-col gap-2.5">
-              {[
-                { id: 'mostly_l3', label: 'Mostly Level 3' },
-                { id: 'mix_l3_l4', label: 'Mix of Level 3–4' },
-                { id: 'mostly_l4_l5', label: 'Mostly Level 4–5' },
-                { id: 'unsure', label: 'Unsure' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('emComplexity', opt.id)}
-                  className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    emComplexity === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-em-complexity-${opt.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${emComplexity === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                    <span>{opt.label}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       );
     }
