@@ -372,8 +372,8 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                             {ACTIVATION_LABELS[domain][level]}
                           </p>
                         </div>
-                        <div className="hidden sm:block w-[45%]" style={{ opacity: 0.7 }}>
-                          <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={3} />
+                        <div className="hidden sm:block w-[45%]">
+                          <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={5} />
                         </div>
                         <p className="font-bold text-sm text-black w-[60%] sm:w-[20%] text-right" data-testid={`domain-score-${domain}`}>
                           {domainScore} / 25
