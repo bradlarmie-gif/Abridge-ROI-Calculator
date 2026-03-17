@@ -1,0 +1,168 @@
+ SCREEN5GAP — CHART CURVE + REMAINING FIXES                
+
+  FILE: client/src/pages/switch/ambient/Screen5Gap.tsx
+
+  ─── FIX 1: Chart — curved line with exponential-feeling progression ───
+
+  Replace the chartData computation entirely:
+
+    const chartData = useMemo(() => {
+      const g = strategicAnnual - totalMeasured;
+      if (g <= 0) return [];
+      // Exponential-ish curve: slow start, accelerates in years 2-3
+      return [
+        { month: 0,  gap: 0 },
+        { month: 4,  gap: Math.round(g * 0.08) },
+        { month: 8,  gap: Math.round(g * 0.22) },
+        { month: 12, gap: Math.round(g * 0.42) },
+        { month: 16, gap: Math.round(g * 0.68) },
+        { month: 20, gap: Math.round(g * 1.02) },
+        { month: 24, gap: Math.round(g * 1.45) },
+        { month: 28, gap: Math.round(g * 1.98) },
+        { month: 32, gap: Math.round(g * 2.52) },
+        { month: 36, gap: Math.round(g * 3.1) },
+      ];
+    }, [strategicAnnual, totalMeasured]);
+
+  The progression starts slow (months 0-12) and accelerates (months 24-36),
+  modeling compounding opportunity cost. With 10 points and type="monotone"
+  Recharts will draw a genuine S-curve, not a straight line.
+
+  Also update gap36mo:
+    const gap36mo = useMemo(() => {
+      if (!chartData.length) return 0;
+      return chartData[chartData.length - 1].gap;
+    }, [chartData]);
+
+  On the Line component, confirm type="monotone" is set:
+    <Line type="monotone" dataKey="gap" stroke="#EA2C00" strokeWidth={2.5} ... />
+
+  Change strokeWidth from 3 to 2.5 — slightly finer line reads more premium
+  on a dense chart with 10 points.
+
+  Also update the XAxis tickFormatter and ticks so not every point shows:
+    <XAxis
+      dataKey="month"
+      ticks={[0, 12, 24, 36]}
+      tickFormatter={(v) => v === 0 ? 'Now' : `Mo ${v}`}
+      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+    />
+
+  Show only 4 tick labels (Now / Mo 12 / Mo 24 / Mo 36) even though there
+  are 10 data points. The intermediate points shape the curve without
+  cluttering the axis.
+
+  ─── FIX 2: Rename "Cost of Inaction" ───
+
+  Replace:
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+      Cost of Inaction
+    </p>
+    <p className="text-sm text-[#888888] mb-6">
+      Value accumulating unmeasured each year you don't act — at your scale.
+    </p>
+
+  With:
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+      36-Month Value Trajectory
+    </p>
+    <p className="text-sm text-[#888888] mb-6">
+      What measurement compounds over time — at your scale.
+    </p>
+
+  ─── FIX 3: Sidebar — make Confirmed Today the hero ───
+
+  The sidebar currently shows "FULL POTENTIAL $655K" as the giant number
+  with "CONFIRMED TODAY $480K" below it. Swap the hierarchy so Confirmed
+  Today is the 52px hero and Full Potential drops to a secondary line.
+
+  Replace the entire contents of the panel-gap-summary div with:
+
+    {/* Score badge at top */}
+    {(() => {
+      const totalScore = DOMAIN_ORDER.reduce((sum, d) => {
+        const lvl = domainLevels[d];
+        const scoreMap: Record<number, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
+        return sum + (scoreMap[lvl] ?? 0);
+      }, 0);
+      const band = totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture';
+      return (
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px]">Maturity Score</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white">{totalScore}</span>
+            <span className="text-[9px] font-semibold text-white/30 border border-white/15 rounded-full px-2 py-0.5 uppercase tracking-[1.5px]">{band}</span>
+          </div>
+        </div>
+      );
+    })()}
+
+    <div className="h-px bg-white/8 mb-6" />
+
+    {/* Confirmed Today — THE hero */}
+    <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">
+      Confirmed Today
+    </p>
+    {totalMeasured > 0 ? (
+      <p className="font-bold text-[52px] leading-none text-[#EA2C00] tracking-tight mb-1" data-testid="panel-confirmed-value">
+        {formatDollar(totalMeasured)}
+      </p>
+    ) : (
+      <p className="font-bold text-[52px] leading-none text-white/15 tracking-tight mb-1">—</p>
+    )}
+    <p className="text-[11px] text-white/25 mb-6">per year · from your inputs</p>
+
+    {unmeasuredLow > 0 && (
+      <>
+        <div className="h-px bg-white/8 mb-5" />
+        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-2">
+          Not Yet Measured
+        </p>
+        <p className="font-bold text-2xl text-white/50 leading-none tracking-tight mb-1" data-testid="panel-unmeasured-range">
+          {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+        </p>
+        <p className="text-[11px] text-white/25 mb-5">per year · benchmark range</p>
+      </>
+    )}
+
+    {!allAtLevel4 && (
+      <>
+        <div className="h-px bg-white/8 mb-5" />
+        <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">
+          Full Picture
+        </p>
+        <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">
+          {formatDollar(strategicAnnual)}
+        </p>
+        <p className="text-[11px] text-white/20 mb-5">confirmed + benchmark low</p>
+      </>
+    )}
+
+    {inputs.deploymentTenure && (
+      <>
+        <div className="h-px bg-white/8 mb-5" />
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-1">In Deployment</p>
+        <p className="text-sm font-medium text-white/55">{tenureLabel(inputs.deploymentTenure)}</p>
+      </>
+    )}
+
+    <div className="h-px bg-white/8 mt-6 mb-5" />
+
+    <p className="text-[11px] text-white/25 leading-relaxed italic">
+      The gap between confirmed and potential is the conversation ahead.
+    </p>
+
+  ─── FIX 4: Headline ───
+
+  Replace:
+    <h1 ...>Here's what that score means.</h1>
+    <p className="text-base text-[#888888]">What you're capturing — and what you haven't analyzed yet.</p>
+
+  With (drop the subheadline entirely):
+    <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
+      The full picture.
+    </h1>
+
+  ---
+  The curve fix (Fix 1) is the main thing. The 10-point exponential progression gives Recharts enough shape to draw a genuine S-curve — slow accumulation in year 1, acceleration in years 2-3. That's actually
+   the honest model: measurement gaps compound as the deployment matures and more value has been generating uncounted.

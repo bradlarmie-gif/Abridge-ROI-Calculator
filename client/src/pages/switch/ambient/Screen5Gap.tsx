@@ -294,15 +294,26 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   const annualGap = unmeasuredLow;
 
   const chartData = useMemo(() => {
+    const g = strategicAnnual - totalMeasured;
+    if (g <= 0) return [];
     return [
-      { month: 0, gap: 0 },
-      { month: 12, gap: Math.round(unmeasuredLow * 1) },
-      { month: 24, gap: Math.round(unmeasuredLow * 2) },
-      { month: 36, gap: Math.round(unmeasuredLow * 3) },
+      { month: 0,  gap: 0 },
+      { month: 4,  gap: Math.round(g * 0.08) },
+      { month: 8,  gap: Math.round(g * 0.22) },
+      { month: 12, gap: Math.round(g * 0.42) },
+      { month: 16, gap: Math.round(g * 0.68) },
+      { month: 20, gap: Math.round(g * 1.02) },
+      { month: 24, gap: Math.round(g * 1.45) },
+      { month: 28, gap: Math.round(g * 1.98) },
+      { month: 32, gap: Math.round(g * 2.52) },
+      { month: 36, gap: Math.round(g * 3.1) },
     ];
-  }, [unmeasuredLow]);
+  }, [strategicAnnual, totalMeasured]);
 
-  const gap36mo = chartData[chartData.length - 1].gap;
+  const gap36mo = useMemo(() => {
+    if (!chartData.length) return 0;
+    return chartData[chartData.length - 1].gap;
+  }, [chartData]);
 
   const measuredDomainsList = useMemo(() =>
     DOMAIN_ORDER.filter(d => domainLevels[d] >= 2)
@@ -381,11 +392,8 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          Here's what that score means.
+          The full picture.
         </h1>
-        <p className="text-base text-[#888888]">
-          What you're capturing — and what you haven't analyzed yet.
-        </p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -603,10 +611,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
               <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                  Cost of Inaction
+                  36-Month Value Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
-                  Value accumulating unmeasured each year you don't act — at your scale.
+                  What measurement compounds over time — at your scale.
                 </p>
                 <div className="h-[220px] sm:h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -614,8 +622,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                       <XAxis
                         dataKey="month"
-                        tickFormatter={(v) => `Mo ${v}`}
-                        tick={{ fontSize: 11, fill: '#888888' }}
+                        ticks={[0, 12, 24, 36]}
+                        tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
+                        tick={{ fontSize: 11, fill: '#9CA3AF' }}
                       />
                       <YAxis
                         tickFormatter={(v) => formatDollar(v)}
@@ -627,7 +636,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                         type="monotone"
                         dataKey="gap"
                         stroke="#EA2C00"
-                        strokeWidth={3}
+                        strokeWidth={2.5}
                         dot={{ fill: '#EA2C00', r: 5 }}
                         activeDot={{ r: 7 }}
                         name="Unmeasured value accumulating"
@@ -666,62 +675,76 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
-              Full Potential
-            </p>
-            <p className="text-xs text-white/30 leading-relaxed mb-5">
-              If every domain reached next-level maturity — low-end estimate.
-            </p>
+            {(() => {
+              const totalScore = DOMAIN_ORDER.reduce((sum, d) => {
+                const lvl = domainLevels[d];
+                const scoreMap: Record<number, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
+                return sum + (scoreMap[lvl] ?? 0);
+              }, 0);
+              const band = totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture';
+              return (
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px]">Maturity Score</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">{totalScore}</span>
+                    <span className="text-[9px] font-semibold text-white/30 border border-white/15 rounded-full px-2 py-0.5 uppercase tracking-[1.5px]">{band}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
-            {allAtLevel4 ? (
-              <p className="font-bold text-2xl text-white leading-none mb-1" data-testid="panel-hero-value">
-                Full value captured
+            <div className="h-px bg-white/[0.08] mb-6" />
+
+            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">
+              Confirmed Today
+            </p>
+            {totalMeasured > 0 ? (
+              <p className="font-bold text-[52px] leading-none text-[#EA2C00] tracking-tight mb-1" data-testid="panel-confirmed-value">
+                {formatDollar(totalMeasured)}
               </p>
             ) : (
-              <p className="font-bold text-[44px] sm:text-[52px] text-white leading-none mb-1" data-testid="panel-hero-value">
-                {formatDollar(strategicAnnual)}
-              </p>
+              <p className="font-bold text-[52px] leading-none text-white/15 tracking-tight mb-1">—</p>
             )}
-            <p className="text-xs text-white/30 mb-6">per year</p>
+            <p className="text-[11px] text-white/25 mb-6">per year · from your inputs</p>
 
-            <div className="h-px bg-white/10 mb-5" />
-
-            <div className="space-y-4">
-              <div>
-                <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Confirmed Today</p>
-                <p className="font-bold text-xl text-[#EA2C00] leading-none" data-testid="panel-confirmed-value">
-                  {totalMeasured > 0 ? formatDollar(totalMeasured) : '—'}
-                </p>
-                <p className="text-xs text-white/30 mt-0.5">per year · from your data</p>
-              </div>
-
-              {unmeasuredLow > 0 && (
-                <div>
-                  <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Not Yet Measured</p>
-                  <p className="font-bold text-xl text-white/60 leading-none" data-testid="panel-unmeasured-range">
-                    {unmeasuredHigh > unmeasuredLow
-                      ? `${formatDollar(unmeasuredLow)}–${formatDollar(unmeasuredHigh)}`
-                      : formatDollar(unmeasuredLow)}
-                  </p>
-                  <p className="text-xs text-white/30 mt-0.5">per year · benchmark range</p>
-                </div>
-              )}
-            </div>
-
-            {inputs.deploymentTenure && (
+            {unmeasuredLow > 0 && (
               <>
-                <div className="h-px bg-white/10 mb-4 mt-5" />
-                <div>
-                  <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">Time in Deployment</p>
-                  <p className="font-medium text-sm text-white/70">{tenureLabel(inputs.deploymentTenure)}</p>
-                </div>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-2">
+                  Not Yet Measured
+                </p>
+                <p className="font-bold text-2xl text-white/50 leading-none tracking-tight mb-1" data-testid="panel-unmeasured-range">
+                  {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+                </p>
+                <p className="text-[11px] text-white/25 mb-5">per year · benchmark range</p>
               </>
             )}
 
-            <div className="h-px bg-white/10 my-5" />
+            {!allAtLevel4 && (
+              <>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">
+                  Full Picture
+                </p>
+                <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">
+                  {formatDollar(strategicAnnual)}
+                </p>
+                <p className="text-[11px] text-white/20 mb-5">confirmed + benchmark low</p>
+              </>
+            )}
 
-            <p className="text-xs text-white/30 leading-relaxed italic">
-              The gap between confirmed and potential is the conversation ahead. The organizations measuring all of this don't get there alone.
+            {inputs.deploymentTenure && (
+              <>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-1">In Deployment</p>
+                <p className="text-sm font-medium text-white/55">{tenureLabel(inputs.deploymentTenure)}</p>
+              </>
+            )}
+
+            <div className="h-px bg-white/[0.08] mt-6 mb-5" />
+
+            <p className="text-[11px] text-white/25 leading-relaxed italic">
+              The gap between confirmed and potential is the conversation ahead.
             </p>
 
           </div>
