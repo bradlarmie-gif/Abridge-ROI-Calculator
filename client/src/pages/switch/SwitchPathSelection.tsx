@@ -81,37 +81,31 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             </div>
             
             <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
-              Ambient AI
+              Ambient Assessment
             </h2>
             
             <p className="text-[13px] text-[#666666] mb-4">
-              You've deployed. Find out how much value you're actually capturing — and what it's costing you not to go further.
+              Your deployment is live. See what it's capturing — and what it isn't.
             </p>
             
             <div className="space-y-2 mb-5">
-              <p 
-                className="text-[9px] font-semibold uppercase tracking-[2px]"
-                style={{ color: '#EA2C00' }}
-              >
-                WHAT YOU'LL DISCOVER
-              </p>
               <div className="flex items-start gap-2 text-xs text-[#333333]">
                 <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <TrendingUp className="w-3 h-3 text-blue-500" />
                 </div>
-                <span>Where your deployment stands across four strategic domains</span>
+                <span>Your maturity score across four value domains</span>
               </div>
               <div className="flex items-start gap-2 text-xs text-[#333333]">
                 <div className="w-5 h-5 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Search className="w-3 h-3 text-purple-500" />
                 </div>
-                <span>The gaps between current maturity and full value capture</span>
+                <span>Confirmed value vs. what hasn't been measured yet</span>
               </div>
               <div className="flex items-start gap-2 text-xs text-[#333333]">
                 <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <DollarSign className="w-3 h-3 text-emerald-500" />
                 </div>
-                <span>A 36-month trajectory — and what it takes to close it</span>
+                <span>What the gap compounds to over 36 months</span>
               </div>
             </div>
 
@@ -119,7 +113,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             
             <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
               <span className="text-[12px] text-[#999999] font-medium">
-                5-step analysis
+                5-step assessment
               </span>
               <span className="text-[12px] text-[#999999] font-medium">
                 ~5 min

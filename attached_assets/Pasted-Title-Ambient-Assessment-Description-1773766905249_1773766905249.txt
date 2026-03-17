@@ -1,0 +1,37 @@
+Title: Ambient Assessment                                 
+                           
+  Description: Your deployment is live. See what it's capturing — and what it isn't.
+                                                                                                                                                                                                               
+  Bullets — remove the "WHAT YOU'LL DISCOVER" label entirely, replace bullets with:                                                                                                                            
+  - Your maturity score across four value domains                                                                                                                                                              
+  - Confirmed value vs. what hasn't been measured yet                                                                                                                                                          
+  - What the gap compounds to over 36 months                
+                                                                                                                                                                                                               
+  Footer: 5-step assessment | ~5 min                                                                                                                                                                           
+   
+  ---                                                                                                                                                                                                          
+  Find the Ambient AI entry card. It likely lives in a dashboard,
+  router, or home screen component — search for "Ambient AI" or  
+  "You've deployed" to locate it.                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Make these copy changes:                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  1. Title: change "Ambient AI" → "Ambient Assessment"      
+                                                                                                                                                                                                               
+  2. Description: replace the full description text with:   
+     "Your deployment is live. See what it's capturing — and what it isn't."                                                                                                                                   
+                                                                            
+  3. Remove the "WHAT YOU'LL DISCOVER" label entirely.                                                                                                                                                         
+                                                                                                                                                                                                               
+  4. Replace the three bullet point texts:
+     - "Where your deployment stands across four strategic domains"                                                                                                                                            
+       → "Your maturity score across four value domains"           
+                                                                                                                                                                                                               
+     - "The gaps between current maturity and full value capture"                                                                                                                                              
+       → "Confirmed value vs. what hasn't been measured yet"     
+                                                                                                                                                                                                               
+     - "A 36-month trajectory — and what it takes to close it"                                                                                                                                                 
+       → "What the gap compounds to over 36 months"                                                                                                                                                            
+                                                                                                                                                                                                               
+  5. Footer: change "5-step analysis" → "5-step assessment"                                                                                                                                                    
+     (keep "~5 min" as is)          
