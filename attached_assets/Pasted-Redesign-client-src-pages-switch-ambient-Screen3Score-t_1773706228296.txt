@@ -1,0 +1,63 @@
+Redesign `client/src/pages/switch/ambient/Screen3Score.tsx` to make the score the visual hero of the screen.
+
+  Current structure inside the beige card ("card-buildup"):
+    - Eyebrow "Score Breakdown"
+    - 4 domain rows with animated bars
+    - Separator
+    - Small composite score box at the bottom (text-xl/2xl)
+
+  New structure:
+
+  1. RESTRUCTURE THE BEIGE CARD:
+     Move the composite score to the TOP of the beige card, BEFORE the domain rows. Make it prominent:
+
+     Replace the current eyebrow + domain-rows + composite-score-at-bottom with this order:
+     a) Score hero block at the top of the card:
+        - Small eyebrow: "Ambient Maturity Score" (same styling as current eyebrow)
+        - Large score: AnimatedCounter target={totalScore} displayed at text-5xl sm:text-6xl font-bold text-[#EA2C00] — this is the number
+        - "/ 100" inline at text-xl text-[#888888] aligned to bottom
+        - Maturity band label directly below: scoreBand label ("Acting", "Measuring", etc.) at text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide
+        - The 5-band strip (same as in the PDF's MaturityPositionPage): a small inline row showing all 5 bands (Quantifying / Measuring / Acting / Managing / Full Capture) as dots with labels, current one
+  highlighted in #EA2C00. Place this below the band label.
+        - The composite AnimatedBar (the full-width progress bar) below that
+
+     b) A thin divider
+
+     c) Domain rows (same as now, but remove the "→ " prefix before activation labels — just show the label text directly, no arrow)
+
+     d) Remove the old composite score box at the bottom entirely (it's now at the top)
+
+  2. SIDEBAR: Add the score and band to the top of the sidebar panel ("panel-score-hero"), before "Strategic Snapshot":
+     - Show totalScore at text-3xl font-bold text-[#EA2C00]
+     - Maturity band label below it in text-sm text-white/70
+     - Thin divider
+     - Then existing "Strategic Snapshot" / "Where You're Measuring" / "Biggest Opportunity" sections
+
+  3. HEADLINE: Change the headline from:
+     "Here's where you stand."
+     with subheadline "Four domains. One score. Here's where your organization actually is."
+
+     To just:
+     "Here's where you stand."
+     Remove the subheadline entirely. Let the score speak.
+
+  4. DISCLAIMER: Replace:
+     "Self-assessment across four domains. Each domain scores 0–25 based on activation level (L1=4, L2=12, L3=19, L4=25). Does not guarantee specific financial outcomes."
+
+     With:
+     "Based on your self-assessment across four domains. Scores reflect activation level in each area. Actual outcomes depend on execution and organizational context."
+
+  5. ANIMATION TIMING (from previous prompt, confirm these are in place or apply now):
+     - Domain rows start at delay: 0.15 + idx * 0.1
+     - Score hero block: delay 0.15 (animates in with the card)
+     - AnimatedCounter delay: 800ms
+     - AnimatedBar for total score: delay: 900ms
+     - Verdict card: delay 1.2
+     - StepFooter: delay 1.4
+
+  The scoreBand logic already exists (same bands as domainCalculations):
+  ≤16 = "Quantifying", 17-38 = "Measuring", 39-60 = "Acting", 61-79 = "Managing", 80-100 = "Full Capture"
+  Add a local helper or inline it — whichever is cleaner.
+
+  Context: This is the score reveal moment. The executive just answered 20 minutes of questions. The score should land like a number that matters — big, labeled, impossible to miss. Currently it's text-2xl
+  at the bottom of a list. The domain breakdown is supporting evidence, not the headline.

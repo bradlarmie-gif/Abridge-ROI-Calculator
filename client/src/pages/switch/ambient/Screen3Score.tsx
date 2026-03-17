@@ -33,6 +33,21 @@ const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2, string>> = {
 
 const TIEBREAKER_ORDER: DomainKey[] = ['risk', 'revenue', 'workforce', 'capacity'];
 
+const SCORE_BANDS = [
+  { label: 'Quantifying', max: 16 },
+  { label: 'Measuring', max: 38 },
+  { label: 'Acting', max: 60 },
+  { label: 'Managing', max: 79 },
+  { label: 'Full Capture', max: 100 },
+] as const;
+
+function getScoreBandLabel(score: number): string {
+  for (const band of SCORE_BANDS) {
+    if (score <= band.max) return band.label;
+  }
+  return SCORE_BANDS[SCORE_BANDS.length - 1].label;
+}
+
 function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number; duration?: number; delay?: number }) {
   const startValue = Math.max(target - 8, 0);
   const [current, setCurrent] = useState(startValue);
@@ -93,6 +108,8 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
   const totalScore = useMemo(() =>
     domainScores.capacity + domainScores.revenue + domainScores.workforce + domainScores.risk
   , [domainScores]);
+
+  const scoreBandLabel = useMemo(() => getScoreBandLabel(totalScore), [totalScore]);
 
   const domainLevels: Record<DomainKey, number> = useMemo(() => ({
     capacity: scoreToActivationLevel('capacity', domainScores.capacity),
@@ -270,9 +287,6 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
           Here's where you stand.
         </h1>
-        <p className="text-base text-[#888888]">
-          Four domains. One score. Here's where your organization actually is.
-        </p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -281,13 +295,50 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
           >
             <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-buildup">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-buildup-label">
-                Score Breakdown
-              </p>
-              <div className="h-px bg-[#E5E7EB] mb-6" />
+
+              <div className="text-center mb-6" data-testid="card-composite-score">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3" data-testid="text-buildup-label">
+                  Ambient Maturity Score
+                </p>
+                <div className="flex items-end justify-center gap-1 mb-2">
+                  <p className="text-5xl sm:text-6xl font-bold text-[#EA2C00] leading-none" data-testid="text-composite-score">
+                    <AnimatedCounter target={totalScore} duration={800} delay={800} />
+                  </p>
+                  <p className="text-xl text-[#888888] leading-none pb-1">/ 100</p>
+                </div>
+                <p className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide mb-3">
+                  {scoreBandLabel}
+                </p>
+
+                <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4">
+                  {SCORE_BANDS.map((band) => {
+                    const isActive = scoreBandLabel === band.label;
+                    return (
+                      <div key={band.label} className="flex flex-col items-center gap-1">
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full transition-all ${
+                            isActive ? 'bg-[#EA2C00] scale-125' : 'bg-[#D1D5DB]'
+                          }`}
+                        />
+                        <span className={`text-[9px] sm:text-[10px] leading-tight ${
+                          isActive ? 'text-[#EA2C00] font-semibold' : 'text-[#AAAAAA]'
+                        }`}>
+                          {band.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="max-w-[300px] mx-auto" style={{ height: 8 }}>
+                  <AnimatedBar percent={(totalScore / 100) * 100} delay={900} height={8} />
+                </div>
+              </div>
+
+              <div className="h-px bg-[#E5E7EB] mb-4" />
 
               {DOMAIN_ORDER.map((domain, idx) => {
                 const level = scoreToActivationLevel(domain, domainScores[domain]) as 1 | 2 | 3 | 4;
@@ -311,7 +362,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                             {DOMAIN_LABELS[domain]}
                           </p>
                           <p className="text-[11px] sm:text-xs text-[#888888] italic">
-                            → {ACTIVATION_LABELS[domain][level]}
+                            {ACTIVATION_LABELS[domain][level]}
                           </p>
                         </div>
                         <div className="hidden sm:block w-[45%]">
@@ -328,31 +379,6 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   </div>
                 );
               })}
-
-              <div className="h-px bg-[#E5E7EB] mt-4" />
-
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-              >
-                <div
-                  className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between gap-4"
-                  data-testid="card-composite-score"
-                >
-                  <p className="font-semibold text-sm text-black">
-                    Your Maturity Score
-                  </p>
-
-                  <div className="flex-1 max-w-[200px]" style={{ height: 8 }}>
-                    <AnimatedBar percent={(totalScore / 100) * 100} delay={900} height={8} />
-                  </div>
-
-                  <p className="font-bold text-xl sm:text-2xl text-black min-w-[60px] sm:min-w-[80px] text-right" data-testid="text-composite-score">
-                    <AnimatedCounter target={totalScore} duration={800} delay={800} /> / 100
-                  </p>
-                </div>
-              </motion.div>
             </div>
           </motion.div>
 
@@ -397,7 +423,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             transition={{ delay: 1.5, duration: 0.5 }}
           >
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
-              Self-assessment across four domains. Each domain scores 0–25 based on activation level (L1=4, L2=12, L3=19, L4=25). Does not guarantee specific financial outcomes.
+              Based on your self-assessment across four domains. Scores reflect activation level in each area. Actual outcomes depend on execution and organizational context.
             </p>
           </motion.div>
 
@@ -411,6 +437,17 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           transition={{ delay: 2.0, duration: 0.6, ease: "easeOut" }}
         >
           <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
+
+            <div className="mb-5">
+              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="sidebar-score">
+                {totalScore}
+              </p>
+              <p className="text-sm text-white/70">
+                {scoreBandLabel}
+              </p>
+            </div>
+
+            <div className="h-px bg-white/10 mb-5" />
 
             <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-5">
               Strategic Snapshot
