@@ -355,9 +355,22 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     return `Your score reflects what your organization has chosen to analyze. ${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The range sitting in those domains — based on what organizations your size typically find — is significant.`;
   }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure, providers]);
 
-  const [expandedDomains, setExpandedDomains] = useState<Record<Domain, boolean>>({
-    capacity: true, revenue: true, workforce: true, risk: true,
+  const topDomain = useMemo(() => {
+    const measured = DOMAIN_ORDER.filter(d => domainHasValue[d]);
+    if (measured.length > 0) {
+      return measured.reduce((best, d) => domainGaps[d] > domainGaps[best] ? d : best, measured[0]);
+    }
+    return DOMAIN_ORDER.find(d => domainLevels[d] === 1) ?? DOMAIN_ORDER[0];
+  }, [domainHasValue, domainGaps, domainLevels]);
+
+  const [expandedDomains, setExpandedDomains] = useState<Record<Domain, boolean>>(() => {
+    const init: Record<Domain, boolean> = { capacity: false, revenue: false, workforce: false, risk: false };
+    return init;
   });
+
+  useEffect(() => {
+    setExpandedDomains({ capacity: false, revenue: false, workforce: false, risk: false, [topDomain]: true } as Record<Domain, boolean>);
+  }, [topDomain]);
   const toggleDomain = (domain: Domain) => setExpandedDomains(prev => ({ ...prev, [domain]: !prev[domain] }));
 
   return (
