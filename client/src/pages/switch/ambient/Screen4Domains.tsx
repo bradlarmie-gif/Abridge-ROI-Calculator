@@ -956,7 +956,8 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         { value: 10, label: '~10%' },
         { value: 20, label: '~20%' },
         { value: 30, label: '~30%' },
-        { value: 40, label: '40%+' },
+        { value: 40, label: '~40%' },
+        { value: 60, label: '~60%' },
       ];
       return (
         <div className="flex flex-col gap-5">
@@ -1008,21 +1009,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
                   }`}
                   data-testid={`radio-burden-share-${opt.value}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {[
-                { label: 'Conservative', value: 40 },
-                { label: 'Research benchmark', value: 60 },
-              ].map((opt) => (
-                <button
-                  key={opt.label}
-                  type="button"
-                  onClick={() => setDomainInput('docBurdenShare', opt.value)}
-                  className="text-xs px-3 py-1.5 rounded-full border border-[#D1D5DB] text-[#525252] hover:border-[#E8350A] hover:text-[#E8350A] transition-all"
                 >
                   {opt.label}
                 </button>
