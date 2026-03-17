@@ -543,7 +543,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3 sr-only">
+            <label className="block text-sm font-medium text-black mb-3">
               What has your organization observed?
             </label>
             <div className="flex flex-col gap-2.5">
@@ -738,7 +738,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-3 sr-only">
+          <label className="block text-sm font-medium text-black mb-3">
             How is documentation quality being used strategically in revenue decisions?
           </label>
           <div className="flex flex-col gap-2.5">
