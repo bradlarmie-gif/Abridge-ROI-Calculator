@@ -152,6 +152,10 @@ export function PDFCoverPage({
         <Text style={styles.title}>{title}</Text>
         <View style={styles.redRule} />
 
+        <Text style={{ fontSize: 13, color: "#1A1A1A", fontWeight: 400, lineHeight: 1.5, marginBottom: 20, maxWidth: 340 }}>
+          What your deployment is measuring. What it isn't. What the gap costs at your scale.
+        </Text>
+
         {subtitle ? (
           <Text style={styles.subtitle}>{subtitle}</Text>
         ) : null}

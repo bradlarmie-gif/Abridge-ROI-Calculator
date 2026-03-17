@@ -87,7 +87,7 @@ export interface DomainData {
 // CONSTANTS & UTILITIES
 // ============================================================================
 
-const TOTAL_PAGES = 7;
+const TOTAL_PAGES = 8;
 const DOMAIN_ORDER = ["capacity", "revenue", "workforce", "risk"];
 
 const fmt = (n: number): string => {
@@ -407,6 +407,154 @@ function PageFooter({ pageNum, orgName, dark = false }: { pageNum: number; orgNa
 }
 
 // ============================================================================
+// PAGE 1: EXECUTIVE SUMMARY
+// ============================================================================
+
+function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
+  const band = scoreBand(data.documentationScore);
+  const domainLevels: Record<string, number> = {
+    capacity: data.domains?.capacity?.activationLevel || 1,
+    revenue: data.domains?.revenue?.activationLevel || 1,
+    workforce: data.domains?.workforce?.activationLevel || 1,
+    risk: data.domains?.risk?.activationLevel || 1,
+  };
+  const measuredTotal = DOMAIN_ORDER.reduce((sum, d) => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return dom?.hasValue ? sum + (dom.gapValue || 0) : sum;
+  }, 0);
+  const unmeasuredLow = DOMAIN_ORDER.reduce((sum, d) => {
+    if (domainLevels[d] === 1 && data.providers > 0) return sum + BENCH[d].low(data.providers);
+    return sum;
+  }, 0);
+  const unmeasuredHigh = DOMAIN_ORDER.reduce((sum, d) => {
+    if (domainLevels[d] === 1 && data.providers > 0) return sum + BENCH[d].high(data.providers);
+    return sum;
+  }, 0);
+  const measuredDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 2);
+  const unmeasuredDomains = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+  const archetype = computeArchetype(domainLevels, data.providers);
+
+  const unmeasuredMid = Math.round((unmeasuredLow + unmeasuredHigh) / 2);
+  const yr1 = Math.round(measuredTotal + unmeasuredMid * 0.25);
+  const yr2 = Math.round(measuredTotal + unmeasuredMid * 0.65);
+  const yr3 = Math.round(measuredTotal + unmeasuredMid);
+  const maxBar = yr3 > 0 ? yr3 : 1;
+
+  const findings: string[] = [];
+  if (measuredDomains.length > 0) {
+    const topDomain = measuredDomains.reduce((best, d) => {
+      const bv = data.domains?.[best as keyof typeof data.domains]?.gapValue || 0;
+      const dv = data.domains?.[d as keyof typeof data.domains]?.gapValue || 0;
+      return dv > bv ? d : best;
+    });
+    const topVal = data.domains?.[topDomain as keyof typeof data.domains]?.gapValue || 0;
+    if (topVal > 0) findings.push(`${domainDisplayName[topDomain]} is your strongest measured domain at ${fmt(topVal)}/year \u2014 confirmed from your data and stated inputs.`);
+  }
+  if (unmeasuredDomains.length > 0) {
+    const names = unmeasuredDomains.map(d => domainDisplayName[d]);
+    const nameStr = names.length === 1 ? names[0] : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+    findings.push(`${nameStr} ${unmeasuredDomains.length === 1 ? "has" : "have"} not been formally analyzed. Based on organizations your size, the range when they look is ${fmt(unmeasuredLow)}\u2013${fmt(unmeasuredHigh)}/year.`);
+  }
+  const tenureInsights: Record<string, string> = {
+    "0-6": "You are in the window where measurement habits form. Organizations that build them before 12 months don\u2019t have to rebuild them at 24.",
+    "6-12": "The deployment is stable. The question now is whether measurement becomes a structured program or stays informal.",
+    "12-24": "One to two years in. Every month the unmeasured domains stay unmeasured is a month of value sitting uncounted.",
+    "24+": "Two or more years live. The unmeasured domains have been generating value without being formally counted for a long time.",
+  };
+  if (data.deploymentTenure && tenureInsights[data.deploymentTenure]) {
+    findings.push(tenureInsights[data.deploymentTenure]);
+  }
+
+  return (
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
+      <View style={s.redRule} />
+      <Text style={s.eyebrow}>EXECUTIVE SUMMARY</Text>
+
+      <View style={{ flexDirection: "row", borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 4, marginBottom: 16, overflow: "hidden" }}>
+        <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>MATURITY SCORE</Text>
+          <Text style={{ fontSize: 44, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>{data.documentationScore}</Text>
+          <Text style={{ fontSize: 8, color: "#AAAAAA", marginTop: 2 }}>/100</Text>
+          <Text style={{ fontSize: 9, fontWeight: 700, color: "#1A1A1A", marginTop: 6 }}>{band}</Text>
+        </View>
+        <View style={{ width: 1, backgroundColor: "#E5E0D9" }} />
+        <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>CONFIRMED VALUE</Text>
+          {measuredTotal > 0 ? (
+            <>
+              <Text style={{ fontSize: 36, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>{fmt(measuredTotal)}</Text>
+              <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>{"per year \u00B7 from your data"}</Text>
+            </>
+          ) : (
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "#CCCCCC", marginTop: 8 }}>Not yet measured</Text>
+          )}
+        </View>
+        <View style={{ width: 1, backgroundColor: "#E5E0D9" }} />
+        <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>UNMEASURED RANGE</Text>
+          {unmeasuredLow > 0 ? (
+            <>
+              <Text style={{ fontSize: 28, fontWeight: 800, color: "#555555", lineHeight: 1 }}>{fmt(unmeasuredLow)}</Text>
+              <Text style={{ fontSize: 10, fontWeight: 800, color: "#555555", lineHeight: 1 }}>{"\u2013"}{fmt(unmeasuredHigh)}</Text>
+              <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>{"per year \u00B7 benchmark range"}</Text>
+            </>
+          ) : (
+            <Text style={{ fontSize: 11, fontWeight: 400, color: "#CCCCCC", marginTop: 8 }}>All domains measured</Text>
+          )}
+        </View>
+      </View>
+
+      <View style={s.divider} />
+      <Text style={[s.eyebrow, { marginBottom: 6 }]}>WHAT THIS ASSESSMENT FOUND</Text>
+      <Text style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.35, marginBottom: 8 }}>{archetype.name}</Text>
+      <Text style={[s.body, { color: "#444444", lineHeight: 1.7, marginBottom: 12 }]}>{archetype.body}</Text>
+
+      {findings.length > 0 && (
+        <View style={[s.beigeBox, { marginBottom: 16 }]}>
+          {findings.map((f, i) => (
+            <View key={i} style={{ flexDirection: "row", gap: 10, marginBottom: i < findings.length - 1 ? 8 : 0 }}>
+              <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: "#EA2C00", marginTop: 4, flexShrink: 0 }} />
+              <Text style={{ fontSize: 10, color: "#444444", lineHeight: 1.6, flex: 1 }}>{f}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {unmeasuredLow > 0 && yr3 > measuredTotal && (
+        <View>
+          <Text style={[s.eyebrow, { marginBottom: 8 }]}>36-MONTH VALUE TRAJECTORY</Text>
+          <View style={[s.beigeBox, { paddingVertical: 12 }]}>
+            {[
+              { label: "TODAY", value: measuredTotal, note: "confirmed", highlight: false },
+              { label: "YEAR 1", value: yr1, note: "if measurement begins", highlight: false },
+              { label: "YEAR 2", value: yr2, note: "domains formalized", highlight: false },
+              { label: "YEAR 3", value: yr3, note: "full capture", highlight: true },
+            ].map((item, i) => {
+              const pct = Math.round((item.value / maxBar) * 100);
+              return (
+                <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: i < 3 ? 6 : 0 }}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#888888", letterSpacing: 1, width: 34 }}>{item.label}</Text>
+                  <View style={{ flex: 1, height: 7, backgroundColor: "#E5E0D9", borderRadius: 3 }}>
+                    <View style={{ width: pct + "%", height: 7, backgroundColor: i === 0 ? "#CCCCCC" : "#EA2C00", borderRadius: 3, opacity: i === 0 ? 1 : 0.5 + i * 0.15 }} />
+                  </View>
+                  <Text style={{ fontSize: 8.5, fontWeight: 700, color: item.highlight ? "#EA2C00" : "#555555", width: 62, textAlign: "right" }}>{fmt(item.value)}</Text>
+                  <Text style={{ fontSize: 7.5, color: "#AAAAAA", width: 80 }}>{item.note}</Text>
+                </View>
+              );
+            })}
+            <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginTop: 8, fontStyle: "italic" }}>
+              Accelerated path assumes benchmark mid-range capture as unmeasured domains are formally analyzed. Not a projection for your organization.
+            </Text>
+          </View>
+        </View>
+      )}
+
+      <PageFooter pageNum={1} orgName={data.organizationName} />
+    </Page>
+  );
+}
+
+// ============================================================================
 // PAGE 2: YOUR STRATEGIC PROFILE
 // ============================================================================
 
@@ -493,7 +641,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
               <Text style={{ fontSize: 36, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 }}>
                 {fmt(measuredTotal)}
               </Text>
-              <Text style={{ fontSize: 8.5, color: "#888888" }}>per year \u00B7 from measured domains</Text>
+              <Text style={{ fontSize: 8.5, color: "#888888" }}>per year {"·"} from measured domains</Text>
             </>
           ) : (
             <>
@@ -515,27 +663,10 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
             <Text style={{ fontSize: 28, fontWeight: 800, color: "#555555", lineHeight: 1, marginBottom: 4 }}>
               {fmt(unmeasuredLow)}{"–"}{fmt(unmeasuredHigh)}
             </Text>
-            <Text style={{ fontSize: 8.5, color: "#888888" }}>per year \u00B7 benchmark range</Text>
+            <Text style={{ fontSize: 8.5, color: "#888888" }}>per year {"·"} benchmark range</Text>
           </View>
         )}
 
-        <View style={{ flex: 1, backgroundColor: "#F5F0EB", borderRadius: 4, padding: 16, borderWidth: 1, borderColor: "#E5E0D9" }}>
-          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-            DEPLOYMENT
-          </Text>
-          <View style={{ gap: 5 }}>
-            {[
-              { label: "Providers", value: data.providers > 0 ? data.providers.toLocaleString() : "\u2014" },
-              { label: "Encounters", value: data.annualEncounters > 0 ? data.annualEncounters.toLocaleString() + "/yr" : "\u2014" },
-              { label: "Utilization", value: data.utilization > 0 ? `${data.utilization}%` : "\u2014" },
-            ].map((item, i) => (
-              <View key={i} style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 8.5, color: "#AAAAAA" }}>{item.label}</Text>
-                <Text style={{ fontSize: 8.5, fontWeight: 700, color: "#555555" }}>{item.value}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
       </View>
 
       {unmeasuredLow > 0 && (
@@ -544,7 +675,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
         </Text>
       )}
 
-      <PageFooter pageNum={1} orgName={data.organizationName} />
+      <PageFooter pageNum={2} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -674,7 +805,7 @@ sustainability.`;
         })}
       </View>
 
-      <PageFooter pageNum={2} orgName={data.organizationName} />
+      <PageFooter pageNum={3} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -841,7 +972,7 @@ function DomainPage({
           <Text style={s.body}>{domainFrameText[domainKey]}</Text>
 
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>
-            {isUnmeasured ? "WHY THIS DOMAIN MATTERS" : "WHERE YOU STAND"}
+            {isUnmeasured ? "THE UNMEASURED SIGNAL" : "WHERE YOU STAND"}
           </Text>
           <Text style={s.body}>
             {domain.context || domainAtThisLevel[domainKey]?.[level] || ""}
@@ -889,7 +1020,7 @@ function DomainPage({
           {nextUnlock ? (
             <View>
               <Text style={{ fontSize: 8, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
-                NEXT LEVEL UNLOCKS
+                THE MOVE FROM HERE
               </Text>
               <Text style={{ fontSize: 10, color: "#555555", lineHeight: 1.6 }}>{nextUnlock}</Text>
             </View>
@@ -956,7 +1087,7 @@ function DomainPage({
             <>
               <View style={s.darkDivider} />
               <Text style={{ fontSize: 8, fontWeight: 700, color: isUnmeasured ? "rgba(255,255,255,0.3)" : "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-                {isUnmeasured ? "BENCHMARK FORMULA" : "HOW WE GOT HERE"}
+                {isUnmeasured ? "BENCHMARK BASIS" : "HOW THIS WAS CALCULATED"}
               </Text>
               {formula.split("\n").map((line, i) => (
                 <Text key={i} style={{ fontSize: 8, color: "rgba(255,255,255,0.4)", lineHeight: 1.5, fontStyle: "italic" }}>
@@ -969,7 +1100,7 @@ function DomainPage({
           <View style={[s.darkDivider, { marginTop: 14 }]} />
 
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-            A THOUGHT ON THIS
+            WHAT HIGH PERFORMERS DO
           </Text>
           <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
             {coachNote}
@@ -1041,7 +1172,7 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
 
   return (
     <Page size="LETTER" style={s.whitePage} wrap={false}>
-      <Text style={s.eyebrow}>THE CONVERSATION AHEAD</Text>
+      <Text style={s.eyebrow}>THE PATH FORWARD</Text>
       <View style={s.redRule} />
 
       <View style={[s.darkTile, { marginBottom: 14 }]}>
@@ -1058,32 +1189,51 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
         ) : null}
       </View>
 
-      <Text style={[s.eyebrow, { marginBottom: 8 }]}>WHAT THE DATA SHOWS</Text>
+      <Text style={[s.eyebrow, { marginBottom: 8 }]}>WHAT THE PATTERN SHOWS</Text>
       <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
-        {[
-          {
-            title: "Level 3 Revenue within 12 months",
-            body: "Organizations that get there have a structured CDI and coding review process connected to their ambient documentation \u2014 not a one-time study, but an ongoing program.",
-          },
-          {
-            title: "Level 3 Workforce within 12 months",
-            body: "Organizations that get there have a formal provider satisfaction measurement program running on a cadence \u2014 explicitly connected to ambient data.",
-          },
-          {
-            title: "The common thread",
-            body: "Measurement infrastructure that was built, not discovered. The organizations that close the gap quickly don\u2019t stumble into it \u2014 they built a program.",
-          },
-        ].map((card, i) => (
-          <View key={i} style={[s.beigeBox, { flex: 1, paddingVertical: 12 }]}>
-            <Text style={{ fontSize: 8, fontWeight: 700, color: i < 2 ? "#EA2C00" : "#1A1A1A", letterSpacing: 0.8, marginBottom: 5 }}>
-              {card.title.toUpperCase()}
-            </Text>
-            <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.55 }}>{card.body}</Text>
-          </View>
-        ))}
+        {(() => {
+          const sorted = [...DOMAIN_ORDER].sort((a, b) => domainLevels[a] - domainLevels[b]);
+          const priority = sorted[0];
+          const isUnmeasured = domainLevels[priority] === 1;
+          const cards = [
+            {
+              label: isUnmeasured ? "HIGHEST-LEVERAGE MOVE" : "TOP PRIORITY DOMAIN",
+              title: domainDisplayName[priority],
+              body: isUnmeasured
+                ? `${domainDisplayName[priority]} hasn\u2019t been formally analyzed. At your scale, that analysis typically takes 4\u20138 weeks and produces a defensible number. It\u2019s the highest-return investment of measurement time at this stage.`
+                : `${domainDisplayName[priority]} has measurement underway but hasn\u2019t been pushed to validated, actionable impact. The infrastructure is in place. The next move is pushing it to Level 3.`,
+              accent: true,
+            },
+            {
+              label: "WHAT HIGH PERFORMERS SHARE",
+              title: "A measurement program, not a one-time study.",
+              body: "The organizations that close the maturity gap in 12 months don\u2019t do it domain by domain. They build a connected program \u2014 CDI, provider experience, access planning \u2014 running on a cadence with executive ownership.",
+              accent: false,
+            },
+            {
+              label: "THE PATTERN AT YOUR SCORE",
+              title: band,
+              body: band === "Quantifying" || band === "Measuring"
+                ? "This is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because at this stage, the gap is visible and the next move is defined."
+                : band === "Acting"
+                ? "Some domains are generating confirmed value. The ones that haven\u2019t been measured yet are the highest-return opportunities \u2014 because the infrastructure to measure them already exists."
+                : "You\u2019re in the top tier of ambient maturity. The work at this stage is governance \u2014 making sure the measurement capability is institutional, not dependent on champions.",
+              accent: false,
+            },
+          ];
+          return cards.map((card, i) => (
+            <View key={i} style={[s.beigeBox, { flex: 1, paddingVertical: 12 }]}>
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: card.accent ? "#EA2C00" : "#1A1A1A", letterSpacing: 1, textTransform: "uppercase", marginBottom: 5 }}>
+                {card.label}
+              </Text>
+              <Text style={{ fontSize: 9.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 5, lineHeight: 1.3 }}>{card.title}</Text>
+              <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.55 }}>{card.body}</Text>
+            </View>
+          ));
+        })()}
       </View>
 
-      <Text style={[s.eyebrow, { marginBottom: 8 }]}>DOMAIN PRIORITIES</Text>
+      <Text style={[s.eyebrow, { marginBottom: 8 }]}>YOUR NEXT MOVES</Text>
       {sortedDomains.map((key, idx) => {
         const level = domainLevels[key];
         const isUnmeasured = level === 1;
@@ -1142,31 +1292,21 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
       })}
 
       <View style={{ marginTop: "auto" }}>
-        <View style={s.divider} />
-        <Text style={{ fontSize: 9.5, color: "#555555", lineHeight: 1.6, marginBottom: 6 }}>
-          A working session is not a product walkthrough. It\u2019s a 45-minute conversation built around your specific profile \u2014 what the domains that haven\u2019t been measured are worth at your
-scale, and what organizations your size have done to move in the first 90 days.
-        </Text>
+        <View style={[s.darkTile, { marginBottom: 10, padding: 18 }]}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>RECOMMENDED NEXT STEP</Text>
+          <Text style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.4, marginBottom: 8 }}>
+            A 45-minute working session built around this profile.
+          </Text>
+          <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 }}>
+            Not a product walkthrough. A structured conversation about what the unmeasured domains are worth at your scale, what the first 90 days of measurement looks like, and what organizations at your maturity level have done to move quickly. The output is a specific plan {"\u2014"} not a proposal.
+          </Text>
+        </View>
         <Text style={s.disclaimer}>
-          All dollar figures apply conservative conversion rates to account for implementation variability, organizational lag, and partial capture. For Level 1 domains, figures represent benchmark ranges
-from similar organizations \u2014 not projections for your organization. Actual results depend on execution, market conditions, and organizational readiness. Individual results vary. Assessment date:
-{data.assessmentDate}.
-        </Text>
-        <Text style={{
-          fontSize: 7,
-          color: '#999999',
-          lineHeight: 1.5,
-          marginTop: 24,
-          paddingTop: 12,
-          borderTopWidth: 1,
-          borderTopColor: '#E5E5E5',
-          borderTopStyle: 'solid' as const,
-        }}>
-          Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+          Confirmed values are derived from your stated inputs using Abridge deployment methodology. Level 1 domain figures are benchmark ranges from health systems of comparable size {"\u2014"} not projections for your organization. Actual results depend on execution, organizational readiness, and market conditions. Assessment date: {data.assessmentDate}.
         </Text>
       </View>
 
-      <PageFooter pageNum={7} orgName={data.organizationName} />
+      <PageFooter pageNum={8} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -1227,12 +1367,13 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
         preparedBy={data.preparedBy || "Abridge Partner Success"}
         disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
       />
+      <ExecutiveSummaryPage data={data} />
       <StrategicProfilePage data={data} />
       <MaturityPositionPage data={data} />
-      <DomainPage domainKey="capacity" data={data} pageNum={3} />
-      <DomainPage domainKey="revenue" data={data} pageNum={4} />
-      <DomainPage domainKey="workforce" data={data} pageNum={5} />
-      <DomainPage domainKey="risk" data={data} pageNum={6} />
+      <DomainPage domainKey="capacity" data={data} pageNum={4} />
+      <DomainPage domainKey="revenue" data={data} pageNum={5} />
+      <DomainPage domainKey="workforce" data={data} pageNum={6} />
+      <DomainPage domainKey="risk" data={data} pageNum={7} />
       <ConversationAheadPage data={data} />
     </Document>
   );
