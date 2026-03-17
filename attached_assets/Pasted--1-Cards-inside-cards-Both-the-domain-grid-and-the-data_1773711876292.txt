@@ -1,0 +1,136 @@
+ 1. Cards inside cards. Both the domain grid and the data insights are white cards sitting inside beige cards. Nested boxes look like a dashboard from 2012 — the boxing removes all breathing room and makes 
+  everything feel equally weighted.                                                                                                                                                                            
+                                                                                                                                                                                                               
+  2. The banner is too tall with the number floating in dead space. $480K alone in a huge dark rectangle looks unfinished, not bold.                                                                           
+                                                            
+  Here's the fix:
+
+  SCREEN6INVITATION — PREMIUM VISUAL FIX
+
+  FILE: client/src/pages/switch/ambient/Screen6Invitation.tsx
+
+  ─── FIX 1: Banner — reduce dead space, tighten the number ───
+
+  Find the dark banner motion.div. Change vertical padding from:
+    py-8 sm:py-10 md:py-12
+  To:
+    py-10 sm:py-12
+
+  Then inside the banner, the confirmed value section currently has mb-8
+  creating too much space below the hero number before the divider row.
+  Change mb-8 to mb-6.
+
+  Also add a max-w constraint to the number itself so it feels anchored:
+    Wrap the "CONFIRMED ANNUALLY" label + number + subtitle in:
+    <div className="max-w-[500px] mx-auto text-center">
+
+  ─── FIX 2: Remove nested card boxes — both sections ───
+
+  The "WHERE YOU ARE" section is a beige card (bg-[#F5F0EB] rounded-lg p-5 sm:p-8 mb-8)
+  containing white domain cards. Remove the outer beige card entirely.
+
+  Replace the outer beige wrapper div with just:
+    <div className="mb-10" data-testid="card-benchmark">
+      <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-1">
+        Where You Are — And What's Ahead
+      </p>
+      <p className="text-sm text-[#888888] leading-relaxed mb-5">
+        What becomes visible when each domain reaches full capture.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        ... domain cards ...
+      </div>
+    </div>
+
+  Domain cards themselves: keep the border border-[#E5E7EB] rounded-lg p-4 bg-white/60.
+  Now they sit on the page background, not inside a beige box.
+
+  Similarly, the "WHAT THE DATA SHOWS" section is a beige card
+  (bg-[#F5F0EB] rounded-lg p-5 sm:p-8 mb-8) containing white/70 insight cards.
+  Remove the outer beige card entirely.
+
+  Replace with:
+    <div className="mb-10" data-testid="card-data-shows">
+      <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-5">
+        What the Data Shows
+      </p>
+      <div className="space-y-3">
+        ... insight cards ...
+      </div>
+    </div>
+
+  Insight cards themselves: change from bg-white/70 rounded-lg p-4
+  to: bg-[#F9F8F6] rounded-lg p-5 border-l-2 border-[#EA2C00]
+
+  For "THE COMMON THREAD" card specifically, use border-[#1A1A1A] instead of border-[#EA2C00].
+
+  This removes all nested box-in-box structure. Sections breathe.
+
+  ─── FIX 3: Domain cards — equal height in the grid ───
+
+  The 2×2 grid cards have different text lengths creating uneven row heights.
+  Add consistent min-height so the grid looks intentional:
+
+  Change the domain card div from:
+    className="border border-[#E5E7EB] rounded-lg p-4 bg-white/60"
+  To:
+    className="border border-[#E5E7EB] rounded-lg p-5 bg-white flex flex-col"
+
+  Then wrap the AT FULL CAPTURE section in:
+    <div className="flex-1 mt-3">
+      <p className="text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1.5">
+        At full capture
+      </p>
+      <p className="text-sm text-black font-medium leading-relaxed">
+        {contrast.benchmarkPicture}
+      </p>
+    </div>
+
+  Using flex flex-col + flex-1 on the bottom section makes all cards in a
+  row stretch to the same height regardless of text length.
+
+  ─── FIX 4: Add visual separation between sections ───
+
+  Between the domain grid section and the data shows section, add:
+    <div className="h-px bg-[#E5E7EB] mb-10" />
+
+  Between the data shows section and the dark CTA card, add:
+    <div className="h-6" />
+
+  This creates clear page rhythm — the eye knows a new section is starting.
+
+  ─── FIX 5: "WHAT COMES NEXT" label — remove it ───
+
+  The dark CTA card has "WHAT COMES NEXT" as a small label before the headline.
+  This is redundant — the big headline tells you what comes next.
+
+  Find:
+    <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
+      What Comes Next
+    </p>
+    <div className="h-px bg-white/10 mb-6" />
+
+  Delete both lines. Start directly with the big headline.
+  This makes the dark card feel like a decisive statement, not a labeled section.
+
+  ─── FIX 6: Insight card labels — use domain-aware labels ───
+
+  Currently the data shows cards have fixed labels like "CAPACITY: THE FIRST MOVE"
+  regardless of what domains the exec is in. These labels also have the colon-separator
+  format which reads like a subtitle, not a header.
+
+  Change each insight card headline from:
+    <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">
+      Level 3 Revenue within 12 months
+    </p>
+  To:
+    <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
+      Level 3 Revenue within 12 months
+    </p>
+
+  And for "THE COMMON THREAD" card, make the label text-black instead of text-[#EA2C00]:
+    <p className="text-[10px] font-semibold text-black uppercase tracking-[1.5px] mb-2">
+      The Common Thread
+    </p>
+
+  This creates visual hierarchy: two orange (specific domains) and one black (the synthesis).

@@ -681,7 +681,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
   return (
     <div>
       <motion.div
-        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-8 sm:py-10 md:py-12 mb-8 sm:mb-10"
+        className="bg-[#1A1A1A] rounded-xl -mx-4 sm:-mx-6 px-4 sm:px-6 py-10 sm:py-12 mb-8 sm:mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -692,7 +692,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
           </p>
 
           <div className="max-w-[680px] mx-auto">
-            <div className="text-center mb-8">
+            <div className="max-w-[500px] mx-auto text-center mb-6">
               {hasMeasuredDomains ? (
                 <>
                   <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
@@ -756,12 +756,11 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-benchmark">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <div className="mb-10" data-testid="card-benchmark">
+              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-1">
                 Where You Are — And What's Ahead
               </p>
-              <div className="h-px bg-[#E5E7EB] mb-2" />
-              <p className="text-sm text-[#888888] leading-relaxed mb-6">
+              <p className="text-sm text-[#888888] leading-relaxed mb-5">
                 What becomes visible when each domain reaches full capture.
               </p>
 
@@ -772,7 +771,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                   const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
                   const isAtCeiling = level === 4;
                   return (
-                    <div key={domain} className="border border-[#E5E7EB] rounded-lg p-4 bg-white/60" data-testid={`benchmark-${domain}`}>
+                    <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 bg-white flex flex-col" data-testid={`benchmark-${domain}`}>
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
                           {DOMAIN_LABELS[domain as Domain]}
@@ -782,24 +781,28 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                         </span>
                       </div>
                       {isAtCeiling ? (
-                        <p className="text-sm text-[#444444] leading-relaxed italic">
-                          {contrast.benchmarkPicture}
-                        </p>
+                        <div className="flex-1 mt-3">
+                          <p className="text-sm text-[#444444] leading-relaxed italic">
+                            {contrast.benchmarkPicture}
+                          </p>
+                        </div>
                       ) : (
-                        <>
+                        <div className="flex-1 mt-3">
                           <p className="text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1.5">
                             At full capture
                           </p>
                           <p className="text-sm text-black font-medium leading-relaxed">
                             {contrast.benchmarkPicture}
                           </p>
-                        </>
+                        </div>
                       )}
                     </div>
                   );
                 })}
               </div>
             </div>
+
+            <div className="h-px bg-[#E5E7EB] mb-10" />
           </motion.div>
 
           <motion.div
@@ -807,15 +810,14 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.42, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 mb-8" data-testid="card-data-shows">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <div className="mb-10" data-testid="card-data-shows">
+              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-5">
                 What the Data Shows
               </p>
-              <div className="h-px bg-[#E5E7EB] mb-5" />
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {dataShowsCards.map((card, i) => (
-                  <div key={i} className="bg-white/70 rounded-lg p-4">
-                    <p className={`text-[11px] font-semibold uppercase tracking-[1px] mb-1.5 ${i < 2 ? 'text-[#EA2C00]' : 'text-black'}`}>
+                  <div key={i} className={`bg-[#F9F8F6] rounded-lg p-5 border-l-2 ${i < 2 ? 'border-[#EA2C00]' : 'border-[#1A1A1A]'}`}>
+                    <p className={`text-[10px] font-semibold uppercase tracking-[1.5px] mb-2 ${i < 2 ? 'text-[#EA2C00]' : 'text-black'}`}>
                       {card.title}
                     </p>
                     <p className="text-sm text-[#444444] leading-relaxed">{card.body}</p>
@@ -823,6 +825,8 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                 ))}
               </div>
             </div>
+
+            <div className="h-6" />
           </motion.div>
 
           <motion.div
@@ -831,11 +835,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             transition={{ delay: 0.45, duration: 0.5 }}
           >
             <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
-              <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
-                What Comes Next
-              </p>
-              <div className="h-px bg-white/10 mb-6" />
-
               <p className="text-xl sm:text-2xl font-bold text-white leading-snug mb-5" data-testid="text-invitation-opening">
                 {invitationCopy.opening}
               </p>
