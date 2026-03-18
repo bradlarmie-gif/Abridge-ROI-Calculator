@@ -130,7 +130,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           if (level === 1) {
             lowEstimate = Math.round(providers * 1000);
             highEstimate = Math.round(providers * 3000);
-            narrative = `Ambient has been running, but recovered time hasn't been formally tracked or redeployed. Organizations at your scale (${providers > 0 ? providers.toLocaleString() + ' providers' : 'similar size'}) typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in access revenue when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a time-tracking study across a cohort of providers. Even a 30-day pilot generates the data needed to confirm or refute the benchmark range.`;
+            narrative = `Recovered time is generating value. It hasn't been counted yet. Organizations at your scale (${providers > 0 ? providers.toLocaleString() + ' providers' : 'similar size'}) typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in access revenue when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a time-tracking study across a cohort of providers. Even a 30-day pilot generates the data needed to confirm or refute the benchmark range.`;
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 2) {
             const minsPerEncounter = domainInputs.minsPerEncounter || 3;
@@ -155,7 +155,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           if (level === 1) {
             lowEstimate = Math.round(providers * 4000);
             highEstimate = Math.round(providers * 12000);
-            narrative = `Documentation quality has likely improved — but no one has analyzed whether reimbursement has followed. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
+            narrative = `Documentation quality has improved. Whether reimbursement followed is the question — and the answer is almost always yes. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
             formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 2) {
             const wrvuLift = domainInputs.wrvuLift || 0.05;
@@ -178,7 +178,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           if (level === 1) {
             lowEstimate = Math.round(providers * 1500);
             highEstimate = Math.round(providers * 4000);
-            narrative = `Provider burden has likely decreased — but the workforce and retention impact hasn't been formally measured. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
+            narrative = `Provider burden has decreased. The retention and workforce economics of that decrease haven't been formally counted yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
             formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 2) {
             const satisfactionLift = domainInputs.satisfactionLift || 10;
@@ -202,7 +202,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           if (level === 1) {
             lowEstimate = Math.round(providers * 1000);
             highEstimate = Math.round(providers * 3000);
-            narrative = `Documentation quality has improved — but no downstream quality program has been connected to it. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in quality and compliance value when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a documentation completeness audit. It typically generates the baseline data needed to build the quality program.`;
+            narrative = `Documentation quality has improved. The downstream value — in quality programs, compliance, and CDI — hasn't been connected to it yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in quality and compliance value when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a documentation completeness audit. It typically generates the baseline data needed to build the quality program.`;
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 2) {
             const qualityScore = domainInputs.qualityScore || 70;

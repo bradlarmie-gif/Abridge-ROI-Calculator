@@ -83,7 +83,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'Has better documentation shown up in reimbursement?',
     reframe: '',
     cards: [
-      { level: 1, label: 'Not Yet Analyzed', description: 'Documentation-driven revenue impact has not been analyzed.' },
+      { level: 1, label: 'Revenue Uncounted', description: 'Documentation quality has improved. Whether reimbursement followed has not been analyzed yet — which is where the opportunity lives.' },
       { level: 2, label: 'Directional Signal', description: 'Your organization has observed trends suggesting documentation is affecting reimbursement. Not yet formally validated.' },
       { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue impact quantified.' },
       { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
@@ -129,7 +129,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'How far has documentation quality traveled downstream?',
     reframe: '',
     cards: [
-      { level: 1, label: 'Improvement Untracked', description: 'Documentation quality has improved. The downstream teams that could benefit from it — coding, CDI, compliance — haven\'t been formally engaged yet.' },
+      { level: 1, label: 'Downstream Unmeasured', description: 'Documentation quality has improved. The teams that benefit from it — coding, CDI, compliance — haven\'t been formally connected to it yet.' },
       { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
       { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
       { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
