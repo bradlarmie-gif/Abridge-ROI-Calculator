@@ -464,6 +464,9 @@ function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
     <Page size="LETTER" style={s.whitePage} wrap={false}>
       <View style={s.redRule} />
       <Text style={s.eyebrow}>EXECUTIVE SUMMARY</Text>
+      <Text style={{ fontSize: 10.5, color: "#444444", lineHeight: 1.7, marginBottom: 16 }}>
+        {"This isn\u2019t a summary of your deployment. It\u2019s a measurement of what your deployment is producing across four organizational value domains \u2014 and a map of what hasn\u2019t been measured yet. The numbers that appear below are either confirmed from your stated inputs or labeled as benchmark ranges. Nothing is projected. Nothing is extrapolated without being labeled."}
+      </Text>
 
       <View style={{ flexDirection: "row", borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 4, marginBottom: 16, overflow: "hidden" }}>
         <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
@@ -582,7 +585,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={s.whitePage} wrap={false}>
       <View style={s.redRule} />
-      <Text style={s.eyebrow}>YOUR AMBIENT PROFILE</Text>
+      <Text style={s.eyebrow}>THE DIAGNOSIS</Text>
 
       <View style={{ flexDirection: "row", gap: 24, marginBottom: 20 }}>
         <View style={{ flex: 1.6 }}>
@@ -593,8 +596,11 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
             {archetype.body}
           </Text>
           {tenureMod ? (
-            <View style={{ borderLeftWidth: 2, borderLeftColor: "#E5E0D9", paddingLeft: 12, marginTop: 8 }}>
-              <Text style={{ fontSize: 9.5, color: "#888888", lineHeight: 1.6, fontStyle: "italic" }}>
+            <View style={{ borderLeftWidth: 3, borderLeftColor: "#EA2C00", paddingLeft: 12, marginTop: 12 }}>
+              <Text style={{ fontSize: 7, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4 }}>
+                WHERE THIS PROFILE SITS IN THE ADOPTION CURVE
+              </Text>
+              <Text style={{ fontSize: 9.5, color: "#555555", lineHeight: 1.6 }}>
                 {tenureMod}
               </Text>
             </View>
@@ -603,7 +609,7 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
 
         <View style={{ flex: 0.8 }}>
           <View style={[s.beigeBox, { alignItems: "center", paddingVertical: 20 }]}>
-            <Text style={s.eyebrow}>MATURITY SCORE</Text>
+            <Text style={s.eyebrow}>THE FULL PICTURE</Text>
             <Text style={{ fontSize: 64, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>
               {data.documentationScore}
             </Text>
@@ -612,6 +618,11 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
               <View style={{ height: 4, backgroundColor: "#EA2C00", borderRadius: 2, width: `${data.documentationScore}%` }} />
             </View>
             <Text style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{band}</Text>
+            <View style={{ height: 1, backgroundColor: "#E5E0D9", width: "80%", marginVertical: 10 }} />
+            <Text style={{ fontSize: 8, color: "#888888", textAlign: "center", lineHeight: 1.5 }}>
+              {measuredTotal > 0 ? fmt(measuredTotal) + " confirmed" : "No domains measured yet"}
+              {unmeasuredLow > 0 ? "\n" + fmt(unmeasuredLow) + "\u2013" + fmt(unmeasuredHigh) + " unmeasured range" : ""}
+            </Text>
             {tenure && (
               <View style={{ backgroundColor: "#FFFFFF", borderRadius: 3, paddingVertical: 4, paddingHorizontal: 10, marginTop: 8 }}>
                 <Text style={{ fontSize: 8, color: "#888888", textAlign: "center" }}>
