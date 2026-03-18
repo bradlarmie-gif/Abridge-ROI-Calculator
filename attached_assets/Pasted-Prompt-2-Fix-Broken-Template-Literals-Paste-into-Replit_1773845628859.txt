@@ -1,0 +1,32 @@
+Prompt 2 — Fix Broken Template Literals
+
+  Paste into Replit:
+
+  In client/src/lib/ambient-assessment-pdf.tsx, find the `computeInvitationCopy` function (around line 313).
+
+  Inside the `bodies` object, replace the `low` and `mid` values with these corrected single-line strings. The current versions wrap across multiple source lines and embed literal newlines in the PDF text,
+  which is a bug.
+
+  Replace the `low` value:
+    CURRENT (broken, spans ~3 lines):
+    low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider
+  satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common
+  starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+
+    REPLACEMENT (single line):
+    low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider
+  satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common
+  starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+
+  Replace the `mid` value:
+    CURRENT (broken, spans ~3 lines):
+    mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to
+   accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not
+  starting from scratch.`,
+
+    REPLACEMENT (single line):
+    mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to
+  accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not
+  starting from scratch.`,
+
+  Make only these two targeted changes. Do not modify anything else in the file.

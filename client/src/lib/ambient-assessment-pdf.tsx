@@ -318,12 +318,8 @@ function computeInvitationCopy(
   const band = tenureScoreBand(totalScore);
   const opening = `The organizations that move from ${scoreBandLabel} to Level 3+ across multiple domains in under 12 months don\u2019t do it alone.`;
   const bodies: Record<string, string> = {
-    low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider
-satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common
-starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
-    mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to
- accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not
-starting from scratch.`,
+    low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
+    mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not starting from scratch.`,
     high: `What they have in common is governance \u2014 ensuring the measurement capability is institutional, not dependent on champions, and that it scales as the deployment grows. Your profile suggests
 you\u2019re closer to that frontier than most. The question is whether it\u2019s owned by the organization or by a few people inside it.`,
   };
