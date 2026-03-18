@@ -3,7 +3,6 @@ import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { DataMode } from "@/lib/switchGapCalculator";
-import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Button } from "@/components/ui/button";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
@@ -12,16 +11,14 @@ interface Screen1Props {
   onHome?: () => void;
 }
 
-type PillChoice = "knows" | "estimates" | "never" | null;
+type PillChoice = "estimates" | "never" | null;
 
 const PILLS: { id: PillChoice; label: string; dataMode: DataMode }[] = [
-  { id: "knows", label: "I know the number", dataMode: "measured" },
   { id: "estimates", label: "I have a rough sense", dataMode: "estimated" },
   { id: "never", label: "I\u2019ve never calculated it", dataMode: "benchmark" },
 ];
 
 const RESPONSES: Record<string, string> = {
-  knows: "Good. Let\u2019s validate it.",
   estimates: "Let\u2019s sharpen it.",
   never: "Most haven\u2019t. That\u2019s exactly why this exists.",
 };
@@ -30,29 +27,20 @@ export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
   const { dispatch } = useAssessment();
   const [selected, setSelected] = useState<PillChoice>(null);
   const [showResponse, setShowResponse] = useState(false);
-  const [showInput, setShowInput] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
-  const [entryEstimate, setEntryEstimate] = useState<number>(0);
 
   const handleSelect = (pill: typeof PILLS[0]) => {
     setSelected(pill.id);
     setShowResponse(false);
-    setShowInput(false);
     setShowCTA(false);
 
     dispatch(assessmentActions.updateInput("dataMode", pill.dataMode));
 
     setTimeout(() => setShowResponse(true), 400);
-    if (pill.id === "knows") {
-      setTimeout(() => setShowInput(true), 700);
-    }
     setTimeout(() => setShowCTA(true), 1200);
   };
 
   const handleBegin = () => {
-    if (selected === "knows" && entryEstimate > 0) {
-      dispatch(assessmentActions.updateInput("entryEstimate", entryEstimate));
-    }
     onNext();
   };
 
@@ -148,36 +136,6 @@ export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
                   data-testid="text-screen1-response"
                 >
                   {RESPONSES[selected]}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {selected === "knows" && showInput && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-[280px] mx-auto mb-6"
-              >
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] text-left mb-2.5">
-                  Your Estimate
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg text-[#888888]">$</span>
-                  <FormattedNumberInput
-                    value={entryEstimate}
-                    onChange={setEntryEstimate}
-                    className="flex-1"
-                    placeholder="annually"
-                    data-testid="input-entry-estimate"
-                  />
-                  <span className="text-sm text-[#888888]">/ year</span>
-                </div>
-                <p className="text-left mt-2 text-sm text-[#888888]">
-                  Optional — we'll reference this in your results.
                 </p>
               </motion.div>
             )}

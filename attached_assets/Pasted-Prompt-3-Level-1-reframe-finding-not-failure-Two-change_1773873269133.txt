@@ -1,0 +1,68 @@
+Prompt 3 — Level 1 reframe: finding, not failure
+
+  Two changes to flip Level 1 domains from "you haven't done this"
+  to "here's what's on the table."
+
+  ---
+
+  CHANGE A — Rename Level 1 labels in Screen4Domains.tsx
+
+  In client/src/pages/switch/ambient/Screen4Domains.tsx,
+  find the DOMAIN_CONFIGS object. Update the Level 1 card labels
+  and descriptions as follows:
+
+  Revenue domain, Level 1 card:
+    CURRENT label:       'Not Yet Analyzed'
+    CURRENT description: 'Documentation-driven revenue impact has not been analyzed.'
+    NEW label:           'Revenue Uncounted'
+    NEW description:     'Documentation quality has improved. Whether reimbursement followed has not been analyzed yet — which is where the opportunity lives.'
+
+  Quality/Risk domain, Level 1 card:
+    CURRENT label:       'Improvement Untracked'
+    CURRENT description: 'Documentation quality has improved. The downstream teams that could benefit from it — coding, CDI, compliance — haven\'t been formally engaged yet.'
+    NEW label:           'Downstream Unmeasured'
+    NEW description:     'Documentation quality has improved. The teams that benefit from it — coding, CDI, compliance — haven\'t been formally connected to it yet.'
+
+  Leave Capacity L1 ("Time Recovered") and Workforce L1 ("Time Is Returning")
+  unchanged — those labels are already findings-forward.
+
+  ---
+
+  CHANGE B — When Level 1 is selected, show the benchmark as a finding
+
+  In client/src/pages/switch/ambient/Screen4Domains.tsx, find the section
+  that renders the domain feedback panel when a level is selected. This is
+  the area that shows the domain context/narrative after a card is clicked.
+
+  When the selected level is 1 (and no hasValue), find where the benchmark
+  narrative is shown. The narrative text currently starts with something like
+  "Ambient has been running, but recovered time hasn't been formally tracked..."
+
+  Replace the opening sentence pattern for ALL four Level 1 benchmark narratives
+  to lead with what's on the table, not what hasn't happened.
+
+  Find each Level 1 narrative string in the nextLevelContents useMemo block
+  (around lines 129-224) and update the opening of each:
+
+  Capacity L1 — find:
+    `Ambient has been running, but recovered time hasn't been formally tracked or redeployed.`
+  Replace with:
+    `Recovered time is generating value. It hasn't been counted yet.`
+
+  Revenue L1 — find:
+    `Documentation quality has likely improved — but no one has analyzed whether reimbursement has followed.`
+  Replace with:
+    `Documentation quality has improved. Whether reimbursement followed is the question — and the answer is almost always yes.`
+
+  Workforce L1 — find:
+    `Provider burden has likely decreased — but the workforce and retention impact hasn't been formally measured.`
+  Replace with:
+    `Provider burden has decreased. The retention and workforce economics of that decrease haven't been formally counted yet.`
+
+  Risk L1 — find:
+    `Documentation quality has improved — but no downstream quality program has been connected to it.`
+  Replace with:
+    `Documentation quality has improved. The downstream value — in quality programs, compliance, and CDI — hasn't been connected to it yet.`
+
+  Do not change the benchmark range figures or the OPPORTUNITY AHEAD sections.
+  Only change the opening sentence of each Level 1 narrative.
