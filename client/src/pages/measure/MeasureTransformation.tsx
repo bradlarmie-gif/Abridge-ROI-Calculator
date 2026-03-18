@@ -168,24 +168,24 @@ export default function MeasureTransformation({
           data-testid="section-stats-banner"
         >
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="border-l-4 border-[#EA2C00] pl-3">
-              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
+            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.providers}</p>
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Providers</p>
             </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3">
-              <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
+            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{formatNumber(state.deployment.totalEncounters)}</p>
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : isNursing ? "Shifts" : "Encounters"}</p>
             </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3">
-              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
+            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.utilizationRate}%</p>
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
             </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3">
-              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
+            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.monthsOnAbridge}mo</p>
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
             </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3">
-              <p className="text-2xl md:text-3xl font-bold text-black">{hoursPerProvider} hrs</p>
+            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{hoursPerProvider} hrs</p>
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Saved Per Provider</p>
             </div>
           </div>
