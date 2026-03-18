@@ -153,7 +153,7 @@ export function PDFCoverPage({
         <View style={styles.redRule} />
 
         <Text style={{ fontSize: 13, color: "#1A1A1A", fontWeight: 400, lineHeight: 1.5, marginBottom: 20, maxWidth: 340 }}>
-          {"Ambient technology captures time. This assessment measures what happens to it \u2014 whether recovered capacity gets deployed, whether documentation quality reaches revenue cycle, whether provider relief connects to workforce economics, whether quality improvements travel downstream. Most organizations measure adoption. This measures what adoption produces."}
+          Most organizations measure adoption. This measures what adoption produces.
         </Text>
 
         {subtitle ? (
