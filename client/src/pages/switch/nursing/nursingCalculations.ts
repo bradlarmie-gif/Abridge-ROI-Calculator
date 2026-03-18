@@ -25,7 +25,7 @@ export function derivePatientDays(baseline: NursingBaselineInputs): number {
 }
 
 export function deriveShiftsPerYear(baseline: NursingBaselineInputs): number {
-  return Math.round(baseline.nurseFTEs * 260);
+  return Math.round(baseline.nurseFTEs * 173);
 }
 
 function fmt(n: number): string {
@@ -73,7 +73,7 @@ export function getOTNarrative(inputs: StaffingCostsInputs, baseline: NursingBas
 
 export function computeBedsideImpact(inputs: BedsidePresenceInputs, baseline: NursingBaselineInputs) {
   const annualDocHours = inputs.docHoursPerShift > 0
-    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 260)
+    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 173)
     : 0;
   return { annualDocHours };
 }

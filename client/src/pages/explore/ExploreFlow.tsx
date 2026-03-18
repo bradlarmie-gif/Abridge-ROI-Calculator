@@ -299,8 +299,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   utilizationPercent: 0,
   nursingStaffedBeds: 0,
   nursingOccupancyRate: 85,
-  nursingShiftsPerNurseYear: 260,
-  nursingMinutesPerShift: 30,
+  nursingShiftsPerNurseYear: 173,
+  nursingMinutesPerShift: 0,
   timePathScenario: null,
   minutesSavedPerEncounter: 3,
   timeAllocation: {

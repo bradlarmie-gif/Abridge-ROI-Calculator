@@ -1,0 +1,134 @@
+Replit Prompt — Fix Both Nursing Calculation Bugs                                                                                                                                                            
+                                                                                                                                                                                                               
+  Two confirmed calculation bugs need to be fixed in the nursing explore path.                                                                                                                                 
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  BUG 1 FIX — Change 260 to 173 everywhere in the nursing calculation path.                                                                                                                                    
+                                                                                                                                                                                                               
+  Nurses work 12-hour shifts. The correct shifts/year for a nursing FTE is 173                                                                                                                                 
+  (2080 standard annual hours ÷ 12 hours per shift = 173.3, rounded to 173).                                                                                                                                   
+                                                                                                                                                                                                               
+  In client/src/pages/switch/nursing/nursingCalculations.ts:                                                                                                                                                   
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                        
+    export function deriveShiftsPerYear(baseline: NursingBaselineInputs): number {                                                                                                                             
+      return Math.round(baseline.nurseFTEs * 260);                                                                                                                                                             
+    }                                                                                                                                                                                                          
+                                                            
+  Replace with:                                                                                                                                                                                                
+    export function deriveShiftsPerYear(baseline: NursingBaselineInputs): number {
+      return Math.round(baseline.nurseFTEs * 173);                                                                                                                                                             
+    }                                                       
+
+  Also in the same file, find the annualDocHours calculation:                                                                                                                                                  
+    const annualDocHours = inputs.docHoursPerShift > 0
+      ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 260)                                                                                                                                         
+      : 0;                                                                                                                                                                                                     
+                                          
+  Replace with:                                                                                                                                                                                                
+    const annualDocHours = inputs.docHoursPerShift > 0                                                                                                                                                         
+      ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 173)
+      : 0;                                                                                                                                                                                                     
+                                                            
+  In client/src/pages/explore/ExploreFlow.tsx, find the default state:
+    nursingShiftsPerNurseYear: 260,                                                                                                                                                                            
+                                              
+  Replace with:                                                                                                                                                                                                
+    nursingShiftsPerNurseYear: 173,                         
+                                                                                                                                                                                                               
+  In client/src/pages/switch/nursing/NursingScreen1Program.tsx, find the sidebar display:
+    <p>x 260 shifts/year</p>                                                                                                                                                                                   
+                                                            
+  Replace with:                                                                                                                                                                                                
+    <p>x 173 shifts/year</p>
+                                                                                                                                                                                                               
+  Also in the same file, find:                              
+    <p className="text-white/40">Shifts / Year</p>                                                                                                                                                             
+                                                            
+  The sidebar already computes from deriveShiftsPerYear so that will update automatically.
+  Also search for any other hardcoded "260" in the nursing directory and replace with 173.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  BUG 2 FIX — Ensure the user's selected minutes/shift carries forward to the value page.                                                                                                                      
+                                                            
+  In client/src/pages/explore/ExploreFlow.tsx, find:                                                                                                                                                           
+    nursingMinutesPerShift: 30,                                                                                                                                                                                
+  
+  Replace with:                                                                                                                                                                                                
+    nursingMinutesPerShift: 0,                              
+                                                                                                                                                                                                               
+  This ensures the downstream page does not default to the Optimistic 30-minute preset.
+  The correct value comes from state.minutesSavedPerEncounter which the Time Savings screen
+  updates when the user makes a selection. Verify in ExploreModel.tsx that the line:
+    const minsPerShift = state.minutesSavedPerEncounter;                                                                                                                                                       
+    nursingMinutesPerShift: minsPerShift, 
+  is present and is the authoritative source for the downstream value page.                                                                                                                                    
+                                                                                                                                                                                                               
+  If the downstream "What Could That Time Be Worth?" page has any fallback that reads                                                                                                                          
+  nursingMinutesPerShift before minutesSavedPerEncounter is set, update that fallback                                                                                                                          
+  to use state.minutesSavedPerEncounter directly.                                                                                                                                                              
+                                                                                                                                                                                                               
+  Do not change any other logic. These are targeted constant and default value corrections only.                                                                                                               
+                                                                                                                                                                                                               
+✻ Cooked for 3m 55s                                                                                                                                                                                            
+                                                                                                                                                                                                               
+❯ can you create a replit prompt for me to fix these                                                                                                                                                           
+                                                                                                                                                                                                               
+⏺ Fix two confirmed calculation bugs in the nursing path. Make only these changes.                                                                                                                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  BUG 1 — 260 shifts/year is wrong for nurses. Nurses work 12-hour shifts, so the correct number is 173 (2080 FTE hours ÷ 12 hrs/shift). Replace every hardcoded 260 in the nursing calculation path with 173. 
+                                                                                                                                                                                                               
+  In client/src/pages/switch/nursing/nursingCalculations.ts:
+                                                                                                                                                                                                               
+  Change 1a — find:                                         
+    return Math.round(baseline.nurseFTEs * 260);                                                                                                                                                               
+  Replace with:                                             
+    return Math.round(baseline.nurseFTEs * 173);                                                                                                                                                               
+                                                            
+  Change 1b — find:                                                                                                                                                                                            
+    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 260)                                                                                                                                           
+  Replace with:                                                                                                                                                                                                
+    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 173)                                                                                                                                           
+                                                            
+  In client/src/pages/explore/ExploreFlow.tsx:                                                                                                                                                                 
+                                          
+  Change 1c — find:                                                                                                                                                                                            
+    nursingShiftsPerNurseYear: 260,                                                                                                                                                                            
+  Replace with:
+    nursingShiftsPerNurseYear: 173,                                                                                                                                                                            
+                                                            
+  In client/src/pages/switch/nursing/NursingScreen1Program.tsx:
+
+  Change 1d — find:                                                                                                                                                                                            
+    <p>x 260 shifts/year</p>              
+  Replace with:                                                                                                                                                                                                
+    <p>x 173 shifts/year</p>                                                                                                                                                                                   
+                                              
+  Also search the entire nursing directory for any remaining hardcoded 260 used in a shifts/year context and replace with 173.                                                                                 
+                                                            
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  BUG 2 — The "What Could That Time Be Worth?" page defaults to 30 min/shift (the Optimistic preset) regardless of what the user selected on the Time Savings screen. This causes a 6x inflation when a user   
+  enters a custom low value like 5 min/shift.                                                                                                                                                                  
+                                                            
+  Root cause: the default state initializes nursingMinutesPerShift: 30, so if the mapping from minutesSavedPerEncounter hasn't run yet, the downstream page reads the stale default.                           
+                                          
+  In client/src/pages/explore/ExploreFlow.tsx:                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Change 2a — find:                           
+    nursingMinutesPerShift: 30,                                                                                                                                                                                
+  Replace with:                                             
+    nursingMinutesPerShift: 0,                                                                                                                                                                                 
+                                                            
+  Then in client/src/pages/explore/ExploreModel.tsx, find the line that maps minutesSavedPerEncounter to nursingMinutesPerShift (it looks like: const minsPerShift = state.minutesSavedPerEncounter). Confirm  
+  that this mapping runs before the downstream value page reads nursingMinutesPerShift. If the downstream value page has any conditional fallback like:
+    nursingMinutesPerShift || 30
+  or                                                                                                                                                                                                           
+    nursingMinutesPerShift > 0 ? nursingMinutesPerShift : 30
+  change the fallback from 30 to 0 so it does not silently revert to the optimistic scenario.                                                                                                                  
+                                                                                                                                                                                                               
+  Do not change any other files or logic.  
