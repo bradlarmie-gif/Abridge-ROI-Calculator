@@ -215,10 +215,13 @@ export default function ExploreModel({
   }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
   const nursingAgencyValue = useMemo(() => {
-    if (!isNursing || !state.timeDriverInputs.nursingAgencyEnabled || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
+    if (!isNursing || !state.timeDriverInputs.nursingAgencyEnabled) return 0;
+    const retainedForAgency = state.timeDriverInputs.nursingRetentionEnabled
+      ? nursingRetainedCount
+      : 0;
     const weeksOfCoverage = state.timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
     const weeklyPremium = state.timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-    return Math.round(nursingRetainedCount * weeksOfCoverage * weeklyPremium);
+    return Math.round(retainedForAgency * weeksOfCoverage * weeklyPremium);
   }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
   const nursingCareQualityPotential = useMemo(() => {
@@ -228,14 +231,16 @@ export default function ExploreModel({
     let total = 0;
     if (docQualityInputs.nursingHapiEnabled) {
       const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+      const hapiPreventionRate = Math.min(docQualityInputs.nursingHapiPreventionRate, 15);
+      total += hapIs * (hapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
     }
     if (docQualityInputs.nursingFallsEnabled) {
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
+      const fallsPreventionRate = Math.min(docQualityInputs.nursingFallsPreventionRate, 12);
+      total += falls * (fallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
     }
     if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
-      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
+      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
       total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
     }
     return Math.round(total);
@@ -248,19 +253,21 @@ export default function ExploreModel({
     if (!isNursing || !state.docQualityInputs.nursingHapiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const hapIs = (patientDays / 1000) * state.docQualityInputs.nursingHapiRate;
-    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
+    const hapiPreventionRate = Math.min(state.docQualityInputs.nursingHapiPreventionRate, 15);
+    return Math.round(hapIs * (hapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingFallsValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingFallsEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
-    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
+    const fallsPreventionRate = Math.min(state.docQualityInputs.nursingFallsPreventionRate, 12);
+    return Math.round(falls * (fallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingHacValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingHacEnabled || !state.docQualityInputs.nursingHacBottomQuartile) return 0;
-    const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01;
+    const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
     return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100));
   }, [isNursing, state.docQualityInputs]);
 

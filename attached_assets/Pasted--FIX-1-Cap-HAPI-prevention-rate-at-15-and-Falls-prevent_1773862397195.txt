@@ -1,0 +1,63 @@
+ FIX 1 — Cap HAPI prevention rate at 15% and Falls prevention rate at 12%.                                                                                                                                    
+  These represent the upper bound of what documentation improvements alone can                                                                                                                                 
+  defensibly claim based on published literature.                                                                                                                                                              
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreModel.tsx, find the HAPI value calculation:
+    const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;                                                                                                                                     
+    total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+                                                                                                                                                                                                               
+  Replace with:                                             
+    const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;                                                                                                                                     
+    const hapiPreventionRate = Math.min(docQualityInputs.nursingHapiPreventionRate, 15);                                                                                                                       
+    total += hapIs * (hapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+                                                                                                                                                                                                               
+  Find the Falls value calculation:                                                                                                                                                                            
+    const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;                                                                                                                                    
+    total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;                                                                                                  
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+    const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;                                                                                                                                    
+    const fallsPreventionRate = Math.min(docQualityInputs.nursingFallsPreventionRate, 12);                                                                                                                     
+    total += falls * (fallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+   
+  FIX 2 — Update replacement cost default from $50,000 to $56,300.                                                                                                                                             
+  NSI Nursing Solutions 2024 benchmark is $56,300 average per RN.
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreFlow.tsx, find:                                                                                                                                                           
+    replacementCost: 50000,               
+  Replace with:                                                                                                                                                                                                
+    replacementCost: 56300,                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  FIX 3 — Fix agency savings silent zero when retention is disabled.
+  Currently agency savings return $0 if retention is not enabled, with no explanation.                                                                                                                         
+  Change the condition so agency can be calculated independently.
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreModel.tsx, find:
+    if (!state.timeDriverInputs.nursingAgencyEnabled || !state.timeDriverInputs.nursingRetentionEnabled) return 0;                                                                                             
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+    if (!state.timeDriverInputs.nursingAgencyEnabled) return 0;                                                                                                                                                
+    const nursingRetainedCount = state.timeDriverInputs.nursingRetentionEnabled                                                                                                                                
+      ? (state.numberOfProviders * (state.timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * ((state.timeDriverInputs.retentionImpactRates?.[state.timeDriverInputs.retentionImpactScenario] || 15) / 100))
+      : 0;                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Then use nursingRetainedCount in the agency calculation below. If nursingRetainedCount                                                                                                                       
+  is 0 (retention disabled), agency savings will correctly return 0 — but now it is                                                                                                                            
+  explicit rather than silently gated on the retention toggle.                                                                                                                                                 
+                                                                                                                                                                                                               
+  ---                                                       
+                                                                                                                                                                                                               
+  FIX 4 — Add a note to the HAC 1% penalty so it stays current.
+  In client/src/pages/explore/ExploreModel.tsx, find:                                                                                                                                                          
+    const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
+                                                                                                                                                                                                               
+  Replace with:                           
+    const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)                                                                                     
+                                                                                                                                                                                                               
+  Do not change the calculation — just add the comment.                                                                                                                                                        
+                                                                                                                                                                                                               
+  Do not change any other files or logic.       

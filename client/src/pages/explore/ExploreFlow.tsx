@@ -374,7 +374,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingRetentionEnabled: false,
     nursingRetentionExpanded: true,
     nursingTurnoverRate: 18,
-    nursingReplacementCost: 50000,
+    nursingReplacementCost: 56300,
     nursingCareTimeEnabled: false,
     nursingCareTimeExpanded: true,
     nursingCareTimePercent: 40,
