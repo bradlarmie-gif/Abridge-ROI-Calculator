@@ -167,14 +167,22 @@ export function computeCapacityFeedback(
     const annualAdditionalVisits = additionalPatients * redesignedProviders * 11;
     const accessRevenue = Math.round(annualAdditionalVisits * revenuePerVisit);
     const confidence = (inputs.capacityAccessConfidence as string) || 'estimated';
+    const confidenceMultiplier =
+      confidence === 'measured' ? 1.0 :
+      confidence === 'estimated' ? 0.7 :
+      confidence === 'aspirational' ? 0.5 : 0.7;
+    const adjustedRevenue = Math.round(accessRevenue * confidenceMultiplier);
+    const confidenceNote = confidenceMultiplier < 1
+      ? ` (${Math.round((1 - confidenceMultiplier) * 100)}% confidence adjustment applied \u2014 data marked as ${confidence})`
+      : '';
     const isAspirational = confidence === 'aspirational';
     const isMeasured = confidence === 'measured';
 
     const headlineMetric = isMeasured
-      ? `${formatDollar(accessRevenue)} in access revenue annually`
+      ? `${formatDollar(adjustedRevenue)} in access revenue annually`
       : isAspirational
-        ? `${formatDollar(accessRevenue)} access revenue target`
-        : `${formatDollar(accessRevenue)} in access revenue annually (estimated)`;
+        ? `${formatDollar(adjustedRevenue)} access revenue target`
+        : `${formatDollar(adjustedRevenue)} in access revenue annually (estimated)`;
 
     const confidenceFraming = isMeasured
       ? 'Based on your confirmed scheduling data.'
@@ -184,11 +192,11 @@ export function computeCapacityFeedback(
 
     return {
       label: 'Estimated Impact',
-      value: accessRevenue,
+      value: adjustedRevenue,
       hasValue: true,
       headlineMetric,
-      context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.\n\n${confidenceFraming}`,
-      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
+      context: `${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month across ${redesignedProviders} provider${redesignedProviders !== 1 ? 's' : ''} = ${annualAdditionalVisits.toLocaleString()} new encounters annually at ${formatDollar(revenuePerVisit)} per visit.${confidenceNote}\n\n${confidenceFraming}`,
+      formula: `[annualVisits] = ${additionalPatients} patients/mo × ${redesignedProviders} providers × 11 clinical months = ${annualAdditionalVisits.toLocaleString()}\n[accessRevenue] = ${annualAdditionalVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${confidenceMultiplier < 1 ? `\n[adjusted] = ${formatDollar(accessRevenue)} × ${confidenceMultiplier} = ${formatDollar(adjustedRevenue)}` : ''}`,
       footnote: isAspirational
         ? `⚠ Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations. Uses 11 clinical months. Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}.`
         : `Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit uses your baseline input of ${formatDollar(revenuePerVisit)}. If additional visits are typically shorter or lower-complexity than your average, adjust revenue per visit in your baseline settings.`,

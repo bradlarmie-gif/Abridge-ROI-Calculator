@@ -1,0 +1,61 @@
+Replit Prompt — Fix the Three Bugs                        
+                                                                                                                                                                                                               
+  Fix three calculation issues in the ambient assessment.   
+                                              
+  ---                                                                                                                                                                                                          
+  
+  FIX 1 — Apply confidence haircut computationally in Capacity L3 and Revenue L3.                                                                                                                              
+                                                            
+  In client/src/pages/switch/ambient/domainCalculations.ts,                                                                                                                                                    
+  find the Capacity Level 3 section where accessRevenue is calculated                                                                                                                                          
+  (look for: accessRevenue = annualAdditionalVisits × revenuePerVisit).
+                                                                                                                                                                                                               
+  After the accessRevenue line, add:                        
+    const confidenceMultiplier =                                                                                                                                                                               
+      inputs.capacityAccessConfidence === 'measured' ? 1.0 :                                                                                                                                                   
+      inputs.capacityAccessConfidence === 'estimated' ? 0.7 :                                                                                                                                                  
+      inputs.capacityAccessConfidence === 'aspirational' ? 0.5 : 0.7;                                                                                                                                          
+    const adjustedRevenue = Math.round(accessRevenue * confidenceMultiplier);                                                                                                                                  
+                                                                                                                                                                                                               
+  Then use adjustedRevenue (not accessRevenue) as the value returned.                                                                                                                                          
+  Also add a confidenceNote to the context string:                                                                                                                                                             
+    const confidenceNote = confidenceMultiplier < 1                                                                                                                                                            
+      ? ` (${Math.round((1 - confidenceMultiplier) * 100)}% confidence adjustment applied — data marked as ${inputs.capacityAccessConfidence})`                                                                
+      : '';                                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  Apply the same pattern to Revenue L3 wherever the revenueImpact value is returned,                                                                                                                           
+  using the equivalent confidence input field for Revenue.                                                                                                                                                     
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                            
+  FIX 2 — Scale Revenue L4 benchmark by org size.                                                                                                                                                              
+                                                            
+  In client/src/pages/switch/ambient/domainCalculations.ts,                                                                                                                                                    
+  find the BENCHMARK_RANGES constant (near the bottom of the file).                                                                                                                                            
+  Find the revenue entry. It currently has flat values (200000 / 600000 or similar).
+                                                                                                                                                                                                               
+  Replace with scaled functions matching the pattern of the other domains:
+    revenue: {                                                                                                                                                                                                 
+      low: (providers: number) => Math.round(providers * 4000),                                                                                                                                                
+      high: (providers: number) => Math.round(providers * 12000),                                                                                                                                              
+      description: "from documentation-driven coding and denial impact, annually"                                                                                                                              
+    },                                                                                                                                                                                                         
+                                                            
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  FIX 3 — Add double-count disclosure on Screen5Gap.
+                                                                                                                                                                                                               
+  In client/src/pages/switch/ambient/Screen5Gap.tsx,        
+  find the section that shows the confirmed total tile or the domain cards area.                                                                                                                               
+  Add this note below the confirmed total value, only when both Capacity AND Revenue
+  domains have hasValue = true:                                                                                                                                                                                
+                                                            
+    {capacityHasValue && revenueHasValue && (                                                                                                                                                                  
+      <p className="text-xs text-[#999999] mt-2 leading-relaxed">                                                                                                                                              
+        If your Capacity and Revenue figures reflect activity from the same patient                                                                                                                            
+        encounters, review the combined total with your finance team before use in                                                                                                                             
+        a formal business case.                                                                                                                                                                                
+      </p>                                                                                                                                                                                                     
+    )}                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Do not change any other logic.     

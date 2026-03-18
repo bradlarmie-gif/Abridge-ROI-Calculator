@@ -706,6 +706,11 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               <p className="font-bold text-[52px] leading-none text-white/15 tracking-tight mb-1">—</p>
             )}
             <p className="text-[11px] text-white/25 mb-6">per year · from your inputs</p>
+            {domainHasValue.capacity && domainHasValue.revenue && (
+              <p className="text-[10px] text-white/25 leading-relaxed mb-4">
+                If your Capacity and Revenue figures reflect activity from the same patient encounters, review the combined total with your finance team before use in a formal business case.
+              </p>
+            )}
 
             {unmeasuredLow > 0 && (
               <>
