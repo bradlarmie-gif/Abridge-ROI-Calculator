@@ -95,47 +95,43 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
                     )}
                   </AnimatePresence>
 
-                  {baseline.staffedBeds > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="mt-2"
-                    >
-                      <p className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#AAAAAA] mb-1.5">
-                        Estimate from beds
-                      </p>
-                      <div className="flex gap-1.5 flex-wrap">
-                        {FTE_ESTIMATES.map(({ label, multiplier, description }) => {
-                          const estimated = Math.round(baseline.staffedBeds * multiplier);
-                          const isActive = appliedEstimate === label;
-                          return (
-                            <button
-                              key={label}
-                              type="button"
-                              onClick={() => applyEstimate(multiplier, label)}
-                              title={description}
-                              className={`group flex flex-col items-start px-2.5 py-1.5 rounded-lg border text-left transition-all duration-150 ${
-                                isActive
-                                  ? "bg-[#EA2C00] border-[#EA2C00] text-white"
-                                  : "bg-white border-[#E0DAD4] text-[#555555] hover:border-[#EA2C00] hover:bg-[#FFF5F3]"
-                              }`}
-                            >
-                              <span className={`text-[10px] font-semibold leading-none ${isActive ? "text-white" : "text-[#1A1A1A]"}`}>
-                                {label}
-                              </span>
-                              <span className={`text-[10px] mt-0.5 ${isActive ? "text-white/80" : "text-[#EA2C00]"}`}>
-                                {estimated.toLocaleString()} FTEs
-                              </span>
-                              <span className={`text-[9px] mt-0.5 ${isActive ? "text-white/60" : "text-[#AAAAAA]"}`}>
-                                {description}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
+                  <AnimatePresence>
+                    {baseline.staffedBeds > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          <span className="text-[9.5px] text-[#AAAAAA] shrink-0">Estimate:</span>
+                          {FTE_ESTIMATES.map(({ label, multiplier, description }) => {
+                            const estimated = Math.round(baseline.staffedBeds * multiplier);
+                            const isActive = appliedEstimate === label;
+                            return (
+                              <button
+                                key={label}
+                                type="button"
+                                onClick={() => applyEstimate(multiplier, label)}
+                                title={description}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10.5px] font-medium transition-all duration-150 ${
+                                  isActive
+                                    ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                                    : "bg-white border-[#D8D2CC] text-[#555555] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+                                }`}
+                              >
+                                <span>{label}</span>
+                                <span className={`font-bold ${isActive ? "text-white" : "text-[#EA2C00]"}`}>
+                                  {estimated.toLocaleString()}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>

@@ -1,0 +1,114 @@
+Replit Prompt                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  In client/src/pages/switch/nursing/NursingScreen1Program.tsx, make the following three changes to add a compact FTE estimator under the Nurse FTEs input. Do not change any other file.
+                                              
+  ---                                                                                                                                                                                                          
+  
+  CHANGE 1 — Replace the import block at the top of the file:                                                                                                                                                  
+                                                            
+  Replace:                                                                                                                                                                                                     
+    import { motion } from "framer-motion";                 
+    import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+    import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+    import { staggerContainer, staggerItem } from "@/components/PageTransition";
+    import type { NursingBaselineInputs } from "./nursingTypes";                                                                                                                                               
+    import { derivePatientDays, deriveShiftsPerYear } from "./nursingCalculations";                                                                                                                            
+                                                                                                                                                                                                               
+  With:                                                                                                                                                                                                        
+    import { motion, AnimatePresence } from "framer-motion";                                                                                                                                                   
+    import { useState } from "react";                       
+    import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                  
+    import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+    import { staggerContainer, staggerItem } from "@/components/PageTransition";                                                                                                                               
+    import type { NursingBaselineInputs } from "./nursingTypes";
+    import { derivePatientDays, deriveShiftsPerYear } from "./nursingCalculations";                                                                                                                            
+                                                                                                                                                                                                               
+    const FTE_ESTIMATES = [                                                                                                                                                                                    
+      { label: "Med / Surg", multiplier: 1.5, description: "1:4–5 patient ratio" },                                                                                                                            
+      { label: "ICU / PICU", multiplier: 3.0, description: "1:1–2 patient ratio" },                                                                                                                            
+      { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },                                                                                                                                  
+    ];                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  CHANGE 2 — Add state and helper function inside the component, immediately after the canProceed line:                                                                                                        
+                                                                                                                                                                                                               
+  Find:                                                     
+    const canProceed = baseline.staffedBeds > 0 && baseline.nurseFTEs > 0;                                                                                                                                     
+                                              
+  Replace with:                                                                                                                                                                                                
+    const canProceed = baseline.staffedBeds > 0 && baseline.nurseFTEs > 0;
+    const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);                                                                                                                               
+                                              
+    function applyEstimate(multiplier: number, label: string) {                                                                                                                                                
+      if (baseline.staffedBeds <= 0) return;                                                                                                                                                                   
+      updateBaseline("nurseFTEs", Math.round(baseline.staffedBeds * multiplier));                                                                                                                              
+      setAppliedEstimate(label);                                                                                                                                                                               
+      setTimeout(() => setAppliedEstimate(null), 2000);                                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  CHANGE 3 — Replace the Nurse FTEs helper text with the inline estimator.                                                                                                                                     
+                                                            
+  Find this exact block (the helper text line and the closing div):
+    <p className="text-xs text-[#999999] mt-1">Full-time equivalent nurses in scope</p>                                                                                                                        
+                  </div>                      
+                                                                                                                                                                                                               
+  Replace it with:                                          
+    <AnimatePresence mode="wait">                                                                                                                                                                              
+      {appliedEstimate ? (                                  
+        <motion.p                                                                                                                                                                                              
+          key="applied"                                     
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}                                                                                                                                                                       
+          exit={{ opacity: 0 }}
+          className="text-xs text-[#EA2C00] mt-1 font-medium"                                                                                                                                                  
+        >                                                   
+          ✓ Applied {appliedEstimate} estimate
+        </motion.p>
+      ) : (                                                                                                                                                                                                    
+        <motion.p key="hint" initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-[#999999] mt-1">
+          Full-time equivalent nurses in scope                                                                                                                                                                 
+        </motion.p>                                                                                                                                                                                            
+      )}
+    </AnimatePresence>                                                                                                                                                                                         
+                                                            
+    <AnimatePresence>                                                                                                                                                                                          
+      {baseline.staffedBeds > 0 && (                        
+        <motion.div                           
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}                                                                                                                                                                     
+          transition={{ duration: 0.18 }}
+          className="overflow-hidden"                                                                                                                                                                          
+        >                                                   
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <span className="text-[9.5px] text-[#AAAAAA] shrink-0">Estimate:</span>                                                                                                                            
+            {FTE_ESTIMATES.map(({ label, multiplier, description }) => {
+              const estimated = Math.round(baseline.staffedBeds * multiplier);                                                                                                                                 
+              const isActive = appliedEstimate === label;   
+              return (                                                                                                                                                                                         
+                <button                       
+                  key={label}                                                                                                                                                                                  
+                  type="button"                                                                                                                                                                                
+                  onClick={() => applyEstimate(multiplier, label)}                                                                                                                                             
+                  title={description}                                                                                                                                                                          
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10.5px] font-medium transition-all duration-150 ${                                                        
+                    isActive                                
+                      ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                      : "bg-white border-[#D8D2CC] text-[#555555] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+                  }`}                                                                                                                                                                                          
+                >                                                                                                                                                                                              
+                  <span>{label}</span>                                                                                                                                                                         
+                  <span className={`font-bold ${isActive ? "text-white" : "text-[#EA2C00]"}`}>                                                                                                                 
+                    {estimated.toLocaleString()}                                                                                                                                                               
+                  </span>                                                                                                                                                                                      
+                </button>                                                                                                                                                                                      
+              );                                                                                                                                                                                               
+            })}                                                                                                                                                                                                
+          </div>                                                                                                                                                                                               
+        </motion.div>                                                                                                                                                                                          
+      )}                                                                                                                                                                                                       
+    </AnimatePresence>                                      
+                  </div>                 
