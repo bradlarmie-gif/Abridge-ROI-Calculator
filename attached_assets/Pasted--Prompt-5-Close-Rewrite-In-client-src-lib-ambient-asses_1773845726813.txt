@@ -1,0 +1,32 @@
+ Prompt 5 — Close Rewrite
+
+  In client/src/lib/ambient-assessment-pdf.tsx, find the ConversationAheadPage function (or the last page function — page 8).
+
+  Find the dark tile block that contains "RECOMMENDED NEXT STEP" (around line 1295-1303):
+
+    <View style={[s.darkTile, { marginBottom: 10, padding: 18 }]}>
+      <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>RECOMMENDED NEXT STEP</Text>
+      <Text style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.4, marginBottom: 8 }}>
+        A 45-minute working session built around this profile.
+      </Text>
+      <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 }}>
+        Not a product walkthrough. A structured conversation about what the unmeasured domains are worth at your scale, what the first 90 days of measurement looks like, and what organizations at your
+  maturity level have done to move quickly. The output is a specific plan {"\u2014"} not a proposal.
+      </Text>
+    </View>
+
+  Replace the entire block with:
+
+    <View style={[s.darkTile, { marginBottom: 10, padding: 20 }]}>
+      <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 }}>WHAT THIS ASSESSMENT REPRESENTS</Text>
+      <Text style={{ fontSize: 11.5, color: "rgba(255,255,255,0.9)", lineHeight: 1.75, marginBottom: 12 }}>
+        {"Most vendors show you a number. This assessment shows you a measurement architecture \u2014 four domains, four levels of rigor, each with a defined formula and a defined gap between where you are
+  and what full capture looks like. The organizations that reach Level 3+ across multiple domains in 12 months don\u2019t do it because they had a better deployment. They do it because they built a
+  structured measurement program around what the deployment was producing. That program has a methodology. The methodology is what this assessment is built on."}
+      </Text>
+      <Text style={{ fontSize: 10, fontWeight: 700, color: "#EA2C00", lineHeight: 1.5 }}>
+        {"That\u2019s the conversation Abridge is built to have."}
+      </Text>
+    </View>
+
+  Make only this change. Do not modify anything else.

@@ -1,0 +1,45 @@
+Prompt 4 — Maturity Position + Domain Pages
+
+  Make two targeted changes in client/src/lib/ambient-assessment-pdf.tsx. Do not change anything else.
+
+  ---
+
+  CHANGE A: MaturityPositionPage — "DOMAIN BREAKDOWN" label + framework text
+
+  Find (around line 748):
+    <Text style={s.eyebrow}>DOMAIN BREAKDOWN</Text>
+
+  Replace with:
+    <Text style={s.eyebrow}>FOUR ORGANIZATIONAL DECISIONS</Text>
+    <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.6, marginBottom: 10 }}>
+      {"Each domain represents a distinct question. Capacity: did the time ambient saved get redeployed into patient access? Revenue: did documentation quality reach coding and denial management? Workforce:
+  did provider relief translate to measurable retention economics? Quality: did improved accuracy produce downstream clinical and compliance value? These are four separate decisions, four separate
+  measurement programs, four separate conversations with four separate stakeholders."}
+    </Text>
+
+  ---
+
+  CHANGE B: DomainPage — add strategic question after domain divider
+
+  Find the DomainPage function. Inside it, find the section that renders the domain header (the part that shows domain name and level label). Look for the View that starts with the domain name Text and level
+   badge.
+
+  After the main domain header row and before the content body of each domain card, find where the domain's description or context text begins. Add a strategic question opener immediately before the domain
+  body text begins.
+
+  Add this to the DomainPage function — a strategic question map at the top of the function body:
+
+    const domainStrategicQuestion: Record<string, string> = {
+      capacity: "Did the time ambient saved get redeployed into patient access \u2014 or did it disappear?",
+      revenue: "Did documentation quality improvements reach revenue cycle \u2014 or stop at the note?",
+      workforce: "Did provider relief translate into measurable retention economics \u2014 or stay anecdotal?",
+      risk: "Did improved documentation accuracy produce downstream clinical and compliance value \u2014 or stay untracked?",
+    };
+
+  Then find the place inside DomainPage's JSX where the domain body content begins (the first substantive Text block after the header). Add this View immediately before it:
+
+    <Text style={{ fontSize: 9.5, color: "#777777", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10, borderLeftWidth: 2, borderLeftColor: "#E5E0D9", paddingLeft: 10 }}>
+      {domainStrategicQuestion[domainKey]}
+    </Text>
+
+  where `domainKey` is whatever variable holds the domain key in that function (capacity/revenue/workforce/risk).
