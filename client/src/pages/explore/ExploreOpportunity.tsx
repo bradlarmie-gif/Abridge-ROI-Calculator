@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { ArrowRight, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
@@ -49,6 +49,12 @@ const NURSING_UTILIZATION_PRESETS = [
   { label: "Optimistic", value: 60 },
 ];
 
+const FTE_ESTIMATES = [
+  { label: "Med / Surg", multiplier: 1.5, description: "1:4–5 patient ratio" },
+  { label: "ICU / PICU", multiplier: 3.0, description: "1:1–2 patient ratio" },
+  { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },
+];
+
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
@@ -69,6 +75,15 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   );
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
+  const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
+
+  function applyFteEstimate(multiplier: number, label: string) {
+    if (state.nursingStaffedBeds <= 0) return;
+    const estimated = Math.round(state.nursingStaffedBeds * multiplier);
+    handleProvidersChange(estimated);
+    setAppliedEstimate(label);
+    setTimeout(() => setAppliedEstimate(null), 2000);
+  }
 
   const handleProvidersChange = useCallback((numValue: number) => {
     if (numValue > 0) {
@@ -217,7 +232,68 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       data-testid="input-providers" 
                     />
                     {isNursing && (
-                      <p className="text-xs text-[#888888]">Full-time equivalent nurses in scope for Abridge</p>
+                      <>
+                        <AnimatePresence mode="wait">
+                          {appliedEstimate ? (
+                            <motion.p
+                              key="applied"
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              className="text-xs text-[#EA2C00] mt-1 font-medium"
+                            >
+                              ✓ Applied {appliedEstimate} estimate
+                            </motion.p>
+                          ) : (
+                            <motion.p key="hint" initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-[#888888]">
+                              Full-time equivalent nurses in scope for Abridge
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+
+                        {state.nursingStaffedBeds > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="mt-2"
+                          >
+                            <p className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#AAAAAA] mb-1.5">
+                              Estimate from beds
+                            </p>
+                            <div className="flex gap-1.5 flex-wrap">
+                              {FTE_ESTIMATES.map(({ label, multiplier, description }) => {
+                                const estimated = Math.round(state.nursingStaffedBeds * multiplier);
+                                const isActive = appliedEstimate === label;
+                                return (
+                                  <button
+                                    key={label}
+                                    type="button"
+                                    onClick={() => applyFteEstimate(multiplier, label)}
+                                    title={description}
+                                    data-testid={`btn-fte-estimate-${label.toLowerCase().replace(/\s*\/\s*/g, '-')}`}
+                                    className={`group flex flex-col items-start px-2.5 py-1.5 rounded-lg border text-left transition-all duration-150 ${
+                                      isActive
+                                        ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                                        : "bg-white border-[#E0DAD4] text-[#555555] hover:border-[#EA2C00] hover:bg-[#FFF5F3]"
+                                    }`}
+                                  >
+                                    <span className={`text-[10px] font-semibold leading-none ${isActive ? "text-white" : "text-[#1A1A1A]"}`}>
+                                      {label}
+                                    </span>
+                                    <span className={`text-[10px] mt-0.5 ${isActive ? "text-white/80" : "text-[#EA2C00]"}`}>
+                                      {estimated.toLocaleString()} FTEs
+                                    </span>
+                                    <span className={`text-[9px] mt-0.5 ${isActive ? "text-white/60" : "text-[#AAAAAA]"}`}>
+                                      {description}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
