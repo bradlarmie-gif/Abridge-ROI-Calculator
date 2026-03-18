@@ -633,7 +633,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       // Nursing uses per-shift model
       const totalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
       const eligibleShifts = totalShiftsPerYear * (state.utilizationPercent / 100);
-      const totalMinutes = eligibleShifts * state.nursingMinutesPerShift;
+      const totalMinutes = eligibleShifts * state.minutesSavedPerEncounter;
       return Math.round(totalMinutes / 60);
     } else {
       // Other care settings use per-encounter model
