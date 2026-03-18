@@ -1,0 +1,74 @@
+Prompt 3 — Cover Tagline + Exec Summary + Strategic Profile
+
+  Make three targeted changes to the PDF. Do not change anything else.
+
+  ---
+
+  CHANGE A: client/src/components/pdf/PDFCoverPage.tsx
+
+  Find this line (around line 155-156):
+    What your deployment is measuring. What it isn't. What the gap costs at your scale.
+
+  Replace it with:
+    Ambient technology captures time. This assessment measures what happens to it \u2014 whether recovered capacity gets deployed, whether documentation quality reaches revenue cycle, whether provider relief
+   connects to workforce economics, whether quality improvements travel downstream. Most organizations measure adoption. This measures what adoption produces.
+
+  ---
+
+  CHANGE B: client/src/lib/ambient-assessment-pdf.tsx — ExecutiveSummaryPage
+
+  Find the line (around line 471):
+    <Text style={s.eyebrow}>EXECUTIVE SUMMARY</Text>
+
+  Add this block immediately AFTER that line, before the three-tile row:
+    <Text style={{ fontSize: 10.5, color: "#444444", lineHeight: 1.7, marginBottom: 16 }}>
+      {"This isn\u2019t a summary of your deployment. It\u2019s a measurement of what your deployment is producing across four organizational value domains \u2014 and a map of what hasn\u2019t been measured
+  yet. The numbers that appear below are either confirmed from your stated inputs or labeled as benchmark ranges. Nothing is projected. Nothing is extrapolated without being labeled."}
+    </Text>
+
+  ---
+
+  CHANGE C: client/src/lib/ambient-assessment-pdf.tsx — StrategicProfilePage
+
+  Find (around line 590):
+    <Text style={s.eyebrow}>YOUR AMBIENT PROFILE</Text>
+
+  Replace with:
+    <Text style={s.eyebrow}>THE DIAGNOSIS</Text>
+
+  Find the tenure modifier block (around lines 600-606):
+    {tenureMod ? (
+      <View style={{ borderLeftWidth: 2, borderLeftColor: "#E5E0D9", paddingLeft: 12, marginTop: 8 }}>
+        <Text style={{ fontSize: 9.5, color: "#888888", lineHeight: 1.6, fontStyle: "italic" }}>
+          {tenureMod}
+        </Text>
+      </View>
+    ) : null}
+
+  Replace it with:
+    {tenureMod ? (
+      <View style={{ borderLeftWidth: 3, borderLeftColor: "#EA2C00", paddingLeft: 12, marginTop: 12 }}>
+        <Text style={{ fontSize: 7, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4 }}>
+          WHERE THIS PROFILE SITS IN THE ADOPTION CURVE
+        </Text>
+        <Text style={{ fontSize: 9.5, color: "#555555", lineHeight: 1.6 }}>
+          {tenureMod}
+        </Text>
+      </View>
+    ) : null}
+
+  Find the right column MATURITY SCORE box eyebrow (around line 611):
+    <Text style={s.eyebrow}>MATURITY SCORE</Text>
+
+  Replace it with:
+    <Text style={s.eyebrow}>THE FULL PICTURE</Text>
+
+  Find the line immediately after the score bar that shows the band label (around line 619):
+    <Text style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>{band}</Text>
+
+  Add these two lines immediately AFTER it:
+    <View style={{ height: 1, backgroundColor: "#E5E0D9", width: "80%", marginVertical: 10 }} />
+    <Text style={{ fontSize: 8, color: "#888888", textAlign: "center", lineHeight: 1.5 }}>
+      {measuredTotal > 0 ? fmt(measuredTotal) + " confirmed" : "No domains measured yet"}
+      {unmeasuredLow > 0 ? "\n" + fmt(unmeasuredLow) + "\u2013" + fmt(unmeasuredHigh) + " unmeasured range" : ""}
+    </Text>
