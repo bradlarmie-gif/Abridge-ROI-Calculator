@@ -1,0 +1,22 @@
+ Two hardcoded 260s were missed in the previous nursing shift fix. Apply these now.                                                                                                                           
+                                                            
+  In client/src/pages/explore/ExploreModel.tsx:                                                                                                                                                                
+                                                            
+  Find:                                                                                                                                                                                                        
+    const enabledShifts = Math.round(ftes * 260 * (adoptRate / 100));                                                                                                                                          
+  Replace with:                                                                                                                                                                                                
+    const enabledShifts = Math.round(ftes * state.nursingShiftsPerNurseYear * (adoptRate / 100));                                                                                                              
+                                                            
+  This ensures the final model calculation uses the same 156 shifts/year from state                                                                                                                            
+  instead of its own hardcoded 260.       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+   
+  In client/src/pages/switch/nursing/NursingScreen3Explore.tsx:                                                                                                                                                
+                                                            
+  Find:                                                                                                                                                                                                        
+    annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 260
+  Replace with:                               
+    annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 156
+                                              
+  This fixes the formula display text to match the corrected calculation.   

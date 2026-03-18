@@ -982,7 +982,7 @@ export default function ExploreModel({
           const occRate = state.nursingOccupancyRate;
           const adoptRate = state.utilizationPercent;
           const patientDays = Math.round(beds * (occRate / 100) * 365);
-          const enabledShifts = Math.round(ftes * 260 * (adoptRate / 100));
+          const enabledShifts = Math.round(ftes * state.nursingShiftsPerNurseYear * (adoptRate / 100));
           const minsPerShift = state.minutesSavedPerEncounter;
           const otPct = timeDriverInputs.nursingOtReductionPercent;
           const currentOtPerYear = ftes * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
