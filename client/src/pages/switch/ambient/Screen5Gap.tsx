@@ -244,10 +244,17 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   const totalMeasured = useMemo(() => {
     let sum = 0;
     for (const d of DOMAIN_ORDER) {
-      if (domainHasValue[d]) sum += domainGaps[d];
+      if (domainHasValue[d]) {
+        if (d === 'revenue' && domainLevels[d] === 2) continue;
+        sum += domainGaps[d];
+      }
     }
     return sum;
-  }, [domainHasValue, domainGaps]);
+  }, [domainHasValue, domainGaps, domainLevels]);
+
+  const revL2Value = (domainLevels.revenue === 2 && domainHasValue.revenue)
+    ? (domainGaps.revenue || 0)
+    : 0;
 
   const unmeasuredLow = useMemo(() => {
     let sum = 0;
@@ -431,6 +438,17 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                   )}
                 </div>
               </div>
+              {revL2Value > 0 && (
+                <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/30 mt-2 mb-3">
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue Signal</span>
+                    <span className="text-[9px] text-[#92400E]/70 ml-2">directional estimate — not from billing data</span>
+                  </div>
+                  <span className="text-sm font-bold text-[#92400E]">
+                    ~{formatDollar(revL2Value)}/yr
+                  </span>
+                </div>
+              )}
               <p className="text-xs text-[#888888] italic leading-relaxed mb-8">
                 The first number is what the math shows based on your data. The second is a benchmark range — what organizations your size typically find when they analyze domains you haven't measured yet.
               </p>
