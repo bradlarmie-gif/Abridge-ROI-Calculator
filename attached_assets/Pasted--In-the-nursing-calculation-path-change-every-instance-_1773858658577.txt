@@ -1,0 +1,22 @@
+ In the nursing calculation path, change every instance of 173 (just applied) to 156.                                                                                                                         
+  The correct shifts/year for a nursing FTE is 156 — based on 3 twelve-hour shifts per                                                                                                                         
+  week × 52 weeks, which is the standard hospital scheduling definition.                                                                                                                                       
+                                                                                                                                                                                                               
+  Make these four changes:                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In client/src/pages/switch/nursing/nursingCalculations.ts:                                                                                                                                                   
+    Find:    return Math.round(baseline.nurseFTEs * 173);                                                                                                                                                      
+    Replace: return Math.round(baseline.nurseFTEs * 156);                                                                                                                                                      
+                                                                                                                                                                                                               
+    Find:    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 173)
+    Replace: ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 156)                                                                                                                                  
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreFlow.tsx:                                                                                                                                                                 
+    Find:    nursingShiftsPerNurseYear: 173,                                                                                                                                                                   
+    Replace: nursingShiftsPerNurseYear: 156,                                                                                                                                                                   
+                                                            
+  In client/src/pages/switch/nursing/NursingScreen1Program.tsx:                                                                                                                                                
+    Find:    <p>x 173 shifts/year</p>                                                                                                                                                                          
+    Replace: <p>x 156 shifts/year</p>                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Do not change anything else.                    

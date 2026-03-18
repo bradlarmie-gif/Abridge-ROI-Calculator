@@ -211,7 +211,7 @@ export default function NursingScreen1Program({ baseline, updateBaseline, onNext
                 <p className="text-[9px] font-semibold uppercase tracking-[2px] text-white/40 mb-2">The Math</p>
                 <div className="text-xs text-white/50 font-mono space-y-0.5">
                   <p>{baseline.nurseFTEs.toLocaleString()} nurse FTEs</p>
-                  <p>x 173 shifts/year</p>
+                  <p>x 156 shifts/year</p>
                   <p>= {shiftsPerYear.toLocaleString()} shifts</p>
                 </div>
               </>

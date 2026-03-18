@@ -492,7 +492,7 @@ export default function NursingScreen3Explore({
                   {bedsideImpact.annualDocHours > 0 ? (
                     <div>
                       <p className="text-sm font-bold text-white" data-testid="text-annual-doc-hours">{bedsideImpact.annualDocHours.toLocaleString()} hours annually on documentation</p>
-                      <p className="text-[12px] text-white/30 font-mono mt-2">annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 173</p>
+                      <p className="text-[12px] text-white/30 font-mono mt-2">annualDocHours = {inputs.bedsidePresence.docHoursPerShift} x {baseline.nurseFTEs} x 156</p>
                       <p className="text-xs text-white/40 mt-1">Time redirected to the bedside is time redirected to patients.</p>
                     </div>
                   ) : (
