@@ -320,8 +320,7 @@ function computeInvitationCopy(
   const bodies: Record<string, string> = {
     low: `What they have in common isn\u2019t a better deployment \u2014 it\u2019s a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile \u2014 ${scoreBandLabel} \u2014 is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
     mid: `What they have in common is that the domains they\u2019ve measured have given them leverage. The signal you\u2019ve built is real. The organizations that move quickly from here use that signal to accelerate the unmeasured domains \u2014 not one at a time, but as a connected program. The measurement infrastructure you\u2019ve started is the hardest part to build from scratch. You\u2019re not starting from scratch.`,
-    high: `What they have in common is governance \u2014 ensuring the measurement capability is institutional, not dependent on champions, and that it scales as the deployment grows. Your profile suggests
-you\u2019re closer to that frontier than most. The question is whether it\u2019s owned by the organization or by a few people inside it.`,
+    high: `What they have in common is governance \u2014 ensuring the measurement capability is institutional, not dependent on champions, and that it scales as the deployment grows. Your profile suggests you\u2019re closer to that frontier than most. The question is whether it\u2019s owned by the organization or by a few people inside it.`,
   };
   const tenureAppends: Record<string, string> = {
     "0-6": "At less than 6 months, you\u2019re in the window where the measurement habits get set. The organizations that build them now don\u2019t have to rebuild them at 24 months.",
@@ -741,7 +740,10 @@ sustainability.`;
         </View>
 
         <View style={{ flex: 0.9 }}>
-          <Text style={s.eyebrow}>DOMAIN BREAKDOWN</Text>
+          <Text style={s.eyebrow}>FOUR ORGANIZATIONAL DECISIONS</Text>
+          <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.6, marginBottom: 10 }}>
+            {"Each domain represents a distinct question. Capacity: did the time ambient saved get redeployed into patient access? Revenue: did documentation quality reach coding and denial management? Workforce: did provider relief translate to measurable retention economics? Quality: did improved accuracy produce downstream clinical and compliance value? These are four separate decisions, four separate measurement programs, four separate conversations with four separate stakeholders."}
+          </Text>
           {DOMAIN_ORDER.map((key) => {
             const score = domainScores[key];
             const level = data.domains?.[key as keyof typeof data.domains]?.activationLevel || 1;
@@ -899,6 +901,13 @@ function DomainPage({
   data: AmbientAssessmentPDFData;
   pageNum: number;
 }) {
+  const domainStrategicQuestion: Record<string, string> = {
+    capacity: "Did the time ambient saved get redeployed into patient access \u2014 or did it disappear?",
+    revenue: "Did documentation quality improvements reach revenue cycle \u2014 or stop at the note?",
+    workforce: "Did provider relief translate into measurable retention economics \u2014 or stay anecdotal?",
+    risk: "Did improved documentation accuracy produce downstream clinical and compliance value \u2014 or stay untracked?",
+  };
+
   const domain = data.domains?.[domainKey as keyof typeof data.domains] || ({} as DomainData);
   const level = domain.activationLevel || 1;
   const label = domain.activationLabel || "";
@@ -964,6 +973,10 @@ function DomainPage({
           </View>
 
           <View style={[s.divider, { marginVertical: 10 }]} />
+
+          <Text style={{ fontSize: 9.5, color: "#777777", lineHeight: 1.6, fontStyle: "italic", marginBottom: 10, borderLeftWidth: 2, borderLeftColor: "#E5E0D9", paddingLeft: 10 }}>
+            {domainStrategicQuestion[domainKey]}
+          </Text>
 
           <Text style={s.body}>{domainFrameText[domainKey]}</Text>
 
@@ -1288,13 +1301,13 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
       })}
 
       <View style={{ marginTop: "auto" }}>
-        <View style={[s.darkTile, { marginBottom: 10, padding: 18 }]}>
-          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>RECOMMENDED NEXT STEP</Text>
-          <Text style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.4, marginBottom: 8 }}>
-            A 45-minute working session built around this profile.
+        <View style={[s.darkTile, { marginBottom: 10, padding: 20 }]}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 }}>WHAT THIS ASSESSMENT REPRESENTS</Text>
+          <Text style={{ fontSize: 11.5, color: "rgba(255,255,255,0.9)", lineHeight: 1.75, marginBottom: 12 }}>
+            {"Most vendors show you a number. This assessment shows you a measurement architecture \u2014 four domains, four levels of rigor, each with a defined formula and a defined gap between where you are and what full capture looks like. The organizations that reach Level 3+ across multiple domains in 12 months don\u2019t do it because they had a better deployment. They do it because they built a structured measurement program around what the deployment was producing. That program has a methodology. The methodology is what this assessment is built on."}
           </Text>
-          <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 }}>
-            Not a product walkthrough. A structured conversation about what the unmeasured domains are worth at your scale, what the first 90 days of measurement looks like, and what organizations at your maturity level have done to move quickly. The output is a specific plan {"\u2014"} not a proposal.
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#EA2C00", lineHeight: 1.5 }}>
+            {"That\u2019s the conversation Abridge is built to have."}
           </Text>
         </View>
         <Text style={s.disclaimer}>
