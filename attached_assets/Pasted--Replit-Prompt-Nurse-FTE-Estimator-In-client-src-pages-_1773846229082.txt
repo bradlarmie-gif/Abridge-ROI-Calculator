@@ -1,0 +1,119 @@
+ Replit Prompt — Nurse FTE Estimator
+
+  In client/src/pages/switch/nursing/NursingScreen1Program.tsx, make the following changes to add a smart FTE estimator under the Nurse FTEs input:
+
+  CHANGE 1 — Update the imports at the top of the file:
+
+  Replace:
+    import { motion } from "framer-motion";
+    import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+    import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+    import { staggerContainer, staggerItem } from "@/components/PageTransition";
+    import type { NursingBaselineInputs } from "./nursingTypes";
+    import { derivePatientDays, deriveShiftsPerYear } from "./nursingCalculations";
+
+  With:
+    import { motion, AnimatePresence } from "framer-motion";
+    import { useState } from "react";
+    import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+    import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+    import { staggerContainer, staggerItem } from "@/components/PageTransition";
+    import type { NursingBaselineInputs } from "./nursingTypes";
+    import { derivePatientDays, deriveShiftsPerYear } from "./nursingCalculations";
+
+    const FTE_ESTIMATES = [
+      { label: "Med / Surg", multiplier: 1.5, description: "1:4–5 patient ratio" },
+      { label: "ICU / PICU", multiplier: 3.0, description: "1:1–2 patient ratio" },
+      { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },
+    ];
+
+  ---
+
+  CHANGE 2 — Add local state and the applyEstimate function inside the component, right after the existing derived values:
+
+  Find:
+    const canProceed = baseline.staffedBeds > 0 && baseline.nurseFTEs > 0;
+
+  Replace with:
+    const canProceed = baseline.staffedBeds > 0 && baseline.nurseFTEs > 0;
+    const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
+
+    function applyEstimate(multiplier: number, label: string) {
+      if (baseline.staffedBeds <= 0) return;
+      const estimated = Math.round(baseline.staffedBeds * multiplier);
+      updateBaseline("nurseFTEs", estimated);
+      setAppliedEstimate(label);
+      setTimeout(() => setAppliedEstimate(null), 2000);
+    }
+
+  ---
+
+  CHANGE 3 — Replace the Nurse FTEs helper text with the full estimator block:
+
+  Find:
+    <p className="text-xs text-[#999999] mt-1">Full-time equivalent nurses in scope</p>
+                  </div>
+
+  Replace with:
+    <AnimatePresence mode="wait">
+      {appliedEstimate ? (
+        <motion.p
+          key="applied"
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="text-xs text-[#EA2C00] mt-1 font-medium"
+        >
+          ✓ Applied {appliedEstimate} estimate
+        </motion.p>
+      ) : (
+        <motion.p key="hint" initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-[#999999] mt-1">
+          Full-time equivalent nurses in scope
+        </motion.p>
+      )}
+    </AnimatePresence>
+
+    {baseline.staffedBeds > 0 && (
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="mt-2"
+      >
+        <p className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#AAAAAA] mb-1.5">
+          Estimate from beds
+        </p>
+        <div className="flex gap-1.5 flex-wrap">
+          {FTE_ESTIMATES.map(({ label, multiplier, description }) => {
+            const estimated = Math.round(baseline.staffedBeds * multiplier);
+            const isActive = appliedEstimate === label;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => applyEstimate(multiplier, label)}
+                title={description}
+                className={`group flex flex-col items-start px-2.5 py-1.5 rounded-lg border text-left transition-all duration-150 ${
+                  isActive
+                    ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                    : "bg-white border-[#E0DAD4] text-[#555555] hover:border-[#EA2C00] hover:bg-[#FFF5F3]"
+                }`}
+              >
+                <span className={`text-[10px] font-semibold leading-none ${isActive ? "text-white" : "text-[#1A1A1A]"}`}>
+                  {label}
+                </span>
+                <span className={`text-[10px] mt-0.5 ${isActive ? "text-white/80" : "text-[#EA2C00]"}`}>
+                  {estimated.toLocaleString()} FTEs
+                </span>
+                <span className={`text-[9px] mt-0.5 ${isActive ? "text-white/60" : "text-[#AAAAAA]"}`}>
+                  {description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+    )}
+                  </div>
+
+  Make only these three changes. Do not touch any other file.
