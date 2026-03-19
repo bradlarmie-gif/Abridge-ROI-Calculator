@@ -332,7 +332,7 @@ export default function ExploreTimeSavings({
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50 min-w-0">{isNursing ? 'Abridge-Enabled Shifts' : 'Eligible Encounters'}</span>
-                  <span className="text-white flex-shrink-0">{formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}</span>
+                  <span className="text-white flex-shrink-0">{state.minutesSavedPerEncounter > 0 ? formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters) : '—'}</span>
                 </div>
               </div>
 
