@@ -280,9 +280,6 @@ export function buildMonthlyCashFlows(
   const rows: ProformaCashFlowRow[] = [];
   let cumulativeNet = 0;
 
-  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  cumulativeNet = -totalImplFees;
-
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
     let totalDocValue = 0;
@@ -457,6 +454,11 @@ export function buildMonthlyCashFlows(
         timeValue: settingTimeValue,
         retentionValue: settingRetentionValue,
       };
+
+      if (m === setting.goLiveMonth) {
+        cumulativeNet -= setting.implementationFee;
+        totalInvestment += setting.implementationFee;
+      }
     }
 
     
@@ -662,7 +664,6 @@ export function computeYearlyEncounters(
 
 export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[], startDate?: Date) {
   const start = startDate || getContractStartDate();
-  const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
 
   const contractYears = Math.ceil(cashFlows.length / 12);
   const years: { rows: ProformaCashFlowRow[] }[] = [];
@@ -695,7 +696,10 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
       });
 
       const subscriptionInvestment = y.rows.reduce((s, r) => s + r.investment, 0);
-      const implInvestment = idx === 0 ? totalImplFees : 0;
+      const implInvestment = settings.reduce((sum, s) => {
+        const settingYear = Math.floor((s.goLiveMonth - 1) / 12);
+        return settingYear === idx ? sum + s.implementationFee : sum;
+      }, 0);
 
       const yearLabel = getCalendarYearLabel(idx * 12, start);
 
