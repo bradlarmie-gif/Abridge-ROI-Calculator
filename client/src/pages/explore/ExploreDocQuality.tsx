@@ -30,10 +30,7 @@ function HccExpandedContent({
   updateDocInputs,
   hccScenarios,
   recapturePercent,
-  totalPatients,
-  maPatients,
   gapPatients,
-  totalRecaptureOpportunity,
   hccsDocumented,
   hccGrossValue,
   hccRevenueNet,
@@ -45,10 +42,7 @@ function HccExpandedContent({
   updateDocInputs: (updates: Partial<DocQualityInputs>) => void;
   hccScenarios: Record<ScenarioLevel, number>;
   recapturePercent: number;
-  totalPatients: number;
-  maPatients: number;
   gapPatients: number;
-  totalRecaptureOpportunity: number;
   hccsDocumented: number;
   hccGrossValue: number;
   hccRevenueNet: number;
@@ -1814,10 +1808,7 @@ export default function ExploreDocQuality({
                   updateDocInputs={updateDocInputs}
                   hccScenarios={hccScenarios}
                   recapturePercent={recapturePercent}
-                  totalPatients={totalPatients}
-                  maPatients={maPatients}
                   gapPatients={gapPatients}
-                  totalRecaptureOpportunity={totalRecaptureOpportunity}
                   hccsDocumented={hccsDocumented}
                   hccGrossValue={hccGrossValue}
                   hccRevenueNet={hccRevenueNet}
