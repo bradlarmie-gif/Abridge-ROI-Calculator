@@ -1521,260 +1521,216 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white rounded-b-lg p-6 md:p-8">
-                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                <div className="bg-white rounded-b-lg p-5">
+                  <p className="text-sm text-[#666666] leading-relaxed mb-3">
                     When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. For Medicare Advantage patients, documented conditions drive risk-adjusted payment. This models the estimated revenue impact of that documentation improvement {"–"} not a guarantee, and not your total HCC program value.
                   </p>
 
-                  <div className="mb-10">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 1: Your MA Population
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      How many of your patients are on Medicare Advantage plans?
-                    </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Panel Size / Provider</label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
-                              onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ panelSize: v }); }}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
-                              data-testid="input-panel-size"
-                            />
-                          </div>
-                          <p className="text-xs text-[#888888] mt-1">Primary care: 1,200{"–"}2,000 typical</p>
-                        </div>
-                        <span className="text-[#888888] text-xl hidden sm:block">{"×"}</span>
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Medicare Advantage %</label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              value={docQualityInputs.maPercent}
-                              onChange={(e) => updateDocInputs({ maPercent: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
-                              data-testid="input-ma-percent"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
-                          </div>
-                          <p className="text-xs text-[#888888] mt-1">20% is conservative. Many primary care panels run 30{"–"}45%.</p>
-                        </div>
-                      </div>
-                      <div className="text-center py-2">
-                        <span className="text-[13px] text-[#666666]">= </span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(maPatients))} MA patients across {formatNumber(state.numberOfProviders)} providers</span>
-                      </div>
-                    </div>
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
+                  <p className="text-sm font-medium text-black mb-3">Recapture target:</p>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => updateDocInputs({ hccScenario: level })}
+                        className={`p-2 sm:p-3 rounded-lg border transition-all text-center ${
+                          docQualityInputs.hccScenario === level
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                        }`}
+                        data-testid={`button-hcc-${level}`}
+                      >
+                        <p className={`text-xs mb-1 ${docQualityInputs.hccScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                          {level === 'aggressive' ? 'Optimistic' : level.charAt(0).toUpperCase() + level.slice(1)}
+                        </p>
+                        <p className="font-semibold">{hccScenarios[level]}%</p>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-xs text-[#888888] space-y-1 mb-2">
+                    <p><strong>Conservative (6%):</strong> Existing HCC program in place. Models only the incremental visit-level capture.</p>
+                    <p><strong>Typical (10%):</strong> Limited gap closure program. Ambient is the primary point-of-care documentation mechanism.</p>
+                    <p><strong>Optimistic (15%):</strong> High MA concentration, strong provider adoption, minimal competing workflow.</p>
                   </div>
 
-                  <div className="mb-10">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 2: The Documentation Gap
+                  <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-4 flex items-start gap-2">
+                    <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>
+                    <p className="text-xs text-[#666666]">
+                      <strong>Already running an HCC program?</strong> Lower your recapture target to reflect only what slips through {"–"} conditions discussed at the visit that your existing workflow doesn't catch. 6% (Conservative) is the right starting point.
                     </p>
-                    <p className="text-[13px] text-[#666666] mb-2">
-                      HCC gap patients are MA members with at least one condition that was managed but not documented in the current measurement period.
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      Not every gap is a documentation gap {"–"} some require chart review or pre-visit planning. This models only the share that ambient documentation at the point of care can reach.
-                    </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5 mb-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">MA Patients</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{formatNumber(Math.round(maPatients))}</span>
-                          </div>
-                        </div>
-                        <span className="text-[#888888] text-xl hidden sm:block">{"×"}</span>
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Documentation Gap Rate</label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              value={docQualityInputs.gapRate}
-                              onChange={(e) => updateDocInputs({ gapRate: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
-                              data-testid="input-gap-rate"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
-                          </div>
-                          <p className="text-xs text-[#888888] mt-1">CMS MA data: 10{"–"}18% of members have at least one gap annually. 12% is a mid-range estimate.</p>
-                        </div>
-                      </div>
-                      <div className="text-center py-2">
-                        <span className="text-[13px] text-[#666666]">= </span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients))} patients with estimated documentation gaps</span>
-                      </div>
-                    </div>
-                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 flex items-start gap-2">
-                      <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>
-                      <p className="text-xs text-[#666666]">
-                        <strong>Already running an HCC program?</strong> Your gap closure program catches many of these through chart review and pre-visit outreach. Lower your recapture target in Step 3 to reflect only what reaches the visit level undocumented.
-                      </p>
-                    </div>
                   </div>
 
-                  <div className="mb-10">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 3: What This Models
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-2">
-                      Of patients with gaps, how many arrive at a visit where the condition is discussed {"–"} and ambient documentation captures it in the note?
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      This is not a total population gap closure rate. It is the estimated share of gap patients who have that condition addressed in a documented encounter.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
-                      {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
-                        <button
-                          key={level}
-                          onClick={() => updateDocInputs({ hccScenario: level })}
-                          className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
-                            docQualityInputs.hccScenario === level
-                              ? "bg-[#EA2C00] border-[#EA2C00] text-white"
-                              : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
-                          }`}
-                          data-testid={`button-hcc-${level}`}
-                        >
-                          <p className={`text-xs mb-1 ${docQualityInputs.hccScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
-                            {level === 'aggressive' ? 'Optimistic' : level.charAt(0).toUpperCase() + level.slice(1)}
-                          </p>
-                          <p className="font-semibold text-lg">{hccScenarios[level]}%</p>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-[13px] text-[#888888] space-y-1 mb-4">
-                      <p><strong>Conservative (6%):</strong> Existing HCC program in place. Models only the incremental visit-level capture.</p>
-                      <p><strong>Typical (10%):</strong> Limited gap closure program. Ambient is the primary point-of-care documentation mechanism.</p>
-                      <p><strong>Optimistic (15%):</strong> High MA concentration, strong provider adoption, minimal competing workflow.</p>
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <span className="text-xs text-[#888888]">Click values to edit</span>
                     </div>
 
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Patients Reached</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients * hccScenarios[docQualityInputs.hccScenario] / 100))}</span>
-                          </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">Providers</span>
+                        <span className="text-black">{formatNumber(state.numberOfProviders)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">{"×"} Panel size per provider</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
+                            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ panelSize: v }); }}
+                            className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            data-testid="input-panel-size"
+                          />
+                          <span className="text-[#888888]">pts</span>
                         </div>
-                        <span className="text-[#888888] text-xl hidden sm:block">{"×"}</span>
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Avg HCCs Captured / Patient</label>
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= Total patients</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(totalPatients))}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[#666666]">{"×"} Medicare Advantage %</span>
+                          <p className="text-xs text-[#888888] mt-0.5">20% is conservative. Many primary care panels run 30{"–"}45%.</p>
+                        </div>
+                        <div className="flex items-center gap-1">
                           <input
                             type="number"
-                            step="0.1"
-                            value={docQualityInputs.avgHccs}
-                            onChange={(e) => updateDocInputs({ avgHccs: parseFloat(e.target.value) || 0 })}
-                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
-                            data-testid="input-avg-hccs"
+                            value={docQualityInputs.maPercent}
+                            onChange={(e) => updateDocInputs({ maPercent: parseFloat(e.target.value) || 0 })}
+                            className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            data-testid="input-ma-percent"
                           />
-                          <p className="text-xs text-[#888888] mt-1">Conditions discussed at the visit but absent from the note. 0.5 is conservative; increase if providers routinely omit chronic condition reaffirmation.</p>
+                          <span className="text-[#888888]">%</span>
                         </div>
                       </div>
-                      <div className="text-center py-2">
-                        <span className="text-[13px] text-[#666666]">= estimated </span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))} HCCs documented through improved note capture</span>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= MA patient panel</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(maPatients))}</span>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="mb-10">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 4: Revenue Potential
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      Each documented HCC affects the member's risk score. Higher risk scores increase the annual capitation payment for that member.
-                    </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                      <div className="flex justify-between items-center">
                         <div>
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">HCCs Documented</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))}</span>
-                          </div>
+                          <span className="text-[#666666]">{"×"} Documentation gap rate</span>
+                          <p className="text-xs text-[#888888] mt-0.5">CMS MA data: 10{"–"}18% of members have at least one gap annually. 12% is a mid-range estimate.</p>
                         </div>
-                        <div>
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">RAF Impact / HCC</label>
+                        <div className="flex items-center gap-1">
                           <input
                             type="number"
-                            step="0.01"
-                            value={docQualityInputs.rafImpact}
-                            onChange={(e) => updateDocInputs({ rafImpact: parseFloat(e.target.value) || 0 })}
-                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
-                            data-testid="input-raf-impact"
+                            value={docQualityInputs.gapRate}
+                            onChange={(e) => updateDocInputs({ gapRate: parseFloat(e.target.value) || 0 })}
+                            className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            data-testid="input-gap-rate"
                           />
-                          <p className="text-xs text-[#888888] mt-1">Low-to-mid severity: 0.10{"–"}0.20. Complex chronic: 0.20{"–"}0.40.</p>
-                        </div>
-                        <div>
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Annual Payment / RAF</label>
-                          <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={docQualityInputs.annualPayment ? docQualityInputs.annualPayment.toLocaleString("en-US") : ""}
-                              onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ annualPayment: v }); }}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
-                              data-testid="input-annual-payment"
-                            />
-                          </div>
-                          <p className="text-xs text-[#888888] mt-1">National MA average ~$12{"–"}14K (2024). $10,000 is intentionally conservative.</p>
+                          <span className="text-[#888888]">%</span>
                         </div>
                       </div>
-                      <div className="text-center py-2 border-t border-[#E5E5E5] pt-4">
-                        <span className="text-[13px] text-[#666666]">= </span>
-                        <span className="font-semibold text-black">{formatCurrency(Math.round(hccGrossValue))} estimated gross value</span>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= Patients with gaps</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients))}</span>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="mb-6">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 5: What You Can Count On
-                    </p>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      Not all documented HCCs survive risk adjustment reconciliation. RADV audits, payer timelines, and coder review all reduce the gross figure.
-                    </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Value</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{formatCurrency(Math.round(hccGrossValue))}</span>
-                          </div>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[#666666]">{"×"} Avg missed HCCs per patient</span>
+                          <p className="text-xs text-[#888888] mt-0.5">Conditions discussed but not written {"–"} specifically attributable to note compression. 0.5 is conservative; 0.7+ if providers routinely omit chronic condition reaffirmation.</p>
                         </div>
-                        <span className="text-[#888888] text-xl hidden sm:block">{"×"}</span>
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">
-                            Realization Rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Accounts for RADV audit risk, payer reconciliation timing, partial adoption, and cases where documentation doesn't change final risk score. 40% means you capture 40 cents of every gross dollar estimated." />
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              value={docQualityInputs.hccRealization}
-                              onChange={(e) => updateDocInputs({ hccRealization: parseFloat(e.target.value) || 0 })}
-                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
-                              data-testid="input-hcc-realization"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
-                          </div>
-                          <p className="text-xs text-[#888888] mt-1">40% is conservative. Mature HCC programs with clean documentation typically realize 55{"–"}70%.</p>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={docQualityInputs.avgHccs}
+                          onChange={(e) => updateDocInputs({ avgHccs: parseFloat(e.target.value) || 0 })}
+                          className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          data-testid="input-avg-hccs"
+                        />
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= Total recapture opportunity</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(totalRecaptureOpportunity))} HCCs</span>
+                      </div>
+
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">{"×"} Your recapture target</span>
+                        <span className="text-black">{recapturePercent}%</span>
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= HCCs you'll document</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))} HCCs</span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[#666666]">{"×"} RAF impact per HCC</span>
+                          <p className="text-xs text-[#888888] mt-0.5">Low-to-mid severity: 0.10{"–"}0.20. Complex chronic: 0.20{"–"}0.40.</p>
+                        </div>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={docQualityInputs.rafImpact}
+                          onChange={(e) => updateDocInputs({ rafImpact: parseFloat(e.target.value) || 0 })}
+                          className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          data-testid="input-raf-impact"
+                        />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[#666666]">{"×"} Annual payment per RAF</span>
+                          <p className="text-xs text-[#888888] mt-0.5">National MA average ~$12{"–"}14K (2024 CMS). $10,000 is intentionally conservative.</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[#888888]">$</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={docQualityInputs.annualPayment ? docQualityInputs.annualPayment.toLocaleString("en-US") : ""}
+                            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ annualPayment: v }); }}
+                            className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            data-testid="input-annual-payment"
+                          />
                         </div>
                       </div>
-                      <div className="border-t border-[#888888] pt-4 flex justify-between items-center">
-                        <span className="font-semibold text-black">Estimated Annual HCC Value</span>
-                        <span className="text-xl font-bold text-[#EA2C00]">{formatCurrency(Math.round(hccRevenueNet))}</span>
+                      <div className="h-px bg-[#D1D5DB] my-1" />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">= Gross value</span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(hccGrossValue))}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-[#666666]">{"×"} Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Accounts for RADV audit risk, payer reconciliation timing, partial adoption, and cases where documentation doesn't change final risk score. 40% means you capture 40 cents of every gross dollar estimated." /></span>
+                          <p className="text-xs text-[#888888]">40% is conservative. Mature programs with clean documentation typically realize 55{"–"}70%.</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            value={docQualityInputs.hccRealization}
+                            onChange={(e) => updateDocInputs({ hccRealization: parseFloat(e.target.value) || 0 })}
+                            className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            data-testid="input-hcc-realization"
+                          />
+                          <span className="text-[#888888]">%</span>
+                        </div>
+                      </div>
+                      <div className="h-px bg-[#888888] my-2" />
+                      <div className="flex justify-between font-semibold">
+                        <span className="text-black">Estimated Annual HCC Value</span>
+                        <span className="text-[#EA2C00]">{formatCurrency(Math.round(hccRevenueNet))}</span>
                       </div>
                     </div>
-                    <p className="text-xs text-[#888888] mt-3 italic">
-                      This is a planning estimate based on inputs you provided. Actual results depend on provider adoption, payer mix, and existing HCC program maturity. Validate with your coding and revenue cycle teams.
-                    </p>
                   </div>
+                  <p className="text-xs text-[#888888] mt-3 italic">
+                    This is a planning estimate based on inputs you provided. Actual results depend on provider adoption, payer mix, and existing HCC program maturity. Validate with your coding and revenue cycle teams.
+                  </p>
                 </div>
               </motion.div>
             )}
