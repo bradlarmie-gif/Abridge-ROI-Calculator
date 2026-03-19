@@ -66,7 +66,7 @@ export default function ExploreModel({
   const { timeDriverInputs, docQualityInputs } = state;
   const isOutpatientSetting = state.careSetting === 'outpatient';
   
-  const effectiveAccessProviders = timeDriverInputs.accessProviders || state.numberOfProviders;
+  const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || state.numberOfProviders, state.numberOfProviders);
 
   const patientAccessValue = useMemo(() => {
     if (!timeDriverInputs.patientAccessEnabled) return 0;

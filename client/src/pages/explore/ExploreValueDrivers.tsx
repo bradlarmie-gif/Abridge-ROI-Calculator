@@ -37,7 +37,7 @@ export default function ExploreValueDrivers({
   const isOutpatientSetting = state.careSetting === 'outpatient';
   const isED = state.careSetting === 'ed';
 
-  const effectiveAccessProviders = timeDriverInputs.accessProviders || state.numberOfProviders;
+  const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || state.numberOfProviders, state.numberOfProviders);
 
   const potentialVisits = useMemo(() => {
     return timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
@@ -1138,7 +1138,10 @@ export default function ExploreValueDrivers({
 
                     <div className="text-xs text-[#666666]">
                       <p>
-                        Your providers save ~<span className="font-semibold text-black">{hoursPerProviderPerWeek}</span> hrs/wk each.
+                        {effectiveAccessProviders < state.numberOfProviders
+                          ? <>{effectiveAccessProviders} of your {state.numberOfProviders} providers</>
+                          : <>Your providers</>
+                        } save ~<span className="font-semibold text-black">{hoursPerProviderPerWeek}</span> hrs/wk each.
                         At {timeDriverInputs.additionalVisitsPerWeek} extra visits ({timeDriverInputs.visitDuration} min each), you're using <span className="font-semibold text-black">{Math.round(timeDriverInputs.additionalVisitsPerWeek * timeDriverInputs.visitDuration / 60 * 10) / 10} hrs/wk</span> per provider — about <span className="font-semibold text-black">{capacityPctOfSaved > 100 ? '>100' : capacityPctOfSaved}%</span> of saved time.
                         {capacityPctOfSaved <= 30 && ' The rest flows into documentation quality and work-life balance.'}
                         {capacityPctOfSaved > 30 && capacityPctOfSaved <= 60 && ' A significant portion of saved time goes to capacity — consider whether this is realistic for your organization.'}

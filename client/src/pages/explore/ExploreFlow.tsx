@@ -528,7 +528,16 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   });
 
   const updateState = useCallback((updates: Partial<ExploreState>) => {
-    setState(prev => ({ ...prev, ...updates }));
+    setState(prev => {
+      const next = { ...prev, ...updates };
+      if (updates.numberOfProviders !== undefined && next.timeDriverInputs.accessProviders > 0) {
+        next.timeDriverInputs = {
+          ...next.timeDriverInputs,
+          accessProviders: Math.min(next.timeDriverInputs.accessProviders, updates.numberOfProviders),
+        };
+      }
+      return next;
+    });
   }, []);
 
   const prevCareSettingRef = useRef(state.careSetting);
@@ -708,7 +717,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     } else {
       // Outpatient: Patient Access and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
-        const effectiveAccessProviders = timeDriverInputs.accessProviders || numberOfProviders;
+        const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || numberOfProviders, numberOfProviders);
         const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
         total += annualVisits * timeDriverInputs.revenuePerVisit;
       }
