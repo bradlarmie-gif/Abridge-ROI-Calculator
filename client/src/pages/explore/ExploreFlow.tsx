@@ -901,7 +901,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                 timeDriverInputs: {
                   ...td,
                   ipRoundingEnabled: true,
-                  costReductionEnabled: true,
                   wellbeingEnabled: true,
                 },
               });
