@@ -210,7 +210,9 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   if (cs === "outpatient") {
     if (t.patientAccessEnabled) {
       const visitsPerWk = (t as any).additionalVisitsPerWeek ?? 2;
-      lines.push(`Capacity: ${visitsPerWk} visits/wk per provider · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
+      const apCount = (t as any).accessProviders || s.numberOfProviders || 0;
+      const apLabel = apCount < (s.numberOfProviders || 0) ? ` (${apCount} of ${s.numberOfProviders})` : '';
+      lines.push(`Capacity: ${visitsPerWk} visits/wk per provider${apLabel} · ${t.visitDuration}min visits · $${t.revenuePerVisit}/visit`);
     }
     if (d.wrvuEnabled) lines.push(`wRVU: ${d.wrvuScenario} scenario \u00B7 ${d.wrvuRealization}% realization`);
     if (d.hccEnabled) lines.push(`HCC: ${d.hccRealization}% realization`);
@@ -285,10 +287,12 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
     }
     case "patientAccess": {
       const visitsPerWk = (t as any).additionalVisitsPerWeek ?? 2;
-      const providerCount = snapshot.providerCount ?? s.numberOfProviders ?? 0;
-      const annualVisits = visitsPerWk * providerCount * 48;
+      const accessProv = (t as any).accessProviders || snapshot.providerCount || s.numberOfProviders || 0;
+      const totalProv = snapshot.providerCount ?? s.numberOfProviders ?? 0;
+      const annualVisits = visitsPerWk * accessProv * 48;
+      const provLabel = accessProv < totalProv ? `${accessProv} of ${totalProv} providers` : `${accessProv} providers`;
       return [
-        `${visitsPerWk} visits/wk \u00D7 ${providerCount} providers \u00D7 48 wks = ${annualVisits.toLocaleString()} visits`,
+        `${visitsPerWk} visits/wk \u00D7 ${provLabel} \u00D7 48 wks = ${annualVisits.toLocaleString()} visits`,
         `${annualVisits.toLocaleString()} \u00D7 $${t.revenuePerVisit}/visit = ${fmtK(driver.value)}/year`,
       ];
     }

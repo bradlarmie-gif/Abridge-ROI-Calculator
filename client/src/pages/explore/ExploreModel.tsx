@@ -66,11 +66,13 @@ export default function ExploreModel({
   const { timeDriverInputs, docQualityInputs } = state;
   const isOutpatientSetting = state.careSetting === 'outpatient';
   
+  const effectiveAccessProviders = timeDriverInputs.accessProviders || state.numberOfProviders;
+
   const patientAccessValue = useMemo(() => {
     if (!timeDriverInputs.patientAccessEnabled) return 0;
-    const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
+    const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
     return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);
-  }, [timeDriverInputs, state.numberOfProviders]);
+  }, [timeDriverInputs, effectiveAccessProviders]);
 
   const isED = state.careSetting === 'ed';
   const costReductionValue = (!isOutpatientSetting && !isED && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
@@ -476,11 +478,14 @@ export default function ExploreModel({
 
       if (state.careSetting === 'outpatient') {
         if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
-          const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
+          const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+          const providerLabel = effectiveAccessProviders < state.numberOfProviders
+            ? `${effectiveAccessProviders} of ${state.numberOfProviders} providers`
+            : `${effectiveAccessProviders} providers`;
           drivers.push({
             id: 'patientAccess', name: 'Patient Access', value: patientAccessValue, category: 'time',
             calcSteps: [
-              `${timeDriverInputs.additionalVisitsPerWeek} visits/wk × ${state.numberOfProviders} providers × 48 wks = ${annualVisits.toLocaleString()} visits`,
+              `${timeDriverInputs.additionalVisitsPerWeek} visits/wk × ${providerLabel} × 48 wks = ${annualVisits.toLocaleString()} visits`,
               `${annualVisits.toLocaleString()} visits × $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
             ],
           });
@@ -719,8 +724,8 @@ export default function ExploreModel({
       const denialsPrevVal = unappealableDenialsVal * (denialsPreventionPct / 100);
       const denialGrossVal = denialsPrevVal * docQualityInputs.avgClaimValue;
 
-      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
-      const capHrsRaw = timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * state.numberOfProviders * 48;
+      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+      const capHrsRaw = timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * effectiveAccessProviders * 48;
       const capHrs = Math.round(Math.min(capHrsRaw, totalHoursSaved));
       const remainingHrs = Math.max(0, totalHoursSaved - (timeDriverInputs.patientAccessEnabled ? capHrs : 0));
       const docQualHrs = Math.round(remainingHrs * 0.4);
@@ -764,6 +769,7 @@ export default function ExploreModel({
         docQualityHours: docQualHrs,
         sustainabilityHours: susHrs,
         additionalVisitsPerWeek: timeDriverInputs.additionalVisitsPerWeek,
+        accessProviders: effectiveAccessProviders,
 
         patientAccessEnabled: timeDriverInputs.patientAccessEnabled,
         accessConversionPct: capPctDerived,
@@ -1613,7 +1619,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.additionalVisitsPerWeek} visit{timeDriverInputs.additionalVisitsPerWeek !== 1 ? 's' : ''}/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
@@ -2355,7 +2361,7 @@ export default function ExploreModel({
                   </p>
                   {timeDriverInputs.patientAccessEnabled && (
                     <p>
-                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider × {state.numberOfProviders} providers × 48 wks × ${timeDriverInputs.revenuePerVisit}/visit.
+                      <strong className="text-black">Patient Access:</strong> {timeDriverInputs.additionalVisitsPerWeek} visits/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers × 48 wks × ${timeDriverInputs.revenuePerVisit}/visit.
                     </p>
                   )}
                   {docQualityInputs.wrvuEnabled && (

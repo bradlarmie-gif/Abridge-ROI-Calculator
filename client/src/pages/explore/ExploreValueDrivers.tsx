@@ -37,17 +37,19 @@ export default function ExploreValueDrivers({
   const isOutpatientSetting = state.careSetting === 'outpatient';
   const isED = state.careSetting === 'ed';
 
+  const effectiveAccessProviders = timeDriverInputs.accessProviders || state.numberOfProviders;
+
   const potentialVisits = useMemo(() => {
-    return timeDriverInputs.additionalVisitsPerWeek * state.numberOfProviders * 48;
-  }, [timeDriverInputs.additionalVisitsPerWeek, state.numberOfProviders]);
+    return timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+  }, [timeDriverInputs.additionalVisitsPerWeek, effectiveAccessProviders]);
 
   const potentialRevenue = useMemo(() => {
     return potentialVisits * timeDriverInputs.revenuePerVisit;
   }, [potentialVisits, timeDriverInputs.revenuePerVisit]);
 
   const capacityHoursUsed = useMemo(() => {
-    return Math.round(timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * state.numberOfProviders * 48);
-  }, [timeDriverInputs.additionalVisitsPerWeek, timeDriverInputs.visitDuration, state.numberOfProviders]);
+    return Math.round(timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * effectiveAccessProviders * 48);
+  }, [timeDriverInputs.additionalVisitsPerWeek, timeDriverInputs.visitDuration, effectiveAccessProviders]);
 
   const capacityPctOfSaved = useMemo(() => {
     if (totalHoursSaved <= 0) return 0;
@@ -1064,6 +1066,29 @@ export default function ExploreValueDrivers({
                     </p>
                   </div>
 
+                  <div className="mb-6">
+                    <div className="space-y-2.5">
+                      <label className="text-sm text-[#888888]">Providers with scheduling capacity</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min={1}
+                          max={state.numberOfProviders}
+                          value={effectiveAccessProviders}
+                          onChange={(e) => {
+                            const v = Math.max(1, Math.min(state.numberOfProviders, parseInt(e.target.value) || 1));
+                            updateTimeDriverInputs({ accessProviders: v });
+                          }}
+                          className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
+                          data-testid="input-access-providers"
+                        />
+                      </div>
+                      <p className="text-xs text-[#888888]">
+                        How many of your {state.numberOfProviders} providers have the scheduling flexibility to see additional patients?
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Average visit duration</label>
@@ -1095,9 +1120,14 @@ export default function ExploreValueDrivers({
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666]">{timeDriverInputs.additionalVisitsPerWeek} visits/wk × {state.numberOfProviders} providers × 48 wks</span>
+                        <span className="text-[#666666]">{timeDriverInputs.additionalVisitsPerWeek} visits/wk × {effectiveAccessProviders} providers × 48 wks</span>
                         <span className="font-semibold text-black flex-shrink-0">= {formatNumber(potentialVisits)} visits</span>
                       </div>
+                      {effectiveAccessProviders < state.numberOfProviders && (
+                        <div className="flex justify-between gap-2">
+                          <span className="text-[#888888] text-xs">{effectiveAccessProviders} of {state.numberOfProviders} providers</span>
+                        </div>
+                      )}
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
                         <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}</span>
@@ -2101,7 +2131,7 @@ export default function ExploreValueDrivers({
                         </span>
                       </div>
                       {timeDriverInputs.patientAccessEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.additionalVisitsPerWeek} visits/wk per provider)</p>
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.additionalVisitsPerWeek} visit{timeDriverInputs.additionalVisitsPerWeek !== 1 ? 's' : ''}/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers)</p>
                       )}
                     </div>
 

@@ -180,6 +180,7 @@ export interface ExplorePDFData {
 
   patientAccessEnabled?: boolean;
   additionalVisitsPerWeek?: number;
+  accessProviders?: number;
   accessConversionPct?: number;
   avgVisitDurationMin?: number;
   revenuePerVisit?: number;
@@ -997,7 +998,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.patientAccessValue))}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Your organization modeled {safe(data.additionalVisitsPerWeek)} additional visits per provider per week. Across {fmtNum(data.providers)} providers over 48 working weeks, that{"\u2019"}s {fmtNum(safe(data.projectedAdditionalVisits))} additional encounters annually. At ${safe(data.revenuePerVisit)} per visit, the return is {fmtCurrency(safe(data.patientAccessValue))}.
+                      Your organization modeled {safe(data.additionalVisitsPerWeek)} additional visits per provider per week. Across {fmtNum(safe(data.accessProviders) || data.providers)}{(safe(data.accessProviders) || 0) > 0 && safe(data.accessProviders) !== data.providers ? ` (of ${fmtNum(data.providers)} total)` : ""} providers over 48 working weeks, that{"\u2019"}s {fmtNum(safe(data.projectedAdditionalVisits))} additional encounters annually. At ${safe(data.revenuePerVisit)} per visit, the return is {fmtCurrency(safe(data.patientAccessValue))}.
                     </Text>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                       This uses approximately {capPct}% of recovered documentation time for scheduling capacity. The remaining time flows into documentation quality and provider sustainability. {safe(data.additionalVisitsPerWeek) === 1 ? "One additional visit per week is a conservative starting point \u2014 achievable with minimal scheduling changes." : safe(data.additionalVisitsPerWeek) === 2 ? "Two additional visits per week reflects intentional template adjustments to capture recovered time." : (safe(data.additionalVisitsPerWeek) ?? 0) >= 3 ? "This level of capacity expansion requires active workflow redesign and scheduling optimization." : ""}
