@@ -364,7 +364,7 @@ export function buildMonthlyCashFlows(
 
       const retentionRate = setting.retentionRate ?? 0;
       const replacementCost = setting.replacementCost ?? 400000;
-      const hasExploreRetention = setting.drivers.some(d => d.id === "retention" && d.value > 0);
+      const hasExploreRetention = setting.drivers.some(d => d.id === "retention");
       const proformaRetentionAnnual = !hasExploreRetention && retentionRate > 0
         ? fullScale * (retentionRate / 100) * replacementCost
         : 0;
