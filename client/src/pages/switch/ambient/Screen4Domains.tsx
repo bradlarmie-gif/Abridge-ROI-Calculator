@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
@@ -209,13 +209,31 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   const currentState = domainStates[activeDomain];
   const config = DOMAIN_CONFIGS[activeDomain];
 
+  const pendingScrollRef = useRef<string | null>(null);
+
   const setActivation = useCallback((level: ActivationLevel) => {
+    pendingScrollRef.current = `${activeDomain}-${level}`;
     setDomainStates((prev) => ({
       ...prev,
       [activeDomain]: { ...prev[activeDomain], activationLevel: level },
     }));
     dispatch(assessmentActions.updateInput(`${activeDomain}ActivationLevel` as keyof typeof inputs, level));
   }, [activeDomain, dispatch]);
+
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;
+    const target = pendingScrollRef.current;
+    pendingScrollRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-domain-level="${target}"]`);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
+      });
+    });
+  }, [currentState.activationLevel]);
 
   const setDomainInput = useCallback((key: string, value: number | string) => {
     setDomainStates((prev) => {
@@ -1705,6 +1723,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       className="group bg-[#FAFAF9] border border-[#E8E3DC] rounded-xl mb-2 cursor-pointer hover:border-[#EA2C00]/30 transition-all duration-200"
                       onClick={() => setActivation(card.level)}
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
+                      data-domain-level={`${activeDomain}-${card.level}`}
                     >
                       <div className="flex items-center gap-4 px-4 py-3">
                         <div className="w-8 h-8 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0">
@@ -1731,6 +1750,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
                       className="bg-white border-2 border-[#EA2C00] rounded-xl mb-3 shadow-[0_6px_28px_rgba(234,44,0,0.14)] overflow-hidden ring-1 ring-[#EA2C00]/10"
                       data-testid={`activation-card-${activeDomain}-${card.level}`}
+                      data-domain-level={`${activeDomain}-${card.level}`}
                     >
                       <div className="px-5 pt-5 pb-4 border-b border-[#F5F0EB]">
                         <div className="flex items-start gap-4">
@@ -1771,6 +1791,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     className="bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200"
                     onClick={() => setActivation(card.level)}
                     data-testid={`activation-card-${activeDomain}-${card.level}`}
+                    data-domain-level={`${activeDomain}-${card.level}`}
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
                       <div className="w-8 h-8 rounded-full bg-[#EAE5DF] flex items-center justify-center flex-shrink-0">
