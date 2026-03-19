@@ -445,8 +445,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipObsDefenseEnabled: false,
     ipObsDefenseDenialRate: 5,
     ipObsDefenseClaimValue: 10000,
-    ipObsDefenseDocContribution: 40,
-    ipObsDefenseRealization: 35,
+    ipObsDefenseDocContribution: 20,
+    ipObsDefenseRealization: 25,
     ipObsDefenseExpanded: true,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,

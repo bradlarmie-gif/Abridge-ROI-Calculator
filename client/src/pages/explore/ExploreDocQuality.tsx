@@ -1242,8 +1242,8 @@ export default function ExploreDocQuality({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">Obs/IP Status Defense</p>
-                <p className="text-sm text-[#888888]">Protect against medical necessity denials at the point of admission</p>
+                <p className="font-semibold text-black">Medical Necessity Appeal Support</p>
+                <p className="text-sm text-[#888888]">When payers challenge IP status retrospectively, complete documentation is your defense</p>
               </div>
               <div className="flex items-center gap-3">
                 {docQualityInputs.ipObsDefenseEnabled && (
@@ -1279,9 +1279,15 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
-                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
-                    Better documentation at admission supports medical necessity and reduces observation-to-inpatient status denials.
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
+                    Obs/IP status is determined at admission {"—"} Abridge doesn{"'"}t change that decision. What it changes is the quality of the documentation that supports it. When payers challenge IP status in retrospective review, the attending{"'"}s clinical reasoning needs to be in the record. Ambient documentation captures that reasoning in the note at the time of the encounter, not reconstructed later.
                   </p>
+                  <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-6 flex items-start gap-2">
+                    <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>
+                    <p className="text-xs text-[#666666]">
+                      <strong>What this models:</strong> The share of medical necessity denials where the appeal outcome depends on the quality of the original encounter documentation {"—"} and where a more complete Abridge-generated note would have supported the appeal. This is not a denial prevention model. It is a denial defense model.
+                    </p>
+                  </div>
 
                   {/* STEP 1: DENIAL EXPOSURE */}
                   <div className="mb-10">
@@ -1347,7 +1353,7 @@ export default function ExploreDocQuality({
                   {/* STEP 3: DOCUMENTATION CONTRIBUTION */}
                   <div className="mb-10">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 3: Documentation Contribution
+                      Step 3: Appeal-Sensitive Denials
                     </p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
                       <div className="flex-1">
@@ -1367,7 +1373,7 @@ export default function ExploreDocQuality({
                         </div>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        Your denial management team can tell you what % of medical necessity denials cite documentation gaps. Range: 25–55%.
+                        Of your medical necessity denials, what % do you lose on appeal specifically because the original documentation didn{"'"}t capture the clinical reasoning adequately? Your denial management team will know this. 15{"–"}25% is a defensible starting point for most programs.
                       </p>
                     </div>
                   </div>
@@ -1399,7 +1405,7 @@ export default function ExploreDocQuality({
                         <span className="font-semibold text-black">{formatCurrency(Math.round(ipObsDefenseNet))} net</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        35% is a conservative realization rate that accounts for cases where documentation alone doesn't resolve the denial.
+                        25% accounts for the reality that most denials involve medical judgment disputes, not just documentation gaps. Even with perfect documentation, payers often sustain denials. Only count cases where documentation quality was the deciding factor.
                       </p>
                     </div>
                   </div>
@@ -1412,7 +1418,7 @@ export default function ExploreDocQuality({
                     </div>
                     <p className="text-[13px] text-[#888888] flex items-start gap-2">
                       <span>⚠️</span>
-                      <span>Validate with your denial management team. They know your status denial patterns better than any benchmark.</span>
+                      <span>Your denial management team tracks appeal win/loss rates. Ask them: {"\""}How many of our lost appeals could have been won with better encounter documentation?{"\""} That number {"—"} not this model {"—"} is your real baseline.</span>
                     </p>
                   </div>
                 </div>
