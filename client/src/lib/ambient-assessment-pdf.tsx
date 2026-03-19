@@ -87,7 +87,7 @@ export interface DomainData {
 // CONSTANTS & UTILITIES
 // ============================================================================
 
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 9;
 const DOMAIN_ORDER = ["capacity", "revenue", "workforce", "risk"];
 
 const fmt = (n: number): string => {
@@ -1196,6 +1196,168 @@ function DomainPage({
   );
 }
 
+function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
+  const capacityLevel = data.domains?.capacity?.activationLevel ?? 1;
+  const revenueLevel = data.domains?.revenue?.activationLevel ?? 1;
+  const workforceLevel = data.domains?.workforce?.activationLevel ?? 1;
+  const qualityLevel = data.domains?.risk?.activationLevel ?? 1;
+
+  const assumptions: { domain: string; level: number; lines: string[] }[] = [];
+
+  if (capacityLevel >= 2) {
+    assumptions.push({
+      domain: "Capacity",
+      level: capacityLevel,
+      lines: [
+        `Providers in scope: ${data.providers.toLocaleString()}`,
+        `Encounters/year: ${data.annualEncounters.toLocaleString()}`,
+        `Current utilization: ${data.utilization ?? 0}%`,
+        "Time savings applied: 8 min/encounter (Abridge deployment average)",
+        "Conversion to access: 25% of recovered time converts to new encounters",
+        "Revenue per new encounter: $150 (adjustable by org)",
+        capacityLevel === 2
+          ? "Confidence adjustment: 30% reduction applied (estimated data, not confirmed)"
+          : capacityLevel === 3
+          ? "Confidence adjustment: 50% reduction applied (aspirational target, not current state)"
+          : "No confidence adjustment (confirmed deployment data)",
+      ],
+    });
+  }
+
+  if (revenueLevel >= 2) {
+    assumptions.push({
+      domain: "Revenue",
+      level: revenueLevel,
+      lines: [
+        `Providers in scope: ${data.providers.toLocaleString()}`,
+        `Encounters/year: ${data.annualEncounters.toLocaleString()}`,
+        revenueLevel === 2
+          ? "Method: Benchmark range from Abridge deployments at similar scale ($4K\u2013$12K/provider/year)"
+          : "Coding accuracy improvement: 2\u20134% lift in HCC capture rate",
+        revenueLevel >= 3 ? "Denial reduction: 0.5\u20131.5% of total claims affected" : "",
+        "Note: Revenue figures are directional. Actual impact depends on payer mix and billing workflow.",
+      ].filter(Boolean),
+    });
+  }
+
+  if (workforceLevel >= 2) {
+    assumptions.push({
+      domain: "Workforce",
+      level: workforceLevel,
+      lines: [
+        `Providers in scope: ${data.providers.toLocaleString()}`,
+        "Annual turnover rate: 15%",
+        "Replacement cost per provider: $350K",
+        workforceLevel >= 3
+          ? "Burnout share of turnover: 40% (Medscape 2023 benchmark)"
+          : "",
+        workforceLevel >= 3
+          ? "Documentation burden of burnout: 20% (AMA data)"
+          : "",
+        workforceLevel >= 3
+          ? "Formula: Departures \u00D7 Burnout% \u00D7 DocBurden% \u00D7 Replacement Cost"
+          : "Formula: Departures \u00D7 Replacement Cost (full attribution, conservative baseline)",
+      ].filter(Boolean),
+    });
+  }
+
+  if (qualityLevel >= 2) {
+    assumptions.push({
+      domain: "Quality",
+      level: qualityLevel,
+      lines: [
+        `Providers in scope: ${data.providers.toLocaleString()}`,
+        "Readmission reduction: 0.3\u20130.8% of applicable discharges",
+        "CMS penalty avoidance basis: HRRP program benchmarks",
+        "Note: Quality figures require confirmed outcome tracking data to move from directional to validated.",
+      ],
+    });
+  }
+
+  const unmeasuredDomains = [
+    capacityLevel < 2 ? "Capacity" : null,
+    revenueLevel < 2 ? "Revenue" : null,
+    workforceLevel < 2 ? "Workforce" : null,
+    qualityLevel < 2 ? "Quality" : null,
+  ].filter(Boolean);
+
+  return (
+    <Page size="LETTER" style={{ backgroundColor: "#FFFFFF", padding: 54 }}>
+      <Text style={{
+        fontSize: 8, color: "#EA2C00", letterSpacing: 2.5,
+        textTransform: "uppercase", marginBottom: 6,
+      }}>
+        Methodology
+      </Text>
+      <Text style={{
+        fontSize: 22, fontWeight: "bold", color: "#1A1A1A",
+        marginBottom: 4,
+      }}>
+        How These Numbers Were Built
+      </Text>
+      <View style={{ width: 40, height: 2, backgroundColor: "#EA2C00", marginBottom: 16 }} />
+      <Text style={{
+        fontSize: 10, color: "#555555", lineHeight: 1.6, marginBottom: 24, maxWidth: 460,
+      }}>
+        {"Every number in this report can be traced to a specific formula, a specific input you provided, and a specific assumption. The assumptions are listed here so that any figure can be challenged, validated, or updated as you collect better data."}
+      </Text>
+
+      {assumptions.map((a) => (
+        <View key={a.domain} style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+            <Text style={{
+              fontSize: 9, fontWeight: "bold", color: "#1A1A1A",
+              textTransform: "uppercase", letterSpacing: 1.5, marginRight: 8,
+            }}>
+              {a.domain}
+            </Text>
+            <Text style={{
+              fontSize: 8, color: "#EA2C00", letterSpacing: 1,
+              textTransform: "uppercase",
+            }}>
+              {`Level ${a.level}`}
+            </Text>
+          </View>
+          {a.lines.map((line, i) => (
+            <View key={i} style={{ flexDirection: "row", marginBottom: 3, paddingLeft: 8 }}>
+              <Text style={{ fontSize: 9, color: "#888888", marginRight: 6 }}>{"\u00B7"}</Text>
+              <Text style={{ fontSize: 9, color: "#444444", lineHeight: 1.55, flex: 1 }}>
+                {line}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ))}
+
+      {unmeasuredDomains.length > 0 && (
+        <View style={{
+          marginTop: 8, backgroundColor: "#F5F0EB", borderRadius: 6,
+          padding: 14,
+        }}>
+          <Text style={{
+            fontSize: 8, color: "#888888", letterSpacing: 1.5,
+            textTransform: "uppercase", marginBottom: 6,
+          }}>
+            Unmeasured Domains
+          </Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6 }}>
+            {`${unmeasuredDomains.join(", ")} ${unmeasuredDomains.length === 1 ? "was" : "were"} reported at Level 1 (not yet measured). The benchmark ranges shown for ${unmeasuredDomains.length === 1 ? "this domain" : "these domains"} are derived from Abridge deployment data at comparable organization sizes \u2014 they are ranges, not projections, and are explicitly labeled as such throughout this report.`}
+          </Text>
+        </View>
+      )}
+
+      <View style={{
+        position: "absolute", bottom: 36, left: 54, right: 54,
+        borderTopWidth: 1, borderTopColor: "#E0E0E0", paddingTop: 10,
+      }}>
+        <Text style={{ fontSize: 8, color: "#AAAAAA" }}>
+          {"Abridge \u00B7 Ambient Assessment Methodology \u00B7 All figures subject to validation with confirmed deployment data."}
+        </Text>
+      </View>
+    </Page>
+  );
+}
+
 function getHighPerformerInsights(data: AmbientAssessmentPDFData): string[] {
   const insights: string[] = [];
   const score = data.documentationScore ?? 0;
@@ -1503,6 +1665,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       <DomainPage domainKey="revenue" data={data} pageNum={5} />
       <DomainPage domainKey="workforce" data={data} pageNum={6} />
       <DomainPage domainKey="risk" data={data} pageNum={7} />
+      <MethodologyPage data={data} />
       <ConversationAheadPage data={data} />
     </Document>
   );
