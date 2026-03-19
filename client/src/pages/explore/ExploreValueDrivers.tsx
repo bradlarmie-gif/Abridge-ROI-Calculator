@@ -1027,13 +1027,13 @@ export default function ExploreValueDrivers({
                       <label className="text-sm text-[#888888]">Additional visits per provider per week</label>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.max(0, timeDriverInputs.additionalVisitsPerWeek - 1) })}
+                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.max(0, Math.round((timeDriverInputs.additionalVisitsPerWeek - 0.5) * 10) / 10) })}
                           className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
                           data-testid="button-visits-decrement"
                         >−</button>
-                        <span className="text-2xl font-bold text-black w-8 text-center" data-testid="text-visits-per-week">{timeDriverInputs.additionalVisitsPerWeek}</span>
+                        <span className="text-2xl font-bold text-black w-10 text-center" data-testid="text-visits-per-week">{timeDriverInputs.additionalVisitsPerWeek}</span>
                         <button
-                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.min(10, timeDriverInputs.additionalVisitsPerWeek + 1) })}
+                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.min(10, Math.round((timeDriverInputs.additionalVisitsPerWeek + 0.5) * 10) / 10) })}
                           className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
                           data-testid="button-visits-increment"
                         >+</button>
@@ -1042,9 +1042,9 @@ export default function ExploreValueDrivers({
 
                     <div className="flex gap-2">
                       {[
-                        { label: 'Conservative', value: 1, desc: 'Minimal scheduling changes' },
-                        { label: 'Moderate', value: 2, desc: 'Intentional template adjustments' },
-                        { label: 'Aggressive', value: 3, desc: 'Active capacity expansion' },
+                        { label: 'Conservative', value: 0.5, desc: 'Minimal scheduling changes' },
+                        { label: 'Moderate', value: 1, desc: 'Intentional template adjustments' },
+                        { label: 'Aggressive', value: 2, desc: 'Active capacity expansion' },
                       ].map((preset) => (
                         <button
                           key={preset.label}
