@@ -393,37 +393,26 @@ const ProgressBar = ({ percent, width = 400 }: { percent: number; width?: number
   );
 };
 
-interface AllocationRow {
-  pct: number;
-  label: string;
-  description: string;
-  badge?: { text: string; color: string; dotted?: boolean };
-}
-
-const AllocationIntentBlock = ({ rows }: { rows: AllocationRow[] }) => (
-  <View style={{ backgroundColor: colors.cards, borderRadius: 4 }}>
-    {rows.map((row, i) => {
-      const isZero = row.pct === 0;
-      const textColor = isZero ? "#AAAAAA" : colors.primaryText;
-      const descColor = isZero ? "#AAAAAA" : "#888888";
-      return (
-        <View key={i} style={{ paddingVertical: 10, paddingHorizontal: 16, borderBottomWidth: i < rows.length - 1 ? 0.5 : 0, borderBottomColor: colors.border }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: textColor }}>{row.pct}% {"\u2192"} {row.label}</Text>
-            {row.badge && (
-              <View style={{ borderWidth: 1, borderColor: row.badge.color, borderStyle: row.badge.dotted ? "dotted" : "solid", borderRadius: 3, paddingHorizontal: 4, paddingVertical: 1 }}>
-                <Text style={{ fontSize: 6.5, color: row.badge.color, textTransform: "uppercase", letterSpacing: 0.5 }}>{row.badge.text}</Text>
-              </View>
-            )}
+const ValueDriversGlanceBlock = ({ drivers, formatValue }: { drivers: ExploreDriver[]; formatValue: (n: number) => string }) => {
+  const activeDrivers = drivers.filter(d => d.value > 0);
+  if (activeDrivers.length === 0) return null;
+  return (
+    <View style={{ backgroundColor: colors.cards, borderRadius: 4 }}>
+      {activeDrivers.map((driver, i) => (
+        <View key={i} style={{ paddingVertical: 8, paddingHorizontal: 16, borderBottomWidth: i < activeDrivers.length - 1 ? 0.5 : 0, borderBottomColor: colors.border, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+            <View style={{ width: 3, height: 16, backgroundColor: driver.category === "time" ? colors.primary : "#1A6B4A", borderRadius: 1 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{driver.name}</Text>
+              <Text style={{ fontSize: 7.5, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 1 }}>{driver.category === "time" ? "Time Recaptured" : "Documentation Quality"}</Text>
+            </View>
           </View>
-          <Text style={{ fontSize: 9, color: descColor, marginTop: 3, lineHeight: 1.5 }}>
-            {isZero ? "Not allocated." : row.description}
-          </Text>
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatValue(driver.value)}</Text>
         </View>
-      );
-    })}
-  </View>
-);
+      ))}
+    </View>
+  );
+};
 
 const PageFooter = ({ pageNum, orgName, settingLabel, totalPages = 5 }: { pageNum: number; orgName: string; settingLabel: string; totalPages?: number }) => (
   <View style={styles.footer}>
@@ -725,67 +714,7 @@ const getNursingObservation = (data: ExplorePDFData): string => {
   return `Your model captures staffing efficiency value from documentation time savings. The remaining time returns to the bedside for assessments, interventions, and the clinical presence that improves care quality.`;
 };
 
-const ALLOCATION_FOOTER_NOTE = "Not all reclaimed time creates direct dollar value \u2014 some makes shifts more sustainable. That\u2019s real value too, just harder to count.";
 
-const getOpAllocationSentence = (capPct: number, docPct: number, susPct: number): string => {
-  if (capPct >= 50) {
-    return `Your model is capacity-driven. The majority of reclaimed time converts directly into patient visits \u2014 that\u2019s what produces the TIME RECAPTURED dollar figure below. ${susPct}% is returned to your providers as genuine breathing room. That value is real \u2014 it just doesn\u2019t move through revenue.`;
-  }
-  if (docPct >= 50) {
-    return `Your model is documentation-quality-driven. The majority of reclaimed time goes toward better notes \u2014 that\u2019s the foundation of the revenue optimization drivers below. ${capPct}% converts to capacity, ${susPct}% returns to your providers as time.`;
-  }
-  if (susPct >= 50) {
-    return `Your model prioritizes provider sustainability \u2014 ${susPct}% of reclaimed time is returned directly to your providers. That doesn\u2019t appear as a dollar figure here, but it shows up in retention, burnout reduction, and clinical presence. ${capPct}% converts to capacity and is modeled below.`;
-  }
-  if (capPct === 0 && docPct === 0) {
-    return "100% of reclaimed time is allocated to clinician sustainability. No revenue or capacity drivers are active in this model. The value is real \u2014 it lives in retention, wellbeing, and clinical presence.";
-  }
-  return `Your time is split: ${capPct}% into patient capacity, ${docPct}% into documentation quality, and ${susPct}% back to your providers. Each allocation drives a different kind of value \u2014 modeled separately below.`;
-};
-
-const getEdAllocationSentence = (thrPct: number, docPct: number, wellPct: number): string => {
-  if (thrPct >= 50) {
-    return `Your model is throughput-driven. Faster documentation translates directly into faster patient disposition \u2014 fewer walkouts, more capacity within the same physical department. ${wellPct}% is returned to your ED physicians as genuine shift breathing room. That value is real \u2014 it doesn\u2019t move through revenue.`;
-  }
-  if (docPct >= 50) {
-    return `Your model is documentation-quality-driven. The majority of reclaimed time goes toward more complete notes \u2014 that\u2019s what drives E&M accuracy and denial prevention below. ${thrPct}% converts to throughput, ${wellPct}% returns to your physicians as time.`;
-  }
-  if (wellPct >= 50) {
-    return `Your model prioritizes physician wellbeing \u2014 ${wellPct}% of reclaimed time is returned directly to your ED physicians. That doesn\u2019t appear as a dollar figure here, but it shows up in burnout scores, retention, and shift sustainability. ${thrPct}% converts to throughput and is modeled below.`;
-  }
-  if (thrPct === 0 && docPct === 0) {
-    return "100% of reclaimed time is allocated to clinician wellbeing. No throughput or documentation quality drivers are active in this model. The value is real \u2014 it lives in retention, shift sustainability, and physician presence.";
-  }
-  return `Your time is split: ${thrPct}% into patient throughput, ${docPct}% into documentation quality, and ${wellPct}% back to your physicians as time. Each allocation drives a different kind of value \u2014 modeled separately below.`;
-};
-
-const getIpAllocationSentence = (directPct: number, docPct: number, susPct: number): string => {
-  if (directPct >= 50) {
-    return `Your model is capacity-driven. The majority of reclaimed time flows back to the bedside \u2014 more time rounding, less time at the keyboard. That\u2019s what drives the CAPACITY UNLOCKED figure: more admissions handled, fewer bottlenecks, a program that scales. ${susPct}% is returned to your hospitalists as time \u2014 real value that shows up in retention, not revenue.`;
-  }
-  if (docPct >= 50) {
-    return `Your model is documentation-quality-driven. The majority of reclaimed time goes toward better notes \u2014 that\u2019s where DRG accuracy, CC/MCC capture, and CDI efficiency live. The revenue optimization below flows directly from this choice. ${directPct}% converts to capacity, ${susPct}% returns to your hospitalists as time.`;
-  }
-  if (susPct >= 50) {
-    return `Your model prioritizes hospitalist sustainability \u2014 ${susPct}% of reclaimed time is returned directly to your physicians. That doesn\u2019t appear as a revenue line here, but it shows up in after-hours charting load, retention, and the long-term sustainability of your program. ${directPct}% converts to capacity and is modeled below.`;
-  }
-  if (directPct === 0 && docPct === 0) {
-    return "100% of reclaimed time is allocated to shift sustainability. No capacity or documentation quality drivers are active in this model. The value is real \u2014 it lives in after-hours charting reduction, retention, and hospitalist wellbeing.";
-  }
-  return `Your time is split: ${directPct}% to direct patient care, ${docPct}% to documentation quality, and ${susPct}% to shift sustainability. Each allocation drives a different kind of value \u2014 modeled separately below.`;
-};
-
-const getNursingTimeSentence = (data: ExplorePDFData): string => {
-  const otHrsPerWk = safe(data.nursingOtHoursPerNurseWeek);
-  const otReduction = safe(data.nursingOtAllocationPct);
-  const otVal = safe(data.nursingOtValue);
-  const hrsPerWk = safe(data.nursingHoursPerWeek);
-
-  if (otVal > 0) {
-    return `Your nurses currently average ${otHrsPerWk} overtime hours per week. With a ${otReduction}% expected reduction from better documentation, the OT savings are grounded in your actual overtime spend \u2014 not a percentage of saved time. The remaining ${hrsPerWk} hrs/wk of documentation time saved per nurse returns to shift sustainability and bedside care.`;
-  }
-  return `Documentation time savings of ${hrsPerWk} hrs/wk per nurse return to the bedside for assessments, interventions, and the clinical presence that improves care quality. No overtime reduction is modeled in this assessment.`;
-};
 
 const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const config = SETTING_CONFIGS[data.careSetting];
@@ -1031,61 +960,28 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>VALUE DRIVERS AT A GLANCE</Text>
 
-            <AllocationIntentBlock rows={[
-              { pct: capPct, label: "More patients seen", description: "Time converted to additional visits and scheduling capacity. This is the throughput story. It produces the dollar figures on the next page." },
-              { pct: docPct, label: "Better documentation", description: "Time redirected toward more complete, accurate notes \u2014 the foundation of the revenue optimization drivers that follow. This is the revenue integrity story." },
-              { pct: susPct, label: "Given back to your providers", description: "Time returned as genuine breathing room. Less after-hours charting, less documentation burden, more sustainable practice. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a provider stays." },
-            ]} />
+            <ValueDriversGlanceBlock drivers={data.drivers} formatValue={fmtCurrency} />
 
             <View style={styles.divider} />
 
             <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+              {"\u201C"}The pages that follow detail how each driver works{"\n"}and what it produces for your organization.{"\u201D"}
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
           </View>
         </Page>
 
-        {/* OUTPATIENT PAGE 3: HOW YOUR TIME ALLOCATION BECOMES REVENUE */}
+        {/* OUTPATIENT PAGE 3: YOUR VALUE DRIVERS */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
-            <Text style={styles.sectionHeadline}>How Your Time Allocation Becomes Revenue</Text>
+            <Text style={styles.sectionHeadline}>How Time Becomes Revenue</Text>
             <Text style={styles.body}>
-              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} providers. Here{"\u2019"}s what each allocation decision produces.
+              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} providers. Here{"\u2019"}s how each driver works.
             </Text>
-
-            <View style={{ backgroundColor: "#F5F2EE", borderRadius: 4, padding: 12, marginBottom: 10 }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                YOUR TIME ALLOCATION
-              </Text>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>PATIENT CAPACITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: capPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{capPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Time converted to additional patient visits and reduced scheduling gaps.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>DOCUMENTATION QUALITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: docPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{docPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Time that enables more complete, thorough documentation {"\u2014"} the foundation of the revenue drivers below.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>CLINICIAN SUSTAINABILITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: susPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{susPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Breathing room that reduces documentation burden, supports work-life balance, and protects retention.</Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
-                {getOpAllocationSentence(capPct, docPct, susPct)}
-              </Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
-                {ALLOCATION_FOOTER_NOTE}
-              </Text>
-            </View>
 
             <View style={styles.divider} />
 
@@ -1750,61 +1646,28 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>VALUE DRIVERS AT A GLANCE</Text>
 
-            <AllocationIntentBlock rows={[
-              { pct: thrPct, label: "Faster patient disposition", description: "Less time documenting means faster chart closure, faster disposition decisions, fewer patients who leave without being seen. This is the throughput story. It produces the dollar figures on the next page." },
-              { pct: 100 - thrPct - wellPct, label: "More complete documentation", description: "Time redirected toward E&M accuracy and denial prevention. Every note complete at close of encounter is a note that doesn\u2019t come back as a query or a denial. This is the revenue integrity story." },
-              { pct: wellPct, label: "Returned to your physicians", description: "Shift sustainability. Less cognitive load at hour 8. A department that doesn\u2019t cycle through its physicians every three years. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a physician renews." },
-            ]} />
+            <ValueDriversGlanceBlock drivers={data.drivers} formatValue={fmtCurrency} />
 
             <View style={styles.divider} />
 
             <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+              {"\u201C"}The pages that follow detail how each driver works{"\n"}and what it produces for your organization.{"\u201D"}
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
           </View>
         </Page>
 
-        {/* ED PAGE 3: HOW YOUR TIME ALLOCATION DRIVES ED REVENUE */}
+        {/* ED PAGE 3: YOUR VALUE DRIVERS */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
-            <Text style={styles.sectionHeadline}>How Your Time Allocation Drives ED Revenue</Text>
+            <Text style={styles.sectionHeadline}>How Time Drives ED Revenue</Text>
             <Text style={styles.body}>
-              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} emergency physicians. In the ED, every allocation decision has a direct throughput consequence.
+              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} emergency physicians. Here{"\u2019"}s how each driver works.
             </Text>
-
-            <View style={{ backgroundColor: "#F5F2EE", borderRadius: 4, padding: 12, marginBottom: 10 }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                YOUR TIME ALLOCATION
-              </Text>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>PATIENT THROUGHPUT</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: thrPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{thrPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Faster documentation means faster disposition {"\u2014"} fewer walkouts, more capacity.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>DOCUMENTATION QUALITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: (100 - thrPct - wellPct) === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{100 - thrPct - wellPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Time that enables more complete, thorough documentation {"\u2014"} the foundation of E&M accuracy and denial prevention below.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>CLINICIAN WELLBEING</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: wellPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{wellPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Shift sustainability that reduces burnout and supports emergency physician retention.</Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
-                {getEdAllocationSentence(thrPct, 100 - thrPct - wellPct, wellPct)}
-              </Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
-                {ALLOCATION_FOOTER_NOTE}
-              </Text>
-            </View>
 
             <View style={styles.divider} />
 
@@ -2424,18 +2287,14 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>WHERE YOUR TIME GOES</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>VALUE DRIVERS AT A GLANCE</Text>
 
-            <AllocationIntentBlock rows={[
-              { pct: directPct, label: "Back to the bedside", description: "More rounding time. More patient and family presence. More capacity \u2014 without adding FTEs. This is the capacity story. The CAPACITY UNLOCKED figure on the next page flows from this choice." },
-              { pct: docQPct, label: "Better clinical records", description: "More complete notes mean more accurate DRGs, fewer CDI queries, and stronger revenue integrity. This is the documentation quality story. Its dollar figures are on the next page." },
-              { pct: shiftPct, label: "Returned to your hospitalists", description: "Less after-hours charting. Less documentation burden at the end of a 12-hour shift. A program that can retain the people who built it and recruit the people who will grow it. This is the retention story. It doesn\u2019t have a dollar on this page. It has a dollar when a hospitalist re-signs." },
-            ]} />
+            <ValueDriversGlanceBlock drivers={data.drivers} formatValue={fmtCurrency} />
 
             <View style={styles.divider} />
 
             <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow show what the first two produce financially.{"\n"}This page is about what the third one means.{"\u201D"}
+              {"\u201C"}The pages that follow detail how each driver works{"\n"}and what it produces for your organization.{"\u201D"}
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
@@ -2450,35 +2309,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <Text style={styles.body}>
               {fmtNum(data.hoursReturned)} hours returned to your hospitalists. Here{"\u2019"}s how each driver works.
             </Text>
-
-            <View style={{ backgroundColor: "#F5F2EE", borderRadius: 4, padding: 12, marginBottom: 10 }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                YOUR TIME ALLOCATION
-              </Text>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>DIRECT PATIENT CARE</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: directPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{directPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Time returned to rounding, patient interaction, teaching, and bedside presence.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>DOCUMENTATION QUALITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: docQPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{docQPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Better ambient notes mean fewer CDI queries, more accurate DRGs, and stronger clinical records.</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>SHIFT SUSTAINABILITY</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: shiftPct === 0 ? colors.tertiary : "#1A1A1A", marginBottom: 2 }}>{shiftPct}%</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Reduced after-hours charting that protects hospitalist retention and work-life balance.</Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
-                {getIpAllocationSentence(directPct, docQPct, shiftPct)}
-              </Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
-                {ALLOCATION_FOOTER_NOTE}
-              </Text>
-            </View>
 
             <View style={styles.divider} />
 
@@ -3114,39 +2944,14 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>HOW YOUR TIME IS DEPLOYED</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>VALUE DRIVERS AT A GLANCE</Text>
 
-            <View style={[styles.cardBg, { padding: 12, marginBottom: 8 }]}>
-              <View style={{ flexDirection: "row", gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OVERTIME REDUCTION</Text>
-                  <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{fmtNum(otHrsElim)} hrs/yr</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
-                    Based on {otHrsPerWk} OT hrs/nurse/wk {"\u00D7"} {otPct}% reduction {"\u00D7"} 52 weeks. Grounded in your actual overtime spend.
-                  </Text>
-                  <Text style={{ fontSize: 7, color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>HARD VALUE</Text>
-                </View>
-                <View style={{ width: 0.5, backgroundColor: colors.border }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>TIME RETURNED TO NURSING</Text>
-                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{hrsPerWk} hrs/wk</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
-                    Per nurse, from documentation time savings. Returns to shift sustainability, bedside care, and clinical presence.
-                  </Text>
-                  <Text style={{ fontSize: 7, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>SUSTAINABILITY + CARE QUALITY</Text>
-                </View>
-              </View>
-              <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: colors.border }}>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  {getNursingTimeSentence(data)}
-                </Text>
-              </View>
-            </View>
+            <ValueDriversGlanceBlock drivers={data.drivers} formatValue={fmtCurrency} />
 
             <View style={styles.divider} />
 
             <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow show what this produces {"\u2014"} in hard labor{"\n"}savings, in care quality potential, and in the retention economics{"\n"}your workforce strategy depends on.{"\u201D"}
+              {"\u201C"}The pages that follow detail how each driver works{"\n"}and what it produces for your organization.{"\u201D"}
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Nursing Value Assessment" totalPages={nursingTotalPages} />
@@ -3161,38 +2966,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <Text style={styles.body}>
               {fmtNum(data.hoursReturned)} hours returned to your nursing staff. Here{"\u2019"}s how each driver works.
             </Text>
-
-            <View style={{ backgroundColor: "#F5F2EE", borderRadius: 4, padding: 12, marginBottom: 10 }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                YOUR DOCUMENTATION TIME IMPACT
-              </Text>
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>TIME SAVED</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{hrsPerWk} hrs/wk</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Per nurse, from reduced documentation burden.</Text>
-                </View>
-                {otHrsElim > 0 && (
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>OT HOURS ELIMINATED</Text>
-                    <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{fmtNum(otHrsElim)}/yr</Text>
-                    <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>{otHrsPerWk} OT hrs/wk {"\u00D7"} {otPct}% reduction {"\u00D7"} 52 wks.</Text>
-                    <Text style={{ fontSize: 7, color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5 }}>HARD VALUE</Text>
-                  </View>
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 8, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>HOURS PER NURSE</Text>
-                  <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1A1A1A", marginBottom: 2 }}>{fmtNum(hrsPerNurse)}/yr</Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4, marginBottom: 4 }}>Returned to the bedside for assessments and care.</Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
-                {getNursingTimeSentence(data)}
-              </Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
-                {ALLOCATION_FOOTER_NOTE}
-              </Text>
-            </View>
 
             <View style={styles.divider} />
 

@@ -763,24 +763,7 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
 const ThesisPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
   const timeReturned = data.laborTotal;
   const docImproved = data.revenueTotal;
-  
-  const allocations = [];
-  if (data.timeAllocation?.patientAccess) {
-    allocations.push({ category: "Patient Access", allocation: data.timeAllocation.patientAccess, implication: "Growth-oriented" });
-  }
-  if (data.timeAllocation?.clinicianWellbeing) {
-    allocations.push({ category: "Clinician Wellbeing", allocation: data.timeAllocation.clinicianWellbeing, implication: "Sustainability-oriented" });
-  }
-  if (data.timeAllocation?.reducingLocums) {
-    allocations.push({ category: "Locum Reduction", allocation: data.timeAllocation.reducingLocums, implication: "Cost-reduction" });
-  }
-
-  const primaryAllocation = allocations.length > 0 ? allocations.sort((a, b) => b.allocation - a.allocation)[0] : null;
-  const strategyInsight = primaryAllocation?.implication === "Growth-oriented" 
-    ? `This allocation reveals a growth-leaning strategy. You're betting that capacity—not retention—is your binding constraint. If that changes, the math changes. The model adapts.`
-    : primaryAllocation?.implication === "Sustainability-oriented"
-    ? `This allocation prioritizes sustainability. You're betting that keeping your clinicians healthy and engaged is the primary constraint. This is a long-term play.`
-    : `This allocation balances multiple priorities. You're hedging across growth, sustainability, and cost reduction.`;
+  const activeDrivers = data.drivers.filter(d => d.value > 0);
 
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
@@ -821,32 +804,27 @@ const ThesisPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pa
           </View>
         </View>
 
-        {allocations.length > 0 && (
+        {activeDrivers.length > 0 && (
           <View style={styles.allocationSection}>
             <Text style={styles.allocationLabel}>
-              You've chosen to allocate your {formatNumber(data.hoursReturned)} hours as follows:
+              Value Drivers at a Glance
             </Text>
             <View style={styles.allocationTable}>
-              <View style={styles.allocationHeader}>
-                <Text style={[styles.allocationHeaderCell, { flex: 2 }]}>Category</Text>
-                <Text style={[styles.allocationHeaderCell, { flex: 1, textAlign: "center" }]}>Allocation</Text>
-                <Text style={[styles.allocationHeaderCell, { flex: 2 }]}>Implication</Text>
-              </View>
-              {allocations.map((item, i) => (
-                <View key={i} style={[styles.allocationRow, i === allocations.length - 1 ? styles.allocationRowLast : {}]}>
-                  <Text style={[styles.allocationCell, { flex: 2 }]}>{item.category}</Text>
-                  <Text style={[styles.allocationCellBold, { flex: 1, textAlign: "center" }]}>{item.allocation}%</Text>
-                  <Text style={[styles.allocationCell, { flex: 2 }]}>{item.implication}</Text>
+              {activeDrivers.map((driver, i) => (
+                <View key={i} style={[styles.allocationRow, i === activeDrivers.length - 1 ? styles.allocationRowLast : {}, { alignItems: "center" }]}>
+                  <View style={{ flexDirection: "row", alignItems: "center", flex: 3, gap: 6 }}>
+                    <View style={{ width: 3, height: 14, backgroundColor: driver.category === "labor" ? brand.coral : "#1A6B4A", borderRadius: 1 }} />
+                    <View>
+                      <Text style={[styles.allocationCellBold, { marginBottom: 1 }]}>{driver.name}</Text>
+                      <Text style={{ fontSize: 7, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.5 }}>{driver.category === "labor" ? "Time Recaptured" : "Documentation Quality"}</Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.allocationCellBold, { flex: 1, textAlign: "right", color: brand.coral }]}>{formatCurrency(driver.value)}</Text>
                 </View>
               ))}
             </View>
           </View>
         )}
-
-        <View style={styles.insightBox}>
-          <Text style={styles.insightLabel}>Strategic Observation</Text>
-          <Text style={styles.insightText}>{strategyInsight}</Text>
-        </View>
       </View>
 
       <View style={styles.footer}>
