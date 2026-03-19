@@ -195,6 +195,14 @@ export interface DocQualityInputs {
   ipObsDefenseDocContribution: number;
   ipObsDefenseRealization: number;
   ipObsDefenseExpanded: boolean;
+  ipConcurrentReviewEnabled: boolean;
+  ipConcurrentReviewRate: number;
+  ipConcurrentDenialRate: number;
+  ipConcurrentDocSensitive: number;
+  ipConcurrentAvgDays: number;
+  ipConcurrentDailyRate: number;
+  ipConcurrentRealization: number;
+  ipConcurrentExpanded: boolean;
   
   // Inpatient: CDI Query Reduction
   ipCdiEnabled: boolean;
@@ -433,6 +441,14 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipObsDefenseDocContribution: 20,
     ipObsDefenseRealization: 25,
     ipObsDefenseExpanded: true,
+    ipConcurrentReviewEnabled: false,
+    ipConcurrentReviewRate: 45,
+    ipConcurrentDenialRate: 8,
+    ipConcurrentDocSensitive: 20,
+    ipConcurrentAvgDays: 1.5,
+    ipConcurrentDailyRate: 2800,
+    ipConcurrentRealization: 30,
+    ipConcurrentExpanded: true,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',
