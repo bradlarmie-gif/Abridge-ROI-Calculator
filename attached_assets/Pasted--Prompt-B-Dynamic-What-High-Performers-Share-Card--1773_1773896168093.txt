@@ -1,0 +1,64 @@
+ Prompt B — Dynamic "What High Performers Share" Card
+                                                                                                                                                                                                               
+  Paste this into Replit after Prompt A is applied:         
+                                              
+  ---                                                                                                                                                                                                          
+  In client/src/lib/ambient-assessment-pdf.tsx, find the ConversationAheadPage component (around line 1145). Find the "WHAT HIGH PERFORMERS SHARE" section — it currently shows static bullet points regardless
+   of the org's profile.                                                                                                                                                                                       
+                                                            
+  Replace the static content with a dynamic version. Add this function above the ConversationAheadPage component:                                                                                              
+                                                                                                                                                                                                               
+  function getHighPerformerInsights(inputs: AmbientInputs, results: AmbientResults): string[] {
+    const insights: string[] = [];                                                                                                                                                                             
+    const score = results.maturityScore ?? 0;                                                                                                                                                                  
+    const hasCapacity = (inputs.capacityLevel ?? 1) >= 2;
+    const hasRevenue = (inputs.revenueLevel ?? 1) >= 2;                                                                                                                                                        
+    const hasWorkforce = (inputs.workforceLevel ?? 1) >= 2;                                                                                                                                                    
+    const hasQuality = (inputs.qualityLevel ?? 1) >= 2;                                                                                                                                                        
+    const unmeasuredCount = [hasCapacity, hasRevenue, hasWorkforce, hasQuality].filter(v => !v).length;                                                                                                        
+                                                            
+    if (score >= 61) {                                                                                                                                                                                         
+      insights.push("They measure across all four domains — not because every number is perfect, but because visibility changes the conversation.");                                                           
+    } else if (score >= 39) {                                                                                                                                                                                  
+      insights.push("They've moved beyond measuring one domain in isolation — they track how Capacity, Revenue, and Workforce interact.");                                                                     
+    } else {                                                                                                                                                                                                   
+      insights.push("They picked one domain to measure rigorously and used that data to earn internal support for expanding the analysis.");                                                                   
+    }                                                       
+                                                                                                                                                                                                               
+    if (unmeasuredCount >= 2) {                             
+      insights.push(`They didn't wait until they had perfect data. They started with the domains they could measure, built the case, then expanded.`);                                                         
+    }                                                       
+                                                                                                                                                                                                               
+    if (!hasRevenue) {                                      
+      insights.push("Revenue impact is often the last domain organizations measure — and consistently the largest when they do.");                                                                             
+    }                                                       
+                                                                                                                                                                                                               
+    if (!hasWorkforce) {                                    
+      insights.push("Workforce numbers become defensible when you separate documentation burden from total burnout causes — not when you claim all retention impact.");                                        
+    }                                                       
+                                                                                                                                                                                                               
+    if (inputs.providers >= 200) {                          
+      insights.push("At your scale, a half-point improvement in documentation efficiency across all providers is a material budget line.");                                                                    
+    }                                         
+                                                                                                                                                                                                               
+    if (inputs.tenure && inputs.tenure > 6) {               
+      insights.push("Long-tenure organizations find that ambient adoption stabilizes faster — providers aren't unlearning a workflow, they're replacing a burden.");                                           
+    }                                                       
+                                                                                                                                                                                                               
+    return insights.slice(0, 3);                            
+  }                                                                                                                                                                                                            
+                                                            
+  Then, inside ConversationAheadPage, replace the static bullet list content with:                                                                                                                             
+                                                            
+  {getHighPerformerInsights(inputs, results).map((insight, i) => (                                                                                                                                             
+    <View key={i} style={{ flexDirection: "row", marginBottom: 8, alignItems: "flex-start" }}>                                                                                                                 
+      <View style={{                      
+        width: 4, height: 4, borderRadius: 2,                                                                                                                                                                  
+        backgroundColor: "#EA2C00",                                                                                                                                                                            
+        marginTop: 4, marginRight: 8, flexShrink: 0
+      }} />                                                                                                                                                                                                    
+      <Text style={{ fontSize: 10, color: "#333333", lineHeight: 1.6, flex: 1 }}>
+        {insight}                                                                                                                                                                                              
+      </Text>                                                                                                                                                                                                  
+    </View>                                                                                                                                                                                                    
+  ))}                                             

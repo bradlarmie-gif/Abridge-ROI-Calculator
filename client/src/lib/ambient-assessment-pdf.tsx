@@ -468,6 +468,16 @@ function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
         {"This isn\u2019t a summary of your deployment. It\u2019s a measurement of what your deployment is producing across four organizational value domains \u2014 and a map of what hasn\u2019t been measured yet. The numbers that appear below are either confirmed from your stated inputs or labeled as benchmark ranges. Nothing is projected. Nothing is extrapolated without being labeled."}
       </Text>
 
+      <Text style={{
+        fontSize: 11,
+        color: "#555555",
+        lineHeight: 1.65,
+        marginBottom: 20,
+        maxWidth: 460,
+      }}>
+        {`This assessment is based on ${data.providers} providers and the activation levels your team reported across four domains. The first number below reflects value the math can confirm. The second reflects what organizations your size typically find when they analyze domains you haven't measured yet.`}
+      </Text>
+
       <View style={{ flexDirection: "row", borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 4, marginBottom: 16, overflow: "hidden" }}>
         <View style={{ flex: 1, padding: 16, alignItems: "center" }}>
           <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>MATURITY SCORE</Text>
@@ -501,6 +511,48 @@ function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
           )}
         </View>
       </View>
+
+      {(() => {
+        const confirmedAnnual = measuredTotal;
+        const totalLow = confirmedAnnual + unmeasuredLow;
+        const totalHigh = confirmedAnnual + unmeasuredHigh;
+        const fmtCoi = (n: number) =>
+          n >= 1_000_000
+            ? `$${(n / 1_000_000).toFixed(1)}M`
+            : `$${(n / 1_000).toFixed(0)}K`;
+        return (
+          <View style={{
+            marginTop: 16,
+            backgroundColor: "#1A1A1A",
+            borderRadius: 8,
+            padding: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{
+                fontSize: 8,
+                color: "#EA2C00",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}>
+                Cost of a 12-Month Delay
+              </Text>
+              <Text style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
+                {`Every year at your current maturity level, the full gap persists. At your scale, waiting 12 months costs between ${fmtCoi(totalLow)} and ${fmtCoi(totalHigh)} in value not yet captured \u2014 the confirmed portion plus the unmeasured range.`}
+              </Text>
+            </View>
+            <View style={{ marginLeft: 20, alignItems: "flex-end" }}>
+              <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Per Year Delayed</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>
+                {`${fmtCoi(totalLow)}\u2013${fmtCoi(totalHigh)}`}
+              </Text>
+            </View>
+          </View>
+        );
+      })()}
 
       <View style={s.divider} />
       <Text style={[s.eyebrow, { marginBottom: 6 }]}>WHAT THIS ASSESSMENT FOUND</Text>
@@ -1144,6 +1196,46 @@ function DomainPage({
   );
 }
 
+function getHighPerformerInsights(data: AmbientAssessmentPDFData): string[] {
+  const insights: string[] = [];
+  const score = data.documentationScore ?? 0;
+  const hasCapacity = (data.domains?.capacity?.activationLevel ?? 1) >= 2;
+  const hasRevenue = (data.domains?.revenue?.activationLevel ?? 1) >= 2;
+  const hasWorkforce = (data.domains?.workforce?.activationLevel ?? 1) >= 2;
+  const hasQuality = (data.domains?.risk?.activationLevel ?? 1) >= 2;
+  const unmeasuredCount = [hasCapacity, hasRevenue, hasWorkforce, hasQuality].filter(v => !v).length;
+
+  if (score >= 61) {
+    insights.push("They measure across all four domains \u2014 not because every number is perfect, but because visibility changes the conversation.");
+  } else if (score >= 39) {
+    insights.push("They\u2019ve moved beyond measuring one domain in isolation \u2014 they track how Capacity, Revenue, and Workforce interact.");
+  } else {
+    insights.push("They picked one domain to measure rigorously and used that data to earn internal support for expanding the analysis.");
+  }
+
+  if (unmeasuredCount >= 2) {
+    insights.push("They didn\u2019t wait until they had perfect data. They started with the domains they could measure, built the case, then expanded.");
+  }
+
+  if (!hasRevenue) {
+    insights.push("Revenue impact is often the last domain organizations measure \u2014 and consistently the largest when they do.");
+  }
+
+  if (!hasWorkforce) {
+    insights.push("Workforce numbers become defensible when you separate documentation burden from total burnout causes \u2014 not when you claim all retention impact.");
+  }
+
+  if (data.providers >= 200) {
+    insights.push("At your scale, a half-point improvement in documentation efficiency across all providers is a material budget line.");
+  }
+
+  if (data.deploymentTenure && (data.deploymentTenure === "12-24" || data.deploymentTenure === "24+")) {
+    insights.push("Long-tenure organizations find that ambient adoption stabilizes faster \u2014 providers aren\u2019t unlearning a workflow, they\u2019re replacing a burden.");
+  }
+
+  return insights.slice(0, 3);
+}
+
 // ============================================================================
 // PAGE 8: THE CONVERSATION AHEAD
 // ============================================================================
@@ -1226,8 +1318,8 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
             },
             {
               label: "WHAT HIGH PERFORMERS SHARE",
-              title: "A measurement program, not a one-time study.",
-              body: "The organizations that close the maturity gap in 12 months don\u2019t do it domain by domain. They build a connected program \u2014 CDI, provider experience, access planning \u2014 running on a cadence with executive ownership.",
+              title: "",
+              body: "__DYNAMIC_INSIGHTS__",
               accent: false,
             },
             {
@@ -1246,8 +1338,25 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
               <Text style={{ fontSize: 7.5, fontWeight: 700, color: card.accent ? "#EA2C00" : "#1A1A1A", letterSpacing: 1, textTransform: "uppercase", marginBottom: 5 }}>
                 {card.label}
               </Text>
-              <Text style={{ fontSize: 9.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 5, lineHeight: 1.3 }}>{card.title}</Text>
-              <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.55 }}>{card.body}</Text>
+              {card.title ? (
+                <Text style={{ fontSize: 9.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 5, lineHeight: 1.3 }}>{card.title}</Text>
+              ) : null}
+              {card.body === "__DYNAMIC_INSIGHTS__" ? (
+                getHighPerformerInsights(data).map((insight, idx) => (
+                  <View key={idx} style={{ flexDirection: "row", marginBottom: 8, alignItems: "flex-start" }}>
+                    <View style={{
+                      width: 4, height: 4, borderRadius: 2,
+                      backgroundColor: "#EA2C00",
+                      marginTop: 4, marginRight: 8, flexShrink: 0
+                    }} />
+                    <Text style={{ fontSize: 10, color: "#333333", lineHeight: 1.6, flex: 1 }}>
+                      {insight}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.55 }}>{card.body}</Text>
+              )}
             </View>
           ));
         })()}
