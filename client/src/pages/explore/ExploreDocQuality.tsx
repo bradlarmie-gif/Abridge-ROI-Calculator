@@ -1045,7 +1045,7 @@ export default function ExploreDocQuality({
                         <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))} admissions with documentation opportunities</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        Your benchmark: If CDI queries 30% of admissions, you have at least 30% with documentation gaps. 25% is moderate.
+                        CDI programs typically identify gaps in 15{"–"}25% of admissions. 18% reflects a conservative starting point {"—"} your CDI team can tell you your actual query rate.
                       </p>
                     </div>
                   </div>
@@ -1083,9 +1083,10 @@ export default function ExploreDocQuality({
                       <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions where Abridge captures what was missed</span>
                     </div>
                     <div className="text-[13px] text-[#888888] space-y-1">
-                      <p><strong>Conservative:</strong> Only clear verbal discussions</p>
-                      <p><strong>Typical:</strong> Includes clinical reasoning that supports specificity</p>
-                      <p><strong>Optimistic:</strong> Strong adoption, comprehensive capture</p>
+                      <p><strong>Conservative:</strong> Only conditions explicitly named in conversation that are absent from the note</p>
+                      <p><strong>Typical:</strong> Includes clinical reasoning and specificity that supports CC/MCC assignment</p>
+                      <p><strong>Optimistic:</strong> Strong provider adoption; coders actively using ambient-captured note content</p>
+                      <p className="text-xs text-[#AAAAAA] mt-2 italic">Note: This value depends on your coding team using what Abridge captures. Validate with your CDI director.</p>
                     </div>
                   </div>
 

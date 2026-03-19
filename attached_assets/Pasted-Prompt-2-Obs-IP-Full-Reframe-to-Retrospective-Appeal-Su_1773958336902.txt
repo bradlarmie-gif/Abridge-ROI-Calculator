@@ -1,0 +1,73 @@
+Prompt 2 — Obs/IP: Full Reframe to Retrospective Appeal Support
+
+  This is a complete reframe of the driver — same formula, entirely different mechanism, lower defaults, honest framing.
+
+  In client/src/pages/explore/ExploreFlow.tsx, update these defaults:
+
+  Find:
+  ipObsDefenseDenialRate: 5,
+  ipObsDefenseClaimValue: 10000,
+  ipObsDefenseDocContribution: 40,
+  ipObsDefenseRealization: 35,
+  Replace with:
+  ipObsDefenseDenialRate: 5,
+  ipObsDefenseClaimValue: 10000,
+  ipObsDefenseDocContribution: 20,
+  ipObsDefenseRealization: 25,
+
+  In client/src/pages/explore/ExploreDocQuality.tsx, make the following changes to the Obs/IP section:
+
+  1. Update the card header title and subtitle (around line 1244–1245):
+
+  Find:
+  <p className="font-semibold text-black">Obs/IP Status Defense</p>
+  <p className="text-sm text-[#888888]">Protect against medical necessity denials at the point of admission</p>
+  Replace with:
+  <p className="font-semibold text-black">Medical Necessity Appeal Support</p>
+  <p className="text-sm text-[#888888]">When payers challenge IP status retrospectively, complete documentation is your defense</p>
+
+  2. Replace the opening paragraph (around line 1281–1283):
+
+  Find:
+  Better documentation at admission supports medical necessity and reduces observation-to-inpatient status denials.
+  Replace with:
+  <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
+    Obs/IP status is determined at admission — Abridge doesn't change that decision. What it changes is the quality of the documentation that supports it. When payers challenge IP status in retrospective
+  review, the attending's clinical reasoning needs to be in the record. Ambient documentation captures that reasoning in the note at the time of the encounter, not reconstructed later.
+  </p>
+  <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-6 flex items-start gap-2">
+    <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">ⓘ</span>
+    <p className="text-xs text-[#666666]">
+      <strong>What this models:</strong> The share of medical necessity denials where the appeal outcome depends on the quality of the original encounter documentation — and where a more complete
+  Abridge-generated note would have supported the appeal. This is not a denial prevention model. It is a denial defense model.
+    </p>
+  </div>
+
+  3. Update the Step 3 label and helper text (around line 1348–1370):
+
+  Find:
+  Step 3: Documentation Contribution
+  Replace with:
+  Step 3: Appeal-Sensitive Denials
+
+  Find:
+  Your denial management team can tell you what % of medical necessity denials cite documentation gaps. Range: 25–55%.
+  Replace with:
+  Of your medical necessity denials, what % do you lose on appeal specifically because the original documentation didn't capture the clinical reasoning adequately? Your denial management team will know this.
+   15–25% is a defensible starting point for most programs.
+
+  4. Update the realization note (around line 1401):
+
+  Find:
+  35% is a conservative realization rate that accounts for cases where documentation alone doesn't resolve the denial.
+  Replace with:
+  25% accounts for the reality that most denials involve medical judgment disputes, not just documentation gaps. Even with perfect documentation, payers often sustain denials. Only count cases where
+  documentation quality was the deciding factor.
+
+  5. Update the final disclaimer (around line 1412–1414):
+
+  Find:
+  <span>Validate with your denial management team. They know your status denial patterns better than any benchmark.</span>
+  Replace with:
+  <span>Your denial management team tracks appeal win/loss rates. Ask them: "How many of our lost appeals could have been won with better encounter documentation?" That number — not this model — is your real
+   baseline.</span>
