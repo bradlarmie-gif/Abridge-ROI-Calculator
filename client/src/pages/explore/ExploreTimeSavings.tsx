@@ -267,7 +267,8 @@ export default function ExploreTimeSavings({
             >
               <Button
                 onClick={onNext}
-                className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
+                disabled={state.minutesSavedPerEncounter === 0}
+                className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="button-continue"
               >
                 Continue to Value Drivers
@@ -295,9 +296,11 @@ export default function ExploreTimeSavings({
               {/* Hero Value */}
               <div className="text-center my-5">
                 <p className="text-5xl font-bold text-[#EA2C00]">
-                  {formatNumber(hoursSaved)}
+                  {state.minutesSavedPerEncounter > 0 ? formatNumber(hoursSaved) : '—'}
                 </p>
-                <p className="text-sm text-white/50 mt-1">hours / year</p>
+                <p className="text-sm text-white/50 mt-1">
+                  {state.minutesSavedPerEncounter > 0 ? 'hours / year' : 'Select a scenario below'}
+                </p>
               </div>
 
               <div className="h-px bg-white/10 my-4" />
@@ -307,9 +310,11 @@ export default function ExploreTimeSavings({
                 THE MATH
               </p>
               <p className="text-xs text-white/40 mb-4">
-                {isNursing 
-                  ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts ÷ 60`
-                  : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters ÷ 60`
+                {state.minutesSavedPerEncounter > 0
+                  ? (isNursing 
+                      ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts ÷ 60`
+                      : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters ÷ 60`)
+                  : '—'
                 }
               </p>
 
@@ -323,7 +328,7 @@ export default function ExploreTimeSavings({
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">Time Saved</span>
-                  <span className="text-white text-right">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
+                  <span className="text-white text-right">{state.minutesSavedPerEncounter > 0 ? `${state.minutesSavedPerEncounter} ${isNursing ? 'min/shift' : 'min/encounter'}` : '—'}</span>
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50 min-w-0">{isNursing ? 'Abridge-Enabled Shifts' : 'Eligible Encounters'}</span>
@@ -340,18 +345,20 @@ export default function ExploreTimeSavings({
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">Hours/year</span>
-                  <span className="text-white font-semibold">{formatNumber(hoursPerProvider)}</span>
+                  <span className="text-white font-semibold">{state.minutesSavedPerEncounter > 0 ? formatNumber(hoursPerProvider) : '—'}</span>
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">Hours/week</span>
-                  <span className="text-white font-semibold">{hoursPerWeek}</span>
+                  <span className="text-white font-semibold">{state.minutesSavedPerEncounter > 0 ? hoursPerWeek : '—'}</span>
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">{isNursing ? 'Per-shift impact' : 'Daily impact'}</span>
                   <span className="text-white font-semibold">
-                    {isNursing
-                      ? `${state.minutesSavedPerEncounter}min/shift per nurse`
-                      : `~${Math.round(hoursPerProvider * 60 / 220)}min/day per provider`}
+                    {state.minutesSavedPerEncounter > 0
+                      ? (isNursing
+                          ? `${state.minutesSavedPerEncounter}min/shift per nurse`
+                          : `~${Math.round(hoursPerProvider * 60 / 220)}min/day per provider`)
+                      : '—'}
                   </span>
                 </div>
               </div>
@@ -362,7 +369,8 @@ export default function ExploreTimeSavings({
               <div className="hidden lg:block">
                 <Button
                   onClick={onNext}
-                  className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
+                  disabled={state.minutesSavedPerEncounter === 0}
+                  className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   data-testid="button-panel-continue"
                 >
                   Continue to Value Drivers

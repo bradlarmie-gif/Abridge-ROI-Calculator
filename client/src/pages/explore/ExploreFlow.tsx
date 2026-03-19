@@ -302,7 +302,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingShiftsPerNurseYear: 156,
   nursingMinutesPerShift: 0,
   timePathScenario: null,
-  minutesSavedPerEncounter: 3,
+  minutesSavedPerEncounter: 0,
   timeAllocation: {
     patientAccess: 15,
     patientExperience: 0,
@@ -521,13 +521,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       ...DEFAULT_EXPLORE_STATE,
       careSetting: initialCareSetting || null,
     };
-    if (initialCareSetting === 'ed') {
-      fresh.minutesSavedPerEncounter = 2;
-    } else if (initialCareSetting === 'inpatient') {
-      fresh.minutesSavedPerEncounter = 3;
-    } else if (initialCareSetting === 'nursing') {
-      fresh.minutesSavedPerEncounter = 15;
-    }
     return fresh;
   });
 
@@ -542,17 +535,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       setState(() => {
         const fresh = { ...DEFAULT_EXPLORE_STATE, careSetting: newCareSetting };
         if (newCareSetting === 'ed') {
-          fresh.minutesSavedPerEncounter = 2;
           fresh.docQualityInputs = {
             ...fresh.docQualityInputs,
             currentWrvu: 2.5,
             denialRate: 10,
             avgClaimValue: 300,
           };
-        } else if (newCareSetting === 'inpatient') {
-          fresh.minutesSavedPerEncounter = 3;
-        } else if (newCareSetting === 'nursing') {
-          fresh.minutesSavedPerEncounter = 15;
         }
         return fresh;
       });
