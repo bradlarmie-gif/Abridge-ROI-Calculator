@@ -1282,7 +1282,7 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
   ].filter(Boolean);
 
   return (
-    <Page size="LETTER" style={s.whitePage}>
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
       <Text style={{
         fontSize: 8, color: "#EA2C00", letterSpacing: 2.5,
         textTransform: "uppercase", marginBottom: 6,
@@ -1346,14 +1346,7 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
       )}
 
-      <View style={{
-        position: "absolute", bottom: 36, left: 54, right: 54,
-        borderTopWidth: 1, borderTopColor: "#E0E0E0", paddingTop: 10,
-      }}>
-        <Text style={{ fontSize: 8, color: "#AAAAAA" }}>
-          {"Abridge \u00B7 Ambient Assessment Methodology \u00B7 All figures subject to validation with confirmed deployment data."}
-        </Text>
-      </View>
+      <PageFooter pageNum={8} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -1597,7 +1590,7 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
         </Text>
       </View>
 
-      <PageFooter pageNum={8} orgName={data.organizationName} />
+      <PageFooter pageNum={9} orgName={data.organizationName} />
     </Page>
   );
 }
