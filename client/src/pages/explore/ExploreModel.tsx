@@ -178,10 +178,6 @@ export default function ExploreModel({
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
-  const ipCdiCapacityValue = useMemo(() => {
-    if (!isInpatient || !timeDriverInputs.ipCdiCapacityEnabled) return 0;
-    return Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100));
-  }, [isInpatient, timeDriverInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
@@ -305,7 +301,6 @@ export default function ExploreModel({
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
     if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
-    if (ipCdiCapacityValue > 0) drivers.push({ id: "ipCdiCapacity", name: "CDI Capacity Extension", value: ipCdiCapacityValue, category: "time", onset: "delayed" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
@@ -630,15 +625,6 @@ export default function ExploreModel({
             calcSteps: [
               `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
               `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query = ${fmtK(ipCdiValue)}/year`,
-            ],
-          });
-        }
-        if (timeDriverInputs.ipCdiCapacityEnabled && ipCdiCapacityValue > 0) {
-          drivers.push({
-            id: 'inpatientCdiCapacity', name: 'CDI Capacity Extension', value: ipCdiCapacityValue, category: 'time',
-            calcSteps: [
-              `${timeDriverInputs.ipCdiCapacityFtes} CDI FTEs \u00D7 $${timeDriverInputs.ipCdiCapacitySalary.toLocaleString()} salary`,
-              `\u00D7 ${timeDriverInputs.ipCdiCapacityQueryTimePct}% query time \u00D7 ${timeDriverInputs.ipCdiCapacityReductionPct}% reduction = ${fmtK(ipCdiCapacityValue)}/year`,
             ],
           });
         }
@@ -1618,13 +1604,6 @@ export default function ExploreModel({
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• CDI Capacity Extension</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.ipCdiCapacityEnabled ? formatCurrency(ipCdiCapacityValue) : '—'}</span>
-                    </div>
-                    {timeDriverInputs.ipCdiCapacityEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.ipCdiCapacityReductionPct}% query time reduction)</p>
                     )}
                   </>
                 ) : (

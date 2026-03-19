@@ -413,41 +413,6 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="CDI Capacity Extension">
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <p className="text-[#888888] mb-1">The mechanism:</p>
-                      <p className="text-black">
-                        CDI specialists have fixed capacity. Today, a significant portion of their review time 
-                        is spent sending queries and waiting for physician responses to fill gaps that should 
-                        have been in the note. When documentation captures clinical complexity at the point of 
-                        care, CDI spends less time on reactive querying and more time on proactive case review. 
-                        The same team can cover more admissions — or cover current admissions with less rework.
-                      </p>
-                    </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[#888888] mb-1">The calculation:</p>
-                      <p className="font-mono text-black text-sm">
-                        CDI FTEs × % time on query follow-up × Reduction % × CDI FTE cost
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
-                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>CDI specialist salary: $75,000–$95,000</li>
-                        <li>Time spent on query creation and follow-up: 25–40% of CDI workload</li>
-                        <li>Reduction with improved upstream documentation: 15–30%</li>
-                      </ul>
-                    </div>
-                    <div className="border-l-2 border-[#EA2C00] pl-4">
-                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
-                      <p className="text-[#666666]">
-                        CDI productivity metrics (cases reviewed per day, query response time, query rate per 
-                        1,000 admissions) are standard ACDIS benchmarks. Before/after comparison is straightforward.
-                      </p>
-                    </div>
-                  </div>
-                </MechanismCard>
               </div>
 
               {/* Clinician Wellbeing */}

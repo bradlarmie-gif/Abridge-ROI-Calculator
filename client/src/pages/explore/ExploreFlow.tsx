@@ -92,14 +92,6 @@ export interface TimeDriverInputs {
   ipBurnoutRelatedTurnover: number; // % of turnover burnout-related
   ipReplacementCost: number; // Hospitalist replacement cost
   
-  // Inpatient: CDI Capacity Extension
-  ipCdiCapacityEnabled: boolean;
-  ipCdiCapacityFtes: number;
-  ipCdiCapacityQueryTimePct: number;
-  ipCdiCapacityReductionPct: number;
-  ipCdiCapacitySalary: number;
-  ipCdiCapacityExpanded: boolean;
-  
   // Outpatient time allocation
   opAllocCapacityPercent: number;
   opAllocDocQualityPercent: number;
@@ -404,13 +396,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsExpanded: true,
     edThroughputExpanded: true,
     ipRoundingExpanded: true,
-    // Inpatient: CDI Capacity Extension defaults
-    ipCdiCapacityEnabled: false,
-    ipCdiCapacityFtes: 5,
-    ipCdiCapacityQueryTimePct: 30,
-    ipCdiCapacityReductionPct: 20,
-    ipCdiCapacitySalary: 85000,
-    ipCdiCapacityExpanded: true,
   },
   // Documentation quality inputs
   docQualityInputs: {
@@ -678,9 +663,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         const retained = burnoutRelated * impactRate;
         total += retained * timeDriverInputs.replacementCost;
       }
-      if (timeDriverInputs.ipCdiCapacityEnabled) {
-        total += Math.round(timeDriverInputs.ipCdiCapacityFtes * timeDriverInputs.ipCdiCapacitySalary * (timeDriverInputs.ipCdiCapacityQueryTimePct / 100) * (timeDriverInputs.ipCdiCapacityReductionPct / 100));
-      }
     } else if (isNursing) {
       if (timeDriverInputs.nursingOtEnabled) {
         const currentOtHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
@@ -891,7 +873,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
                 timeDriverInputs: {
                   ...td,
                   ipRoundingEnabled: true,
-                  ipCdiCapacityEnabled: true,
                   costReductionEnabled: true,
                   wellbeingEnabled: true,
                 },

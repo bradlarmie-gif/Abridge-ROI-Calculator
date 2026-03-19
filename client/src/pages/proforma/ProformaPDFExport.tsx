@@ -354,11 +354,6 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
         `\u00D7 $${d.ipCdiCostPerQuery}/query = ${fmtK(driver.value)}/year`,
       ];
     }
-    case "ipCdiCapacity":
-      return [
-        `${t.ipCdiCapacityFtes} CDI FTEs \u00D7 $${t.ipCdiCapacitySalary.toLocaleString()} salary`,
-        `\u00D7 ${t.ipCdiCapacityQueryTimePct}% query time \u00D7 ${t.ipCdiCapacityReductionPct}% reduction = ${fmtK(driver.value)}/year`,
-      ];
     case "costReduction":
       return [`Estimated annual cost reduction: ${fmtK(driver.value)}/year`];
     case "docQuality":

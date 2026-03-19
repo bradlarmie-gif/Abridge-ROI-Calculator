@@ -2579,7 +2579,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   ADDITIONAL OPPORTUNITY {"\u2014"} NOT YET MODELED
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Your wizard inputs support two additional value scenarios not included in the primary model: Obs/IP Status Defense (documentation completeness protecting against medical necessity denials) and CDI Capacity Extension (reducing CDI query workload). These are available to model when your team is ready to quantify them.
+                  Your wizard inputs support an additional value scenario not included in the primary model: Medical Necessity Appeal Support (documentation completeness supporting retrospective denial defense). This is available to model when your team is ready to quantify it.
                 </Text>
               </View>
 
