@@ -1282,7 +1282,7 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
   ].filter(Boolean);
 
   return (
-    <Page size="LETTER" style={{ backgroundColor: "#FFFFFF", padding: 54 }}>
+    <Page size="LETTER" style={s.whitePage}>
       <Text style={{
         fontSize: 8, color: "#EA2C00", letterSpacing: 2.5,
         textTransform: "uppercase", marginBottom: 6,
@@ -1652,8 +1652,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
     <Document>
       <PDFCoverPage
         reportLabel="Ambient Assessment"
-        title={data.organizationName || "Your Organization"}
-        subtitle={`${archetype.name} \u00B7 Prepared by Abridge`}
+        title="Ambient Maturity Assessment"
         clientName={data.organizationName || "Your Organization"}
         preparedBy={data.preparedBy || "Abridge Partner Success"}
         disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect aggregated deployment data. Individual results vary."
