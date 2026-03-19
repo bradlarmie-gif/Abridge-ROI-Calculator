@@ -1522,12 +1522,15 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
-                    For Medicare Advantage populations, better documentation at point-of-care captures 
-                    more HCCs. This models only the MA share Abridge touches in documented encounters — not 
-                    your full panel. Risk adjustment pays based on documented conditions, and many patients 
-                    have gaps where conditions were discussed but not captured.
+                  <p className="text-sm text-[#666666] leading-relaxed mb-3">
+                    Abridge's specific contribution to HCC capture is <strong>point-of-care documentation</strong> {"–"} conditions that were verbally addressed in the visit but didn't make it into the note. This is distinct from retrospective chart review, pre-visit gap lists, or post-visit CDI queries. If your organization already runs an HCC program, these numbers represent Abridge's <em>incremental</em> contribution, not your total program value.
                   </p>
+                  <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-4 flex items-start gap-2">
+                    <span className="text-[#EA2C00] text-sm mt-0.5">{"ⓘ"}</span>
+                    <p className="text-xs text-[#666666]">
+                      <strong>If you already have an HCC program:</strong> Lower your recapture target to reflect only what slips through {"–"} conditions discussed at the visit that your existing workflow doesn't catch. 6% (Conservative) is the right starting point.
+                    </p>
+                  </div>
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
 
@@ -1544,10 +1547,17 @@ export default function ExploreDocQuality({
                         }`}
                         data-testid={`button-hcc-${level}`}
                       >
-                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.hccScenario === level ? 'text-white/80' : ''}`}>{level}</p>
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.hccScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                          {level === 'aggressive' ? 'Optimistic' : level.charAt(0).toUpperCase() + level.slice(1)}
+                        </p>
                         <p className="font-semibold">{hccScenarios[level]}%</p>
                       </button>
                     ))}
+                  </div>
+                  <div className="text-xs text-[#888888] space-y-1 mt-2 mb-2">
+                    <p><strong>Conservative (6%):</strong> You have an existing HCC program. Abridge captures what slips through at the visit.</p>
+                    <p><strong>Typical (10%):</strong> Minimal existing gap closure program. Abridge is the primary point-of-care capture mechanism.</p>
+                    <p><strong>Optimistic (15%):</strong> High MA concentration, strong adoption, no competing HCC workflow.</p>
                   </div>
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
@@ -1623,11 +1633,12 @@ export default function ExploreDocQuality({
                         <span className="text-[#666666]">= Patients with gaps</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients))}</span>
                       </div>
+                      <p className="text-xs text-[#888888] -mt-1 mb-1">CMS MA gap data: 10{"–"}18% of patients have at least one undocumented HCC annually. 12% is a conservative mid-point.</p>
 
                       <div className="flex justify-between items-center">
                         <div>
                           <span className="text-[#666666]">× Avg missed HCCs per patient</span>
-                          <p className="text-xs text-[#888888] mt-0.5">Attributable to ambient capture at point-of-care; full population gap programs may yield higher rates.</p>
+                          <p className="text-xs text-[#888888] mt-0.5">Conditions discussed but not written {"–"} specifically attributable to note compression, not total population gaps. 0.5 is conservative; 0.7+ applies if providers routinely omit chronic condition documentation.</p>
                         </div>
                         <input
                           type="number"
@@ -1680,6 +1691,7 @@ export default function ExploreDocQuality({
                           />
                         </div>
                       </div>
+                      <p className="text-xs text-[#888888] -mt-1 mb-1">National MA average is $12{"–"}14K (2024 CMS). $10,000 is intentionally conservative {"–"} update if you know your plan's rate.</p>
                       <div className="h-px bg-[#D1D5DB] my-1" />
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">= Gross value</span>
