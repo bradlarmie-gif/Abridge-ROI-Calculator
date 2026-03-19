@@ -62,9 +62,9 @@ export default function ExploreValueDrivers({
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
-    conservative: 20,
-    typical: 30,
-    optimistic: 40,
+    conservative: 5,
+    typical: 10,
+    optimistic: 15,
   };
 
   const retentionCalcs = useMemo(() => {
@@ -1449,6 +1449,13 @@ export default function ExploreValueDrivers({
                               <p className="font-semibold">{retentionScenarios[scenario]}%</p>
                             </button>
                           ))}
+                        </div>
+
+                        <div className="text-[13px] text-[#666666] leading-relaxed space-y-2 mt-4">
+                          <p><strong>Conservative (5%):</strong> Documentation burden is one of several burnout factors. Modest impact on departure decisions.</p>
+                          <p><strong>Typical (10%):</strong> Documentation relief is a meaningful contributor in an org with high admin burden and strong Abridge adoption.</p>
+                          <p><strong>Optimistic (15%):</strong> High documentation burden is a primary stated reason for departures. Validate with exit interview data.</p>
+                          <p className="text-xs text-[#AAAAAA] mt-2 italic">These rates represent Abridge{"'"}s estimated contribution to burnout-related departure prevention {"—"} not total retention program impact.</p>
                         </div>
 
                         <div className="h-px bg-[#E5E5E5] my-4" />

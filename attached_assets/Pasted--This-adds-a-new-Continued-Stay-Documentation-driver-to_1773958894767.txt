@@ -1,0 +1,331 @@
+ This adds a new "Continued Stay Documentation" driver to the inpatient path. It requires changes in four places: the type interface, the default state, the calculations, and the UI. Follow this exactly.
+
+  ---
+  Step 1 — Add to DocQualityInputs interface in client/src/pages/explore/ExploreFlow.tsx
+
+  Find the block near ipObsDefenseExpanded: boolean; (around line 205) and after it add:
+
+  ipConcurrentReviewEnabled: boolean;
+  ipConcurrentReviewRate: number;
+  ipConcurrentDenialRate: number;
+  ipConcurrentDocSensitive: number;
+  ipConcurrentAvgDays: number;
+  ipConcurrentDailyRate: number;
+  ipConcurrentRealization: number;
+  ipConcurrentExpanded: boolean;
+
+  ---
+  Step 2 — Add defaults to initial state in client/src/pages/explore/ExploreFlow.tsx
+
+  Find the block near ipObsDefenseExpanded: true, (around line 450) and after it add:
+
+  ipConcurrentReviewEnabled: false,
+  ipConcurrentReviewRate: 45,
+  ipConcurrentDenialRate: 8,
+  ipConcurrentDocSensitive: 20,
+  ipConcurrentAvgDays: 1.5,
+  ipConcurrentDailyRate: 2800,
+  ipConcurrentRealization: 30,
+  ipConcurrentExpanded: true,
+
+  ---
+  Step 3 — Add calculation in client/src/pages/explore/ExploreDocQuality.tsx
+
+  Find this block (around line 362):
+  // Inpatient: Obs/IP Status Defense Calculation
+  const ipObsDefenseGross = ...
+  const ipObsDefenseNet = ...
+
+  After those two lines, add:
+
+  // Inpatient: Continued Stay / Concurrent Review
+  const ipConcurrentCasesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
+  const ipConcurrentCasesDenied = ipConcurrentCasesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
+  const ipConcurrentDocSensitiveCases = ipConcurrentCasesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);
+  const ipConcurrentGross = ipConcurrentDocSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
+  const ipConcurrentNet = Math.round(ipConcurrentGross * (docQualityInputs.ipConcurrentRealization / 100));
+
+  ---
+  Step 4 — Add to totalDocValue in client/src/pages/explore/ExploreDocQuality.tsx
+
+  Find (around line 407):
+  return (docQualityInputs.ipDrgEnabled ? ipDrgNetValue : 0) +
+         (docQualityInputs.ipObsDefenseEnabled ? ipObsDefenseNet : 0) +
+         (docQualityInputs.ipCdiEnabled ? ipCdiSavingsValue : 0);
+
+  Replace with:
+  return (docQualityInputs.ipDrgEnabled ? ipDrgNetValue : 0) +
+         (docQualityInputs.ipObsDefenseEnabled ? ipObsDefenseNet : 0) +
+         (docQualityInputs.ipConcurrentReviewEnabled ? ipConcurrentNet : 0) +
+         (docQualityInputs.ipCdiEnabled ? ipCdiSavingsValue : 0);
+
+  ---
+  Step 5 — Add UI section in client/src/pages/explore/ExploreDocQuality.tsx
+
+  Find the closing </div> that ends the Obs/IP section (the one just before {/* CDI Query Reduction */}), which is around line 1421. Insert the following complete block after it:
+
+  {/* Continued Stay / Concurrent Review */}
+  <div className="space-y-0">
+    <div
+      className={`w-full p-4 text-left transition-all ${
+        docQualityInputs.ipConcurrentReviewEnabled
+          ? (docQualityInputs.ipConcurrentExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+          : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="font-semibold text-black">Continued Stay Documentation</p>
+          <p className="text-sm text-[#888888]">Complete daily notes protect revenue when payers review whether continued inpatient stay is justified</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {docQualityInputs.ipConcurrentReviewEnabled && (
+            <button
+              onClick={() => updateDocInputs({ ipConcurrentExpanded: !docQualityInputs.ipConcurrentExpanded })}
+              className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+              data-testid="button-concurrent-expand"
+            >
+              <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.ipConcurrentExpanded ? 'rotate-0' : '-rotate-90'}`} />
+            </button>
+          )}
+          <button
+            onClick={() => updateDocInputs({ ipConcurrentReviewEnabled: !docQualityInputs.ipConcurrentReviewEnabled, ipConcurrentExpanded: !docQualityInputs.ipConcurrentReviewEnabled ? true :
+  docQualityInputs.ipConcurrentExpanded })}
+            className={`w-12 h-6 rounded-full relative transition-all ${
+              docQualityInputs.ipConcurrentReviewEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+            }`}
+            data-testid="toggle-concurrent-review"
+          >
+            <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+              docQualityInputs.ipConcurrentReviewEnabled ? 'right-0.5' : 'left-0.5'
+            }`} />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <AnimatePresence>
+      {docQualityInputs.ipConcurrentReviewEnabled && docQualityInputs.ipConcurrentExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="overflow-hidden"
+        >
+          <div className="bg-white rounded-b-lg p-6 md:p-8">
+            <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
+              While a patient is admitted, payers send clinical reviewers to determine whether continued inpatient stay is medically necessary. The reviewer reads your daily progress notes. A thin, templated
+   note fails review. A complete note — capturing clinical reasoning, response to treatment, and why the patient still requires inpatient-level care — survives it.
+            </p>
+            <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-8 flex items-start gap-2">
+              <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">ⓘ</span>
+              <p className="text-xs text-[#666666]">
+                <strong>Abridge's mechanism here is direct:</strong> ambient documentation produces richer daily progress notes because physicians narrate their reasoning during rounds rather than
+  reconstructing it later. The reviewer reads what was actually said at the bedside.
+              </p>
+            </div>
+
+            {/* STEP 1: CONCURRENT REVIEW VOLUME */}
+            <div className="mb-10">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Step 1: Concurrent Review Volume</p>
+              <p className="text-[13px] text-[#666666] mb-4">What share of your admissions receive active payer review during the stay?</p>
+              <div className="bg-[#F5F0EB] rounded-lg p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions</label>
+                    <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                      <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                    </div>
+                  </div>
+                  <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Concurrent Review Rate</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="5"
+                        value={docQualityInputs.ipConcurrentReviewRate}
+                        onChange={(e) => updateDocInputs({ ipConcurrentReviewRate: parseFloat(e.target.value) || 0 })}
+                        className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                        data-testid="input-concurrent-review-rate"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center py-2">
+                  <span className="text-[13px] text-[#666666]">= </span>
+                  <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentCasesReviewed))} admissions under active payer review</span>
+                </div>
+                <p className="text-[13px] text-[#888888] mt-3">Industry range: 35–60%. Higher-acuity and longer-stay programs run toward 50–60%. Your utilization management team will know your rate.</p>
+              </div>
+            </div>
+
+            {/* STEP 2: DENIAL EXPOSURE */}
+            <div className="mb-10">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Step 2: Denial Exposure</p>
+              <p className="text-[13px] text-[#666666] mb-4">Of reviewed cases, how often does the payer deny at least one day of continued stay?</p>
+              <div className="bg-[#F5F0EB] rounded-lg p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Cases Reviewed</label>
+                    <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentCasesReviewed))}</span>
+                    </div>
+                  </div>
+                  <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Continued Stay Denial Rate</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="1"
+                        value={docQualityInputs.ipConcurrentDenialRate}
+                        onChange={(e) => updateDocInputs({ ipConcurrentDenialRate: parseFloat(e.target.value) || 0 })}
+                        className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                        data-testid="input-concurrent-denial-rate"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center py-2">
+                  <span className="text-[13px] text-[#666666]">= </span>
+                  <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentCasesDenied))} cases with a continued stay denial</span>
+                </div>
+                <p className="text-[13px] text-[#888888] mt-3">Typical range: 5–15% of reviewed cases. Ask your UM director — they track this daily.</p>
+              </div>
+            </div>
+
+            {/* STEP 3: DOCUMENTATION-SENSITIVE SHARE */}
+            <div className="mb-10">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Step 3: Documentation-Sensitive Denials</p>
+              <p className="text-[13px] text-[#666666] mb-2">Not every denial is a documentation problem. Some are medical judgment disputes, policy disagreements, or criteria mismatches that better notes
+  won't fix.</p>
+              <p className="text-[13px] text-[#666666] mb-4">Of your continued stay denials, what share were lost specifically because the clinical reasoning wasn't adequately documented?</p>
+              <div className="bg-[#F5F0EB] rounded-lg p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Cases Denied</label>
+                    <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentCasesDenied))}</span>
+                    </div>
+                  </div>
+                  <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Documentation-Sensitive %</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="5"
+                        value={docQualityInputs.ipConcurrentDocSensitive}
+                        onChange={(e) => updateDocInputs({ ipConcurrentDocSensitive: parseFloat(e.target.value) || 0 })}
+                        className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                        data-testid="input-concurrent-doc-sensitive"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center py-2">
+                  <span className="text-[13px] text-[#666666]">= </span>
+                  <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentDocSensitiveCases))} cases where documentation quality affected the outcome</span>
+                </div>
+                <p className="text-[13px] text-[#888888] mt-3">20% is a conservative starting point. Your appeal win rate — especially on cases where you submitted additional clinical documentation — gives
+  you a real number here.</p>
+              </div>
+            </div>
+
+            {/* STEP 4: REVENUE AT RISK */}
+            <div className="mb-10">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Step 4: Revenue at Risk</p>
+              <p className="text-[13px] text-[#666666] mb-4">For each documentation-sensitive case, how many days are at risk and what is each day worth?</p>
+              <div className="bg-[#F5F0EB] rounded-lg p-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Cases</label>
+                    <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipConcurrentDocSensitiveCases))}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Avg Days at Risk / Case</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={docQualityInputs.ipConcurrentAvgDays}
+                      onChange={(e) => updateDocInputs({ ipConcurrentAvgDays: parseFloat(e.target.value) || 0 })}
+                      className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
+                      data-testid="input-concurrent-avg-days"
+                    />
+                    <p className="text-xs text-[#888888] mt-1">Typically 1–3 days per contested stay</p>
+                  </div>
+                  <div>
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Daily Inpatient Rate</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={docQualityInputs.ipConcurrentDailyRate ? docQualityInputs.ipConcurrentDailyRate.toLocaleString("en-US") : ""}
+                        onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ ipConcurrentDailyRate: v }); }}
+                        className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
+                        data-testid="input-concurrent-daily-rate"
+                      />
+                    </div>
+                    <p className="text-xs text-[#888888] mt-1">National avg: $2,500–$3,500/day</p>
+                  </div>
+                </div>
+                <div className="text-center py-2 border-t border-[#E5E5E5] pt-4">
+                  <span className="text-[13px] text-[#666666]">= </span>
+                  <span className="font-semibold text-black">{formatCurrency(Math.round(ipConcurrentGross))} gross exposure</span>
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 5: WHAT YOU CAN COUNT ON */}
+            <div className="mb-6">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Step 5: What You Can Count On</p>
+              <p className="text-[13px] text-[#666666] mb-4">Better documentation doesn't win every case. Some denials will hold regardless of note quality.</p>
+              <div className="bg-[#F5F0EB] rounded-lg p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Exposure</label>
+                    <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                      <span className="font-semibold text-black">{formatCurrency(Math.round(ipConcurrentGross))}</span>
+                    </div>
+                  </div>
+                  <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                  <div className="flex-1">
+                    <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={docQualityInputs.ipConcurrentRealization}
+                        onChange={(e) => updateDocInputs({ ipConcurrentRealization: parseFloat(e.target.value) || 0 })}
+                        className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
+                        data-testid="input-concurrent-realization"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                    </div>
+                    <p className="text-xs text-[#888888] mt-1">30% is conservative — accounts for cases where denial holds despite complete documentation</p>
+                  </div>
+                </div>
+                <div className="border-t border-[#888888] pt-4 flex justify-between items-center">
+                  <span className="font-semibold text-black">Annual Continued Stay Value</span>
+                  <span className="text-xl font-bold text-[#EA2C00]">{formatCurrency(ipConcurrentNet)}</span>
+                </div>
+              </div>
+              <p className="text-xs text-[#888888] mt-3 italic">
+                Validate inputs with your utilization management team. They track concurrent review denial rates and appeal outcomes — your real numbers will be more precise than any benchmark.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+
+  ---
+  That's the complete driver. The causal story is airtight: ambient documentation captures clinical reasoning during rounds → daily progress notes are richer → concurrent reviewers read complete notes →
+  fewer days denied. Your UM team will immediately recognize this as a real problem, and every input in the model is something they can validate from their own data.

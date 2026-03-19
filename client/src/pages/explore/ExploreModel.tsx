@@ -137,7 +137,7 @@ export default function ExploreModel({
   // Inpatient-specific calculations
   const isInpatient = state.careSetting === 'inpatient';
 
-  const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
 
   const clinicianRetentionValue = useMemo(() => {
     if (!timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
@@ -1582,7 +1582,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                     </div>
                     {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
@@ -1600,7 +1600,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
@@ -1620,7 +1620,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                     </div>
                     {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>

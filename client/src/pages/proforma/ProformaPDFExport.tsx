@@ -239,7 +239,7 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
 
 const WRVU_SCENARIOS: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
 const DENIALS_SCENARIOS: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
-const RETENTION_SCENARIOS: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+const RETENTION_SCENARIOS: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
 const DRG_SCENARIOS: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
 const CDI_SCENARIOS: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
 

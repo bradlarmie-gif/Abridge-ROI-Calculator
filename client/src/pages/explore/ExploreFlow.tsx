@@ -639,7 +639,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -654,7 +654,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -694,7 +694,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += annualVisits * timeDriverInputs.revenuePerVisit;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
