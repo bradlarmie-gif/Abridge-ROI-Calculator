@@ -1154,7 +1154,7 @@ function DeltaCard({ label, before, after, step, sparkData, delayIndex, isReduct
   );
 }
 
-function JourneyTimeline({ months, goLiveDate }: { months: number; goLiveDate: string | null }) {
+function JourneyTimeline({ months }: { months: number }) {
   const milestones = [
     { month: 1, label: 'Go-Live' },
     { month: 3, label: 'Efficiency' },
@@ -1223,6 +1223,10 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
   const getSparkData = (metricKey: string) => {
     const trendKey = trendMetricMap[metricKey];
     if (!trendKey || state.deployment.monthsOnAbridge < 2) return undefined;
+    if (state.trendConfig.enabled) {
+      const monthlyArr = state.trendConfig.monthlyData[trendKey as keyof MonthlyMetricData];
+      if (!monthlyArr || monthlyArr.length < 2 || monthlyArr.every(v => v === 0)) return undefined;
+    }
     const trend = generateTrendData(state, trendKey);
     if (trend.length < 2) return undefined;
     return trend.map(t => ({ value: t.abridge }));
@@ -1301,7 +1305,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
               </motion.div>
             )}
 
-            <JourneyTimeline months={state.deployment.monthsOnAbridge} goLiveDate={state.goLiveDate} />
+            <JourneyTimeline months={state.deployment.monthsOnAbridge} />
           </motion.div>
         </div>
       </motion.div>
