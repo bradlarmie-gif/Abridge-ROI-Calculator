@@ -1,10 +1,10 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X, Sparkles, TrendingUp, TrendingDown, Activity, Calendar, Minus } from "lucide-react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X, Sparkles, TrendingUp, TrendingDown, Activity, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber, generateTrendData } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type SurveyMetric, type DataSource, type MonthlyMetricData, formatNumber, generateTrendData } from "@/lib/measureCalculator";
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import {
   CARE_SETTING_CONFIGS,
@@ -13,9 +13,9 @@ import {
   type CareSettingConfig,
   type SettingMetrics,
   hasSettingData,
-  isSectionComplete,
   syncSettingToState,
   getDefaultMetrics,
+  getTotalAvailableMetrics,
 } from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
@@ -173,7 +173,6 @@ export default function MeasureDataEntry({
               onToggleSection={toggleSection}
               onUpdateDeployment={updateDeployment}
               onUpdateMetric={updateMetric}
-              onUpdateCustomMetrics={(cm) => updateState({ customMetrics: cm })}
               onUpdateState={updateState}
               onSavePreview={handleSavePreview}
             />
@@ -360,7 +359,6 @@ interface EditViewProps {
     value: MeasureState["deployment"][K],
   ) => void;
   onUpdateMetric: (key: string, value: number) => void;
-  onUpdateCustomMetrics: (metrics: CustomMetric[]) => void;
   onUpdateState: (updates: Partial<MeasureState>) => void;
   onSavePreview: () => void;
 }
@@ -419,7 +417,6 @@ function EditView({
   onToggleSection,
   onUpdateDeployment,
   onUpdateMetric,
-  onUpdateCustomMetrics,
   onUpdateState,
   onSavePreview,
 }: EditViewProps) {
@@ -427,26 +424,6 @@ function EditView({
     state.deployment.organizationName.trim().length > 0 &&
     state.deployment.providers > 0 &&
     state.deployment.totalEncounters > 0;
-
-  const metricSectionStatuses: SectionStatus[] = useMemo(() => {
-    return config.metricSections.map((section) => {
-      const sectionHasContent = section.metrics.some((m) => {
-        if (m.hasBeforeAfter) {
-          return (
-            (metrics[`${m.key}_before`] ?? 0) !== 0 ||
-            (metrics[`${m.key}_after`] ?? 0) !== 0
-          );
-        }
-        return false;
-      });
-      const sectionIsComplete = isSectionComplete(section.key, config, metrics);
-
-      if (sectionIsComplete) return "complete" as SectionStatus;
-      if (sectionHasContent) return "in-progress" as SectionStatus;
-      if (!profileComplete) return "locked" as SectionStatus;
-      return "active" as SectionStatus;
-    });
-  }, [config, metrics, profileComplete]);
 
   const guidance = getNextStepGuidance(profileComplete);
 
@@ -606,155 +583,15 @@ function EditView({
         )}
       </div>
 
-      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999] mb-2 mt-2">From Your EHR / Billing System</p>
-
-      {config.metricSections.map((section, idx) => {
-        const status = metricSectionStatuses[idx];
-        const isExpanded = expandedSections[section.key] ?? stickyExpanded[section.key] ?? false;
-
-        return (
-          <CollapsibleSection
-            key={section.key}
-            sectionKey={section.key}
-            label={section.label}
-            isExpanded={isExpanded}
-            status={status}
-            onToggle={() => onToggleSection(section.key)}
-          >
-            {section.description && (
-              <p className="text-[12px] text-[#999999] mb-3">{section.description}</p>
-            )}
-            <div className="grid grid-cols-3 gap-4 mb-1">
-              <div />
-              <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
-                Non-Abridge
-              </div>
-              <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
-                With Abridge
-              </div>
-            </div>
-            <p className="text-[10px] text-[#AAAAAA] text-center mb-3">Same time period {"–"} encounters documented with and without Abridge</p>
-            {section.metrics.map((metric) => (
-              <div
-                key={metric.key}
-                className="grid grid-cols-3 gap-4 items-center py-2"
-              >
-                <label className="text-sm font-medium text-black">
-                  {metric.label}
-                  {metric.optional && (
-                    <span className="text-[#999999] text-xs ml-1">(optional)</span>
-                  )}
-                </label>
-                {metric.hasBeforeAfter ? (
-                  <>
-                    <FormattedNumberInput
-                      value={metrics[`${metric.key}_before`] ?? 0}
-                      onChange={(v) => onUpdateMetric(`${metric.key}_before`, v)}
-                      step={metric.step}
-                      className="h-10 bg-white border-[#E5E5E5] text-right"
-                      data-testid={`input-${metric.key}-before`}
-                    />
-                    <FormattedNumberInput
-                      value={metrics[`${metric.key}_after`] ?? 0}
-                      onChange={(v) => onUpdateMetric(`${metric.key}_after`, v)}
-                      step={metric.step}
-                      className="h-10 bg-white border-[#E5E5E5] text-right"
-                      data-testid={`input-${metric.key}-after`}
-                    />
-                  </>
-                ) : (
-                  <FormattedNumberInput
-                    value={metrics[metric.key] ?? 0}
-                    onChange={(v) => onUpdateMetric(metric.key, v)}
-                    step={metric.step}
-                    className="h-10 bg-white border-[#E5E5E5] text-right col-span-2"
-                    data-testid={`input-${metric.key}`}
-                  />
-                )}
-              </div>
-            ))}
-
-            {(state.customMetrics || [])
-              .filter((cm) => cm.section === section.key)
-              .map((cm) => (
-                <div
-                  key={cm.id}
-                  className="grid grid-cols-3 gap-4 items-center py-2"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="text"
-                      value={cm.label}
-                      onChange={(e) => {
-                        const updated = (state.customMetrics || []).map((m) =>
-                          m.id === cm.id ? { ...m, label: e.target.value } : m
-                        );
-                        onUpdateCustomMetrics(updated);
-                      }}
-                      placeholder="Metric name"
-                      className="h-10 w-full bg-white border border-[#E5E5E5] rounded-md px-3 text-sm font-medium text-black placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]/50"
-                      data-testid={`input-custom-label-${cm.id}`}
-                    />
-                    <button
-                      onClick={() => {
-                        const updated = (state.customMetrics || []).filter(
-                          (m) => m.id !== cm.id
-                        );
-                        onUpdateCustomMetrics(updated);
-                      }}
-                      className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] hover:bg-[#FFF0EC] transition-colors"
-                      data-testid={`button-remove-custom-${cm.id}`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <FormattedNumberInput
-                    value={cm.before}
-                    onChange={(v) => {
-                      const updated = (state.customMetrics || []).map((m) =>
-                        m.id === cm.id ? { ...m, before: v } : m
-                      );
-                      onUpdateCustomMetrics(updated);
-                    }}
-                    step={0.01}
-                    className="h-10 bg-white border-[#E5E5E5] text-right"
-                    data-testid={`input-custom-before-${cm.id}`}
-                  />
-                  <FormattedNumberInput
-                    value={cm.after}
-                    onChange={(v) => {
-                      const updated = (state.customMetrics || []).map((m) =>
-                        m.id === cm.id ? { ...m, after: v } : m
-                      );
-                      onUpdateCustomMetrics(updated);
-                    }}
-                    step={0.01}
-                    className="h-10 bg-white border-[#E5E5E5] text-right"
-                    data-testid={`input-custom-after-${cm.id}`}
-                  />
-                </div>
-              ))}
-
-            <button
-              onClick={() => {
-                const newMetric: CustomMetric = {
-                  id: `cm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-                  label: "",
-                  before: 0,
-                  after: 0,
-                  section: section.key,
-                };
-                onUpdateCustomMetrics([...(state.customMetrics || []), newMetric]);
-              }}
-              className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
-              data-testid={`button-add-custom-${section.key}`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add Custom Metric
-            </button>
-          </CollapsibleSection>
-        );
-      })}
+      <MetricSelectionSection
+        state={state}
+        config={config}
+        metrics={metrics}
+        activeSetting={activeSetting}
+        onUpdateMetric={onUpdateMetric}
+        onUpdateState={onUpdateState}
+        profileComplete={profileComplete}
+      />
 
       <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999] mb-2 mt-4">From Your Abridge Deployment</p>
 
@@ -1003,6 +840,323 @@ function EditView({
         </p>
       </div>
     </motion.div>
+  );
+}
+
+const DOMAIN_MAP: Record<string, string> = {
+  timeEfficiency: 'Workforce',
+  docQuality: 'Quality',
+  qualityRetention: 'Quality',
+};
+const CAPACITY_KEYS = ['sameDayClosure', 'lwbsRate', 'doorToDoc'];
+const REVENUE_KEYS = ['wrvuPerEncounter', 'cmi', 'denialsPer100', 'ccMccCapture', 'emLevel', 'admissionCapture'];
+
+function getMetricDomain(sectionKey: string, metricKey: string, setting: MeasureCareSetting): string {
+  if (CAPACITY_KEYS.includes(metricKey)) {
+    return setting === 'inpatient' ? 'Patient Flow' : setting === 'ed' ? 'Throughput' : 'Capacity';
+  }
+  if (REVENUE_KEYS.includes(metricKey)) return 'Revenue';
+  return DOMAIN_MAP[sectionKey] || 'Quality';
+}
+
+const DOMAIN_COLORS: Record<string, string> = {
+  Workforce: '#6366F1',
+  Quality: '#2D8A4E',
+  Revenue: '#EA580C',
+  Capacity: '#0891B2',
+  Throughput: '#0891B2',
+  'Patient Flow': '#0891B2',
+};
+
+const SURVEY_DOMAIN_OPTIONS = [
+  { key: 'Workforce', label: 'Workforce' },
+  { key: 'Quality', label: 'Quality' },
+  { key: 'Revenue', label: 'Revenue' },
+  { key: 'Capacity', label: 'Capacity' },
+];
+
+function MetricSelectionSection({
+  state,
+  config,
+  metrics,
+  activeSetting,
+  onUpdateMetric,
+  onUpdateState,
+  profileComplete,
+}: {
+  state: MeasureState;
+  config: CareSettingConfig;
+  metrics: SettingMetrics;
+  activeSetting: MeasureCareSetting;
+  onUpdateMetric: (key: string, value: number) => void;
+  onUpdateState: (updates: Partial<MeasureState>) => void;
+  profileComplete: boolean;
+}) {
+  const enabledMap = state.enabledMetrics?.[activeSetting] || {};
+
+  const toggleMetric = useCallback((metricKey: string) => {
+    const current = state.enabledMetrics?.[activeSetting] || {};
+    const updated = { ...current, [metricKey]: !current[metricKey] };
+    onUpdateState({
+      enabledMetrics: {
+        ...state.enabledMetrics,
+        [activeSetting]: updated,
+      },
+    });
+  }, [activeSetting, state.enabledMetrics, onUpdateState]);
+
+  const totalAvailable = getTotalAvailableMetrics(activeSetting);
+  const enabledCount = Object.values(enabledMap).filter(Boolean).length;
+  const surveyCount = (state.surveyMetrics || []).length;
+  const totalSelected = enabledCount + surveyCount;
+
+  const groupedMetrics = useMemo(() => {
+    const groups: Record<string, { sectionKey: string; metrics: typeof config.metricSections[0]['metrics'] }> = {};
+    for (const section of config.metricSections) {
+      for (const metric of section.metrics) {
+        if (!metric.hasBeforeAfter) continue;
+        const domain = getMetricDomain(section.key, metric.key, activeSetting);
+        if (!groups[domain]) groups[domain] = { sectionKey: section.key, metrics: [] };
+        groups[domain].metrics.push(metric);
+      }
+    }
+    return groups;
+  }, [config, activeSetting]);
+
+  const addSurveyMetric = useCallback(() => {
+    const newMetric: SurveyMetric = {
+      id: `sm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      label: '',
+      before: 0,
+      after: 0,
+      domain: 'Workforce',
+    };
+    onUpdateState({ surveyMetrics: [...(state.surveyMetrics || []), newMetric] });
+  }, [state.surveyMetrics, onUpdateState]);
+
+  const updateSurveyMetric = useCallback((id: string, updates: Partial<SurveyMetric>) => {
+    const updated = (state.surveyMetrics || []).map(m =>
+      m.id === id ? { ...m, ...updates } : m
+    );
+    onUpdateState({ surveyMetrics: updated });
+  }, [state.surveyMetrics, onUpdateState]);
+
+  const removeSurveyMetric = useCallback((id: string) => {
+    onUpdateState({ surveyMetrics: (state.surveyMetrics || []).filter(m => m.id !== id) });
+  }, [state.surveyMetrics, onUpdateState]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between mt-2 mb-1">
+        <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999]">
+          What Are You Measuring?
+        </p>
+        <div className="flex items-center gap-2">
+          <div className="flex h-1.5 rounded-full overflow-hidden w-20 bg-[#E5E5E5]">
+            <div
+              className="bg-[#EA2C00] rounded-full transition-all duration-500"
+              style={{ width: `${Math.min((totalSelected / (totalAvailable + surveyCount || 1)) * 100, 100)}%` }}
+            />
+          </div>
+          <span className="text-[11px] font-semibold text-[#888888]" data-testid="text-coverage-count">
+            {totalSelected} of {totalAvailable + surveyCount}
+          </span>
+        </div>
+      </div>
+
+      {!profileComplete && (
+        <div className="rounded-lg bg-[#F5F0EB] border border-[#E8E2DA] p-4 text-center">
+          <Lock className="w-4 h-4 text-[#BBBBBB] mx-auto mb-2" />
+          <p className="text-sm text-[#999999]">Complete the Partner Profile above to select metrics</p>
+        </div>
+      )}
+
+      {profileComplete && Object.entries(groupedMetrics).map(([domain, { sectionKey, metrics: domainMetrics }]) => (
+        <div key={domain} className="rounded-lg border border-[#E5E5E5] bg-white overflow-hidden" data-testid={`domain-group-${domain.toLowerCase().replace(/\s/g, '-')}`}>
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#F0F0F0]">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: DOMAIN_COLORS[domain] || '#999' }} />
+            <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">{domain}</span>
+            <span className="text-[10px] text-[#BBBBBB] ml-auto">
+              {domainMetrics.filter(m => enabledMap[m.key]).length} / {domainMetrics.length}
+            </span>
+          </div>
+          <div className="divide-y divide-[#F5F5F5]">
+            {domainMetrics.map(metric => {
+              const isEnabled = !!enabledMap[metric.key];
+              const hasBefore = (metrics[`${metric.key}_before`] ?? 0) !== 0;
+              const hasAfter = (metrics[`${metric.key}_after`] ?? 0) !== 0;
+
+              return (
+                <div key={metric.key} className="transition-all duration-200">
+                  <button
+                    onClick={() => toggleMetric(metric.key)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
+                      ${isEnabled ? 'bg-white' : 'bg-[#FAFAF8]'}
+                    `}
+                    data-testid={`toggle-metric-${metric.key}`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all
+                      ${isEnabled ? 'bg-[#EA2C00] border-[#EA2C00]' : 'border-[#D0D0D0] bg-white'}
+                    `}>
+                      {isEnabled && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-sm font-medium ${isEnabled ? 'text-[#1A1A1A]' : 'text-[#AAAAAA]'}`}>
+                        {metric.label}
+                      </span>
+                      {metric.optional && (
+                        <span className="text-[10px] text-[#CCCCCC] ml-1.5">(optional)</span>
+                      )}
+                    </div>
+                    {isEnabled && hasBefore && hasAfter && (
+                      <Check className="w-3.5 h-3.5 text-[#2D8A4E] flex-shrink-0" />
+                    )}
+                    {isEnabled && hasBefore && !hasAfter && (
+                      <span className="text-[10px] text-[#EA2C00] font-medium">Needs post</span>
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isEnabled && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-3 pt-1">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Non-Abridge</label>
+                              <FormattedNumberInput
+                                value={metrics[`${metric.key}_before`] ?? 0}
+                                onChange={(v) => onUpdateMetric(`${metric.key}_before`, v)}
+                                step={metric.step}
+                                className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                                data-testid={`input-${metric.key}-before`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">With Abridge</label>
+                              <FormattedNumberInput
+                                value={metrics[`${metric.key}_after`] ?? 0}
+                                onChange={(v) => onUpdateMetric(`${metric.key}_after`, v)}
+                                step={metric.step}
+                                className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                                data-testid={`input-${metric.key}-after`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {profileComplete && (
+        <div className="rounded-lg border border-dashed border-[#D0D0D0] bg-[#FAFAF8] overflow-hidden" data-testid="section-survey-metrics">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#F0F0F0]">
+            <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
+            <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">Survey & Feedback Data</span>
+            <span className="text-[10px] text-[#BBBBBB] ml-auto">{surveyCount} added</span>
+          </div>
+
+          {(state.surveyMetrics || []).length > 0 && (
+            <div className="divide-y divide-[#F0F0F0]">
+              {(state.surveyMetrics || []).map(sm => (
+                <div key={sm.id} className="px-4 py-3" data-testid={`survey-metric-${sm.id}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={sm.label}
+                      onChange={e => updateSurveyMetric(sm.id, { label: e.target.value })}
+                      placeholder="e.g., Clinician Satisfaction Score"
+                      className="flex-1 h-9 bg-white border border-[#E5E5E5] rounded-md px-3 text-sm font-medium text-black placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]/50"
+                      data-testid={`input-survey-label-${sm.id}`}
+                    />
+                    <select
+                      value={sm.domain}
+                      onChange={e => updateSurveyMetric(sm.id, { domain: e.target.value })}
+                      className="h-9 px-2 bg-white border border-[#E5E5E5] rounded-md text-xs text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                      data-testid={`select-survey-domain-${sm.id}`}
+                    >
+                      {SURVEY_DOMAIN_OPTIONS.map(opt => (
+                        <option key={opt.key} value={opt.key}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => removeSurveyMetric(sm.id)}
+                      className="w-8 h-8 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] hover:bg-[#FFF0EC] transition-colors"
+                      data-testid={`button-remove-survey-${sm.id}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Before</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={sm.before}
+                          onChange={v => updateSurveyMetric(sm.id, { before: v })}
+                          step={0.1}
+                          className="h-9 bg-white border-[#E5E5E5] text-right text-sm"
+                          data-testid={`input-survey-before-${sm.id}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">After</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={sm.after}
+                          onChange={v => updateSurveyMetric(sm.id, { after: v })}
+                          step={0.1}
+                          className="h-9 bg-white border-[#E5E5E5] text-right text-sm"
+                          data-testid={`input-survey-after-${sm.id}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      value={sm.unit || ''}
+                      onChange={e => updateSurveyMetric(sm.id, { unit: e.target.value })}
+                      placeholder="Unit (e.g., %, score, NPS)"
+                      className="h-8 w-32 bg-white border border-[#E5E5E5] rounded-md px-2.5 text-xs text-[#666666] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                      data-testid={`input-survey-unit-${sm.id}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="px-4 py-3">
+            <button
+              onClick={addSurveyMetric}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
+              data-testid="button-add-survey-metric"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Survey / Feedback Metric
+            </button>
+            {(state.surveyMetrics || []).length === 0 && (
+              <p className="text-[10px] text-[#BBBBBB] mt-1.5 ml-1">
+                Track satisfaction scores, burnout indexes, NPS, or any other survey data with before/after comparison.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1355,7 +1509,9 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
           if (visible.length > 0) allMetrics.push({ sectionKey: section.key, sectionLabel: section.label, metrics: visible });
         });
 
-        if (allMetrics.length === 0) return null;
+        const filledSurvey = (state.surveyMetrics || []).filter(sm => sm.label.trim() && (sm.before > 0 || sm.after > 0));
+        const hasAny = allMetrics.length > 0 || filledSurvey.length > 0;
+        if (!hasAny) return null;
 
         return (
           <motion.div
@@ -1413,6 +1569,28 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
                   })}
               </div>
             ))}
+
+            {filledSurvey.length > 0 && (
+              <div className="mb-4">
+                <p className="text-[10px] font-semibold text-[#7C3AED] uppercase tracking-[1.5px] mb-2 ml-1">
+                  Survey & Feedback
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {filledSurvey.map((sm) => {
+                    const idx = deltaIndex++;
+                    return (
+                      <DeltaCard
+                        key={sm.id}
+                        label={sm.label}
+                        before={sm.before}
+                        after={sm.after}
+                        delayIndex={idx}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </motion.div>
         );
       })()}

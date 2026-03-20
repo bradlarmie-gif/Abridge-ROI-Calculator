@@ -33,6 +33,7 @@ interface MetricRowData {
   delta?: number;
   unit?: string;
   step?: number;
+  dataSource?: 'ehr' | 'survey';
 }
 
 const reductionMetrics = new Set([
@@ -125,6 +126,35 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   return rows;
 }
 
+function getSurveyMetricRows(state: MeasureState): MetricRowData[] {
+  const rows: MetricRowData[] = [];
+  for (const sm of (state.surveyMetrics || [])) {
+    if (!sm.label.trim()) continue;
+    const delta = sm.after - sm.before;
+    let status: 'active' | 'baseline' | 'not-measuring';
+    if (sm.before > 0 && sm.after > 0 && Math.abs(delta) > 0) {
+      status = 'active';
+    } else if (sm.before > 0) {
+      status = 'baseline';
+    } else {
+      status = 'not-measuring';
+    }
+    rows.push({
+      label: sm.label,
+      metricKey: `survey_${sm.id}`,
+      domain: sm.domain || 'Workforce',
+      setting: state.careSetting || 'outpatient',
+      status,
+      before: sm.before || undefined,
+      after: sm.after || undefined,
+      delta: Math.abs(delta) > 0 ? delta : undefined,
+      unit: sm.unit,
+      dataSource: 'survey',
+    });
+  }
+  return rows;
+}
+
 const settingLabels: Record<MeasureCareSetting, string> = {
   outpatient: 'Outpatient',
   ed: 'Emergency',
@@ -150,7 +180,6 @@ function SignalRing({ active, baseline, total }: { active: number; baseline: num
   const baselineRatio = total > 0 ? baseline / total : 0;
   const activeLen = circumference * activeRatio;
   const baselineLen = circumference * baselineRatio;
-  const gapLen = circumference - activeLen - baselineLen;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -204,6 +233,9 @@ function MetricDeltaRow({ row, index, isReduction, showSetting, reducedMotion }:
     >
       <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
       <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
+      {row.dataSource === 'survey' && (
+        <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[#F3E8FF] text-[#7C3AED] font-semibold uppercase tracking-[0.5px] flex-shrink-0">Survey</span>
+      )}
       {showSetting && (
         <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#F5F0EB] text-[#999999] font-medium flex-shrink-0">{settingLabels[row.setting]}</span>
       )}
@@ -270,6 +302,7 @@ export default function MeasureInventory({
     for (const s of activeSettings) {
       rows.push(...getSettingMetricRows(state, s));
     }
+    rows.push(...getSurveyMetricRows(state));
     return rows;
   }, [state, activeSettings]);
 
@@ -280,6 +313,7 @@ export default function MeasureInventory({
 
   const activeRows = filteredRows.filter(r => r.status === 'active');
   const baselineRows = filteredRows.filter(r => r.status === 'baseline');
+  const notMeasuringRows = filteredRows.filter(r => r.status === 'not-measuring');
   const activeCount = activeRows.length;
   const baselineCount = baselineRows.length;
 
@@ -558,6 +592,40 @@ export default function MeasureInventory({
             <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] overflow-hidden px-4">
               {baselineRows.map((row, i) => (
                 <BaselineRow key={`${row.setting}-${row.label}`} row={row} index={i} reducedMotion={!!prefersReducedMotion} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {notMeasuringRows.length > 0 && (
+          <motion.div
+            className="mb-6"
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.6, duration: 0.4 }}
+            data-testid="not-measuring-section"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1 h-4 rounded-full bg-[#E5E5E5]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#CCCCCC]">
+                Available to Measure
+              </p>
+              <span className="text-[10px] text-[#DDDDDD] ml-1">{notMeasuringRows.length} metric{notMeasuringRows.length !== 1 ? 's' : ''} not yet tracked</span>
+            </div>
+            <div className="rounded-xl border border-dashed border-[#E5E5E5] bg-[#FAFAFA] overflow-hidden px-4">
+              {notMeasuringRows.map((row, i) => (
+                <motion.div
+                  key={`${row.setting}-${row.label}`}
+                  className="flex items-center gap-3 py-2.5 border-b border-[#F0F0F0] last:border-b-0"
+                  initial={prefersReducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.65 + i * 0.03, duration: 0.3 }}
+                  data-testid={`gap-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E5E5E5] flex-shrink-0" />
+                  <span className="text-sm text-[#CCCCCC] flex-1 min-w-0">{row.label}</span>
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#F5F5F5] text-[#BBBBBB] font-medium flex-shrink-0">{row.domain}</span>
+                </motion.div>
               ))}
             </div>
           </motion.div>

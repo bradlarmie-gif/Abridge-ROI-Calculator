@@ -229,6 +229,32 @@ export const CARE_SETTING_ORDER: MeasureCareSetting[] = [
 
 export type SettingMetrics = Record<string, number>;
 
+export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
+  const config = CARE_SETTING_CONFIGS[setting];
+  let count = 0;
+  for (const section of config.metricSections) {
+    for (const metric of section.metrics) {
+      if (metric.hasBeforeAfter) count++;
+    }
+  }
+  return count;
+}
+
+export function getEnabledMetricCount(
+  setting: MeasureCareSetting,
+  enabledMap: Record<string, boolean> | undefined,
+): number {
+  if (!enabledMap) return 0;
+  const config = CARE_SETTING_CONFIGS[setting];
+  let count = 0;
+  for (const section of config.metricSections) {
+    for (const metric of section.metrics) {
+      if (metric.hasBeforeAfter && enabledMap[metric.key]) count++;
+    }
+  }
+  return count;
+}
+
 export function getDefaultMetrics(setting: MeasureCareSetting): SettingMetrics {
   const config = CARE_SETTING_CONFIGS[setting];
   const metrics: SettingMetrics = {};

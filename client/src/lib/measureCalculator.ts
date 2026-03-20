@@ -74,7 +74,18 @@ export interface CustomMetric {
   section: string;
 }
 
+export interface SurveyMetric {
+  id: string;
+  label: string;
+  before: number;
+  after: number;
+  unit?: string;
+  domain: string;
+}
+
 export type DataSource = 'analytics' | 'benchmark' | 'estimate';
+
+export type MetricDataSource = 'ehr' | 'survey';
 
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
@@ -93,6 +104,8 @@ export interface MeasureState {
   settingData: Partial<Record<MeasureCareSetting, Record<string, number>>>;
   abridgeNativeData: Partial<Record<string, number>>;
   customMetrics: CustomMetric[];
+  surveyMetrics: SurveyMetric[];
+  enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   expansionTargets?: {
     targetAdoption: number;
     targetProviders: number;
@@ -176,6 +189,8 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   settingData: {},
   abridgeNativeData: {},
   customMetrics: [],
+  surveyMetrics: [],
+  enabledMetrics: {},
 };
 
 export interface MeasureResults {
@@ -876,11 +891,20 @@ export function deriveSettingStage(
   else if (months < 18) { phase = 3; phaseLabel = PHASE_THIRD_LABELS[setting]; }
   else { phase = 4; phaseLabel = 'Strategic Proof'; }
 
+  const settingData = state.settingData[setting] || {};
+  const filledMetricCount = Object.entries(settingData).filter(([k, v]) =>
+    (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
+  ).length;
+  const filledPairs = Math.ceil(filledMetricCount / 2);
+  const filledSurvey = (state.surveyMetrics || []).filter(sm => sm.label.trim() && (sm.before > 0 || sm.after > 0)).length;
+  const totalFilledSlots = filledPairs + filledSurvey;
+  const coverageRatio = totalFilledSlots > 0 ? Math.min(totalFilledSlots / 8, 1) : 0;
+
   let maturityStage: MaturityStage;
   let maturityLabel: string;
   if (months < 3 || util < 20) { maturityStage = 'unmeasured'; maturityLabel = 'Unmeasured'; }
-  else if (months > 18 && util > 70) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
-  else if (months >= 9 || (util > 60 && activeDomainCount >= 3)) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
+  else if (months > 18 && util > 70 && coverageRatio > 0.5) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
+  else if (months >= 9 || (util > 60 && activeDomainCount >= 3) || coverageRatio > 0.7) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
   else { maturityStage = 'signaling'; maturityLabel = 'Signaling'; }
 
   const stageOrder: MaturityStage[] = ['unmeasured', 'signaling', 'validated', 'strategic'];
