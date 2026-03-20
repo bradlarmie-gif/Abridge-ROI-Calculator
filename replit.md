@@ -45,7 +45,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Burden Relief Model**: Retention/wellbeing calculations use fixed allocation defaults.
 -   **ED LWBS Recovery**: Uses a slider with presets for expected LWBS reduction, including admission capture as a sub-toggle.
 -   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing.
--   **Measure Path (EBR)**: Redesigned as a 6-screen Executive Business Review tool with confirmed and scenario-based value analysis.
+-   **Measure Path (EBR)**: Redesigned as a 6-screen Executive Business Review tool with confirmed and scenario-based value analysis. Features domain-level value breakdowns via `calculateConfirmedValue()` with `ConfirmedDomainValues`, Abridge native metrics collection (`ABRIDGE_NATIVE_METRICS`), month-over-month trend tracking with Recharts LineChart, Presenter Notes (data-driven narrative per screen), present mode toggle (Cmd+Shift+P), and Abridge Footprint stats row on MeasureTransformation. DataSource badges use labels: Analytics Pull / Partner Platform / Team Estimate.
 -   **Architecture**: Component-driven UI, configuration-driven ROI levers, pure functions for calculation logic, and handling of qualitative drivers.
 
 ## External Dependencies

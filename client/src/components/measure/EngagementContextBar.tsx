@@ -7,9 +7,9 @@ interface EngagementContextBarProps {
 }
 
 const SOURCE_CONFIG: Record<DataSource, { label: string; bg: string; text: string }> = {
-  analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-  benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
-  estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+  analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
+  benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
+  estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
 };
 
 export function EngagementContextBar({ context, dataSource, organizationName }: EngagementContextBarProps) {

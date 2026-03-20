@@ -1,0 +1,468 @@
+Redesign the Measure path to tell a coherent per-setting story arc.                                                                                                                                          
+  Files: client/src/pages/measure/ and client/src/lib/measureCalculator.ts
+  Read existing code before changing anything.                                                                                                                                                                 
+                                              
+  The story arc has six chapters. Each screen in the tool corresponds                                                                                                                                          
+  to one or more chapters. The data entry step (MeasureDataEntry.tsx)                                                                                                                                          
+  is unchanged — it is build mode only. Everything below is the                                                                                                                                                
+  presentation story.                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 1: DATA MODEL — PER-SETTING STAGES                                                                                                                                                                      
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In measureCalculator.ts, add a per-setting stage function:                                                                                                                                                   
+                                                                                                                                                                                                               
+    export interface SettingStage {                         
+      setting: MeasureCareSetting                                                                                                                                                                              
+      settingLabel: string          // "Outpatient" | "Emergency" | etc.
+      months: number                                                                                                                                                                                           
+      phase: 1 | 2 | 3 | 4                                  
+      phaseLabel: string            // "Documentation Fidelity" | "Efficiency" | etc.                                                                                                                          
+      phaseThirdLabel: string       // care-setting third phase name                                                                                                                                           
+      maturityStage: MaturityStage                                                                                                                                                                             
+      maturityLabel: string                                                                                                                                                                                    
+      maturityNext: string                                  
+      domainStatus: {                                                                                                                                                                                          
+        quality: DomainStatus                                                                                                                                                                                  
+        workforce: DomainStatus                                                                                                                                                                                
+        revenue: DomainStatus                                                                                                                                                                                  
+        capacity: DomainStatus                                                                                                                                                                                 
+      }
+      activeDomainCount: number                                                                                                                                                                                
+      confirmedLow: number                                  
+      confirmedHigh: number               
+      perProviderLow: number
+      perProviderHigh: number                                                                                                                                                                                  
+      // What can be claimed at this stage
+      defensibleClaims: string[]                                                                                                                                                                               
+      // Metrics to unlock next stage                                                                                                                                                                          
+      nextStageMetrics: NextStageMetric[]     
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    export interface NextStageMetric {                                                                                                                                                                         
+      metric: string          // e.g. "CDI query rate"                                                                                                                                                         
+      domain: string          // which domain it unlocks                                                                                                                                                       
+      why: string             // one sentence: why this metric matters                                                                                                                                         
+      source: string          // "Abridge platform" | "EHR analytics" | "Billing"                                                                                                                              
+      expectedAtMonth: number // when this signal typically appears                                                                                                                                            
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    export function deriveSettingStage(                                                                                                                                                                        
+      state: MeasureState,                                                                                                                                                                                     
+      setting: MeasureCareSetting                                                                                                                                                                              
+    ): SettingStage                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  This function computes the full stage picture for ONE care setting                                                                                                                                           
+  using only that setting's data from state.settingData[setting].
+                                                                                                                                                                                                               
+  Next stage metrics per setting and phase:                                                                                                                                                                    
+   
+    OUTPATIENT Phase 1 → Phase 2 metrics:                                                                                                                                                                      
+      - "CDI query reduction" (Quality, "First CDI signal", EHR analytics, month 3)
+      - "After-hours work decline" (Workforce, "WoW signal", Abridge platform, month 3)                                                                                                                        
+      - "wRVU per encounter" (Revenue, "Coding lift signal", Billing, month 3)                                                                                                                                 
+                                              
+    OUTPATIENT Phase 2 → Phase 3 metrics:                                                                                                                                                                      
+      - "Encounter volume lift" (Capacity, "Panel growth", EHR analytics, month 6)                                                                                                                             
+      - "Physician retention data" (Workforce, "Retention advantage", HR, month 9)                                                                                                                             
+      - "Clean claim rate" (Revenue, "Coding confirmed", Revenue Cycle, month 9)                                                                                                                               
+                                                                                                                                                                                                               
+    OUTPATIENT Phase 3 → Phase 4 metrics:                                                                                                                                                                      
+      - "New care settings added" (Capacity, "Expansion story", Abridge platform, month 12)                                                                                                                    
+      - "Net collection ratio" (Revenue, "Board-level revenue", Finance, month 12)                                                                                                                             
+      - "Provider satisfaction score" (Workforce, "Recruitment leverage", HR, month 12)                                                                                                                        
+                                                                                                                                                                                                               
+    ED Phase 1 → Phase 2:                                                                                                                                                                                      
+      - "E/M level accuracy" (Revenue, "Coding lift", Billing, month 3)                                                                                                                                        
+      - "Shift-end documentation time" (Workforce, "WoW relief", Abridge platform, month 3)                                                                                                                    
+                                                                                                                                                                                                               
+    ED Phase 2 → Phase 3:                                                                                                                                                                                      
+      - "LWBS rate" (Throughput, "Patient retention", Operations, month 6)                                                                                                                                     
+      - "Patients per provider per shift" (Throughput, "Throughput lift", Operations, month 6)                                                                                                                 
+                                                                                                                                                                                                               
+    INPATIENT Phase 1 → Phase 2:                                                                                                                                                                               
+      - "CMI improvement" (Revenue, "DRG accuracy", Health Information, month 4)                                                                                                                               
+      - "CDI query rate" (Quality, "CDI baseline", CDI team, month 3)                                                                                                                                          
+      - "EHR time per patient day" (Workforce, "Rounding efficiency", Abridge platform, month 3)                                                                                                               
+                                                                                                                                                                                                               
+    INPATIENT Phase 2 → Phase 3:                                                                                                                                                                               
+      - "Denial reduction rate" (Revenue, "Payer defense", Revenue Cycle, month 9)                                                                                                                             
+      - "Discharge summary completion time" (Patient Flow, "Flow signal", Operations, month 9)                                                                                                                 
+      - "Physician retention" (Workforce, "Retention data", HR, month 12)                                                                                                                                      
+                                                                                                                                                                                                               
+    NURSING Phase 1 → Phase 2:                                                                                                                                                                                 
+      - "Overtime hours per nurse" (Workforce, "OT relief", HR/Payroll, month 3)                                                                                                                               
+      - "Turnover rate" (Workforce, "Retention signal", HR, month 6)                                                                                                                                           
+                                                                                                                                                                                                               
+    NURSING Phase 2 → Phase 3:                              
+      - "Falls/HAPIs rate" (Quality, "Safety signal", Quality team, month 9)                                                                                                                                   
+      - "Nurse satisfaction" (Workforce, "Recruitment leverage", HR, month 9)
+                                                                                                                                                                                                               
+  Defensible claims per stage (these are what the CSM can say in the room):
+                                                                                                                                                                                                               
+    UNMEASURED:                                                                                                                                                                                                
+      ["Abridge is live and being used",                                                                                                                                                                       
+       "Baseline metrics are establishing",                                                                                                                                                                    
+       "No outcome claims yet — foundation building"]                                                                                                                                                          
+                                                            
+    SIGNALING:                                                                                                                                                                                                 
+      ["Documentation patterns are changing with Abridge",  
+       "Early efficiency signals are present in [strongest domain]",                                                                                                                                           
+       "Trend direction is confirmed — too early for magnitude"]
+                                                                                                                                                                                                               
+    VALIDATED:                                              
+      ["[N] domains show consistent positive trends",                                                                                                                                                          
+       "Time reclaimed: [X] hours across [N] providers",                                                                                                                                                       
+       "Value range [low]–[high] / year is supported by the data",                                                                                                                                             
+       "Renewal decision is made on data, not relationship"]                                                                                                                                                   
+                                                                                                                                                                                                               
+    STRATEGIC:                                                                                                                                                                                                 
+      ["Multi-domain proof across [N] settings",                                                                                                                                                               
+       "Per-provider value of [X] is proven and scalable",                                                                                                                                                     
+       "Expansion economics are understood",                                                                                                                                                                   
+       "This deployment is a strategic asset, not a tool"]                                                                                                                                                     
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 2: NEW SCREEN — MeasureInventory.tsx                                                                                                                                                                    
+  "What We're Measuring"                                                                                                                                                                                       
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Create client/src/pages/measure/MeasureInventory.tsx                                                                                                                                                         
+                                                            
+  This is a NEW screen inserted between MeasureDataEntry and                                                                                                                                                   
+  MeasureTransformation in the flow.                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Update MeasureFlow.tsx phases:                                                                                                                                                                               
+    'data' → 'inventory' → 'change' → 'scenarios' → 'value' 
+    → 'opportunity' → 'story'                                                                                                                                                                                  
+                                          
+    (7 phases total, step counter updates to totalSteps={7})                                                                                                                                                   
+                                                                                                                                                                                                               
+  PURPOSE: Show the full picture of what's being measured across
+  all active settings — which metrics are active, which are                                                                                                                                                    
+  baseline-only, which haven't started. Before showing any changes
+  or dollar values, establish what the measurement program looks like.                                                                                                                                         
+                                                            
+  LAYOUT:                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  HEADER:                                                                                                                                                                                                      
+    "Your Measurement Picture"                                                                                                                                                                                 
+    Subhead: "Here's what we're tracking together — and where each                                                                                                                                             
+    metric stands."                                                                                                                                                                                            
+                                                            
+  SETTING TABS (if multiple settings active):                                                                                                                                                                  
+    Pill tabs for each active setting + "All Settings" combined view.                                                                                                                                          
+    Default to "All Settings" if > 1 setting.                                                                                                                                                                  
+    If single setting, no tabs — just show that setting's content.                                                                                                                                             
+                                                                                                                                                                                                               
+  PER-SETTING CONTENT (shown per tab):                                                                                                                                                                         
+                                                                                                                                                                                                               
+    SECTION A — "From Abridge" (cream #F5F0EB background):                                                                                                                                                     
+      Small eyebrow: "ABRIDGE PLATFORM DATA"                                                                                                                                                                   
+      Subtext: "Pulled directly from your Abridge deployment"                                                                                                                                                  
+                                                                                                                                                                                                               
+      Metric rows — only show rows where abridgeNativeData has a value:
+        MRU, Adoption Rate, Note Quality, Same-Day Closure, User Retention                                                                                                                                     
+                                                                                                                                                                                                               
+      Each row:                                                                                                                                                                                                
+        ● [metric label]    [value]    [trend arrow if improving]                                                                                                                                              
+                                                                                                                                                                                                               
+      If no native data entered:                            
+        "Add your Abridge platform metrics in Step 1 to see them here."                                                                                                                                        
+        Small muted text, italic.                                                                                                                                                                              
+                                              
+    SECTION B — "From Your Systems" (white background):                                                                                                                                                        
+      Small eyebrow: "PARTNER-PROVIDED DATA"                                                                                                                                                                   
+      Subtext: "Entered from your EHR, billing, and HR systems"                                                                                                                                                
+                                                                                                                                                                                                               
+      Show ALL metrics relevant to this care setting,                                                                                                                                                          
+      grouped by domain (Quality, Workforce, Revenue, Capacity):                                                                                                                                               
+                                                                                                                                                                                                               
+      Each metric row shows one of three states:                                                                                                                                                               
+                                                                                                                                                                                                               
+      ACTIVE (has before AND after value, delta > 0):                                                                                                                                                          
+        ● [metric]    [before] → [after]    [+delta]    [ACTIVE badge]                                                                                                                                         
+                                                                                                                                                                                                               
+      BASELINE ONLY (before value entered, no after value or no delta):                                                                                                                                        
+        ○ [metric]    [baseline: X]    [—]    [BASELINE badge]
+                                                                                                                                                                                                               
+      NOT MEASURING (no data entered):                                                                                                                                                                         
+        ○ [metric]    [Not entered]    [+Add]                                                                                                                                                                  
+        The [+Add] link scrolls back to data entry for that metric.                                                                                                                                            
+        Muted gray styling.                                                                                                                                                                                    
+                                                                                                                                                                                                               
+      Domain grouping headers:                                                                                                                                                                                 
+        "QUALITY" | "WORKFORCE" | "REVENUE" | "CAPACITY / [FLOW/THROUGHPUT]"                                                                                                                                   
+        Style: 9px uppercase, #999999, letterSpacing 2                                                                                                                                                         
+                                                                                                                                                                                                               
+    SIGNAL SUMMARY BAR at the bottom of each setting's content:                                                                                                                                                
+      One line: "[N] metrics active · [M] baseline-only · [P] not yet measuring"                                                                                                                               
+                                                                                                                                                                                                               
+      Visual: small horizontal progress-style bar showing the three                                                                                                                                            
+      categories as proportional segments:                                                                                                                                                                     
+      Active = #EA2C00 | Baseline = #F5E0D6 | Not measuring = #F0F0F0                                                                                                                                          
+                                                                                                                                                                                                               
+  COMBINED VIEW (when "All Settings" tab is active):                                                                                                                                                           
+    Stack each setting's summary as a collapsed card.                                                                                                                                                          
+    Each card header: "[Setting] — [N] months — [Stage]"                                                                                                                                                       
+    Expandable to show full metric inventory.                                                                                                                                                                  
+                                                                                                                                                                                                               
+    At the very top of combined view, a summary row:                                                                                                                                                           
+    "[Total providers] providers · [Total encounters] encounters                                                                                                                                               
+     · [N] care settings · [X] metrics active"                                                                                                                                                                 
+                                                                                                                                                                                                               
+  CONTINUE BUTTON at bottom → advances to MeasureTransformation.                                                                                                                                               
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 3: REVISE MeasureTransformation.tsx                                                                                                                                                                     
+  "What Changed"                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                            
+  This screen now has ONE JOB: show what moved.                                                                                                                                                                
+  Not the value. Not the stage. Just: here is what changed.                                                                                                                                                    
+                                                                                                                                                                                                               
+  RENAME step: "What Changed" (was "What Your Data Shows")                                                                                                                                                     
+                                                                                                                                                                                                               
+  Remove the confirmed value hero tile from this screen entirely.                                                                                                                                              
+  The dollar value lives on MeasureAllocate (Step 5). This screen                                                                                                                                              
+  shows the raw signal — not the conclusion.                                                                                                                                                                   
+                                                                                                                                                                                                               
+  REVISED LAYOUT:                                           
+                                                                                                                                                                                                               
+  HEADER:                                                   
+    "[Org Name] — [X] months with Abridge"  ← org name leads in present mode                                                                                                                                   
+    Subhead: "Here's how the metrics moved from your baseline to today."
+                                              
+  ENGAGEMENT CONTEXT BAR (keep as-is)         
+                                                                                                                                                                                                               
+  SETTING SELECTOR (if multi-setting):                                                                                                                                                                         
+    Pill tabs per setting.                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  PER-SETTING CONTENT:                                                                                                                                                                                         
+                                                            
+    Show the PointComparison rows for every metric that has BOTH a                                                                                                                                             
+    before and after value — grouped by domain.                                                                                                                                                                
+   
+    Each domain group has a header:                                                                                                                                                                            
+      "QUALITY" with its stakeholder label + signal badge   
+      Then the metric rows for that domain                                                                                                                                                                     
+                                                                                                                                                                                                               
+    If a domain has NO active metrics (only baseline or not measuring):
+      Show the domain header + signal badge (Baseline Set / Pre-Signal)                                                                                                                                        
+      + one line: "[Domain] signal expected at month [N]"   
+      Muted styling. Do not hide — show where we are in the journey.                                                                                                                                           
+                                                            
+    After all domain groups, one summary line:                                                                                                                                                                 
+      "[N] of [total] metrics are showing positive movement."                                                                                                                                                  
+      Style: small, italic, #666666                                                                                                                                                                            
+                                                                                                                                                                                                               
+  REMOVE: the formula block (it belongs on the value screen)                                                                                                                                                   
+  REMOVE: the confirmed value hero tile (it belongs on the value screen)                                                                                                                                       
+  REMOVE: the adoption headroom card (move to MeasureAllocate)
+  KEEP: the NarrativePanel (Presenter Notes)                                                                                                                                                                   
+                                                            
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 4: NEW SCREEN — MeasureStage.tsx                                                                                                                                                                        
+  "Your Stage"                                                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Create client/src/pages/measure/MeasureStage.tsx                                                                                                                                                             
+                                                            
+  Insert between MeasureTransformation and MeasureScenarios.                                                                                                                                                   
+                                                            
+  Flow becomes:                                                                                                                                                                                                
+    data → inventory → change → stage → scenarios → value → opportunity → story                                                                                                                                
+    (8 phases, totalSteps={8})                
+                                                                                                                                                                                                               
+  PURPOSE: Connect the evidence (what changed) to the stage 
+  (what that means). This is the "therefore" moment in the story.                                                                                                                                              
+                                                                                                                                                                                                               
+  LAYOUT:                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  HEADER:                                                                                                                                                                                                      
+    "Your Stage"                                            
+    Subhead: "Based on what the data shows, here's where each                                                                                                                                                  
+    setting stands in the Abridge maturity journey."        
+                                              
+  IF SINGLE SETTING:                      
+                                                                                                                                                                                                               
+    STAGE CARD — full width, dark background (#1A1A1A):                                                                                                                                                        
+                                                                                                                                                                                                               
+      TOP ROW: four stage dots in sequence                                                                                                                                                                     
+        ○ UNMEASURED → ○ SIGNALING → ● VALIDATED → ○ STRATEGIC                                                                                                                                                 
+        Current stage dot is filled orange (#EA2C00), others are
+        white outline (completed) or gray outline (upcoming).                                                                                                                                                  
+                                                            
+      STAGE NAME: large, Abridge font, white                                                                                                                                                                   
+        e.g. "VALIDATED"                                                                                                                                                                                       
+                                                                                                                                                                                                               
+      STAGE DESCRIPTION: 2 sentences, white/60                                                                                                                                                                 
+        From the defensibleClaims array — show as a paragraph,                                                                                                                                                 
+        not a bullet list. Prose reads better in the room.                                                                                                                                                     
+                                                                                                                                                                                                               
+      DIVIDER (1pt white/10)                                                                                                                                                                                   
+                                                                                                                                                                                                               
+      "WHAT YOUR DATA SUPPORTS" — eyebrow label                                                                                                                                                                
+      Defensible claims as a clean list:                                                                                                                                                                       
+        ✓ "[claim 1]"                                                                                                                                                                                          
+        ✓ "[claim 2]"                                                                                                                                                                                          
+        ✓ "[claim 3]"                                       
+      Style: 11px, white/70, checkmark in #EA2C00                                                                                                                                                              
+                                                                                                                                                                                                               
+      "HOW YOU GOT HERE" — eyebrow label                                                                                                                                                                       
+      One sentence connecting the evidence to the stage:                                                                                                                                                       
+      "Your [strongest domain] signal ([strongest metric delta])                                                                                                                                               
+      confirmed across [N] months is what moves you from Signaling                                                                                                                                             
+      to Validated."                                                                                                                                                                                           
+      Style: 11px, white/50, italic                                                                                                                                                                            
+                                                                                                                                                                                                               
+    BELOW THE STAGE CARD:                                                                                                                                                                                      
+                                                                                                                                                                                                               
+    DOMAIN STATUS ROW — four small cards in a row:                                                                                                                                                             
+                                                            
+      Each card: white background, 1pt border 
+      Active/Validated: #EA2C00 top border (3pt)                                                                                                                                                               
+      Signaling: #F5C4B8 top border           
+      Baseline/Pre-signal: #E0E0E0 top border                                                                                                                                                                  
+                                                            
+      Card content:                                                                                                                                                                                            
+        Domain name (bold, 10px)                                                                                                                                                                               
+        Status badge                                                                                                                                                                                           
+        Primary metric delta (if any): "+0.18 wRVU" in small text                                                                                                                                              
+        Stakeholder: tiny gray text                         
+                                                                                                                                                                                                               
+  IF MULTIPLE SETTINGS:                                     
+                                                                                                                                                                                                               
+    One stage card per setting, stacked.                    
+    Each card is more compact (less padding) but follows the same                                                                                                                                              
+    structure — stage name, 1-2 defensible claims, domain status row.
+                                                                                                                                                                                                               
+    At the bottom: a COMBINED STAGE summary:                
+      "Across [N] settings, your most advanced stage is [highest stage].                                                                                                                                       
+       Your newest setting ([setting name]) is [X] months in —                                                                                                                                                 
+       [its stage and what's expected next]."                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 5: REVISE MeasureOpportunity.tsx                                                                                                                                                                        
+  Add "What's Next" per-setting roadmap                                                                                                                                                                        
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Keep the existing Deepen / Expand / Combined structure at the top.                                                                                                                                           
+  It's the right framing. Do not change it.                                                                                                                                                                    
+                                                                                                                                                                                                               
+  ADD a new section at the bottom of MeasureOpportunity, after the                                                                                                                                             
+  Combined Opportunity card:                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  "YOUR NEXT CHAPTER"                                                                                                                                                                                          
+    Subhead: "To move from [current stage] to [next stage],                                                                                                                                                    
+    here's what we'd focus on."                                                                                                                                                                                
+                                                                                                                                                                                                               
+  PER-SETTING ROADMAP CARDS:                  
+                                                                                                                                                                                                               
+    One card per active setting.                            
+                                                                                                                                                                                                               
+    Card header: "[Setting] — currently [Stage] → path to [Next Stage]"
+                                                                                                                                                                                                               
+    Inside: a table of next stage metrics from nextStageMetrics array:
+                                                                                                                                                                                                               
+    ┌─────────────────────────────────────────────────────────────┐
+    │  METRIC              DOMAIN      SOURCE          EXPECTED   │                                                                                                                                            
+    │  ─────────────────────────────────────────────────────────  │
+    │  CDI query rate      Quality     EHR analytics   Month 3    │                                                                                                                                            
+    │  After-hours work    Workforce   Abridge platform Month 3   │
+    │  wRVU per encounter  Revenue     Billing          Month 3   │                                                                                                                                            
+    └─────────────────────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+    Style: clean table, 11px text, alternating row backgrounds.                                                                                                                                                
+    Source column: small badge — "Abridge" (orange) vs "Your Systems" (gray)                                                                                                                                   
+    Expected column: if already past that month → show "Ready now"                                                                                                                                             
+    in green instead of "Month N"                                                                                                                                                                              
+                                                                                                                                                                                                               
+    Below the table:                                                                                                                                                                                           
+    "Adding these metrics is what advances you to [next stage].                                                                                                                                                
+     Your CSM can help pull the Abridge-sourced ones — the rest                                                                                                                                                
+     come from your [source systems]."                                                                                                                                                                         
+    Style: 11px, #666666, italic                                                                                                                                                                               
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 6: UPDATE MeasureFlow.tsx PHASE ORDER                                                                                                                                                                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  New complete phase sequence:                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    type MeasurePhase =                                     
+      'data'        → MeasureDataEntry      Step —  (build mode only)                                                                                                                                          
+      'inventory'   → MeasureInventory      Step 1  "Your Measurement Picture"
+      'change'      → MeasureTransformation Step 2  "What Changed"                                                                                                                                             
+      'stage'       → MeasureStage          Step 3  "Your Stage"
+      'scenarios'   → MeasureScenarios      Step 4  "What You Could Earn"                                                                                                                                      
+      'value'       → MeasureAllocate       Step 5  "What It's Worth"                                                                                                                                          
+      'opportunity' → MeasureOpportunity    Step 6  "Where You're Going"                                                                                                                                       
+      'story'       → MeasureStory          Step 7  "Executive Summary"                                                                                                                                        
+                                                                                                                                                                                                               
+  Update all UnifiedHeader currentStep and totalSteps props accordingly.                                                                                                                                       
+  MeasureDataEntry has no step counter (it's pre-story, build mode).                                                                                                                                           
+                                                                                                                                                                                                               
+  Step names in the header (what shows as the step label):                                                                                                                                                     
+    1 — "Measurement Picture"                                                                                                                                                                                  
+    2 — "What Changed"                                                                                                                                                                                         
+    3 — "Your Stage"                                                                                                                                                                                           
+    4 — "Scenarios"                                                                                                                                                                                            
+    5 — "The Value"                                                                                                                                                                                            
+    6 — "Growth Path"                                       
+    7 — "Summary"                                                                                                                                                                                              
+                                              
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 7: NARRATIVE UPDATES FOR NEW SCREENS                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                            
+  Add two new screen types to measureNarrative.ts:                                                                                                                                                             
+                                                                                                                                                                                                               
+    type MeasureScreen =                      
+      'inventory' | 'change' | 'stage' | 'scenarios'                                                                                                                                                           
+      | 'value' | 'opportunity' | 'summary'                 
+                                                                                                                                                                                                               
+  INVENTORY screen narrative:                               
+    headline: "{{providers}} providers. {{settings}} settings.                                                                                                                                                 
+               {{activeMetrics}} metrics actively tracking."                                                                                                                                                   
+    body: "Here's your full measurement picture — what we're                                                                                                                                                   
+           tracking together, what's live, and what's still                                                                                                                                                    
+           establishing its baseline. This is the foundation                                                                                                                                                   
+           the rest of the story builds on."                
+    handoff: "Here's what moved since we started measuring."                                                                                                                                                   
+                                                                                                                                                                                                               
+  STAGE screen narrative:                                                                                                                                                                                      
+    headline (signaling): "The early signals are real.                                                                                                                                                         
+                            Here's what they confirm."                                                                                                                                                         
+    headline (validated): "Your data is validated across                                                                                                                                                       
+                            {{activeDomains}} domains."                                                                                                                                                        
+    headline (strategic): "This deployment is strategic.                                                                                                                                                       
+                            The data says so."                                                                                                                                                                 
+                                                                                                                                                                                                               
+    body (signaling): "At {{months}} months, you're in the Signaling                                                                                                                                           
+    stage — trends are visible in {{strongestDomain}}, and the                                                                                                                                                 
+    pattern is consistent. This is the stage where direction is
+    confirmed but magnitude is still building."                                                                                                                                                                
+                                                            
+    body (validated): "Validated means the trends are confirmed                                                                                                                                                
+    and repeatable. {{confirmedLow}}–{{confirmedHigh}} per year                                                                                                                                                
+    is a number you can take to your CFO. The question now isn't                                                                                                                                               
+    whether this is working — it's how fast you want to scale it."                                                                                                                                             
+                                                                                                                                                                                                               
+    handoff: "Based on this stage, here's what the math shows."                                                                                                                                                
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  WHAT NOT TO CHANGE                                                                                                                                                                                           
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  - MeasureDataEntry.tsx — unchanged (add abridgeNativeData fields
+    only if not already added from previous prompt)                                                                                                                                                            
+  - MeasureScenarios.tsx — unchanged                                                                                                                                                                           
+  - MeasureAllocate.tsx — unchanged except: add the formula block                                                                                                                                              
+    and adoption headroom card that were removed from Transformation                                                                                                                                           
+  - MeasureStory.tsx — unchanged                                                                                                                                                                               
+  - All brand colors, fonts, component styling — unchanged  
+  - EngagementContextBar, NarrativePanel — unchanged                                                                                                                                                           
+  - PDF export — unchanged                                                                                                                                                                                     
+  - URL state / shareable link — unchanged    

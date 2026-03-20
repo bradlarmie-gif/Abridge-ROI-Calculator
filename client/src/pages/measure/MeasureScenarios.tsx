@@ -22,9 +22,9 @@ import { generateNarrative } from "@/lib/measureNarrative";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
+    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
   };
   const c = config[source] || config.estimate;
   return (

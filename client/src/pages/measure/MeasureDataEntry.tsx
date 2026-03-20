@@ -1,13 +1,14 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X } from "lucide-react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, formatNumber, deriveEngagementContext } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber, deriveEngagementContext } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
+  ABRIDGE_NATIVE_METRICS,
   type CareSettingConfig,
   type SettingMetrics,
   hasSettingData,
@@ -635,6 +636,8 @@ function EditView({
         )}
       </div>
 
+      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999] mb-2 mt-2">From Your EHR / Billing System</p>
+
       {config.metricSections.map((section, idx) => {
         const status = metricSectionStatuses[idx];
         const isExpanded = expandedSections[section.key] ?? stickyExpanded[section.key] ?? false;
@@ -782,6 +785,111 @@ function EditView({
           </CollapsibleSection>
         );
       })}
+
+      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999] mb-2 mt-4">From Your Abridge Deployment</p>
+
+      <div className="rounded-lg bg-white border border-[#E5E5E5] p-5 mb-3" data-testid="section-abridge-native">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
+        </div>
+        <p className="text-[11px] text-[#999999] mb-4">Optional. If you have access to Abridge analytics, enter these platform-native metrics.</p>
+        <div className="grid grid-cols-2 gap-4">
+          {ABRIDGE_NATIVE_METRICS.map((metric) => (
+            <div key={metric.key} className="space-y-1.5">
+              <label className="text-sm font-medium text-black">{metric.label}</label>
+              <div className="relative">
+                <FormattedNumberInput
+                  value={state.abridgeNativeData[metric.key] ?? 0}
+                  onChange={(v) => {
+                    onUpdateState({
+                      abridgeNativeData: { ...state.abridgeNativeData, [metric.key]: v },
+                    });
+                  }}
+                  step={metric.suffix === '%' ? 0.1 : 1}
+                  className={`h-10 bg-white border-[#E5E5E5] text-right ${metric.suffix ? 'pr-10' : ''}`}
+                  data-testid={`input-native-${metric.key}`}
+                />
+                {metric.suffix && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">{metric.suffix}</span>
+                )}
+              </div>
+              {metric.description && <p className="text-[10px] text-[#BBBBBB]">{metric.description}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <CollapsibleSection
+        sectionKey="trendData"
+        label="Trend Data (Monthly)"
+        isExpanded={expandedSections.trendData ?? false}
+        status={state.trendConfig.enabled ? 'in-progress' : 'active'}
+        subtitle="Optional month-over-month data"
+        onToggle={() => onToggleSection('trendData')}
+      >
+        <p className="text-[11px] text-[#999999] mb-3">
+          Enter monthly values to see trends over time. Leave empty months blank.
+        </p>
+        <div className="flex items-center gap-2 mb-4">
+          <label className="text-sm font-medium text-black">Enable Trend Tracking</label>
+          <button
+            onClick={() => onUpdateState({
+              trendConfig: { ...state.trendConfig, enabled: !state.trendConfig.enabled },
+            })}
+            className={`w-10 h-5 rounded-full transition-colors flex items-center ${state.trendConfig.enabled ? 'bg-[#EA2C00] justify-end' : 'bg-[#E5E5E5] justify-start'}`}
+            data-testid="toggle-trend-enabled"
+          >
+            <div className="w-4 h-4 rounded-full bg-white shadow-sm mx-0.5" />
+          </button>
+        </div>
+        {state.trendConfig.enabled && (
+          <div className="space-y-4">
+            {[
+              { key: 'timeInNotes' as const, label: 'Time in Notes (min)' },
+              { key: 'wrvu' as const, label: 'wRVU/encounter' },
+              { key: 'emLevel' as const, label: 'E/M Level' },
+              { key: 'sameDayClosure' as const, label: 'Same-Day Closure (%)' },
+            ].map((trendMetric) => {
+              const data = state.trendConfig.monthlyData[trendMetric.key] || [];
+              const monthCount = Math.max(data.length, state.deployment.monthsOnAbridge || 6, 6);
+              return (
+                <div key={trendMetric.key}>
+                  <p className="text-xs font-semibold text-[#666666] mb-2">{trendMetric.label}</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {Array.from({ length: monthCount }, (_, i) => (
+                      <div key={i} className="w-14">
+                        <p className="text-[9px] text-[#BBBBBB] text-center mb-0.5">M{i + 1}</p>
+                        <input
+                          type="number"
+                          value={data[i] ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                            const newData = [...data];
+                            while (newData.length <= i) newData.push(0);
+                            newData[i] = val;
+                            onUpdateState({
+                              trendConfig: {
+                                ...state.trendConfig,
+                                monthlyData: {
+                                  ...state.trendConfig.monthlyData,
+                                  [trendMetric.key]: newData,
+                                },
+                              },
+                            });
+                          }}
+                          className="w-full h-8 text-center text-xs bg-white border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                          data-testid={`input-trend-${trendMetric.key}-${i}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CollapsibleSection>
 
       <div
         className={`rounded-lg overflow-visible mb-3 transition-all duration-300 bg-[#F9F7F4] border border-[#E8E2DA]`}

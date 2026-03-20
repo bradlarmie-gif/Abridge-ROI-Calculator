@@ -9,7 +9,7 @@ import {
   type DomainStatus,
   formatCurrency, 
   formatNumber,
-  calculateMeasureResults,
+  calculateConfirmedValue,
   deriveEngagementContext,
   computeDomainStatus,
   getMonthsFromGoLive,
@@ -20,9 +20,9 @@ import { generateNarrative } from "@/lib/measureNarrative";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
+    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
   };
   const c = config[source] || config.estimate;
   return (
@@ -45,6 +45,7 @@ interface DomainValueRow {
   valueHigh?: number;
   note?: string;
   hoursNote?: string;
+  metricOnly?: boolean;
 }
 
 interface DomainSection {
@@ -56,8 +57,9 @@ interface DomainSection {
 
 function DomainValueCard({ domain, dataSource, delay = 0 }: { domain: DomainSection; dataSource: DataSource; delay?: number }) {
   const muted = domain.status === 'no-data';
-  const totalLow = domain.rows.reduce((s, r) => s + r.value, 0);
-  const totalHigh = domain.rows.reduce((s, r) => s + (r.valueHigh ?? r.value), 0);
+  const dollarRows = domain.rows.filter(r => !r.metricOnly);
+  const totalLow = dollarRows.reduce((s, r) => s + r.value, 0);
+  const totalHigh = dollarRows.reduce((s, r) => s + (r.valueHigh ?? r.value), 0);
 
   return (
     <motion.div
@@ -83,11 +85,15 @@ function DomainValueCard({ domain, dataSource, delay = 0 }: { domain: DomainSect
                 {row.hoursNote && <span className="text-xs text-[#999999] ml-1">({row.hoursNote})</span>}
               </div>
               <span className="text-sm font-semibold text-[#1A1A1A] flex-shrink-0 ml-3">
-                {row.valueHigh ? formatSmartRange(row.value, row.valueHigh) : formatCurrency(row.value)}
+                {row.metricOnly ? (
+                  <span className="text-xs font-medium text-[#999999]">{row.note}</span>
+                ) : (
+                  row.valueHigh ? formatSmartRange(row.value, row.valueHigh) : formatCurrency(row.value)
+                )}
               </span>
             </div>
           ))}
-          {domain.rows.length > 1 && (
+          {dollarRows.length > 1 && (
             <div className="flex items-center justify-between pt-2 mt-1 border-t border-[#E5E5E5]">
               <span className="text-xs font-semibold text-[#1A1A1A] uppercase">Domain Total</span>
               <span className="text-sm font-bold text-[#EA2C00]">{formatSmartRange(totalLow, totalHigh)}</span>
@@ -113,7 +119,7 @@ export default function MeasureAllocate({
   onBack,
   onHome,
 }: MeasureAllocateProps) {
-  const results = useMemo(() => calculateMeasureResults(state), [state]);
+  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
   const narrative = useMemo(() => generateNarrative('value', state), [state]);
@@ -124,61 +130,46 @@ export default function MeasureAllocate({
   const isED = careSetting === "ed";
   const isNursing = careSetting === "nursing";
   const providerLabel = isNursing ? "nurses" : "providers";
-  const settingMetrics = state.settingData?.[careSetting] || {};
-
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
+  const d = confirmed.domains;
 
   const qualityDomain: DomainSection = useMemo(() => {
     const rows: DomainValueRow[] = [];
-    if (results.wrvuValue > 0) {
-      rows.push({ label: 'wRVU lift', value: results.wrvuValue, valueHigh: results.wrvuValue * 1.5, note: '50\u201375% attribution' });
+    if (d.wrvuDelta > 0) {
+      rows.push({ label: 'wRVU lift', value: 0, metricOnly: true, note: `+${d.wrvuDelta.toFixed(2)} wRVU/encounter` });
     }
-    if (results.emValue > 0) {
-      rows.push({ label: 'E/M accuracy', value: results.emValue, valueHigh: results.emValue * 1.5 });
-    }
-    if (isInpatient) {
-      const cmiDelta = (settingMetrics.cmi_after ?? 0) - (settingMetrics.cmi_before ?? 0);
-      if (cmiDelta > 0) {
-        const cmiValue = cmiDelta * adoptedEncounters * 500;
-        rows.push({ label: 'CMI improvement', value: cmiValue * 0.5, valueHigh: cmiValue * 0.75 });
-      }
+    if (isInpatient && d.qualityValueLow > 0) {
+      rows.push({ label: 'CMI improvement', value: d.qualityValueLow, valueHigh: d.qualityValueHigh });
     }
     return { name: 'Quality', status: domainStatus.quality, rows };
-  }, [results, domainStatus.quality, isInpatient, settingMetrics, adoptedEncounters]);
+  }, [d, domainStatus.quality, isInpatient]);
 
   const workforceDomain: DomainSection = useMemo(() => {
     const rows: DomainValueRow[] = [];
-    const efficiencyHours = results.totalHoursSaved * 0.5;
-    const efficiencyValue = efficiencyHours * state.calibration.otHourlyRate;
-    if (efficiencyValue > 0) {
-      rows.push({ label: 'Efficiency value', value: efficiencyValue, hoursNote: `${formatNumber(Math.round(efficiencyHours))} hrs at $${state.calibration.otHourlyRate}/hr` });
+    if (d.workforceValue > 0) {
+      rows.push({ label: 'Efficiency value', value: d.workforceValue, hoursNote: `${formatNumber(Math.round(d.efficiencyHours))} hrs at $${state.calibration.otHourlyRate}/hr` });
     }
-    if (results.qualityHoursPerWeek > 0) {
-      rows.push({ label: 'Wellbeing hours returned', value: 0, hoursNote: `${results.qualityHoursPerWeek.toFixed(1)} hrs/provider/wk \u2013 shown as hours, not dollarized` });
+    if (d.qualityHoursPerWeek > 0) {
+      rows.push({ label: 'Wellbeing hours returned', value: 0, metricOnly: true, note: `${d.qualityHoursPerWeek.toFixed(1)} hrs/provider/wk` });
     }
     return { name: 'Workforce', status: domainStatus.workforce, rows };
-  }, [results, state.calibration.otHourlyRate, domainStatus.workforce]);
+  }, [d, state.calibration.otHourlyRate, domainStatus.workforce]);
 
   const revenueDomain: DomainSection = useMemo(() => {
     const rows: DomainValueRow[] = [];
-    if (!isNursing && results.wrvuValue > 0) {
-      rows.push({ label: 'wRVU revenue impact', value: results.wrvuValue, valueHigh: results.wrvuValue * 1.5, note: 'Overlaps with Quality' });
+    if (!isNursing && !isInpatient && d.revenueValueLow > 0) {
+      rows.push({ label: 'wRVU revenue impact', value: d.revenueValueLow, valueHigh: d.revenueValueHigh });
     }
-    if (isInpatient) {
-      const denialsReduction = (settingMetrics.denialsPer100_before ?? 0) - (settingMetrics.denialsPer100_after ?? 0);
-      if (denialsReduction > 0) {
-        const denialValue = denialsReduction * (adoptedEncounters / 100) * 2000;
-        rows.push({ label: 'Denial reduction', value: denialValue });
-      }
+    if (isInpatient && d.denialValue > 0) {
+      rows.push({ label: 'Denial reduction', value: d.denialValue });
     }
     return { name: 'Revenue', status: domainStatus.revenue, rows };
-  }, [results, isNursing, isInpatient, settingMetrics, adoptedEncounters, domainStatus.revenue]);
+  }, [d, isNursing, isInpatient, domainStatus.revenue]);
 
   const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
   const capacityDomain: DomainSection = useMemo(() => {
     const rows: DomainValueRow[] = [];
-    if (results.capacityValue > 0) {
-      rows.push({ label: `Additional ${isInpatient ? 'throughput' : isED ? 'patients seen' : 'visits'} value`, value: results.capacityValue });
+    if (d.capacityValue > 0) {
+      rows.push({ label: `Additional ${isInpatient ? 'throughput' : isED ? 'patients seen' : 'visits'} value`, value: d.capacityValue });
     }
     return {
       name: capacityLabel,
@@ -186,12 +177,10 @@ export default function MeasureAllocate({
       rows,
       preSignalNote: months < 6 ? 'Signal expected at month 6. Too early for capacity data.' : undefined,
     };
-  }, [results, isInpatient, isED, capacityLabel, domainStatus.capacity, months]);
+  }, [d, isInpatient, isED, capacityLabel, domainStatus.capacity, months]);
 
   const domains = [qualityDomain, workforceDomain, revenueDomain, capacityDomain];
-  const totalLow = domains.reduce((s, d) => s + d.rows.reduce((rs, r) => rs + r.value, 0), 0);
-  const totalHigh = domains.reduce((s, d) => s + d.rows.reduce((rs, r) => rs + (r.valueHigh ?? r.value), 0), 0);
-  const heroValue = formatSmartRange(totalLow, totalHigh);
+  const heroValue = formatSmartRange(confirmed.low, confirmed.high);
 
   return (
     <div className="min-h-screen bg-white">
@@ -232,8 +221,8 @@ export default function MeasureAllocate({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2">
             <h2 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-4">What the Math Shows</h2>
-            {domains.map((d, i) => (
-              <DomainValueCard key={d.name} domain={d} dataSource={state.dataSource} delay={0.15 + i * 0.07} />
+            {domains.map((dd, i) => (
+              <DomainValueCard key={dd.name} domain={dd} dataSource={state.dataSource} delay={0.15 + i * 0.07} />
             ))}
 
             <motion.div

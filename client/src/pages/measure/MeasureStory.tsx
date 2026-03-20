@@ -23,9 +23,9 @@ import { generateNarrative } from "@/lib/measureNarrative";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
+    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
   };
   const c = config[source] || config.estimate;
   return (
@@ -100,88 +100,16 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
   const narrative = useMemo(() => generateNarrative('summary', state), [state]);
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
 
-  const results = useMemo(() => {
-    const deployment = state.deployment;
-    const timeEfficiency = state.timeEfficiency;
-    const calibration = state.calibration;
-    const docQuality = state.documentationQuality;
-
-    const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
-    const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
-    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
-
-    let qualityValue = 0;
-    let qualityValueHigh = 0;
-    let workforceValue = 0;
-    let revenueValue = 0;
-    let revenueValueHigh = 0;
-    let capacityValue = 0;
-    let totalValueLow = 0;
-    let totalValueHigh = 0;
-
-    const efficiencyHours = totalHoursSaved * 0.5;
-    workforceValue = efficiencyHours * calibration.otHourlyRate;
-
-    const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
-    if (!isNursing && wrvuLift > 0) {
-      qualityValue = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.50 * annualFactor;
-      qualityValueHigh = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.75 * annualFactor;
-      revenueValue = qualityValue;
-      revenueValueHigh = qualityValueHigh;
-    }
-
-    if (isInpatient) {
-      const metrics = state.settingData?.inpatient || {};
-      const cmiDelta = Math.max(0, (metrics.cmi_after ?? 0) - (metrics.cmi_before ?? 0));
-      const cmiPointValue = metrics.vm_cmiPointValue ?? calibration.conversionFactor ?? 1500;
-      if (cmiDelta > 0) {
-        qualityValue += cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
-        qualityValueHigh += cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
-      }
-      const denialsDelta = Math.max(0, (metrics.denialsPer100_before ?? 0) - (metrics.denialsPer100_after ?? 0));
-      if (denialsDelta > 0) {
-        const dVal = (denialsDelta / 100) * adoptedEncounters * (metrics.vm_denialCostPerCase ?? 3200) * annualFactor;
-        revenueValue += dVal;
-        revenueValueHigh += dVal;
-      }
-    }
-
-    if (isED) {
-      const throughputHours = totalHoursSaved * 0.3;
-      const addlPatients = throughputHours * (60 / calibration.minutesPerVisit);
-      capacityValue = addlPatients * calibration.revenuePerVisit * annualFactor;
-    } else if (!isInpatient && !isNursing) {
-      const capHours = totalHoursSaved * 0.2;
-      const addlVisits = capHours * (60 / calibration.minutesPerVisit);
-      capacityValue = addlVisits * calibration.revenuePerVisit * annualFactor;
-    }
-
-    totalValueLow = qualityValue + workforceValue + revenueValue + capacityValue;
-    totalValueHigh = qualityValueHigh + workforceValue + revenueValueHigh + capacityValue;
-
-    const expansion = calculateExpansionResults(
-      state, totalValueLow, totalValueHigh, totalHoursSaved,
-      state.expansionTargets?.targetAdoption,
-      state.expansionTargets?.targetProviders
-    );
-
-    return {
-      totalHoursSaved,
-      qualityValue,
-      qualityValueHigh,
-      workforceValue,
-      revenueValue,
-      revenueValueHigh,
-      capacityValue,
-      totalValueLow,
-      totalValueHigh,
-      expansion,
-    };
-  }, [state, careSetting]);
+  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
+  const d = confirmed.domains;
+  const expansion = useMemo(() => calculateExpansionResults(
+    state, confirmed.low, confirmed.high, d.totalHoursSaved,
+    state.expansionTargets?.targetAdoption,
+    state.expansionTargets?.targetProviders
+  ), [state, confirmed]);
 
   const hoursPerProvider = state.deployment.providers > 0
-    ? Math.round(results.totalHoursSaved / state.deployment.providers)
+    ? Math.round(d.totalHoursSaved / state.deployment.providers)
     : 0;
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
@@ -219,7 +147,6 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     return `At ${months}+ months, Abridge value is embedded across the organization. Your data tells a strategic story \u2014 one that supports expansion, board-level reporting, and long-term investment framing.`;
   }, [context.phase, months, state.deployment.providers, isNursing, isInpatient, isED]);
 
-  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
   const typicalScenario = useMemo(() => {
     const defaults = getDefaultScenarios(state);
     const typicalInputs = state.scenarioOverrides?.typical ?? defaults.typical;
@@ -300,10 +227,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             </div>
 
             <div className="border-t border-white/10 pt-3 space-y-0">
-              <DomainRow name="Quality" status={domainStatus.quality} value={results.qualityValue} valueHigh={results.qualityValueHigh} dark />
-              <DomainRow name="Workforce" status={domainStatus.workforce} value={results.workforceValue} hoursNote={`${formatNumber(Math.round(results.totalHoursSaved * 0.5))} hrs`} dark />
-              <DomainRow name="Revenue" status={domainStatus.revenue} value={results.revenueValue} valueHigh={results.revenueValueHigh} dark />
-              <DomainRow name={capacityLabel} status={domainStatus.capacity} value={results.capacityValue} dark />
+              <DomainRow name="Quality" status={domainStatus.quality} value={d.qualityValueLow} valueHigh={d.qualityValueHigh} dark />
+              <DomainRow name="Workforce" status={domainStatus.workforce} value={d.workforceValue} hoursNote={`${formatNumber(Math.round(d.efficiencyHours))} hrs`} dark />
+              <DomainRow name="Revenue" status={domainStatus.revenue} value={d.revenueValueLow} valueHigh={d.revenueValueHigh} dark />
+              <DomainRow name={capacityLabel} status={domainStatus.capacity} value={d.capacityValue} dark />
             </div>
           </motion.div>
 
@@ -435,7 +362,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     {state.dataSource === 'analytics' ? 'Values sourced from EHR/analytics pull.' : state.dataSource === 'benchmark' ? 'Values sourced from Abridge analytics platform.' : 'Values are team estimates based on observation.'}
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
                   </p>
                 </div>
               </motion.div>

@@ -21,6 +21,7 @@ interface MeasureFlowProps {
 
 export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [phase, setPhase] = useState<MeasurePhase>('data');
+  const [presentMode, setPresentMode] = useState(false);
   const [state, setState] = useState<MeasureState>({
     ...DEFAULT_MEASURE_STATE,
     careSetting: 'outpatient',
@@ -50,6 +51,17 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
     }
   }, []);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'p' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        setPresentMode(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const updateState = useCallback((updates: Partial<MeasureState>) => {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
@@ -65,6 +77,8 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const navigate = useCallback((nextPhase: MeasurePhase) => {
     setPhase(nextPhase);
   }, []);
+
+  const mode = presentMode ? 'present' as const : 'build' as const;
 
   switch (phase) {
     case 'data':
@@ -85,6 +99,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
           onNext={() => navigate('scenarios')}
           onBack={() => navigate('data')}
           onHome={goHome}
+          mode={mode}
         />
       );
 

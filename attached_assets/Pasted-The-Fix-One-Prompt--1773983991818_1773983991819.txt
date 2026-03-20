@@ -1,0 +1,320 @@
+The Fix — One Prompt
+                                                                                                                                                                                                               
+  You are making targeted, specific improvements to the Measure path EBR tool
+  in /tmp/roi-calc-v16/The-ROI-Calculator/. Read the existing code before
+  changing anything. This is a polish + architecture pass, not a rewrite.                                                                                                                                      
+                                              
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 1: KILL THE BAD LABELS EVERYWHERE                                                                                                                                                                        
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In every file in client/src/pages/measure/ and                                                                                                                                                               
+  client/src/components/measure/ and client/src/lib/measureNarrative.ts:                                                                                                                                       
+                                                                                                                                                                                                               
+  Replace "Abridge-verified" → "Partner Platform"                                                                                                                                                              
+    (This means data comes from Abridge's own platform/analytics —                                                                                                                                             
+     not that Abridge verified it, which sounds like a guarantee)                                                                                                                                              
+                                                                                                                                                                                                               
+  Replace the DataSourceBadge label config everywhere it appears:                                                                                                                                              
+    analytics: "Analytics Pull"    (unchanged)                                                                                                                                                                 
+    benchmark: "Partner Platform"  (was "Abridge-verified")                                                                                                                                                    
+    estimate:  "Team Estimate"     (was "Estimated")                                                                                                                                                           
+                                                                                                                                                                                                               
+  In NarrativePanel.tsx (client/src/components/measure/NarrativePanel.tsx):                                                                                                                                    
+    In build mode, rename the toggle label from "Talking Points"                                                                                                                                               
+    to "Presenter Notes" — and style the label as a subtle muted gray                                                                                                                                          
+    text link (not a button), with a small notepad icon (use Lucide                                                                                                                                            
+    `NotebookPen` icon). It should look like an optional aside,
+    not a feature.                                                                                                                                                                                             
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 2: UNIFY THE MATH — ONE CALCULATION SOURCE                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  The confirmed value ($X–$Y) must be computed ONCE and used everywhere.
+  Currently MeasureTransformation uses calculateConfirmedValue() but                                                                                                                                           
+  MeasureStory recomputes it inline. Fix this:              
+                                                                                                                                                                                                               
+  In MeasureStory.tsx: remove the inline results useMemo calculation block
+  entirely. Import calculateConfirmedValue from measureCalculator and use                                                                                                                                      
+  it for all confirmed value display. Import calculateExpansionResults as                                                                                                                                      
+  before for the deepen/expand section only.                                                                                                                                                                   
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx: the domain breakdown rows must sum to the same                                                                                                                                       
+  total as calculateConfirmedValue(). Audit the domain sections:                                                                                                                                               
+                                                                                                                                                                                                               
+    The wRVU value appears in BOTH Quality and Revenue domain rows with                                                                                                                                        
+    a note "Overlaps with Quality." This is confusing and misleading.                                                                                                                                          
+    Fix:                                                                                                                                                                                                       
+    - Quality domain shows wRVU lift as a METRIC (the +X wRVU delta)                                                                                                                                           
+      with NO dollar value in the Quality row                                                                                                                                                                  
+    - Revenue domain shows the dollarized wRVU value ONCE                                                                                                                                                      
+    - Remove the "Overlaps" note entirely — the overlap is resolved                                                                                                                                            
+      by only dollarizing it in Revenue                                                                                                                                                                        
+                                                                                                                                                                                                               
+    The domain total cards should sum to calculateConfirmedValue().low                                                                                                                                         
+    and .high. If they don't, add a reconciliation note: "Domain totals                                                                                                                                        
+    reflect primary value driver allocation. See methodology for detail."                                                                                                                                      
+    But fix the math first so they do sum correctly.                                                                                                                                                           
+                                                                                                                                                                                                               
+  In measureCalculator.ts: ensure calculateConfirmedValue() and                                                                                                                                                
+  calculateMeasureResults() either return identical total numbers OR                                                                                                                                           
+  remove calculateMeasureResults() entirely and have all screens use                                                                                                                                           
+  calculateConfirmedValue(). Do not maintain two separate systems.                                                                                                                                             
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 3: BUILD TO THE NUMBER — DON'T LEAD WITH IT                                                                                                                                                              
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  MeasureTransformation.tsx currently shows the dark hero tile                                                                                                                                                 
+  ($X–$Y confirmed value) at the TOP of the screen — before the domain                                                                                                                                         
+  cards. This is the wrong order. The number has no weight if it appears                                                                                                                                       
+  before the evidence.                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Restructure MeasureTransformation.tsx in this order:                                                                                                                                                         
+                                                                                                                                                                                                               
+  1. EngagementContextBar (phase + maturity + source — keep as-is)                                                                                                                                             
+                                                                                                                                                                                                               
+  2. NarrativePanel (keep — but move below the section heading)
+                                                                                                                                                                                                               
+  3. Page heading: "What Your Data Shows"                   
+     Subhead: "Comparing concurrent encounters — Abridge-documented                                                                                                                                            
+     vs. non-Abridge — across your [N]-month deployment."   
+                                                                                                                                                                                                               
+  4. THE FOUR DOMAIN CARDS (moved up — this is the evidence first)
+     Keep the existing DomainSignalCard component and 2x2 grid.                                                                                                                                                
+     Each card shows the before/after metrics with the PointComparison                                                                                                                                         
+     visual. This is the "here's what changed" section.                                                                                                                                                        
+                                                                                                                                                                                                               
+  5. HOW WE CALCULATED THIS (the formula block — keep as-is)                                                                                                                                                   
+                                                                                                                                                                                                               
+  6. THE CONFIRMED VALUE HERO TILE (moved to bottom — the conclusion)                                                                                                                                          
+     Keep the dark #1A1A1A tile. Change the eyebrow text from                                                                                                                                                  
+     "Confirmed Value – X Months" to "Based on the above, here's                                                                                                                                               
+     the annual value" — making it explicitly the conclusion of                                                                                                                                                
+     the evidence above, not the opening claim.             
+                                                                                                                                                                                                               
+     Add one sentence below the range: "This is the math on what                                                                                                                                               
+     you've entered. Scroll up to see how each domain contributes."                                                                                                                                            
+                                                                                                                                                                                                               
+  7. ADOPTION HEADROOM card (keep — move below the hero tile)                                                                                                                                                  
+                                                                                                                                                                                                               
+  8. Continue button (keep)                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  This sequence means: context → data → math → conclusion.                                                                                                                                                     
+  Not: conclusion → data → math.                                                                                                                                                                               
+                                                            
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 4: ABRIDGE NATIVE METRICS — THE SQL DISTINCTION       
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Add a new section to MeasureDataEntry.tsx ABOVE the metrics entry form,                                                                                                                                      
+  called "What Abridge Tracks" (not a form — a display section).                                                                                                                                               
+                                                                                                                                                                                                               
+  This section shows a list of metrics that Abridge measures natively                                                                                                                                          
+  from its own platform. These are inputs the partner does NOT need to                                                                                                                                         
+  provide — Abridge already has them.                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Create a static constant in measureCareSettings.ts:                                                                                                                                                          
+                                                                                                                                                                                                               
+    export const ABRIDGE_NATIVE_METRICS: Abridge NativeMetric[] = [                                                                                                                                            
+      {                                                                                                                                                                                                        
+        id: 'mru',                                                                                                                                                                                             
+        label: 'Monthly Recurring Utilization (MRU)',                                                                                                                                                          
+        description: 'Encounters documented with Abridge per month',
+        unit: 'encounters/month',                                                                                                                                                                              
+        domain: 'workforce',                                                                                                                                                                                   
+      },                                  
+      {                                                                                                                                                                                                        
+        id: 'adoption_rate',                                                                                                                                                                                   
+        label: 'Provider Adoption Rate',                                                                                                                                                                       
+        description: '% of eligible providers actively using Abridge',                                                                                                                                         
+        unit: '%',                                          
+        domain: 'workforce',              
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        id: 'note_quality',                                                                                                                                                                                    
+        label: 'Note Quality Score',                                                                                                                                                                           
+        description: 'AI-assessed documentation quality (star rating)',
+        unit: '/ 5.0',                                                                                                                                                                                         
+        domain: 'quality',                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        id: 'same_day_closure',                             
+        label: 'Same-Day Note Closure Rate',                                                                                                                                                                   
+        description: '% of Abridge-documented notes closed same day',
+        unit: '%',                            
+        domain: 'quality',                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        id: 'user_retention',                                                                                                                                                                                  
+        label: 'Abridge User Retention',                                                                                                                                                                       
+        description: '% of providers who continue using Abridge month-over-month',
+        unit: '%',                            
+        domain: 'workforce',              
+      },                                                                                                                                                                                                       
+    ]                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Add these fields to MeasureState under a new key:                                                                                                                                                            
+    abridgeNativeData: Partial<Record<string, number>>      
+                                                                                                                                                                                                               
+  In MeasureDataEntry.tsx, render the "What Abridge Tracks" section                                                                                                                                            
+  as a card with a slightly different visual treatment — cream background
+  (#F5F0EB), no form inputs, just display fields:                                                                                                                                                              
+                                                                                                                                                                                                               
+    ┌────────────────────────────────────────────────────────────┐                                                                                                                                             
+    │  FROM YOUR ABRIDGE DEPLOYMENT                              │                                                                                                                                             
+    │  These come directly from Abridge platform data.           │                                                                                                                                             
+    │                                                            │                                                                                                                                             
+    │  MRU  [____] enc/month  ← editable number input           │                                                                                                                                              
+    │  Adoption Rate  [___]%                                     │                                                                                                                                             
+    │  Note Quality  [___] / 5.0                                 │                                                                                                                                             
+    │  Same-Day Closure  [___]%                                  │
+    │  User Retention  [___]%                                    │                                                                                                                                             
+    │                                                            │
+    │  [ℹ] Pull these from your Abridge analytics dashboard      │                                                                                                                                             
+    │      or ask your Abridge contact.                          │
+    └────────────────────────────────────────────────────────────┘                                                                                                                                             
+                                                            
+  Style: cream card, orange left border, inputs are compact inline                                                                                                                                             
+  fields (not full-width form inputs). The section heading uses the                                                                                                                                            
+  same "FROM YOUR ABRIDGE DEPLOYMENT" label style as other section                                                                                                                                             
+  headers in the form.                                                                                                                                                                                         
+                                                            
+  Below this section, the existing partner-provided metrics section                                                                                                                                            
+  is labeled "FROM YOUR EHR / BILLING SYSTEM" to make the distinction                                                                                                                                          
+  explicit.                                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  These native metrics flow into:                                                                                                                                                                              
+    - MeasureTransformation: show MRU and adoption in a small stats row                                                                                                                                        
+      above the domain cards ("Your Abridge Footprint")     
+    - EngagementContextBar: show MRU if entered alongside the other pills                                                                                                                                      
+    - MeasureStory: include in the PDF under "Deployment Metrics"
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 5: MONTH-OVER-MONTH AS PRIMARY WHEN DATA EXISTS                                                                                                                                                          
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In MeasureDataEntry.tsx, make the monthly data entry more prominent.                                                                                                                                         
+  Currently it's buried as an optional section. Move it to be a                                                                                                                                                
+  first-class option:                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  After the main metrics entry for each care setting, add a section:                                                                                                                                           
+  "Trend Data (Optional but powerful)"                                                                                                                                                                         
+  with this framing copy:                                   
+  "If you have monthly data, enter it here. It turns your before/after                                                                                                                                         
+  comparison into a trajectory story — which lands harder in the room."
+                                                                                                                                                                                                               
+  [+ Add monthly data points] button that reveals a compact month-by-month                                                                                                                                     
+  entry grid (same as previous prompt spec).                                                                                                                                                                   
+                                                                                                                                                                                                               
+  In MeasureTransformation.tsx:                                                                                                                                                                                
+                                                                                                                                                                                                               
+  When monthlyData exists for the active setting (any entries present),                                                                                                                                        
+  add a tab selector above the domain cards:                                                                                                                                                                   
+                                              
+    [ Point-in-Time ] [ Trend Over Time ]   ← default to Trend if data exists                                                                                                                                  
+                                                            
+  POINT-IN-TIME tab: the existing domain cards grid (unchanged)                                                                                                                                                
+                                                                                                                                                                                                               
+  TREND OVER TIME tab: replace the domain cards with a single                                                                                                                                                  
+  Recharts LineChart showing the selected metric over time.                                                                                                                                                    
+                                                            
+    Metric selector: small pill tabs above the chart                                                                                                                                                           
+    For outpatient: Time in Notes | wRVU | E/M Level | Same-Day Closure
+                                                                                                                                                                                                               
+    Chart:                                                                                                                                                                                                     
+    - Orange line (#EA2C00) for "With Abridge" data
+    - Dashed gray reference line for the "Non-Abridge" baseline value                                                                                                                                          
+    - Phase markers as thin vertical dashed lines at months 3, 6, 18
+      with small label chips: "Phase 2 →" and "Phase 3 →"                                                                                                                                                      
+    - Clean white background, minimal grid                                                                                                                                                                     
+                                                                                                                                                                                                               
+    Below the chart: one computed insight line (only when data present):                                                                                                                                       
+    "[Metric] improved [X]% between Month 1 and Month [N].                                                                                                                                                     
+     Steepest gain: Month [A] to Month [B]."                                                                                                                                                                   
+    Style: small, muted, #666666                                                                                                                                                                               
+                                                                                                                                                                                                               
+  When NO monthly data exists:                                                                                                                                                                                 
+    Do not show the tab selector at all.                                                                                                                                                                       
+    Show only the point-in-time domain cards.                                                                                                                                                                  
+    Below the domain cards add a subtle prompt:                                                                                                                                                                
+    "← Add monthly data in Step 1 to see your trend over time."                                                                                                                                                
+    Style: 11px, #AAAAAA, italic, with a small TrendingUp icon                                                                                                                                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 6: REMOVE THE CORNY "OPENING TITLE SLIDE" CONCEPT                                                                                                                                                        
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  The previous prompt suggested a full-screen title slide in present mode.                                                                                                                                     
+  This is unnecessary. The EngagementContextBar already handles this.                                                                                                                                          
+                                                                                                                                                                                                               
+  Instead, when present mode is active (mode === 'present') and the user                                                                                                                                       
+  is on MeasureTransformation (screen 2 — first visible screen in present                                                                                                                                      
+  mode), make the page heading area more substantial:                                                                                                                                                          
+                                                                                                                                                                                                               
+    Replace the current h1 + subhead with:    
+                                                                                                                                                                                                               
+    Organization name: large, Abridge font, #1A1A1A                                                                                                                                                            
+      Style: 28pt-equivalent, marginBottom 4                                                                                                                                                                   
+                                                                                                                                                                                                               
+    Partnership line: "[N] months with Abridge · [Care Setting]"                                                                                                                                               
+      Style: 14px, #888888, marginBottom 24                 
+                                                                                                                                                                                                               
+    Then the EngagementContextBar (phase + maturity + source)                                                                                                                                                  
+                                                                                                                                                                                                               
+    Then the NarrativePanel                                                                                                                                                                                    
+                                                            
+    Then the domain cards                                                                                                                                                                                      
+                                                                                                                                                                                                               
+    This makes the first thing you see in the room the organization's
+    name — not a form or a number. That's the right opening.                                                                                                                                                   
+                                                            
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  FIX 7: THE "ABRIDGE FOOTPRINT" STATS ROW
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In MeasureTransformation.tsx, add a compact stats row immediately                                                                                                                                            
+  below the EngagementContextBar (above the NarrativePanel):                                                                                                                                                   
+                                                                                                                                                                                                               
+    ┌────────────────────────────────────────────────────────┐                                                                                                                                                 
+    │  YOUR ABRIDGE FOOTPRINT                                │                                                                                                                                                 
+    │                                                        │                                                                                                                                                 
+    │  [N] providers   [MRU] enc/mo   [X]% adoption         │                                                                                                                                                  
+    │  [Y] / 5.0 quality   [Z]% retention                   │
+    └────────────────────────────────────────────────────────┘                                                                                                                                                 
+                                                            
+  Only show fields where abridgeNativeData has a value entered.                                                                                                                                                
+  If no native data is entered, do not show this row at all.                                                                                                                                                   
+                                                                                                                                                                                                               
+  Style: clean row of stat chips, cream background (#F5F0EB),                                                                                                                                                  
+  borderRadius 8, padding 12. Each stat: small gray label + bold value.                                                                                                                                        
+  No border. Minimal visual weight — this is context, not the story.                                                                                                                                           
+                                                                                                                                                                                                               
+  These numbers come from abridgeNativeData in state, which the CSM                                                                                                                                            
+  entered in the "From Your Abridge Deployment" section in Step 1.                                                                                                                                             
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  WHAT NOT TO CHANGE                                                                                                                                                                                           
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                            
+  - Do not change MeasureScenarios.tsx — it's working correctly                                                                                                                                                
+  - Do not change MeasureOpportunity.tsx — the deepen/expand model is strong                                                                                                                                   
+  - Do not change the EngagementContextBar component structure                                                                                                                                                 
+  - Do not change the 6-phase flow order in MeasureFlow.tsx                                                                                                                                                    
+  - Do not add new screens or remove existing ones                                                                                                                                                             
+  - Do not change any Abridge brand colors or font usage                                                                                                                                                       
+  - Do not change PDF export functionality                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  The six fixes in order of impact:                                                                                                                                                                            
+                                                            
+  1. Unify the math — one calculation, one number, everywhere                                                                                                                                                  
+  2. Build to the number — evidence first, conclusion last  
+  3. Abridge native metrics — the "what we already know" section that makes Abridge feel like a data partner, not a form                                                                                       
+  4. Kill the bad labels — "Partner Platform" instead of "Abridge-verified", "Presenter Notes" instead of "Talking Points"
+  5. Month-over-month as primary — when data exists, show the trajectory                                                                                                                                       
+  6. Present mode opening — org name first, not a number                                                                                                                                                       
+                                                                                                                                                                                                               
+  The native metrics piece is the one that'll feel most different in the room. When a CSM opens the tool and the first thing it shows is "here's what we already know about your deployment from Abridge" —    
+  MRU, adoption, quality scores — it signals that Abridge is a partner with data, not a vendor with a calculator.      

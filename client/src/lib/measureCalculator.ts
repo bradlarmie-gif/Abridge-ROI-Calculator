@@ -91,6 +91,7 @@ export interface MeasureState {
     with: EMDistribution;
   };
   settingData: Partial<Record<MeasureCareSetting, Record<string, number>>>;
+  abridgeNativeData: Partial<Record<string, number>>;
   customMetrics: CustomMetric[];
   expansionTargets?: {
     targetAdoption: number;
@@ -173,6 +174,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     },
   },
   settingData: {},
+  abridgeNativeData: {},
   customMetrics: [],
 };
 
@@ -605,6 +607,20 @@ export function calculateScenario(
   };
 }
 
+export interface ConfirmedDomainValues {
+  workforceValue: number;
+  qualityValueLow: number;
+  qualityValueHigh: number;
+  revenueValueLow: number;
+  revenueValueHigh: number;
+  denialValue: number;
+  capacityValue: number;
+  totalHoursSaved: number;
+  efficiencyHours: number;
+  qualityHoursPerWeek: number;
+  wrvuDelta: number;
+}
+
 export interface ConfirmedValue {
   low: number;
   high: number;
@@ -612,6 +628,7 @@ export interface ConfirmedValue {
   perProviderHigh: number;
   hoursReclaimed: number;
   adoptedEncounters: number;
+  domains: ConfirmedDomainValues;
 }
 
 export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
@@ -621,47 +638,53 @@ export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
   const dep = state.deployment;
   const months = getMonthsFromGoLive(state.goLiveDate, dep.monthsOnAbridge);
   const annualFactor = 12 / Math.max(months, 1);
+  const careSetting = state.careSetting || 'outpatient';
+  const settingData = state.settingData?.[careSetting] || {};
 
   const timeSavedPerNote = Math.max(0, te.timeInNotesWithout - te.timeInNotesWith);
   const adoptedEncounters = Math.round(dep.totalEncounters * (dep.utilizationRate / 100));
   const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
 
-  const efficiencyValue = totalHoursSaved * 0.5 * cal.otHourlyRate * annualFactor;
+  const efficiencyHours = totalHoursSaved * 0.5;
+  const workforceValue = efficiencyHours * cal.otHourlyRate * annualFactor;
+
+  const qualityHours = totalHoursSaved * 0.3;
+  const qualityHoursPerWeek = dep.providers > 0 ? qualityHours / dep.providers / Math.max(dep.monthsOnAbridge, 1) / 4.33 : 0;
 
   const wrvuLift = dq.wrvuWith - dq.wrvuWithout;
-  const wrvuValueLow = wrvuLift > 0 ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.50 * annualFactor : 0;
-  const wrvuValueHigh = wrvuLift > 0 ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.75 * annualFactor : 0;
+  const isInpatient = careSetting === 'inpatient';
+  const useGenericWrvu = !isInpatient && wrvuLift > 0;
+  const wrvuValueLow = useGenericWrvu ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.50 * annualFactor : 0;
+  const wrvuValueHigh = useGenericWrvu ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.75 * annualFactor : 0;
 
-  let settingValueLow = 0;
-  let settingValueHigh = 0;
-  const careSetting = state.careSetting || 'outpatient';
-  const settingData = state.settingData?.[careSetting] || {};
+  let qualityValueLow = 0;
+  let qualityValueHigh = 0;
+  let revenueValueLow = wrvuValueLow;
+  let revenueValueHigh = wrvuValueHigh;
+  let capacityValue = 0;
+  let denialValue = 0;
 
-  if (careSetting === 'inpatient') {
+  if (isInpatient) {
     const cmiDelta = Math.max(0, (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0));
     const cmiPointValue = settingData.vm_cmiPointValue ?? cal.conversionFactor ?? 1500;
-    settingValueLow += cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
-    settingValueHigh += cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
+    qualityValueLow += cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
+    qualityValueHigh += cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
     const denialsDelta = Math.max(0, (settingData.denialsPer100_before ?? 0) - (settingData.denialsPer100_after ?? 0));
-    const denialVal = (denialsDelta / 100) * adoptedEncounters * (settingData.vm_denialCostPerCase ?? 3200) * annualFactor;
-    settingValueLow += denialVal;
-    settingValueHigh += denialVal;
+    denialValue = (denialsDelta / 100) * adoptedEncounters * (settingData.vm_denialCostPerCase ?? 3200) * annualFactor;
+    revenueValueLow += denialValue;
+    revenueValueHigh += denialValue;
   } else if (careSetting === 'ed') {
     const throughputHours = totalHoursSaved * 0.3;
     const addlPatients = throughputHours * (60 / cal.minutesPerVisit);
-    const tv = addlPatients * cal.revenuePerVisit * annualFactor;
-    settingValueLow += tv;
-    settingValueHigh += tv;
+    capacityValue = addlPatients * cal.revenuePerVisit * annualFactor;
   } else if (careSetting !== 'nursing') {
     const capHours = totalHoursSaved * 0.2;
     const addlVisits = capHours * (60 / cal.minutesPerVisit);
-    const cv = addlVisits * cal.revenuePerVisit * annualFactor;
-    settingValueLow += cv;
-    settingValueHigh += cv;
+    capacityValue = addlVisits * cal.revenuePerVisit * annualFactor;
   }
 
-  const low = efficiencyValue + wrvuValueLow + settingValueLow;
-  const high = efficiencyValue + wrvuValueHigh + settingValueHigh;
+  const low = workforceValue + qualityValueLow + revenueValueLow + capacityValue;
+  const high = workforceValue + qualityValueHigh + revenueValueHigh + capacityValue;
 
   return {
     low,
@@ -670,6 +693,19 @@ export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
     perProviderHigh: dep.providers > 0 ? high / dep.providers : 0,
     hoursReclaimed: Math.round(totalHoursSaved),
     adoptedEncounters,
+    domains: {
+      workforceValue,
+      qualityValueLow,
+      qualityValueHigh,
+      revenueValueLow,
+      revenueValueHigh,
+      denialValue,
+      capacityValue,
+      totalHoursSaved,
+      efficiencyHours,
+      qualityHoursPerWeek,
+      wrvuDelta: wrvuLift,
+    },
   };
 }
 

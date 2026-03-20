@@ -37,6 +37,9 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (parsed.goLiveDate === undefined) {
         parsed.goLiveDate = null;
       }
+      if (!parsed.abridgeNativeData) {
+        parsed.abridgeNativeData = {};
+      }
       return parsed as MeasureState;
     }
     return null;

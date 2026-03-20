@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, ChevronDown } from 'lucide-react';
+import { NotebookPen, ChevronDown } from 'lucide-react';
 import { type NarrativeOutput } from '@/lib/measureNarrative';
 
 interface NarrativePanelProps {
@@ -37,17 +37,14 @@ export default function NarrativePanel({ narrative, mode = 'build' }: NarrativeP
     <div className="mb-6" data-testid="narrative-panel-build">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 w-full text-left group"
+        className="inline-flex items-center gap-1.5 text-left group"
         data-testid="narrative-toggle"
       >
-        <MessageSquare className="w-4 h-4 text-[#999999] group-hover:text-[#EA2C00] transition-colors" />
-        <span className="text-sm font-medium text-[#666666] group-hover:text-[#1A1A1A] transition-colors">
-          Talking Points
+        <NotebookPen className="w-3.5 h-3.5 text-[#BBBBBB] group-hover:text-[#999999] transition-colors" />
+        <span className="text-[12px] text-[#BBBBBB] group-hover:text-[#999999] transition-colors">
+          Presenter Notes
         </span>
-        <span className="text-xs text-[#AAAAAA] ml-1">
-          What to say on this screen {"\u2014"} adapts to your data.
-        </span>
-        <ChevronDown className={`w-3.5 h-3.5 text-[#999999] ml-auto transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 text-[#CCCCCC] transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>

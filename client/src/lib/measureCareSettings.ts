@@ -206,6 +206,21 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
   },
 };
 
+export interface AbridgeNativeMetricDef {
+  key: string;
+  label: string;
+  suffix?: string;
+  description?: string;
+}
+
+export const ABRIDGE_NATIVE_METRICS: AbridgeNativeMetricDef[] = [
+  { key: 'notesGenerated', label: 'Notes Generated', description: 'Total AI-generated notes during deployment' },
+  { key: 'avgNoteAcceptanceRate', label: 'Note Acceptance Rate', suffix: '%', description: 'Percentage of generated notes accepted by providers' },
+  { key: 'avgTimeSavedPerNote', label: 'Avg Time Saved / Note', suffix: 'min', description: 'Average minutes saved per accepted note' },
+  { key: 'activeProviders', label: 'Active Providers', description: 'Providers who used Abridge at least once this period' },
+  { key: 'encountersCaptured', label: 'Encounters Captured', description: 'Total encounters processed by Abridge' },
+];
+
 export const CARE_SETTING_ORDER: MeasureCareSetting[] = [
   "outpatient",
   "ed",
