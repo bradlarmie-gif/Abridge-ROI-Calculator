@@ -47,15 +47,6 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   const settingData = state.settingData[setting] || {};
   const rows: MetricRowData[] = [];
 
-  const domainMap: Record<string, string> = {
-    timeEfficiency: 'Workforce',
-    docQuality: 'Quality',
-    qualityRetention: 'Quality',
-  };
-
-  const capacityKeys = ['sameDayClosure', 'lwbsRate', 'doorToDoc'];
-  const revenueKeys = ['wrvuPerEncounter', 'cmi', 'denialsPer100', 'ccMccCapture', 'emLevel', 'admissionCapture'];
-
   const enabledMap = state.enabledMetrics?.[setting] || {};
 
   for (const section of config.metricSections) {
@@ -67,12 +58,15 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
       const after = settingData[`${metric.key}_after`] ?? 0;
       const delta = after - before;
 
-      let domain = domainMap[section.key] || 'Quality';
-      if (capacityKeys.includes(metric.key)) {
-        domain = setting === 'inpatient' ? 'Patient Flow' : setting === 'ed' ? 'Throughput' : 'Capacity';
-      } else if (revenueKeys.includes(metric.key)) {
-        domain = 'Revenue';
-      }
+      const domainKeyMap: Record<string, string> = {
+        workforce: 'Workforce',
+        revenue: 'Revenue',
+        quality: 'Quality',
+        capacity: 'Capacity',
+        throughput: 'Throughput',
+        patientFlow: 'Patient Flow',
+      };
+      const domain = domainKeyMap[section.key] || section.label;
 
       let status: 'active' | 'baseline' | 'not-measuring';
       if (!isEnabled) {

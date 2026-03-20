@@ -38,14 +38,37 @@ export interface AllocationField {
   defaultValue: number;
 }
 
+export type DomainKey = 'workforce' | 'revenue' | 'quality' | 'capacity' | 'throughput' | 'patientFlow';
+
 export interface CareSettingConfig {
   key: MeasureCareSetting;
   label: string;
   shortLabel: string;
+  fourthDomainKey: DomainKey;
+  fourthDomainLabel: string;
   deploymentFields?: DeploymentField[];
   metricSections: MetricSection[];
   valueModel: ValueModelField[];
   allocationFields: AllocationField[];
+}
+
+export const DOMAIN_LABELS: Record<DomainKey, string> = {
+  workforce: 'Workforce',
+  revenue: 'Revenue',
+  quality: 'Quality',
+  capacity: 'Capacity',
+  throughput: 'Throughput',
+  patientFlow: 'Patient Flow',
+};
+
+export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey; label: string }[] {
+  const config = CARE_SETTING_CONFIGS[setting];
+  return [
+    { key: 'workforce', label: 'Workforce' },
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'quality', label: 'Quality' },
+    { key: config.fourthDomainKey, label: config.fourthDomainLabel },
+  ];
 }
 
 export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig> = {
@@ -53,23 +76,36 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     key: "outpatient",
     label: "Outpatient",
     shortLabel: "Outpatient",
+    fourthDomainKey: "capacity",
+    fourthDomainLabel: "Capacity",
     metricSections: [
       {
-        key: "timeEfficiency",
-        label: "Time & Efficiency",
+        key: "workforce",
+        label: "Workforce",
         metrics: [
           { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
-          { key: "sameDayClosure", label: "Same-Day Closure (%)", hasBeforeAfter: true },
           { key: "daysToClose", label: "Days to Close", hasBeforeAfter: true, step: 0.1, optional: true },
           { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
       {
-        key: "docQuality",
-        label: "Documentation Quality",
+        key: "revenue",
+        label: "Revenue",
         metrics: [
           { key: "wrvuPerEncounter", label: "wRVU per Encounter", hasBeforeAfter: true, step: 0.01 },
           { key: "emLevel", label: "E/M Level", hasBeforeAfter: true, optional: true, step: 0.1 },
+        ],
+      },
+      {
+        key: "quality",
+        label: "Quality",
+        metrics: [],
+      },
+      {
+        key: "capacity",
+        label: "Capacity",
+        metrics: [
+          { key: "sameDayClosure", label: "Same-Day Closure (%)", hasBeforeAfter: true },
         ],
       },
     ],
@@ -90,23 +126,36 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     key: "ed",
     label: "Emergency Department",
     shortLabel: "Emergency",
+    fourthDomainKey: "throughput",
+    fourthDomainLabel: "Throughput",
     metricSections: [
       {
-        key: "timeEfficiency",
-        label: "Time & Efficiency",
+        key: "workforce",
+        label: "Workforce",
         metrics: [
           { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
-          { key: "doorToDoc", label: "Door-to-Doc (min)", hasBeforeAfter: true },
-          { key: "lwbsRate", label: "LWBS Rate (%)", hasBeforeAfter: true, step: 0.1 },
           { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
       {
-        key: "docQuality",
-        label: "Documentation Quality",
+        key: "revenue",
+        label: "Revenue",
         metrics: [
           { key: "emLevel", label: "E/M Level", hasBeforeAfter: true, step: 0.1 },
           { key: "admissionCapture", label: "Admission Capture (%)", hasBeforeAfter: true, step: 0.1 },
+        ],
+      },
+      {
+        key: "quality",
+        label: "Quality",
+        metrics: [],
+      },
+      {
+        key: "throughput",
+        label: "Throughput",
+        metrics: [
+          { key: "doorToDoc", label: "Door-to-Doc (min)", hasBeforeAfter: true },
+          { key: "lwbsRate", label: "LWBS Rate (%)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
     ],
@@ -126,25 +175,38 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     key: "inpatient",
     label: "Inpatient",
     shortLabel: "Inpatient",
+    fourthDomainKey: "patientFlow",
+    fourthDomainLabel: "Patient Flow",
     metricSections: [
       {
-        key: "timeEfficiency",
-        label: "Time & Efficiency",
+        key: "workforce",
+        label: "Workforce",
         metrics: [
           { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
-          { key: "sameDayClosure", label: "Same-Day Completion (%)", hasBeforeAfter: true },
           { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
       {
-        key: "docQuality",
-        label: "Documentation & Coding",
-        description: "These metrics drive the majority of inpatient value.",
+        key: "revenue",
+        label: "Revenue",
         metrics: [
           { key: "cmi", label: "CMI", hasBeforeAfter: true, step: 0.01 },
           { key: "ccMccCapture", label: "CC/MCC Capture Rate (%)", hasBeforeAfter: true, step: 0.1 },
           { key: "denialsPer100", label: "Denials per 100 Claims", hasBeforeAfter: true, step: 0.1 },
+        ],
+      },
+      {
+        key: "quality",
+        label: "Quality",
+        metrics: [
           { key: "cdiQueriesPer100", label: "CDI Queries per 100 Cases", hasBeforeAfter: true, step: 1 },
+        ],
+      },
+      {
+        key: "patientFlow",
+        label: "Patient Flow",
+        metrics: [
+          { key: "sameDayClosure", label: "Same-Day Completion (%)", hasBeforeAfter: true },
         ],
       },
     ],
@@ -166,6 +228,8 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     key: "nursing",
     label: "Nursing",
     shortLabel: "Nursing",
+    fourthDomainKey: "patientFlow",
+    fourthDomainLabel: "Patient Flow",
     deploymentFields: [
       { key: "staffedBeds", label: "Staffed Beds", required: true },
       { key: "nurseFTEs", label: "Nurse FTEs", required: true },
@@ -173,23 +237,33 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     ],
     metricSections: [
       {
-        key: "timeEfficiency",
-        label: "Time & Efficiency",
+        key: "workforce",
+        label: "Workforce",
         metrics: [
           { key: "chartingTime", label: "Time in Charting (min/shift)", hasBeforeAfter: true },
           { key: "overtimeHours", label: "Overtime Hours/Week", hasBeforeAfter: true, step: 0.1 },
           { key: "afterShiftCharting", label: "After-Shift Charting (min)", hasBeforeAfter: true },
+          { key: "turnoverRate", label: "Turnover Rate (%)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
       {
-        key: "qualityRetention",
-        label: "Quality & Retention",
+        key: "revenue",
+        label: "Revenue",
+        metrics: [],
+      },
+      {
+        key: "quality",
+        label: "Quality",
         metrics: [
-          { key: "turnoverRate", label: "Turnover Rate (%)", hasBeforeAfter: true, step: 0.1 },
           { key: "fallsRate", label: "Falls Rate (per 1,000)", hasBeforeAfter: true, step: 0.1 },
           { key: "hapiRate", label: "HAPI Rate (per 1,000)", hasBeforeAfter: true, step: 0.1 },
           { key: "nurseSatisfaction", label: "Nurse Satisfaction (%)", hasBeforeAfter: true },
         ],
+      },
+      {
+        key: "patientFlow",
+        label: "Patient Flow",
+        metrics: [],
       },
     ],
     valueModel: [

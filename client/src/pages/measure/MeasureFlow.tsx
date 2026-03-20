@@ -5,17 +5,17 @@ import {
   DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
 import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
-import { getDefaultOutpatientMetrics, getDefaultMetrics } from "@/lib/measureCareSettings";
+import { getDefaultOutpatientMetrics, getDefaultMetrics, syncSettingToState } from "@/lib/measureCareSettings";
 import MeasureDataEntry from "./MeasureDataEntry";
-import MeasureInventory from "./MeasureInventory";
-import MeasureTransformation from "./MeasureTransformation";
+import MeasureMetricSelection from "./MeasureMetricSelection";
+import MeasureJourney from "./MeasureJourney";
 import MeasureStage from "./MeasureStage";
 import MeasureScenarios from "./MeasureScenarios";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
 
-type MeasurePhase = 'data' | 'inventory' | 'change' | 'stage' | 'scenarios' | 'value' | 'opportunity' | 'story';
+type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'scenarios' | 'value' | 'opportunity' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -48,7 +48,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
     const urlState = getStateFromCurrentUrl();
     if (urlState) {
       setState(urlState);
-      setPhase('inventory');
+      setPhase('journey');
       clearUrlState();
     }
   }, []);
@@ -66,6 +66,22 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
 
   const updateState = useCallback((updates: Partial<MeasureState>) => {
     setState(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const applySettingSync = useCallback(() => {
+    setState(prev => {
+      const setting = prev.careSetting || 'outpatient';
+      const metrics = prev.settingData[setting];
+      if (!metrics) return prev;
+      const synced = syncSettingToState(setting, metrics);
+      return {
+        ...prev,
+        timeEfficiency: { ...prev.timeEfficiency, ...synced.timeEfficiency },
+        documentationQuality: { ...prev.documentationQuality, ...synced.documentationQuality },
+        calibration: { ...prev.calibration, ...synced.calibration },
+        allocation: { ...prev.allocation, ...synced.allocation },
+      };
+    });
   }, []);
 
   const goHome = useCallback(() => {
@@ -88,28 +104,29 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureDataEntry
           state={state}
           updateState={updateState}
-          onNext={() => navigate('inventory')}
+          onNext={() => { applySettingSync(); navigate('metricSelection'); }}
           onBack={goHome}
           onHome={goHome}
         />
       );
 
-    case 'inventory':
+    case 'metricSelection':
       return (
-        <MeasureInventory
+        <MeasureMetricSelection
           state={state}
-          onNext={() => navigate('change')}
+          updateState={updateState}
+          onNext={() => { applySettingSync(); navigate('journey'); }}
           onBack={() => navigate('data')}
           onHome={goHome}
         />
       );
-    
-    case 'change':
+
+    case 'journey':
       return (
-        <MeasureTransformation
+        <MeasureJourney
           state={state}
           onNext={() => navigate('stage')}
-          onBack={() => navigate('inventory')}
+          onBack={() => navigate('metricSelection')}
           onHome={goHome}
           mode={mode}
         />
@@ -120,7 +137,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureStage
           state={state}
           onNext={() => navigate('scenarios')}
-          onBack={() => navigate('change')}
+          onBack={() => navigate('journey')}
           onHome={goHome}
         />
       );
