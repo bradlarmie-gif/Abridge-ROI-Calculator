@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Activity, BarChart3, Users, Stethoscope, TrendingUp, TrendingDown, Minus, CircleDot } from "lucide-react";
+import { ArrowRight, Activity, BarChart3, Users, Stethoscope, TrendingUp, TrendingDown, CircleDot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
@@ -182,7 +182,7 @@ function SignalRing({ active, baseline, total }: { active: number; baseline: num
   );
 }
 
-function MetricDeltaRow({ row, index, isReduction, showSetting }: { row: MetricRowData; index: number; isReduction: boolean; showSetting?: boolean }) {
+function MetricDeltaRow({ row, index, isReduction, showSetting, reducedMotion }: { row: MetricRowData; index: number; isReduction: boolean; showSetting?: boolean; reducedMotion?: boolean }) {
   const s = row.step ?? 1;
   const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
   const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
@@ -198,9 +198,9 @@ function MetricDeltaRow({ row, index, isReduction, showSetting }: { row: MetricR
   return (
     <motion.div
       className="flex items-center gap-3 py-3 border-b border-[#F0EBE6] last:border-b-0"
-      initial={{ opacity: 0, x: -10 }}
+      initial={reducedMotion ? false : { opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.2 + index * 0.05, duration: 0.4 }}
+      transition={reducedMotion ? { duration: 0 } : { delay: 0.2 + index * 0.05, duration: 0.4 }}
       data-testid={`metric-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
@@ -222,13 +222,13 @@ function MetricDeltaRow({ row, index, isReduction, showSetting }: { row: MetricR
   );
 }
 
-function BaselineRow({ row, index }: { row: MetricRowData; index: number }) {
+function BaselineRow({ row, index, reducedMotion }: { row: MetricRowData; index: number; reducedMotion?: boolean }) {
   return (
     <motion.div
       className="flex items-center gap-3 py-2.5 border-b border-[#F5F5F5] last:border-b-0"
-      initial={{ opacity: 0 }}
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 0.4 + index * 0.04, duration: 0.3 }}
+      transition={reducedMotion ? { duration: 0 } : { delay: 0.4 + index * 0.04, duration: 0.3 }}
       data-testid={`metric-row-baseline-${row.label.toLowerCase().replace(/\s/g, '-')}`}
     >
       <span className="w-1.5 h-1.5 rounded-full border border-[#CCCCCC] flex-shrink-0" />
@@ -244,6 +244,7 @@ export default function MeasureInventory({
   onBack,
   onHome,
 }: MeasureInventoryProps) {
+  const prefersReducedMotion = useReducedMotion();
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const narrative = useMemo(() => generateNarrative('inventory', state), [state]);
 
@@ -328,7 +329,7 @@ export default function MeasureInventory({
 
         <motion.div
           className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
@@ -343,9 +344,9 @@ export default function MeasureInventory({
 
         <motion.div
           className="rounded-2xl bg-[#1A1A1A] p-6 mb-6"
-          initial={{ opacity: 0, y: 20 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.5 }}
           data-testid="stats-header"
         >
           <div className="flex items-center gap-6">
@@ -365,8 +366,8 @@ export default function MeasureInventory({
                 <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Settings</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-months">{months}</p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Months Live</p>
+                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">{allMetricRows.filter(r => r.status === 'active').length}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Metrics Active</p>
               </div>
             </div>
           </div>
@@ -405,9 +406,9 @@ export default function MeasureInventory({
         {activeSettings.length > 1 && (
           <motion.div
             className="flex flex-wrap items-center gap-2 mb-6"
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2 }}
             data-testid="setting-tabs"
           >
             <button
@@ -437,6 +438,11 @@ export default function MeasureInventory({
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{settingLabels[s]}</span>
+                  {stage?.maturityLabel && (
+                    <span className={`text-[9px] ${selectedSetting === s ? 'text-white/60' : 'text-[#BBBBBB]'}`}>
+                      {stage.maturityLabel}
+                    </span>
+                  )}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                     selectedSetting === s ? 'bg-white/20 text-white' : 'bg-[#F0F0F0] text-[#999999]'
                   }`}>
@@ -450,9 +456,9 @@ export default function MeasureInventory({
 
         <motion.div
           className="rounded-xl bg-[#F9F7F4] border border-[#E8E2DA] p-5 mb-6"
-          initial={{ opacity: 0, y: 10 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.25, duration: 0.4 }}
           data-testid="abridge-platform-data"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -465,9 +471,9 @@ export default function MeasureInventory({
                 <motion.div
                   key={m.key}
                   className="bg-white rounded-lg px-3 py-2.5"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.05, duration: 0.3 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3 + i * 0.05, duration: 0.3 }}
                 >
                   <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(nativeData[m.key]!)}{m.suffix || ''}</p>
                   <p className="text-[9px] text-[#999999] uppercase tracking-[1px] mt-0.5">{m.label}</p>
@@ -484,9 +490,9 @@ export default function MeasureInventory({
         {activeRows.length > 0 && (
           <motion.div
             className="mb-6"
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.4 }}
             data-testid="active-metrics-section"
           >
             <div className="flex items-center gap-2 mb-4">
@@ -515,6 +521,7 @@ export default function MeasureInventory({
                             index={i}
                             isReduction={reductionMetrics.has(row.metricKey)}
                             showSetting={selectedSetting === 'all' && activeSettings.length > 1}
+                            reducedMotion={!!prefersReducedMotion}
                           />
                         );
                       })}
@@ -529,9 +536,9 @@ export default function MeasureInventory({
         {baselineRows.length > 0 && (
           <motion.div
             className="mb-6"
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.5, duration: 0.4 }}
             data-testid="baseline-metrics-section"
           >
             <div className="flex items-center gap-2 mb-3">
@@ -543,7 +550,7 @@ export default function MeasureInventory({
             </div>
             <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] overflow-hidden px-4">
               {baselineRows.map((row, i) => (
-                <BaselineRow key={`${row.setting}-${row.label}`} row={row} index={i} />
+                <BaselineRow key={`${row.setting}-${row.label}`} row={row} index={i} reducedMotion={!!prefersReducedMotion} />
               ))}
             </div>
           </motion.div>
@@ -552,9 +559,9 @@ export default function MeasureInventory({
         {activeRows.length === 0 && baselineRows.length === 0 && (
           <motion.div
             className="rounded-xl border border-[#E8E2DA] bg-[#F9F7F4] p-8 text-center mb-6"
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3 }}
           >
             <p className="text-sm text-[#888888]">No metric data entered yet. Go back to add before & after values.</p>
             <Button
@@ -570,9 +577,9 @@ export default function MeasureInventory({
 
         <motion.div
           className="flex justify-center mt-8"
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.5 }}
         >
           <Button
             onClick={onNext}
