@@ -1,6 +1,8 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
+import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig } from './measureCareSettings';
+
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
 export interface MeasureDeployment {
@@ -81,6 +83,7 @@ export interface SurveyMetric {
   after: number;
   unit?: string;
   domain: string;
+  setting?: MeasureCareSetting;
 }
 
 export type DataSource = 'analytics' | 'benchmark' | 'estimate';
@@ -106,6 +109,7 @@ export interface MeasureState {
   customMetrics: CustomMetric[];
   surveyMetrics: SurveyMetric[];
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
+  activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
     targetAdoption: number;
     targetProviders: number;
@@ -191,6 +195,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   customMetrics: [],
   surveyMetrics: [],
   enabledMetrics: {},
+  activeCareSettings: ['outpatient'],
 };
 
 export interface MeasureResults {
@@ -874,15 +879,8 @@ function getDefensibleClaims(
   }
 }
 
-const SETTING_AVAILABLE_METRIC_COUNTS: Record<MeasureCareSetting, number> = {
-  outpatient: 6,
-  ed: 6,
-  inpatient: 7,
-  nursing: 7,
-};
-
 function getSettingTotalAvailableMetrics(setting: MeasureCareSetting): number {
-  return SETTING_AVAILABLE_METRIC_COUNTS[setting] || 6;
+  return getTotalAvailableMetricsFromConfig(setting);
 }
 
 export function deriveSettingStage(

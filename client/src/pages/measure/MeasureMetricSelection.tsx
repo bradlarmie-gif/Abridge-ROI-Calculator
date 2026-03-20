@@ -45,35 +45,36 @@ export default function MeasureMetricSelection({
   const [expandedDomains, setExpandedDomains] = useState<Record<string, boolean>>({});
   const [showAssumptions, setShowAssumptions] = useState(false);
 
-  const activeSettings = useMemo(() => {
-    const settings: MeasureCareSetting[] = [];
-    for (const s of CARE_SETTING_ORDER) {
-      const enabled = state.enabledMetrics?.[s];
-      const hasEnabled = enabled && Object.values(enabled).some(Boolean);
-      const hasData = state.settingData[s] && Object.entries(state.settingData[s]!).some(
-        ([k, v]) => (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
-      );
-      if (hasEnabled || hasData || s === (state.careSetting || 'outpatient')) {
-        settings.push(s);
-      }
-    }
-    if (settings.length === 0) settings.push('outpatient');
-    return settings;
-  }, [state.careSetting, state.enabledMetrics, state.settingData]);
+  const activeSettings = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient' as MeasureCareSetting];
 
   const toggleSetting = useCallback((setting: MeasureCareSetting) => {
-    const isActive = activeSettings.includes(setting);
-    if (isActive && activeSettings.length <= 1) return;
-    if (isActive) {
+    const current = [...activeSettings];
+    const idx = current.indexOf(setting);
+    if (idx >= 0) {
+      if (current.length <= 1) return;
+      current.splice(idx, 1);
       const newEnabled = { ...state.enabledMetrics };
       delete newEnabled[setting];
       const newSettingData = { ...state.settingData };
       delete newSettingData[setting];
-      updateState({ enabledMetrics: newEnabled, settingData: newSettingData });
+      const newSurvey = (state.surveyMetrics || []).filter(sm => sm.setting !== setting);
+      updateState({
+        activeCareSettings: current,
+        careSetting: current[0],
+        enabledMetrics: newEnabled,
+        settingData: newSettingData,
+        surveyMetrics: newSurvey,
+      });
     } else {
-      updateState({ careSetting: setting });
+      current.push(setting);
+      updateState({
+        activeCareSettings: current,
+        careSetting: setting,
+      });
     }
-  }, [activeSettings, state.enabledMetrics, state.settingData, updateState]);
+  }, [activeSettings, state.enabledMetrics, state.settingData, state.surveyMetrics, updateState]);
 
   const toggleMetric = useCallback((setting: MeasureCareSetting, metricKey: string) => {
     const current = state.enabledMetrics?.[setting] || {};
@@ -105,14 +106,11 @@ export default function MeasureMetricSelection({
     });
   }, [state.settingData, updateState]);
 
-  const surveyMetricsByDomain = useMemo(() => {
-    const map: Record<string, SurveyMetric[]> = {};
-    for (const sm of (state.surveyMetrics || [])) {
-      const dk = (sm.domain || 'Workforce').toLowerCase();
-      if (!map[dk]) map[dk] = [];
-      map[dk].push(sm);
-    }
-    return map;
+  const getSurveyMetricsForSettingDomain = useCallback((setting: MeasureCareSetting, domainKey: string): SurveyMetric[] => {
+    return (state.surveyMetrics || []).filter(sm => {
+      const smDomain = (sm.domain || 'Workforce').toLowerCase();
+      return smDomain === domainKey && sm.setting === setting;
+    });
   }, [state.surveyMetrics]);
 
   const totalStats = useMemo(() => {
@@ -131,7 +129,7 @@ export default function MeasureMetricSelection({
 
   const gapCount = totalStats.totalAvailable - totalStats.totalEnabled;
 
-  const addSurveyMetric = useCallback((domainKey: string) => {
+  const addSurveyMetric = useCallback((setting: MeasureCareSetting, domainKey: string) => {
     const domainLabel = domainKey.charAt(0).toUpperCase() + domainKey.slice(1);
     const newMetric: SurveyMetric = {
       id: `sm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -139,6 +137,7 @@ export default function MeasureMetricSelection({
       before: 0,
       after: 0,
       domain: domainLabel,
+      setting,
     };
     updateState({ surveyMetrics: [...(state.surveyMetrics || []), newMetric] });
   }, [state.surveyMetrics, updateState]);
@@ -158,7 +157,7 @@ export default function MeasureMetricSelection({
     setExpandedDomains(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const activeSetting = activeSettings[0] || 'outpatient';
+  const activeSetting = state.careSetting || activeSettings[0] || 'outpatient';
   const config = CARE_SETTING_CONFIGS[activeSetting];
   const settingMetrics = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
 
@@ -283,7 +282,7 @@ export default function MeasureMetricSelection({
                   const enabledInDomain = domainMetrics.filter(m => enabledMap[m.key]).length;
                   const expandKey = `${setting}_${domain.key}`;
                   const isExpanded = expandedDomains[expandKey] ?? (enabledInDomain > 0);
-                  const domainSurveyMetrics = (surveyMetricsByDomain[domain.key] || []);
+                  const domainSurveyMetrics = getSurveyMetricsForSettingDomain(setting, domain.key);
 
                   return (
                     <div
@@ -454,7 +453,7 @@ export default function MeasureMetricSelection({
 
                             <div className="px-4 py-2.5 border-t border-[#F0F0F0]">
                               <button
-                                onClick={() => addSurveyMetric(domain.key)}
+                                onClick={() => addSurveyMetric(setting, domain.key)}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
                                 data-testid={`button-add-custom-${setting}-${domain.key}`}
                               >

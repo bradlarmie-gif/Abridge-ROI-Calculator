@@ -135,10 +135,12 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   return rows;
 }
 
-function getSurveyMetricRows(state: MeasureState): MetricRowData[] {
+function getSurveyMetricRows(state: MeasureState, activeSettings: MeasureCareSetting[]): MetricRowData[] {
   const rows: MetricRowData[] = [];
   for (const sm of (state.surveyMetrics || [])) {
     if (!sm.label.trim()) continue;
+    const smSetting = sm.setting || state.careSetting || 'outpatient';
+    if (!activeSettings.includes(smSetting)) continue;
     const delta = sm.after - sm.before;
     let status: 'active' | 'baseline' | 'not-measuring';
     if (sm.before > 0 && sm.after > 0 && Math.abs(delta) > 0) {
@@ -153,7 +155,7 @@ function getSurveyMetricRows(state: MeasureState): MetricRowData[] {
       metricKey: `survey_${sm.id}`,
       domain: sm.domain || 'Workforce',
       domainKey: (sm.domain || 'Workforce').toLowerCase(),
-      setting: state.careSetting || 'outpatient',
+      setting: smSetting,
       status,
       before: sm.before || undefined,
       after: sm.after || undefined,
@@ -375,24 +377,17 @@ export default function MeasureJourney({
   const hasTrendData = state.trendConfig.enabled && Object.values(state.trendConfig.monthlyData).some(arr => arr.length >= 2);
 
   const activeSettings = useMemo(() => {
+    if (state.activeCareSettings?.length > 0) return state.activeCareSettings;
     const settings: MeasureCareSetting[] = [];
     const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     for (const s of all) {
       const enabled = state.enabledMetrics?.[s];
       if (enabled && Object.values(enabled).some(Boolean)) {
         settings.push(s);
-        continue;
-      }
-      const d = state.settingData[s];
-      if (d) {
-        const hasMetricData = Object.entries(d).some(([k, v]) =>
-          (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
-        );
-        if (hasMetricData) settings.push(s);
       }
     }
     if (settings.length === 0 && state.careSetting) settings.push(state.careSetting);
-    return settings;
+    return settings.length > 0 ? settings : ['outpatient' as MeasureCareSetting];
   }, [state]);
 
   const allMetricRows = useMemo(() => {
@@ -400,7 +395,7 @@ export default function MeasureJourney({
     for (const s of activeSettings) {
       rows.push(...getSettingMetricRows(state, s));
     }
-    rows.push(...getSurveyMetricRows(state));
+    rows.push(...getSurveyMetricRows(state, activeSettings));
     return rows;
   }, [state, activeSettings]);
 
@@ -412,7 +407,7 @@ export default function MeasureJourney({
     for (const s of activeSettings) {
       total += getTotalAvailableMetrics(s);
     }
-    total += (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
+    total += (state.surveyMetrics || []).filter(sm => sm.label.trim() && activeSettings.includes(sm.setting || state.careSetting || 'outpatient')).length;
     return { active: a, baseline: b, notMeasuring: n, total };
   }, [allMetricRows, activeSettings, state.surveyMetrics]);
 
