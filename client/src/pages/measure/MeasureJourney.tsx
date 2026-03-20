@@ -585,6 +585,76 @@ export default function MeasureJourney({
           })}
         </div>
 
+        {(() => {
+          const baselineOnlyRows = allMetricRows.filter(r => r.status === 'baseline');
+          if (baselineOnlyRows.length === 0) return null;
+          return (
+            <motion.div
+              className="rounded-lg border border-[#F5D399] bg-[#FFFBF0] p-5 mb-6"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.4 }}
+              data-testid="section-baseline-only"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2 h-2 rounded-full bg-[#F5C6B3]" />
+                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A]">Baseline Set</h3>
+                <span className="text-[10px] text-[#BBBBBB] ml-auto">{baselineOnlyRows.length} metric{baselineOnlyRows.length > 1 ? 's' : ''}</span>
+              </div>
+              <p className="text-[11px] text-[#888888] mb-3">These metrics have a baseline but no post-Abridge measurement yet. Collect "With Abridge" data to activate them.</p>
+              <div className="space-y-1.5">
+                {baselineOnlyRows.map(row => (
+                  <div key={row.metricKey} className="flex items-center gap-2 py-1.5 px-2 rounded bg-white/60">
+                    <Minus className="w-3 h-3 text-[#D4A843] flex-shrink-0" />
+                    <span className="text-sm text-[#666666] flex-1">{row.label}</span>
+                    <span className="text-[11px] text-[#999999] tabular-nums">Baseline: {row.before}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })()}
+
+        {(() => {
+          const notMeasuringRows = allMetricRows.filter(r => r.status === 'not-measuring');
+          if (notMeasuringRows.length === 0) return null;
+          const byDomain: Record<string, MetricRowData[]> = {};
+          for (const r of notMeasuringRows) {
+            if (!byDomain[r.domain]) byDomain[r.domain] = [];
+            byDomain[r.domain].push(r);
+          }
+          return (
+            <motion.div
+              className="rounded-lg border border-dashed border-[#E5E5E5] bg-[#FAFAF8] p-5 mb-6"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.35, duration: 0.4 }}
+              data-testid="section-not-measuring"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2 h-2 rounded-full bg-[#E5E5E5]" />
+                <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#666666]">Not Yet Measuring</h3>
+                <span className="text-[10px] text-[#CCCCCC] ml-auto">{notMeasuringRows.length} opportunity metric{notMeasuringRows.length > 1 ? 's' : ''}</span>
+              </div>
+              <p className="text-[11px] text-[#999999] mb-3">These metrics are available but not yet tracked. Adding them will strengthen your value story.</p>
+              <div className="space-y-3">
+                {Object.entries(byDomain).map(([domainLabel, rows]) => (
+                  <div key={domainLabel}>
+                    <p className="text-[10px] font-semibold text-[#BBBBBB] uppercase tracking-[1px] mb-1">{domainLabel}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {rows.map(row => (
+                        <span key={row.metricKey} className="inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-[#E5E5E5] text-[11px] text-[#999999]">
+                          {row.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })()}
+
         {hasTrendData && (
           <motion.div
             className="rounded-lg border border-[#E5E5E5] p-5 mb-6"
