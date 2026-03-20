@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
@@ -225,6 +225,7 @@ function DomainProgressCard({
   delay?: number;
   reducedMotion?: boolean;
 }) {
+  const [isExpanded, setIsExpanded] = useState(true);
   const muted = status === 'no-data';
   const color = DOMAIN_COLORS[domainKey] || '#999';
   const question = DOMAIN_QUESTIONS[domainKey] || '';
@@ -232,79 +233,102 @@ function DomainProgressCard({
 
   return (
     <motion.div
-      className={`rounded-xl border p-5 transition-all ${muted ? 'bg-[#FAFAFA] border-[#F0F0F0]' : 'bg-white border-[#E5E5E5] hover:shadow-sm'}`}
+      className={`rounded-xl border overflow-hidden transition-all shadow-sm ${muted ? 'bg-[#F5F3F0] border-[#E8E2DA]' : 'bg-[#FAF8F5] border-[#E8E2DA] hover:shadow-md'}`}
       initial={reducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={reducedMotion ? { duration: 0 } : { delay, duration: 0.4 }}
       data-testid={`domain-progress-${domainKey}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-          <h3 className={`text-xs font-bold uppercase tracking-[1.5px] ${muted ? 'text-[#CCCCCC]' : 'text-[#1A1A1A]'}`}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left group"
+        data-testid={`domain-toggle-${domainKey}`}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+          <h3 className={`text-xs font-bold uppercase tracking-[1.5px] ${muted ? 'text-[#BBBBBB]' : 'text-[#4A4A4A]'}`}>
             {domainLabel}
           </h3>
         </div>
-        <StatusBadge status={status} />
-      </div>
+        <div className="flex items-center gap-2">
+          <StatusBadge status={status} />
+          <ChevronRight
+            className={`w-4 h-4 text-[#BBBBBB] transition-transform duration-200 group-hover:text-[#888888] ${isExpanded ? 'rotate-90' : ''}`}
+          />
+        </div>
+      </button>
 
-      {!muted && activeRows.length > 0 ? (
-        <div className="space-y-0">
-          {activeRows.map((row, i) => {
-            const s = row.step ?? 1;
-            const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
-            const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
-            const delta = (row.after ?? 0) - (row.before ?? 0);
-            const absDelta = Math.abs(delta);
-            const pctChange = row.before && row.before !== 0 ? Math.round((absDelta / row.before) * 100) : 0;
-            const isReduction = reductionMetrics.has(row.metricKey);
-            const isPositive = isReduction ? delta < 0 : delta > 0;
-            const accentColor = isPositive ? '#2D8A4E' : '#DC2626';
-            const bgColor = isPositive ? '#F0FDF4' : '#FEF2F2';
-            const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-4">
+              {!muted && activeRows.length > 0 ? (
+                <div className="space-y-0">
+                  {activeRows.map((row, i) => {
+                    const s = row.step ?? 1;
+                    const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
+                    const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
+                    const delta = (row.after ?? 0) - (row.before ?? 0);
+                    const absDelta = Math.abs(delta);
+                    const pctChange = row.before && row.before !== 0 ? Math.round((absDelta / row.before) * 100) : 0;
+                    const isReduction = reductionMetrics.has(row.metricKey);
+                    const isPositive = isReduction ? delta < 0 : delta > 0;
+                    const accentColor = isPositive ? '#2D8A4E' : '#DC2626';
+                    const bgColor = isPositive ? '#F0FDF4' : '#FEF2F2';
+                    const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
 
-            return (
-              <motion.div
-                key={row.metricKey}
-                className="flex items-center gap-3 py-2.5 border-b border-[#F0EBE6] last:border-b-0"
-                initial={reducedMotion ? false : { opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={reducedMotion ? { duration: 0 } : { delay: delay + 0.1 + i * 0.05, duration: 0.4 }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
-                <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
-                <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
-                <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
-                <div
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
-                  style={{ backgroundColor: bgColor, color: accentColor }}
-                >
-                  <DeltaIcon className="w-3 h-3" />
-                  {pctChange > 0 && <span>{pctChange}%</span>}
+                    return (
+                      <motion.div
+                        key={row.metricKey}
+                        className="flex items-center gap-3 py-2.5 border-b border-[#E8E2DA]/50 last:border-b-0"
+                        initial={reducedMotion ? false : { opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={reducedMotion ? { duration: 0 } : { delay: delay + 0.1 + i * 0.05, duration: 0.4 }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
+                        <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
+                        <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
+                        <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
+                        <div
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
+                          style={{ backgroundColor: bgColor, color: accentColor }}
+                        >
+                          <DeltaIcon className="w-3 h-3" />
+                          {pctChange > 0 && <span>{pctChange}%</span>}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="py-3 text-center">
-          <p className={`text-xs italic ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
-            {muted ? question : baselineRows.length > 0 ? `${baselineRows.length} baseline metric${baselineRows.length > 1 ? 's' : ''} set` : 'No data entered yet'}
-          </p>
-        </div>
-      )}
+              ) : (
+                <div className="py-2 text-center">
+                  <p className={`text-xs italic ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
+                    {muted ? question : baselineRows.length > 0 ? `${baselineRows.length} baseline metric${baselineRows.length > 1 ? 's' : ''} set` : 'No data entered yet'}
+                  </p>
+                </div>
+              )}
 
-      {totalMetrics > 0 && (
-        <div className="mt-3 pt-2 border-t border-[#F0F0F0]">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-[#BBBBBB]">{measuredCount}/{totalMetrics} measured</span>
-            <div className="flex h-1 rounded-full overflow-hidden w-16 bg-[#F0F0F0]">
-              <div className="rounded-full transition-all" style={{ width: `${(measuredCount / totalMetrics) * 100}%`, backgroundColor: color }} />
+              {totalMetrics > 0 && (
+                <div className="mt-3 pt-2 border-t border-[#E8E2DA]/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-[#BBBBBB]">{measuredCount}/{totalMetrics} measured</span>
+                    <div className="flex h-1 rounded-full overflow-hidden w-16 bg-[#E8E2DA]/40">
+                      <div className="rounded-full transition-all" style={{ width: `${(measuredCount / totalMetrics) * 100}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

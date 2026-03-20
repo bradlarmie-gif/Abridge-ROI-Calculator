@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Check, Plus, X, Activity, Settings2, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, Check, Plus, X, Activity, Settings2, Pencil, ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -287,23 +287,23 @@ export default function MeasureMetricSelection({
                   return (
                     <div
                       key={domain.key}
-                      className="rounded-lg border border-[#E5E5E5] bg-white overflow-hidden"
+                      className="rounded-xl border border-[#E8E2DA] bg-[#FAF8F5] overflow-hidden shadow-sm"
                       data-testid={`domain-card-${setting}-${domain.key}`}
                     >
                       <button
                         onClick={() => toggleDomain(expandKey)}
-                        className="w-full flex items-center gap-2 px-4 py-3 border-b border-[#F0F0F0] text-left"
+                        className="w-full flex items-center gap-2.5 px-4 py-3.5 text-left group"
                         data-testid={`domain-toggle-${setting}-${domain.key}`}
                       >
                         <div
-                          className="w-2 h-2 rounded-full"
+                          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                           style={{ backgroundColor: DOMAIN_COLORS[domain.key] || '#999' }}
                         />
-                        <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666] flex-1">
+                        <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#4A4A4A] flex-1">
                           {domain.label}
                         </span>
                         {domainMetrics.length > 0 && (
-                          <span className="text-[10px] text-[#BBBBBB]">
+                          <span className="text-[10px] text-[#AAAAAA] font-medium">
                             {enabledInDomain}/{domainMetrics.length}
                           </span>
                         )}
@@ -312,6 +312,9 @@ export default function MeasureMetricSelection({
                             Add custom metrics below
                           </span>
                         )}
+                        <ChevronRight
+                          className={`w-4 h-4 text-[#BBBBBB] transition-transform duration-200 group-hover:text-[#888888] ${isExpanded ? 'rotate-90' : ''}`}
+                        />
                       </button>
 
                       <AnimatePresence>
@@ -321,10 +324,10 @@ export default function MeasureMetricSelection({
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.2, ease: 'easeInOut' }}
-                            className="overflow-hidden"
+                            className="overflow-hidden border-t border-[#E8E2DA]/60"
                           >
                             {domainMetrics.length > 0 && (
-                              <div className="divide-y divide-[#F5F5F5]">
+                              <div className="divide-y divide-[#EDE8E1]">
                                 {domainMetrics.map(metric => {
                                   const isEnabled = !!enabledMap[metric.key];
 
@@ -333,7 +336,7 @@ export default function MeasureMetricSelection({
                                       <button
                                         onClick={() => toggleMetric(setting, metric.key)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
-                                          ${isEnabled ? 'bg-white' : 'bg-[#FAFAF8]'}
+                                          ${isEnabled ? 'bg-white/70' : 'bg-transparent'}
                                         `}
                                         data-testid={`toggle-metric-${setting}-${metric.key}`}
                                       >
@@ -393,7 +396,7 @@ export default function MeasureMetricSelection({
                             )}
 
                             {domainSurveyMetrics.length > 0 && (
-                              <div className="border-t border-[#F0F0F0]">
+                              <div className="border-t border-[#E8E2DA]/60">
                                 {domainSurveyMetrics.map(sm => (
                                   <div key={sm.id} className="px-4 py-3 border-b border-[#F5F5F5] last:border-b-0" data-testid={`survey-metric-${sm.id}`}>
                                     <div className="flex items-center gap-2 mb-2">
@@ -451,7 +454,7 @@ export default function MeasureMetricSelection({
                               </div>
                             )}
 
-                            <div className="px-4 py-2.5 border-t border-[#F0F0F0]">
+                            <div className="px-4 py-2.5 border-t border-[#E8E2DA]/60">
                               <button
                                 onClick={() => addSurveyMetric(setting, domain.key)}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
