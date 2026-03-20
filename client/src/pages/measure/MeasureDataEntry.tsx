@@ -890,19 +890,30 @@ function MetricSelectionSection({
 
   const toggleMetric = useCallback((metricKey: string) => {
     const current = state.enabledMetrics?.[activeSetting] || {};
-    const updated = { ...current, [metricKey]: !current[metricKey] };
-    onUpdateState({
+    const wasEnabled = !!current[metricKey];
+    const updated = { ...current, [metricKey]: !wasEnabled };
+    const stateUpdate: Partial<MeasureState> = {
       enabledMetrics: {
         ...state.enabledMetrics,
         [activeSetting]: updated,
       },
-    });
-  }, [activeSetting, state.enabledMetrics, onUpdateState]);
+    };
+    if (wasEnabled) {
+      const settingData = { ...(state.settingData[activeSetting] || {}) };
+      settingData[`${metricKey}_before`] = 0;
+      settingData[`${metricKey}_after`] = 0;
+      stateUpdate.settingData = {
+        ...state.settingData,
+        [activeSetting]: settingData,
+      };
+    }
+    onUpdateState(stateUpdate);
+  }, [activeSetting, state.enabledMetrics, state.settingData, onUpdateState]);
 
   const totalAvailable = getTotalAvailableMetrics(activeSetting);
   const enabledCount = Object.values(enabledMap).filter(Boolean).length;
-  const surveyCount = (state.surveyMetrics || []).length;
-  const totalSelected = enabledCount + surveyCount;
+  const validSurveyCount = (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
+  const totalSelected = enabledCount + validSurveyCount;
 
   const groupedMetrics = useMemo(() => {
     const groups: Record<string, { sectionKey: string; metrics: typeof config.metricSections[0]['metrics'] }> = {};
@@ -949,11 +960,11 @@ function MetricSelectionSection({
           <div className="flex h-1.5 rounded-full overflow-hidden w-20 bg-[#E5E5E5]">
             <div
               className="bg-[#EA2C00] rounded-full transition-all duration-500"
-              style={{ width: `${Math.min((totalSelected / (totalAvailable + surveyCount || 1)) * 100, 100)}%` }}
+              style={{ width: `${Math.min((totalSelected / (totalAvailable + validSurveyCount || 1)) * 100, 100)}%` }}
             />
           </div>
           <span className="text-[11px] font-semibold text-[#888888]" data-testid="text-coverage-count">
-            {totalSelected} of {totalAvailable + surveyCount}
+            {totalSelected} of {totalAvailable + validSurveyCount}
           </span>
         </div>
       </div>
@@ -1058,7 +1069,7 @@ function MetricSelectionSection({
           <div className="flex items-center gap-2 px-4 py-3 border-b border-[#F0F0F0]">
             <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
             <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">Survey & Feedback Data</span>
-            <span className="text-[10px] text-[#BBBBBB] ml-auto">{surveyCount} added</span>
+            <span className="text-[10px] text-[#BBBBBB] ml-auto">{validSurveyCount} added</span>
           </div>
 
           {(state.surveyMetrics || []).length > 0 && (

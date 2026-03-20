@@ -903,21 +903,18 @@ export function deriveSettingStage(
   else { phase = 4; phaseLabel = 'Strategic Proof'; }
 
   const settingData = state.settingData[setting] || {};
-  const beforeKeys = new Set<string>();
-  const afterKeys = new Set<string>();
-  for (const k of Object.keys(settingData)) {
-    if (k.endsWith('_before') && settingData[k] !== 0) beforeKeys.add(k.replace('_before', ''));
-    if (k.endsWith('_after') && settingData[k] !== 0) afterKeys.add(k.replace('_after', ''));
-  }
+  const enabledMap = state.enabledMetrics?.[setting] || {};
   let evidencedMetrics = 0;
-  for (const key of beforeKeys) {
-    if (afterKeys.has(key)) evidencedMetrics++;
+  for (const [key, isEnabled] of Object.entries(enabledMap)) {
+    if (!isEnabled) continue;
+    const b = settingData[`${key}_before`] ?? 0;
+    const a = settingData[`${key}_after`] ?? 0;
+    if (b !== 0 && a !== 0) evidencedMetrics++;
   }
-  const evidencedSurvey = (state.surveyMetrics || []).filter(sm =>
-    sm.label.trim() && sm.before > 0 && sm.after > 0
-  ).length;
+  const validSurveys = (state.surveyMetrics || []).filter(sm => sm.label.trim());
+  const evidencedSurvey = validSurveys.filter(sm => sm.before > 0 && sm.after > 0).length;
   const totalEvidenced = evidencedMetrics + evidencedSurvey;
-  const totalAvailable = getSettingTotalAvailableMetrics(setting) + (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
+  const totalAvailable = getSettingTotalAvailableMetrics(setting) + validSurveys.length;
   const coverageRatio = totalAvailable > 0 ? Math.min(totalEvidenced / totalAvailable, 1) : 0;
 
   let maturityStage: MaturityStage;

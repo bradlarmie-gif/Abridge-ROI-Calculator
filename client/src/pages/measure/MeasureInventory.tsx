@@ -56,10 +56,13 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   const capacityKeys = ['sameDayClosure', 'lwbsRate', 'doorToDoc'];
   const revenueKeys = ['wrvuPerEncounter', 'cmi', 'denialsPer100', 'ccMccCapture', 'emLevel', 'admissionCapture'];
 
+  const enabledMap = state.enabledMetrics?.[setting] || {};
+
   for (const section of config.metricSections) {
     for (const metric of section.metrics) {
       if (!metric.hasBeforeAfter) continue;
 
+      const isEnabled = !!enabledMap[metric.key];
       const before = settingData[`${metric.key}_before`] ?? 0;
       const after = settingData[`${metric.key}_after`] ?? 0;
       const delta = after - before;
@@ -72,7 +75,9 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
       }
 
       let status: 'active' | 'baseline' | 'not-measuring';
-      if (before > 0 && after > 0 && Math.abs(delta) > 0) {
+      if (!isEnabled) {
+        status = 'not-measuring';
+      } else if (before > 0 && after > 0 && Math.abs(delta) > 0) {
         status = 'active';
       } else if (before > 0) {
         status = 'baseline';
@@ -99,21 +104,19 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
     const te = state.timeEfficiency;
     const dq = state.documentationQuality;
 
-    const timeBefore = te.timeInNotesWithout;
-    const timeAfter = te.timeInNotesWith;
-    if (timeBefore > 0 || timeAfter > 0) {
-      const existing = rows.find(r => r.label === 'Time in Notes');
+    if (enabledMap['timeInNotes'] && (te.timeInNotesWithout > 0 || te.timeInNotesWith > 0)) {
+      const existing = rows.find(r => r.metricKey === 'timeInNotes');
       if (existing) {
-        existing.before = timeBefore || existing.before;
-        existing.after = timeAfter || existing.after;
-        const d = (timeAfter || 0) - (timeBefore || 0);
-        existing.status = timeBefore > 0 && timeAfter > 0 && Math.abs(d) > 0 ? 'active' : timeBefore > 0 ? 'baseline' : 'not-measuring';
+        existing.before = te.timeInNotesWithout || existing.before;
+        existing.after = te.timeInNotesWith || existing.after;
+        const d = (te.timeInNotesWith || 0) - (te.timeInNotesWithout || 0);
+        existing.status = te.timeInNotesWithout > 0 && te.timeInNotesWith > 0 && Math.abs(d) > 0 ? 'active' : te.timeInNotesWithout > 0 ? 'baseline' : 'not-measuring';
         existing.delta = Math.abs(d) > 0 ? d : undefined;
       }
     }
 
-    if (dq.wrvuWithout > 0 || dq.wrvuWith > 0) {
-      const existing = rows.find(r => r.label === 'wRVU per Encounter');
+    if (enabledMap['wrvuPerEncounter'] && (dq.wrvuWithout > 0 || dq.wrvuWith > 0)) {
+      const existing = rows.find(r => r.metricKey === 'wrvuPerEncounter');
       if (existing) {
         existing.before = dq.wrvuWithout || existing.before;
         existing.after = dq.wrvuWith || existing.after;
