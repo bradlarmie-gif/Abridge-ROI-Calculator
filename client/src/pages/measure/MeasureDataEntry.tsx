@@ -561,31 +561,26 @@ function EditView({
               data-testid="input-total-providers"
             />
           </div>
-          <div className="space-y-1.5 col-span-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium text-black">Go-Live Date</label>
-            <div className="flex gap-3 items-start">
-              <input
-                type="date"
-                value={state.goLiveDate || ''}
-                onChange={(e) => onUpdateState({ goLiveDate: e.target.value || null })}
-                className="h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
-                data-testid="input-go-live-date"
-              />
-              {!state.goLiveDate && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#999999]">or</span>
-                  <div className="space-y-0.5">
-                    <label className="text-xs text-[#999999]">Months since go-live</label>
-                    <FormattedNumberInput
-                      value={state.deployment.monthsOnAbridge}
-                      onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
-                      className="h-8 w-20 bg-white border-[#E5E5E5] text-right text-sm"
-                      data-testid="input-months"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+            <input
+              type="date"
+              value={state.goLiveDate || ''}
+              onChange={(e) => onUpdateState({ goLiveDate: e.target.value || null })}
+              className="h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] w-full"
+              data-testid="input-go-live-date"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Months on Abridge</label>
+            <FormattedNumberInput
+              value={state.deployment.monthsOnAbridge}
+              onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
+              className="h-10 bg-white border-[#E5E5E5] text-right"
+              data-testid="input-months"
+            />
+          </div>
+          <div className="col-span-2">
             <PhaseContextCard state={state} />
           </div>
           <div className="space-y-1.5">
