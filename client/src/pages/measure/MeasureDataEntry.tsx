@@ -88,10 +88,22 @@ export default function MeasureDataEntry({
 
   const updateNursingField = useCallback((key: string, value: number) => {
     const current = state.settingData?.nursing || getDefaultMetrics('nursing');
-    updateState({
-      settingData: { ...state.settingData, nursing: { ...current, [`deploy_${key}`]: value } },
-    });
-  }, [state.settingData, updateState]);
+    const updatedNursing = { ...current, [`deploy_${key}`]: value };
+    const updates: Partial<MeasureState> = {
+      settingData: { ...state.settingData, nursing: updatedNursing },
+    };
+    if (!hasProviderSettings && (key === 'nurseFTEs' || key === 'staffedBeds')) {
+      const nurseFTEs = key === 'nurseFTEs' ? value : (updatedNursing.deploy_nurseFTEs ?? 0);
+      const totalProv = state.deployment.totalProviders > 0 ? state.deployment.totalProviders : nurseFTEs;
+      updates.deployment = {
+        ...state.deployment,
+        providers: nurseFTEs,
+        totalProviders: totalProv,
+        utilizationRate: totalProv > 0 ? Math.round((nurseFTEs / totalProv) * 100) : 0,
+      };
+    }
+    updateState(updates);
+  }, [state.settingData, state.deployment, hasProviderSettings, updateState]);
 
   const nursingData = useMemo(() => {
     const d = state.settingData?.nursing || {};
