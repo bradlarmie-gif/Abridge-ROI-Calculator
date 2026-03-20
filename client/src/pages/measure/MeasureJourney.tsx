@@ -378,6 +378,11 @@ export default function MeasureJourney({
     const settings: MeasureCareSetting[] = [];
     const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     for (const s of all) {
+      const enabled = state.enabledMetrics?.[s];
+      if (enabled && Object.values(enabled).some(Boolean)) {
+        settings.push(s);
+        continue;
+      }
       const d = state.settingData[s];
       if (d) {
         const hasMetricData = Object.entries(d).some(([k, v]) =>
