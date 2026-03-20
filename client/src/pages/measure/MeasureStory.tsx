@@ -5,10 +5,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
+  type DataSource,
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
 } from "@/lib/measureCalculator";
+
+function DataSourceBadge({ source }: { source: DataSource }) {
+  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
+    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Benchmark-based', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+  };
+  const c = config[source] || config.estimate;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
+      {c.label}
+    </span>
+  );
+}
 import { generateMeasurePDF } from "@/components/measure/MeasurePDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
@@ -331,7 +346,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
           <div className="pt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide">Estimated Annual Value</span>
+              <span className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide flex items-center gap-2">Estimated Annual Value <DataSourceBadge source={state.dataSource} /></span>
               <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-total-value">
                 {formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}
               </span>

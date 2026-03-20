@@ -5,10 +5,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
+  type DataSource,
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
 } from "@/lib/measureCalculator";
+
+function DataSourceBadge({ source }: { source: DataSource }) {
+  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
+    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Benchmark-based', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+  };
+  const c = config[source] || config.estimate;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
+      {c.label}
+    </span>
+  );
+}
 
 function formatSmartRange(low: number, high: number): string {
   const lowFmt = formatCurrency(low);
@@ -454,7 +469,7 @@ export default function MeasureOpportunity({
 
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-[#2A2A2A] rounded-lg p-5">
-              <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-3">Today</p>
+              <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px]">Today</p><DataSourceBadge source={state.dataSource} /></div>
               <p className="text-sm text-[#AAAAAA] mb-1">{state.deployment.providers} {providerLabel}</p>
               <p className="text-sm text-[#AAAAAA] mb-3">{state.deployment.utilizationRate}% adoption</p>
               <p className="text-2xl font-bold text-white" data-testid="text-today-value">

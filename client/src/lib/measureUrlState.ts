@@ -31,6 +31,9 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.settingData) {
         parsed.settingData = {};
       }
+      if (!parsed.dataSource) {
+        parsed.dataSource = DEFAULT_MEASURE_STATE.dataSource;
+      }
       return parsed as MeasureState;
     }
     return null;

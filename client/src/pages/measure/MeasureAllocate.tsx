@@ -6,10 +6,25 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
+  type DataSource,
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
 } from "@/lib/measureCalculator";
+
+function DataSourceBadge({ source }: { source: DataSource }) {
+  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
+    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Benchmark-based', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+  };
+  const c = config[source] || config.estimate;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
+      {c.label}
+    </span>
+  );
+}
 
 function formatSmartRange(low: number, high: number): string {
   const lowFmt = formatCurrency(low);
@@ -236,9 +251,12 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.1 }}
           data-testid="section-hero-value"
         >
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-            Estimated Annual Value
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
+              Estimated Annual Value
+            </p>
+            <DataSourceBadge source={state.dataSource} />
+          </div>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
             {heroValue}
           </p>
@@ -397,9 +415,10 @@ function InpatientAllocate({ state, updateState, onNext, onBack, onHome }: Alloc
           transition={{ delay: 0.25 }}
           data-testid="section-total"
         >
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-            Estimated Annual Value
-          </p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p>
+            <DataSourceBadge source={state.dataSource} />
+          </div>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
             {heroValue}
           </p>
@@ -588,7 +607,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         </motion.div>
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p><DataSourceBadge source={state.dataSource} /></div>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
@@ -688,7 +707,7 @@ function EDAllocate({ state, updateState, onNext, onBack, onHome }: AllocateComp
         )}
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} data-testid="section-total">
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p><DataSourceBadge source={state.dataSource} /></div>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
@@ -733,7 +752,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         </motion.div>
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p><DataSourceBadge source={state.dataSource} /></div>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
@@ -860,7 +879,7 @@ function NursingAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
         )}
 
         <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} data-testid="section-total">
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p><DataSourceBadge source={state.dataSource} /></div>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
           <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Time value: {formatCurrency(adjustedTimeValue)}</p>
@@ -929,9 +948,10 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.1 }}
           data-testid="section-hero-value"
         >
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-            Estimated Annual Value
-          </p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p>
+            <DataSourceBadge source={state.dataSource} />
+          </div>
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
             {heroValue}
           </p>
@@ -1083,9 +1103,10 @@ function GenericAllocate({ state, updateState, onNext, onBack, onHome }: Allocat
           transition={{ delay: 0.25 }}
           data-testid="section-total"
         >
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-            Estimated Annual Value
-          </p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p>
+            <DataSourceBadge source={state.dataSource} />
+          </div>
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
             {heroValue}
           </p>

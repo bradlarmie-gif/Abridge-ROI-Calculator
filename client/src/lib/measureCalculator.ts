@@ -74,8 +74,11 @@ export interface CustomMetric {
   section: string;
 }
 
+export type DataSource = 'analytics' | 'benchmark' | 'estimate';
+
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
+  dataSource: DataSource;
   deployment: MeasureDeployment;
   documentationQuality: DocumentationQuality;
   timeEfficiency: TimeEfficiency;
@@ -96,6 +99,7 @@ export interface MeasureState {
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
   careSetting: null,
+  dataSource: 'estimate',
   deployment: {
     organizationName: '',
     providers: 0,

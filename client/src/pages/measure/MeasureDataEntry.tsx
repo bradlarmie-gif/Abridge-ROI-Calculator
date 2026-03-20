@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, formatNumber } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, formatNumber } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
@@ -172,6 +172,7 @@ export default function MeasureDataEntry({
               onUpdateDeployment={updateDeployment}
               onUpdateMetric={updateMetric}
               onUpdateCustomMetrics={(cm) => updateState({ customMetrics: cm })}
+              onUpdateState={updateState}
               onSavePreview={handleSavePreview}
             />
           )}
@@ -358,6 +359,7 @@ interface EditViewProps {
   ) => void;
   onUpdateMetric: (key: string, value: number) => void;
   onUpdateCustomMetrics: (metrics: CustomMetric[]) => void;
+  onUpdateState: (updates: Partial<MeasureState>) => void;
   onSavePreview: () => void;
 }
 
@@ -366,6 +368,39 @@ function getNextStepGuidance(
 ): string {
   if (!profileComplete) return "Fill in Partner Profile to continue";
   return "Review and continue";
+}
+
+function DataSourceSelector({ value, onChange }: { value: DataSource; onChange: (ds: DataSource) => void }) {
+  const options: { key: DataSource; label: string; desc: string }[] = [
+    { key: 'analytics', label: 'Analytics Pull', desc: 'Epic, Abridge analytics, or EHR reporting' },
+    { key: 'benchmark', label: 'Abridge Benchmark', desc: 'Comparable deployment data' },
+    { key: 'estimate', label: 'Our Estimate', desc: 'Team-estimated from observation' },
+  ];
+
+  return (
+    <div className="mb-5" data-testid="section-data-source">
+      <p className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">Data Source</p>
+      <div className="flex gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => onChange(opt.key)}
+            className={`flex-1 px-3 py-2.5 rounded-full text-sm font-medium transition-all
+              ${value === opt.key
+                ? 'bg-[#EA2C00] text-white shadow-sm'
+                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EDE7E0]'
+              }`}
+            data-testid={`button-source-${opt.key}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-[#999999] mt-1.5">
+        {options.find((o) => o.key === value)?.desc}
+      </p>
+    </div>
+  );
 }
 
 function EditView({
@@ -383,6 +418,7 @@ function EditView({
   onUpdateDeployment,
   onUpdateMetric,
   onUpdateCustomMetrics,
+  onUpdateState,
   onSavePreview,
 }: EditViewProps) {
   const profileComplete =
@@ -424,6 +460,11 @@ function EditView({
         active={activeSetting}
         settingData={state.settingData}
         onSwitch={onSwitchTab}
+      />
+
+      <DataSourceSelector
+        value={state.dataSource}
+        onChange={(ds) => onUpdateState({ dataSource: ds })}
       />
 
       <div className={`rounded-lg p-5 mb-3 transition-all duration-300 ${profileComplete ? "bg-[#F9F7F4] border border-[#E8E2DA]" : "bg-[#F5F0EB] border-2 border-[#EA2C00]/30 shadow-sm"}`}>

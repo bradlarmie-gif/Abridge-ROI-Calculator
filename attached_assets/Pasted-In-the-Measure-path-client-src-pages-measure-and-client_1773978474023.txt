@@ -1,0 +1,51 @@
+In the Measure path (client/src/pages/measure/ and client/src/lib/measureCalculator.ts),
+  make the following changes:
+
+  1. ADD DATA SOURCE TRACKING
+
+  In MeasureState (measureCalculator.ts), add:
+    dataSource: 'analytics' | 'benchmark' | 'estimate'
+
+  Default to 'estimate'.
+
+  In MeasureDataEntry.tsx, add a prominent data source selector at the top of the form
+  (before any metric entry), with three choices:
+    - "Analytics Pull" — data from Epic, Abridge analytics, or EHR reporting
+    - "Abridge Benchmark" — based on comparable deployment data
+    - "Our Estimate" — team-estimated based on observation
+
+  Style: three pill buttons, not a dropdown. Selected state uses brand orange.
+
+  2. ADD DATA SOURCE BADGE COMPONENT
+
+  Create a small badge component (DataSourceBadge) that appears next to every dollar
+  value in MeasureAllocate, MeasureOpportunity, and MeasureStory:
+    - analytics: green pill "Analytics-backed"
+    - benchmark: yellow pill "Benchmark-based"
+    - estimate: gray pill "Estimated"
+
+  3. FIX THE TREND SCREEN
+
+  In MeasureTrends.tsx:
+    - If trendConfig.enabled is false (no real monthly data), replace the line chart
+      with a static "point-in-time comparison" visual instead:
+
+      Two stat boxes side by side:
+      Left box (muted): "Without Abridge" + baseline value
+      Right box (brand orange): "With Abridge" + current value + delta %
+
+    - Remove the text "Here's how your metrics have evolved since you started with
+      Abridge" — replace with "Your deployment creates two groups to compare:
+      encounters documented with Abridge vs. encounters without. Here's what your
+      data shows for [selected metric]."
+
+    - Keep the metric selector (wrvu, emLevel, timeInNotes, sameDayClosure)
+    - Keep the actual Recharts chart only when trendConfig.enabled = true
+
+  4. UPDATE THE METHODOLOGY SECTION
+
+  In MeasureStory.tsx, move the Methodology accordion from the bottom of the page
+  to appear directly below the hero value tile (above the "What's Next" section).
+  Change the accordion label from "Methodology & Assumptions" to
+  "How We Calculated This" with a small info icon.
+  Default it to expanded (not collapsed).
