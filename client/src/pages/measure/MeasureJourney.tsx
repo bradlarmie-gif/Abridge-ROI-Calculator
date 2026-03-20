@@ -436,8 +436,19 @@ export default function MeasureJourney({
     return grouped;
   }, [allMetricRows, activeSettings]);
 
-  const primarySetting = activeSettings[0] || 'outpatient';
-  const settingDomains = getSettingDomains(primarySetting);
+  const settingDomains = useMemo(() => {
+    const seen = new Set<string>();
+    const result: { key: DomainKey; label: string }[] = [];
+    for (const s of activeSettings) {
+      for (const d of getSettingDomains(s)) {
+        if (!seen.has(d.key)) {
+          seen.add(d.key);
+          result.push(d);
+        }
+      }
+    }
+    return result;
+  }, [activeSettings]);
 
   const domainStatusMap: Record<string, DomainStatus> = {
     workforce: domainStatus.workforce,

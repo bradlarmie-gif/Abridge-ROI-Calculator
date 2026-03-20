@@ -235,7 +235,7 @@ export default function MeasureMetricSelection({
             </span>
             {gapCount > 0 && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFF0EC] text-[#EA2C00] font-medium" data-testid="text-gap-count">
-                {gapCount} available
+                {gapCount} not tracking
               </span>
             )}
           </div>
