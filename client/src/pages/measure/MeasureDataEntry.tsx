@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber, deriveEngagementContext } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
@@ -371,50 +371,6 @@ function getNextStepGuidance(
   return "Review and continue";
 }
 
-function PhaseContextCard({ state }: { state: MeasureState }) {
-  const ctx = deriveEngagementContext(state);
-  if (ctx.monthsOnAbridge === 0) return null;
-
-  const domainSignals = [
-    { label: 'Quality signals', phase: 1 },
-    { label: 'Workforce signals', phase: 2 },
-    { label: 'Revenue signals', phase: 2 },
-    { label: `${ctx.phaseSubLabel} signals`, phase: 3 },
-  ];
-
-  return (
-    <div className="mt-2 rounded-lg bg-[#F5F0EB] border-l-4 border-[#EA2C00] p-4" data-testid="phase-context-card">
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EA2C00] text-white">
-          PHASE {ctx.phase}
-        </span>
-        <span className="text-sm font-semibold text-[#1A1A1A]">{ctx.phaseLabel}</span>
-      </div>
-      <p className="text-xs text-[#666666] mb-2">
-        You are {ctx.monthsOnAbridge} months into your Abridge deployment.
-      </p>
-      <div className="space-y-1">
-        {domainSignals.map((d) => {
-          const active = ctx.phase >= d.phase;
-          const emerging = ctx.phase === d.phase;
-          return (
-            <div key={d.label} className="flex items-center gap-2 text-xs">
-              {active ? (
-                <span className="text-[#2D8A4E]">{emerging ? '~' : '\u2713'}</span>
-              ) : (
-                <span className="text-[#CCCCCC]">{'\u25CB'}</span>
-              )}
-              <span className={active ? 'text-[#1A1A1A]' : 'text-[#999999]'}>
-                {d.label} {active ? (emerging ? 'emerging' : 'active') : `expected at month ${d.phase === 2 ? '3' : d.phase === 3 ? '6' : '1'}+`}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function DataSourceSelector({ value, onChange }: { value: DataSource; onChange: (ds: DataSource) => void }) {
   const options: { key: DataSource; label: string; desc: string }[] = [
     { key: 'analytics', label: 'Analytics Pull', desc: 'Epic, Abridge analytics, or EHR reporting' },
@@ -566,22 +522,40 @@ function EditView({
             <input
               type="date"
               value={state.goLiveDate || ''}
-              onChange={(e) => onUpdateState({ goLiveDate: e.target.value || null })}
+              onChange={(e) => {
+                const dateVal = e.target.value || null;
+                onUpdateState({ goLiveDate: dateVal });
+                if (dateVal) {
+                  const goLive = new Date(dateVal);
+                  const now = new Date();
+                  const diffMonths = (now.getFullYear() - goLive.getFullYear()) * 12 + (now.getMonth() - goLive.getMonth());
+                  onUpdateDeployment("monthsOnAbridge", Math.max(0, diffMonths));
+                }
+              }}
               className="h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] w-full"
               data-testid="input-go-live-date"
             />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-black">Months on Abridge</label>
-            <FormattedNumberInput
-              value={state.deployment.monthsOnAbridge}
-              onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
-              className="h-10 bg-white border-[#E5E5E5] text-right"
-              data-testid="input-months"
-            />
-          </div>
-          <div className="col-span-2">
-            <PhaseContextCard state={state} />
+            {state.goLiveDate ? (
+              <div
+                className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black"
+                data-testid="input-months"
+              >
+                {state.deployment.monthsOnAbridge}
+              </div>
+            ) : (
+              <FormattedNumberInput
+                value={state.deployment.monthsOnAbridge}
+                onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
+                className="h-10 bg-white border-[#E5E5E5] text-right"
+                data-testid="input-months"
+              />
+            )}
+            {state.goLiveDate && (
+              <p className="text-[10px] text-[#BBBBBB]">Auto-calculated from go-live date</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-black">Total Encounters</label>
