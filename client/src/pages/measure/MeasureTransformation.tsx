@@ -5,9 +5,12 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
+  type DataSource,
   formatNumber,
+  formatCurrency,
   deriveEngagementContext,
   computeDomainStatus,
+  calculateConfirmedValue,
   type DomainStatus,
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
@@ -18,6 +21,20 @@ interface MeasureTransformationProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+}
+
+function DataSourceBadge({ source }: { source: DataSource }) {
+  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
+    analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
+    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
+    estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
+  };
+  const c = config[source] || config.estimate;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
+      {c.label}
+    </span>
+  );
 }
 
 function SignalBadge({ status }: { status: DomainStatus }) {
@@ -123,6 +140,7 @@ export default function MeasureTransformation({
 }: MeasureTransformationProps) {
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
+  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
   const careSetting = state.careSetting || "outpatient";
   const isInpatient = careSetting === "inpatient";
   const isED = careSetting === "ed";
@@ -134,8 +152,11 @@ export default function MeasureTransformation({
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
   const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
   const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
-  const totalHoursSaved = (timeReclaimed * adoptedEncounters) / 60;
-  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
+
+  const wrvuLift = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const goLiveDisplay = state.goLiveDate
+    ? new Date(state.goLiveDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : `${months} months ago`;
 
   const qualityMetrics = useMemo(() => {
     const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
@@ -192,7 +213,6 @@ export default function MeasureTransformation({
 
   const capacityMetrics = useMemo(() => {
     const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
-    const settingData = state.settingData?.[careSetting] || {};
     if (isED) {
       if (state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) {
         m.push({ label: 'LWBS rate', nonAbridge: state.timeEfficiency.sameDayClosureWithout, withAbridge: state.timeEfficiency.sameDayClosureWith, unit: '%' });
@@ -202,7 +222,7 @@ export default function MeasureTransformation({
       m.push({ label: 'Same-day closure', nonAbridge: state.timeEfficiency.sameDayClosureWithout, withAbridge: state.timeEfficiency.sameDayClosureWith, unit: '%' });
     }
     return m;
-  }, [state, careSetting, isED, isNursing]);
+  }, [state, isED, isNursing]);
 
   const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
 
@@ -211,7 +231,7 @@ export default function MeasureTransformation({
       <UnifiedHeader
         pathType="measure"
         currentStep={2}
-        totalSteps={5}
+        totalSteps={6}
         stepName="What Your Data Shows"
         onBack={onBack}
         onHome={onHome}
@@ -231,39 +251,37 @@ export default function MeasureTransformation({
             What Your Data Shows
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
-            Same providers. Same period. Abridge vs. non-Abridge encounters compared.
+            Based on what you{"'"}ve entered, here is the value we can attribute to Abridge during your deployment period.
           </p>
         </motion.div>
 
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-5 mb-8"
+          className="rounded-xl p-8 text-center mb-8"
+          style={{ backgroundColor: '#1A1A1A' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
-          data-testid="section-stats-banner"
+          data-testid="section-confirmed-hero"
         >
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.providers}</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Providers</p>
-            </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{formatNumber(state.deployment.totalEncounters)}</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : isNursing ? "Shifts" : "Encounters"}</p>
-            </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.utilizationRate}%</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
-            </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{months}mo</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Since Go-Live</p>
-            </div>
-            <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{hoursPerProvider} hrs</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Saved Per Provider</p>
-            </div>
+          <p className="text-[11px] font-semibold text-white/60 uppercase tracking-[2px] mb-1">
+            Confirmed Value {"–"} {months} Months
+          </p>
+          <p className="text-4xl md:text-5xl font-bold text-white mb-3" data-testid="text-confirmed-range">
+            {formatCurrency(confirmed.low)} {"–"} {formatCurrency(confirmed.high)}
+            <span className="text-lg font-normal text-white/50"> / year</span>
+          </p>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <DataSourceBadge source={state.dataSource} />
           </div>
+          <p className="text-sm text-white/50">
+            Across {state.deployment.providers} {isNursing ? 'nurses' : 'providers'} {"·"} {formatNumber(adoptedEncounters)} Abridge-documented {isNursing ? 'shifts' : isInpatient ? 'discharges' : 'encounters'}
+          </p>
+          <p className="text-sm text-white/40 mt-1">
+            {"≈"} {formatCurrency(confirmed.perProviderLow)} {"–"} {formatCurrency(confirmed.perProviderHigh)} per {isNursing ? 'nurse' : 'provider'} per year
+          </p>
+          <p className="text-[10px] text-white/30 mt-3">
+            conservative (50%) {"–"} typical (75%) attribution
+          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -273,7 +291,6 @@ export default function MeasureTransformation({
             stakeholder="CMO, Quality & CDI"
             status={domainStatus.quality}
             metrics={qualityMetrics}
-            phaseNote={context.phase < 1 ? undefined : undefined}
             delay={0.15}
           />
           <DomainSignalCard
@@ -305,21 +322,36 @@ export default function MeasureTransformation({
           />
         </div>
 
-        <motion.p
-          className="text-xs text-[#AAAAAA] text-center mb-6 italic"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+        <motion.div
+          className="rounded-lg border border-[#E5E5E5] p-5 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          data-testid="section-formula"
         >
-          These values compare concurrent encounters {"–"} same providers, same period, documented with and without Abridge.
-        </motion.p>
+          <p className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">How We Calculated This</p>
+          <div className="h-px bg-[#E5E5E5] mb-3" />
+          <div className="space-y-1.5 text-sm text-[#666666] font-mono">
+            <p>{formatNumber(adoptedEncounters)} encounters {"×"} {timeReclaimed} min {"÷"} 60 {"×"} 50% efficiency {"×"} ${state.calibration.otHourlyRate}/hr</p>
+            {wrvuLift > 0 && (
+              <p>+ {wrvuLift.toFixed(2)} wRVU lift {"×"} {formatNumber(adoptedEncounters)} encounters {"×"} ${state.calibration.conversionFactor} CF {"×"} 50{"–"}75% attribution</p>
+            )}
+            {months !== 12 && <p className="text-[#999999]">{"×"} 12/{months} months (annualized)</p>}
+            <p className="font-semibold text-[#1A1A1A]">= {formatCurrency(confirmed.low)} {"–"} {formatCurrency(confirmed.high)} / year</p>
+          </div>
+          <div className="h-px bg-[#E5E5E5] my-3" />
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#999999]">
+            <span>Deployment period: {goLiveDisplay} {"→"} today ({months} months)</span>
+            <span className="flex items-center gap-1">Data source: <DataSourceBadge source={state.dataSource} /></span>
+          </div>
+        </motion.div>
 
         {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
           <motion.div
             className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
+            transition={{ delay: 0.4 }}
             data-testid="section-custom-metrics"
           >
             <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">Additional Metrics</h3>
@@ -332,7 +364,7 @@ export default function MeasureTransformation({
                     label={cm.label}
                     nonAbridge={cm.before}
                     withAbridge={cm.after}
-                    delay={0.5 + i * 0.05}
+                    delay={0.45 + i * 0.05}
                   />
                 ))}
             </div>
@@ -344,7 +376,7 @@ export default function MeasureTransformation({
             className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
+            transition={{ delay: 0.5 }}
             data-testid="section-headroom"
           >
             <div className="flex items-start gap-3">
@@ -361,29 +393,18 @@ export default function MeasureTransformation({
           </motion.div>
         )}
 
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <p className="text-base text-[#666666] italic">
-            Here{"'"}s what this means for your organization.
-          </p>
-        </motion.div>
-
         <motion.div 
           className="flex justify-center relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.6 }}
         >
           <Button
             onClick={onNext}
             className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
-            data-testid="button-see-value"
+            data-testid="button-see-scenarios"
           >
-            See What It{"'"}s Worth
+            What You Could Earn
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

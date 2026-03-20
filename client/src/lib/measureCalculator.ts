@@ -96,6 +96,14 @@ export interface MeasureState {
     targetAdoption: number;
     targetProviders: number;
   };
+  scenarioOverrides?: {
+    conservative?: ScenarioInputs;
+    typical?: ScenarioInputs;
+    optimistic?: ScenarioInputs;
+    conservativeCustom?: boolean;
+    typicalCustom?: boolean;
+    optimisticCustom?: boolean;
+  };
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -494,6 +502,176 @@ export const BENCHMARK_RANGES: Record<string, Record<number, { low: number; high
   inpatient: { 2: { low: 6000, high: 12000 }, 3: { low: 6000, high: 12000 }, 4: { low: 6000, high: 12000 } },
   nursing: { 2: { low: 3000, high: 6000 }, 3: { low: 3000, high: 6000 }, 4: { low: 3000, high: 6000 } },
 };
+
+export interface ScenarioInputs {
+  adoptionRate: number;
+  attributionRate: number;
+  providers: number;
+  encountersPerProvider: number;
+}
+
+export interface ScenarioResult {
+  label: 'conservative' | 'typical' | 'optimistic' | 'custom';
+  inputs: ScenarioInputs;
+  annualValue: number;
+  hoursReclaimed: number;
+  perProviderValue: number;
+  isCustomized: boolean;
+}
+
+export function getDefaultScenarios(state: MeasureState): {
+  conservative: ScenarioInputs;
+  typical: ScenarioInputs;
+  optimistic: ScenarioInputs;
+} {
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const annualFactor = 12 / Math.max(months, 1);
+  const baseEncounters = state.deployment.totalEncounters > 0
+    ? Math.round((state.deployment.totalEncounters / Math.max(state.deployment.providers, 1)) * annualFactor)
+    : 200;
+
+  return {
+    conservative: {
+      adoptionRate: state.deployment.utilizationRate,
+      attributionRate: 50,
+      providers: state.deployment.providers,
+      encountersPerProvider: baseEncounters,
+    },
+    typical: {
+      adoptionRate: Math.min(75, Math.max(state.deployment.utilizationRate + 15, 60)),
+      attributionRate: 62,
+      providers: state.deployment.totalProviders || state.deployment.providers,
+      encountersPerProvider: baseEncounters,
+    },
+    optimistic: {
+      adoptionRate: 90,
+      attributionRate: 75,
+      providers: state.deployment.totalProviders || state.deployment.providers,
+      encountersPerProvider: baseEncounters,
+    },
+  };
+}
+
+export function calculateScenario(
+  state: MeasureState,
+  inputs: ScenarioInputs,
+  label: ScenarioResult['label'],
+  isCustomized: boolean = false,
+): ScenarioResult {
+  const te = state.timeEfficiency;
+  const cal = state.calibration;
+  const dq = state.documentationQuality;
+
+  const timeSavedPerNote = Math.max(0, te.timeInNotesWithout - te.timeInNotesWith);
+  const totalEncounters = inputs.providers * inputs.encountersPerProvider;
+  const adoptedEncounters = Math.round(totalEncounters * (inputs.adoptionRate / 100));
+  const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
+
+  const efficiencyValue = totalHoursSaved * 0.5 * cal.otHourlyRate;
+
+  const wrvuLift = dq.wrvuWith - dq.wrvuWithout;
+  const wrvuValue = wrvuLift > 0 ? wrvuLift * adoptedEncounters * cal.conversionFactor * (inputs.attributionRate / 100) : 0;
+
+  let settingValue = 0;
+  const careSetting = state.careSetting || 'outpatient';
+  const settingData = state.settingData?.[careSetting] || {};
+
+  if (careSetting === 'inpatient') {
+    const cmiDelta = Math.max(0, (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0));
+    const cmiPointValue = settingData.vm_cmiPointValue ?? cal.conversionFactor ?? 1500;
+    settingValue += cmiDelta * adoptedEncounters * cmiPointValue * (inputs.attributionRate / 100);
+    const denialsDelta = Math.max(0, (settingData.denialsPer100_before ?? 0) - (settingData.denialsPer100_after ?? 0));
+    settingValue += (denialsDelta / 100) * adoptedEncounters * (settingData.vm_denialCostPerCase ?? 3200);
+  } else if (careSetting === 'ed') {
+    const throughputHours = totalHoursSaved * 0.3;
+    const addlPatients = throughputHours * (60 / cal.minutesPerVisit);
+    settingValue += addlPatients * cal.revenuePerVisit;
+  } else if (careSetting !== 'nursing') {
+    const capHours = totalHoursSaved * 0.2;
+    const addlVisits = capHours * (60 / cal.minutesPerVisit);
+    settingValue += addlVisits * cal.revenuePerVisit;
+  }
+
+  const annualValue = efficiencyValue + wrvuValue + settingValue;
+  const perProviderValue = inputs.providers > 0 ? annualValue / inputs.providers : 0;
+
+  return {
+    label,
+    inputs,
+    annualValue,
+    hoursReclaimed: Math.round(totalHoursSaved),
+    perProviderValue,
+    isCustomized,
+  };
+}
+
+export interface ConfirmedValue {
+  low: number;
+  high: number;
+  perProviderLow: number;
+  perProviderHigh: number;
+  hoursReclaimed: number;
+  adoptedEncounters: number;
+}
+
+export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
+  const te = state.timeEfficiency;
+  const cal = state.calibration;
+  const dq = state.documentationQuality;
+  const dep = state.deployment;
+  const months = getMonthsFromGoLive(state.goLiveDate, dep.monthsOnAbridge);
+  const annualFactor = 12 / Math.max(months, 1);
+
+  const timeSavedPerNote = Math.max(0, te.timeInNotesWithout - te.timeInNotesWith);
+  const adoptedEncounters = Math.round(dep.totalEncounters * (dep.utilizationRate / 100));
+  const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
+
+  const efficiencyValue = totalHoursSaved * 0.5 * cal.otHourlyRate * annualFactor;
+
+  const wrvuLift = dq.wrvuWith - dq.wrvuWithout;
+  const wrvuValueLow = wrvuLift > 0 ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.50 * annualFactor : 0;
+  const wrvuValueHigh = wrvuLift > 0 ? wrvuLift * adoptedEncounters * cal.conversionFactor * 0.75 * annualFactor : 0;
+
+  let settingValueLow = 0;
+  let settingValueHigh = 0;
+  const careSetting = state.careSetting || 'outpatient';
+  const settingData = state.settingData?.[careSetting] || {};
+
+  if (careSetting === 'inpatient') {
+    const cmiDelta = Math.max(0, (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0));
+    const cmiPointValue = settingData.vm_cmiPointValue ?? cal.conversionFactor ?? 1500;
+    settingValueLow += cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
+    settingValueHigh += cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
+    const denialsDelta = Math.max(0, (settingData.denialsPer100_before ?? 0) - (settingData.denialsPer100_after ?? 0));
+    const denialVal = (denialsDelta / 100) * adoptedEncounters * (settingData.vm_denialCostPerCase ?? 3200) * annualFactor;
+    settingValueLow += denialVal;
+    settingValueHigh += denialVal;
+  } else if (careSetting === 'ed') {
+    const throughputHours = totalHoursSaved * 0.3;
+    const addlPatients = throughputHours * (60 / cal.minutesPerVisit);
+    const tv = addlPatients * cal.revenuePerVisit * annualFactor;
+    settingValueLow += tv;
+    settingValueHigh += tv;
+  } else if (careSetting !== 'nursing') {
+    const capHours = totalHoursSaved * 0.2;
+    const addlVisits = capHours * (60 / cal.minutesPerVisit);
+    const cv = addlVisits * cal.revenuePerVisit * annualFactor;
+    settingValueLow += cv;
+    settingValueHigh += cv;
+  }
+
+  const low = efficiencyValue + wrvuValueLow + settingValueLow;
+  const high = efficiencyValue + wrvuValueHigh + settingValueHigh;
+
+  return {
+    low,
+    high,
+    perProviderLow: dep.providers > 0 ? low / dep.providers : 0,
+    perProviderHigh: dep.providers > 0 ? high / dep.providers : 0,
+    hoursReclaimed: Math.round(totalHoursSaved),
+    adoptedEncounters,
+  };
+}
 
 export function calculateExpansionResults(
   state: MeasureState,

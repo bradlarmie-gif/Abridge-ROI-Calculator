@@ -8,11 +8,12 @@ import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
 import { getDefaultOutpatientMetrics, getDefaultMetrics } from "@/lib/measureCareSettings";
 import MeasureDataEntry from "./MeasureDataEntry";
 import MeasureTransformation from "./MeasureTransformation";
+import MeasureScenarios from "./MeasureScenarios";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
 
-type MeasurePhase = 'data' | 'change' | 'value' | 'opportunity' | 'story';
+type MeasurePhase = 'data' | 'change' | 'scenarios' | 'value' | 'opportunity' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -81,8 +82,19 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureTransformation
           state={state}
-          onNext={() => navigate('value')}
+          onNext={() => navigate('scenarios')}
           onBack={() => navigate('data')}
+          onHome={goHome}
+        />
+      );
+
+    case 'scenarios':
+      return (
+        <MeasureScenarios
+          state={state}
+          updateState={updateState}
+          onNext={() => navigate('value')}
+          onBack={() => navigate('change')}
           onHome={goHome}
         />
       );
@@ -93,7 +105,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
           state={state}
           updateState={updateState}
           onNext={() => navigate('opportunity')}
-          onBack={() => navigate('change')}
+          onBack={() => navigate('scenarios')}
           onHome={goHome}
         />
       );
