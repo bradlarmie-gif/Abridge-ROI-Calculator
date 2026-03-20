@@ -225,12 +225,16 @@ export default function MeasureStage({
   const careSetting = state.careSetting || 'outpatient';
 
   const activeSettings = useMemo(() => {
+    if (state.activeCareSettings?.length > 0) return state.activeCareSettings;
     const settings: MeasureCareSetting[] = [];
     const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     for (const s of all) {
       const d = state.settingData[s];
-      if (d && Object.values(d).some(v => v !== 0)) {
-        settings.push(s);
+      if (d) {
+        const hasMetricData = Object.entries(d).some(([k, v]) =>
+          (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
+        );
+        if (hasMetricData) settings.push(s);
       }
     }
     if (settings.length === 0 && careSetting) settings.push(careSetting);
