@@ -216,7 +216,7 @@ export interface AbridgeNativeMetricDef {
 export const ABRIDGE_NATIVE_METRICS: AbridgeNativeMetricDef[] = [
   { key: 'notesGenerated', label: 'Notes Generated', description: 'Total AI-generated notes during deployment' },
   { key: 'avgNoteAcceptanceRate', label: 'Note Acceptance Rate', suffix: '%', description: 'Percentage of generated notes accepted by providers' },
-  { key: 'activeProviders', label: 'Active Providers', description: 'Providers who used Abridge at least once this period' },
+  { key: 'activeProviders', label: 'Monthly Recording Users', description: 'Providers who recorded with Abridge at least once this month' },
   { key: 'encountersCaptured', label: 'Encounters Captured', description: 'Total encounters processed by Abridge' },
 ];
 
