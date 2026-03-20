@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X, Sparkles } from "lucide-react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X, Sparkles, TrendingUp, TrendingDown, Activity, Calendar, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, type MonthlyMetricData, formatNumber, generateTrendData } from "@/lib/measureCalculator";
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
@@ -1013,160 +1014,410 @@ interface PreviewViewProps {
   onNext: () => void;
 }
 
-function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProps) {
+function useAnimatedCount(target: number, duration = 1200, delay = 0) {
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const [value, setValue] = useState(prefersReducedMotion ? target : 0);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (prefersReducedMotion) { setValue(target); return; }
+    const timeout = setTimeout(() => {
+      const start = performance.now();
+      const animate = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setValue(Math.round(target * eased));
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(animate);
+        }
+      };
+      rafRef.current = requestAnimationFrame(animate);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeout);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target, duration, delay, prefersReducedMotion]);
+
+  return value;
+}
+
+function AnimatedStat({ value, suffix, label, delay, format }: {
+  value: number;
+  suffix?: string;
+  label: string;
+  delay: number;
+  format?: (v: number) => string;
+}) {
+  const animated = useAnimatedCount(value, 1200, delay);
+  const display = format ? format(animated) : animated.toLocaleString();
+
   return (
     <motion.div
-      key="preview"
+      className="text-center"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay / 1000, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <p className="text-3xl md:text-4xl font-bold text-white tracking-tight" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
+        {display}{suffix || ''}
+      </p>
+      <p className="text-[11px] text-white/50 uppercase tracking-[1.5px] mt-1">
+        {label}
+      </p>
+    </motion.div>
+  );
+}
+
+function MiniSparkline({ data, color = '#EA2C00' }: { data: { value: number }[]; color?: string }) {
+  if (data.length < 2) return null;
+  return (
+    <div className="w-16 h-8">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={true}
+            animationDuration={1500}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function DeltaCard({ label, before, after, step, sparkData, delayIndex, isReduction }: {
+  label: string;
+  before: number;
+  after: number;
+  step?: number;
+  sparkData?: { value: number }[];
+  delayIndex: number;
+  isReduction?: boolean;
+}) {
+  const s = step ?? 1;
+  const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
+  const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
+  const delta = after - before;
+  const absDelta = Math.abs(delta);
+  const pctChange = before !== 0 ? Math.round((absDelta / before) * 100) : 0;
+
+  const isPositive = isReduction ? delta < 0 : delta > 0;
+  const isNeutral = delta === 0;
+
+  const accentColor = isNeutral ? '#999999' : isPositive ? '#2D8A4E' : '#DC2626';
+  const bgColor = isNeutral ? '#F5F5F5' : isPositive ? '#F0FDF4' : '#FEF2F2';
+  const DeltaIcon = isNeutral ? Minus : isPositive ? TrendingUp : TrendingDown;
+
+  return (
+    <motion.div
+      className="rounded-xl border border-[#E8E2DA] bg-white p-4 relative overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3 }}
+      transition={{ delay: 0.3 + delayIndex * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      data-testid={`delta-card-${label.toLowerCase().replace(/\s/g, '-')}`}
     >
-      <motion.div
-        className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <p
-          className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
-          data-testid="text-section-deployment"
-        >
-          Deployment Summary
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div data-testid="stat-providers">
-            <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.providers}</p>
-            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">
-              providers on Abridge
-            </p>
-          </div>
-          <div data-testid="stat-encounters">
-            <p className="text-2xl font-bold text-[#1A1A1A]">
-              {formatNumber(state.deployment.totalEncounters)}
-            </p>
-            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">
-              encounters analyzed
-            </p>
-          </div>
-          <div data-testid="stat-adoption">
-            <p className="text-2xl font-bold text-[#1A1A1A]">
-              {state.deployment.utilizationRate}%
-            </p>
-            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">adoption</p>
-          </div>
-          <div data-testid="stat-months">
-            <p className="text-2xl font-bold text-[#1A1A1A]">
-              {state.deployment.monthsOnAbridge} mo
-            </p>
-            <p className="text-[12px] text-[#999999] uppercase tracking-[1px]">live</p>
+      <div className="flex items-start justify-between mb-3">
+        <p className="text-sm font-medium text-[#1A1A1A]">{label}</p>
+        {sparkData && sparkData.length >= 2 && (
+          <MiniSparkline data={sparkData} color={accentColor} />
+        )}
+      </div>
+
+      <div className="flex items-end gap-4">
+        <div className="flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs text-[#999999]">{formatVal(before)}</span>
+            <span className="text-[#CCCCCC]">{"\u2192"}</span>
+            <span className="text-lg font-bold text-[#1A1A1A]">{formatVal(after)}</span>
           </div>
         </div>
 
-        {state.deployment.totalProviders > state.deployment.providers && (
-          <div className="mt-4 flex items-start gap-2" data-testid="section-expansion-seed">
-            <Users className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
-            <p className="text-[12px] text-[#999999]">
-              {state.deployment.providers} of {state.deployment.totalProviders} total providers are
-              on Abridge today.
-            </p>
+        {!isNeutral && (
+          <div
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: bgColor, color: accentColor }}
+          >
+            <DeltaIcon className="w-3 h-3" />
+            {isReduction ? '' : delta > 0 ? '+' : ''}{formatVal(delta)}
+            {pctChange > 0 && <span className="opacity-70">({pctChange}%)</span>}
           </div>
         )}
-      </motion.div>
+      </div>
+    </motion.div>
+  );
+}
 
-      <motion.div
-        className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <p
-          className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
-          data-testid="text-section-measured"
-        >
-          What We Measured
-        </p>
+function JourneyTimeline({ months, goLiveDate }: { months: number; goLiveDate: string | null }) {
+  const milestones = [
+    { month: 1, label: 'Go-Live' },
+    { month: 3, label: 'Efficiency' },
+    { month: 6, label: 'Capacity' },
+    { month: 12, label: 'Strategic' },
+    { month: 18, label: 'Full Proof' },
+  ].filter(m => m.month <= Math.max(months + 3, 6));
 
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div />
-          <p className="text-xs font-semibold text-[#999999] uppercase tracking-[1px] text-right">
-            Non-Abridge
-          </p>
-          <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">
-            With Abridge
-          </p>
-        </div>
+  const maxMonth = milestones[milestones.length - 1]?.month || 6;
 
-        {config.metricSections.map((section) => {
-          const visibleMetrics = section.metrics.filter((m) => {
-            if (m.hasBeforeAfter) {
-              return (
-                (metrics[`${m.key}_before`] ?? 0) !== 0 ||
-                (metrics[`${m.key}_after`] ?? 0) !== 0
-              );
-            }
-            return (metrics[m.key] ?? 0) !== 0;
-          });
+  return (
+    <motion.div
+      className="mt-6 px-2"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.8, duration: 0.6 }}
+    >
+      <div className="relative h-12">
+        <div className="absolute top-4 left-0 right-0 h-[2px] bg-white/10 rounded-full" />
 
-          if (visibleMetrics.length === 0) return null;
+        <motion.div
+          className="absolute top-4 left-0 h-[2px] rounded-full"
+          style={{ background: 'linear-gradient(90deg, #EA2C00, #FF6B35)' }}
+          initial={{ width: '0%' }}
+          animate={{ width: `${Math.min((months / maxMonth) * 100, 100)}%` }}
+          transition={{ delay: 1.0, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        />
 
+        {milestones.map((m) => {
+          const pct = (m.month / maxMonth) * 100;
+          const reached = months >= m.month;
+          const isCurrent = m.month <= months && (!milestones.find(n => n.month > m.month && n.month <= months));
           return (
-            <div key={section.key} className="mb-4">
-              <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-                {section.label}
+            <div
+              key={m.month}
+              className="absolute flex flex-col items-center"
+              style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
+            >
+              <div className={`w-2.5 h-2.5 rounded-full border-2 mt-[11px] transition-all ${
+                reached ? 'bg-[#EA2C00] border-[#EA2C00]' : 'bg-transparent border-white/20'
+              } ${isCurrent ? 'ring-2 ring-[#EA2C00]/30 ring-offset-1 ring-offset-[#1A1A1A]' : ''}`} />
+              <p className={`text-[9px] mt-1 whitespace-nowrap ${
+                reached ? 'text-white/70 font-medium' : 'text-white/25'
+              }`}>
+                {m.label}
               </p>
-              <div className="space-y-0">
-                {visibleMetrics.map((metric) => {
-                  const before = metrics[`${metric.key}_before`] ?? 0;
-                  const after = metrics[`${metric.key}_after`] ?? 0;
-                  const step = metric.step ?? 1;
-                  const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0;
-                  const formatVal = (v: number) =>
-                    decimals > 0 ? v.toFixed(decimals) : String(v);
-
-                  return (
-                    <div
-                      key={metric.key}
-                      className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]"
-                      data-testid={`row-${metric.key}`}
-                    >
-                      <p className="text-sm text-[#1A1A1A]">
-                        {metric.label.replace(/\s*\(.*?\)\s*/g, "")}
-                      </p>
-                      <p className="text-sm text-[#999999] text-right">{formatVal(before)}</p>
-                      <p className="text-sm font-semibold text-[#1A1A1A] text-right">
-                        {formatVal(after)}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {(state.customMetrics || [])
-                .filter((cm) => cm.section === section.key && cm.label.trim())
-                .map((cm) => (
-                  <div
-                    key={cm.id}
-                    className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]"
-                    data-testid={`row-custom-${cm.id}`}
-                  >
-                    <p className="text-sm text-[#1A1A1A] italic">{cm.label}</p>
-                    <p className="text-sm text-[#999999] text-right">{cm.before}</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{cm.after}</p>
-                  </div>
-                ))}
             </div>
           );
         })}
+      </div>
+    </motion.div>
+  );
+}
+
+function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProps) {
+  const nativeData = state.abridgeNativeData || {};
+  const filledNative = ABRIDGE_NATIVE_METRICS.filter(m => (nativeData[m.key] ?? 0) > 0);
+
+  const trendMetricMap: Record<string, string> = {
+    timeInNotes: 'timeInNotes',
+    wrvuPerEncounter: 'wrvu',
+    sameDayClosure: 'sameDayClosure',
+    emLevel: 'emLevel',
+  };
+
+  const getSparkData = (metricKey: string) => {
+    const trendKey = trendMetricMap[metricKey];
+    if (!trendKey || state.deployment.monthsOnAbridge < 2) return undefined;
+    const trend = generateTrendData(state, trendKey);
+    if (trend.length < 2) return undefined;
+    return trend.map(t => ({ value: t.abridge }));
+  };
+
+  const reductionMetrics = new Set(['timeInNotes', 'timeToClose', 'workOutside', 'chartingTime', 'overtimeHours', 'denialsPer100', 'doorToDoc', 'lwbsRate', 'fallsRate', 'hapiRate', 'turnoverRate', 'daysToClose', 'afterHours', 'afterShiftCharting', 'cdiQueriesPer100', 'readmissionRate', 'los']);
+
+  let deltaIndex = 0;
+
+  return (
+    <motion.div
+      key="preview"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.4 }}
+    >
+      <motion.div
+        className="rounded-2xl overflow-hidden mb-8"
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="bg-[#1A1A1A] px-6 py-8 md:px-8 md:py-10 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 20% 50%, #EA2C00 0%, transparent 50%), radial-gradient(circle at 80% 20%, #EA2C00 0%, transparent 50%)',
+            }}
+          />
+
+          <motion.div
+            className="relative z-10"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <Activity className="w-4 h-4 text-[#EA2C00]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00]" data-testid="text-section-deployment">
+                Your Abridge Deployment
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+              <AnimatedStat value={state.deployment.providers} label="Providers" delay={200} />
+              <AnimatedStat
+                value={state.deployment.totalEncounters}
+                label="Encounters"
+                delay={400}
+                format={(v) => v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}K` : v.toLocaleString()}
+              />
+              <AnimatedStat value={state.deployment.utilizationRate} suffix="%" label="Adoption" delay={600} />
+              <AnimatedStat value={state.deployment.monthsOnAbridge} label="Months Live" delay={800} />
+            </div>
+
+            {state.deployment.totalProviders > state.deployment.providers && (
+              <motion.div
+                className="mt-5 flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2, duration: 0.5 }}
+                data-testid="section-expansion-seed"
+              >
+                <Users className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                <p className="text-[11px] text-white/40">
+                  {state.deployment.providers} of {state.deployment.totalProviders} total providers on Abridge today
+                </p>
+                <div className="flex-1 h-1 bg-white/5 rounded-full ml-2 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-[#EA2C00] to-[#FF6B35]"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${Math.round((state.deployment.providers / state.deployment.totalProviders) * 100)}%` }}
+                    transition={{ delay: 1.4, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            <JourneyTimeline months={state.deployment.monthsOnAbridge} goLiveDate={state.goLiveDate} />
+          </motion.div>
+        </div>
       </motion.div>
 
-      <div className="h-px bg-[#E5E5E5] my-6" />
+      {filledNative.length > 0 && (
+        <motion.div
+          className="rounded-xl border border-[#E8E2DA] bg-gradient-to-br from-[#FFF8F5] to-[#FFFBF9] p-5 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.5 }}
+          data-testid="section-abridge-footprint"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00]">
+              Abridge Footprint
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {filledNative.map((m, i) => (
+              <motion.div
+                key={m.key}
+                className="bg-white rounded-lg border border-[#F0EBE6] px-4 py-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.06, duration: 0.4 }}
+              >
+                <p className="text-xl font-bold text-[#1A1A1A]">
+                  {formatNumber(nativeData[m.key]!)}{m.suffix || ''}
+                </p>
+                <p className="text-[10px] text-[#888888] uppercase tracking-[1px] mt-0.5">{m.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {(() => {
+        const allMetrics: { sectionKey: string; sectionLabel: string; metrics: typeof config.metricSections[0]['metrics'] }[] = [];
+        config.metricSections.forEach(section => {
+          const visible = section.metrics.filter(m => {
+            if (m.hasBeforeAfter) {
+              return (metrics[`${m.key}_before`] ?? 0) !== 0 || (metrics[`${m.key}_after`] ?? 0) !== 0;
+            }
+            return false;
+          });
+          if (visible.length > 0) allMetrics.push({ sectionKey: section.key, sectionLabel: section.label, metrics: visible });
+        });
+
+        if (allMetrics.length === 0) return null;
+
+        return (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-4 rounded-full bg-[#EA2C00]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#999999]" data-testid="text-section-measured">
+                What Your Data Shows
+              </p>
+            </div>
+
+            {allMetrics.map(({ sectionKey, sectionLabel, metrics: sectionMetrics }) => (
+              <div key={sectionKey} className="mb-4">
+                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2 ml-1">
+                  {sectionLabel}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {sectionMetrics.map((metric) => {
+                    const before = metrics[`${metric.key}_before`] ?? 0;
+                    const after = metrics[`${metric.key}_after`] ?? 0;
+                    const idx = deltaIndex++;
+                    return (
+                      <DeltaCard
+                        key={metric.key}
+                        label={metric.label.replace(/\s*\(.*?\)\s*/g, '')}
+                        before={before}
+                        after={after}
+                        step={metric.step}
+                        sparkData={getSparkData(metric.key)}
+                        delayIndex={idx}
+                        isReduction={reductionMetrics.has(metric.key)}
+                      />
+                    );
+                  })}
+                </div>
+
+                {(state.customMetrics || [])
+                  .filter(cm => cm.section === sectionKey && cm.label.trim())
+                  .map(cm => {
+                    const idx = deltaIndex++;
+                    return (
+                      <div key={cm.id} className="mt-3">
+                        <DeltaCard
+                          label={cm.label}
+                          before={cm.before}
+                          after={cm.after}
+                          delayIndex={idx}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+            ))}
+          </motion.div>
+        );
+      })()}
 
       <motion.div
-        className="max-w-[480px] mx-auto text-center relative z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
+        className="max-w-[480px] mx-auto text-center relative z-10 mt-8"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
       >
         <Button
           onClick={onNext}
