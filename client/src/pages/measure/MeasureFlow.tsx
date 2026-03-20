@@ -10,12 +10,12 @@ import MeasureDataEntry from "./MeasureDataEntry";
 import MeasureMetricSelection from "./MeasureMetricSelection";
 import MeasureJourney from "./MeasureJourney";
 import MeasureStage from "./MeasureStage";
-import MeasureScenarios from "./MeasureScenarios";
 import MeasureAllocate from "./MeasureAllocate";
+import MeasureScenarios from "./MeasureScenarios";
 import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
 
-type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'scenarios' | 'value' | 'opportunity' | 'story';
+type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'value' | 'adoption' | 'opportunity' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -136,30 +136,30 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureStage
           state={state}
-          onNext={() => navigate('scenarios')}
+          onNext={() => navigate('value')}
           onBack={() => navigate('journey')}
           onHome={goHome}
         />
       );
 
-    case 'scenarios':
-      return (
-        <MeasureScenarios
-          state={state}
-          updateState={updateState}
-          onNext={() => navigate('value')}
-          onBack={() => navigate('stage')}
-          onHome={goHome}
-        />
-      );
-    
     case 'value':
       return (
         <MeasureAllocate
           state={state}
           updateState={updateState}
+          onNext={() => navigate('adoption')}
+          onBack={() => navigate('stage')}
+          onHome={goHome}
+        />
+      );
+
+    case 'adoption':
+      return (
+        <MeasureScenarios
+          state={state}
+          updateState={updateState}
           onNext={() => navigate('opportunity')}
-          onBack={() => navigate('scenarios')}
+          onBack={() => navigate('value')}
           onHome={goHome}
         />
       );
@@ -170,7 +170,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
           state={state}
           updateState={updateState}
           onNext={() => navigate('story')}
-          onBack={() => navigate('value')}
+          onBack={() => navigate('adoption')}
           onHome={goHome}
         />
       );

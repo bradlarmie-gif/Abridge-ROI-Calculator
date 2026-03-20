@@ -326,7 +326,7 @@ export default function MeasureStage({
             className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-next"
           >
-            What You Could Earn
+            Your Estimated Impact
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
