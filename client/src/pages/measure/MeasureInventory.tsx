@@ -9,7 +9,6 @@ import {
   formatNumber,
   deriveEngagementContext,
   deriveSettingStage,
-  getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS } from "@/lib/measureCareSettings";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
@@ -253,8 +252,11 @@ export default function MeasureInventory({
     const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     for (const s of all) {
       const d = state.settingData[s];
-      if (d && Object.values(d).some(v => v !== 0)) {
-        settings.push(s);
+      if (d) {
+        const hasMetricData = Object.entries(d).some(([k, v]) =>
+          (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
+        );
+        if (hasMetricData) settings.push(s);
       }
     }
     if (settings.length === 0 && state.careSetting) settings.push(state.careSetting);
@@ -278,10 +280,8 @@ export default function MeasureInventory({
 
   const activeRows = filteredRows.filter(r => r.status === 'active');
   const baselineRows = filteredRows.filter(r => r.status === 'baseline');
-  const totalMetrics = filteredRows.length;
   const activeCount = activeRows.length;
   const baselineCount = baselineRows.length;
-  const notMeasuringCount = filteredRows.filter(r => r.status === 'not-measuring').length;
 
   const groupedActive = useMemo(() => {
     const groups: Record<string, MetricRowData[]> = {};
@@ -294,7 +294,6 @@ export default function MeasureInventory({
 
   const totalProviders = state.deployment.providers;
   const totalEncounters = state.deployment.totalEncounters;
-  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
   const nativeData = state.abridgeNativeData || {};
   const filledNative = ABRIDGE_NATIVE_METRICS.filter(m => (nativeData[m.key] ?? 0) > 0);
 
