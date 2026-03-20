@@ -250,7 +250,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
               label={providerLabel.charAt(0).toUpperCase() + providerLabel.slice(1)}
               value={expandTarget}
               min={currentProviders}
-              max={Math.max(totalProviders * 2, currentProviders + 50)}
+              max={Math.max(totalProviders, currentProviders + 10)}
               step={1}
               suffix=""
               onChange={setExpandTarget}
