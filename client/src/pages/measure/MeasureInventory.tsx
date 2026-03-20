@@ -1,15 +1,13 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, Activity, BarChart3, Users, Stethoscope, TrendingUp, TrendingDown, Minus, CircleDot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
   type MeasureCareSetting,
-  type DomainStatus,
   formatNumber,
   deriveEngagementContext,
-  computeDomainStatus,
   deriveSettingStage,
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
@@ -27,13 +25,22 @@ interface MeasureInventoryProps {
 
 interface MetricRowData {
   label: string;
+  metricKey: string;
   domain: string;
+  setting: MeasureCareSetting;
   status: 'active' | 'baseline' | 'not-measuring';
   before?: number;
   after?: number;
   delta?: number;
   unit?: string;
+  step?: number;
 }
+
+const reductionMetrics = new Set([
+  'timeInNotes', 'timeToClose', 'workOutside', 'chartingTime', 'overtimeHours',
+  'denialsPer100', 'doorToDoc', 'lwbsRate', 'fallsRate', 'hapiRate', 'turnoverRate',
+  'daysToClose', 'afterHours', 'afterShiftCharting', 'cdiQueriesPer100', 'readmissionRate', 'los',
+]);
 
 function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting): MetricRowData[] {
   const config = CARE_SETTING_CONFIGS[setting];
@@ -74,12 +81,15 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
 
       rows.push({
         label: metric.label.replace(/ \(.*\)/, ''),
+        metricKey: metric.key,
         domain,
+        setting,
         status,
         before: before || undefined,
         after: after || undefined,
         delta: Math.abs(delta) > 0 ? delta : undefined,
         unit: metric.suffix,
+        step: metric.step,
       });
     }
   }
@@ -116,139 +126,115 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   return rows;
 }
 
-function groupByDomain(rows: MetricRowData[]): Record<string, MetricRowData[]> {
-  const groups: Record<string, MetricRowData[]> = {};
-  for (const r of rows) {
-    if (!groups[r.domain]) groups[r.domain] = [];
-    groups[r.domain].push(r);
-  }
-  return groups;
-}
+const settingLabels: Record<MeasureCareSetting, string> = {
+  outpatient: 'Outpatient',
+  ed: 'Emergency',
+  inpatient: 'Inpatient',
+  nursing: 'Nursing',
+};
 
-function StatusBadge({ status }: { status: 'active' | 'baseline' | 'not-measuring' }) {
-  if (status === 'active') {
-    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700" data-testid="badge-active">ACTIVE</span>;
-  }
-  if (status === 'baseline') {
-    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-700" data-testid="badge-baseline">BASELINE</span>;
-  }
-  return null;
-}
+const settingIcons: Record<MeasureCareSetting, typeof Stethoscope> = {
+  outpatient: Stethoscope,
+  ed: Activity,
+  inpatient: BarChart3,
+  nursing: Users,
+};
 
-function MetricRow({ row, onAdd }: { row: MetricRowData; onAdd?: () => void }) {
-  if (row.status === 'active') {
-    return (
-      <div className="flex items-center gap-3 py-2 border-b border-[#F5F5F5] last:border-b-0" data-testid={`metric-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}>
-        <span className="w-2 h-2 rounded-full bg-[#EA2C00] flex-shrink-0" />
-        <span className="text-sm text-[#1A1A1A] flex-1 min-w-0">{row.label}</span>
-        <span className="text-xs text-[#999999]">{row.before?.toFixed(row.before % 1 ? 2 : 0)}</span>
-        <span className="text-xs text-[#CCCCCC]">{"\u2192"}</span>
-        <span className="text-sm font-medium text-[#1A1A1A]">{row.after?.toFixed(row.after % 1 ? 2 : 0)}</span>
-        {row.delta !== undefined && (
-          <span className={`text-xs font-medium ${row.delta > 0 ? 'text-green-600' : 'text-red-500'}`}>
-            {row.delta > 0 ? '+' : ''}{row.delta.toFixed(row.delta % 1 ? 2 : 1)}
-          </span>
-        )}
-        <StatusBadge status="active" />
-      </div>
-    );
-  }
+const domainOrder = ['Workforce', 'Quality', 'Revenue', 'Capacity', 'Patient Flow', 'Throughput'];
 
-  if (row.status === 'baseline') {
-    return (
-      <div className="flex items-center gap-3 py-2 border-b border-[#F5F5F5] last:border-b-0" data-testid={`metric-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}>
-        <span className="w-2 h-2 rounded-full border border-[#CCCCCC] flex-shrink-0" />
-        <span className="text-sm text-[#666666] flex-1 min-w-0">{row.label}</span>
-        <span className="text-xs text-[#999999]">baseline: {row.before?.toFixed(row.before % 1 ? 2 : 0)}</span>
-        <span className="text-xs text-[#CCCCCC]">{"\u2014"}</span>
-        <StatusBadge status="baseline" />
-      </div>
-    );
-  }
+function SignalRing({ active, baseline, total }: { active: number; baseline: number; total: number }) {
+  const size = 72;
+  const stroke = 6;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const activeRatio = total > 0 ? active / total : 0;
+  const baselineRatio = total > 0 ? baseline / total : 0;
+  const activeLen = circumference * activeRatio;
+  const baselineLen = circumference * baselineRatio;
+  const gapLen = circumference - activeLen - baselineLen;
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-[#F5F5F5] last:border-b-0 opacity-50" data-testid={`metric-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}>
-      <span className="w-2 h-2 rounded-full border border-[#E0E0E0] flex-shrink-0" />
-      <span className="text-sm text-[#999999] flex-1 min-w-0">{row.label}</span>
-      <span className="text-xs text-[#CCCCCC]">Not entered</span>
-      {onAdd && (
-        <button onClick={onAdd} className="text-xs text-[#EA2C00] hover:underline flex items-center gap-0.5" data-testid={`btn-add-${row.label.toLowerCase().replace(/\s/g, '-')}`}>
-          <Plus className="w-3 h-3" />Add
-        </button>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#F0F0F0" strokeWidth={stroke} />
+        {active > 0 && (
+          <circle
+            cx={size / 2} cy={size / 2} r={radius} fill="none"
+            stroke="#EA2C00" strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={`${activeLen} ${circumference - activeLen}`}
+            strokeDashoffset={0}
+          />
+        )}
+        {baseline > 0 && (
+          <circle
+            cx={size / 2} cy={size / 2} r={radius} fill="none"
+            stroke="#F5C6B3" strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={`${baselineLen} ${circumference - baselineLen}`}
+            strokeDashoffset={-activeLen}
+          />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-lg font-bold text-white" data-testid="text-signal-active-count">{active}</span>
+        <span className="text-[8px] uppercase tracking-[1px] text-white/50">active</span>
+      </div>
+    </div>
+  );
+}
+
+function MetricDeltaRow({ row, index, isReduction, showSetting }: { row: MetricRowData; index: number; isReduction: boolean; showSetting?: boolean }) {
+  const s = row.step ?? 1;
+  const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
+  const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
+  const delta = (row.after ?? 0) - (row.before ?? 0);
+  const absDelta = Math.abs(delta);
+  const pctChange = row.before && row.before !== 0 ? Math.round((absDelta / row.before) * 100) : 0;
+  const isPositive = isReduction ? delta < 0 : delta > 0;
+
+  const accentColor = isPositive ? '#2D8A4E' : '#DC2626';
+  const bgColor = isPositive ? '#F0FDF4' : '#FEF2F2';
+  const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
+
+  return (
+    <motion.div
+      className="flex items-center gap-3 py-3 border-b border-[#F0EBE6] last:border-b-0"
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 + index * 0.05, duration: 0.4 }}
+      data-testid={`metric-row-${row.label.toLowerCase().replace(/\s/g, '-')}`}
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
+      <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
+      {showSetting && (
+        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#F5F0EB] text-[#999999] font-medium flex-shrink-0">{settingLabels[row.setting]}</span>
       )}
-    </div>
+      <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
+      <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
+      <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
+      <div
+        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
+        style={{ backgroundColor: bgColor, color: accentColor }}
+      >
+        <DeltaIcon className="w-3 h-3" />
+        {pctChange > 0 && <span>{pctChange}%</span>}
+      </div>
+    </motion.div>
   );
 }
 
-function SignalSummaryBar({ rows }: { rows: MetricRowData[] }) {
-  const active = rows.filter(r => r.status === 'active').length;
-  const baseline = rows.filter(r => r.status === 'baseline').length;
-  const notMeasuring = rows.filter(r => r.status === 'not-measuring').length;
-  const total = rows.length;
-
+function BaselineRow({ row, index }: { row: MetricRowData; index: number }) {
   return (
-    <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
-      <p className="text-xs text-[#666666] mb-2">
-        {active} metric{active !== 1 ? 's' : ''} active {"\u00B7"} {baseline} baseline-only {"\u00B7"} {notMeasuring} not yet measuring
-      </p>
-      <div className="flex h-2 rounded-full overflow-hidden">
-        {active > 0 && <div className="bg-[#EA2C00]" style={{ width: `${(active / total) * 100}%` }} />}
-        {baseline > 0 && <div className="bg-[#F5E0D6]" style={{ width: `${(baseline / total) * 100}%` }} />}
-        {notMeasuring > 0 && <div className="bg-[#F0F0F0]" style={{ width: `${(notMeasuring / total) * 100}%` }} />}
-      </div>
-    </div>
-  );
-}
-
-function SettingInventoryContent({ state, setting, onBack }: { state: MeasureState; setting: MeasureCareSetting; onBack: () => void }) {
-  const rows = useMemo(() => getSettingMetricRows(state, setting), [state, setting]);
-  const grouped = useMemo(() => groupByDomain(rows), [rows]);
-  const nativeData = state.abridgeNativeData || {};
-  const filledNative = ABRIDGE_NATIVE_METRICS.filter(m => (nativeData[m.key] ?? 0) > 0);
-  const domainOrder = ['Quality', 'Workforce', 'Revenue', 'Capacity', 'Patient Flow', 'Throughput'];
-
-  return (
-    <div>
-      <div className="rounded-lg p-5 mb-4" style={{ backgroundColor: '#F5F0EB' }}>
-        <p className="text-[9px] font-bold uppercase tracking-[2px] text-[#999999] mb-1">ABRIDGE PLATFORM DATA</p>
-        <p className="text-xs text-[#666666] mb-3">Pulled directly from your Abridge deployment</p>
-        {filledNative.length > 0 ? (
-          <div className="space-y-1.5">
-            {filledNative.map(m => (
-              <div key={m.key} className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
-                <span className="text-sm text-[#1A1A1A]">{m.label}</span>
-                <span className="text-sm font-semibold text-[#1A1A1A] ml-auto">{formatNumber(nativeData[m.key]!)}{m.suffix ? m.suffix : ''}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-[#999999] italic">
-            Add your Abridge platform metrics in Step 1 to see them here.
-          </p>
-        )}
-      </div>
-
-      <div className="rounded-lg bg-white border border-[#E5E5E5] p-5">
-        <p className="text-[9px] font-bold uppercase tracking-[2px] text-[#999999] mb-1">PARTNER-PROVIDED DATA</p>
-        <p className="text-xs text-[#666666] mb-4">Entered from your EHR, billing, and HR systems</p>
-
-        {domainOrder.map(domain => {
-          const domainRows = grouped[domain];
-          if (!domainRows || domainRows.length === 0) return null;
-          return (
-            <div key={domain} className="mb-4 last:mb-0">
-              <p className="text-[9px] font-bold uppercase tracking-[2px] text-[#999999] mb-2">{domain}</p>
-              {domainRows.map(row => (
-                <MetricRow key={row.label} row={row} onAdd={row.status === 'not-measuring' ? onBack : undefined} />
-              ))}
-            </div>
-          );
-        })}
-
-        <SignalSummaryBar rows={rows} />
-      </div>
-    </div>
+    <motion.div
+      className="flex items-center gap-3 py-2.5 border-b border-[#F5F5F5] last:border-b-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.4 + index * 0.04, duration: 0.3 }}
+      data-testid={`metric-row-baseline-${row.label.toLowerCase().replace(/\s/g, '-')}`}
+    >
+      <span className="w-1.5 h-1.5 rounded-full border border-[#CCCCCC] flex-shrink-0" />
+      <span className="text-sm text-[#888888] flex-1 min-w-0">{row.label}</span>
+      <span className="text-xs text-[#BBBBBB]">baseline: {(row.before ?? 0).toFixed(row.step && row.step < 1 ? Math.ceil(-Math.log10(row.step)) : 0)}</span>
+    </motion.div>
   );
 }
 
@@ -260,7 +246,6 @@ export default function MeasureInventory({
 }: MeasureInventoryProps) {
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const narrative = useMemo(() => generateNarrative('inventory', state), [state]);
-  const careSetting = state.careSetting || 'outpatient';
 
   const activeSettings = useMemo(() => {
     const settings: MeasureCareSetting[] = [];
@@ -271,31 +256,60 @@ export default function MeasureInventory({
         settings.push(s);
       }
     }
-    if (settings.length === 0 && careSetting) settings.push(careSetting);
+    if (settings.length === 0 && state.careSetting) settings.push(state.careSetting);
     return settings;
-  }, [state, careSetting]);
+  }, [state]);
 
-  const multiSetting = activeSettings.length > 1;
-  const [selectedTab, setSelectedTab] = useState<MeasureCareSetting | 'all'>(multiSetting ? 'all' : activeSettings[0]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [selectedSetting, setSelectedSetting] = useState<MeasureCareSetting | 'all'>('all');
 
-  const settingLabels: Record<MeasureCareSetting, string> = {
-    outpatient: 'Outpatient',
-    ed: 'Emergency',
-    inpatient: 'Inpatient',
-    nursing: 'Nursing',
-  };
-
-  const totalProviders = state.deployment.providers;
-  const totalEncounters = state.deployment.totalEncounters;
-  const allRows = useMemo(() => {
+  const allMetricRows = useMemo(() => {
     const rows: MetricRowData[] = [];
     for (const s of activeSettings) {
       rows.push(...getSettingMetricRows(state, s));
     }
     return rows;
   }, [state, activeSettings]);
-  const activeMetricCount = allRows.filter(r => r.status === 'active').length;
+
+  const filteredRows = useMemo(() => {
+    if (selectedSetting === 'all') return allMetricRows;
+    return allMetricRows.filter(r => r.setting === selectedSetting);
+  }, [allMetricRows, selectedSetting]);
+
+  const activeRows = filteredRows.filter(r => r.status === 'active');
+  const baselineRows = filteredRows.filter(r => r.status === 'baseline');
+  const totalMetrics = filteredRows.length;
+  const activeCount = activeRows.length;
+  const baselineCount = baselineRows.length;
+  const notMeasuringCount = filteredRows.filter(r => r.status === 'not-measuring').length;
+
+  const groupedActive = useMemo(() => {
+    const groups: Record<string, MetricRowData[]> = {};
+    for (const r of activeRows) {
+      if (!groups[r.domain]) groups[r.domain] = [];
+      groups[r.domain].push(r);
+    }
+    return groups;
+  }, [activeRows]);
+
+  const totalProviders = state.deployment.providers;
+  const totalEncounters = state.deployment.totalEncounters;
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const nativeData = state.abridgeNativeData || {};
+  const filledNative = ABRIDGE_NATIVE_METRICS.filter(m => (nativeData[m.key] ?? 0) > 0);
+
+  const settingStages = useMemo(() => {
+    const stages: Record<string, { maturityLabel: string; months: number; activeCount: number }> = {};
+    for (const s of activeSettings) {
+      const stage = deriveSettingStage(state, s);
+      const sRows = getSettingMetricRows(state, s);
+      stages[s] = {
+        maturityLabel: stage.maturityLabel,
+        months: stage.months,
+        activeCount: sRows.filter(r => r.status === 'active').length,
+      };
+    }
+    return stages;
+  }, [state, activeSettings]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -313,7 +327,7 @@ export default function MeasureInventory({
         <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
 
         <motion.div
-          className="text-center mb-6"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -321,80 +335,236 @@ export default function MeasureInventory({
             Your Measurement Picture
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
-            Here{"'"}s what we{"'"}re tracking together {"\u2014"} and where each metric stands.
+            Here{"\u2019"}s what your data shows {"\u2014"} at a glance.
           </p>
         </motion.div>
 
         <NarrativePanel narrative={narrative} />
 
-        {multiSetting && (
-          <div className="flex items-center gap-2 mb-6" data-testid="setting-tabs">
+        <motion.div
+          className="rounded-2xl bg-[#1A1A1A] p-6 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          data-testid="stats-header"
+        >
+          <div className="flex items-center gap-6">
+            <SignalRing active={allMetricRows.filter(r => r.status === 'active').length} baseline={allMetricRows.filter(r => r.status === 'baseline').length} total={allMetricRows.length} />
+
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="stat-providers">{formatNumber(totalProviders)}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Providers</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="stat-encounters">{formatNumber(totalEncounters)}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Encounters</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="stat-settings">{activeSettings.length}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Settings</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="stat-months">{months}</p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Months Live</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-white/10">
+            <div className="flex items-center gap-4 text-[11px]">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'active').length} Active</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#F5C6B3]" />
+                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'baseline').length} Baseline</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-white/20" />
+                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'not-measuring').length} Not yet</span>
+              </div>
+              <div className="ml-auto">
+                <div className="flex h-1.5 rounded-full overflow-hidden w-28">
+                  {allMetricRows.filter(r => r.status === 'active').length > 0 && (
+                    <div className="bg-[#EA2C00]" style={{ width: `${(allMetricRows.filter(r => r.status === 'active').length / allMetricRows.length) * 100}%` }} />
+                  )}
+                  {allMetricRows.filter(r => r.status === 'baseline').length > 0 && (
+                    <div className="bg-[#F5C6B3]" style={{ width: `${(allMetricRows.filter(r => r.status === 'baseline').length / allMetricRows.length) * 100}%` }} />
+                  )}
+                  {allMetricRows.filter(r => r.status === 'not-measuring').length > 0 && (
+                    <div className="bg-white/20" style={{ width: `${(allMetricRows.filter(r => r.status === 'not-measuring').length / allMetricRows.length) * 100}%` }} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {activeSettings.length > 1 && (
+          <motion.div
+            className="flex flex-wrap items-center gap-2 mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            data-testid="setting-tabs"
+          >
             <button
-              onClick={() => setSelectedTab('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedTab === 'all' ? 'bg-[#1A1A1A] text-white' : 'bg-[#F0F0F0] text-[#999999] hover:text-[#666666]'}`}
+              onClick={() => setSelectedSetting('all')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all border ${
+                selectedSetting === 'all'
+                  ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                  : 'bg-white text-[#666666] border-[#E5E5E5] hover:border-[#CCCCCC]'
+              }`}
               data-testid="tab-all-settings"
             >
               All Settings
             </button>
-            {activeSettings.map(s => (
-              <button
-                key={s}
-                onClick={() => setSelectedTab(s)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedTab === s ? 'bg-[#1A1A1A] text-white' : 'bg-[#F0F0F0] text-[#999999] hover:text-[#666666]'}`}
-                data-testid={`tab-${s}`}
-              >
-                {settingLabels[s]}
-              </button>
-            ))}
-          </div>
+            {activeSettings.map(s => {
+              const Icon = settingIcons[s];
+              const stage = settingStages[s];
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSetting(s)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all border ${
+                    selectedSetting === s
+                      ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                      : 'bg-white text-[#666666] border-[#E5E5E5] hover:border-[#CCCCCC]'
+                  }`}
+                  data-testid={`tab-${s}`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{settingLabels[s]}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    selectedSetting === s ? 'bg-white/20 text-white' : 'bg-[#F0F0F0] text-[#999999]'
+                  }`}>
+                    {stage?.activeCount || 0}
+                  </span>
+                </button>
+              );
+            })}
+          </motion.div>
         )}
 
-        {selectedTab === 'all' && multiSetting ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="bg-[#F9F7F4] rounded-lg border border-[#E8E2DA] p-4 mb-6">
-              <p className="text-sm text-[#666666]">
-                {formatNumber(totalProviders)} providers {"\u00B7"} {formatNumber(totalEncounters)} encounters {"\u00B7"} {activeSettings.length} care setting{activeSettings.length > 1 ? 's' : ''} {"\u00B7"} {activeMetricCount} metrics active
+        <motion.div
+          className="rounded-xl bg-[#F9F7F4] border border-[#E8E2DA] p-5 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          data-testid="abridge-platform-data"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <CircleDot className="w-3.5 h-3.5 text-[#EA2C00]" />
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#999999]">Abridge Platform</p>
+          </div>
+          {filledNative.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {filledNative.map((m, i) => (
+                <motion.div
+                  key={m.key}
+                  className="bg-white rounded-lg px-3 py-2.5"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.05, duration: 0.3 }}
+                >
+                  <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(nativeData[m.key]!)}{m.suffix || ''}</p>
+                  <p className="text-[9px] text-[#999999] uppercase tracking-[1px] mt-0.5">{m.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-[#999999] italic">
+              Add your Abridge platform metrics in Data Entry to see them here.
+            </p>
+          )}
+        </motion.div>
+
+        {activeRows.length > 0 && (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            data-testid="active-metrics-section"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-4 rounded-full bg-[#EA2C00]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#999999]">
+                Active Signals
               </p>
+              <span className="text-[10px] text-[#BBBBBB] ml-1">{activeCount} metric{activeCount !== 1 ? 's' : ''} with before {"\u2192"} after</span>
             </div>
 
-            {activeSettings.map(s => {
-              const stage = deriveSettingStage(state, s);
-              const isExpanded = expandedCards.has(s);
+            {domainOrder.map(domain => {
+              const domainRows = groupedActive[domain];
+              if (!domainRows || domainRows.length === 0) return null;
+              let idx = 0;
               return (
-                <div key={s} className="rounded-lg border border-[#E5E5E5] mb-3 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      const next = new Set(expandedCards);
-                      if (isExpanded) next.delete(s); else next.add(s);
-                      setExpandedCards(next);
-                    }}
-                    className="w-full flex items-center justify-between p-4 hover:bg-[#FAFAFA] transition-colors"
-                    data-testid={`card-header-${s}`}
-                  >
-                    <span className="text-sm font-semibold text-[#1A1A1A]">
-                      {settingLabels[s]} {"\u2014"} {stage.months} months {"\u2014"} {stage.maturityLabel}
-                    </span>
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-[#999999]" /> : <ChevronDown className="w-4 h-4 text-[#999999]" />}
-                  </button>
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="px-4 pb-4 overflow-hidden"
-                      >
-                        <SettingInventoryContent state={state} setting={s} onBack={onBack} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                <div key={domain} className="mb-4 last:mb-0">
+                  <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1 ml-1">{domain}</p>
+                  <div className="rounded-xl border border-[#F0EBE6] bg-white overflow-hidden">
+                    <div className="px-4">
+                      {domainRows.map((row) => {
+                        const i = idx++;
+                        return (
+                          <MetricDeltaRow
+                            key={`${row.setting}-${row.label}`}
+                            row={row}
+                            index={i}
+                            isReduction={reductionMetrics.has(row.metricKey)}
+                            showSetting={selectedSetting === 'all' && activeSettings.length > 1}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               );
             })}
           </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <SettingInventoryContent state={state} setting={selectedTab === 'all' ? activeSettings[0] : selectedTab} onBack={onBack} />
+        )}
+
+        {baselineRows.length > 0 && (
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            data-testid="baseline-metrics-section"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1 h-4 rounded-full bg-[#F5C6B3]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#BBBBBB]">
+                Baseline Only
+              </p>
+              <span className="text-[10px] text-[#CCCCCC] ml-1">{baselineCount} metric{baselineCount !== 1 ? 's' : ''} awaiting post-Abridge data</span>
+            </div>
+            <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] overflow-hidden px-4">
+              {baselineRows.map((row, i) => (
+                <BaselineRow key={`${row.setting}-${row.label}`} row={row} index={i} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {activeRows.length === 0 && baselineRows.length === 0 && (
+          <motion.div
+            className="rounded-xl border border-[#E8E2DA] bg-[#F9F7F4] p-8 text-center mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="text-sm text-[#888888]">No metric data entered yet. Go back to add before & after values.</p>
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="mt-4 text-sm"
+              data-testid="button-go-back"
+            >
+              Back to Data Entry
+            </Button>
           </motion.div>
         )}
 
@@ -402,7 +572,7 @@ export default function MeasureInventory({
           className="flex justify-center mt-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.5 }}
         >
           <Button
             onClick={onNext}
