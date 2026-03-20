@@ -1,11 +1,11 @@
-import { useCallback } from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { ArrowRight, Sparkles, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
-import { ABRIDGE_NATIVE_METRICS } from "@/lib/measureCareSettings";
+import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -15,7 +15,17 @@ interface MeasureDataEntryProps {
   onHome: () => void;
 }
 
-type DataSource = 'analytics' | 'benchmark' | 'estimate';
+const SETTING_OPTIONS: {
+  key: MeasureCareSetting;
+  label: string;
+  description: string;
+  icon: typeof Building2;
+}[] = [
+  { key: 'outpatient', label: 'Outpatient', description: 'Clinic & ambulatory', icon: Building2 },
+  { key: 'ed', label: 'Emergency', description: 'Emergency department', icon: Siren },
+  { key: 'inpatient', label: 'Inpatient', description: 'Hospital medicine', icon: Stethoscope },
+  { key: 'nursing', label: 'Nursing', description: 'Nursing units', icon: Heart },
+];
 
 export default function MeasureDataEntry({
   state,
@@ -24,6 +34,45 @@ export default function MeasureDataEntry({
   onBack,
   onHome,
 }: MeasureDataEntryProps) {
+  const activeSettings = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : ['outpatient' as MeasureCareSetting];
+
+  const hasNursing = activeSettings.includes('nursing');
+  const hasProviderSettings = activeSettings.some(s => s !== 'nursing');
+
+  const toggleSetting = useCallback((setting: MeasureCareSetting) => {
+    const current = [...activeSettings];
+    const idx = current.indexOf(setting);
+    if (idx >= 0) {
+      if (current.length <= 1) return;
+      current.splice(idx, 1);
+      const newEnabled = { ...state.enabledMetrics };
+      delete newEnabled[setting];
+      const newSettingData = { ...state.settingData };
+      delete newSettingData[setting];
+      const newSurvey = (state.surveyMetrics || []).filter(sm => sm.setting !== setting);
+      updateState({
+        activeCareSettings: current,
+        careSetting: current[0],
+        enabledMetrics: newEnabled,
+        settingData: newSettingData,
+        surveyMetrics: newSurvey,
+      });
+    } else {
+      current.push(setting);
+      const newSettingData = { ...state.settingData };
+      if (!newSettingData[setting]) {
+        newSettingData[setting] = getDefaultMetrics(setting);
+      }
+      updateState({
+        activeCareSettings: current,
+        careSetting: current.includes(state.careSetting || 'outpatient') ? state.careSetting : current[0],
+        settingData: newSettingData,
+      });
+    }
+  }, [activeSettings, state.enabledMetrics, state.settingData, state.surveyMetrics, state.careSetting, updateState]);
+
   const updateDeployment = useCallback(<K extends keyof typeof state.deployment>(
     key: K,
     value: (typeof state.deployment)[K],
@@ -37,15 +86,62 @@ export default function MeasureDataEntry({
     updateState({ deployment: updated });
   }, [state.deployment, updateState]);
 
-  const hasRequiredFields = () => {
-    const hasOrg = state.deployment.organizationName.trim().length > 0;
-    const hasProviders = state.deployment.providers > 0;
-    const hasEncounters = state.deployment.totalEncounters > 0;
-    const hasTotalProviders = state.deployment.totalProviders > 0;
-    return hasOrg && hasProviders && hasEncounters && hasTotalProviders;
-  };
+  const updateNursingField = useCallback((key: string, value: number) => {
+    const current = state.settingData?.nursing || getDefaultMetrics('nursing');
+    updateState({
+      settingData: { ...state.settingData, nursing: { ...current, [`deploy_${key}`]: value } },
+    });
+  }, [state.settingData, updateState]);
 
-  const isValid = hasRequiredFields();
+  const nursingData = useMemo(() => {
+    const d = state.settingData?.nursing || {};
+    return {
+      unitsLive: d.deploy_unitsLive ?? 0,
+      staffedBeds: d.deploy_staffedBeds ?? 0,
+      nurseFTEs: d.deploy_nurseFTEs ?? 0,
+      bedOccupancy: d.deploy_bedOccupancy ?? 0,
+    };
+  }, [state.settingData]);
+
+  const providerLabel = useMemo(() => {
+    if (hasProviderSettings && !hasNursing) return 'Providers';
+    if (!hasProviderSettings && hasNursing) return 'Nurses';
+    return 'Providers';
+  }, [hasProviderSettings, hasNursing]);
+
+  const encounterLabel = useMemo(() => {
+    if (activeSettings.length === 1) {
+      if (activeSettings[0] === 'nursing') return 'Total Shifts';
+      if (activeSettings[0] === 'inpatient') return 'Total Discharges';
+    }
+    return 'Total Encounters';
+  }, [activeSettings]);
+
+  const syncNursingToDeployment = useCallback(() => {
+    if (!hasNursing || hasProviderSettings) return;
+    const updated = { ...state.deployment };
+    updated.providers = nursingData.nurseFTEs;
+    updated.totalProviders = updated.totalProviders > 0 ? updated.totalProviders : nursingData.nurseFTEs;
+    updated.utilizationRate = updated.totalProviders > 0 ? Math.round((updated.providers / updated.totalProviders) * 100) : 0;
+    updateState({ deployment: updated });
+  }, [hasNursing, hasProviderSettings, nursingData, state.deployment, updateState]);
+
+  const isValid = useMemo(() => {
+    const hasOrg = state.deployment.organizationName.trim().length > 0;
+    const hasSetting = activeSettings.length > 0;
+
+    if (hasProviderSettings) {
+      if (state.deployment.providers <= 0 || state.deployment.totalProviders <= 0) return false;
+      if (state.deployment.totalEncounters <= 0) return false;
+    }
+
+    if (hasNursing) {
+      if (nursingData.nurseFTEs <= 0 || nursingData.staffedBeds <= 0) return false;
+      if (!hasProviderSettings && state.deployment.totalEncounters <= 0) return false;
+    }
+
+    return hasOrg && hasSetting;
+  }, [state.deployment, activeSettings, hasProviderSettings, hasNursing, nursingData]);
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
@@ -73,27 +169,58 @@ export default function MeasureDataEntry({
             Partner Profile
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
-            Enter your partner's deployment data and platform metrics.
+            Tell us about your Abridge deployment.
           </p>
         </motion.div>
 
-        <DataSourceSelector
-          value={state.dataSource}
-          onChange={(ds) => updateState({ dataSource: ds })}
-        />
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px] mb-3">Care Settings Live on Abridge</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="pills-care-settings">
+            {SETTING_OPTIONS.map(opt => {
+              const isActive = activeSettings.includes(opt.key);
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => toggleSetting(opt.key)}
+                  className={`flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-xl border-2 transition-all text-center
+                    ${isActive
+                      ? 'bg-[#FAF8F5] border-[#EA2C00] shadow-sm'
+                      : 'bg-white border-[#E5E5E5] hover:border-[#CCCCCC]'
+                    }`}
+                  data-testid={`pill-${opt.key}`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#EA2C00]' : 'text-[#BBBBBB]'}`} />
+                  <span className={`text-sm font-semibold ${isActive ? 'text-[#1A1A1A]' : 'text-[#888888]'}`}>
+                    {opt.label}
+                  </span>
+                  <span className="text-[10px] text-[#AAAAAA]">{opt.description}</span>
+                  {isActive && (
+                    <span className="text-[9px] font-semibold text-[#EA2C00] uppercase">Active</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
 
         <motion.div
-          className="rounded-lg p-5 mb-5 bg-[#F5F0EB] border-2 border-[#EA2C00]/30 shadow-sm"
+          className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
         >
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
-              Deployment Details
+              Organization
             </span>
           </div>
-          <div className="h-px bg-[#E5E5E5]/60 mb-4" />
+          <div className="h-px bg-[#E8E2DA] mb-4" />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5 col-span-2">
               <label className="text-sm font-medium text-black">Organization Name</label>
@@ -104,24 +231,6 @@ export default function MeasureDataEntry({
                 placeholder="e.g., Valley Health System"
                 className="w-full h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
                 data-testid="input-org-name"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-black">Providers on Abridge</label>
-              <FormattedNumberInput
-                value={state.deployment.providers}
-                onChange={(v) => updateDeployment("providers", v)}
-                className="h-10 bg-white border-[#E5E5E5] text-right"
-                data-testid="input-providers"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-black">Total Providers</label>
-              <FormattedNumberInput
-                value={state.deployment.totalProviders}
-                onChange={(v) => updateDeployment("totalProviders", v)}
-                className="h-10 bg-white border-[#E5E5E5] text-right"
-                data-testid="input-total-providers"
               />
             </div>
             <div className="space-y-1.5">
@@ -147,7 +256,7 @@ export default function MeasureDataEntry({
               <label className="text-sm font-medium text-black">Months on Abridge</label>
               {state.goLiveDate ? (
                 <div
-                  className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black"
+                  className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black"
                   data-testid="input-months"
                 >
                   {state.deployment.monthsOnAbridge}
@@ -164,27 +273,156 @@ export default function MeasureDataEntry({
                 <p className="text-[10px] text-[#BBBBBB]">Auto-calculated from go-live date</p>
               )}
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-black">Total Encounters</label>
-              <FormattedNumberInput
-                value={state.deployment.totalEncounters}
-                onChange={(v) => updateDeployment("totalEncounters", v)}
-                className="h-10 bg-white border-[#E5E5E5] text-right"
-                data-testid="input-total-encounters"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-black">Utilization Rate</label>
-              <div className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-utilization">
-                {state.deployment.totalProviders > 0 ? Math.round((state.deployment.providers / state.deployment.totalProviders) * 100) : 0}%
-              </div>
-              <p className="text-xs text-[#888888]">Providers on Abridge / Total Providers</p>
-            </div>
           </div>
         </motion.div>
 
+        <AnimatePresence>
+          {hasProviderSettings && (
+            <motion.div
+              className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Stethoscope className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+                  Provider Deployment
+                </span>
+                {activeSettings.filter(s => s !== 'nursing').length > 0 && (
+                  <span className="text-[10px] text-[#AAAAAA] ml-auto">
+                    {activeSettings.filter(s => s !== 'nursing').map(s => CARE_SETTING_CONFIGS[s].shortLabel).join(', ')}
+                  </span>
+                )}
+              </div>
+              <div className="h-px bg-[#E8E2DA] mb-4" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">{providerLabel} on Abridge</label>
+                  <FormattedNumberInput
+                    value={state.deployment.providers}
+                    onChange={(v) => updateDeployment("providers", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-providers"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Total {providerLabel} in Org</label>
+                  <FormattedNumberInput
+                    value={state.deployment.totalProviders}
+                    onChange={(v) => updateDeployment("totalProviders", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-total-providers"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">{encounterLabel}</label>
+                  <FormattedNumberInput
+                    value={state.deployment.totalEncounters}
+                    onChange={(v) => updateDeployment("totalEncounters", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-total-encounters"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Utilization Rate</label>
+                  <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-utilization">
+                    {state.deployment.totalProviders > 0 ? Math.round((state.deployment.providers / state.deployment.totalProviders) * 100) : 0}%
+                  </div>
+                  <p className="text-[10px] text-[#BBBBBB]">{providerLabel} on Abridge / Total {providerLabel}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {hasNursing && (
+            <motion.div
+              className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <BedDouble className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+                  Nursing Deployment
+                </span>
+              </div>
+              <div className="h-px bg-[#E8E2DA] mb-4" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Units Live</label>
+                  <FormattedNumberInput
+                    value={nursingData.unitsLive}
+                    onChange={(v) => updateNursingField("unitsLive", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-units-live"
+                  />
+                  <p className="text-[10px] text-[#BBBBBB]">Number of nursing units on Abridge</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Staffed Beds</label>
+                  <FormattedNumberInput
+                    value={nursingData.staffedBeds}
+                    onChange={(v) => updateNursingField("staffedBeds", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-staffed-beds"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Nurse FTEs</label>
+                  <FormattedNumberInput
+                    value={nursingData.nurseFTEs}
+                    onChange={(v) => updateNursingField("nurseFTEs", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-nurse-ftes"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Bed Occupancy</label>
+                  <div className="relative">
+                    <FormattedNumberInput
+                      value={nursingData.bedOccupancy}
+                      onChange={(v) => updateNursingField("bedOccupancy", Math.min(100, Math.max(0, v)))}
+                      className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
+                      data-testid="input-bed-occupancy"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
+                  </div>
+                </div>
+                {!hasProviderSettings && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-black">Total Shifts</label>
+                      <FormattedNumberInput
+                        value={state.deployment.totalEncounters}
+                        onChange={(v) => updateDeployment("totalEncounters", v)}
+                        className="h-10 bg-white border-[#E5E5E5] text-right"
+                        data-testid="input-total-encounters"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-black">Total Nurses in Org</label>
+                      <FormattedNumberInput
+                        value={state.deployment.totalProviders}
+                        onChange={(v) => updateDeployment("totalProviders", v)}
+                        className="h-10 bg-white border-[#E5E5E5] text-right"
+                        data-testid="input-total-providers"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
-          className="rounded-lg bg-white border border-[#E5E5E5] p-5 mb-5"
+          className="rounded-xl bg-white border border-[#E5E5E5] p-5 mb-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -228,7 +466,7 @@ export default function MeasureDataEntry({
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <Button
-            onClick={onNext}
+            onClick={() => { syncNursingToDeployment(); onNext(); }}
             disabled={!isValid}
             className={`
               w-full h-[52px] font-semibold rounded-lg text-base transition-all duration-200 gap-2
@@ -251,44 +489,5 @@ export default function MeasureDataEntry({
         </motion.div>
       </div>
     </div>
-  );
-}
-
-function DataSourceSelector({ value, onChange }: { value: DataSource; onChange: (ds: DataSource) => void }) {
-  const options: { key: DataSource; label: string; desc: string }[] = [
-    { key: 'analytics', label: 'Analytics Pull', desc: 'Epic, Abridge analytics, or EHR reporting' },
-    { key: 'benchmark', label: 'Abridge Data', desc: 'From Abridge analytics platform' },
-    { key: 'estimate', label: 'Our Estimate', desc: 'Team-estimated from observation' },
-  ];
-
-  return (
-    <motion.div
-      className="mb-5"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.05 }}
-      data-testid="section-data-source"
-    >
-      <p className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">Data Source</p>
-      <div className="flex gap-2">
-        {options.map((opt) => (
-          <button
-            key={opt.key}
-            onClick={() => onChange(opt.key)}
-            className={`flex-1 px-3 py-2.5 rounded-full text-sm font-medium transition-all
-              ${value === opt.key
-                ? 'bg-[#EA2C00] text-white shadow-sm'
-                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EDE7E0]'
-              }`}
-            data-testid={`button-source-${opt.key}`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-      <p className="text-xs text-[#999999] mt-1.5">
-        {options.find((o) => o.key === value)?.desc}
-      </p>
-    </motion.div>
   );
 }

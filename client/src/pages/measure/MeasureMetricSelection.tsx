@@ -11,7 +11,6 @@ import {
 } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
-  CARE_SETTING_ORDER,
   getSettingDomains,
   getTotalAvailableMetrics,
   getDefaultMetrics,
@@ -48,33 +47,6 @@ export default function MeasureMetricSelection({
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
     : [state.careSetting || 'outpatient' as MeasureCareSetting];
-
-  const toggleSetting = useCallback((setting: MeasureCareSetting) => {
-    const current = [...activeSettings];
-    const idx = current.indexOf(setting);
-    if (idx >= 0) {
-      if (current.length <= 1) return;
-      current.splice(idx, 1);
-      const newEnabled = { ...state.enabledMetrics };
-      delete newEnabled[setting];
-      const newSettingData = { ...state.settingData };
-      delete newSettingData[setting];
-      const newSurvey = (state.surveyMetrics || []).filter(sm => sm.setting !== setting);
-      updateState({
-        activeCareSettings: current,
-        careSetting: current[0],
-        enabledMetrics: newEnabled,
-        settingData: newSettingData,
-        surveyMetrics: newSurvey,
-      });
-    } else {
-      current.push(setting);
-      updateState({
-        activeCareSettings: current,
-        careSetting: setting,
-      });
-    }
-  }, [activeSettings, state.enabledMetrics, state.settingData, state.surveyMetrics, updateState]);
 
   const toggleMetric = useCallback((setting: MeasureCareSetting, metricKey: string) => {
     const current = state.enabledMetrics?.[setting] || {};
@@ -191,36 +163,8 @@ export default function MeasureMetricSelection({
             What Are You Measuring?
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
-            Select care settings, toggle metrics, and enter before/after data.
+            Toggle metrics and enter before/after data for your care settings.
           </p>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-wrap gap-2 mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          data-testid="pills-care-settings"
-        >
-          {CARE_SETTING_ORDER.map(setting => {
-            const cfg = CARE_SETTING_CONFIGS[setting];
-            const isActive = activeSettings.includes(setting);
-            return (
-              <button
-                key={setting}
-                onClick={() => toggleSetting(setting)}
-                className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all border
-                  ${isActive
-                    ? 'bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-sm'
-                    : 'bg-white text-[#888888] border-[#E5E5E5] hover:border-[#CCCCCC] hover:text-[#666666]'
-                  }`}
-                data-testid={`pill-${setting}`}
-              >
-                {cfg.shortLabel}
-                {isActive && <span className="ml-1.5 text-[10px] opacity-70">{"\u2713"}</span>}
-              </button>
-            );
-          })}
         </motion.div>
 
         <motion.div
@@ -602,6 +546,24 @@ export default function MeasureMetricSelection({
                 className="overflow-hidden"
               >
                 <div className="px-4 pb-4 space-y-4">
+                  {activeSettings.length > 1 && (
+                    <div className="flex gap-2">
+                      {activeSettings.map(s => (
+                        <button
+                          key={s}
+                          onClick={() => updateState({ careSetting: s })}
+                          className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border
+                            ${activeSetting === s
+                              ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                              : 'bg-white text-[#888888] border-[#E5E5E5] hover:border-[#CCCCCC]'
+                            }`}
+                          data-testid={`assumption-setting-${s}`}
+                        >
+                          {CARE_SETTING_CONFIGS[s].shortLabel}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     {config.valueModel.map(field => (
                       <div key={field.key} className="space-y-1">

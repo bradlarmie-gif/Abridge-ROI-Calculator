@@ -27,6 +27,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [state, setState] = useState<MeasureState>({
     ...DEFAULT_MEASURE_STATE,
     careSetting: 'outpatient',
+    activeCareSettings: ['outpatient'],
     settingData: {
       outpatient: getDefaultOutpatientMetrics(),
       ed: getDefaultMetrics('ed'),

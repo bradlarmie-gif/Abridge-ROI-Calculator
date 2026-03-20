@@ -231,6 +231,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     fourthDomainKey: "patientFlow",
     fourthDomainLabel: "Patient Flow",
     deploymentFields: [
+      { key: "unitsLive", label: "Units Live", required: true },
       { key: "staffedBeds", label: "Staffed Beds", required: true },
       { key: "nurseFTEs", label: "Nurse FTEs", required: true },
       { key: "bedOccupancy", label: "Bed Occupancy", suffix: "%", required: true },
