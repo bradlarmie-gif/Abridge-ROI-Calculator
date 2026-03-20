@@ -15,6 +15,8 @@ import {
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
+import NarrativePanel from "@/components/measure/NarrativePanel";
+import { generateNarrative } from "@/lib/measureNarrative";
 
 interface MeasureTransformationProps {
   state: MeasureState;
@@ -141,6 +143,7 @@ export default function MeasureTransformation({
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
   const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
+  const narrative = useMemo(() => generateNarrative('confirmed', state), [state]);
   const careSetting = state.careSetting || "outpatient";
   const isInpatient = careSetting === "inpatient";
   const isED = careSetting === "ed";
@@ -240,6 +243,8 @@ export default function MeasureTransformation({
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+
+        <NarrativePanel narrative={narrative} />
 
         <motion.div 
           className="text-center mb-8"

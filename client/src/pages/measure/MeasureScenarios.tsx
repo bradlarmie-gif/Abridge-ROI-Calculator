@@ -17,6 +17,8 @@ import {
   computeDomainStatus,
 } from "@/lib/measureCalculator";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
+import NarrativePanel from "@/components/measure/NarrativePanel";
+import { generateNarrative } from "@/lib/measureNarrative";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
@@ -177,6 +179,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
   const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
+  const narrative = useMemo(() => generateNarrative('scenarios', state), [state]);
   const defaults = useMemo(() => getDefaultScenarios(state), [state]);
 
   const overrides = state.scenarioOverrides;
@@ -259,6 +262,8 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
 
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+
+        <NarrativePanel narrative={narrative} />
 
         <motion.div
           className="text-center mb-8"
