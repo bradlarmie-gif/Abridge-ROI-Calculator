@@ -1,0 +1,468 @@
+PROMPT 4: Premium EBR PDF                                 
+                                                                                                                                                                                                               
+  Redesign the Measure path PDF export to be a premium executive leave-behind.
+  The file to modify is client/src/components/measure/MeasurePDFExport.tsx.                                                                                                                                    
+  Reference the existing PDFCoverPage component for brand styling patterns.
+                                                                                                                                                                                                               
+  The PDF must use @react-pdf/renderer throughout.                                                                                                                                                             
+  Brand system: primary #EA2C00, black #1A1A1A, gray #666666,                                                                                                                                                  
+  lightGray #999999, cream #F5F0EB, border #E0E0E0, white #FFFFFF.                                                                                                                                             
+  Abridge font (already registered) for display headings.                                                                                                                                                      
+  Page size: LETTER. Margins: 54pt horizontal, 48pt vertical.                                                                                                                                                  
+                                                                                                                                                                                                               
+  The PDF has exactly 6 pages. Each page is a named component.                                                                                                                                                 
+  Build them in order.                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 1: EBRCoverPage                                                                                                                                                                                         
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Layout: full white page, no padding, content centered vertically.                                                                                                                                            
+                                                                                                                                                                                                               
+  TOP LEFT: Abridge logo (existing abridgeLogoRed asset), width 80pt,                                                                                                                                          
+  position absolute top 48 left 54.                                                                                                                                                                            
+                                                                                                                                                                                                               
+  BOTTOM RIGHT: decorative curve SVG (same pattern as existing                                                                                                                                                 
+  PDFCoverPage — large arc in #EA2C00 at 8% opacity).       
+                                                                                                                                                                                                               
+  CENTER CONTENT (verticallycentered in the page body):                                                                                                                                                        
+                                                                                                                                                                                                               
+    EYEBROW: "EXECUTIVE BUSINESS REVIEW"                                                                                                                                                                       
+    Style: 8pt, #EA2C00, letterSpacing 3, uppercase, marginBottom 16                                                                                                                                           
+                                                                                                                                                                                                               
+    ORG NAME: state.deployment.organizationName (or "Your Organization")                                                                                                                                       
+    Style: 36pt, Abridge font, bold, #1A1A1A, lineHeight 1.1,
+           letterSpacing -0.5, marginBottom 12                                                                                                                                                                 
+                                                                                                                                                                                                               
+    RED RULE: 48pt wide, 2pt tall, #EA2C00, marginBottom 20                                                                                                                                                    
+                                                                                                                                                                                                               
+    PARTNERSHIP LINE: "[X] months with Abridge"                                                                                                                                                                
+    Derive X from the longest-running active setting's goLiveDate                                                                                                                                              
+    or monthsOnAbridge. If multiple settings, use the earliest go-live.                                                                                                                                        
+    Style: 13pt, #666666, marginBottom 8                                                                                                                                                                       
+                                                            
+    CARE SETTINGS LINE: "Outpatient · Inpatient" (join active setting                                                                                                                                          
+    type labels with ·)                                                                                                                                                                                        
+    Style: 11pt, #999999, marginBottom 32                                                                                                                                                                      
+                                                                                                                                                                                                               
+    PREPARED FOR block (if clientName provided):                                                                                                                                                               
+      Label: "PREPARED FOR" — 8pt, #999999, letterSpacing 1.5,                                                                                                                                                 
+             uppercase, marginBottom 4                                                                                                                                                                         
+      Name: clientName — 15pt, bold, #1A1A1A, marginBottom 20                                                                                                                                                  
+                                                                                                                                                                                                               
+    PREPARED BY block:                                                                                                                                                                                         
+      Label: "PREPARED BY" — 8pt, #999999, letterSpacing 1.5,
+             uppercase, marginBottom 4                                                                                                                                                                         
+      Value: "[preparedBy] · [today's date]" — 11pt, #666666                                                                                                                                                   
+                                                                                                                                                                                                               
+  BOTTOM DISCLAIMER (absolute, bottom 36, left 54, right 54):                                                                                                                                                  
+    Top border 1pt #E0E0E0, paddingTop 10                   
+    Text: "This review is based on deployment data provided by                                                                                                                                                 
+    [orgName] and Abridge methodology. Confirmed values reflect                                                                                                                                                
+    50–75% attribution range. Scenarios are modeled estimates,                                                                                                                                                 
+    not guarantees."                                                                                                                                                                                           
+    Style: 8pt, #999999, lineHeight 1.5                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 2: ConfirmedValuePage                                                                                                                                                                                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This page answers: "How much has Abridge been worth so far?"                                                                                                                                                 
+                                                                                                                                                                                                               
+  SECTION 1 — Page header (top of page, full width):                                                                                                                                                           
+    Eyebrow: "WHAT YOUR DATA SHOWS" — 8pt, #EA2C00, letterSpacing 3,                                                                                                                                           
+             uppercase, marginBottom 8                                                                                                                                                                         
+    Subtitle: "Confirmed value from [totalMonths] months of deployment"                                                                                                                                        
+    Style: 11pt, #666666                                    
+                                                                                                                                                                                                               
+  SECTION 2 — Hero tile (full width, dark background):                                                                                                                                                         
+    backgroundColor: #1A1A1A, borderRadius 6, padding 28, marginBottom 16                                                                                                                                      
+                                                                                                                                                                                                               
+    Inside the tile, three-column layout:                   
+                                                                                                                                                                                                               
+    LEFT (flex 2):                                                                                                                                                                                             
+      Label: "CONFIRMED ANNUAL VALUE" — 8pt, #EA2C00, letterSpacing 2,                                                                                                                                         
+             uppercase, marginBottom 8                                                                                                                                                                         
+      Value: "$[totalValueLow] – $[totalValueHigh]"                                                                                                                                                            
+      Use formatCurrency() for both.                        
+      Style: 32pt, bold, white, Abridge font, marginBottom 8                                                                                                                                                   
+                                                                                                                                                                                                               
+      Sub-line: "[totalProviders] providers · [totalEncounters]                                                                                                                                                
+      encounters · [dataSourceLabel]"                                                                                                                                                                          
+      Style: 9pt, white at 50% opacity                                                                                                                                                                         
+                                                                                                                                                                                                               
+      Per-provider line: "≈ $[perProviderValue] per provider / year"                                                                                                                                           
+      Style: 11pt, white at 70%, marginTop 8                                                                                                                                                                   
+                                                                                                                                                                                                               
+    RIGHT (flex 1, borderLeft 1pt white at 15%, paddingLeft 20):                                                                                                                                               
+      Attribution note:                                                                                                                                                                                        
+      Label: "ATTRIBUTION RANGE" — 8pt, #EA2C00, letterSpacing 1.5,                                                                                                                                            
+             marginBottom 6                                                                                                                                                                                    
+      Line 1: "Conservative (50%): $[lowValue]"
+      Line 2: "Typical (75%): $[highValue]"                                                                                                                                                                    
+      Style: 9pt, white at 60%, lineHeight 1.6                                                                                                                                                                 
+                                              
+      Data source badge below:                                                                                                                                                                                 
+      Small pill shape (border 1pt, borderRadius 10, paddingH 8, paddingV 3)                                                                                                                                   
+      Text: "Analytics-backed" / "Abridge-verified" / "Estimated"                                                                                                                                              
+      Color: green/blue/gray text and border based on dataSource                                                                                                                                               
+                                                                                                                                                                                                               
+  SECTION 3 — Domain breakdown (four rows):                                                                                                                                                                    
+    For each of the four domains (Quality, Workforce, Revenue, Capacity):                                                                                                                                      
+                                                                                                                                                                                                               
+    One row per domain. Row height ~44pt.                                                                                                                                                                      
+    Alternating row backgrounds: white / #FAFAFA                                                                                                                                                               
+                                                                                                                                                                                                               
+    Row layout:                                                                                                                                                                                                
+      LEFT: colored status dot (8pt circle) + domain name (10pt bold #1A1A1A)                                                                                                                                  
+            + stakeholder label (8pt #999999, e.g. "CMO · Quality & CDI")                                                                                                                                      
+      CENTER: primary metric shown (e.g. "+0.18 wRVU/encounter")
+              Style: 10pt, #1A1A1A                                                                                                                                                                             
+      RIGHT: domain value or status label                                                                                                                                                                      
+             If has value: "$[value]" — 11pt bold #1A1A1A                                                                                                                                                      
+             If baseline-only: "Baseline set" — 9pt #999999 italic                                                                                                                                             
+             If pre-signal: "Signal at month [N]" — 9pt #AAAAAA italic                                                                                                                                         
+                                                                                                                                                                                                               
+    Status dot colors:                                                                                                                                                                                         
+      Active (has value): #EA2C00 filled                                                                                                                                                                       
+      Baseline-only: #EA2C00 outline only (unfilled)                                                                                                                                                           
+      Pre-signal: #CCCCCC filled                                                                                                                                                                               
+                                                                                                                                                                                                               
+    Bottom border on each row: 1pt #F0F0F0                                                                                                                                                                     
+                                                                                                                                                                                                               
+  SECTION 4 — Formula block:                                                                                                                                                                                   
+    backgroundColor: #F5F0EB, borderRadius 6, padding 16, marginTop 12                                                                                                                                         
+                                                                                                                                                                                                               
+    Label: "HOW THIS WAS CALCULATED" — 8pt, #888888, letterSpacing 1.5,                                                                                                                                        
+           uppercase, marginBottom 8                        
+                                                                                                                                                                                                               
+    Two-column formula display (use the primary setting's formula):                                                                                                                                            
+      Column 1 (labels):  "Time savings:", "Documentation lift:",                                                                                                                                              
+                          "Encounters:", "Attribution:"                                                                                                                                                        
+      Column 2 (values):  actual computed values from state                                                                                                                                                    
+                                              
+    Style: 8pt monospace, #666666, lineHeight 1.6                                                                                                                                                              
+                                                            
+    If multiple settings: "Across [N] care settings. See Page 4 for                                                                                                                                            
+    per-setting breakdown."                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 3: ScenariosPage                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This page answers: "What could Abridge be worth at full potential?"                                                                                                                                          
+                                                                                                                                                                                                               
+  SECTION 1 — Header:                                                                                                                                                                                          
+    Eyebrow: "WHAT YOU COULD EARN" — 8pt, #EA2C00, letterSpacing 3,                                                                                                                                            
+             uppercase, marginBottom 8                                                                                                                                                                         
+    Subtitle: "Modeled scenarios based on your deployment economics"                                                                                                                                           
+    Style: 11pt, #666666, marginBottom 4      
+    Disclaimer: "These are estimates, not guarantees. Conservative                                                                                                                                             
+    floor uses 50% attribution."                                                                                                                                                                               
+    Style: 8pt, #AAAAAA, marginBottom 20                                                                                                                                                                       
+                                                                                                                                                                                                               
+  SECTION 2 — Reference line:                                                                                                                                                                                  
+    Small row showing confirmed value as anchor:                                                                                                                                                               
+    "YOUR CONFIRMED VALUE  ────────────────  $[low] – $[high] / year"
+    Style: 9pt, #888888. The dashes are a decorative rule filling space.                                                                                                                                       
+    marginBottom 16                                         
+                                                                                                                                                                                                               
+  SECTION 3 — Three scenario cards, equal width, side by side:                                                                                                                                                 
+    Card gap: 10pt                                                                                                                                                                                             
+                                                                                                                                                                                                               
+    CONSERVATIVE card:                                                                                                                                                                                         
+      border: 1pt #E0E0E0, borderRadius 6, padding 16       
+      Header: "CONSERVATIVE" — 8pt, #888888, letterSpacing 1.5,                                                                                                                                                
+              uppercase, marginBottom 8                                                                                                                                                                        
+      Value: "$[conservativeValue]" — 22pt, bold, #1A1A1A, marginBottom 12
+                                                                                                                                                                                                               
+      Assumption rows (8pt, #666666, lineHeight 1.8):       
+        "[currentAdoption]% adoption"                                                                                                                                                                          
+        "[currentProviders] providers"                                                                                                                                                                         
+        "50% attribution"                                                                                                                                                                                      
+        "Your current economics"                                                                                                                                                                               
+                                                                                                                                                                                                               
+    TYPICAL card (FEATURED — slightly elevated):                                                                                                                                                               
+      border: 1.5pt #EA2C00, borderRadius 6, padding 16                                                                                                                                                        
+      backgroundColor: #FFF8F6 (very light orange tint)                                                                                                                                                        
+                                                                                                                                                                                                               
+      Header row: "TYPICAL" label (8pt, #EA2C00) +
+                  "RECOMMENDED" badge (7pt, #EA2C00, border #EA2C00,                                                                                                                                           
+                  borderRadius 8, paddingH 6, paddingV 2)                                                                                                                                                      
+      marginBottom 8                                                                                                                                                                                           
+      Value: "$[typicalValue]" — 26pt, bold, #EA2C00, marginBottom 12                                                                                                                                          
+                                                                                                                                                                                                               
+      Assumption rows (8pt, #666666):                                                                                                                                                                          
+        "[75]% adoption"                                                                                                                                                                                       
+        "[totalProviders] providers"                                                                                                                                                                           
+        "62% attribution"                                   
+        "Based on similar deployments"                                                                                                                                                                         
+                                                            
+      GAP line at bottom of card:             
+        borderTop: 1pt #EA2C00 at 20%, paddingTop 8, marginTop 8
+        "+$[gap] vs. confirmed value" — 9pt, bold, #EA2C00                                                                                                                                                     
+                                                                                                                                                                                                               
+    OPTIMISTIC card:                                                                                                                                                                                           
+      border: 1pt #E0E0E0, borderRadius 6, padding 16                                                                                                                                                          
+      Header: "OPTIMISTIC" — 8pt, #888888, letterSpacing 1.5,                                                                                                                                                  
+              uppercase, marginBottom 8                                                                                                                                                                        
+      Value: "$[optimisticValue]" — 22pt, bold, #1A1A1A, marginBottom 12                                                                                                                                       
+                                                            
+      Assumption rows (8pt, #666666):                                                                                                                                                                          
+        "90% adoption"
+        "[totalProviders] providers"                                                                                                                                                                           
+        "75% attribution"                                   
+        "Full deployment realized"                                                                                                                                                                             
+                                                            
+  SECTION 4 — The Gap card (full width, cream background):                                                                                                                                                     
+    backgroundColor: #F5F0EB, borderRadius 6, padding 20, marginTop 16                                                                                                                                         
+    borderLeft: 3pt #EA2C00                                                                                                                                                                                    
+                                                                                                                                                                                                               
+    Two columns:                                                                                                                                                                                               
+                                                                                                                                                                                                               
+    LEFT:                                                                                                                                                                                                      
+      Label: "THE GAP" — 8pt, #EA2C00, letterSpacing 1.5, uppercase,                                                                                                                                           
+             marginBottom 6                                                                                                                                                                                    
+      Value: "$[typicalValue - confirmedLow] – $[typicalValue - confirmedHigh]"                                                                                                                                
+      Style: 20pt, bold, #1A1A1A, marginBottom 4            
+      Sub: "per year currently uncaptured (vs. Typical scenario)"                                                                                                                                              
+      Style: 9pt, #666666                     
+                                                                                                                                                                                                               
+    RIGHT (borderLeft 1pt #E0E0E0, paddingLeft 16):                                                                                                                                                            
+      Label: "CLOSES BY" — 8pt, #888888, letterSpacing 1.5, uppercase,                                                                                                                                         
+             marginBottom 8                                                                                                                                                                                    
+      Up to 3 action items, computed from state:                                                                                                                                                               
+        If utilizationRate < 60: "↑ Deepen adoption to 75%" 
+        If any domain pre-signal: "→ Measure [domain] domain"                                                                                                                                                  
+        If totalProviders > providers: "→ Expand to [N] additional providers"
+      Style: 9pt, #1A1A1A, lineHeight 2.0                                                                                                                                                                      
+      Bullet: small #EA2C00 square 4×4pt before each item                                                                                                                                                      
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 4: DomainDepthPage                                                                                                                                                                                      
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This page answers: "Where are we in each domain, and what's next?"                                                                                                                                           
+                                                                                                                                                                                                               
+  SECTION 1 — Header:                                                                                                                                                                                          
+    Eyebrow: "YOUR FOUR DOMAINS" — 8pt, #EA2C00, letterSpacing 3,                                                                                                                                              
+             uppercase                                                                                                                                                                                         
+    Subtitle: "Progress across Quality, Workforce, Revenue, and Capacity"                                                                                                                                      
+    Style: 11pt, #666666, marginBottom 20                   
+                                                                                                                                                                                                               
+  SECTION 2 — One card per domain (stacked vertically, not grid):
+    Card marginBottom: 12pt                                                                                                                                                                                    
+                                                                                                                                                                                                               
+    Each card: border 1pt #E0E0E0, borderRadius 6, padding 16                                                                                                                                                  
+                                                                                                                                                                                                               
+    CARD HEADER ROW (flex row, space-between):                                                                                                                                                                 
+      LEFT:                                                                                                                                                                                                    
+        Domain name — 12pt, bold, #1A1A1A (Abridge font)
+        Stakeholder — 8pt, #999999, marginTop 2                                                                                                                                                                
+      RIGHT:                                                
+        Status badge — pill shape, borderRadius 10, paddingH 10, paddingV 4                                                                                                                                    
+        ACTIVE:       backgroundColor #EA2C00, text white, "Active"                                                                                                                                            
+        SIGNALING:    backgroundColor #FFF3F0, text #EA2C00,                                                                                                                                                   
+                      border 1pt #EA2C00, "Signaling"                                                                                                                                                          
+        BASELINE SET: backgroundColor #F5F5F5, text #888888,                                                                                                                                                   
+                      border 1pt #CCCCCC, "Baseline Set"                                                                                                                                                       
+        PRE-SIGNAL:   backgroundColor #F5F5F5, text #AAAAAA,                                                                                                                                                   
+                      border 1pt #E0E0E0, "Pre-Signal"                                                                                                                                                         
+                                                                                                                                                                                                               
+    DIVIDER: 1pt #F0F0F0, marginV 10                                                                                                                                                                           
+                                                                                                                                                                                                               
+    METRICS ROW (flex row):                                                                                                                                                                                    
+      For each relevant metric with data:                                                                                                                                                                      
+        Small block: metric label (7pt #999999 uppercase) +                                                                                                                                                    
+                     value (11pt bold #1A1A1A)                                                                                                                                                                 
+        Blocks separated by vertical 1pt #F0F0F0 lines      
+                                                                                                                                                                                                               
+    NEXT SIGNAL ROW (if not at Strategic proof):                                                                                                                                                               
+      Label: "NEXT SIGNAL" — 7pt, #AAAAAA, uppercase, letterSpacing 1                                                                                                                                          
+      Text: one sentence, what to look for next                                                                                                                                                                
+      Style: 8pt, #666666, fontStyle italic                                                                                                                                                                    
+                                                                                                                                                                                                               
+      Next signal copy per domain and phase:                                                                                                                                                                   
+      Quality phase 1:  "CDI query rate baseline — expect first reduction                                                                                                                                      
+                         signal at month 3"                                                                                                                                                                    
+      Quality phase 2:  "HCC capture rate trending — first coding accuracy                                                                                                                                     
+                         signal expected soon"                                                                                                                                                                 
+      Quality phase 3+: "Downstream quality outcomes — payer negotiation                                                                                                                                       
+                         leverage building"                                                                                                                                                                    
+      Workforce phase 1: "After-hours work reduction — first signal at month 3"                                                                                                                                
+      Workforce phase 2: "Provider satisfaction data — burnout comparison                                                                                                                                      
+                          ready at month 6"                                                                                                                                                                    
+      Workforce phase 3+: "Retention data — physician retention signal                                                                                                                                         
+                           at month 12+"                                                                                                                                                                       
+      Revenue phase 1:  "wRVU per encounter trending — track week over week"                                                                                                                                   
+      Revenue phase 2:  "Clean claim rate signal — coding accuracy data                                                                                                                                        
+                         becoming meaningful"                                                                                                                                                                  
+      Revenue phase 3+: "Net collection ratio — board-level revenue story                                                                                                                                      
+                         forming"                                                                                                                                                                              
+      Capacity phase 1–2: "No signal expected yet — Capacity unlocks at                                                                                                                                        
+                           month 6+"                                                                                                                                                                           
+      Capacity phase 3:  "Encounter volume lift — panel growth signal forming"                                                                                                                                 
+      Capacity phase 4:  "New care settings and service line expansion —
+                          strategic proof"                                                                                                                                                                     
+                                                            
+    If multiple care settings: show per-setting breakdown inside each                                                                                                                                          
+    domain card. Small sub-rows labeled by setting type.                                                                                                                                                       
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 5: MaturityPage                                      
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This page answers: "Where are we in the partnership journey?"                                                                                                                                                
+                                                                                                                                                                                                               
+  SECTION 1 — Header:                                                                                                                                                                                          
+    Eyebrow: "YOUR MATURITY STAGE" — 8pt, #EA2C00, letterSpacing 3,                                                                                                                                            
+             uppercase, marginBottom 8                                                                                                                                                                         
+    Subtitle: "The path from Unmeasured to Strategic"                                                                                                                                                          
+    Style: 11pt, #666666, marginBottom 24                   
+                                                                                                                                                                                                               
+  SECTION 2 — Stage progression (horizontal):                                                                                                                                                                  
+    Four stage blocks in a row, equal width, connected by arrows.                                                                                                                                              
+                                                                                                                                                                                                               
+    Each stage block: centered text, borderRadius 6, padding 14                                                                                                                                                
+                                                            
+    Current stage: backgroundColor #1A1A1A, text white                                                                                                                                                         
+    Completed stages (before current): backgroundColor #F5F0EB,                                                                                                                                                
+                                        text #888888,                                                                                                                                                          
+                                        thin border #E0E0E0                                                                                                                                                    
+    Upcoming stages (after current): backgroundColor white, 
+                                      text #CCCCCC,                                                                                                                                                            
+                                      border 1pt dashed #E0E0E0
+                                                                                                                                                                                                               
+    Each block contains:                                                                                                                                                                                       
+      Stage number: 8pt, stage color at 60%, marginBottom 4                                                                                                                                                    
+      Stage name: 10pt, bold                                                                                                                                                                                   
+      1-line description: 7pt, marginTop 4                                                                                                                                                                     
+                                                                                                                                                                                                               
+    Arrows between blocks: "→" in #CCCCCC                                                                                                                                                                      
+                                                                                                                                                                                                               
+    Below current stage block: small orange dot indicator ▲                                                                                                                                                    
+                                                                                                                                                                                                               
+  SECTION 3 — Current stage detail card (full width):                                                                                                                                                          
+    backgroundColor: #1A1A1A, borderRadius 6, padding 20, marginTop 16                                                                                                                                         
+                                              
+    Three columns:                                                                                                                                                                                             
+                                                            
+    COLUMN 1 — "WHERE YOU ARE":                                                                                                                                                                                
+      Stage name — 14pt, Abridge font, white, bold          
+      Description (2 sentences) — 9pt, white at 60%, lineHeight 1.6                                                                                                                                            
+                                                                                                                                                                                                               
+    COLUMN 2 — "YOUR INDICATORS":             
+      Three data points from state relevant to maturity:                                                                                                                                                       
+        MRU/utilization: "[X]% utilization rate"                                                                                                                                                               
+        Adoption: "[N] of [total] providers on Abridge"                                                                                                                                                        
+        Domains: "[N] of 4 domains active"                                                                                                                                                                     
+      Style: 9pt, white at 70%, lineHeight 2.0                                                                                                                                                                 
+      Small orange dot before each                                                                                                                                                                             
+                                                                                                                                                                                                               
+    COLUMN 3 — "TO REACH [NEXT STAGE]":                                                                                                                                                                        
+      The gap items (same as computed gap, max 3)                                                                                                                                                              
+      Style: 9pt, white at 70%, lineHeight 2.0                                                                                                                                                                 
+      Small #EA2C00 arrow → before each                                                                                                                                                                        
+                                                                                                                                                                                                               
+  SECTION 4 — Timeline visual (simplified):                                                                                                                                                                    
+    A horizontal timeline bar showing the three phases:                                                                                                                                                        
+                                                                                                                                                                                                               
+    ├── DOCUMENTATION ──┼── EFFICIENCY ──┼── [CAPACITY/FLOW/THROUGHPUT] ──┤                                                                                                                                    
+        (0–3 months)       (3–6 months)        (6+ months)                                                                                                                                                     
+                                                                                                                                                                                                               
+    Current position marked with a filled orange circle on the bar.                                                                                                                                            
+    Phase labels below each segment.                                                                                                                                                                           
+                                                                                                                                                                                                               
+    Style: thin (#E0E0E0) bar, 6pt height, borderRadius 3                                                                                                                                                      
+    Completed portion: #EA2C00 fill                                                                                                                                                                            
+    Phase labels: 7pt, #999999                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PAGE 6: MethodologyPage                                                                                                                                                                                      
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This page exists so every number in the PDF can be defended.                                                                                                                                                 
+                                                                                                                                                                                                               
+  SECTION 1 — Header:
+    Eyebrow: "METHODOLOGY" — 8pt, #EA2C00, letterSpacing 3, uppercase                                                                                                                                          
+    Subtitle: "Every assumption, listed. Every formula, traceable."
+    Style: 11pt, #666666, marginBottom 20                                                                                                                                                                      
+                                                            
+  SECTION 2 — Assumption table (per active setting):                                                                                                                                                           
+    Label: "[SETTING TYPE] ASSUMPTIONS" — 8pt, #888888, uppercase,                                                                                                                                             
+           letterSpacing 1.5, marginBottom 8                                                                                                                                                                   
+                                                                                                                                                                                                               
+    Table: two columns (Assumption | Value Used)            
+    Row height: 22pt, alternating #FAFAFA / white backgrounds                                                                                                                                                  
+    Border: 1pt #E0E0E0 around table, 1pt #F0F0F0 between rows
+    Text: 8.5pt, #333333                                                                                                                                                                                       
+                                                            
+    Rows to include (showing actual values from state):                                                                                                                                                        
+      "Go-live date"               | "[date]"                                                                                                                                                                  
+      "Deployment period"          | "[X] months"                                                                                                                                                              
+      "Providers in scope"         | "[N]"                                                                                                                                                                     
+      "Total encounters"           | "[N]"                                                                                                                                                                     
+      "Utilization rate"           | "[X]%"                                                                                                                                                                    
+      "Time saved per encounter"   | "[X] minutes"                                                                                                                                                             
+      "Hourly rate used"           | "$[X]/hr"                                                                                                                                                                 
+      "wRVU lift"                  | "+[X] per encounter"                                                                                                                                                      
+      "Conversion factor"          | "$[X] per wRVU"                                                                                                                                                           
+      "Attribution range"          | "50% (conservative) – 75% (typical)"                                                                                                                                      
+      "Data source"                | "[analytics/benchmark/estimate]"                                                                                                                                          
+      + any inpatient-specific rows (CMI point value, denial cost/case, etc.)                                                                                                                                  
+                                                                                                                                                                                                               
+  SECTION 3 — Formula block:                                                                                                                                                                                   
+    Label: "VALUE CALCULATION" — 8pt, #888888, uppercase, marginBottom 8                                                                                                                                       
+                                                                                                                                                                                                               
+    Show the primary formula with actual numbers substituted:                                                                                                                                                  
+      Outpatient:                                                                                                                                                                                              
+      "([timeSaved] min × [encounters] encounters ÷ 60)                                                                                                                                                        
+       × $[rate]/hr × 50% efficiency                                                                                                                                                                           
+       + [wrvuLift] wRVU × [encounters] × $[CF] × 50–75%                                                                                                                                                       
+       = $[low] – $[high] / year"                                                                                                                                                                              
+                                                                                                                                                                                                               
+      Use monospace font, 8.5pt, #444444, lineHeight 1.8                                                                                                                                                       
+                                                                                                                                                                                                               
+  SECTION 4 — Attribution note:                                                                                                                                                                                
+    backgroundColor: #F5F0EB, borderRadius 4, padding 12                                                                                                                                                       
+                                                                                                                                                                                                               
+    "The 50–75% attribution range accounts for confounding factors:                                                                                                                                            
+    organizational changes, EHR updates, seasonal variation, and
+    provider cohort differences. The conservative floor (50%) is                                                                                                                                               
+    used in all confirmed value calculations. Scenarios use 50%,                                                                                                                                               
+    62%, and 75% for conservative, typical, and optimistic                                                                                                                                                     
+    projections respectively."                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    Style: 8pt, #666666, lineHeight 1.6                                                                                                                                                                        
+                                                                                                                                                                                                               
+  SECTION 5 — Legal footer (absolute bottom):                                                                                                                                                                  
+    "This document was prepared by [preparedBy] on [date] using                                                                                                                                                
+    Abridge's Partner Value Methodology. Results are based on data                                                                                                                                             
+    provided by [orgName]. Actual outcomes may vary. This document                                                                                                                                             
+    does not constitute a guarantee of financial performance."
+                                                                                                                                                                                                               
+    Style: 7.5pt, #AAAAAA, lineHeight 1.5                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  WIRING IT TOGETHER                                                                                                                                                                                           
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In MeasurePDFExport.tsx, the generateMeasurePDF function assembles
+  all 6 pages in order:                                                                                                                                                                                        
+                                                                                                                                                                                                               
+    <Document>                                                                                                                                                                                                 
+      <EBRCoverPage ... />                                                                                                                                                                                     
+      <ConfirmedValuePage ... />                                                                                                                                                                               
+      <ScenariosPage ... />                                                                                                                                                                                    
+      <DomainDepthPage ... />                                                                                                                                                                                  
+      <MaturityPage ... />                                                                                                                                                                                     
+      <MethodologyPage ... />                               
+    </Document>                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Pass the full MeasureState plus clientName, preparedBy to each page.                                                                                                                                         
+  Each page computes its own values from state — do not pre-compute                                                                                                                                            
+  and pass derived values as props (keeps pages self-contained and                                                                                                                                             
+  easier to maintain).                                                                                                                                                                                         
+                                          
+  The existing PDFExportModal (client/src/components/switch/PDFExportModal.tsx)                                                                                                                                
+  already handles the clientName and preparedBy inputs — no change needed there.

@@ -6,15 +6,20 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
   type DataSource,
+  type MaturityStage,
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
+  deriveEngagementContext,
+  computeDomainStatus,
+  getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
+import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
     analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Benchmark-based', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
     estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
   };
   const c = config[source] || config.estimate;
@@ -22,6 +27,81 @@ function DataSourceBadge({ source }: { source: DataSource }) {
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
       {c.label}
     </span>
+  );
+}
+
+function MaturityStageCard({ state }: { state: MeasureState }) {
+  const ctx = deriveEngagementContext(state);
+  const domainStatus = computeDomainStatus(state);
+  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
+  const stages: { key: MaturityStage; label: string }[] = [
+    { key: 'unmeasured', label: 'Unmeasured' },
+    { key: 'signaling', label: 'Signaling' },
+    { key: 'validated', label: 'Validated' },
+    { key: 'strategic', label: 'Strategic' },
+  ];
+  const currentIdx = stages.findIndex(s => s.key === ctx.maturityStage);
+
+  const descriptions: Record<MaturityStage, string> = {
+    unmeasured: 'Your deployment is stabilizing. Focus on adoption and establishing baselines.',
+    signaling: 'First metrics are live. One or two domains are beginning to show trends.',
+    validated: 'Trends confirmed across multiple domains. Your data tells a credible story.',
+    strategic: 'Embedded in organizational strategy. Board-level proof established.',
+  };
+
+  const nextActions: string[] = [];
+  if (ctx.maturityStage === 'unmeasured') {
+    nextActions.push('Reach 20%+ utilization');
+    nextActions.push('Pass the 3-month mark');
+  } else if (ctx.maturityStage === 'signaling') {
+    if (activeDomains < 3) nextActions.push(`Confirm trends in ${3 - activeDomains}+ more domain${3 - activeDomains > 1 ? 's' : ''} (you have ${activeDomains} active)`);
+    if (state.deployment.utilizationRate < 60) nextActions.push(`Reach 60%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    nextActions.push('Months 9\u201318 is the typical window');
+  } else if (ctx.maturityStage === 'validated') {
+    if (state.deployment.utilizationRate < 70) nextActions.push(`Reach 70%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    nextActions.push('Sustain trends past 18 months');
+    nextActions.push('Build board-level narrative');
+  }
+
+  return (
+    <motion.div
+      className="bg-[#1A1A1A] rounded-xl p-6 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 }}
+      data-testid="section-maturity-stage"
+    >
+      <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-4">Your Maturity Stage</p>
+      <div className="flex items-center gap-3 mb-5">
+        {stages.map((s, i) => (
+          <div key={s.key} className="flex items-center gap-3">
+            <div className="flex flex-col items-center">
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
+                ${i === currentIdx ? 'border-[#EA2C00] bg-[#EA2C00]' : i < currentIdx ? 'border-white bg-white' : 'border-white/40 bg-transparent'}`}
+              >
+                {i < currentIdx && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
+              </div>
+              <span className={`text-[10px] mt-1.5 ${i === currentIdx ? 'text-[#EA2C00] font-semibold' : 'text-[#666666]'}`}>{s.label}</span>
+            </div>
+            {i < stages.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-white' : 'bg-[#444444]'} mb-4`} />}
+          </div>
+        ))}
+      </div>
+      <p className="text-sm text-white mb-1">You are in: <span className="font-semibold text-[#EA2C00]">{ctx.maturityLabel}</span></p>
+      <p className="text-xs text-[#AAAAAA] mb-4 italic">{descriptions[ctx.maturityStage]}</p>
+      {nextActions.length > 0 && ctx.maturityStage !== 'strategic' && (
+        <div>
+          <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">To reach {ctx.maturityNext}:</p>
+          <ul className="space-y-1">
+            {nextActions.map((a, i) => (
+              <li key={i} className="text-xs text-[#CCCCCC] flex items-start gap-2">
+                <span className="text-[#EA2C00] mt-0.5">{'\u00B7'}</span> {a}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
@@ -258,25 +338,29 @@ export default function MeasureOpportunity({
         pathType="measure"
         currentStep={4}
         totalSteps={5}
-        stepName="The Opportunity"
+        stepName="Where You're Going"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <EngagementContextBar context={deriveEngagementContext(state)} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+
         <motion.div 
           className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            The Opportunity Ahead
+            Where You{"'"}re Going
           </h1>
           <p className="text-base text-[#666666] max-w-lg mx-auto" data-testid="text-page-subtitle">
-            You've demonstrated the model with {state.deployment.providers} {providerLabel}. Here's what your data suggests about what's next.
+            You{"'"}ve demonstrated the model with {state.deployment.providers} {providerLabel}. Here{"'"}s what your data suggests about what{"'"}s next.
           </p>
         </motion.div>
+
+        <MaturityStageCard state={state} />
 
         <motion.div
           className="bg-white rounded-xl border border-[#E5E5E5] p-6 md:p-8 mb-6"
@@ -437,7 +521,7 @@ export default function MeasureOpportunity({
             </div>
             <div className="bg-[#1A1A1A] rounded-lg p-4">
               <p className="text-xl font-bold text-white">{Math.round(expansion.hoursPerProvider)} hrs</p>
-              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">saved per {providerLabelSingular}/{state.deployment.monthsOnAbridge} mo</p>
+              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">saved per {providerLabelSingular}/{getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge)} mo</p>
             </div>
             <div className="bg-[#1A1A1A] rounded-lg p-4">
               <AnimatePresence mode="wait">
@@ -497,8 +581,11 @@ export default function MeasureOpportunity({
           </div>
 
           <div className="mt-6 pt-5 border-t border-[#333333]">
-            <p className="text-xs text-[#999999] leading-relaxed">
+            <p className="text-xs text-[#AAAAAA] leading-relaxed mb-3">
               Unlike programs that scale linearly with headcount, AI documentation cost per {providerLabelSingular} decreases as adoption grows, while value per {isInpatient ? "discharge" : isNursing ? "shift" : "encounter"} remains consistent.
+            </p>
+            <p className="text-[10px] text-[#666666] italic">
+              Benchmark: Abridge deployments with {">"}60% adoption and {">"}6 months tenure typically see {isInpatient ? '$400K\u2013$1.2M' : isED ? '$300K\u2013$800K' : isNursing ? '$200K\u2013$600K' : '$500K\u2013$1.5M'} in verified annual value for a similar provider count.
             </p>
           </div>
         </motion.div>
@@ -528,7 +615,7 @@ export default function MeasureOpportunity({
             className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-full text-base gap-2"
             data-testid="button-see-story"
           >
-            See Your Story
+            View Executive Summary
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

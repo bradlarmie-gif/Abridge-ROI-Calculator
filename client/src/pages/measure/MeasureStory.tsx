@@ -9,12 +9,17 @@ import {
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
+  deriveEngagementContext,
+  computeDomainStatus,
+  type DomainStatus,
+  getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
+import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config: Record<DataSource, { label: string; bg: string; text: string }> = {
     analytics: { label: 'Analytics-backed', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Benchmark-based', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    benchmark: { label: 'Abridge-verified', bg: 'bg-blue-100', text: 'text-blue-700' },
     estimate: { label: 'Estimated', bg: 'bg-gray-100', text: 'text-gray-600' },
   };
   const c = config[source] || config.estimate;
@@ -41,20 +46,52 @@ interface MeasureStoryProps {
   onHome: () => void;
 }
 
+function DomainRow({ name, status, value, valueHigh, hoursNote }: {
+  name: string;
+  status: DomainStatus;
+  value: number;
+  valueHigh?: number;
+  hoursNote?: string;
+}) {
+  const muted = status === 'no-data';
+  return (
+    <div className={`flex items-center justify-between py-3 border-b border-[#F0F0F0] last:border-b-0 ${muted ? 'opacity-40' : ''}`}
+      data-testid={`domain-row-${name.toLowerCase().replace(/\s/g, '-')}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`w-2 h-2 rounded-full ${muted ? 'bg-gray-300' : status === 'validated' ? 'bg-green-500' : status === 'signaling' ? 'bg-yellow-500' : 'bg-gray-400'}`} />
+        <span className="text-sm text-[#1A1A1A]">{name}</span>
+      </div>
+      <div className="text-right">
+        {muted ? (
+          <span className="text-xs text-[#CCCCCC] italic">Not yet measured</span>
+        ) : (
+          <>
+            <span className="text-sm font-semibold text-[#1A1A1A]">
+              {value > 0 ? (valueHigh ? formatSmartRange(value, valueHigh) : formatCurrency(value)) : '\u2014'}
+            </span>
+            {hoursNote && <span className="text-xs text-[#999999] ml-2">{hoursNote}</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProps) {
-  const [showMethodology, setShowMethodology] = useState(false);
+  const [showMethodology, setShowMethodology] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
-
-  const capacityPercent = state.allocation.capacityPercent ?? 20;
-  const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
-  const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
 
   const careSetting = state.careSetting || "outpatient";
   const isInpatient = careSetting === "inpatient";
   const isED = careSetting === "ed";
   const isNursing = careSetting === "nursing";
+
+  const context = useMemo(() => deriveEngagementContext(state), [state]);
+  const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
 
   const results = useMemo(() => {
     const deployment = state.deployment;
@@ -67,112 +104,54 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
+    let qualityValue = 0;
+    let qualityValueHigh = 0;
+    let workforceValue = 0;
+    let revenueValue = 0;
+    let revenueValueHigh = 0;
     let capacityValue = 0;
-    let savingsValue = 0;
-    let hoursPerProviderPerWeek = 0;
-    let timeValueSubtotal = 0;
-    let wrvuLift = 0;
-    let docValueLow = 0;
-    let docValueHigh = 0;
     let totalValueLow = 0;
     let totalValueHigh = 0;
-    let overtimeSavings = 0;
-    let retentionValue = 0;
 
-    if (careSetting === "inpatient") {
+    const efficiencyHours = totalHoursSaved * 0.5;
+    workforceValue = efficiencyHours * calibration.otHourlyRate;
+
+    const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
+    if (!isNursing && wrvuLift > 0) {
+      qualityValue = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.50 * annualFactor;
+      qualityValueHigh = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.75 * annualFactor;
+      revenueValue = qualityValue;
+      revenueValueHigh = qualityValueHigh;
+    }
+
+    if (isInpatient) {
       const metrics = state.settingData?.inpatient || {};
-      const hourlyRate = metrics.vm_hourlyRate ?? calibration.otHourlyRate ?? 175;
-      const inpSavingsPercent = state.allocation.hardSavingsPercent ?? 60;
-      const inpWellbeingPercent = state.allocation.qualityOfLifePercent ?? 40;
-
-      savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate * annualFactor;
-      const wellbeingHours = totalHoursSaved * (inpWellbeingPercent / 100);
-      hoursPerProviderPerWeek = deployment.providers > 0
-        ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
-      timeValueSubtotal = savingsValue;
-
       const cmiDelta = Math.max(0, (metrics.cmi_after ?? 0) - (metrics.cmi_before ?? 0));
       const cmiPointValue = metrics.vm_cmiPointValue ?? calibration.conversionFactor ?? 1500;
+      if (cmiDelta > 0) {
+        qualityValue += cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
+        qualityValueHigh += cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
+      }
       const denialsDelta = Math.max(0, (metrics.denialsPer100_before ?? 0) - (metrics.denialsPer100_after ?? 0));
-      const denialCostPerCase = metrics.vm_denialCostPerCase ?? 3200;
-      const cdiDelta = Math.max(0, (metrics.cdiQueriesPer100_before ?? 0) - (metrics.cdiQueriesPer100_after ?? 0));
-      const cdiFteCost = metrics.vm_cdiFteCost ?? 85000;
-      const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
-
-      docValueLow = (cmiDelta * adoptedEncounters * cmiPointValue * 0.50
-        + (denialsDelta / 100) * adoptedEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * adoptedEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
-      docValueHigh = (cmiDelta * adoptedEncounters * cmiPointValue * 0.75
-        + (denialsDelta / 100) * adoptedEncounters * denialCostPerCase
-        + (casesPerCdiFte > 0 ? ((cdiDelta / 100) * adoptedEncounters / casesPerCdiFte) * cdiFteCost : 0)) * annualFactor;
-
-      totalValueLow = docValueLow + timeValueSubtotal;
-      totalValueHigh = docValueHigh + timeValueSubtotal;
-    } else if (careSetting === "ed") {
-      const throughputPercent = state.allocation.capacityPercent ?? 40;
-      const edSavingsPercent = state.allocation.hardSavingsPercent ?? 40;
-      const edWellbeingPercent = state.allocation.qualityOfLifePercent ?? 20;
-
-      const throughputHours = totalHoursSaved * (throughputPercent / 100);
-      const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
-      capacityValue = additionalPatients * calibration.revenuePerVisit * annualFactor;
-      savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
-      const wellbeingHours = totalHoursSaved * (edWellbeingPercent / 100);
-      hoursPerProviderPerWeek = deployment.providers > 0
-        ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
-      timeValueSubtotal = capacityValue + savingsValue;
-
-      const lwbsReduction = Math.max(0, timeEfficiency.sameDayClosureWithout - timeEfficiency.sameDayClosureWith);
-      const patientsRetained = Math.round((lwbsReduction / 100) * adoptedEncounters);
-      const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
-
-      const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
-      const emLevelValue = emLevelLift * adoptedEncounters * calibration.conversionFactor;
-      docValueLow = emLevelValue * 0.50 * annualFactor;
-      docValueHigh = emLevelValue * 0.75 * annualFactor;
-
-      totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
-      totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
-    } else if (careSetting === "nursing") {
-      const nursingMetrics = state.settingData?.nursing || {};
-      const nursingSavingsPercent = state.allocation.hardSavingsPercent ?? 50;
-      const nursingWellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
-
-      savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
-      const wellbeingHours = totalHoursSaved * (nursingWellbeingPercent / 100);
-      hoursPerProviderPerWeek = deployment.providers > 0
-        ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
-      timeValueSubtotal = savingsValue;
-
-      const otSaved = Math.max(0, timeEfficiency.workOutsideWithout - timeEfficiency.workOutsideWith);
-      overtimeSavings = otSaved * deployment.providers * calibration.otHourlyRate * 1.5 * 52;
-
-      const turnoverReduction = Math.max(0, (nursingMetrics.turnoverRate_before ?? 0) - (nursingMetrics.turnoverRate_after ?? 0));
-      retentionValue = Math.round((turnoverReduction / 100) * deployment.providers) * 56000;
-
-      totalValueLow = timeValueSubtotal + overtimeSavings + retentionValue;
-      totalValueHigh = totalValueLow;
-    } else {
-      const capacityHours = totalHoursSaved * (capacityPercent / 100);
-      const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
-      capacityValue = additionalVisits * calibration.revenuePerVisit * annualFactor;
-
-      const savingsHours = totalHoursSaved * (savingsPercent / 100);
-      savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
-
-      const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
-      hoursPerProviderPerWeek = deployment.providers > 0
-        ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
-
-      timeValueSubtotal = capacityValue + savingsValue;
-
-      wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
-      docValueLow = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.50 * annualFactor;
-      docValueHigh = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.75 * annualFactor;
-
-      totalValueLow = timeValueSubtotal + docValueLow;
-      totalValueHigh = timeValueSubtotal + docValueHigh;
+      if (denialsDelta > 0) {
+        const dVal = (denialsDelta / 100) * adoptedEncounters * (metrics.vm_denialCostPerCase ?? 3200) * annualFactor;
+        revenueValue += dVal;
+        revenueValueHigh += dVal;
+      }
     }
+
+    if (isED) {
+      const throughputHours = totalHoursSaved * 0.3;
+      const addlPatients = throughputHours * (60 / calibration.minutesPerVisit);
+      capacityValue = addlPatients * calibration.revenuePerVisit * annualFactor;
+    } else if (!isInpatient && !isNursing) {
+      const capHours = totalHoursSaved * 0.2;
+      const addlVisits = capHours * (60 / calibration.minutesPerVisit);
+      capacityValue = addlVisits * calibration.revenuePerVisit * annualFactor;
+    }
+
+    totalValueLow = qualityValue + workforceValue + revenueValue + capacityValue;
+    totalValueHigh = qualityValueHigh + workforceValue + revenueValueHigh + capacityValue;
 
     const expansion = calculateExpansionResults(
       state, totalValueLow, totalValueHigh, totalHoursSaved,
@@ -182,28 +161,21 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
     return {
       totalHoursSaved,
+      qualityValue,
+      qualityValueHigh,
+      workforceValue,
+      revenueValue,
+      revenueValueHigh,
       capacityValue,
-      savingsValue,
-      hoursPerProviderPerWeek,
-      timeValueSubtotal,
-      wrvuLift,
-      docValueLow,
-      docValueHigh,
       totalValueLow,
       totalValueHigh,
-      overtimeSavings,
-      retentionValue,
       expansion,
     };
-  }, [state, capacityPercent, savingsPercent, wellbeingPercent, careSetting]);
+  }, [state, careSetting]);
 
-  const adjustedTimeValue = results.timeValueSubtotal - results.savingsValue;
-  const adjustedTotalLow = results.totalValueLow - results.savingsValue;
-  const adjustedTotalHigh = results.totalValueHigh - results.savingsValue;
-  const savingsHours = results.savingsValue > 0
-    ? Math.round(results.totalHoursSaved * (savingsPercent / 100))
+  const hoursPerProvider = state.deployment.providers > 0
+    ? Math.round(results.totalHoursSaved / state.deployment.providers)
     : 0;
-  const hoursPerProvider = Math.round(results.expansion.hoursPerProvider);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
@@ -212,7 +184,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
-        description: "Your Value Story has been saved.",
+        description: "Your Executive Summary has been saved.",
         variant: "brand",
       });
     } catch (error) {
@@ -227,19 +199,36 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     }
   };
 
+  const phaseNarrative = useMemo(() => {
+    if (context.phase === 1) {
+      return `${state.deployment.providers} ${isNursing ? 'nurses' : 'providers'} are ${months} months into their Abridge deployment. Documentation efficiency is the first signal \u2014 and it\u2019s live. The foundation is set for deeper value domains to emerge.`;
+    }
+    if (context.phase === 2) {
+      return `At ${months} months, your deployment has moved beyond documentation speed. Workforce and revenue signals are beginning to appear \u2014 the kind of evidence that builds a credible renewal case.`;
+    }
+    if (context.phase === 3) {
+      return `${months} months in, your data spans multiple value domains. ${isInpatient ? 'Patient flow' : isED ? 'Throughput' : 'Capacity'} signals are emerging \u2014 the organization is beginning to do more with the time Abridge has returned.`;
+    }
+    return `At ${months}+ months, Abridge value is embedded across the organization. Your data tells a strategic story \u2014 one that supports expansion, board-level reporting, and long-term investment framing.`;
+  }, [context.phase, months, state.deployment.providers, isNursing, isInpatient, isED]);
+
+  const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
         currentStep={5}
         totalSteps={5}
-        stepName="Your Story"
+        stepName="Executive Summary"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+
         <motion.div 
           className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -249,14 +238,14 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             {state.deployment.providers} {isNursing ? "nurses" : "providers"}.
           </p>
           <p className="text-[28px] text-[#1A1A1A] mb-1" data-testid="text-hero-months">
-            {state.deployment.monthsOnAbridge} months.
+            {months} months since go-live.
           </p>
           <p className="text-[36px] font-bold text-[#EA2C00] mb-4" data-testid="text-hero-hours">
             {formatNumber(Math.round(results.totalHoursSaved))} hours back.
           </p>
 
           <p className="text-sm text-[#666666] max-w-lg mx-auto" data-testid="text-hero-context">
-            That's {hoursPerProvider} hours per {isNursing ? "nurse" : "provider"} over {state.deployment.monthsOnAbridge} months{'\u2014'}time that used to disappear into documentation.
+            That{"'"}s {hoursPerProvider} hours per {isNursing ? "nurse" : "provider"} over {months} months{"\u2014"}time that used to disappear into documentation.
           </p>
         </motion.div>
 
@@ -268,13 +257,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           data-testid="section-story-callout"
         >
           <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-            The Story
+            Phase {context.phase} {"–"} {context.phaseLabel}
           </p>
-          <p className="text-xl font-bold text-[#1A1A1A] leading-relaxed mb-3">
-            You gave {state.deployment.providers} {isNursing ? "nurses" : "people"} their evenings back{'\u2014'}and the {isNursing ? "charting" : "notes"} got better, not worse.
-          </p>
-          <p className="text-sm text-[#666666] leading-relaxed">
-            Better documentation comes from less time documenting. That's not a paradox{'\u2014'}it's what happens when the technology works.
+          <p className="text-base text-[#1A1A1A] leading-relaxed">
+            {phaseNarrative}
           </p>
         </motion.div>
 
@@ -286,69 +272,19 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           data-testid="section-results"
         >
           <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
-            Your Results
+            Value by Domain
           </p>
 
-          <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
-            <span className="text-sm text-[#1A1A1A]">Hours Reclaimed</span>
-            <span className="text-sm font-semibold text-[#1A1A1A]">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
-            <span className="text-sm text-[#1A1A1A]">Per {isNursing ? "Nurse" : "Provider"}</span>
-            <span className="text-sm font-semibold text-[#1A1A1A]">{hoursPerProvider} hours</span>
-          </div>
+          <DomainRow name="Quality" status={domainStatus.quality} value={results.qualityValue} valueHigh={results.qualityValueHigh} />
+          <DomainRow name="Workforce" status={domainStatus.workforce} value={results.workforceValue} hoursNote={`${formatNumber(Math.round(results.totalHoursSaved * 0.5))} hrs`} />
+          <DomainRow name="Revenue" status={domainStatus.revenue} value={results.revenueValue} valueHigh={results.revenueValueHigh} />
+          <DomainRow name={capacityLabel} status={domainStatus.capacity} value={results.capacityValue} />
 
-          <div className="py-3 border-b border-[#F0F0F0]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#1A1A1A]">Time Value</span>
-              <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(adjustedTimeValue)}</span>
-            </div>
-            <div className="pl-4 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[#666666]">Time Returned ({savingsPercent}%)</span>
-                <span className="text-xs text-[#666666]">{formatNumber(savingsHours)} hours</span>
-              </div>
-              {!isInpatient && !isNursing && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#666666]">{isED ? "Throughput" : "Patient Capacity"} ({capacityPercent}%)</span>
-                  <span className="text-xs text-[#666666]">{formatCurrency(results.capacityValue)}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[#666666]">{isNursing ? "Nurse" : "Provider"} Wellbeing ({wellbeingPercent}%)</span>
-                <span className="text-xs text-[#666666]">{results.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</span>
-              </div>
-            </div>
-          </div>
-
-          {isNursing && results.overtimeSavings > 0 && (
-            <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
-              <span className="text-sm text-[#1A1A1A]">Overtime Savings</span>
-              <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(results.overtimeSavings)}</span>
-            </div>
-          )}
-
-          {isNursing && results.retentionValue > 0 && (
-            <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
-              <span className="text-sm text-[#1A1A1A]">Retention Value</span>
-              <span className="text-sm font-semibold text-[#1A1A1A]">{formatCurrency(results.retentionValue)}</span>
-            </div>
-          )}
-
-          {!isNursing && (results.docValueLow > 0 || results.docValueHigh > 0) && (
-            <div className="py-3 border-b border-[#F0F0F0]">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[#1A1A1A]">{isInpatient ? "Documentation & Coding" : isED ? "E/M & LWBS Value" : "Documentation Value"}</span>
-                <span className="text-sm font-semibold text-[#1A1A1A]">{formatSmartRange(results.docValueLow, results.docValueHigh)}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-4">
+          <div className="pt-4 mt-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide flex items-center gap-2">Estimated Annual Value <DataSourceBadge source={state.dataSource} /></span>
               <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-total-value">
-                {formatSmartRange(adjustedTotalLow, adjustedTotalHigh)}
+                {formatSmartRange(results.totalValueLow, results.totalValueHigh)}
               </span>
             </div>
             <p className="text-xs text-[#666666]">Per {isNursing ? "nurse" : "provider"}: ~{formatCurrency(results.expansion.perProviderValue)}/year</p>
@@ -400,7 +336,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           data-testid="section-expansion"
         >
           <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-4">
-            What's Next
+            What{"'"}s Next
           </p>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -423,15 +359,72 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
         </motion.div>
 
         <motion.div
-          className="bg-white rounded-xl border border-[#E5E5E5] p-5 mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
+          className="mb-6"
+        >
+          <button
+            onClick={() => setShowMethodology(!showMethodology)}
+            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#999999]"
+            data-testid="button-methodology"
+          >
+            <span className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              How We Calculated This
+            </span>
+            {showMethodology ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          
+          <AnimatePresence initial={false}>
+            {showMethodology && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="p-5 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
+                  <p>
+                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} {"\u00D7"} {formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} Abridge-documented {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
+                  </p>
+                  <p>
+                    <strong className="text-[#1A1A1A]">Allocation:</strong> Fixed 50% efficiency / 30% capacity / 20% wellbeing allocation applied to recovered time. Efficiency hours valued at ${state.calibration.otHourlyRate}/hr. Wellbeing hours shown as time returned, not dollarized.
+                  </p>
+                  {!isNursing && (
+                    <p>
+                      <strong className="text-[#1A1A1A]">Documentation quality:</strong>{" "}
+                      {isInpatient
+                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 50\u201375% attribution for DRG accuracy."
+                        : isED
+                        ? "E/M level accuracy and throughput recovery. Range reflects 50\u201375% attribution."
+                        : `wRVU lift of ${(state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout).toFixed(2)}/encounter. Range reflects 50\u201375% attribution.`
+                      }
+                    </p>
+                  )}
+                  <p>
+                    <strong className="text-[#1A1A1A]">Data source:</strong>{" "}
+                    {state.dataSource === 'analytics' ? 'Values sourced from EHR/analytics pull.' : state.dataSource === 'benchmark' ? 'Values sourced from Abridge analytics platform.' : 'Values are team estimates based on observation.'}
+                  </p>
+                  <p>
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        <motion.div
+          className="bg-white rounded-xl border border-[#E5E5E5] p-5 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
           data-testid="section-share"
         >
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-semibold text-[#1A1A1A] mb-1">Share Your Story</p>
+              <p className="font-semibold text-[#1A1A1A] mb-1">Share This Summary</p>
               <p className="text-sm text-[#999999]">
                 Export a polished PDF for leadership
               </p>
@@ -452,68 +445,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           onClose={() => setShowExportModal(false)}
           onExport={handleExportPDF}
           isExporting={isExporting}
-          documentType="value story"
+          documentType="executive summary"
         />
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-6"
-        >
-          <button
-            onClick={() => setShowMethodology(!showMethodology)}
-            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#999999]"
-            data-testid="button-methodology"
-          >
-            <span className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Methodology & Assumptions
-            </span>
-            {showMethodology ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-          
-          <AnimatePresence>
-            {showMethodology && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="p-5 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
-                  <p>
-                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} × {formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} Abridge-documented {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
-                  </p>
-                  <p>
-                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {!isInpatient && !isNursing ? `Patient ${isED ? "throughput" : "capacity"} calculated at ${capacityPercent}% time allocation, ${state.calibration.minutesPerVisit} min per ${isED ? "patient" : "visit"}, $${state.calibration.revenuePerVisit}/${isED ? "patient" : "visit"}. ` : ""}{savingsPercent}% time returned to {isNursing ? "nurses" : "providers"} shown as hours, not dollarized. {wellbeingPercent}% wellbeing.
-                  </p>
-                  {!isNursing && (
-                    <p>
-                      <strong className="text-[#1A1A1A]">{isInpatient ? "Documentation & Coding:" : isED ? "E/M & Throughput:" : "Documentation value:"}</strong>{" "}
-                      {isInpatient
-                        ? "CMI improvement, denial reduction, and CDI efficiency. Range reflects 50-75% attribution for DRG accuracy."
-                        : isED
-                        ? "E/M level accuracy and LWBS recovery value. Range reflects 50-75% attribution."
-                        : `+${results.wrvuLift.toFixed(2)} wRVU/encounter × $${state.calibration.conversionFactor} conversion × ${formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} encounters. Range reflects 50-75% attribution (matching Model Assumptions).`
-                      }
-                    </p>
-                  )}
-                  {isNursing && (results.overtimeSavings > 0 || results.retentionValue > 0) && (
-                    <p>
-                      <strong className="text-[#1A1A1A]">Additional value:</strong>{" "}
-                      {results.overtimeSavings > 0 ? `Overtime reduction at 1.5x hourly rate.` : ""}{" "}
-                      {results.retentionValue > 0 ? `Retention savings at $56K replacement cost per nurse.` : ""}
-                    </p>
-                  )}
-                  <p>
-                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {results.expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
 
         <motion.div
           className="flex justify-center"

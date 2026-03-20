@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, formatNumber } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, type DataSource, formatNumber, deriveEngagementContext } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
@@ -121,7 +121,7 @@ export default function MeasureDataEntry({
         pathType="measure"
         currentStep={1}
         totalSteps={5}
-        stepName="Your Data"
+        stepName="Your Deployment"
         onBack={onBack}
         onHome={onHome}
       />
@@ -370,10 +370,54 @@ function getNextStepGuidance(
   return "Review and continue";
 }
 
+function PhaseContextCard({ state }: { state: MeasureState }) {
+  const ctx = deriveEngagementContext(state);
+  if (ctx.monthsOnAbridge === 0) return null;
+
+  const domainSignals = [
+    { label: 'Quality signals', phase: 1 },
+    { label: 'Workforce signals', phase: 2 },
+    { label: 'Revenue signals', phase: 2 },
+    { label: `${ctx.phaseSubLabel} signals`, phase: 3 },
+  ];
+
+  return (
+    <div className="mt-2 rounded-lg bg-[#F5F0EB] border-l-4 border-[#EA2C00] p-4" data-testid="phase-context-card">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EA2C00] text-white">
+          PHASE {ctx.phase}
+        </span>
+        <span className="text-sm font-semibold text-[#1A1A1A]">{ctx.phaseLabel}</span>
+      </div>
+      <p className="text-xs text-[#666666] mb-2">
+        You are {ctx.monthsOnAbridge} months into your Abridge deployment.
+      </p>
+      <div className="space-y-1">
+        {domainSignals.map((d) => {
+          const active = ctx.phase >= d.phase;
+          const emerging = ctx.phase === d.phase;
+          return (
+            <div key={d.label} className="flex items-center gap-2 text-xs">
+              {active ? (
+                <span className="text-[#2D8A4E]">{emerging ? '~' : '\u2713'}</span>
+              ) : (
+                <span className="text-[#CCCCCC]">{'\u25CB'}</span>
+              )}
+              <span className={active ? 'text-[#1A1A1A]' : 'text-[#999999]'}>
+                {d.label} {active ? (emerging ? 'emerging' : 'active') : `expected at month ${d.phase === 2 ? '3' : d.phase === 3 ? '6' : '1'}+`}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function DataSourceSelector({ value, onChange }: { value: DataSource; onChange: (ds: DataSource) => void }) {
   const options: { key: DataSource; label: string; desc: string }[] = [
     { key: 'analytics', label: 'Analytics Pull', desc: 'Epic, Abridge analytics, or EHR reporting' },
-    { key: 'benchmark', label: 'Abridge Benchmark', desc: 'Comparable deployment data' },
+    { key: 'benchmark', label: 'Abridge Data', desc: 'From Abridge analytics platform' },
     { key: 'estimate', label: 'Our Estimate', desc: 'Team-estimated from observation' },
   ];
 
@@ -516,14 +560,32 @@ function EditView({
               data-testid="input-total-providers"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-black">Months on Abridge</label>
-            <FormattedNumberInput
-              value={state.deployment.monthsOnAbridge}
-              onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
-              className="h-10 bg-white border-[#E5E5E5] text-right"
-              data-testid="input-months"
-            />
+          <div className="space-y-1.5 col-span-2">
+            <label className="text-sm font-medium text-black">Go-Live Date</label>
+            <div className="flex gap-3 items-start">
+              <input
+                type="date"
+                value={state.goLiveDate || ''}
+                onChange={(e) => onUpdateState({ goLiveDate: e.target.value || null })}
+                className="h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
+                data-testid="input-go-live-date"
+              />
+              {!state.goLiveDate && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#999999]">or</span>
+                  <div className="space-y-0.5">
+                    <label className="text-xs text-[#999999]">Months since go-live</label>
+                    <FormattedNumberInput
+                      value={state.deployment.monthsOnAbridge}
+                      onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
+                      className="h-8 w-20 bg-white border-[#E5E5E5] text-right text-sm"
+                      data-testid="input-months"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <PhaseContextCard state={state} />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-black">Total Encounters</label>
@@ -589,15 +651,16 @@ function EditView({
             {section.description && (
               <p className="text-[12px] text-[#999999] mb-3">{section.description}</p>
             )}
-            <div className="grid grid-cols-3 gap-4 mb-3">
+            <div className="grid grid-cols-3 gap-4 mb-1">
               <div />
               <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
-                Before
+                Non-Abridge
               </div>
               <div className="text-xs font-semibold text-[#888888] text-center uppercase tracking-[1px]">
                 With Abridge
               </div>
             </div>
+            <p className="text-[10px] text-[#AAAAAA] text-center mb-3">Same time period {"–"} encounters documented with and without Abridge</p>
             {section.metrics.map((metric) => (
               <div
                 key={metric.key}
@@ -950,7 +1013,7 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div />
           <p className="text-xs font-semibold text-[#999999] uppercase tracking-[1px] text-right">
-            Before
+            Non-Abridge
           </p>
           <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">
             With Abridge

@@ -1,0 +1,463 @@
+REPLIT PROMPT: Measure Path EBR Redesign    
+                                              
+  You are redesigning the Measure path of The ROI Calculator to function as a             
+  premium Executive Business Review (EBR) tool for existing Abridge partners.                                                                                                                                  
+  The redesign must embed a specific strategic framework that Abridge uses                                                                                                                                     
+  internally — four value domains, four maturity stages, and a phased time-to-value                                                                                                                            
+  model. This is NOT a sales calculator. It's a structured partner review instrument.                                                                                                                          
+                                                                                                                                                                                                               
+  The full framework is defined below. Read it carefully — it shapes every screen.                                                                                                                             
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 1: THE FRAMEWORK TO EMBED                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  FOUR VALUE DOMAINS (replace "doc quality" and "time value" buckets)
+  Each domain answers one strategic question. Each has a stakeholder owner.                                                                                                                                    
+                                                                                                                                                                                                               
+    QUALITY      → "Has documentation quality traveled downstream?"                                                                                                                                            
+                   Stakeholder: CMO, Quality & CDI                                                                                                                                                             
+                   First signal: Day 1–30                                                                                                                                                                      
+                   Metrics: note accuracy, CDI query rate, HCC capture,                                                                                                                                        
+                            diagnosis specificity                                                                                                                                                              
+                                                                                                                                                                                                               
+    WORKFORCE    → "Has clinician relief translated into tangible benefits?"                                                                                                                                   
+                   Stakeholder: CHRO, CMO                                                                                                                                                                      
+                   First signal: Day 30–90                                                                                                                                                                     
+                   Metrics: time in notes, after-hours work (WoW),                                                                                                                                             
+                            burnout indicators, retention                                                                                                                                                      
+                                                                                                                                                                                                               
+    REVENUE      → "Has documentation quality reached the bottom line?"
+                   Stakeholder: CFO, VP Revenue Cycle                                                                                                                                                          
+                   First signal: Day 30–90                                                                                                                                                                     
+                   Metrics: wRVU per encounter, E/M level accuracy,                                                                                                                                            
+                            coding accuracy, clean claim rate, CMI (inpatient)                                                                                                                                 
+                                                                                                                                                                                                               
+    CAPACITY     → "What is the organization doing with the freed time?"
+    (or PATIENT  Stakeholder: COO, Dept Chiefs                                                                                                                                                                 
+     FLOW for    First signal: Day 90–180                                                                                                                                                                      
+     inpatient / Metrics: encounter volume, panel growth, patients/provider/shift,                                                                                                                             
+     THROUGHPUT     LOS indicators, LWBS rate (ED)                                                                                                                                                             
+     for ED)                                                                                                                                                                                                   
+                                                            
+  THREE PHASES OF VALUE (based on months on Abridge)                                                                                                                                                           
+                                                                                                                                                                                                               
+    PHASE 1 — Documentation Fidelity     (Days 0–90)                                                                                                                                                           
+    → Quality domain is primary. Efficiency beginning.                                                                                                                                                         
+    → Revenue and Workforce: baseline only. No signal expected yet.                                                                                                                                            
+    → Capacity/Flow/Throughput: pre-signal. No data to show.                                                                                                                                                   
+                                                            
+    PHASE 2 — Efficiency                  (Days 90–180)                                                                                                                                                        
+    → Workforce signals emerging. Revenue signals strengthening.                                                                                                                                               
+    → Quality: first CDI and coding accuracy data.                                                                                                                                                             
+    → Capacity/Flow/Throughput: still pre-signal.                                                                                                                                                              
+                                                                                                                                                                                                               
+    PHASE 3 — Capacity / Flow / Throughput (Days 180–360)                                                                                                                                                      
+    → All four domains now active.                                                                                                                                                                             
+    → Capacity (outpatient): encounter volume, panel growth, new settings                                                                                                                                      
+    → Patient Flow (inpatient): discharge pipeline, LOS direction                                                                                                                                              
+    → Patient Throughput (ED): LWBS rate, patients/provider/shift                                                                                                                                              
+                                                                                                                                                                                                               
+    PHASE 4 — Strategic Proof             (Day 360+)                                                                                                                                                           
+    → Multi-domain validated data. Board-level story.
+    → Renewal is assumed. Question is where to grow next.                                                                                                                                                      
+                                                                                                                                                                                                               
+  FOUR MATURITY STAGES (per partner engagement)
+                                                                                                                                                                                                               
+    UNMEASURED   → No baseline. No story yet.                                                                                                                                                                  
+                   MRU stabilizing. Single setting. Relationship-dependent.                                                                                                                                    
+                                                                                                                                                                                                               
+    SIGNALING    → First metrics live. 1–2 domains trending.                                                                                                                                                   
+                   MRU growing. Core setting deepening. Trust established.
+                                                                                                                                                                                                               
+    VALIDATED    → Trends confirmed across multiple domains.                                                                                                                                                   
+                   Multi-setting. Renewal is a given. QBR-worthy data.                                                                                                                                         
+                                                                                                                                                                                                               
+    STRATEGIC    → Embedded in org strategy. Board-level proof.                                                                                                                                                
+                   Full portfolio. Expansion is the conversation.                                                                                                                                              
+                                                                                                                                                                                                               
+  MATURITY STAGE DERIVATION (computed, not user-selected)                                                                                                                                                      
+    - UNMEASURED: monthsOnAbridge < 3 OR utilizationRate < 20                                                                                                                                                  
+    - SIGNALING: monthsOnAbridge 3–9 AND utilizationRate 20–60 AND 1–2 domains have data                                                                                                                       
+    - VALIDATED: monthsOnAbridge 9–18 OR (utilizationRate > 60 AND 3+ domains have data)                                                                                                                       
+    - STRATEGIC: monthsOnAbridge > 18 AND utilizationRate > 70
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 2: DATA MODEL CHANGES                                                                                                                                                                                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In client/src/lib/measureCalculator.ts, add to MeasureState:                                                                                                                                                 
+                                                                                                                                                                                                               
+    goLiveDate: string | null        // ISO date string "YYYY-MM-DD"                                                                                                                                           
+    dataSource: 'analytics' | 'benchmark' | 'estimate'  // default 'estimate'                                                                                                                                  
+                                                                                                                                                                                                               
+  Derive monthsOnAbridge from goLiveDate to today when goLiveDate is set.                                                                                                                                      
+  Keep monthsOnAbridge as a manual fallback if goLiveDate is null.
+                                                                                                                                                                                                               
+  Add a pure function:                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    export function deriveEngagementContext(state: MeasureState): {                                                                                                                                            
+      phase: 1 | 2 | 3 | 4                                                                                                                                                                                     
+      phaseLabel: string           // "Documentation Fidelity" | "Efficiency" | etc.                                                                                                                           
+      phaseSubLabel: string        // care-setting-aware: "Capacity" | "Patient Flow" | "Throughput"                                                                                                           
+      maturityStage: 'unmeasured' | 'signaling' | 'validated' | 'strategic'
+      maturityLabel: string        // "Unmeasured" | "Signaling" | "Validated" | "Strategic"                                                                                                                   
+      maturityNext: string         // label of the next stage                                                                                                                                                  
+      activeDomainsExpected: string[]  // which domains should have signal by now                                                                                                                              
+      phaseMonthsElapsed: number   // months since phase transition                                                                                                                                            
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Add a pure function to compute which domains have data entered                                                                                                                                               
+  (i.e., non-zero deltas for the relevant metrics):                                                                                                                                                            
+                                                                                                                                                                                                               
+    export function computeDomainStatus(state: MeasureState): {                                                                                                                                                
+      quality: 'no-data' | 'baseline-only' | 'signaling' | 'validated'
+      workforce: 'no-data' | 'baseline-only' | 'signaling' | 'validated'                                                                                                                                       
+      revenue: 'no-data' | 'baseline-only' | 'signaling' | 'validated'                                                                                                                                         
+      capacity: 'no-data' | 'baseline-only' | 'signaling' | 'validated'                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Domain status logic:                                                                                                                                                                                         
+    - Quality: has data if emLevel delta > 0 OR wRVU delta > 0 (outpatient)                                                                                                                                    
+               OR CDI metrics entered (inpatient)           
+    - Workforce: has data if timeInNotes delta > 0 OR workOutside delta > 0                                                                                                                                    
+    - Revenue: has data if wRVU delta > 0 (outpatient/ED) OR CMI delta > 0 (inpatient)
+    - Capacity: has data if deployment months >= 6 AND                                                                                                                                                         
+                (additionalVisits > 0 OR encounter volume entered)                                                                                                                                             
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 3: SCREEN-BY-SCREEN CHANGES                                                                                                                                                                             
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  SCREEN 1: MeasureDataEntry.tsx                                                                                                                                                                               
+  Rename step: "Your Deployment"                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                                                                                                                                                                               
+  SECTION 1 — "Your Organization" (existing fields, reordered)                                                                                                                                                 
+    - Organization name                                                                                                                                                                                        
+    - Care setting (existing pill selector, unchanged)                                                                                                                                                         
+                                                                                                                                                                                                               
+  SECTION 2 — "Time With Abridge" (NEW — this is the most important addition)                                                                                                                                  
+    Replace the "Months on Abridge" number input with:                                                                                                                                                         
+                                                                                                                                                                                                               
+    A date picker labeled "Go-Live Date" (use an HTML date input, styled to match                                                                                                                              
+    the existing form aesthetic — cream/beige background, brand styling).                                                                                                                                      
+                                                                                                                                                                                                               
+    Below the date picker, show a computed summary card:                                                                                                                                                       
+                                                                                                                                                                                                               
+    ┌─────────────────────────────────────────────────────┐                                                                                                                                                    
+    │  [Phase icon]  PHASE 2 — EFFICIENCY                 │                                                                                                                                                    
+    │  You are 7 months into your Abridge deployment.     │                                                                                                                                                    
+    │                                                     │                                                                                                                                                    
+    │  At this stage, we expect:                          │ 
+    │  ✓ Quality signals active                           │                                                                                                                                                    
+    │  ✓ Workforce signals emerging                       │                                                                                                                                                    
+    │  ✓ Revenue signals emerging                         │                                                                                                                                                    
+    │  ○ Capacity — signal expected at month 6+           │                                                                                                                                                    
+    └─────────────────────────────────────────────────────┘ 
+                                                                                                                                                                                                               
+    Style: cream/beige background (#F5F0EB), left border in brand orange for                                                                                                                                   
+    the active phase, muted gray border for upcoming phases.                                                                                                                                                   
+                                                                                                                                                                                                               
+    The phase label and expected signals update automatically as the user                                                                                                                                      
+    changes the go-live date.                               
+                                                                                                                                                                                                               
+    If monthsOnAbridge < 3: show Phase 1 card (Documentation Fidelity)                                                                                                                                         
+    If 3–6 months: Phase 2 (Efficiency)                                                                                                                                                                        
+    If 6–18 months: Phase 3 (care-setting aware label)                                                                                                                                                         
+    If 18+ months: Phase 4 (Strategic Proof)                                                                                                                                                                   
+                                              
+  SECTION 3 — "Data Source" (NEW — three pill buttons)                                                                                                                                                         
+    Prominent placement. Label: "Where does this data come from?"
+    Three options as pill toggle buttons:                                                                                                                                                                      
+    - "Analytics Pull"   (from Epic, Abridge dashboard, or EHR reporting)                                                                                                                                      
+    - "Abridge Data"     (from Abridge's analytics platform)                                                                                                                                                   
+    - "Our Estimate"     (team-estimated or directional)                                                                                                                                                       
+                                                                                                                                                                                                               
+    Default: "Our Estimate"                                                                                                                                                                                    
+    Selected state: brand orange background (#EA2C00), white text                                                                                                                                              
+    Unselected: white background, #666 text, light border                                                                                                                                                      
+                                                                                                                                                                                                               
+    This selection affects a confidence badge shown on every value number                                                                                                                                      
+    throughout the remaining screens:                                                                                                                                                                          
+    - "Analytics Pull": green badge "Analytics-backed"                                                                                                                                                         
+    - "Abridge Data":   blue badge "Abridge-verified"                                                                                                                                                          
+    - "Our Estimate":   gray badge "Estimated"                                                                                                                                                                 
+                                                                                                                                                                                                               
+  SECTION 4 — Deployment metrics (existing, keep as-is)                                                                                                                                                        
+    Providers, total encounters, utilization rate, etc.                                                                                                                                                        
+                                                                                                                                                                                                               
+  SECTION 5 — Metrics entry (existing per-setting forms, keep as-is)                                                                                                                                           
+    Time in notes, wRVU, E/M levels, etc.                   
+                                                                                                                                                                                                               
+    IMPORTANT CHANGE: Label the two columns "Non-Abridge Encounters" and                                                                                                                                       
+    "Abridge Encounters" instead of "Before" and "After". Add a small tooltip:                                                                                                                                 
+    "These should be from the same time period — encounters documented with                                                                                                                                    
+    and without Abridge, compared simultaneously."                                                                                                                                                             
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  SCREEN 2: MeasureTransformation.tsx                                                                                                                                                                          
+  Rename step: "What Your Data Shows"                                                                                                                                                                          
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                            
+  HEADER: Show the engagement context bar (NEW COMPONENT — see Part 4).                                                                                                                                        
+                                                                                                                                                                                                               
+  SECTION 1 — Domain signal cards (REDESIGNED)
+  Replace the current before/after comparison layout with four domain cards                                                                                                                                    
+  arranged in a 2×2 grid (or vertical stack on mobile).     
+                                                                                                                                                                                                               
+  Each domain card shows:                                   
+                                                                                                                                                                                                               
+  ┌──────────────────────────────────────────────────────────┐                                                                                                                                                 
+  │ QUALITY                              [signal badge]      │                                                                                                                                                 
+  │ Stakeholder: CMO · Quality & CDI                         │                                                                                                                                                 
+  │ ──────────────────────────────────────────────────────   │                                                                                                                                                 
+  │ [metric]: [before value] → [after value]  [delta badge]  │
+  │ [metric]: [before value] → [after value]                 │                                                                                                                                                 
+  │                                                          │
+  │ [Phase note — if domain is pre-signal]:                  │                                                                                                                                                 
+  │ "Signal expected at month 6. Baseline established."      │                                                                                                                                                 
+  └──────────────────────────────────────────────────────────┘                                                                                                                                                 
+                                                                                                                                                                                                               
+  Signal badge states:                                                                                                                                                                                         
+    - "Active"        (green) — has data and delta > 0                                                                                                                                                         
+    - "Baseline Set"  (yellow) — data entered but no delta yet                                                                                                                                                 
+    - "Pre-Signal"    (gray)   — not expected at this phase yet                                                                                                                                                
+                                                                                                                                                                                                               
+  Pre-signal domains still show the card but in a muted style with the                                                                                                                                         
+  phase note. Do NOT hide them — showing what's coming is part of the story.                                                                                                                                   
+                                                                                                                                                                                                               
+  Domain-to-metric mapping:                                                                                                                                                                                    
+    QUALITY:   E/M level delta, wRVU delta, CDI query reduction (if entered)                                                                                                                                   
+    WORKFORCE: Time in notes delta, after-hours work delta                                                                                                                                                     
+    REVENUE:   wRVU delta, CMI delta (inpatient), E/M level delta (ED)                                                                                                                                         
+    CAPACITY:  Derived visits added (outpatient), LOS indicators (inpatient),                                                                                                                                  
+               LWBS reduction (ED)                                                                                                                                                                             
+                                                                                                                                                                                                               
+  For domains with no data entered: show the card in muted state with                                                                                                                                          
+  "No data entered yet" and the question the domain answers.                                                                                                                                                   
+                                                            
+  SECTION 2 — Fix the trend display                                                                                                                                                                            
+  REMOVE the interpolated trend chart (the easeOutQuad generated curve).
+                                                                                                                                                                                                               
+  Replace with a clean point-in-time comparison visual for each domain:                                                                                                                                        
+                                                                                                                                                                                                               
+    Non-Abridge ●────────────── ● With Abridge                                                                                                                                                                 
+    [value]                     [value]         [+delta] [+%]                                                                                                                                                  
+                                                                                                                                                                                                               
+  This is honest. It shows what was measured, not a fabricated curve.                                                                                                                                          
+                                                            
+  Add a single explanatory line below:                                                                                                                                                                         
+  "These values compare concurrent encounters — same providers, same period,                                                                                                                                   
+  documented with and without Abridge."                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                    
+  SCREEN 3: MeasureAllocate.tsx                                                                                                                                                                                
+  Rename step: "What It's Worth"                            
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                            
+  MAJOR LAYOUT CHANGE: Two-column layout                                                                                                                                                                       
+                                                                                                                                                                                                               
+  LEFT COLUMN: "What the Math Shows"                                                                                                                                                                           
+    Show value broken out by the four domains instead of by "time" and "doc":                                                                                                                                  
+                                                                                                                                                                                                               
+    QUALITY domain value:                                                                                                                                                                                      
+      Outpatient: wRVU lift × encounters × CF × 50-75% attribution
+      Inpatient: CMI improvement value + CDI efficiency                                                                                                                                                        
+      ED: E/M level accuracy value                                                                                                                                                                             
+                                                                                                                                                                                                               
+    WORKFORCE domain value:                                                                                                                                                                                    
+      Show as: X hours reclaimed across N providers                                                                                                                                                            
+      → Dollarize at: [X hours] × [$rate] × [50% efficiency conversion]                                                                                                                                        
+      → Also show: [Y hrs/provider/week] returned — NOT dollarized, shown as hours                                                                                                                             
+                                                            
+    REVENUE domain value:                                                                                                                                                                                      
+      Outpatient/ED: same as quality for wRVU (these overlap — note this)                                                                                                                                      
+      Inpatient: DRG accuracy, denial reduction (separate lines)                                                                                                                                               
+                                                                                                                                                                                                               
+    CAPACITY domain value:                                                                                                                                                                                     
+      Show only if phase >= 3 (months >= 6)                                                                                                                                                                    
+      If pre-signal: show greyed out with "Signal expected at month 6"                                                                                                                                         
+      If active: additional visits × revenue/visit                                                                                                                                                             
+                                                                                                                                                                                                               
+    Each value line shows the data source badge from Screen 1.                                                                                                                                                 
+                                                                                                                                                                                                               
+  RIGHT COLUMN: "What We Don't Count"                                                                                                                                                                          
+    Muted styling. Heading: "Also Real. Not Quantified."                                                                                                                                                       
+    Three bullet items (static copy, not calculated):                                                                                                                                                          
+    - "Physician satisfaction and retention sentiment — real effects,                                                                                                                                          
+       not traceable to a single documented encounter"      
+    - "Patient experience correlation — directional signal, not attributable"                                                                                                                                  
+    - "Recruitment differentiation — documented but not dollarized"                                                                                                                                            
+                                                                                                                                                                                                               
+    Bottom of right column:                                                                                                                                                                                    
+    "We only put dollar signs on what we can trace directly to your                                                                                                                                            
+    documented encounters. Everything else is real — and worth naming                                                                                                                                          
+    in the right conversation."                                                                                                                                                                                
+                                                            
+  REMOVE the allocation sliders (hardSavingsPercent, capacityPercent,                                                                                                                                          
+  qualityOfLifePercent are no longer user-configurable on this screen).                                                                                                                                        
+  Use fixed Abridge standard allocations: 50% efficiency, 30% capacity, 20% wellbeing.                                                                                                                         
+  Show these as static labels, not sliders. Add a small note:                                                                                                                                                  
+  "These reflect Abridge's standard conservative methodology.                                                                                                                                                  
+  Talk to your CSM to discuss org-specific adjustments."                                                                                                                                                       
+                                                                                                                                                                                                               
+  FIX THE HERO NUMBER: The hero tile should show the TOTAL of all domains                                                                                                                                      
+  with a clear breakdown below it. Do not subtract savingsValue or create                                                                                                                                      
+  an "adjusted" total that doesn't explain itself. If a component is shown                                                                                                                                     
+  as hours rather than dollars, label it explicitly as "(shown as hours, not                                                                                                                                   
+  dollarized)" in the breakdown — don't silently exclude it from the total.                                                                                                                                    
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  SCREEN 4: MeasureOpportunity.tsx                                                                                                                                                                             
+  Rename step: "Where You're Going"                                                                                                                                                                            
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Keep the existing Deepen / Expand / Combined structure — it is excellent.                                                                                                                                    
+  Keep the InlineEdit pattern for targetAdoption and targetProviders.                                                                                                                                          
+                                                                                                                                                                                                               
+  ADD at the top of this screen, before the Deepen/Expand cards:                                                                                                                                               
+                                                            
+  MATURITY STAGE CARD (NEW):                                                                                                                                                                                   
+  ┌─────────────────────────────────────────────────────────┐                                                                                                                                                  
+  │  YOUR MATURITY STAGE                                    │                                                                                                                                                  
+  │                                                         │                                                                                                                                                  
+  │  ○ UNMEASURED  →  ● SIGNALING  →  ○ VALIDATED  →  ○ STRATEGIC │
+  │                                                         │                                                                                                                                                  
+  │  You are in: SIGNALING                                  │
+  │  "[1-sentence description of what Signaling means]"     │                                                                                                                                                  
+  │                                                         │                                                                                                                                                  
+  │  To reach VALIDATED:                                    │                                                                                                                                                  
+  │  · Confirm trends in 2+ domains (you have 1 active)     │                                                                                                                                                  
+  │  · Reach 60%+ utilization (you're at 45%)               │                                                                                                                                                  
+  │  · Months 9–18 is the typical window                    │
+  └─────────────────────────────────────────────────────────┘                                                                                                                                                  
+                                                                                                                                                                                                               
+  Style: dark background card (#1A1A1A), brand orange for current stage                                                                                                                                        
+  indicator, white text. Progress dots: active = orange filled,                                                                                                                                                
+  upcoming = white outline, completed = white filled.                                                                                                                                                          
+                                                                                                                                                                                                               
+  The "To reach VALIDATED" checklist items are computed dynamically                                                                                                                                            
+  from the user's actual data — not static copy.                                                                                                                                                               
+                                                            
+  ADD below the Deepen/Expand combined card:                                                                                                                                                                   
+                                                            
+  BENCHMARK CONTEXT (NEW — small, not prominent):                                                                                                                                                              
+    "Based on deployments at similar scale: {N} providers, {care setting},
+     {phase} phase. Typical annual value range: $X–$Y per provider."                                                                                                                                           
+                                                                                                                                                                                                               
+    These benchmark ranges should be constants in the code:
+      Outpatient phase 2-3: $4,000–$8,000 per provider/year                                                                                                                                                    
+      Outpatient phase 4:   $8,000–$15,000 per provider/year                                                                                                                                                   
+      Inpatient phase 2-3:  $6,000–$12,000 per provider/year                                                                                                                                                   
+      ED phase 2-3:         $5,000–$10,000 per provider/year                                                                                                                                                   
+                                                                                                                                                                                                               
+    Style: small gray italic note, not a prominent tile.                                                                                                                                                       
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  SCREEN 5: MeasureStory.tsx                                                                                                                                                                                   
+  Rename step: "Executive Summary"                          
+  Rename button: "Export Executive Summary" (was "Export PDF")                                                                                                                                                 
+  ──────────────────────────────────────                    
+                                                                                                                                                                                                               
+  HERO SECTION: Change the three stacked lines to:
+    "[N] providers. [X] months. [Y] hours recovered."                                                                                                                                                          
+    Keep this — it's strong. Just rename the section label from                                                                                                                                                
+    "Your Story" to "Your Deployment in Numbers."                                                                                                                                                              
+                                                                                                                                                                                                               
+  CHANGE the callout card copy from:                                                                                                                                                                           
+    "You gave X people their evenings back — and the notes got better, not worse."                                                                                                                             
+  TO a dynamic paragraph that references their maturity stage and phase:                                                                                                                                       
+                                                                                                                                                                                                               
+    For phase 1–2: "Your data shows documentation quality improving in                                                                                                                                         
+    the first months — the foundation everything else builds on."                                                                                                                                              
+                                                                                                                                                                                                               
+    For phase 3: "You're past the foundation. [Care setting: Capacity /                                                                                                                                        
+    Patient Flow / Throughput] signals are now in range. Your data is                                                                                                                                          
+    starting to tell the full story."                                                                                                                                                                          
+                                                                                                                                                                                                               
+    For phase 4: "Across [N] domains, your data is validated. This is                                                                                                                                          
+    what a strategic deployment looks like."                                                                                                                                                                   
+                                                            
+  REPLACE the "Your Results" card with four domain cards:                                                                                                                                                      
+    One row per active domain. Muted row for pre-signal domains.
+    Each row: Domain name | Value | Data source badge                                                                                                                                                          
+    Total at bottom — all domains summed.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  MOVE the Methodology accordion to directly below the hero section                                                                                                                                            
+  (not the bottom of the page). Default it to EXPANDED, not collapsed.
+  Rename it: "How We Calculated This"                                                                                                                                                                          
+                                                                                                                                                                                                               
+  RENAME "What's Next" section to "Your Next Chapter"                                                                                                                                                          
+  Keep the Deepen/Expand tiles but add one line above them:                                                                                                                                                    
+    "You are at [Maturity Stage]. The path to [Next Stage] runs through                                                                                                                                        
+    [key action — e.g., 'deepening adoption and confirming your third domain']."                                                                                                                               
+                                                                                                                                                                                                               
+  RENAME "Share Your Story" to "Export Executive Summary"                                                                                                                                                      
+  Change the export modal document type to "executive summary"                                                                                                                                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 4: NEW SHARED COMPONENT                                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Create: client/src/components/measure/EngagementContextBar.tsx                                                                                                                                               
+                                                                                                                                                                                                               
+  This component renders at the top of screens 2–5. It shows a compact                                                                                                                                         
+  horizontal bar with three pieces of information:                                                                                                                                                             
+                                                                                                                                                                                                               
+    [Phase badge]  Phase 2 — Efficiency   |   [Maturity badge]  Signaling   |   [Source badge]  Estimated                                                                                                      
+                                                            
+  Phase badge: orange/brand color, small pill                                                                                                                                                                  
+  Maturity badge: dark (#1A1A1A), small pill                                                                                                                                                                   
+  Source badge: green/yellow/gray based on dataSource
+                                                                                                                                                                                                               
+  Props:                                                    
+    context: ReturnType<typeof deriveEngagementContext>                                                                                                                                                        
+    dataSource: MeasureState['dataSource']                                                                                                                                                                     
+    organizationName: string                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                  
+  PART 5: LANGUAGE CHANGES (global find + replace)                                                                                                                                                             
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+                                                                                                                                                                                                               
+  Throughout all Measure path files:                        
+                                                                                                                                                                                                               
+    "Before" / "After"           → "Non-Abridge" / "With Abridge"
+    "Your Story"                 → "Executive Summary"                                                                                                                                                         
+    "See Your Story"             → "View Executive Summary" 
+    "Share Your Story"           → "Export Executive Summary"                                                                                                                                                  
+    "The Value You've Built"     → "What Your Data Shows"   
+    "The Opportunity Ahead"      → "Where You're Going"                                                                                                                                                        
+    "Provider Wellbeing"         → keep as-is (it's accurate)
+    "months on Abridge"          → "months since go-live" (where it appears as copy)                                                                                                                           
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 6: WHAT NOT TO CHANGE                                                                                                                                                                                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  - Do NOT change the Abridge brand colors (#EA2C00 orange, #1A1A1A dark,                                                                                                                                      
+    #F5F0EB cream/beige)                                                                                                                                                                                       
+  - Do NOT remove the PDF export functionality                                                                                                                                                                 
+  - Do NOT change the custom metrics section in MeasureStory                                                                                                                                                   
+  - Do NOT change the InlineEdit component in MeasureOpportunity — keep it                                                                                                                                     
+  - Do NOT change the care-setting routing logic (outpatient / ed / nursing /                                                                                                                                  
+    inpatient all stay separate)                            
+  - Do NOT remove the expansion/benchmark constants once added — they will                                                                                                                                     
+    be used by the PDF export as well                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  IMPLEMENTATION ORDER                                                                                                                                                                                         
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  1. measureCalculator.ts — Add goLiveDate, dataSource, deriveEngagementContext(),                                                                                                                             
+     computeDomainStatus(), benchmark constants                                                                                                                                                                
+  2. MeasureDataEntry.tsx — Go-live date picker, phase context card, data source selector                                                                                                                      
+  3. EngagementContextBar.tsx — New shared component                                                                                                                                                           
+  4. MeasureTransformation.tsx — Domain signal cards, fix trend display                                                                                                                                        
+  5. MeasureAllocate.tsx — Domain breakdown, two-column layout, fix hero number,                                                                                                                               
+     remove allocation sliders                                                                                                                                                                                 
+  6. MeasureOpportunity.tsx — Maturity stage card, benchmark context line                                                                                                                                      
+  7. MeasureStory.tsx — Dynamic narrative, domain rows, move methodology up,                                                                                                                                   
+     language changes                                                                                                                                                                                          
+  8. Global language changes across all files 

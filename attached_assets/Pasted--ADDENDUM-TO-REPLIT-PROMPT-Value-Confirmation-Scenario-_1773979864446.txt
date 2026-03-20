@@ -1,0 +1,298 @@
+ ADDENDUM TO REPLIT PROMPT: Value Confirmation + Scenario Modeling                                                                                                                                            
+                                                                                                                                                                                                               
+  This addendum extends the EBR redesign prompt. Read the previous prompt first.                                                                                                                               
+  The core addition: the tool must answer one question every executive has —
+  "How much is Abridge making or not making for me?" — with a clear confirmed                                                                                                                                  
+  number AND a scenario model they can explore.
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  THE EXPERIENCE ARC (revised)                                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Screen 1 — Your Deployment        (context + go-live date + data source)
+  Screen 2 — What Your Data Shows   (retrospective: confirmed value from actual data)                                                                                                                          
+  Screen 3 — What You Could Earn    (prospective: scenario modeling, user-editable)
+  Screen 4 — Where You're Going     (maturity stage + deepen/expand)                                                                                                                                           
+  Screen 5 — Executive Summary      (PDF-ready: confirmed + projected side by side)
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  SCREEN 2 REVISION: "What Your Data Shows"                                                                                                                                                                    
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This screen answers: "Based on what you've entered, here is the value                                                                                                                                        
+  we can attribute to Abridge during your deployment period."                                                                                                                                                  
+                                                                                                                                                                                                               
+  This is the CONFIRMED number. It is traceable, defensible, and explicitly                                                                                                                                    
+  labeled as such. It should feel like a finding, not a pitch.                                                                                                                                                 
+                                                                                                                                                                                                               
+  HERO TILE — style: large, centered, dark background card (#1A1A1A)                                                                                                                                           
+                                                                                                                                                                                                               
+    ┌──────────────────────────────────────────────────────────────┐                                                                                                                                           
+    │  CONFIRMED VALUE — [monthsOnAbridge] MONTHS                  │                                                                                                                                           
+    │                                                              │                                                                                                                                           
+    │  $X – $Y / year                                             │                                                                                                                                            
+    │  [data source badge]                                         │
+    │                                                              │                                                                                                                                           
+    │  Across [N] providers · [M] Abridge-documented encounters    │
+    │  ≈ $[per-provider] per provider per year                     │                                                                                                                                           
+    └──────────────────────────────────────────────────────────────┘                                                                                                                                           
+                                                                                                                                                                                                               
+  Below the hero: four domain rows (the cards from the previous prompt spec).                                                                                                                                  
+  One row per domain. Muted row if domain is pre-signal for their phase.
+                                                                                                                                                                                                               
+  IMPORTANT: Show the confirmed value with a range (low/high attribution                                                                                                                                       
+  50–75%). Do not pick one number and assert it as fact. The range IS the                                                                                                                                      
+  honesty. Label it: "conservative (50%) — typical (75%) attribution."                                                                                                                                         
+                                                                                                                                                                                                               
+  BELOW the domain rows: a single transparent formula block (always visible,                                                                                                                                   
+  not hidden in an accordion):                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    ┌──────────────────────────────────────────────────────────────┐                                                                                                                                           
+    │  HOW WE CALCULATED THIS                                      │                                                                                                                                           
+    │  ─────────────────────────────────────────────────────────  │                                                                                                                                            
+    │  [N] encounters × [X] min saved × $[rate]/hr                │
+    │  + [Y] wRVU lift × [N] encounters × $[CF] × 50–75%         │                                                                                                                                             
+    │  = $[low] – $[high] / year                                   │                                                                                                                                           
+    │                                                              │                                                                                                                                           
+    │  Deployment period: [go-live date] → today ([X] months)     │                                                                                                                                            
+    │  Data source: [source badge]                                 │                                                                                                                                           
+    └──────────────────────────────────────────────────────────────┘                                                                                                                                           
+                                                                                                                                                                                                               
+  This block is always open. Not an accordion. The CFO will ask.                                                                                                                                               
+  Have the answer ready.                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  SCREEN 3 (NEW): "What You Could Earn"                                                                                                                                                                        
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  This is a NEW screen inserted between "What Your Data Shows" and                                                                                                                                             
+  "Where You're Going." It is the prospective half of the EBR.                                                                                                                                                 
+                                                                                                                                                                                                               
+  This screen answers: "Based on your data and these assumptions,                                                                                                                                              
+  here is what Abridge could represent for your organization."                                                                                                                                                 
+                                                                                                                                                                                                               
+  There are TWO sections on this screen:                    
+                                                                                                                                                                                                               
+  ─────────────────────────────────────────                                                                                                                                                                    
+  SECTION A: "Your Scenarios"                                                                                                                                                                                  
+  ─────────────────────────────────────────                                                                                                                                                                    
+                                                                                                                                                                                                               
+  Show three scenario cards side by side (or stacked on mobile):
+  CONSERVATIVE · TYPICAL · OPTIMISTIC                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Each card shows what the annual value would be at a specific                                                                                                                                                 
+  adoption rate and value-per-encounter assumption.                                                                                                                                                            
+                                                                                                                                                                                                               
+  DEFAULT scenario assumptions:                                                                                                                                                                                
+    CONSERVATIVE: current utilization rate, 50% attribution
+    TYPICAL:      75% utilization rate, 62% attribution (midpoint)                                                                                                                                             
+    OPTIMISTIC:   90% utilization rate, 75% attribution     
+                                                                                                                                                                                                               
+  Each scenario card:                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    ┌─────────────────────────────────┐                                                                                                                                                                        
+    │  CONSERVATIVE                   │                                                                                                                                                                        
+    │                                 │                     
+    │  $X / year                      │                                                                                                                                                                        
+    │                                 │
+    │  [N] providers                  │                                                                                                                                                                        
+    │  [current]% adoption            │                     
+    │  50% attribution                │                                                                                                                                                                        
+    │                                 │                     
+    │  [Edit assumptions ↓]           │                                                                                                                                                                        
+    └─────────────────────────────────┘                                                                                                                                                                        
+                                                                                                                                                                                                               
+  The TYPICAL card should be visually highlighted (brand orange border,                                                                                                                                        
+  slightly larger) — it is Abridge's recommended anchor scenario.                                                                                                                                              
+                                                                                                                                                                                                               
+  The CURRENT CONFIRMED VALUE appears above all three scenarios as a                                                                                                                                           
+  reference line:                                           
+                                                                                                                                                                                                               
+    ← Your confirmed value: $X – $Y / year                                                                                                                                                                     
+    ────────────────────────────────────────────────────────                                                                                                                                                   
+    CONSERVATIVE    TYPICAL (recommended)    OPTIMISTIC                                                                                                                                                        
+                                                            
+  This framing makes the confirmed value the floor and the scenarios the                                                                                                                                       
+  ceiling — which is the honest, defensible story.                                                                                                                                                             
+                                              
+  EDITABLE ASSUMPTIONS (per-scenario expand):                                                                                                                                                                  
+  Each scenario card has an "Edit assumptions" toggle that reveals:
+    - Adoption rate (slider, 10%–100%)                                                                                                                                                                         
+    - Attribution rate (slider, 30%–80%, labeled "what % do we credit Abridge?")                                                                                                                               
+    - Providers in scope (number input — defaults to totalProviders)                                                                                                                                           
+    - Annual encounters per provider (defaults to derived from current data)                                                                                                                                   
+                                                                                                                                                                                                               
+  When a user edits any assumption, that scenario card gets a small badge:                                                                                                                                     
+  "Custom" — distinguishing it from Abridge's default scenario.                                                                                                                                                
+                                                                                                                                                                                                               
+  This lets the CSM and partner explore together: "what if we get to                                                                                                                                           
+  80% adoption? what if we added your cardiology group?" — live, in the room.                                                                                                                                  
+                                                                                                                                                                                                               
+  ─────────────────────────────────────────                                                                                                                                                                    
+  SECTION B: "The Gap"                                                                                                                                                                                         
+  ─────────────────────────────────────────                                                                                                                                                                    
+                                                                                                                                                                                                               
+  One card below the scenarios. This is the most important single number                                                                                                                                       
+  on this screen.                                                                                                                                                                                              
+                                                            
+    ┌──────────────────────────────────────────────────────────────┐                                                                                                                                           
+    │  THE GAP                                                     │
+    │                                                              │                                                                                                                                           
+    │  The difference between your confirmed value and the         │                                                                                                                                           
+    │  Typical scenario:                                           │
+    │                                                              │                                                                                                                                           
+    │  $[Typical - Confirmed Low] – $[Typical - Confirmed High]    │
+    │  / year currently uncaptured                                 │                                                                                                                                           
+    │                                                              │
+    │  This gap closes primarily by:                               │                                                                                                                                           
+    │  [1] Deepening adoption (you're at X%, target is 75%)        │                                                                                                                                           
+    │  [2] [Domain with no data yet — e.g., "Measuring Capacity"]  │                                                                                                                                           
+    │  [3] [If multi-setting opportunity: "Expanding to inpatient"] │                                                                                                                                          
+    └──────────────────────────────────────────────────────────────┘                                                                                                                                           
+                                                                                                                                                                                                               
+  Style: cream/beige background (#F5F0EB), orange left border.                                                                                                                                                 
+                                                                                                                                                                                                               
+  The "gap closes primarily by" list is computed dynamically:                                                                                                                                                  
+    - If utilizationRate < 60: always list "Deepen adoption" first                                                                                                                                             
+    - If a domain is pre-signal or no-data: list "Measure [domain]"                                                                                                                                            
+    - If totalProviders > providers: list "Expand to [N] additional providers"                                                                                                                                 
+    - If care settings < available: list "Add [setting]"    
+                                                                                                                                                                                                               
+  Maximum 3 items. In order of estimated dollar impact.                                                                                                                                                        
+                                                                                                                                                                                                               
+  ─────────────────────────────────────────                                                                                                                                                                    
+  WHAT THIS SCREEN IS NOT                                                                                                                                                                                      
+  ─────────────────────────────────────────                 
+                                                                                                                                                                                                               
+  This screen is NOT a projection that Abridge guarantees.  
+  Add a single disclaimer line at the bottom (small, gray):                                                                                                                                                    
+                                                            
+  "Scenarios are modeled estimates based on your deployment data and                                                                                                                                           
+  Abridge methodology. They represent what organizations at your scale
+  typically see — not a guarantee. Conservative attribution (50%) is                                                                                                                                           
+  used as the floor in all scenarios."                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  SCREEN 5 REVISION: "Executive Summary"                                                                                                                                                                       
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  The PDF export and the on-screen summary must show BOTH sides:                                                                                                                                               
+                                                                                                                                                                                                               
+  CONFIRMED VALUE SECTION:                    
+    $X – $Y / year                                                                                                                                                                                             
+    "[X] months of deployment data, [N] providers, [M] encounters"
+    Domain breakdown rows (4 domains)                                                                                                                                                                          
+    Data source badge                                       
+                                                                                                                                                                                                               
+  SCENARIO SECTION (right column or below):                                                                                                                                                                    
+    Typical scenario: $Z / year                                                                                                                                                                                
+    Gap vs confirmed: $[gap]                                                                                                                                                                                   
+    "Closes by: [top 2 actions from gap calculation]"                                                                                                                                                          
+                                                            
+  The two sections should be visually distinct:                                                                                                                                                                
+    Confirmed = dark tile (#1A1A1A background) — this is real                                                                                                                                                  
+    Scenarios = cream tile (#F5F0EB background) — this is modeled                                                                                                                                              
+                                                                                                                                                                                                               
+  This visual split is the core design decision. The executive sees                                                                                                                                            
+  both in one glance and understands immediately: "this is what happened,                                                                                                                                      
+  this is what could happen."                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                  
+  FLOW UPDATE: Add Screen 3 to MeasureFlow.tsx                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                  
+                                                                                                                                                                                                               
+  In MeasureFlow.tsx, the current 5-phase array becomes 6 phases:
+                                                                                                                                                                                                               
+    1. data        → MeasureDataEntry      "Your Deployment"                                                                                                                                                   
+    2. change      → MeasureTransformation "What Your Data Shows"                                                                                                                                              
+    3. scenarios   → MeasureScenarios      "What You Could Earn"  ← NEW                                                                                                                                        
+    4. value       → MeasureAllocate       "What It's Worth"                                                                                                                                                   
+    5. opportunity → MeasureOpportunity    "Where You're Going"
+    6. story       → MeasureStory          "Executive Summary"                                                                                                                                                 
+                                                                                                                                                                                                               
+  Create client/src/pages/measure/MeasureScenarios.tsx as a new file.                                                                                                                                          
+                                                                                                                                                                                                               
+  The step counter in UnifiedHeader updates to totalSteps={6}.                                                                                                                                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  SCENARIO CALCULATION LOGIC                                                                                                                                                                                   
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                  
+                                                                                                                                                                                                               
+  Add to measureCalculator.ts:                              
+                                                                                                                                                                                                               
+  export interface ScenarioInputs {                                                                                                                                                                            
+    adoptionRate: number       // 0–100                                                                                                                                                                        
+    attributionRate: number    // 0–100 (50 = conservative, 75 = typical)                                                                                                                                      
+    providers: number                                                                                                                                                                                          
+    encountersPerProvider: number             
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export interface ScenarioResult {                                                                                                                                                                            
+    label: 'conservative' | 'typical' | 'optimistic' | 'custom'                                                                                                                                                
+    inputs: ScenarioInputs                                                                                                                                                                                     
+    annualValueLow: number                                                                                                                                                                                     
+    annualValueHigh: number                                                                                                                                                                                    
+    hoursReclaimed: number                                                                                                                                                                                     
+    perProviderValue: number                                                                                                                                                                                   
+    isCustomized: boolean                                                                                                                                                                                      
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export function calculateScenario(                                                                                                                                                                           
+    state: MeasureState,                                                                                                                                                                                       
+    inputs: ScenarioInputs,                                                                                                                                                                                    
+    label: ScenarioResult['label']                                                                                                                                                                             
+  ): ScenarioResult                                         
+                                                                                                                                                                                                               
+  Default scenario inputs (derived from state):                                                                                                                                                                
+                                          
+    function getDefaultScenarios(state: MeasureState): {                                                                                                                                                       
+      conservative: ScenarioInputs                                                                                                                                                                             
+      typical: ScenarioInputs                                                                                                                                                                                  
+      optimistic: ScenarioInputs                                                                                                                                                                               
+    } {                                                     
+      const baseEncounters = state.deployment.totalEncounters > 0                                                                                                                                              
+        ? state.deployment.totalEncounters / Math.max(state.deployment.providers, 1)                                                                                                                           
+        : 200                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+      return {                                                                                                                                                                                                 
+        conservative: {                                                                                                                                                                                        
+          adoptionRate: state.deployment.utilizationRate,                                                                                                                                                      
+          attributionRate: 50,                                                                                                                                                                                 
+          providers: state.deployment.providers,
+          encountersPerProvider: baseEncounters,                                                                                                                                                               
+        },                                                                                                                                                                                                     
+        typical: {                                                                                                                                                                                             
+          adoptionRate: Math.min(75, Math.max(state.deployment.utilizationRate + 15, 60)),                                                                                                                     
+          attributionRate: 62,                                                                                                                                                                                 
+          providers: state.deployment.totalProviders || state.deployment.providers,                                                                                                                            
+          encountersPerProvider: baseEncounters,                                                                                                                                                               
+        },                                                                                                                                                                                                     
+        optimistic: {                                                                                                                                                                                          
+          adoptionRate: 90,                                                                                                                                                                                    
+          attributionRate: 75,                              
+          providers: state.deployment.totalProviders || state.deployment.providers,                                                                                                                            
+          encountersPerProvider: baseEncounters,                                                                                                                                                               
+        },                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                            
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+  TONE AND LANGUAGE GUIDE FOR NEW SCREENS 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+                                                                                                                                                                                                               
+  The tool speaks like a partner, not a vendor.
+                                                                                                                                                                                                               
+    DO say:   "Your data shows..."                                                                                                                                                                             
+    DON'T say: "Abridge has delivered..."                                                                                                                                                                      
+                                                                                                                                                                                                               
+    DO say:   "Based on your deployment, the math suggests..."                                                                                                                                                 
+    DON'T say: "Abridge is generating $X in value for you"
+                                                                                                                                                                                                               
+    DO say:   "The conservative scenario uses your current adoption rate."                                                                                                                                     
+    DON'T say: "Even at conservative estimates, Abridge delivers..."                                                                                                                                           
+                                                                                                                                                                                                               
+    DO say:   "At the typical scenario, organizations your size find..."                                                                                                                                       
+    DON'T say: "You could be making $X more"                                                                                                                                                                   
+                                                                                                                                                                                                               
+  The confirmed number is a finding. The scenarios are a conversation.                                                                                                                                         
+  The gap is an opportunity — never a failure. 

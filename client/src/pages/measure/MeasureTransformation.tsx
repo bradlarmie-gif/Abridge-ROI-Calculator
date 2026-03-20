@@ -1,14 +1,17 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowUpRight, Clock, FileText, TrendingUp, Heart, Info } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
-  calculateMeasureResults, 
-  formatPercent,
   formatNumber,
+  deriveEngagementContext,
+  computeDomainStatus,
+  type DomainStatus,
+  getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
+import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 
 interface MeasureTransformationProps {
   state: MeasureState;
@@ -17,94 +20,96 @@ interface MeasureTransformationProps {
   onHome: () => void;
 }
 
-function ComparisonCard({ 
-  icon: Icon,
-  title,
-  beforeValue,
-  afterValue,
-  beforeLabel,
-  afterLabel,
-  deltaText,
-  insight,
-  perProviderNote,
-  delay = 0,
-}: {
-  icon: typeof Clock;
-  title: string;
-  beforeValue: number;
-  afterValue: number;
-  beforeLabel: string;
-  afterLabel: string;
-  deltaText: string;
-  insight: string;
-  perProviderNote?: string;
+function SignalBadge({ status }: { status: DomainStatus }) {
+  if (status === 'signaling' || status === 'validated') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700" data-testid="badge-signal-active">Active</span>;
+  }
+  if (status === 'baseline-only') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-700" data-testid="badge-signal-baseline">Baseline Set</span>;
+  }
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500" data-testid="badge-signal-presignal">Pre-Signal</span>;
+}
+
+function PointComparison({ label, nonAbridge, withAbridge, unit, delay = 0 }: {
+  label: string;
+  nonAbridge: number;
+  withAbridge: number;
+  unit?: string;
   delay?: number;
 }) {
-  const maxVal = Math.max(beforeValue, afterValue, 0.1);
-  const beforeWidth = Math.max((beforeValue / maxVal) * 100, 5);
-  const afterWidth = Math.max((afterValue / maxVal) * 100, 5);
+  if (nonAbridge === 0 && withAbridge === 0) return null;
+  const delta = withAbridge - nonAbridge;
+  const deltaPercent = nonAbridge !== 0 ? ((delta / nonAbridge) * 100) : 0;
+  const improved = delta > 0;
+  const suffix = unit || '';
 
   return (
     <motion.div
-      className="bg-white rounded-lg border border-[#E5E5E5] p-5"
-      initial={{ opacity: 0, y: 24 }}
+      className="flex items-center gap-3 py-1.5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay, duration: 0.3 }}
+    >
+      <span className="text-sm text-[#666666] w-[140px] flex-shrink-0 truncate">{label}</span>
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <span className="text-sm font-medium text-[#999999]">{nonAbridge.toFixed(nonAbridge % 1 ? 2 : 0)}{suffix}</span>
+        <div className="flex-1 h-px bg-[#E5E5E5] relative mx-1">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#CCCCCC]" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#EA2C00]" />
+        </div>
+        <span className="text-sm font-semibold text-[#1A1A1A]">{withAbridge.toFixed(withAbridge % 1 ? 2 : 0)}{suffix}</span>
+      </div>
+      {delta !== 0 && (
+        <span className={`text-xs font-medium ${improved ? 'text-green-600' : 'text-red-500'} flex-shrink-0`}>
+          {improved ? '+' : ''}{delta.toFixed(delta % 1 ? 2 : 1)}{suffix} ({improved ? '+' : ''}{deltaPercent.toFixed(1)}%)
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
+interface DomainCardProps {
+  name: string;
+  question: string;
+  stakeholder: string;
+  status: DomainStatus;
+  metrics: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[];
+  phaseNote?: string;
+  delay?: number;
+}
+
+function DomainSignalCard({ name, question, stakeholder, status, metrics, phaseNote, delay = 0 }: DomainCardProps) {
+  const muted = status === 'no-data';
+
+  return (
+    <motion.div
+      className={`rounded-lg border p-5 ${muted ? 'bg-[#FAFAFA] border-[#F0F0F0]' : 'bg-white border-[#E5E5E5]'}`}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
+      data-testid={`domain-card-${name.toLowerCase()}`}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-          <Icon className="w-4 h-4 text-[#EA2C00]" />
-        </div>
-        <h3 className="text-base font-semibold text-black">{title}</h3>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className={`text-xs font-bold uppercase tracking-[1.5px] ${muted ? 'text-[#CCCCCC]' : 'text-[#1A1A1A]'}`}>{name}</h3>
+        <SignalBadge status={status} />
       </div>
+      <p className={`text-[11px] mb-3 ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
+        Stakeholder: {stakeholder}
+      </p>
 
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-[#888888] w-14 uppercase tracking-[1px]">Before</span>
-          <div className="flex-1 h-8 bg-[#F5F5F5] rounded overflow-hidden relative">
-            <motion.div 
-              className="h-full bg-[#D1D5DB] rounded flex items-center px-3"
-              initial={{ width: 0 }}
-              animate={{ width: `${beforeWidth}%` }}
-              transition={{ delay: delay + 0.2, duration: 0.5, ease: "easeOut" }}
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-black">
-              {beforeLabel}
-            </span>
-          </div>
+      {!muted && metrics.length > 0 ? (
+        <div className="space-y-0">
+          {metrics.map((m, i) => (
+            <PointComparison key={m.label} label={m.label} nonAbridge={m.nonAbridge} withAbridge={m.withAbridge} unit={m.unit} delay={delay + 0.1 + i * 0.05} />
+          ))}
         </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
-          <div className="flex-1 h-8 bg-[#FFF5F2] rounded overflow-hidden relative">
-            <motion.div 
-              className="h-full bg-[#EA2C00] rounded flex items-center px-3"
-              initial={{ width: 0 }}
-              animate={{ width: `${afterWidth}%` }}
-              transition={{ delay: delay + 0.3, duration: 0.5, ease: "easeOut" }}
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-black">
-              {afterLabel}
-            </span>
-          </div>
+      ) : (
+        <div className="py-3 text-center">
+          <p className={`text-xs italic ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
+            {muted ? question : 'No data entered yet'}
+          </p>
+          {phaseNote && <p className="text-[10px] text-[#CCCCCC] mt-1">{phaseNote}</p>}
         </div>
-      </div>
-
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <motion.div 
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E5E5E5] rounded"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: delay + 0.5, duration: 0.3 }}
-        >
-          <ArrowUpRight className="w-3.5 h-3.5 text-black" />
-          <span className="text-[13px] font-medium text-black">{deltaText}</span>
-        </motion.div>
-        <p className="text-sm text-[#666666] italic">{insight}</p>
-      </div>
-
-      {perProviderNote && (
-        <p className="text-xs text-[#999999] mt-3">{perProviderNote}</p>
       )}
     </motion.div>
   );
@@ -116,22 +121,90 @@ export default function MeasureTransformation({
   onBack,
   onHome,
 }: MeasureTransformationProps) {
-  const results = useMemo(() => calculateMeasureResults(state), [state]);
+  const context = useMemo(() => deriveEngagementContext(state), [state]);
+  const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
   const careSetting = state.careSetting || "outpatient";
   const isInpatient = careSetting === "inpatient";
   const isED = careSetting === "ed";
   const isNursing = careSetting === "nursing";
   const inpatientMetrics = state.settingData?.inpatient || {};
-  const edMetrics = state.settingData?.ed || {};
   const nursingMetrics = state.settingData?.nursing || {};
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
 
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
-  const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
-
   const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
   const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
   const totalHoursSaved = (timeReclaimed * adoptedEncounters) / 60;
   const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
+
+  const qualityMetrics = useMemo(() => {
+    const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
+    if (state.documentationQuality.emLevelWithout > 0 || state.documentationQuality.emLevelWith > 0) {
+      m.push({ label: 'E/M Level', nonAbridge: state.documentationQuality.emLevelWithout, withAbridge: state.documentationQuality.emLevelWith });
+    }
+    if (!isNursing && (state.documentationQuality.wrvuWithout > 0 || state.documentationQuality.wrvuWith > 0)) {
+      m.push({ label: 'wRVU/encounter', nonAbridge: state.documentationQuality.wrvuWithout, withAbridge: state.documentationQuality.wrvuWith });
+    }
+    if (isInpatient) {
+      const cb = inpatientMetrics.cdiQueriesPer100_before ?? 0;
+      const ca = inpatientMetrics.cdiQueriesPer100_after ?? 0;
+      if (cb > 0 || ca > 0) m.push({ label: 'CDI queries/100', nonAbridge: cb, withAbridge: ca });
+    }
+    return m;
+  }, [state, isInpatient, isNursing, inpatientMetrics]);
+
+  const workforceMetrics = useMemo(() => {
+    const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
+    if (state.timeEfficiency.timeInNotesWithout > 0 || state.timeEfficiency.timeInNotesWith > 0) {
+      m.push({ label: isNursing ? 'Charting time' : 'Time in notes', nonAbridge: state.timeEfficiency.timeInNotesWithout, withAbridge: state.timeEfficiency.timeInNotesWith, unit: ' min' });
+    }
+    if (state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) {
+      m.push({ label: isNursing ? 'Overtime hrs' : 'After-hours work', nonAbridge: state.timeEfficiency.workOutsideWithout, withAbridge: state.timeEfficiency.workOutsideWith, unit: ' hrs' });
+    }
+    if (isNursing) {
+      const tb = nursingMetrics.turnoverRate_before ?? 0;
+      const ta = nursingMetrics.turnoverRate_after ?? 0;
+      if (tb > 0 || ta > 0) m.push({ label: 'Turnover rate', nonAbridge: tb, withAbridge: ta, unit: '%' });
+    }
+    return m;
+  }, [state, isNursing, nursingMetrics]);
+
+  const revenueMetrics = useMemo(() => {
+    const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
+    if (!isNursing && (state.documentationQuality.wrvuWithout > 0 || state.documentationQuality.wrvuWith > 0)) {
+      m.push({ label: 'wRVU/encounter', nonAbridge: state.documentationQuality.wrvuWithout, withAbridge: state.documentationQuality.wrvuWith });
+    }
+    if (isInpatient) {
+      const cb = inpatientMetrics.cmi_before ?? 0;
+      const ca = inpatientMetrics.cmi_after ?? 0;
+      if (cb > 0 || ca > 0) m.push({ label: 'CMI', nonAbridge: cb, withAbridge: ca });
+      const db = inpatientMetrics.denialsPer100_before ?? 0;
+      const da = inpatientMetrics.denialsPer100_after ?? 0;
+      if (db > 0 || da > 0) m.push({ label: 'Denials/100', nonAbridge: db, withAbridge: da });
+    }
+    if (isED) {
+      if (state.documentationQuality.emLevelWithout > 0 || state.documentationQuality.emLevelWith > 0) {
+        m.push({ label: 'E/M accuracy', nonAbridge: state.documentationQuality.emLevelWithout, withAbridge: state.documentationQuality.emLevelWith });
+      }
+    }
+    return m;
+  }, [state, isInpatient, isED, isNursing, inpatientMetrics]);
+
+  const capacityMetrics = useMemo(() => {
+    const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
+    const settingData = state.settingData?.[careSetting] || {};
+    if (isED) {
+      if (state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) {
+        m.push({ label: 'LWBS rate', nonAbridge: state.timeEfficiency.sameDayClosureWithout, withAbridge: state.timeEfficiency.sameDayClosureWith, unit: '%' });
+      }
+    }
+    if (!isED && !isNursing && (state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0)) {
+      m.push({ label: 'Same-day closure', nonAbridge: state.timeEfficiency.sameDayClosureWithout, withAbridge: state.timeEfficiency.sameDayClosureWith, unit: '%' });
+    }
+    return m;
+  }, [state, careSetting, isED, isNursing]);
+
+  const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
 
   return (
     <div className="min-h-screen bg-white">
@@ -139,13 +212,15 @@ export default function MeasureTransformation({
         pathType="measure"
         currentStep={2}
         totalSteps={5}
-        stepName="What Changed"
+        stepName="What Your Data Shows"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+
         <motion.div 
           className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -153,10 +228,10 @@ export default function MeasureTransformation({
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            What Changed
+            What Your Data Shows
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
-            Same providers. Same patients. Different documentation experience.
+            Same providers. Same period. Abridge vs. non-Abridge encounters compared.
           </p>
         </motion.div>
 
@@ -181,8 +256,8 @@ export default function MeasureTransformation({
               <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
-              <p className="text-2xl md:text-3xl font-bold text-black truncate">{state.deployment.monthsOnAbridge}mo</p>
-              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
+              <p className="text-2xl md:text-3xl font-bold text-black truncate">{months}mo</p>
+              <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">Since Go-Live</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3 min-w-0">
               <p className="text-2xl md:text-3xl font-bold text-black truncate">{hoursPerProvider} hrs</p>
@@ -191,302 +266,75 @@ export default function MeasureTransformation({
           </div>
         </motion.div>
 
-        <div className="space-y-4 mb-6">
-          {(state.timeEfficiency.timeInNotesWithout > 0 || state.timeEfficiency.timeInNotesWith > 0) && (
-            <ComparisonCard
-              icon={Clock}
-              title={isNursing ? "Charting Time" : "Documentation Time"}
-              beforeValue={state.timeEfficiency.timeInNotesWithout}
-              afterValue={state.timeEfficiency.timeInNotesWith}
-              beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
-              afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
-              deltaText={`${timeReclaimed} min saved per ${isNursing ? "shift" : "note"}`}
-              insight={isNursing ? "Time returned to bedside care" : "Time returned to patient care"}
-              perProviderNote={`Per provider: ${hoursPerProvider} hours saved over ${state.deployment.monthsOnAbridge} months`}
-              delay={0.15}
-            />
-          )}
-
-          {isInpatient && (
-            <>
-              {((inpatientMetrics.cmi_before ?? 0) > 0 || (inpatientMetrics.cmi_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={FileText}
-                  title="CMI"
-                  beforeValue={inpatientMetrics.cmi_before ?? 0}
-                  afterValue={inpatientMetrics.cmi_after ?? 0}
-                  beforeLabel={(inpatientMetrics.cmi_before ?? 0).toFixed(2)}
-                  afterLabel={(inpatientMetrics.cmi_after ?? 0).toFixed(2)}
-                  deltaText={`+${((inpatientMetrics.cmi_after ?? 0) - (inpatientMetrics.cmi_before ?? 0)).toFixed(2)} CMI improvement`}
-                  insight="Higher acuity capture per discharge"
-                  delay={0.25}
-                />
-              )}
-
-              {((inpatientMetrics.denialsPer100_before ?? 0) > 0 || (inpatientMetrics.denialsPer100_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={TrendingUp}
-                  title="Denials per 100 Claims"
-                  beforeValue={inpatientMetrics.denialsPer100_before ?? 0}
-                  afterValue={inpatientMetrics.denialsPer100_after ?? 0}
-                  beforeLabel={`${(inpatientMetrics.denialsPer100_before ?? 0).toFixed(1)}`}
-                  afterLabel={`${(inpatientMetrics.denialsPer100_after ?? 0).toFixed(1)}`}
-                  deltaText={`${((inpatientMetrics.denialsPer100_before ?? 0) - (inpatientMetrics.denialsPer100_after ?? 0)).toFixed(1)} fewer per 100`}
-                  insight="Reduced rework and revenue leakage"
-                  delay={0.35}
-                />
-              )}
-
-              {((inpatientMetrics.cdiQueriesPer100_before ?? 0) > 0 || (inpatientMetrics.cdiQueriesPer100_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={Info}
-                  title="CDI Queries per 100 Cases"
-                  beforeValue={inpatientMetrics.cdiQueriesPer100_before ?? 0}
-                  afterValue={inpatientMetrics.cdiQueriesPer100_after ?? 0}
-                  beforeLabel={`${inpatientMetrics.cdiQueriesPer100_before ?? 0}`}
-                  afterLabel={`${inpatientMetrics.cdiQueriesPer100_after ?? 0}`}
-                  deltaText={`${((inpatientMetrics.cdiQueriesPer100_before ?? 0) - (inpatientMetrics.cdiQueriesPer100_after ?? 0))} fewer per 100`}
-                  insight="Less CDI follow-up needed"
-                  delay={0.45}
-                />
-              )}
-
-              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
-                <ComparisonCard
-                  icon={TrendingUp}
-                  title="Same-Day Completion"
-                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                  afterValue={state.timeEfficiency.sameDayClosureWith}
-                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                  deltaText={`+${results.sameDayClosureDelta} percentage points`}
-                  insight="Notes completed same day"
-                  delay={0.55}
-                />
-              )}
-            </>
-          )}
-
-          {isED && (
-            <>
-              {(state.timeEfficiency.timeToCloseWithout > 0 || state.timeEfficiency.timeToCloseWith > 0) && (
-                <ComparisonCard
-                  icon={TrendingUp}
-                  title="Door-to-Doc Time"
-                  beforeValue={state.timeEfficiency.timeToCloseWithout}
-                  afterValue={state.timeEfficiency.timeToCloseWith}
-                  beforeLabel={`${state.timeEfficiency.timeToCloseWithout} min`}
-                  afterLabel={`${state.timeEfficiency.timeToCloseWith} min`}
-                  deltaText={`${Math.max(0, state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith)} min faster`}
-                  insight="Patients seen sooner"
-                  delay={0.25}
-                />
-              )}
-
-              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
-                <ComparisonCard
-                  icon={Heart}
-                  title="LWBS Rate"
-                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                  afterValue={state.timeEfficiency.sameDayClosureWith}
-                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                  deltaText={`${Math.max(0, state.timeEfficiency.sameDayClosureWithout - state.timeEfficiency.sameDayClosureWith).toFixed(1)} pp reduction`}
-                  insight="Fewer patients leaving without being seen"
-                  delay={0.35}
-                />
-              )}
-
-              {(state.documentationQuality.emLevelWithout > 0 || state.documentationQuality.emLevelWith > 0) && (
-                <ComparisonCard
-                  icon={FileText}
-                  title="E/M Level"
-                  beforeValue={state.documentationQuality.emLevelWithout}
-                  afterValue={state.documentationQuality.emLevelWith}
-                  beforeLabel={state.documentationQuality.emLevelWithout.toFixed(2)}
-                  afterLabel={state.documentationQuality.emLevelWith.toFixed(2)}
-                  deltaText={`+${(state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout).toFixed(2)} level improvement`}
-                  insight="More accurate acuity capture"
-                  delay={0.45}
-                />
-              )}
-
-              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
-                <ComparisonCard
-                  icon={Heart}
-                  title="After-Hours Work"
-                  beforeValue={state.timeEfficiency.workOutsideWithout}
-                  afterValue={state.timeEfficiency.workOutsideWith}
-                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
-                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
-                  deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
-                  insight="Less charting after shifts"
-                  delay={0.55}
-                />
-              )}
-            </>
-          )}
-
-          {isNursing && (
-            <>
-              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
-                <ComparisonCard
-                  icon={Heart}
-                  title="Overtime Hours"
-                  beforeValue={state.timeEfficiency.workOutsideWithout}
-                  afterValue={state.timeEfficiency.workOutsideWith}
-                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs/wk`}
-                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs/wk`}
-                  deltaText={`${pajamaTimeSaved.toFixed(1)} fewer overtime hours`}
-                  insight="Reduced overtime burden"
-                  delay={0.25}
-                />
-              )}
-
-              {((nursingMetrics.turnoverRate_before ?? 0) > 0 || (nursingMetrics.turnoverRate_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={TrendingUp}
-                  title="Turnover Rate"
-                  beforeValue={nursingMetrics.turnoverRate_before ?? 0}
-                  afterValue={nursingMetrics.turnoverRate_after ?? 0}
-                  beforeLabel={`${(nursingMetrics.turnoverRate_before ?? 0).toFixed(1)}%`}
-                  afterLabel={`${(nursingMetrics.turnoverRate_after ?? 0).toFixed(1)}%`}
-                  deltaText={`${Math.max(0, (nursingMetrics.turnoverRate_before ?? 0) - (nursingMetrics.turnoverRate_after ?? 0)).toFixed(1)} pp reduction`}
-                  insight="Improved nurse retention"
-                  delay={0.35}
-                />
-              )}
-
-              {((nursingMetrics.fallsRate_before ?? 0) > 0 || (nursingMetrics.fallsRate_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={Info}
-                  title="Falls Rate (per 1,000)"
-                  beforeValue={nursingMetrics.fallsRate_before ?? 0}
-                  afterValue={nursingMetrics.fallsRate_after ?? 0}
-                  beforeLabel={`${(nursingMetrics.fallsRate_before ?? 0).toFixed(1)}`}
-                  afterLabel={`${(nursingMetrics.fallsRate_after ?? 0).toFixed(1)}`}
-                  deltaText={`${Math.max(0, (nursingMetrics.fallsRate_before ?? 0) - (nursingMetrics.fallsRate_after ?? 0)).toFixed(1)} fewer per 1,000`}
-                  insight="Safer patient outcomes"
-                  delay={0.45}
-                />
-              )}
-
-              {((nursingMetrics.hapiRate_before ?? 0) > 0 || (nursingMetrics.hapiRate_after ?? 0) > 0) && (
-                <ComparisonCard
-                  icon={Info}
-                  title="HAPI Rate (per 1,000)"
-                  beforeValue={nursingMetrics.hapiRate_before ?? 0}
-                  afterValue={nursingMetrics.hapiRate_after ?? 0}
-                  beforeLabel={`${(nursingMetrics.hapiRate_before ?? 0).toFixed(1)}`}
-                  afterLabel={`${(nursingMetrics.hapiRate_after ?? 0).toFixed(1)}`}
-                  deltaText={`${Math.max(0, (nursingMetrics.hapiRate_before ?? 0) - (nursingMetrics.hapiRate_after ?? 0)).toFixed(1)} fewer per 1,000`}
-                  insight="Reduced hospital-acquired injuries"
-                  delay={0.55}
-                />
-              )}
-            </>
-          )}
-
-          {!isInpatient && !isED && !isNursing && (
-            <>
-              {(state.documentationQuality.wrvuWithout > 0 || state.documentationQuality.wrvuWith > 0) && (
-                <ComparisonCard
-                  icon={FileText}
-                  title="Revenue Capture"
-                  beforeValue={state.documentationQuality.wrvuWithout}
-                  afterValue={state.documentationQuality.wrvuWith}
-                  beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
-                  afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
-                  deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-                  insight="Capturing clinical complexity"
-                  delay={0.25}
-                />
-              )}
-
-              {(state.timeEfficiency.sameDayClosureWithout > 0 || state.timeEfficiency.sameDayClosureWith > 0) && (
-                <ComparisonCard
-                  icon={TrendingUp}
-                  title="Same-Day Closure"
-                  beforeValue={state.timeEfficiency.sameDayClosureWithout}
-                  afterValue={state.timeEfficiency.sameDayClosureWith}
-                  beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-                  afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-                  deltaText={`+${results.sameDayClosureDelta} percentage points`}
-                  insight="Documentation completed during the visit"
-                  delay={0.35}
-                />
-              )}
-
-              {(state.timeEfficiency.workOutsideWithout > 0 || state.timeEfficiency.workOutsideWith > 0) && (
-                <ComparisonCard
-                  icon={Heart}
-                  title="Work-Life Balance"
-                  beforeValue={state.timeEfficiency.workOutsideWithout}
-                  afterValue={state.timeEfficiency.workOutsideWith}
-                  beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
-                  afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
-                  deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
-                  insight="Evenings reclaimed"
-                  delay={0.45}
-                />
-              )}
-            </>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <DomainSignalCard
+            name="Quality"
+            question="Has documentation quality traveled downstream?"
+            stakeholder="CMO, Quality & CDI"
+            status={domainStatus.quality}
+            metrics={qualityMetrics}
+            phaseNote={context.phase < 1 ? undefined : undefined}
+            delay={0.15}
+          />
+          <DomainSignalCard
+            name="Workforce"
+            question="Has clinician relief translated into tangible benefits?"
+            stakeholder="CHRO, CMO"
+            status={domainStatus.workforce}
+            metrics={workforceMetrics}
+            phaseNote={context.phase < 2 ? "Signal expected at month 3+" : undefined}
+            delay={0.2}
+          />
+          <DomainSignalCard
+            name="Revenue"
+            question="Has documentation quality reached the bottom line?"
+            stakeholder="CFO, VP Revenue Cycle"
+            status={domainStatus.revenue}
+            metrics={revenueMetrics}
+            phaseNote={context.phase < 2 ? "Signal expected at month 3+" : undefined}
+            delay={0.25}
+          />
+          <DomainSignalCard
+            name={capacityLabel}
+            question="What is the organization doing with the freed time?"
+            stakeholder="COO, Dept Chiefs"
+            status={domainStatus.capacity}
+            metrics={capacityMetrics}
+            phaseNote={months < 6 ? "Signal expected at month 6+" : undefined}
+            delay={0.3}
+          />
         </div>
+
+        <motion.p
+          className="text-xs text-[#AAAAAA] text-center mb-6 italic"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          These values compare concurrent encounters {"–"} same providers, same period, documented with and without Abridge.
+        </motion.p>
 
         {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
           <motion.div
             className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.45 }}
             data-testid="section-custom-metrics"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
-              </div>
-              <h3 className="text-base font-semibold text-black">Additional Metrics</h3>
-            </div>
-
-            <div className="space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">Additional Metrics</h3>
+            <div className="space-y-0">
               {(state.customMetrics || [])
                 .filter((cm) => cm.label.trim())
-                .map((cm) => {
-                  const maxVal = Math.max(cm.before, cm.after, 0.1);
-                  const beforeWidth = Math.max((cm.before / maxVal) * 100, 5);
-                  const afterWidth = Math.max((cm.after / maxVal) * 100, 5);
-                  const delta = cm.after - cm.before;
-                  const deltaPercent = cm.before !== 0 ? ((delta / cm.before) * 100) : 0;
-                  const improved = delta > 0;
-
-                  return (
-                    <div key={cm.id} className="pb-4 border-b border-[#F0F0F0] last:border-b-0 last:pb-0" data-testid={`custom-metric-card-${cm.id}`}>
-                      <p className="text-sm font-medium text-[#1A1A1A] mb-3">{cm.label}</p>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[12px] text-[#999999] uppercase tracking-[1px] w-16 flex-shrink-0">Before</span>
-                          <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
-                            <div className="bg-[#CCCCCC] h-full rounded-full" style={{ width: `${beforeWidth}%` }} />
-                          </div>
-                          <span className="text-sm text-[#999999] w-16 text-right">{cm.before}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[12px] text-[#EA2C00] uppercase tracking-[1px] w-16 flex-shrink-0">After</span>
-                          <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
-                            <div className="bg-[#EA2C00] h-full rounded-full" style={{ width: `${afterWidth}%` }} />
-                          </div>
-                          <span className="text-sm font-semibold text-[#1A1A1A] w-16 text-right">{cm.after}</span>
-                        </div>
-                      </div>
-                      {deltaPercent !== 0 && (
-                        <p className="text-xs text-[#666666] mt-2">
-                          {improved ? "+" : ""}{delta.toFixed(cm.before % 1 !== 0 || cm.after % 1 !== 0 ? 2 : 0)} ({improved ? "+" : ""}{deltaPercent.toFixed(1)}%)
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                .map((cm, i) => (
+                  <PointComparison
+                    key={cm.id}
+                    label={cm.label}
+                    nonAbridge={cm.before}
+                    withAbridge={cm.after}
+                    delay={0.5 + i * 0.05}
+                  />
+                ))}
             </div>
           </motion.div>
         )}
@@ -506,7 +354,7 @@ export default function MeasureTransformation({
                   At {state.deployment.utilizationRate}% Adoption
                 </p>
                 <p className="text-xs text-[#666666] leading-relaxed">
-                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : isNursing ? "shifts" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : isNursing ? "shifts are" : "encounters are"} still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
+                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : isNursing ? "shifts" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : isNursing ? "shifts are" : "encounters are"} still being documented without Abridge{"\u2014"}representing additional headroom within your current providers.
                 </p>
               </div>
             </div>
@@ -520,7 +368,7 @@ export default function MeasureTransformation({
           transition={{ delay: 0.6 }}
         >
           <p className="text-base text-[#666666] italic">
-            Here's what this means for your organization.
+            Here{"'"}s what this means for your organization.
           </p>
         </motion.div>
 
@@ -535,7 +383,7 @@ export default function MeasureTransformation({
             className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-see-value"
           >
-            See the Value
+            See What It{"'"}s Worth
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

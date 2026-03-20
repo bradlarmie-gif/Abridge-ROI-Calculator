@@ -1,0 +1,335 @@
+ROMPT 5: Narrative Paragraph Generator                   
+                                                                                                                                                                                                               
+  Add a dynamic narrative paragraph system to the Measure path EBR tool.                                                                                                                                       
+  The narrative adapts to each partner's actual data and appears on every                                                                                                                                      
+  screen in present mode. It gives Partner Success team members a                                                                                                                                              
+  ready-to-read synthesis of what each screen is showing.   
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 1: THE GENERATOR FUNCTION                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Create: client/src/lib/measureNarrative.ts                                                                                                                                                                   
+                                                                                                                                                                                                               
+  This file exports one primary function:                   
+                                                                                                                                                                                                               
+    export function generateNarrative(                      
+      screen: MeasureScreen,                                                                                                                                                                                   
+      state: MeasureState,                                  
+      results: CombinedResults,                                                                                                                                                                                
+      context: EngagementContext                            
+    ): NarrativeOutput                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Where:                                                                                                                                                                                                       
+    type MeasureScreen =                                                                                                                                                                                       
+      'opening' | 'confirmed' | 'scenarios' | 'value' |                                                                                                                                                        
+      'opportunity' | 'summary'                                                                                                                                                                                
+                                                                                                                                                                                                               
+    interface NarrativeOutput {                             
+      headline: string       // 1 bold sentence, the core finding                                                                                                                                              
+      body: string           // 2–3 sentences, the supporting story                                                                                                                                            
+      handoff: string        // 1 sentence, the transition to the next screen                                                                                                                                  
+                             // e.g. "Let's look at what the scenarios suggest."                                                                                                                               
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  The function uses a template system with variable substitution.                                                                                                                                              
+  Templates are selected based on: screen + phase + maturity stage +                                                                                                                                           
+  care setting + which domains are active.                                                                                                                                                                     
+                                                                                                                                                                                                               
+  NO hardcoded copy that ignores the data. Every output must reference
+  at least one actual number from state.                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  TEMPLATE SYSTEM                                                                                                                                                                                              
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Define narrative templates as typed objects. Each template has                                                                                                                                               
+  slots for variable substitution using {{variable}} syntax.                                                                                                                                                   
+                                                                                                                                                                                                               
+  Example structure:                                                                                                                                                                                           
+                                                                                                                                                                                                               
+    const CONFIRMED_TEMPLATES: Record<Phase, Record<MaturityStage, NarrativeTemplate>> = {                                                                                                                     
+      1: {                                                                                                                                                                                                     
+        signaling: {                                                                                                                                                                                           
+          headline: "{{months}} months in, your data is establishing the baseline everything else builds on.",                                                                                                 
+          body: "Across {{encounters}} Abridge-documented encounters, your {{strongestDomain}} signal is the clearest yet — {{strongestMetric}}. This is exactly what we expect in the Documentation Fidelity
+  phase: the foundation is setting, and the compounding hasn't started yet. {{preSignalNote}}",                                                                                                                
+          handoff: "Now let's look at what the math shows in dollar terms.",                                                                                                                                   
+        },                                                                                                                                                                                                     
+        ...                                                                                                                                                                                                    
+      },                                                                                                                                                                                                       
+      2: {                                                                                                                                                                                                     
+        signaling: {                                        
+          headline: "At {{months}} months, your Efficiency phase gains are showing up in the data.",                                                                                                           
+          body: "Your {{providers}} providers have recovered {{hoursReclaimed}} hours — {{hoursPerProvider}} hours each — over the deployment period. {{strongestDomainSentence}} {{revenueSignalNote}}",
+          handoff: "Here's what those gains translate to in annual value.",                                                                                                                                    
+        },                                                                                                                                                                                                     
+        validated: {                                                                                                                                                                                           
+          headline: "Your data across {{activeDomains}} domains is telling a consistent story.",                                                                                                               
+          body: "{{confirmedLow}}–{{confirmedHigh}} per year, confirmed across {{encounters}} encounters. At {{hoursPerProvider}} hours returned per provider, your Workforce story is strong enough to take to
+   the CHRO. {{revenueNote}}",                                                                                                                                                                                 
+          handoff: "Let's look at what full adoption could add.",                                                                                                                                              
+        },                                                                                                                                                                                                     
+        ...                                                                                                                                                                                                    
+      },                                                                                                                                                                                                       
+      3: { ... },                                                                                                                                                                                              
+      4: { ... },                                           
+    }                                                                                                                                                                                                          
+                                                            
+  Variable definitions (computed before substitution):                                                                                                                                                         
+                                                                                                                                                                                                               
+    {{months}}             → state.deployment.monthsOnAbridge (or derived)                                                                                                                                     
+    {{providers}}          → state.deployment.providers                                                                                                                                                        
+    {{encounters}}         → formatted total encounters     
+    {{hoursReclaimed}}     → formatNumber(totalHoursSaved)                                                                                                                                                     
+    {{hoursPerProvider}}   → formatNumber(hoursPerProvider) 
+    {{confirmedLow}}       → formatCurrency(totalValueLow)                                                                                                                                                     
+    {{confirmedHigh}}      → formatCurrency(totalValueHigh) 
+    {{perProvider}}        → formatCurrency(perProviderValue)                                                                                                                                                  
+    {{typicalScenario}}    → formatCurrency(typicalScenarioValue)                                                                                                                                              
+    {{gap}}                → formatCurrency(typicalScenario - confirmedLow)                                                                                                                                    
+    {{currentAdoption}}    → state.deployment.utilizationRate + "%"                                                                                                                                            
+    {{targetAdoption}}     → expansionTargets.targetAdoption + "%"                                                                                                                                             
+    {{activeDomains}}      → count of domains with status 'signaling' or 'validated'                                                                                                                           
+    {{settingsLabel}}       → "outpatient" / "outpatient and inpatient" / etc.                                                                                                                                 
+    {{maturityLabel}}      → "Signaling" / "Validated" / "Strategic"                                                                                                                                           
+    {{nextMaturityLabel}}  → next stage label                                                                                                                                                                  
+    {{phaseLabel}}         → "Documentation Fidelity" / "Efficiency" /                                                                                                                                         
+                             "Capacity" (care-setting adjusted)                                                                                                                                                
+                                                                                                                                                                                                               
+    {{strongestDomain}}    → the domain with the highest status                                                                                                                                                
+                             (validated > signaling > baseline > no-data)                                                                                                                                      
+    {{strongestMetric}}    → the key metric for that domain with its value                                                                                                                                     
+                             e.g. "providers averaging 2.1 hours back per week"                                                                                                                                
+                             e.g. "+0.18 wRVU per encounter across 12,000 notes"                                                                                                                               
+                                                                                                                                                                                                               
+    {{preSignalNote}}      → if any domain is pre-signal:                                                                                                                                                      
+                             "[Domain] hasn't unlocked yet — signal expected                                                                                                                                   
+                             at month [N], which is on track."                                                                                                                                                 
+                             else: ""                                                                                                                                                                          
+                                                                                                                                                                                                               
+    {{revenueSignalNote}}  → if revenue domain is signaling/validated:                                                                                                                                         
+                             "Revenue is tracking: wRVU lift of +[X] per                                                                                                                                       
+                             encounter is building toward the coding accuracy story."                                                                                                                          
+                             else: ""                                                                                                                                                                          
+                                                                                                                                                                                                               
+    {{strongestDomainSentence}} → generated sentence for the strongest domain:                                                                                                                                 
+      Quality:   "Documentation accuracy is the clearest signal —                                                                                                                                              
+                  [metric] improvement across [N] encounters."                                                                                                                                                 
+      Workforce: "Provider time is the clearest signal — [N] hours                                                                                                                                             
+                  reclaimed, [X] per provider."             
+      Revenue:   "Revenue is the clearest signal — wRVU lift of +[X]                                                                                                                                           
+                  across [N] Abridge-documented encounters."                                                                                                                                                   
+      Capacity:  "Capacity is unlocking — [N] additional encounters                                                                                                                                            
+                  made possible by reclaimed time."                                                                                                                                                            
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  PER-SCREEN TEMPLATES                                                                                                                                                                                         
+  ──────────────────────────────────────                    
+                                                                                                                                                                                                               
+  SCREEN: 'opening' (the title slide in present mode)       
+    headline: "{{months}} months. {{providers}} providers.                                                                                                                                                     
+               Here's your story."            
+    body: (empty — the opening slide is sparse by design)                                                                                                                                                      
+    handoff: "Let's start with what your data confirms."    
+                                                                                                                                                                                                               
+  SCREEN: 'confirmed'                                                                                                                                                                                          
+    Select from CONFIRMED_TEMPLATES[phase][maturityStage]                                                                                                                                                      
+                                                                                                                                                                                                               
+    Special case — multi-setting:                                                                                                                                                                              
+    headline: "Across {{settingsLabel}}, your data confirms a                                                                                                                                                  
+               consistent picture."                                                                                                                                                                            
+    body: "{{confirmedLow}}–{{confirmedHigh}} per year combined —                                                                                                                                              
+           {{perProvider}} per provider across all settings.                                                                                                                                                   
+           {{strongestSettingSentence}} {{weakestSettingNote}}"                                                                                                                                                
+                                                                                                                                                                                                               
+    Where {{strongestSettingSentence}} identifies the setting with                                                                                                                                             
+    the highest per-provider value and names it.                                                                                                                                                               
+    Where {{weakestSettingNote}} notes if a newer setting is still                                                                                                                                             
+    in Phase 1 ("Your inpatient program is 4 months in — it's still                                                                                                                                            
+    establishing its baseline, which is exactly right.").                                                                                                                                                      
+                                                                                                                                                                                                               
+  SCREEN: 'scenarios'                                                                                                                                                                                          
+    Templates vary by gap size:                                                                                                                                                                                
+                                                                                                                                                                                                               
+    Gap < $200K:                                                                                                                                                                                               
+      headline: "Your confirmed value and the Typical scenario are close —                                                                                                                                     
+                 {{currentAdoption}}% adoption is doing real work."                                                                                                                                            
+      body: "The {{gap}} gap to the Typical scenario closes primarily                                                                                                                                          
+             through {{topGapAction}}. At {{perProvider}} per provider,                                                                                                                                        
+             your per-provider economics are strong. {{expansionNote}}"                                                                                                                                        
+      handoff: "Here's where the next chapter of growth sits."                                                                                                                                                 
+                                                                                                                                                                                                               
+    Gap $200K–$1M:                                                                                                                                                                                             
+      headline: "There's {{gap}} per year sitting between where you are                                                                                                                                        
+                 and where the Typical scenario puts you."                                                                                                                                                     
+      body: "Your confirmed value of {{confirmedLow}}–{{confirmedHigh}}                                                                                                                                        
+             reflects {{currentAdoption}}% adoption. The Typical scenario                                                                                                                                      
+             at {{targetAdoption}}% adoption adds {{gap}} — without                                                                                                                                            
+             adding a single provider. {{secondGapAction}}"                                                                                                                                                    
+      handoff: "Let's look at how to capture that."                                                                                                                                                            
+                                                                                                                                                                                                               
+    Gap > $1M:                                                                                                                                                                                                 
+      headline: "The Typical scenario is {{gap}} above your confirmed                                                                                                                                          
+                 value — and most of that is adoption depth, not expansion."                                                                                                                                   
+      body: "Your per-provider economics are proven at {{perProvider}}.                                                                                                                                        
+             The math from {{currentAdoption}}% to {{targetAdoption}}%                                                                                                                                         
+             adoption is straightforward — {{gap}} in additional annual                                                                                                                                        
+             value from providers who already have Abridge.                                                                                                                                                    
+             {{expansionAddendum}}"                                                                                                                                                                            
+      handoff: "Here's the path, domain by domain."                                                                                                                                                            
+                                                                                                                                                                                                               
+  SCREEN: 'opportunity'                                                                                                                                                                                        
+    Templates vary by maturity stage:                                                                                                                                                                          
+                                                                                                                                                                                                               
+    signaling:                                                                                                                                                                                                 
+      headline: "You've demonstrated the model. Now it's about                                                                                                                                                 
+                 deepening it."                                                                                                                                                                                
+      body: "At {{currentAdoption}}% adoption across {{providers}}                                                                                                                                             
+             providers, you're in the Signaling stage. Reaching Validated                                                                                                                                      
+             means confirming trends in {{domainsNeeded}} more domain(s)                                                                                                                                       
+             — and deepening to {{targetAdoption}}% adoption captures                                                                                                                                          
+             +{{deepenValue}} per year on its own."                                                                                                                                                            
+      handoff: "Let's put this into your Executive Summary."                                                                                                                                                   
+                                                                                                                                                                                                               
+    validated:                                                                                                                                                                                                 
+      headline: "The model is validated. The question is how fast you want                                                                                                                                     
+                 to scale it."                                                                                                                                                                                 
+      body: "Multi-domain confirmation puts you at Validated — the stage                                                                                                                                       
+             where renewal is a given and the conversation shifts to                                                                                                                                           
+             expansion. At {{perProvider}} per provider, each additional                                                                                                                                       
+             provider added to the program represents proven, defensible
+             value. {{expandNote}}"                                                                                                                                                                            
+      handoff: "Here's the summary to take to your leadership."                                                                                                                                                
+                                                                                                                                                                                                               
+    strategic:                                                                                                                                                                                                 
+      headline: "You're in the Strategic tier — this is what                                                                                                                                                   
+                 embedded looks like."                                                                                                                                                                         
+      body: "Full portfolio, multi-domain validation, {{months}} months                                                                                                                                        
+             of compounding gains. The story has moved from 'is this                                                                                                                                           
+             working?' to 'where do we grow next?' {{strategicNote}}"                                                                                                                                          
+      handoff: "Here's your Executive Summary."                                                                                                                                                                
+                                                                                                                                                                                                               
+  SCREEN: 'summary'                                                                                                                                                                                            
+    headline: "{{months}} months. {{providers}} providers.                                                                                                                                                     
+               {{confirmedLow}}–{{confirmedHigh}} per year confirmed."                                                                                                                                         
+    body: "Your {{maturityLabel}} stage deployment spans {{settingsLabel}}                                                                                                                                     
+           and has confirmed value across {{activeDomains}} of 4 domains.
+           The path to {{nextMaturityLabel}} runs through                                                                                                                                                      
+           {{topNextAction}}."                              
+    handoff: (no handoff on final screen)                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 2: THE UI COMPONENT                                                                                                                                                                                     
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Create: client/src/components/measure/NarrativePanel.tsx                                                                                                                                                     
+                                                                                                                                                                                                               
+  Props:                                                                                                                                                                                                       
+    narrative: NarrativeOutput                                                                                                                                                                                 
+    mode: 'build' | 'present'                                                                                                                                                                                  
+    isExpanded?: boolean      // build mode only — can be collapsed                                                                                                                                            
+                                                            
+  BUILD MODE rendering:                                                                                                                                                                                        
+    Collapsible panel, collapsed by default.                                                                                                                                                                   
+    Toggle label: "Talking Points" with a small comment-bubble icon.                                                                                                                                           
+    Hint text: "What to say on this screen — adapts to your data."                                                                                                                                             
+                                                                                                                                                                                                               
+    When expanded, show all three parts (headline, body, handoff)                                                                                                                                              
+    with clear labels:                                                                                                                                                                                         
+      "HEADLINE" — in small gray uppercase label above the headline text                                                                                                                                       
+      "BODY" — same                                                                                                                                                                                            
+      "TRANSITION" — same above the handoff text                                                                                                                                                               
+                                                                                                                                                                                                               
+    Background: #F5F0EB (cream), borderRadius 8, padding 16                                                                                                                                                    
+    Headline: 13pt, bold, #1A1A1A                                                                                                                                                                              
+    Body: 12pt, #444444, lineHeight 1.7                                                                                                                                                                        
+    Handoff: 11pt, #888888, italic                                                                                                                                                                             
+                                          
+    Small note at bottom of panel:                                                                                                                                                                             
+    "This text adapts to your data. Read it, paraphrase it, or use                                                                                                                                             
+     it as a prompt for the conversation."    
+    Style: 10px, #AAAAAA                                                                                                                                                                                       
+                                                            
+  PRESENT MODE rendering:                                                                                                                                                                                      
+    Always visible. No toggle.                                                                                                                                                                                 
+    Positioned at the TOP of each screen, before the data cards.                                                                                                                                               
+    Slightly wider than the content cards — full bleed to page edges.                                                                                                                                          
+                                                                                                                                                                                                               
+    Background: transparent (no card, no border)                                                                                                                                                               
+                                                                                                                                                                                                               
+    Headline: 18px, bold, #1A1A1A, marginBottom 8                                                                                                                                                              
+    Body: 14px, #555555, lineHeight 1.7, marginBottom 6                                                                                                                                                        
+    Handoff: 12px, #EA2C00, italic                                                                                                                                                                             
+             (orange — it's the "what comes next" signal,                                                                                                                                                      
+              draws the eye to move the conversation forward)
+                                                                                                                                                                                                               
+    marginBottom 32 before the first data card                                                                                                                                                                 
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 3: WIRING INTO SCREENS                                                                                                                                                                                  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Import NarrativePanel into each of these files and add it at
+  the top of the main content area (after UnifiedHeaderSpacer,                                                                                                                                                 
+  before the first section):                                                                                                                                                                                   
+                                                                                                                                                                                                               
+    MeasureTransformation.tsx  → screen='confirmed'                                                                                                                                                            
+    MeasureScenarios.tsx       → screen='scenarios'                                                                                                                                                            
+    MeasureAllocate.tsx        → screen='value'             
+    MeasureOpportunity.tsx     → screen='opportunity'                                                                                                                                                          
+    MeasureStory.tsx           → screen='summary'           
+                                                                                                                                                                                                               
+  In each file, call generateNarrative() inside useMemo with                                                                                                                                                   
+  state as the dependency. Pass the result to NarrativePanel.                                                                                                                                                  
+                                                                                                                                                                                                               
+  The NarrativePanel only renders when state has enough data to                                                                                                                                                
+  generate a meaningful narrative — specifically: providers > 0 AND                                                                                                                                            
+  monthsOnAbridge > 0 AND at least one metric delta is non-zero.                                                                                                                                               
+  If data is insufficient, render nothing (null).           
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 4: EDGE CASES TO HANDLE                                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Zero value: if confirmedLow and confirmedHigh are both 0 (no
+  metrics entered), do not generate a narrative. The NarrativePanel                                                                                                                                            
+  returns null silently.                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Very early deployment (< 2 months):                                                                                                                                                                          
+    headline: "You're [X] months in — this is the baseline phase."                                                                                                                                             
+    body: "The most valuable thing happening right now is that                                                                                                                                                 
+           providers are building the habit and the note quality                                                                                                                                               
+           is establishing itself. The financial story comes next.                                                                                                                                             
+           What we're watching: {{qualityMetric}}"                                                                                                                                                             
+                                                                                                                                                                                                               
+  Unusually high numbers (time savings > 15 min/encounter):                                                                                                                                                    
+    Add to body: "Note: your time savings figure of [X] min/encounter                                                                                                                                          
+    is above the typical 6–10 min range — worth validating with your                                                                                                                                           
+    analytics team before presenting."                                                                                                                                                                         
+    Style: same body text but with a ⚠ prefix character and                                                                                                                                                    
+    slightly muted color (#888888) to distinguish it as a footnote.                                                                                                                                            
+                                                                                                                                                                                                               
+  Single domain only (all others pre-signal or no-data):                                                                                                                                                       
+    Acknowledge directly: "With [domain] as your active signal right                                                                                                                                           
+    now, the story is focused — and that's appropriate for month [N].                                                                                                                                          
+    The multi-domain picture fills in at [phase transition month]."                                                                                                                                            
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  WHAT NOT TO DO                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Do NOT generate narrative text that:                                                                                                                                                                         
+    - Claims Abridge "delivered" or "generated" value                                                                                                                                                          
+      (say "your data shows" or "the math confirms")                                                                                                                                                           
+    - Uses future tense for confirmed numbers                                                                                                                                                                  
+      ("will save" — wrong. "has recovered" — right)                                                                                                                                                           
+    - Overstates the gap as a failure                                                                                                                                                                          
+      ("you're missing out on $X" — wrong.                                                                                                                                                                     
+       "there's $X in the Typical scenario" — right)                                                                                                                                                           
+    - Ignores the attribution range                                                                                                                                                                            
+      (always reference low–high, never a single number     
+       for confirmed value)                                                                                                                                                                                    
+    - Generates a sentence that is identical regardless     
+      of the data (every output must have at least one                                                                                                                                                         
+      actual number substituted in)    

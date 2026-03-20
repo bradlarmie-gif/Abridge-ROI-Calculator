@@ -1,0 +1,424 @@
+The Architecture That Needs to Exist                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Problem 1: Single-Setting Only                                                                                                                                                                               
+                                                            
+  The whole flow assumes one careSetting. A partner live in ED + outpatient gets two separate, unconnected PDFs. That's not an EBR — that's two calculator outputs stapled together.                           
+                                          
+  Fix: careSetting becomes an array of active settings. Each setting gets its own data entry and its own value calculation. The output is one combined story with per-setting breakdowns. The maturity stage   
+  and phase are computed per-setting (inpatient at month 4 is Phase 1; outpatient at month 18 is Phase 3 — the combined story shows both).                                                                     
+                                                                                                                                                                                                               
+  Problem 2: No Presentation Mode                                                                                                                                                                              
+                                                            
+  Right now every screen shows both the inputs and the outputs intermingled. A CSM walking into a CHRO's conference room needs to show a clean, polished story — not a calculator with form fields everywhere. 
+                                                            
+  Fix: Two modes — Build and Present. Build mode is what CSMs use to enter data (before the meeting or during setup). Present mode hides all input scaffolding and shows just the narrative, visuals, and
+  numbers. One button toggles between them.                                                                                                                                                                    
+   
+  Problem 3: Month-over-Month Is Fake                                                                                                                                                                          
+                                                            
+  The generateTrendData function creates a smooth easeOutQuad curve from whatever two numbers you enter. It shows this to executives as "Your Journey." This will get caught.                                  
+                                                                                                                                                                                                               
+  Fix: Real monthly data entry (optional — not required). When monthly data exists, show a real chart with phase markers overlaid. When it doesn't exist, show the honest point-in-time comparison — no
+  fabricated curve.                                                                                                                                                                                            
+                                                            
+  ---                                                                                                                                                                                                          
+  The Full UX Design                                        
+                                                                                                                                                                                                               
+  Two Modes                                                 
+
+  ┌─────────────────────────────────────────────────────────────┐                                                                                                                                              
+  │  BUILD MODE                    PRESENT MODE                 │
+  │  ──────────────────            ────────────────────         │                                                                                                                                              
+  │  For CSMs before the EBR.      For the EBR itself.          │
+  │  Shows data entry forms.       Full-screen, clean.          │
+  │  Progress bar visible.         No form fields visible.      │                                                                                                                                              
+  │  Can enter monthly data.       Click through sections.      │                                                                                                                                              
+  │  Shows "how we calc this."     Shows story + numbers only.  │                                                                                                                                              
+  │                                                             │                                                                                                                                              
+  │  [Build]  [Present →]   ← toggle in top-right always       │                                                                                                                                               
+  └─────────────────────────────────────────────────────────────┘                                                                                                                                              
+                                                                                                                                                                                                               
+  Present mode is essentially a slide-show through the same screens, but stripped to just the output panels — no inputs, no methodology accordion by default (available on tap/click if exec asks).            
+                                                                                                                                                                                                               
+  Multi-Setting Story Structure                                                                                                                                                                                
+                                                                                                                                                                                                               
+  COMBINED SUMMARY (lead with this)                                                                                                                                                                            
+  ─────────────────────────────────                                                                                                                                                                            
+  $X – $Y / year  (all settings combined)                   
+  [N] total providers · [M] total encounters                                                                                                                                                                   
+                                                                                                                                                                                                               
+    BY SETTING                                                                                                                                                                                                 
+    ─────────────────────────────────────────────────────────                                                                                                                                                  
+    OUTPATIENT     Month 14   Phase 3   $A – $B / year                                                                                                                                                         
+    INPATIENT      Month 6    Phase 2   $C – $D / year                                                                                                                                                         
+    ─────────────────────────────────────────────────────────
+    COMBINED                            $X – $Y / year                                                                                                                                                         
+                                                                                                                                                                                                               
+  Each setting expandable → shows its own domain breakdown                                                                                                                                                     
+                                                                                                                                                                                                               
+  The phase badge per setting matters for the EBR story — you can say "your outpatient program is in the Capacity phase, your inpatient program just entered Efficiency." This is genuinely useful context for 
+  a CHRO or COO.                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Month-over-Month View                                                                                                                                                                                        
+                                                            
+  The key design decision: optional monthly data, honest point-in-time fallback.                                                                                                                               
+                                                            
+  [ Point-in-Time ]  [ Month-over-Month ]   ← tab toggle
+                                                                                                                                                                                                               
+  MONTH-OVER-MONTH (when real data present):  
+                                                                                                                                                                                                               
+    wRVU / Encounter                                                                                                                                                                                           
+    │                               ●─────────●  With Abridge                                                                                                                                                  
+    │                          ●───╯                                                                                                                                                                           
+    │                     ●───╯                                                                                                                                                                                
+    3.8 ─────────────────────────────────────────  Non-Abridge baseline
+    │    ●─────●─────●─────╯                                                                                                                                                                                   
+    │                                                                                                                                                                                                          
+    ├── Month 1 ── Month 3 ── Month 6 ── Month 9 ── Month 12                                                                                                                                                   
+                                                                                                                                                                                                               
+    PHASE MARKERS (vertical lines with labels):                                                                                                                                                                
+    │ ←── Phase 1 ──┤── Phase 2 ────┤── Phase 3 ──►                                                                                                                                                            
+                                                                                                                                                                                                               
+    "Month 6 is when Efficiency gains started compounding."                                                                                                                                                    
+                                                                                                                                                                                                               
+  Phase markers are computed from the go-live date. They're not data — they're the framework overlaid on the actual data. This is enormously powerful in an EBR because the CSM can say: "see how the gains    
+  accelerated right when we expected them to, at the Phase 2 transition."                                                                                                                                      
+                                                                                                                                                                                                               
+  When no monthly data exists, show the point-in-time tab only. The month-over-month tab shows: "Add monthly data in Build mode to see your trend." Don't fake it.                                             
+                                                            
+  ---                                                                                                                                                                                                          
+  REPLIT PROMPT: Multi-Setting + Presentation Mode + Real Trend                                                                                                                                                
+                                              
+  This prompt adds three architectural capabilities to the Measure path EBR tool.                                                                                                                              
+  It builds on the previous two prompts. Read those first.  
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+  PART 1: MULTI-SETTING ARCHITECTURE                                                                                                                                                                           
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In measureCalculator.ts, change the careSetting model:                                                                                                                                                       
+                                                                                                                                                                                                               
+  BEFORE:                                                                                                                                                                                                      
+    careSetting: MeasureCareSetting | null                                                                                                                                                                     
+                                                                                                                                                                                                               
+  AFTER:                                                                                                                                                                                                       
+    activeSettings: ActiveSetting[]     // ordered array, at least one
+                                              
+  Where:                                                                                                                                                                                                       
+    export interface ActiveSetting {
+      id: string                         // uuid, for keying                                                                                                                                                   
+      type: MeasureCareSetting           // 'outpatient' | 'ed' | 'inpatient' | 'nursing'
+      label: string                      // display name, e.g. "Main Campus Outpatient"                                                                                                                        
+      goLiveDate: string | null          // ISO date        
+      monthsOnAbridge: number            // derived from goLiveDate or manual                                                                                                                                  
+      providers: number                                                                                                                                                                                        
+      totalProviders: number                                                                                                                                                                                   
+      totalEncounters: number                                                                                                                                                                                  
+      utilizationRate: number                                                                                                                                                                                  
+      metrics: Record<string, number>    // all setting-specific before/after values                                                                                                                           
+      monthlyData?: MonthlySettingData   // optional month-over-month data                                                                                                                                     
+      dataSource: 'analytics' | 'benchmark' | 'estimate'                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    export interface MonthlySettingData {                                                                                                                                                                      
+      months: number              // how many months of data                                                                                                                                                   
+      entries: MonthlyEntry[]     // one per month                                                                                                                                                             
+    }                                                                                                                                                                                                          
+                                                            
+    export interface MonthlyEntry {                                                                                                                                                                            
+      monthIndex: number          // 1 = first month after go-live                                                                                                                                             
+      wrvuPerEncounter?: number                                                                                                                                                                                
+      emLevel?: number                                                                                                                                                                                         
+      timeInNotes?: number                                  
+      sameDayClosure?: number                                                                                                                                                                                  
+      workOutside?: number                                                                                                                                                                                     
+      // inpatient-specific                                                                                                                                                                                    
+      cmi?: number                                                                                                                                                                                             
+      denialsPer100?: number                                                                                                                                                                                   
+      // nursing-specific                                                                                                                                                                                      
+      turnoverRate?: number                                                                                                                                                                                    
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Keep the top-level deployment fields (organizationName, etc.) at                                                                                                                                             
+  the MeasureState level — these are org-wide, not per-setting.
+                                                                                                                                                                                                               
+  Add a combined results function:                                                                                                                                                                             
+                                          
+    export function calculateCombinedResults(                                                                                                                                                                  
+      state: MeasureState                                                                                                                                                                                      
+    ): {                                                                                                                                                                                                       
+      settings: SettingResult[]      // per-setting breakdown                                                                                                                                                  
+      combined: CombinedResult       // summed across all settings
+      totalProviders: number                                                                                                                                                                                   
+      totalEncounters: number                               
+      totalHoursSaved: number                                                                                                                                                                                  
+      combinedValueLow: number                              
+      combinedValueHigh: number                                                                                                                                                                                
+      dominantPhase: 1 | 2 | 3 | 4  // phase of the most-advanced setting
+      maturityStage: MaturityStage   // derived from combined data                                                                                                                                             
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Where SettingResult contains the existing per-setting calculations                                                                                                                                           
+  (already exists in the InpatientAllocate/GenericAllocate logic)                                                                                                                                              
+  plus the engagement context (phase, maturity) for that specific setting.                                                                                                                                     
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                    
+  MeasureDataEntry.tsx — Multi-Setting                                                                                                                                                                         
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Replace the single care setting selector with a SETTINGS MANAGER:                                                                                                                                            
+                                                                                                                                                                                                               
+  Header section:                                           
+    "Active Care Settings"                                                                                                                                                                                     
+    [+ Add Setting] button                                  
+                                                                                                                                                                                                               
+  Each setting shown as a collapsible card:                 
+                                          
+    ┌────────────────────────────────────────────────────────┐                                                                                                                                                 
+    │  ● OUTPATIENT   Main Campus   14 months   Phase 3      │                                                                                                                                                 
+    │  [Edit] [Remove]                            [▼ expand] │                                                                                                                                                 
+    └────────────────────────────────────────────────────────┘                                                                                                                                                 
+                                                            
+  When expanded, shows the full data entry form for that setting                                                                                                                                               
+  (the existing MeasureDataEntry content, scoped to that setting).                                                                                                                                             
+                                                                                                                                                                                                               
+  Settings can be added, removed, or reordered.                                                                                                                                                                
+  Minimum 1 setting required to proceed.                    
+                                                                                                                                                                                                               
+  At the top of the data entry area, before the settings manager:                                                                                                                                              
+    - Organization name (top-level)                                                                                                                                                                            
+    - Overall data source selector (top-level, applies to all settings                                                                                                                                         
+      unless overridden per setting)                                                                                                                                                                           
+                                          
+  Per-setting go-live date and monthly data entry is inside each                                                                                                                                               
+  setting's expanded card.                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  MONTHLY DATA ENTRY (inside expanded setting card, collapsible):                                                                                                                                              
+                                                            
+    "Monthly Trend Data (optional)"                                                                                                                                                                            
+    "Adding monthly data enables your trend chart. Without it, we show                                                                                                                                         
+     a point-in-time comparison."             
+                                                                                                                                                                                                               
+    [+ Add Month] button — adds a row for one month's data  
+                                                                                                                                                                                                               
+    Each month row shows: Month [N] | [metric fields relevant to setting]
+                                                                                                                                                                                                               
+    For outpatient: wRVU/encounter | Time in notes | E/M level
+    For inpatient:  CMI | Time in notes | CDI queries/100                                                                                                                                                      
+    For ED:         Time in notes | E/M level | LWBS%       
+    For nursing:    Time in notes | Work outside hours                                                                                                                                                         
+                                                            
+    Table format — compact, one row per month.                                                                                                                                                                 
+    Maximum 24 months.                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 2: PRESENTATION MODE                                                                                                                                                                                    
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Add a global mode toggle to MeasureFlow.tsx:                                                                                                                                                                 
+                                                                                                                                                                                                               
+    type MeasureMode = 'build' | 'present'                                                                                                                                                                     
+                                                                                                                                                                                                               
+    const [mode, setMode] = useState<MeasureMode>('build')                                                                                                                                                     
+                                                                                                                                                                                                               
+  Pass mode down to all screen components via props or context.
+                                                                                                                                                                                                               
+  BUILD MODE: existing layout — all forms, inputs, methodology visible.
+                                                                                                                                                                                                               
+  PRESENT MODE: stripped layout rules
+    - Hide all form inputs (read-only values only)                                                                                                                                                             
+    - Hide the UnifiedHeader step counter (replace with just org name + date)
+    - Hide "Back" navigation buttons (use left arrow key or swipe instead)                                                                                                                                     
+    - Make the content area full-width (no sidebar margins) 
+    - Data entry screens (Screen 1) are NOT accessible in present mode                                                                                                                                         
+    - If user enters present mode before data is complete, show a warning                                                                                                                                      
+      and return to build mode                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  MODE TOGGLE BUTTON:                                                                                                                                                                                          
+    Fixed position, top-right of screen, always visible:                                                                                                                                                       
+                                                                                                                                                                                                               
+    Build mode: shows [Present ▶] button — brand orange                                                                                                                                                        
+    Present mode: shows [✕ Exit Presentation] — small, muted gray,                                                                                                                                             
+                  top-left corner only                                                                                                                                                                         
+                                                                                                                                                                                                               
+  In present mode, clicking any value (dollar amounts, hours, provider                                                                                                                                         
+  counts) shows a brief tooltip/popover with the calculation source                                                                                                                                            
+  (for when an exec asks "how did you get that number?"). This replaces                                                                                                                                        
+  the always-visible methodology section — it's available on demand,                                                                                                                                           
+  not cluttering the screen.                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  KEYBOARD NAVIGATION IN PRESENT MODE:                                                                                                                                                                         
+    → or Space: advance to next screen                                                                                                                                                                         
+    ← : go back to previous screen                                                                                                                                                                             
+    M : toggle methodology tooltip mode on/off                                                                                                                                                                 
+    Esc: exit presentation mode                                                                                                                                                                                
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+  PART 3: MONTH-OVER-MONTH TREND VIEW                                                                                                                                                                          
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                  
+                                                                                                                                                                                                               
+  Replace MeasureTrends.tsx entirely. The new version:      
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  Real chart when monthly data exists                                                                                                                                                                          
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                                                                                                                                                                               
+  When a setting has monthlyData entries (length > 0):      
+                                                                                                                                                                                                               
+  Show a Recharts LineChart with:
+    - X-axis: Month 1 through Month N (using monthIndex)                                                                                                                                                       
+    - Y-axis: selected metric value                         
+    - Line 1: "With Abridge" — brand orange (#EA2C00), strokeWidth 2.5                                                                                                                                         
+    - Line 2 (if available): "Non-Abridge baseline" — dashed gray,
+      using the before-value as a flat reference line                                                                                                                                                          
+                                                                                                                                                                                                               
+  PHASE MARKERS: vertical reference lines at the phase transition months                                                                                                                                       
+    - Phase 1 → Phase 2: at month 3 (dashed vertical line, labeled)                                                                                                                                            
+    - Phase 2 → Phase 3: at month 6 (dashed vertical line, labeled)                                                                                                                                            
+    - Phase 3 → Phase 4: at month 18 (dashed vertical line, labeled)                                                                                                                                           
+                                                                                                                                                                                                               
+    Style: thin dashed lines (#AAAAAA), with small label chips above                                                                                                                                           
+    the chart (not overlapping the data): "Phase 2" at month 3, etc.                                                                                                                                           
+                                                                                                                                                                                                               
+  METRIC SELECTOR: pill tabs (not a dropdown) for:                                                                                                                                                             
+    outpatient/ED: wRVU | Time in Notes | E/M Level | Same-Day Closure
+    inpatient:     CMI | Time in Notes | CDI Queries                                                                                                                                                           
+    nursing:       Time in Notes | After-Hours Work | Turnover Rate                                                                                                                                            
+                                                                                                                                                                                                               
+  INSIGHT LINE below the chart (computed from the data):                                                                                                                                                       
+    "Your [metric] improved [X]% between Month 1 and Month [N].                                                                                                                                                
+     The steepest gain was between Month [A] and Month [B]."                                                                                                                                                   
+                                                                                                                                                                                                               
+  This line is computed dynamically from the actual monthly entries.                                                                                                                                           
+  Do not generate it if monthly data is missing.                                                                                                                                                               
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  Point-in-time fallback (no monthly data)                                                                                                                                                                     
+  ──────────────────────────────────────                                                                                                                                                                       
+                                                            
+  When no monthly data is entered for a setting:                                                                                                                                                               
+                                                                                                                                                                                                               
+  Show TWO stat cards side by side:           
+                                                                                                                                                                                                               
+    ┌──────────────────────┐    ┌──────────────────────────────┐
+    │  NON-ABRIDGE         │    │  WITH ABRIDGE                │                                                                                                                                               
+    │  [metric value]      │ →  │  [metric value]   [+X%]      │
+    │  baseline            │    │  [data source badge]         │                                                                                                                                               
+    └──────────────────────┘    └──────────────────────────────┘
+                                                                                                                                                                                                               
+  Below: "This is a point-in-time comparison of concurrent encounters                                                                                                                                          
+  — same providers, same period. Add monthly data in Build mode to                                                                                                                                             
+  see how this metric has trended over time."                                                                                                                                                                  
+                                                                                                                                                                                                               
+  The "Add monthly data" text is a link that exits present mode                                                                                                                                                
+  and opens the monthly data entry for that setting.                                                                                                                                                           
+                                                                                                                                                                                                               
+  ──────────────────────────────────────                                                                                                                                                                       
+  Multi-setting trend view                                                                                                                                                                                     
+  ──────────────────────────────────────                                                                                                                                                                       
+                                          
+  When multiple settings are active, show a setting selector above                                                                                                                                             
+  the chart: pill tabs for each active setting + "Combined" view.                                                                                                                                              
+                                              
+  Combined view shows:                                                                                                                                                                                         
+    - Total hours saved per month (bar chart, one bar per month)
+    - Stacked by setting if multiple are active                                                                                                                                                                
+    - Phase markers based on the first-active setting's go-live date
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 4: COMBINED STORY SCREEN UPDATES                                                                                                                                                                        
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  MeasureTransformation.tsx — "What Your Data Shows"        
+                                                                                                                                                                                                               
+  When multiple settings are active:                                                                                                                                                                           
+    Show the combined confirmed value hero tile first (all settings summed).                                                                                                                                   
+    Then below: a per-setting breakdown accordion.                                                                                                                                                             
+                                                                                                                                                                                                               
+    ┌──────────────────────────────────────────────────────┐
+    │  COMBINED CONFIRMED VALUE                            │                                                                                                                                                   
+    │  $X – $Y / year                                     │                                                                                                                                                    
+    │  [N] providers · [M] encounters · [Z] settings      │                                                                                                                                                    
+    └──────────────────────────────────────────────────────┘                                                                                                                                                   
+                                                                                                                                                                                                               
+    ▼ OUTPATIENT (14 months · Phase 3)     $A – $B / year                                                                                                                                                      
+    ▼ INPATIENT  (6 months · Phase 2)      $C – $D / year                                                                                                                                                      
+                                                                                                                                                                                                               
+  Each row expands to show that setting's domain card breakdown.                                                                                                                                               
+                                                            
+  MeasureStory.tsx — "Executive Summary"                                                                                                                                                                       
+                                                                                                                                                                                                               
+  When multiple settings are active, the hero changes to:                                                                                                                                                      
+    "[N] providers across [X] care settings.                                                                                                                                                                   
+     [months of longest-running deployment] months.         
+     [total hours] hours recovered."                                                                                                                                                                           
+                                                            
+  The "Your Results" section shows combined totals with a                                                                                                                                                      
+  "by setting" toggle to drill down.                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 5: URL STATE FOR PRE-LOADING                                                                                                                                                                            
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In measureUrlState.ts, ensure the full MeasureState can be encoded                                                                                                                                           
+  into a shareable URL parameter.                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Add a "Copy shareable link" button to the Build mode header.                                                                                                                                                 
+  This encodes the current state as a compressed base64 URL parameter.                                                                                                                                         
+                                                                                                                                                                                                               
+  When the tool loads with this parameter present, it:                                                                                                                                                         
+    1. Decodes and hydrates the state     
+    2. Skips directly to Screen 2 (What Your Data Shows)                                                                                                                                                       
+    3. Enters present mode automatically                                                                                                                                                                       
+    4. Shows a banner: "Loaded for [Org Name] · [Date]  [Edit ✎]"                                                                                                                                              
+                                                                                                                                                                                                               
+  The Edit button exits present mode and returns to Screen 1 for                                                                                                                                               
+  adjustments.                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  This is the pre-loaded EBR flow:                                                                                                                                                                             
+    CSM enters data → copies link → opens on laptop before meeting                                                                                                                                             
+    → arrives with the story already on screen                                                                                                                                                                 
+                                          
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  IMPLEMENTATION ORDER                                                                                                                                                                                         
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                                                                                                                                                                                                               
+  1. measureCalculator.ts                                   
+     - ActiveSetting interface + MonthlyEntry interface                                                                                                                                                        
+     - calculateCombinedResults() function                                                                                                                                                                     
+     - deriveEngagementContext() updated for per-setting
+     - getDefaultScenarios() unchanged                                                                                                                                                                         
+                                                                                                                                                                                                               
+  2. MeasureFlow.tsx                      
+     - mode state ('build' | 'present')                                                                                                                                                                        
+     - mode toggle button (fixed position)                                                                                                                                                                     
+     - keyboard navigation listeners                                                                                                                                                                           
+     - pass mode to all children                                                                                                                                                                               
+                                                                                                                                                                                                               
+  3. MeasureDataEntry.tsx                                                                                                                                                                                      
+     - Settings manager (add/remove/reorder)                                                                                                                                                                   
+     - Monthly data entry table per setting                                                                                                                                                                    
+     - Top-level org fields separated from per-setting fields                                                                                                                                                  
+                                                            
+  4. MeasureTransformation.tsx                                                                                                                                                                                 
+     - Multi-setting combined hero + per-setting accordion                                                                                                                                                     
+     - Domain signal cards (from previous prompt)                                                                                                                                                              
+                                                                                                                                                                                                               
+  5. MeasureTrends.tsx                                                                                                                                                                                         
+     - Full replacement with real chart + phase markers                                                                                                                                                        
+     - Point-in-time fallback                                                                                                                                                                                  
+     - Multi-setting selector                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  6. MeasureScenarios.tsx (from previous prompt — new file)                                                                                                                                                    
+     - Three scenario cards               
+     - Gap calculation                                                                                                                                                                                         
+     - Editable assumptions                                                                                                                                                                                    
+   
+  7. MeasureAllocate.tsx, MeasureOpportunity.tsx, MeasureStory.tsx                                                                                                                                             
+     - Update to use calculateCombinedResults() for multi-setting
+     - Present mode layout rules applied                                                                                                                                                                       
+                                                                                                                                                                                                               
+  8. measureUrlState.ts                       
+     - Full state encode/decode                                                                                                                                                                                
+     - "Copy shareable link" button                                                                                                                                                                            
+     - Auto-load + present mode trigger                             

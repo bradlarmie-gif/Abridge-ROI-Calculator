@@ -79,6 +79,7 @@ export type DataSource = 'analytics' | 'benchmark' | 'estimate';
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
   dataSource: DataSource;
+  goLiveDate: string | null;
   deployment: MeasureDeployment;
   documentationQuality: DocumentationQuality;
   timeEfficiency: TimeEfficiency;
@@ -100,6 +101,7 @@ export interface MeasureState {
 export const DEFAULT_MEASURE_STATE: MeasureState = {
   careSetting: null,
   dataSource: 'estimate',
+  goLiveDate: null,
   deployment: {
     organizationName: '',
     providers: 0,
@@ -388,6 +390,110 @@ export interface ExpansionResults {
   hoursPerProvider: number;
   remainingProviders: number;
 }
+
+export type MaturityStage = 'unmeasured' | 'signaling' | 'validated' | 'strategic';
+export type DomainStatus = 'no-data' | 'baseline-only' | 'signaling' | 'validated';
+
+export interface EngagementContext {
+  phase: 1 | 2 | 3 | 4;
+  phaseLabel: string;
+  phaseSubLabel: string;
+  maturityStage: MaturityStage;
+  maturityLabel: string;
+  maturityNext: string;
+  activeDomainsExpected: string[];
+  phaseMonthsElapsed: number;
+  monthsOnAbridge: number;
+}
+
+export function getMonthsFromGoLive(goLiveDate: string | null, fallback: number): number {
+  if (!goLiveDate) return fallback;
+  const start = new Date(goLiveDate);
+  const now = new Date();
+  const diff = (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+  return Math.max(0, Math.round(diff));
+}
+
+export function deriveEngagementContext(state: MeasureState): EngagementContext {
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const util = state.deployment.utilizationRate;
+  const setting = state.careSetting || 'outpatient';
+  const domainStatus = computeDomainStatus(state);
+  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
+
+  let phase: 1 | 2 | 3 | 4;
+  let phaseLabel: string;
+  if (months < 3) { phase = 1; phaseLabel = 'Documentation Fidelity'; }
+  else if (months < 6) { phase = 2; phaseLabel = 'Efficiency'; }
+  else if (months < 18) { phase = 3; phaseLabel = setting === 'inpatient' ? 'Patient Flow' : setting === 'ed' ? 'Throughput' : 'Capacity'; }
+  else { phase = 4; phaseLabel = 'Strategic Proof'; }
+
+  const phaseSubLabel = setting === 'inpatient' ? 'Patient Flow' : setting === 'ed' ? 'Throughput' : 'Capacity';
+
+  let maturityStage: MaturityStage;
+  let maturityLabel: string;
+  if (months < 3 || util < 20) { maturityStage = 'unmeasured'; maturityLabel = 'Unmeasured'; }
+  else if (months > 18 && util > 70) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
+  else if (months >= 9 || (util > 60 && activeDomains >= 3)) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
+  else { maturityStage = 'signaling'; maturityLabel = 'Signaling'; }
+
+  const stageOrder: MaturityStage[] = ['unmeasured', 'signaling', 'validated', 'strategic'];
+  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', signaling: 'Signaling', validated: 'Validated', strategic: 'Strategic' };
+  const idx = stageOrder.indexOf(maturityStage);
+  const maturityNext = idx < stageOrder.length - 1 ? stageLabels[stageOrder[idx + 1]] : 'Strategic';
+
+  const activeDomainsExpected: string[] = [];
+  if (phase >= 1) activeDomainsExpected.push('quality');
+  if (phase >= 2) { activeDomainsExpected.push('workforce'); activeDomainsExpected.push('revenue'); }
+  if (phase >= 3) activeDomainsExpected.push('capacity');
+
+  return { phase, phaseLabel, phaseSubLabel, maturityStage, maturityLabel, maturityNext, activeDomainsExpected, phaseMonthsElapsed: months, monthsOnAbridge: months };
+}
+
+export function computeDomainStatus(state: MeasureState): Record<'quality' | 'workforce' | 'revenue' | 'capacity', DomainStatus> {
+  const { documentationQuality: dq, timeEfficiency: te, deployment } = state;
+  const months = getMonthsFromGoLive(state.goLiveDate, deployment.monthsOnAbridge);
+  const settingData = state.settingData[state.careSetting || 'outpatient'] || {};
+
+  const emDelta = dq.emLevelWith - dq.emLevelWithout;
+  const wrvuDelta = dq.wrvuWith - dq.wrvuWithout;
+  const cdiQueryDelta = Math.max(0, (settingData.cdiQueriesPer100_before ?? 0) - (settingData.cdiQueriesPer100_after ?? 0));
+  const hasQualityData = emDelta !== 0 || wrvuDelta !== 0 || cdiQueryDelta > 0;
+  const qualitySignaling = emDelta > 0 || wrvuDelta > 0 || cdiQueryDelta > 0;
+
+  const timeInNotesDelta = te.timeInNotesWithout - te.timeInNotesWith;
+  const workOutsideDelta = te.workOutsideWithout - te.workOutsideWith;
+  const hasWorkforceData = timeInNotesDelta !== 0 || workOutsideDelta !== 0;
+  const workforceSignaling = timeInNotesDelta > 0 || workOutsideDelta > 0;
+
+  const cmiDelta = (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0);
+  const denialsDelta = (settingData.denialsPer100_before ?? 0) - (settingData.denialsPer100_after ?? 0);
+  const hasRevenueData = wrvuDelta !== 0 || cmiDelta !== 0 || denialsDelta !== 0;
+  const revenueSignaling = wrvuDelta > 0 || cmiDelta > 0 || denialsDelta > 0;
+
+  const sameDayDelta = te.sameDayClosureWith - te.sameDayClosureWithout;
+  const hasCapacityData = months >= 6 && (sameDayDelta > 0 || timeInNotesDelta > 3);
+
+  function status(hasData: boolean, isSignaling: boolean): DomainStatus {
+    if (!hasData) return 'no-data';
+    if (isSignaling) return 'signaling';
+    return 'baseline-only';
+  }
+
+  return {
+    quality: status(hasQualityData, qualitySignaling),
+    workforce: status(hasWorkforceData, workforceSignaling),
+    revenue: status(hasRevenueData, revenueSignaling),
+    capacity: status(hasCapacityData, hasCapacityData),
+  };
+}
+
+export const BENCHMARK_RANGES: Record<string, Record<number, { low: number; high: number }>> = {
+  outpatient: { 2: { low: 4000, high: 8000 }, 3: { low: 4000, high: 8000 }, 4: { low: 8000, high: 15000 } },
+  ed: { 2: { low: 5000, high: 10000 }, 3: { low: 5000, high: 10000 }, 4: { low: 5000, high: 10000 } },
+  inpatient: { 2: { low: 6000, high: 12000 }, 3: { low: 6000, high: 12000 }, 4: { low: 6000, high: 12000 } },
+  nursing: { 2: { low: 3000, high: 6000 }, 3: { low: 3000, high: 6000 }, 4: { low: 3000, high: 6000 } },
+};
 
 export function calculateExpansionResults(
   state: MeasureState,
