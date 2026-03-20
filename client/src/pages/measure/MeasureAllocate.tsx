@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, TrendingUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -182,12 +182,22 @@ export default function MeasureAllocate({
   const domains = [qualityDomain, workforceDomain, revenueDomain, capacityDomain];
   const heroValue = formatSmartRange(confirmed.low, confirmed.high);
 
+  const timeSavedPerNote = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
+  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
+  const totalEncounters = state.deployment.totalEncounters;
+  const nonAdoptedEncounters = totalEncounters - adoptedEncounters;
+  const adoptionPercent = state.deployment.utilizationRate;
+  const hourlyRate = state.calibration.otHourlyRate || 150;
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const conversionFactor = state.calibration.conversionFactor || 33;
+  const encounterLabel = isInpatient ? "discharges" : isNursing ? "shifts" : "encounters";
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={4}
-        totalSteps={6}
+        currentStep={6}
+        totalSteps={8}
         stepName="What It's Worth"
         onBack={onBack}
         onHome={onHome}
@@ -217,6 +227,54 @@ export default function MeasureAllocate({
             Across {state.deployment.providers} {providerLabel} at {state.deployment.utilizationRate}% adoption
           </p>
         </motion.div>
+
+        {timeSavedPerNote > 0 && (
+          <motion.div
+            className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            data-testid="section-formula"
+          >
+            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">How We Got This Number</h3>
+            <div className="bg-[#FAFAFA] rounded-lg p-4 font-mono text-xs text-[#666666] leading-relaxed">
+              <p>
+                {formatNumber(adoptedEncounters)} adopted {encounterLabel} {"\u00D7"} {timeSavedPerNote} min saved {"\u00F7"} 60 {"\u00D7"} 50% {"\u00D7"} ${hourlyRate}/hr
+              </p>
+              {wrvuDelta > 0 && (
+                <p className="mt-1">
+                  + {wrvuDelta.toFixed(2)} wRVU lift {"\u00D7"} {formatNumber(adoptedEncounters)} {encounterLabel} {"\u00D7"} ${conversionFactor} CF {"\u00D7"} 50{"\u2013"}75%
+                </p>
+              )}
+            </div>
+            <p className="text-[10px] text-[#999999] mt-2 italic">
+              Standard methodology: 50% of reclaimed time allocated to hard savings, wRVU credited at 50{"\u2013"}75% capture rate.
+            </p>
+          </motion.div>
+        )}
+
+        {nonAdoptedEncounters > 0 && adoptionPercent < 100 && (
+          <motion.div
+            className="bg-[#FFF8F5] rounded-lg border border-[#F5D5C8] p-5 mb-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            data-testid="section-adoption-headroom"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
+              <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#EA2C00]">Adoption Headroom</h3>
+            </div>
+            <p className="text-sm text-[#666666] leading-relaxed">
+              {formatNumber(nonAdoptedEncounters)} {encounterLabel} ({100 - adoptionPercent}% of total) are not yet documented with Abridge.
+              At current per-{encounterLabel.slice(0, -1)} economics, full adoption would add approximately{' '}
+              <span className="font-semibold text-[#EA2C00]">
+                {formatCurrency(Math.round(adoptionPercent > 0 ? ((confirmed.low + confirmed.high) / 2) * ((100 - adoptionPercent) / adoptionPercent) : 0))}
+              </span>{' '}
+              in annual value.
+            </p>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2">

@@ -1,18 +1,21 @@
 import { useState, useMemo, useCallback } from "react";
-import { ArrowRight, TrendingUp, Users, Info, Pencil } from "lucide-react";
+import { ArrowRight, TrendingUp, Users, Info, Pencil, Check, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
+  type MeasureCareSetting,
   type DataSource,
   type MaturityStage,
+  type NextStageMetric,
   formatCurrency, 
   formatNumber,
   calculateExpansionResults,
   deriveEngagementContext,
   computeDomainStatus,
   getMonthsFromGoLive,
+  deriveSettingStage,
 } from "@/lib/measureCalculator";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 import NarrativePanel from "@/components/measure/NarrativePanel";
@@ -339,8 +342,8 @@ export default function MeasureOpportunity({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={5}
-        totalSteps={6}
+        currentStep={7}
+        totalSteps={8}
         stepName="Where You're Going"
         onBack={onBack}
         onHome={onHome}
@@ -609,6 +612,8 @@ export default function MeasureOpportunity({
           </div>
         </motion.div>
 
+        <NextChapterSection state={state} />
+
         <motion.div 
           className="max-w-[480px] mx-auto"
           initial={{ opacity: 0 }}
@@ -626,5 +631,92 @@ export default function MeasureOpportunity({
         </motion.div>
       </div>
     </div>
+  );
+}
+
+function SourceBadge({ source }: { source: string }) {
+  const isAbridge = source.toLowerCase().includes('abridge');
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold ${isAbridge ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
+      {isAbridge ? 'Abridge' : 'Your Systems'}
+    </span>
+  );
+}
+
+function NextChapterSection({ state }: { state: MeasureState }) {
+  const careSetting = state.careSetting || 'outpatient';
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+
+  const activeSettings = useMemo(() => {
+    const settings: MeasureCareSetting[] = [];
+    const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
+    for (const s of all) {
+      const d = state.settingData[s];
+      if (d && Object.values(d).some(v => v !== 0)) {
+        settings.push(s);
+      }
+    }
+    if (settings.length === 0) settings.push(careSetting);
+    return settings;
+  }, [state, careSetting]);
+
+  const settingStages = useMemo(() => activeSettings.map(s => deriveSettingStage(state, s)), [state, activeSettings]);
+
+  const allMetrics = settingStages.flatMap(s => s.nextStageMetrics);
+  if (allMetrics.length === 0) return null;
+
+  return (
+    <motion.div
+      className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.28 }}
+      data-testid="section-next-chapter"
+    >
+      <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
+        Your Next Chapter
+      </p>
+      <p className="text-sm text-white/60 mb-6 leading-relaxed">
+        These are the metrics that move you to the next stage. Some come from Abridge, some from your own systems.
+      </p>
+
+      {settingStages.map(stage => {
+        if (stage.nextStageMetrics.length === 0) return null;
+        return (
+          <div key={stage.setting} className="mb-6 last:mb-0" data-testid={`next-chapter-${stage.setting}`}>
+            {activeSettings.length > 1 && (
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/40 mb-3">{stage.settingLabel}</p>
+            )}
+            <div className="bg-white/5 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2 border-b border-white/10">
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Metric</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Domain</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Source</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Expected</span>
+              </div>
+              {stage.nextStageMetrics.map((m, i) => {
+                const readyNow = months >= m.expectedAtMonth;
+                return (
+                  <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2.5 border-b border-white/5 last:border-b-0 items-center">
+                    <span className="text-sm text-white/80">{m.metric}</span>
+                    <span className="text-xs text-white/50">{m.domain}</span>
+                    <SourceBadge source={m.source} />
+                    {readyNow ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                        <Check className="w-3 h-3" /> Ready now
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-white/40">
+                        <Clock className="w-3 h-3" /> Month {m.expectedAtMonth}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </motion.div>
   );
 }

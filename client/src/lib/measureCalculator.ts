@@ -709,6 +709,233 @@ export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
   };
 }
 
+export interface NextStageMetric {
+  metric: string;
+  domain: string;
+  why: string;
+  source: string;
+  expectedAtMonth: number;
+}
+
+export interface SettingStage {
+  setting: MeasureCareSetting;
+  settingLabel: string;
+  months: number;
+  phase: 1 | 2 | 3 | 4;
+  phaseLabel: string;
+  phaseThirdLabel: string;
+  maturityStage: MaturityStage;
+  maturityLabel: string;
+  maturityNext: string;
+  domainStatus: {
+    quality: DomainStatus;
+    workforce: DomainStatus;
+    revenue: DomainStatus;
+    capacity: DomainStatus;
+  };
+  activeDomainCount: number;
+  confirmedLow: number;
+  confirmedHigh: number;
+  perProviderLow: number;
+  perProviderHigh: number;
+  defensibleClaims: string[];
+  nextStageMetrics: NextStageMetric[];
+}
+
+const SETTING_LABELS: Record<MeasureCareSetting, string> = {
+  outpatient: 'Outpatient',
+  ed: 'Emergency',
+  inpatient: 'Inpatient',
+  nursing: 'Nursing',
+};
+
+const PHASE_THIRD_LABELS: Record<MeasureCareSetting, string> = {
+  outpatient: 'Capacity',
+  ed: 'Throughput',
+  inpatient: 'Patient Flow',
+  nursing: 'Quality',
+};
+
+const NEXT_STAGE_METRICS: Record<MeasureCareSetting, Record<number, NextStageMetric[]>> = {
+  outpatient: {
+    1: [
+      { metric: 'CDI query reduction', domain: 'Quality', why: 'First CDI signal', source: 'EHR analytics', expectedAtMonth: 3 },
+      { metric: 'After-hours work decline', domain: 'Workforce', why: 'WoW signal', source: 'Abridge platform', expectedAtMonth: 3 },
+      { metric: 'wRVU per encounter', domain: 'Revenue', why: 'Coding lift signal', source: 'Billing', expectedAtMonth: 3 },
+    ],
+    2: [
+      { metric: 'Encounter volume lift', domain: 'Capacity', why: 'Panel growth', source: 'EHR analytics', expectedAtMonth: 6 },
+      { metric: 'Physician retention data', domain: 'Workforce', why: 'Retention advantage', source: 'HR', expectedAtMonth: 9 },
+      { metric: 'Clean claim rate', domain: 'Revenue', why: 'Coding confirmed', source: 'Revenue Cycle', expectedAtMonth: 9 },
+    ],
+    3: [
+      { metric: 'New care settings added', domain: 'Capacity', why: 'Expansion story', source: 'Abridge platform', expectedAtMonth: 12 },
+      { metric: 'Net collection ratio', domain: 'Revenue', why: 'Board-level revenue', source: 'Finance', expectedAtMonth: 12 },
+      { metric: 'Provider satisfaction score', domain: 'Workforce', why: 'Recruitment leverage', source: 'HR', expectedAtMonth: 12 },
+    ],
+    4: [],
+  },
+  ed: {
+    1: [
+      { metric: 'E/M level accuracy', domain: 'Revenue', why: 'Coding lift', source: 'Billing', expectedAtMonth: 3 },
+      { metric: 'Shift-end documentation time', domain: 'Workforce', why: 'WoW relief', source: 'Abridge platform', expectedAtMonth: 3 },
+    ],
+    2: [
+      { metric: 'LWBS rate', domain: 'Throughput', why: 'Patient retention', source: 'Operations', expectedAtMonth: 6 },
+      { metric: 'Patients per provider per shift', domain: 'Throughput', why: 'Throughput lift', source: 'Operations', expectedAtMonth: 6 },
+    ],
+    3: [],
+    4: [],
+  },
+  inpatient: {
+    1: [
+      { metric: 'CMI improvement', domain: 'Revenue', why: 'DRG accuracy', source: 'Health Information', expectedAtMonth: 4 },
+      { metric: 'CDI query rate', domain: 'Quality', why: 'CDI baseline', source: 'CDI team', expectedAtMonth: 3 },
+      { metric: 'EHR time per patient day', domain: 'Workforce', why: 'Rounding efficiency', source: 'Abridge platform', expectedAtMonth: 3 },
+    ],
+    2: [
+      { metric: 'Denial reduction rate', domain: 'Revenue', why: 'Payer defense', source: 'Revenue Cycle', expectedAtMonth: 9 },
+      { metric: 'Discharge summary completion time', domain: 'Patient Flow', why: 'Flow signal', source: 'Operations', expectedAtMonth: 9 },
+      { metric: 'Physician retention', domain: 'Workforce', why: 'Retention data', source: 'HR', expectedAtMonth: 12 },
+    ],
+    3: [],
+    4: [],
+  },
+  nursing: {
+    1: [
+      { metric: 'Overtime hours per nurse', domain: 'Workforce', why: 'OT relief', source: 'HR/Payroll', expectedAtMonth: 3 },
+      { metric: 'Turnover rate', domain: 'Workforce', why: 'Retention signal', source: 'HR', expectedAtMonth: 6 },
+    ],
+    2: [
+      { metric: 'Falls/HAPIs rate', domain: 'Quality', why: 'Safety signal', source: 'Quality team', expectedAtMonth: 9 },
+      { metric: 'Nurse satisfaction', domain: 'Workforce', why: 'Recruitment leverage', source: 'HR', expectedAtMonth: 9 },
+    ],
+    3: [],
+    4: [],
+  },
+};
+
+function getDefensibleClaims(
+  stage: MaturityStage,
+  strongestDomain: string,
+  activeDomainCount: number,
+  totalHoursSaved: number,
+  providers: number,
+  confirmedLow: number,
+  confirmedHigh: number,
+  perProviderLow: number,
+  settingCount: number,
+): string[] {
+  const hoursPerProv = providers > 0 ? totalHoursSaved / providers : 0;
+  switch (stage) {
+    case 'unmeasured':
+      return [
+        'Abridge is live and being used',
+        'Baseline metrics are establishing',
+        'No outcome claims yet — foundation building',
+      ];
+    case 'signaling':
+      return [
+        'Documentation patterns are changing with Abridge',
+        `Early efficiency signals are present in ${strongestDomain}`,
+        'Trend direction is confirmed — too early for magnitude',
+      ];
+    case 'validated':
+      return [
+        `${activeDomainCount} domains show consistent positive trends`,
+        `Time reclaimed: ${formatNumber(Math.round(totalHoursSaved))} hours across ${providers} providers`,
+        `Value range ${formatCurrency(confirmedLow)}–${formatCurrency(confirmedHigh)} / year is supported by the data`,
+        'Renewal decision is made on data, not relationship',
+      ];
+    case 'strategic':
+      return [
+        `Multi-domain proof across ${settingCount} setting${settingCount > 1 ? 's' : ''}`,
+        `Per-provider value of ${formatCurrency(perProviderLow)} is proven and scalable`,
+        'Expansion economics are understood',
+        'This deployment is a strategic asset, not a tool',
+      ];
+    default:
+      return [];
+  }
+}
+
+export function deriveSettingStage(
+  state: MeasureState,
+  setting: MeasureCareSetting,
+): SettingStage {
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const util = state.deployment.utilizationRate;
+  const domainStatus = computeDomainStatus(state);
+  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated');
+  const activeDomainCount = activeDomains.length;
+
+  let phase: 1 | 2 | 3 | 4;
+  let phaseLabel: string;
+  if (months < 3) { phase = 1; phaseLabel = 'Documentation Fidelity'; }
+  else if (months < 6) { phase = 2; phaseLabel = 'Efficiency'; }
+  else if (months < 18) { phase = 3; phaseLabel = PHASE_THIRD_LABELS[setting]; }
+  else { phase = 4; phaseLabel = 'Strategic Proof'; }
+
+  let maturityStage: MaturityStage;
+  let maturityLabel: string;
+  if (months < 3 || util < 20) { maturityStage = 'unmeasured'; maturityLabel = 'Unmeasured'; }
+  else if (months > 18 && util > 70) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
+  else if (months >= 9 || (util > 60 && activeDomainCount >= 3)) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
+  else { maturityStage = 'signaling'; maturityLabel = 'Signaling'; }
+
+  const stageOrder: MaturityStage[] = ['unmeasured', 'signaling', 'validated', 'strategic'];
+  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', signaling: 'Signaling', validated: 'Validated', strategic: 'Strategic' };
+  const idx = stageOrder.indexOf(maturityStage);
+  const maturityNext = idx < stageOrder.length - 1 ? stageLabels[stageOrder[idx + 1]] : 'Strategic';
+
+  const confirmed = calculateConfirmedValue(state);
+
+  const strongestDomainKey = Object.entries(domainStatus).reduce((best, [k, v]) => {
+    const p = v === 'validated' ? 4 : v === 'signaling' ? 3 : v === 'baseline-only' ? 2 : 1;
+    return p > best.p ? { key: k, p } : best;
+  }, { key: 'workforce', p: 0 }).key;
+
+  const settingCount = Object.keys(state.settingData).filter(k => {
+    const d = state.settingData[k as MeasureCareSetting];
+    return d && Object.values(d).some(v => v !== 0);
+  }).length || 1;
+
+  const defensibleClaims = getDefensibleClaims(
+    maturityStage,
+    strongestDomainKey.charAt(0).toUpperCase() + strongestDomainKey.slice(1),
+    activeDomainCount,
+    confirmed.hoursReclaimed,
+    state.deployment.providers,
+    confirmed.low,
+    confirmed.high,
+    confirmed.perProviderLow,
+    settingCount,
+  );
+
+  const nextPhase = Math.min(phase, 3) as 1 | 2 | 3;
+  const nextStageMetrics = NEXT_STAGE_METRICS[setting][nextPhase] || [];
+
+  return {
+    setting,
+    settingLabel: SETTING_LABELS[setting],
+    months,
+    phase,
+    phaseLabel,
+    phaseThirdLabel: PHASE_THIRD_LABELS[setting],
+    maturityStage,
+    maturityLabel,
+    maturityNext,
+    domainStatus,
+    activeDomainCount,
+    confirmedLow: confirmed.low,
+    confirmedHigh: confirmed.high,
+    perProviderLow: confirmed.perProviderLow,
+    perProviderHigh: confirmed.perProviderHigh,
+    defensibleClaims,
+    nextStageMetrics,
+  };
+}
+
 export function calculateExpansionResults(
   state: MeasureState,
   totalValueLow: number,

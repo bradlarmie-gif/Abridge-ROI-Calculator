@@ -7,13 +7,15 @@ import {
 import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
 import { getDefaultOutpatientMetrics, getDefaultMetrics } from "@/lib/measureCareSettings";
 import MeasureDataEntry from "./MeasureDataEntry";
+import MeasureInventory from "./MeasureInventory";
 import MeasureTransformation from "./MeasureTransformation";
+import MeasureStage from "./MeasureStage";
 import MeasureScenarios from "./MeasureScenarios";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
 
-type MeasurePhase = 'data' | 'change' | 'scenarios' | 'value' | 'opportunity' | 'story';
+type MeasurePhase = 'data' | 'inventory' | 'change' | 'stage' | 'scenarios' | 'value' | 'opportunity' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -46,7 +48,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
     const urlState = getStateFromCurrentUrl();
     if (urlState) {
       setState(urlState);
-      setPhase('change');
+      setPhase('inventory');
       clearUrlState();
     }
   }, []);
@@ -86,8 +88,18 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureDataEntry
           state={state}
           updateState={updateState}
-          onNext={() => navigate('change')}
+          onNext={() => navigate('inventory')}
           onBack={goHome}
+          onHome={goHome}
+        />
+      );
+
+    case 'inventory':
+      return (
+        <MeasureInventory
+          state={state}
+          onNext={() => navigate('change')}
+          onBack={() => navigate('data')}
           onHome={goHome}
         />
       );
@@ -96,10 +108,20 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureTransformation
           state={state}
-          onNext={() => navigate('scenarios')}
-          onBack={() => navigate('data')}
+          onNext={() => navigate('stage')}
+          onBack={() => navigate('inventory')}
           onHome={goHome}
           mode={mode}
+        />
+      );
+
+    case 'stage':
+      return (
+        <MeasureStage
+          state={state}
+          onNext={() => navigate('scenarios')}
+          onBack={() => navigate('change')}
+          onHome={goHome}
         />
       );
 
@@ -109,7 +131,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
           state={state}
           updateState={updateState}
           onNext={() => navigate('value')}
-          onBack={() => navigate('change')}
+          onBack={() => navigate('stage')}
           onHome={goHome}
         />
       );

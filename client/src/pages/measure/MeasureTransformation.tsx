@@ -3,15 +3,12 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { 
-  type MeasureState, 
+import {
+  type MeasureState,
   type DataSource,
-  formatNumber,
-  formatCurrency,
+  type DomainStatus,
   deriveEngagementContext,
   computeDomainStatus,
-  calculateConfirmedValue,
-  type DomainStatus,
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
@@ -19,6 +16,7 @@ import NarrativePanel from "@/components/measure/NarrativePanel";
 import { generateNarrative } from "@/lib/measureNarrative";
 import { ABRIDGE_NATIVE_METRICS } from "@/lib/measureCareSettings";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { formatNumber } from "@/lib/measureCalculator";
 
 interface MeasureTransformationProps {
   state: MeasureState;
@@ -26,20 +24,6 @@ interface MeasureTransformationProps {
   onBack: () => void;
   onHome: () => void;
   mode?: 'build' | 'present';
-}
-
-function DataSourceBadge({ source }: { source: DataSource }) {
-  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
-  };
-  const c = config[source] || config.estimate;
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
-      {c.label}
-    </span>
-  );
 }
 
 function SignalBadge({ status }: { status: DomainStatus }) {
@@ -102,6 +86,7 @@ interface DomainCardProps {
 
 function DomainSignalCard({ name, question, stakeholder, status, metrics, phaseNote, delay = 0 }: DomainCardProps) {
   const muted = status === 'no-data';
+  const hasActiveMetrics = metrics.some(m => m.nonAbridge > 0 && m.withAbridge > 0 && (m.withAbridge - m.nonAbridge) !== 0);
 
   return (
     <motion.div
@@ -112,16 +97,16 @@ function DomainSignalCard({ name, question, stakeholder, status, metrics, phaseN
       data-testid={`domain-card-${name.toLowerCase()}`}
     >
       <div className="flex items-center justify-between mb-1">
-        <h3 className={`text-xs font-bold uppercase tracking-[1.5px] ${muted ? 'text-[#CCCCCC]' : 'text-[#1A1A1A]'}`}>{name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className={`text-xs font-bold uppercase tracking-[1.5px] ${muted ? 'text-[#CCCCCC]' : 'text-[#1A1A1A]'}`}>{name}</h3>
+          <span className={`text-[10px] ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>{stakeholder}</span>
+        </div>
         <SignalBadge status={status} />
       </div>
-      <p className={`text-[11px] mb-3 ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
-        Stakeholder: {stakeholder}
-      </p>
 
-      {!muted && metrics.length > 0 ? (
+      {!muted && hasActiveMetrics ? (
         <div className="space-y-0">
-          {metrics.map((m, i) => (
+          {metrics.filter(m => m.nonAbridge > 0 && m.withAbridge > 0).map((m, i) => (
             <PointComparison key={m.label} label={m.label} nonAbridge={m.nonAbridge} withAbridge={m.withAbridge} unit={m.unit} delay={delay + 0.1 + i * 0.05} />
           ))}
         </div>
@@ -207,16 +192,15 @@ function TrendChart({ state, selectedMetric }: { state: MeasureState; selectedMe
   );
 }
 
-export default function MeasureTransformation({ 
-  state, 
-  onNext, 
+export default function MeasureTransformation({
+  state,
+  onNext,
   onBack,
   onHome,
   mode = 'build',
 }: MeasureTransformationProps) {
   const context = useMemo(() => deriveEngagementContext(state), [state]);
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
-  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
   const narrative = useMemo(() => generateNarrative('confirmed', state), [state]);
   const careSetting = state.careSetting || "outpatient";
   const isInpatient = careSetting === "inpatient";
@@ -231,14 +215,7 @@ export default function MeasureTransformation({
 
   const hasTrendData = state.trendConfig.enabled && Object.values(state.trendConfig.monthlyData).some(arr => arr.length >= 2);
 
-  const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
-  const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
-
-  const wrvuLift = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
-  const goLiveDisplay = state.goLiveDate
-    ? new Date(state.goLiveDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : `${months} months ago`;
+  const orgName = state.deployment.organizationName || 'Your Organization';
 
   const qualityMetrics = useMemo(() => {
     const m: { label: string; nonAbridge: number; withAbridge: number; unit?: string }[] = [];
@@ -307,15 +284,20 @@ export default function MeasureTransformation({
   }, [state, isED, isNursing]);
 
   const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
-  const orgName = state.deployment.organizationName || 'Your Organization';
+
+  const allMetrics = [...qualityMetrics, ...workforceMetrics, ...revenueMetrics, ...capacityMetrics];
+  const positiveCount = allMetrics.filter(m => {
+    if (m.nonAbridge === 0 && m.withAbridge === 0) return false;
+    return (m.withAbridge - m.nonAbridge) !== 0;
+  }).length;
 
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={2}
-        totalSteps={6}
-        stepName="What Your Data Shows"
+        currentStep={3}
+        totalSteps={8}
+        stepName="What Changed"
         onBack={onBack}
         onHome={onHome}
       />
@@ -332,7 +314,7 @@ export default function MeasureTransformation({
               {orgName}
             </h1>
             <p className="text-sm text-[#999999]">
-              Partnership with Abridge {"·"} {months} months {"·"} {state.deployment.providers} {isNursing ? 'nurses' : 'providers'}
+              Partnership with Abridge {"\u00B7"} {months} months {"\u00B7"} {state.deployment.providers} {isNursing ? 'nurses' : 'providers'}
             </p>
           </motion.div>
         )}
@@ -341,17 +323,17 @@ export default function MeasureTransformation({
 
         <AbridgeFootprintRow nativeData={state.abridgeNativeData} />
 
-        <motion.div 
+        <motion.div
           className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            What Your Data Shows
+            What Changed
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
-            Based on what you{"'"}ve entered, here is the value we can attribute to Abridge during your deployment period.
+            Here{"'"}s how the metrics moved from your baseline to today.
           </p>
         </motion.div>
 
@@ -440,69 +422,6 @@ export default function MeasureTransformation({
           </div>
         )}
 
-        <motion.div
-          className="rounded-lg border border-[#E5E5E5] p-5 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          data-testid="section-formula"
-        >
-          <p className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">How We Calculated This</p>
-          <div className="h-px bg-[#E5E5E5] mb-3" />
-          <div className="space-y-1.5 text-sm text-[#666666] font-mono">
-            <p>{formatNumber(adoptedEncounters)} encounters {"×"} {timeReclaimed} min {"÷"} 60 {"×"} 50% efficiency {"×"} ${state.calibration.otHourlyRate}/hr</p>
-            {wrvuLift > 0 && (
-              <p>+ {wrvuLift.toFixed(2)} wRVU lift {"×"} {formatNumber(adoptedEncounters)} encounters {"×"} ${state.calibration.conversionFactor} CF {"×"} 50{"–"}75% attribution</p>
-            )}
-            {months !== 12 && <p className="text-[#999999]">{"×"} 12/{months} months (annualized)</p>}
-            <p className="font-semibold text-[#1A1A1A]">= {formatCurrency(confirmed.low)} {"–"} {formatCurrency(confirmed.high)} / year</p>
-          </div>
-          <div className="h-px bg-[#E5E5E5] my-3" />
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#999999]">
-            <span>Deployment period: {goLiveDisplay} {"→"} today ({months} months)</span>
-            <span className="flex items-center gap-1">Data source: <DataSourceBadge source={state.dataSource} /></span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="rounded-xl p-8 text-center mb-6"
-          style={{ backgroundColor: '#1A1A1A' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          data-testid="section-confirmed-hero"
-        >
-          <p className="text-[11px] font-semibold text-white/60 uppercase tracking-[2px] mb-1">
-            Based on the above, here{"'"}s the annual value
-          </p>
-          <p className="text-4xl md:text-5xl font-bold text-white mb-3" data-testid="text-confirmed-range">
-            {formatCurrency(confirmed.low)} {"–"} {formatCurrency(confirmed.high)}
-            <span className="text-lg font-normal text-white/50"> / year</span>
-          </p>
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <DataSourceBadge source={state.dataSource} />
-          </div>
-          <p className="text-sm text-white/50">
-            Across {state.deployment.providers} {isNursing ? 'nurses' : 'providers'} {"·"} {formatNumber(adoptedEncounters)} Abridge-documented {isNursing ? 'shifts' : isInpatient ? 'discharges' : 'encounters'}
-          </p>
-          <p className="text-sm text-white/40 mt-1">
-            {"≈"} {formatCurrency(confirmed.perProviderLow)} {"–"} {formatCurrency(confirmed.perProviderHigh)} per {isNursing ? 'nurse' : 'provider'} per year
-          </p>
-          <p className="text-[10px] text-white/30 mt-3">
-            conservative (50%) {"–"} typical (75%) attribution
-          </p>
-        </motion.div>
-
-        <motion.p
-          className="text-sm text-[#666666] text-center mb-6 leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.45 }}
-          data-testid="text-conclusion"
-        >
-          This is the value your data can already support. What follows is where that value can grow.
-        </motion.p>
-
         {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
           <motion.div
             className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
@@ -528,40 +447,28 @@ export default function MeasureTransformation({
           </motion.div>
         )}
 
-        {state.deployment.utilizationRate < 100 && (
-          <motion.div
-            className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
-            data-testid="section-headroom"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-1 bg-[#EA2C00] rounded-full self-stretch flex-shrink-0" />
-              <div>
-                <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px] mb-2">
-                  At {state.deployment.utilizationRate}% Adoption
-                </p>
-                <p className="text-xs text-[#666666] leading-relaxed">
-                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : isNursing ? "shifts" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : isNursing ? "shifts are" : "encounters are"} still being documented without Abridge{"\u2014"}representing additional headroom within your current providers.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
+        <motion.p
+          className="text-sm text-[#666666] text-center italic mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          data-testid="text-metric-summary"
+        >
+          {positiveCount} of {allMetrics.length} metrics are showing positive movement.
+        </motion.p>
 
-        <motion.div 
+        <motion.div
           className="flex justify-center relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.5 }}
         >
           <Button
             onClick={onNext}
             className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
-            data-testid="button-see-scenarios"
+            data-testid="button-next"
           >
-            What You Could Earn
+            Your Stage
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

@@ -16,7 +16,9 @@ import {
 } from './measureCalculator';
 
 export type MeasureScreen =
+  | 'inventory'
   | 'confirmed'
+  | 'stage'
   | 'scenarios'
   | 'value'
   | 'opportunity'
@@ -444,6 +446,22 @@ export function generateNarrative(
   let template: NarrativeTemplate;
 
   switch (screen) {
+    case 'inventory': {
+      template = {
+        headline: "Here's everything we're measuring across your deployment.",
+        body: substituteVars("{{providers}} providers, {{encounters}} encounters, {{months}} months. Some metrics are actively signaling, some have baselines set, and some aren't being tracked yet. The mix is normal \u2014 the measurement picture fills in as the deployment matures.", vars),
+        handoff: "Next, let's look at what actually changed.",
+      };
+      break;
+    }
+    case 'stage': {
+      template = {
+        headline: substituteVars("At {{months}} months, your deployment is in the {{maturityLabel}} stage.", vars),
+        body: substituteVars("{{activeDomains}} of 4 domains are active. Your strongest signal is in {{strongestDomain}} \u2014 {{strongestMetric}}. The path to {{nextMaturityLabel}} runs through {{topNextAction}}.", vars),
+        handoff: "Now let's model what this is worth.",
+      };
+      break;
+    }
     case 'confirmed': {
       template = selectConfirmedTemplate(context.phase, context.maturityStage);
       break;

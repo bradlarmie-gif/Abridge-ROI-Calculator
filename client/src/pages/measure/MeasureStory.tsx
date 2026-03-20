@@ -179,8 +179,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={6}
-        totalSteps={6}
+        currentStep={8}
+        totalSteps={8}
         stepName="Executive Summary"
         onBack={onBack}
         onHome={onHome}

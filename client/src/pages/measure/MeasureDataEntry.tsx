@@ -121,7 +121,7 @@ export default function MeasureDataEntry({
       <UnifiedHeader
         pathType="measure"
         currentStep={1}
-        totalSteps={6}
+        totalSteps={8}
         stepName="Your Deployment"
         onBack={onBack}
         onHome={onHome}

@@ -252,8 +252,8 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={3}
-        totalSteps={6}
+        currentStep={5}
+        totalSteps={8}
         stepName="What You Could Earn"
         onBack={onBack}
         onHome={onHome}
