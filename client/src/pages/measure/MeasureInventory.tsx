@@ -56,11 +56,19 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   const capacityKeys = ['sameDayClosure', 'lwbsRate', 'doorToDoc'];
   const revenueKeys = ['wrvuPerEncounter', 'cmi', 'denialsPer100', 'ccMccCapture', 'emLevel', 'admissionCapture'];
 
+  const enabledMap = state.enabledMetrics?.[setting] || {};
+
   for (const section of config.metricSections) {
     for (const metric of section.metrics) {
       if (!metric.hasBeforeAfter) continue;
+
+      const isEnabled = !!enabledMap[metric.key];
       const before = settingData[`${metric.key}_before`] ?? 0;
       const after = settingData[`${metric.key}_after`] ?? 0;
+      const hasData = before !== 0 || after !== 0;
+
+      if (!isEnabled && !hasData) continue;
+
       const delta = after - before;
 
       let domain = domainMap[section.key] || 'Quality';

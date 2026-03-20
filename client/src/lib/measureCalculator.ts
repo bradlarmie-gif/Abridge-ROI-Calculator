@@ -892,13 +892,21 @@ export function deriveSettingStage(
   else { phase = 4; phaseLabel = 'Strategic Proof'; }
 
   const settingData = state.settingData[setting] || {};
-  const filledMetricCount = Object.entries(settingData).filter(([k, v]) =>
-    (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
+  const beforeKeys = new Set<string>();
+  const afterKeys = new Set<string>();
+  for (const k of Object.keys(settingData)) {
+    if (k.endsWith('_before') && settingData[k] !== 0) beforeKeys.add(k.replace('_before', ''));
+    if (k.endsWith('_after') && settingData[k] !== 0) afterKeys.add(k.replace('_after', ''));
+  }
+  let evidencedMetrics = 0;
+  for (const key of beforeKeys) {
+    if (afterKeys.has(key)) evidencedMetrics++;
+  }
+  const evidencedSurvey = (state.surveyMetrics || []).filter(sm =>
+    sm.label.trim() && sm.before > 0 && sm.after > 0
   ).length;
-  const filledPairs = Math.ceil(filledMetricCount / 2);
-  const filledSurvey = (state.surveyMetrics || []).filter(sm => sm.label.trim() && (sm.before > 0 || sm.after > 0)).length;
-  const totalFilledSlots = filledPairs + filledSurvey;
-  const coverageRatio = totalFilledSlots > 0 ? Math.min(totalFilledSlots / 8, 1) : 0;
+  const totalEvidenced = evidencedMetrics + evidencedSurvey;
+  const coverageRatio = totalEvidenced > 0 ? Math.min(totalEvidenced / 8, 1) : 0;
 
   let maturityStage: MaturityStage;
   let maturityLabel: string;

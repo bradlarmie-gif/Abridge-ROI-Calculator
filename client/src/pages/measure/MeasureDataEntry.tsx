@@ -39,7 +39,6 @@ export default function MeasureDataEntry({
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     profile: true,
   });
-  const [stickyExpanded, setStickyExpanded] = useState<Record<string, boolean>>({});
 
   const activeSetting = (state.careSetting || "outpatient") as MeasureCareSetting;
   const config = CARE_SETTING_CONFIGS[activeSetting];
@@ -78,11 +77,9 @@ export default function MeasureDataEntry({
   };
 
   const toggleSection = useCallback((sectionKey: string) => {
-    const currentlyExpanded = expandedSections[sectionKey] ?? stickyExpanded[sectionKey] ?? false;
-    const newValue = !currentlyExpanded;
-    setExpandedSections((prev) => ({ ...prev, [sectionKey]: newValue }));
-    setStickyExpanded((prev) => ({ ...prev, [sectionKey]: newValue }));
-  }, [expandedSections, stickyExpanded]);
+    const currentlyExpanded = expandedSections[sectionKey] ?? false;
+    setExpandedSections((prev) => ({ ...prev, [sectionKey]: !currentlyExpanded }));
+  }, [expandedSections]);
 
   const hasRequiredFields = () => {
     const hasOrg = state.deployment.organizationName.trim().length > 0;
@@ -165,7 +162,6 @@ export default function MeasureDataEntry({
               metrics={metrics}
               activeSetting={activeSetting}
               expandedSections={expandedSections}
-              stickyExpanded={stickyExpanded}
               allocationTotal={allocationTotal}
               allocationValid={allocationValid}
               isValid={isValid}
@@ -348,7 +344,6 @@ interface EditViewProps {
   metrics: SettingMetrics;
   activeSetting: MeasureCareSetting;
   expandedSections: Record<string, boolean>;
-  stickyExpanded: Record<string, boolean>;
   allocationTotal: number;
   allocationValid: boolean;
   isValid: boolean;
@@ -409,7 +404,6 @@ function EditView({
   metrics,
   activeSetting,
   expandedSections,
-  stickyExpanded,
   allocationTotal,
   allocationValid,
   isValid,
