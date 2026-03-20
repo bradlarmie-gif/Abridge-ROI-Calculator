@@ -10,7 +10,7 @@ import {
   deriveEngagementContext,
   deriveSettingStage,
 } from "@/lib/measureCalculator";
-import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS } from "@/lib/measureCareSettings";
+import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getTotalAvailableMetrics } from "@/lib/measureCareSettings";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 import NarrativePanel from "@/components/measure/NarrativePanel";
 import { generateNarrative } from "@/lib/measureNarrative";
@@ -56,19 +56,12 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   const capacityKeys = ['sameDayClosure', 'lwbsRate', 'doorToDoc'];
   const revenueKeys = ['wrvuPerEncounter', 'cmi', 'denialsPer100', 'ccMccCapture', 'emLevel', 'admissionCapture'];
 
-  const enabledMap = state.enabledMetrics?.[setting] || {};
-
   for (const section of config.metricSections) {
     for (const metric of section.metrics) {
       if (!metric.hasBeforeAfter) continue;
 
-      const isEnabled = !!enabledMap[metric.key];
       const before = settingData[`${metric.key}_before`] ?? 0;
       const after = settingData[`${metric.key}_after`] ?? 0;
-      const hasData = before !== 0 || after !== 0;
-
-      if (!isEnabled && !hasData) continue;
-
       const delta = after - before;
 
       let domain = domainMap[section.key] || 'Quality';
@@ -321,6 +314,7 @@ export default function MeasureInventory({
 
   const activeRows = filteredRows.filter(r => r.status === 'active');
   const baselineRows = filteredRows.filter(r => r.status === 'baseline');
+  const notMeasuringRows = filteredRows.filter(r => r.status === 'not-measuring');
   const activeCount = activeRows.length;
   const baselineCount = baselineRows.length;
 
@@ -333,13 +327,26 @@ export default function MeasureInventory({
     return groups;
   }, [activeRows]);
 
+  const totalAvailable = useMemo(() => {
+    let total = 0;
+    for (const s of activeSettings) {
+      total += getTotalAvailableMetrics(s);
+    }
+    total += (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
+    return total;
+  }, [activeSettings, state.surveyMetrics]);
+
+  const measuredCount = useMemo(() => {
+    return allMetricRows.filter(r => r.status === 'active' || r.status === 'baseline').length;
+  }, [allMetricRows]);
+
   const signalCounts = useMemo(() => {
     const a = allMetricRows.filter(r => r.status === 'active').length;
     const b = allMetricRows.filter(r => r.status === 'baseline').length;
     const n = allMetricRows.filter(r => r.status === 'not-measuring').length;
-    const t = allMetricRows.length;
+    const t = totalAvailable;
     return { active: a, baseline: b, notMeasuring: n, total: t };
-  }, [allMetricRows]);
+  }, [allMetricRows, totalAvailable]);
 
   const totalProviders = state.deployment.providers;
   const totalEncounters = state.deployment.totalEncounters;
@@ -414,8 +421,10 @@ export default function MeasureInventory({
                 <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Settings</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">{signalCounts.active}</p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Metrics Active</p>
+                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">
+                  {measuredCount}<span className="text-base text-white/40 font-normal">/{totalAvailable}</span>
+                </p>
+                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Measuring</p>
               </div>
             </div>
           </div>
@@ -599,6 +608,43 @@ export default function MeasureInventory({
             <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] overflow-hidden px-4">
               {baselineRows.map((row, i) => (
                 <BaselineRow key={`${row.setting}-${row.label}`} row={row} index={i} reducedMotion={!!prefersReducedMotion} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {notMeasuringRows.length > 0 && (
+          <motion.div
+            className="mb-6"
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.6, duration: 0.4 }}
+            data-testid="not-measuring-section"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1 h-4 rounded-full bg-[#E5E5E5]" />
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#CCCCCC]">
+                Not Yet Measuring
+              </p>
+              <span className="text-[10px] text-[#CCCCCC] ml-1">{notMeasuringRows.length} available metric{notMeasuringRows.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] overflow-hidden px-4">
+              {notMeasuringRows.map((row, i) => (
+                <motion.div
+                  key={`${row.setting}-${row.label}`}
+                  className="flex items-center gap-3 py-2.5 border-b border-[#F5F5F5] last:border-b-0"
+                  initial={prefersReducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 0.5 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.6 + i * 0.03, duration: 0.3 }}
+                  data-testid={`metric-row-not-measuring-${row.label.toLowerCase().replace(/\s/g, '-')}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full border border-[#E0E0E0] flex-shrink-0" />
+                  <span className="text-sm text-[#BBBBBB] flex-1 min-w-0">{row.label}</span>
+                  {selectedSetting === 'all' && activeSettings.length > 1 && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#F5F0EB] text-[#CCCCCC] font-medium flex-shrink-0">{settingLabels[row.setting]}</span>
+                  )}
+                  <span className="text-[10px] text-[#CCCCCC] italic">Start measuring this</span>
+                </motion.div>
               ))}
             </div>
           </motion.div>

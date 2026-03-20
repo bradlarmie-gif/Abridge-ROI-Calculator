@@ -874,6 +874,17 @@ function getDefensibleClaims(
   }
 }
 
+const SETTING_AVAILABLE_METRIC_COUNTS: Record<MeasureCareSetting, number> = {
+  outpatient: 6,
+  ed: 6,
+  inpatient: 7,
+  nursing: 7,
+};
+
+function getSettingTotalAvailableMetrics(setting: MeasureCareSetting): number {
+  return SETTING_AVAILABLE_METRIC_COUNTS[setting] || 6;
+}
+
 export function deriveSettingStage(
   state: MeasureState,
   setting: MeasureCareSetting,
@@ -906,7 +917,8 @@ export function deriveSettingStage(
     sm.label.trim() && sm.before > 0 && sm.after > 0
   ).length;
   const totalEvidenced = evidencedMetrics + evidencedSurvey;
-  const coverageRatio = totalEvidenced > 0 ? Math.min(totalEvidenced / 8, 1) : 0;
+  const totalAvailable = getSettingTotalAvailableMetrics(setting) + (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
+  const coverageRatio = totalAvailable > 0 ? Math.min(totalEvidenced / totalAvailable, 1) : 0;
 
   let maturityStage: MaturityStage;
   let maturityLabel: string;
