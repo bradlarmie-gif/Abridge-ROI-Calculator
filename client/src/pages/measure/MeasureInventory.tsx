@@ -292,6 +292,14 @@ export default function MeasureInventory({
     return groups;
   }, [activeRows]);
 
+  const signalCounts = useMemo(() => {
+    const a = allMetricRows.filter(r => r.status === 'active').length;
+    const b = allMetricRows.filter(r => r.status === 'baseline').length;
+    const n = allMetricRows.filter(r => r.status === 'not-measuring').length;
+    const t = allMetricRows.length;
+    return { active: a, baseline: b, notMeasuring: n, total: t };
+  }, [allMetricRows]);
+
   const totalProviders = state.deployment.providers;
   const totalEncounters = state.deployment.totalEncounters;
   const nativeData = state.abridgeNativeData || {};
@@ -349,7 +357,7 @@ export default function MeasureInventory({
           data-testid="stats-header"
         >
           <div className="flex items-center gap-6">
-            <SignalRing active={allMetricRows.filter(r => r.status === 'active').length} baseline={allMetricRows.filter(r => r.status === 'baseline').length} total={allMetricRows.length} />
+            <SignalRing active={signalCounts.active} baseline={signalCounts.baseline} total={signalCounts.total} />
 
             <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
@@ -365,7 +373,7 @@ export default function MeasureInventory({
                 <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Settings</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">{allMetricRows.filter(r => r.status === 'active').length}</p>
+                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">{signalCounts.active}</p>
                 <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Metrics Active</p>
               </div>
             </div>
@@ -375,26 +383,26 @@ export default function MeasureInventory({
             <div className="flex items-center gap-4 text-[11px]">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
-                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'active').length} Active</span>
+                <span className="text-white/60">{signalCounts.active} Active</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#F5C6B3]" />
-                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'baseline').length} Baseline</span>
+                <span className="text-white/60">{signalCounts.baseline} Baseline</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-white/20" />
-                <span className="text-white/60">{allMetricRows.filter(r => r.status === 'not-measuring').length} Not yet</span>
+                <span className="text-white/60">{signalCounts.notMeasuring} Not yet</span>
               </div>
               <div className="ml-auto">
                 <div className="flex h-1.5 rounded-full overflow-hidden w-28">
-                  {allMetricRows.filter(r => r.status === 'active').length > 0 && (
-                    <div className="bg-[#EA2C00]" style={{ width: `${(allMetricRows.filter(r => r.status === 'active').length / allMetricRows.length) * 100}%` }} />
+                  {signalCounts.active > 0 && (
+                    <div className="bg-[#EA2C00]" style={{ width: `${(signalCounts.active / signalCounts.total) * 100}%` }} />
                   )}
-                  {allMetricRows.filter(r => r.status === 'baseline').length > 0 && (
-                    <div className="bg-[#F5C6B3]" style={{ width: `${(allMetricRows.filter(r => r.status === 'baseline').length / allMetricRows.length) * 100}%` }} />
+                  {signalCounts.baseline > 0 && (
+                    <div className="bg-[#F5C6B3]" style={{ width: `${(signalCounts.baseline / signalCounts.total) * 100}%` }} />
                   )}
-                  {allMetricRows.filter(r => r.status === 'not-measuring').length > 0 && (
-                    <div className="bg-white/20" style={{ width: `${(allMetricRows.filter(r => r.status === 'not-measuring').length / allMetricRows.length) * 100}%` }} />
+                  {signalCounts.notMeasuring > 0 && (
+                    <div className="bg-white/20" style={{ width: `${(signalCounts.notMeasuring / signalCounts.total) * 100}%` }} />
                   )}
                 </div>
               </div>
