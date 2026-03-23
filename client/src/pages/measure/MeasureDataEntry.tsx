@@ -167,32 +167,32 @@ export default function MeasureDataEntry({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-5 md:py-12">
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-5 md:mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <h1
-            className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
+            className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 md:mb-3 font-abridge uppercase tracking-tight"
             data-testid="text-page-title"
           >
             Partner Profile
           </h1>
-          <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
+          <p className="text-sm md:text-base text-[#666666]" data-testid="text-page-subtitle">
             Tell us about your Abridge deployment.
           </p>
         </motion.div>
 
         <motion.div
-          className="mb-6"
+          className="mb-4 md:mb-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
-          <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px] mb-3">Care Settings Live on Abridge</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="pills-care-settings">
+          <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px] mb-2 md:mb-3">Care Settings Live on Abridge</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3" data-testid="pills-care-settings">
             {SETTING_OPTIONS.map(opt => {
               const isActive = activeSettings.includes(opt.key);
               const Icon = opt.icon;
@@ -200,18 +200,18 @@ export default function MeasureDataEntry({
                 <button
                   key={opt.key}
                   onClick={() => toggleSetting(opt.key)}
-                  className={`flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-xl border-2 transition-all text-center
+                  className={`flex flex-col items-center gap-1 md:gap-1.5 px-2 md:px-3 py-2.5 md:py-3.5 rounded-xl border-2 transition-all text-center
                     ${isActive
                       ? 'bg-[#FAF8F5] border-[#EA2C00] shadow-sm'
                       : 'bg-white border-[#E5E5E5] hover:border-[#CCCCCC]'
                     }`}
                   data-testid={`pill-${opt.key}`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#EA2C00]' : 'text-[#BBBBBB]'}`} />
-                  <span className={`text-sm font-semibold ${isActive ? 'text-[#1A1A1A]' : 'text-[#888888]'}`}>
+                  <Icon className={`w-4 h-4 md:w-5 md:h-5 ${isActive ? 'text-[#EA2C00]' : 'text-[#BBBBBB]'}`} />
+                  <span className={`text-xs md:text-sm font-semibold ${isActive ? 'text-[#1A1A1A]' : 'text-[#888888]'}`}>
                     {opt.label}
                   </span>
-                  <span className="text-[10px] text-[#AAAAAA]">{opt.description}</span>
+                  <span className="text-[10px] text-[#AAAAAA] hidden md:block">{opt.description}</span>
                   {isActive && (
                     <span className="text-[9px] font-semibold text-[#EA2C00] uppercase">Active</span>
                   )}
@@ -222,18 +222,18 @@ export default function MeasureDataEntry({
         </motion.div>
 
         <motion.div
-          className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
               Organization
             </span>
           </div>
-          <div className="h-px bg-[#E8E2DA] mb-4" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div className="space-y-1.5 sm:col-span-2">
               <label className="text-sm font-medium text-black">Organization Name</label>
               <input
@@ -282,7 +282,7 @@ export default function MeasureDataEntry({
                 />
               )}
               {state.goLiveDate && (
-                <p className="text-[10px] text-[#BBBBBB]">Auto-calculated from go-live date</p>
+                <p className="text-[10px] text-[#BBBBBB] hidden md:block">Auto-calculated from go-live date</p>
               )}
             </div>
           </div>
@@ -291,13 +291,13 @@ export default function MeasureDataEntry({
         <AnimatePresence>
           {hasProviderSettings && (
             <motion.div
-              className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+              className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3 md:mb-4">
                 <Stethoscope className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
                   Provider Deployment
@@ -308,8 +308,8 @@ export default function MeasureDataEntry({
                   </span>
                 )}
               </div>
-              <div className="h-px bg-[#E8E2DA] mb-4" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">{providerLabel} on Abridge</label>
                   <FormattedNumberInput
@@ -342,7 +342,7 @@ export default function MeasureDataEntry({
                   <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-utilization">
                     {state.deployment.totalProviders > 0 ? Math.round((state.deployment.providers / state.deployment.totalProviders) * 100) : 0}%
                   </div>
-                  <p className="text-[10px] text-[#BBBBBB]">{providerLabel} on Abridge / Total {providerLabel}</p>
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">{providerLabel} on Abridge / Total {providerLabel}</p>
                 </div>
               </div>
             </motion.div>
@@ -352,20 +352,20 @@ export default function MeasureDataEntry({
         <AnimatePresence>
           {hasNursing && (
             <motion.div
-              className="rounded-xl p-5 mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+              className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3 md:mb-4">
                 <BedDouble className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
                   Nursing Deployment
                 </span>
               </div>
-              <div className="h-px bg-[#E8E2DA] mb-4" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">Units Live</label>
                   <FormattedNumberInput
@@ -374,7 +374,7 @@ export default function MeasureDataEntry({
                     className="h-10 bg-white border-[#E5E5E5] text-right"
                     data-testid="input-units-live"
                   />
-                  <p className="text-[10px] text-[#BBBBBB]">Number of nursing units on Abridge</p>
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Number of nursing units on Abridge</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">Staffed Beds</label>
@@ -434,18 +434,18 @@ export default function MeasureDataEntry({
         </AnimatePresence>
 
         <motion.div
-          className="rounded-xl bg-white border border-[#E5E5E5] p-5 mb-5"
+          className="rounded-xl bg-white border border-[#E5E5E5] p-3.5 md:p-5 mb-3.5 md:mb-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
           data-testid="section-abridge-native"
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
             <Sparkles className="w-4 h-4 text-[#EA2C00]" />
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
           </div>
-          <p className="text-[11px] text-[#999999] mb-4">Optional. If you have access to Abridge analytics, enter these platform-native metrics.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <p className="text-[11px] text-[#999999] mb-3 md:mb-4">Optional. If you have access to Abridge analytics, enter these platform-native metrics.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             {ABRIDGE_NATIVE_METRICS.map((metric) => (
               <div key={metric.key} className="space-y-1.5">
                 <label className="text-sm font-medium text-black">{metric.label}</label>
@@ -465,14 +465,14 @@ export default function MeasureDataEntry({
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">{metric.suffix}</span>
                   )}
                 </div>
-                {metric.description && <p className="text-[10px] text-[#BBBBBB]">{metric.description}</p>}
+                {metric.description && <p className="text-[10px] text-[#BBBBBB] hidden md:block">{metric.description}</p>}
               </div>
             ))}
           </div>
         </motion.div>
 
         <motion.div
-          className="max-w-[480px] mx-auto text-center mt-8"
+          className="max-w-[480px] mx-auto text-center mt-5 md:mt-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
