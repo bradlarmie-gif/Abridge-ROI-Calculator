@@ -99,6 +99,31 @@ export default function MeasureMetricSelection({
     return { totalAvailable: totalAvailable + validSurvey, totalEnabled: totalEnabled + validSurvey };
   }, [activeSettings, state.enabledMetrics, state.surveyMetrics]);
 
+  const nudgeText = useMemo(() => {
+    if (totalStats.totalEnabled === 0) return null;
+    const activeDomainKeys = new Set<string>();
+    let totalDomainKeys = new Set<string>();
+    for (const s of activeSettings) {
+      const domains = getSettingDomains(s);
+      const enabledMap = state.enabledMetrics?.[s] || {};
+      const config = CARE_SETTING_CONFIGS[s];
+      for (const domain of domains) {
+        totalDomainKeys.add(domain.key);
+        const section = config.metricSections.find(sec => sec.key === domain.key);
+        const hasEnabledMetric = section?.metrics.some(m => m.hasBeforeAfter && enabledMap[m.key]);
+        const hasSurveyMetric = (state.surveyMetrics || []).some(
+          sm => sm.setting === s && sm.label.trim() && (sm.domain || '').toLowerCase() === domain.key
+        );
+        if (hasEnabledMetric || hasSurveyMetric) activeDomainKeys.add(domain.key);
+      }
+    }
+    const active = activeDomainKeys.size;
+    const total = totalDomainKeys.size;
+    if (active >= total) return 'Full domain coverage — strongest defensible position';
+    if (active >= 2) return `Tracking across ${active} domains — your data story is getting stronger`;
+    return 'Measuring across more domains strengthens your story';
+  }, [activeSettings, state.enabledMetrics, state.surveyMetrics, totalStats.totalEnabled]);
+
   const addSurveyMetric = useCallback((setting: MeasureCareSetting, domainKey: string) => {
     const domainLabel = domainKey.charAt(0).toUpperCase() + domainKey.slice(1);
     const newMetric: SurveyMetric = {
@@ -174,6 +199,11 @@ export default function MeasureMetricSelection({
           <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-enabled-count">
             {totalStats.totalEnabled} metrics selected
           </span>
+          {nudgeText && (
+            <p className="text-xs text-[#999999] mt-1" data-testid="text-nudge">
+              {nudgeText}
+            </p>
+          )}
         </motion.div>
 
         {activeSettings.map((setting, settingIdx) => {
