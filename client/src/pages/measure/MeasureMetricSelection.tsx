@@ -200,7 +200,7 @@ export default function MeasureMetricSelection({
             {totalStats.totalEnabled} metrics selected
           </span>
           {nudgeText && (
-            <p className="text-xs text-[#999999] mt-1" data-testid="text-nudge">
+            <p className="text-xs text-[#9A9590] mt-1" data-testid="text-nudge">
               {nudgeText}
             </p>
           )}
