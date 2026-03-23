@@ -99,8 +99,6 @@ export default function MeasureMetricSelection({
     return { totalAvailable: totalAvailable + validSurvey, totalEnabled: totalEnabled + validSurvey };
   }, [activeSettings, state.enabledMetrics, state.surveyMetrics]);
 
-  const gapCount = totalStats.totalAvailable - totalStats.totalEnabled;
-
   const addSurveyMetric = useCallback((setting: MeasureCareSetting, domainKey: string) => {
     const domainLabel = domainKey.charAt(0).toUpperCase() + domainKey.slice(1);
     const newMetric: SurveyMetric = {
@@ -168,32 +166,14 @@ export default function MeasureMetricSelection({
         </motion.div>
 
         <motion.div
-          className="flex items-center justify-between mb-4 px-1"
+          className="mb-4 px-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-enabled-count">
-              {totalStats.totalEnabled} metrics selected
-            </span>
-            {gapCount > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFF0EC] text-[#EA2C00] font-medium" data-testid="text-gap-count">
-                {gapCount} not tracking
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-1.5 rounded-full overflow-hidden w-24 bg-[#E5E5E5]">
-              <div
-                className="bg-[#EA2C00] rounded-full transition-all duration-500"
-                style={{ width: `${totalStats.totalAvailable > 0 ? (totalStats.totalEnabled / totalStats.totalAvailable) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="text-[11px] text-[#888888]">
-              {totalStats.totalEnabled}/{totalStats.totalAvailable}
-            </span>
-          </div>
+          <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-enabled-count">
+            {totalStats.totalEnabled} metrics selected
+          </span>
         </motion.div>
 
         {activeSettings.map((setting, settingIdx) => {
