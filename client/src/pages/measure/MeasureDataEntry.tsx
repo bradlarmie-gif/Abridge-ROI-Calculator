@@ -233,8 +233,8 @@ export default function MeasureDataEntry({
             </span>
           </div>
           <div className="h-px bg-[#E8E2DA] mb-4" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5 col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5 sm:col-span-2">
               <label className="text-sm font-medium text-black">Organization Name</label>
               <input
                 type="text"
@@ -309,7 +309,7 @@ export default function MeasureDataEntry({
                 )}
               </div>
               <div className="h-px bg-[#E8E2DA] mb-4" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">{providerLabel} on Abridge</label>
                   <FormattedNumberInput
@@ -365,7 +365,7 @@ export default function MeasureDataEntry({
                 </span>
               </div>
               <div className="h-px bg-[#E8E2DA] mb-4" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">Units Live</label>
                   <FormattedNumberInput
@@ -445,7 +445,7 @@ export default function MeasureDataEntry({
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
           </div>
           <p className="text-[11px] text-[#999999] mb-4">Optional. If you have access to Abridge analytics, enter these platform-native metrics.</p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {ABRIDGE_NATIVE_METRICS.map((metric) => (
               <div key={metric.key} className="space-y-1.5">
                 <label className="text-sm font-medium text-black">{metric.label}</label>
