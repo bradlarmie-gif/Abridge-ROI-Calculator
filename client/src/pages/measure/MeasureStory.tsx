@@ -158,14 +158,14 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
   const gapClosers = useMemo(() => {
     const items: string[] = [];
-    if (state.deployment.utilizationRate < 60) {
+    if (state.deployment.encounterCoverageRate < 60) {
       items.push('Deepen adoption');
     }
     const noDataDomains = Object.entries(domainStatus)
       .filter(([, s]) => s === 'no-data')
       .map(([d]) => d.charAt(0).toUpperCase() + d.slice(1));
     noDataDomains.forEach(d => { if (items.length < 2) items.push(`Measure ${d}`); });
-    const totalProviders = state.deployment.totalProviders || state.deployment.providers;
+    const totalProviders = state.deployment.totalProviders > 0 ? state.deployment.totalProviders : state.deployment.providers;
     if (totalProviders > state.deployment.providers && items.length < 2) {
       items.push(`Expand to ${totalProviders} providers`);
     }
@@ -188,7 +188,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <NarrativePanel narrative={narrative} />
 
@@ -220,7 +220,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               <span className="text-sm font-normal text-white/40"> / year</span>
             </p>
             <p className="text-xs text-white/40 mb-4">
-              {months} months of deployment data, {state.deployment.providers} {isNursing ? 'nurses' : 'providers'}, {formatNumber(confirmed.adoptedEncounters)} encounters
+              {months} months of deployment data, {formatNumber(state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers)} MRUs across {formatNumber(state.deployment.abridgeEncounters > 0 ? state.deployment.abridgeEncounters : confirmed.adoptedEncounters)} encounters
             </p>
             <div className="mb-3">
               <DataSourceBadge source={state.dataSource} />
@@ -341,7 +341,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               >
                 <div className="p-5 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
                   <p>
-                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} {"\u00D7"} {formatNumber(Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100)))} Abridge-documented {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"}.
+                    <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith)} min saved per {isNursing ? "shift" : isInpatient ? "discharge" : "encounter"} {"\u00D7"} {formatNumber(state.deployment.abridgeEncounters > 0 ? state.deployment.abridgeEncounters : Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100)))} Abridge-documented {isNursing ? "shifts" : isInpatient ? "discharges" : "encounters"} by {formatNumber(state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers)} monthly recording users.
                   </p>
                   <p>
                     <strong className="text-[#1A1A1A]">Allocation:</strong> Fixed 50% efficiency / 30% capacity / 20% wellbeing allocation applied to recovered time. Efficiency hours valued at ${state.calibration.otHourlyRate}/hr. Wellbeing hours shown as time returned, not dollarized.
@@ -362,7 +362,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     {state.dataSource === 'analytics' ? 'Values sourced from EHR/analytics pull.' : state.dataSource === 'benchmark' ? 'Values sourced from Abridge analytics platform.' : 'Values are team estimates based on observation.'}
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes {state.expansionTargets?.targetAdoption ?? 80}% utilization. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen targets closing the MRU gap ({formatNumber(state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers)} MRUs of {formatNumber(state.deployment.liveProviders !== undefined ? state.deployment.liveProviders : state.deployment.providers)} live) and reaching {state.expansionTargets?.targetAdoption ?? 80}% encounter coverage. Expand based on per-{isNursing ? "nurse" : "provider"} economics applied to {expansion.expandProviders} {isNursing ? "nurses" : "providers"}.
                   </p>
                 </div>
               </motion.div>

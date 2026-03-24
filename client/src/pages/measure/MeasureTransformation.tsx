@@ -328,7 +328,7 @@ export default function MeasureTransformation({
           </motion.div>
         )}
 
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={mode !== 'present' ? state.deployment.organizationName : undefined} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={mode !== 'present' ? state.deployment.organizationName : undefined} deployment={state.deployment} />
 
         <AbridgeFootprintRow nativeData={state.abridgeNativeData} />
 

@@ -40,6 +40,29 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.abridgeNativeData) {
         parsed.abridgeNativeData = {};
       }
+      if (parsed.deployment) {
+        if (parsed.deployment.liveProviders === undefined) {
+          parsed.deployment.liveProviders = parsed.deployment.providers || 0;
+        }
+        if (parsed.deployment.mruProviders === undefined) {
+          parsed.deployment.mruProviders = parsed.deployment.providers || 0;
+        }
+        if (parsed.deployment.abridgeEncounters === undefined) {
+          parsed.deployment.abridgeEncounters = parsed.deployment.totalEncounters > 0
+            ? Math.round(parsed.deployment.totalEncounters * (parsed.deployment.utilizationRate / 100))
+            : 0;
+        }
+        if (parsed.deployment.encounterCoverageRate === undefined) {
+          parsed.deployment.encounterCoverageRate = parsed.deployment.totalEncounters > 0 && parsed.deployment.abridgeEncounters > 0
+            ? Math.round((parsed.deployment.abridgeEncounters / parsed.deployment.totalEncounters) * 100)
+            : parsed.deployment.utilizationRate;
+        }
+        if (parsed.deployment.mruActivationRate === undefined) {
+          parsed.deployment.mruActivationRate = parsed.deployment.liveProviders > 0
+            ? Math.round((parsed.deployment.mruProviders / parsed.deployment.liveProviders) * 100)
+            : 0;
+        }
+      }
       return parsed as MeasureState;
     }
     return null;

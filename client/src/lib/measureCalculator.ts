@@ -8,11 +8,15 @@ export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 export interface MeasureDeployment {
   organizationName: string;
   providers: number;
+  liveProviders: number;
+  mruProviders: number;
   totalProviders: number;
   totalEncounters: number;
   abridgeEncounters: number;
   nonAbridgeEncounters: number;
   utilizationRate: number;
+  encounterCoverageRate: number;
+  mruActivationRate: number;
   monthsOnAbridge: number;
 }
 
@@ -125,11 +129,15 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   deployment: {
     organizationName: '',
     providers: 0,
+    liveProviders: 0,
+    mruProviders: 0,
     totalProviders: 0,
     totalEncounters: 0,
     abridgeEncounters: 0,
     nonAbridgeEncounters: 0,
     utilizationRate: 0,
+    encounterCoverageRate: 0,
+    mruActivationRate: 0,
     monthsOnAbridge: 0,
   },
   documentationQuality: {
@@ -235,7 +243,9 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const workOutsideDelta = timeEfficiency.workOutsideWithout - timeEfficiency.workOutsideWith;
   const workOutsideDeltaPercent = (workOutsideDelta / timeEfficiency.workOutsideWithout) * 100;
   
-  const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+  const adoptedEncounters = deployment.abridgeEncounters > 0
+    ? deployment.abridgeEncounters
+    : Math.round(deployment.totalEncounters * (deployment.encounterCoverageRate / 100));
   const totalHoursSaved = (timeInNotesDelta * adoptedEncounters) / 60;
   
   const hardSavingsHours = totalHoursSaved * (allocation.hardSavingsPercent / 100);
@@ -246,7 +256,8 @@ export function calculateMeasureResults(state: MeasureState): MeasureResults {
   const capacityValue = capacityVisits * calibration.revenuePerVisit;
   
   const qualityHours = totalHoursSaved * (allocation.qualityOfLifePercent / 100);
-  const qualityHoursPerWeek = deployment.providers > 0 ? qualityHours / deployment.providers / (deployment.monthsOnAbridge * 4.33) : 0;
+  const activeMRU = deployment.mruProviders !== undefined ? deployment.mruProviders : deployment.providers;
+  const qualityHoursPerWeek = activeMRU > 0 ? qualityHours / activeMRU / (deployment.monthsOnAbridge * 4.33) : 0;
   
   // Attribution range is 50-75%; calculator uses conservative floor (0.50).
   // Display pages show the full 0.50–0.75 range for transparency.
@@ -452,7 +463,7 @@ export function getMonthsFromGoLive(goLiveDate: string | null, fallback: number)
 
 export function deriveEngagementContext(state: MeasureState): EngagementContext {
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
-  const util = state.deployment.utilizationRate;
+  const util = state.deployment.encounterCoverageRate;
   const setting = state.careSetting || 'outpatient';
   const domainStatus = computeDomainStatus(state);
   const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
@@ -560,21 +571,21 @@ export function getDefaultScenarios(state: MeasureState): {
 
   return {
     conservative: {
-      adoptionRate: state.deployment.utilizationRate,
+      adoptionRate: state.deployment.encounterCoverageRate,
       attributionRate: 50,
       providers: state.deployment.providers,
       encountersPerProvider: baseEncounters,
     },
     typical: {
-      adoptionRate: Math.min(75, Math.max(state.deployment.utilizationRate + 15, 60)),
+      adoptionRate: Math.min(75, Math.max(state.deployment.encounterCoverageRate + 15, 60)),
       attributionRate: 62,
-      providers: state.deployment.totalProviders || state.deployment.providers,
+      providers: state.deployment.totalProviders > 0 ? state.deployment.totalProviders : state.deployment.providers,
       encountersPerProvider: baseEncounters,
     },
     optimistic: {
       adoptionRate: 90,
       attributionRate: 75,
-      providers: state.deployment.totalProviders || state.deployment.providers,
+      providers: state.deployment.totalProviders > 0 ? state.deployment.totalProviders : state.deployment.providers,
       encountersPerProvider: baseEncounters,
     },
   };
@@ -675,7 +686,8 @@ export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
   const workforceValue = efficiencyHours * cal.otHourlyRate * annualFactor;
 
   const qualityHours = totalHoursSaved * 0.3;
-  const qualityHoursPerWeek = dep.providers > 0 ? qualityHours / dep.providers / Math.max(dep.monthsOnAbridge, 1) / 4.33 : 0;
+  const settingMRU = dep.mruProviders !== undefined ? dep.mruProviders : dep.providers;
+  const qualityHoursPerWeek = settingMRU > 0 ? qualityHours / settingMRU / Math.max(dep.monthsOnAbridge, 1) / 4.33 : 0;
 
   const wrvuLift = dq.wrvuWith - dq.wrvuWithout;
   const isInpatient = careSetting === 'inpatient';
@@ -894,7 +906,7 @@ export function deriveSettingStage(
   setting: MeasureCareSetting,
 ): SettingStage {
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
-  const util = state.deployment.utilizationRate;
+  const util = state.deployment.encounterCoverageRate;
   const domainStatus = computeDomainStatus(state);
   const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated');
   const activeDomainCount = activeDomains.length;
@@ -990,23 +1002,30 @@ export function calculateExpansionResults(
   targetProviders?: number,
 ): ExpansionResults {
   const { deployment } = state;
-  const currentRate = Math.max(deployment.utilizationRate, 1) / 100;
+  const currentMRU = deployment.mruProviders !== undefined ? deployment.mruProviders : deployment.providers;
+  const currentLive = deployment.liveProviders !== undefined ? deployment.liveProviders : deployment.providers;
+  const currentCoverageRate = Math.max(deployment.encounterCoverageRate, 1) / 100;
   const deepenRate = (targetAdoption ?? 80) / 100;
 
-  const currentAdoptedEncounters = Math.round(deployment.totalEncounters * currentRate);
+  const currentAdoptedEncounters = Math.round(deployment.totalEncounters * currentCoverageRate);
   const currentNonAdoptedEncounters = deployment.totalEncounters - currentAdoptedEncounters;
 
   const deepenEncounters = Math.round(deployment.totalEncounters * deepenRate);
-  const deepenScale = currentRate > 0 ? deepenRate / currentRate : 1;
+  const rawMruGapScale = currentMRU > 0 && currentLive > currentMRU
+    ? currentLive / currentMRU
+    : (currentMRU === 0 && currentLive > 0 ? Math.min(currentLive, 5) : 1);
+  const mruGapScale = Math.min(rawMruGapScale, 5);
+  const encounterScale = currentCoverageRate > 0 ? deepenRate / currentCoverageRate : 1;
+  const deepenScale = mruGapScale * encounterScale;
   const deepenHoursSaved = totalHoursSaved * deepenScale;
   const deepenAdditionalValueLow = totalValueLow * (deepenScale - 1);
   const deepenAdditionalValueHigh = totalValueHigh * (deepenScale - 1);
   const deepenAdditionalValue = (deepenAdditionalValueLow + deepenAdditionalValueHigh) / 2;
 
   const expandTarget = targetProviders != null
-    ? Math.max(targetProviders, deployment.providers)
-    : Math.max(deployment.totalProviders, deployment.providers);
-  const expandScale = deployment.providers > 0 ? expandTarget / deployment.providers : 1;
+    ? Math.max(targetProviders, currentLive)
+    : Math.max(deployment.totalProviders, currentLive);
+  const expandScale = currentLive > 0 ? expandTarget / currentLive : 1;
   const expandValueLow = totalValueLow * expandScale;
   const expandValueHigh = totalValueHigh * expandScale;
 
@@ -1017,11 +1036,11 @@ export function calculateExpansionResults(
   const combinedValueHigh = totalValueHigh * combinedScale;
 
   const avgValue = (totalValueLow + totalValueHigh) / 2;
-  const perProviderValue = deployment.providers > 0 ? avgValue / deployment.providers : 0;
+  const perProviderValue = currentMRU > 0 ? avgValue / currentMRU : 0;
   const perEncounterValueLow = deployment.totalEncounters > 0 ? totalValueLow / deployment.totalEncounters : 0;
   const perEncounterValueHigh = deployment.totalEncounters > 0 ? totalValueHigh / deployment.totalEncounters : 0;
-  const hoursPerProvider = deployment.providers > 0 ? totalHoursSaved / deployment.providers : 0;
-  const remainingProviders = Math.max(0, expandTarget - deployment.providers);
+  const hoursPerProvider = currentMRU > 0 ? totalHoursSaved / currentMRU : 0;
+  const remainingProviders = Math.max(0, expandTarget - currentLive);
 
   return {
     currentAdoptedEncounters,

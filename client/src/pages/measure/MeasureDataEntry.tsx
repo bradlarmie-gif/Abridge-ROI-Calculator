@@ -78,10 +78,18 @@ export default function MeasureDataEntry({
     value: (typeof state.deployment)[K],
   ) => {
     const updated = { ...state.deployment, [key]: value };
-    if (key === "providers" || key === "totalProviders") {
-      const p = key === "providers" ? (value as number) : updated.providers;
-      const t = key === "totalProviders" ? (value as number) : updated.totalProviders;
-      updated.utilizationRate = t > 0 ? Math.round((p / t) * 100) : 0;
+    if (key === "totalProviders" || key === "liveProviders" || key === "mruProviders") {
+      const total = key === "totalProviders" ? (value as number) : updated.totalProviders;
+      const live = key === "liveProviders" ? (value as number) : updated.liveProviders;
+      const mru = key === "mruProviders" ? (value as number) : updated.mruProviders;
+      updated.utilizationRate = total > 0 ? Math.round((live / total) * 100) : 0;
+      updated.mruActivationRate = live > 0 ? Math.round((mru / live) * 100) : 0;
+      updated.providers = live;
+    }
+    if (key === "totalEncounters" || key === "abridgeEncounters") {
+      const total = key === "totalEncounters" ? (value as number) : updated.totalEncounters;
+      const abridge = key === "abridgeEncounters" ? (value as number) : updated.abridgeEncounters;
+      updated.encounterCoverageRate = total > 0 ? Math.round((abridge / total) * 100) : 0;
     }
     updateState({ deployment: updated });
   }, [state.deployment, updateState]);
@@ -98,8 +106,11 @@ export default function MeasureDataEntry({
       updates.deployment = {
         ...state.deployment,
         providers: nurseFTEs,
+        liveProviders: nurseFTEs,
+        mruProviders: nurseFTEs,
         totalProviders: totalProv,
         utilizationRate: totalProv > 0 ? Math.round((nurseFTEs / totalProv) * 100) : 0,
+        mruActivationRate: 100,
       };
     }
     updateState(updates);
@@ -133,8 +144,11 @@ export default function MeasureDataEntry({
     if (!hasNursing || hasProviderSettings) return;
     const updated = { ...state.deployment };
     updated.providers = nursingData.nurseFTEs;
+    updated.liveProviders = nursingData.nurseFTEs;
+    updated.mruProviders = nursingData.nurseFTEs;
     updated.totalProviders = updated.totalProviders > 0 ? updated.totalProviders : nursingData.nurseFTEs;
     updated.utilizationRate = updated.totalProviders > 0 ? Math.round((updated.providers / updated.totalProviders) * 100) : 0;
+    updated.mruActivationRate = 100;
     updateState({ deployment: updated });
   }, [hasNursing, hasProviderSettings, nursingData, state.deployment, updateState]);
 
@@ -143,7 +157,7 @@ export default function MeasureDataEntry({
     const hasSetting = activeSettings.length > 0;
 
     if (hasProviderSettings) {
-      if (state.deployment.providers <= 0 || state.deployment.totalProviders <= 0) return false;
+      if (state.deployment.liveProviders <= 0 || state.deployment.totalProviders <= 0) return false;
       if (state.deployment.totalEncounters <= 0) return false;
     }
 
@@ -300,7 +314,7 @@ export default function MeasureDataEntry({
               <div className="flex items-center gap-2 mb-3 md:mb-4">
                 <Stethoscope className="w-4 h-4 text-[#EA2C00]" />
                 <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
-                  Provider Deployment
+                  Provider Adoption Funnel
                 </span>
                 {activeSettings.filter(s => s !== 'nursing').length > 0 && (
                   <span className="text-[10px] text-[#AAAAAA] ml-auto">
@@ -309,16 +323,7 @@ export default function MeasureDataEntry({
                 )}
               </div>
               <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">{providerLabel} on Abridge</label>
-                  <FormattedNumberInput
-                    value={state.deployment.providers}
-                    onChange={(v) => updateDeployment("providers", v)}
-                    className="h-10 bg-white border-[#E5E5E5] text-right"
-                    data-testid="input-providers"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">Total {providerLabel} in Org</label>
                   <FormattedNumberInput
@@ -329,6 +334,66 @@ export default function MeasureDataEntry({
                   />
                 </div>
                 <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Live on Abridge</label>
+                  <FormattedNumberInput
+                    value={state.deployment.liveProviders}
+                    onChange={(v) => updateDeployment("liveProviders", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-live-providers"
+                  />
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Have access to Abridge</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Monthly Recording Users</label>
+                  <FormattedNumberInput
+                    value={state.deployment.mruProviders}
+                    onChange={(v) => updateDeployment("mruProviders", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-mru-providers"
+                  />
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Actively using each month</p>
+                </div>
+              </div>
+
+              {state.deployment.totalProviders > 0 && (
+                <div className="mt-4 pt-3 border-t border-[#E8E2DA]" data-testid="provider-funnel-visual">
+                  <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Provider Adoption</p>
+                  <div className="space-y-1.5">
+                    {[
+                      { label: `Total ${providerLabel}`, value: state.deployment.totalProviders, color: '#E8E2DA' },
+                      { label: 'Live on Abridge', value: state.deployment.liveProviders, color: '#F5C4B8' },
+                      { label: 'Monthly Recording Users', value: state.deployment.mruProviders, color: '#EA2C00' },
+                    ].map((tier) => {
+                      const pct = state.deployment.totalProviders > 0
+                        ? Math.round((tier.value / state.deployment.totalProviders) * 100)
+                        : 0;
+                      const barWidth = Math.max(pct, 2);
+                      return (
+                        <div key={tier.label} className="flex items-center gap-2">
+                          <div className="w-[100px] text-[10px] text-[#888888] text-right shrink-0">{tier.label}</div>
+                          <div className="flex-1 h-5 bg-white rounded overflow-hidden relative">
+                            <div
+                              className="h-full rounded transition-all duration-300"
+                              style={{ width: `${barWidth}%`, backgroundColor: tier.color }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-semibold text-[#1A1A1A] w-[50px] text-right">{tier.value}</span>
+                          <span className="text-[10px] text-[#AAAAAA] w-[35px] text-right">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="h-px bg-[#E8E2DA] mt-4 mb-3 md:mb-4" />
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+                  Encounter Coverage
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                <div className="space-y-1.5">
                   <label className="text-sm font-medium text-black">{encounterLabel}</label>
                   <FormattedNumberInput
                     value={state.deployment.totalEncounters}
@@ -338,13 +403,43 @@ export default function MeasureDataEntry({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">Utilization Rate</label>
-                  <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-utilization">
-                    {state.deployment.totalProviders > 0 ? Math.round((state.deployment.providers / state.deployment.totalProviders) * 100) : 0}%
+                  <label className="text-sm font-medium text-black">Abridge {encounterLabel}</label>
+                  <FormattedNumberInput
+                    value={state.deployment.abridgeEncounters}
+                    onChange={(v) => updateDeployment("abridgeEncounters", v)}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid="input-abridge-encounters"
+                  />
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Where Abridge was used</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">Coverage Rate</label>
+                  <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-encounter-coverage">
+                    {state.deployment.totalEncounters > 0 ? Math.round((state.deployment.abridgeEncounters / state.deployment.totalEncounters) * 100) : 0}%
                   </div>
-                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">{providerLabel} on Abridge / Total {providerLabel}</p>
+                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Abridge encounters / Total</p>
                 </div>
               </div>
+
+              {state.deployment.totalEncounters > 0 && state.deployment.abridgeEncounters > 0 && (
+                <div className="mt-3" data-testid="encounter-funnel-visual">
+                  <div className="flex items-center gap-2">
+                    <div className="w-[100px] text-[10px] text-[#888888] text-right shrink-0">Total</div>
+                    <div className="flex-1 h-5 bg-white rounded overflow-hidden relative">
+                      <div
+                        className="h-full rounded transition-all duration-300"
+                        style={{
+                          width: `${Math.max(Math.round((state.deployment.abridgeEncounters / state.deployment.totalEncounters) * 100), 2)}%`,
+                          backgroundColor: '#EA2C00',
+                        }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#EA2C00] w-[80px] text-right">
+                      {state.deployment.encounterCoverageRate}% covered
+                    </span>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

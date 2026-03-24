@@ -342,25 +342,34 @@ function buildVars(state: MeasureState, context: EngagementContext, confirmed: C
   const gapActions = getGapActions(state, confirmed, typical);
   const dep = state.deployment;
   const totalHours = confirmed.hoursReclaimed;
-  const hoursPerProv = dep.providers > 0 ? totalHours / dep.providers : 0;
+  const narrativeMRU = dep.mruProviders !== undefined ? dep.mruProviders : dep.providers;
+  const hoursPerProv = narrativeMRU > 0 ? totalHours / narrativeMRU : 0;
   const domainsNeeded = Math.max(0, 3 - activeDomains);
-  const deepenScale = dep.utilizationRate > 0 ? (Math.min(75, dep.utilizationRate + 15) / dep.utilizationRate) - 1 : 0;
+  const deepenScale = dep.encounterCoverageRate > 0 ? (Math.min(75, dep.encounterCoverageRate + 15) / dep.encounterCoverageRate) - 1 : 0;
   const deepenVal = ((confirmed.low + confirmed.high) / 2) * deepenScale;
-  const remainingProviders = Math.max(0, (dep.totalProviders || dep.providers) - dep.providers);
+  const remainingProviders = Math.max(0, (dep.totalProviders > 0 ? dep.totalProviders : dep.providers) - dep.providers);
   const careSetting = state.careSetting || 'outpatient';
+
+  const mruProviders = dep.mruProviders !== undefined ? dep.mruProviders : dep.providers;
+  const liveProviders = dep.liveProviders !== undefined ? dep.liveProviders : dep.providers;
+  const abridgeEncounters = dep.abridgeEncounters > 0
+    ? dep.abridgeEncounters
+    : Math.round(dep.totalEncounters * (dep.encounterCoverageRate / 100));
+  const mruGap = liveProviders - mruProviders;
+  const providerGap = Math.max(0, (dep.totalProviders > 0 ? dep.totalProviders : dep.providers) - liveProviders);
 
   return {
     months: String(months),
-    providers: String(dep.providers),
-    encounters: formatNumber(Math.round(dep.totalEncounters * (dep.utilizationRate / 100))),
+    providers: String(mruProviders),
+    encounters: formatNumber(abridgeEncounters),
     hoursReclaimed: formatNumber(totalHours),
     hoursPerProvider: hoursPerProv.toFixed(1),
     confirmedLow: formatCurrency(confirmed.low),
     confirmedHigh: formatCurrency(confirmed.high),
-    perProvider: formatCurrency(dep.providers > 0 ? (confirmed.low + confirmed.high) / 2 / dep.providers : 0),
+    perProvider: formatCurrency(mruProviders > 0 ? (confirmed.low + confirmed.high) / 2 / mruProviders : 0),
     typicalScenario: formatCurrency(typical.annualValue),
     gap: formatCurrency(gapValue),
-    currentAdoption: String(dep.utilizationRate),
+    currentAdoption: String(dep.encounterCoverageRate),
     targetAdoption: String(typical.inputs.adoptionRate),
     activeDomains: String(activeDomains),
     settingsLabel: careSetting.charAt(0).toUpperCase() + careSetting.slice(1),
@@ -374,17 +383,17 @@ function buildVars(state: MeasureState, context: EngagementContext, confirmed: C
     strongestDomainSentence: getStrongestDomainSentence(state, strongest),
     topGapAction: gapActions[0] || '',
     secondGapAction: gapActions[1] || '',
-    expansionNote: remainingProviders > 0 ? `There are ${remainingProviders} additional providers who could join the program.` : '',
-    expandNote: remainingProviders > 0 ? `${remainingProviders} additional providers are expansion-ready.` : '',
+    expansionNote: providerGap > 0 ? `There are ${providerGap} additional providers not yet live on Abridge.` : '',
+    expandNote: providerGap > 0 ? `${providerGap} additional providers are expansion-ready.` : '',
     strategicNote: activeDomains >= 3 ? 'Board-level reporting data is ready.' : '',
     domainsNeeded: String(Math.max(domainsNeeded, 1)),
     deepenValue: formatCurrency(deepenVal),
-    topNextAction: gapActions[0] || 'increasing adoption depth',
+    topNextAction: mruGap > 0 ? `activating ${mruGap} live providers who aren't yet monthly recording users` : (gapActions[0] || 'increasing adoption depth'),
     qualityMetric: getStrongestMetric(state, 'quality'),
     timeSavingsWarning: getTimeSavingsWarning(state),
     singleDomainNote: getSingleDomainNote(domainStatus, months),
     revenueNote: getRevenueSignalNote(state, domainStatus),
-    expansionAddendum: remainingProviders > 0 ? `And there are ${remainingProviders} providers not yet on Abridge \u2014 that's expansion on top of depth.` : '',
+    expansionAddendum: providerGap > 0 ? `And there are ${providerGap} providers not yet live on Abridge \u2014 that's expansion on top of depth.` : '',
   };
 }
 

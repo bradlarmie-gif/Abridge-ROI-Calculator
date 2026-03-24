@@ -111,10 +111,10 @@ function MaturityRoadmapCard({ state }: { state: MeasureState }) {
     nextActions.push('Pass the 3-month mark');
   } else if (ctx.maturityStage === 'signaling') {
     if (activeDomains < 3) nextActions.push(`Confirm trends in ${3 - activeDomains}+ more domain${3 - activeDomains > 1 ? 's' : ''} (you have ${activeDomains} active)`);
-    if (state.deployment.utilizationRate < 60) nextActions.push(`Reach 60%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    if (state.deployment.encounterCoverageRate < 60) nextActions.push(`Reach 60%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
     nextActions.push('Months 9\u201318 is the typical window');
   } else if (ctx.maturityStage === 'validated') {
-    if (state.deployment.utilizationRate < 70) nextActions.push(`Reach 70%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    if (state.deployment.encounterCoverageRate < 70) nextActions.push(`Reach 70%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
     nextActions.push('Sustain trends past 18 months');
     nextActions.push('Build board-level narrative');
   }
@@ -260,21 +260,24 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
   const isNursing = careSetting === 'nursing';
   const providerLabel = isNursing ? 'nurses' : 'providers';
 
-  const currentUtilization = state.deployment.utilizationRate;
-  const currentProviders = state.deployment.providers;
-  const totalProviders = Math.max(state.deployment.totalProviders || currentProviders, currentProviders);
+  const currentEncounterCoverage = state.deployment.encounterCoverageRate;
+  const currentLive = state.deployment.liveProviders !== undefined ? state.deployment.liveProviders : state.deployment.providers;
+  const currentMRU = state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers;
+  const totalProviders = Math.max(state.deployment.totalProviders > 0 ? state.deployment.totalProviders : currentLive, currentLive);
+  const mruGap = currentLive - currentMRU;
+  const providerGap = totalProviders - currentLive;
 
-  const [deepenTarget, setDeepenTarget] = useState(Math.min(Math.max(currentUtilization + 20, 60), 100));
+  const [deepenTarget, setDeepenTarget] = useState(Math.min(Math.max(currentEncounterCoverage + 20, 60), 100));
   const [expandTarget, setExpandTarget] = useState(totalProviders);
 
   const deepenResults = useMemo(() =>
-    calculateExpansionResults(state, confirmed.low, confirmed.high, confirmed.domains.totalHoursSaved, deepenTarget, currentProviders),
-    [state, confirmed, deepenTarget, currentProviders]
+    calculateExpansionResults(state, confirmed.low, confirmed.high, confirmed.domains.totalHoursSaved, deepenTarget, currentLive),
+    [state, confirmed, deepenTarget, currentLive]
   );
 
   const expandResults = useMemo(() =>
-    calculateExpansionResults(state, confirmed.low, confirmed.high, confirmed.domains.totalHoursSaved, currentUtilization, expandTarget),
-    [state, confirmed, currentUtilization, expandTarget]
+    calculateExpansionResults(state, confirmed.low, confirmed.high, confirmed.domains.totalHoursSaved, currentEncounterCoverage, expandTarget),
+    [state, confirmed, currentEncounterCoverage, expandTarget]
   );
 
   const combinedResults = useMemo(() =>
@@ -302,7 +305,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <NarrativePanel narrative={narrative} />
 
@@ -331,7 +334,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
             {formatSmartRange(confirmed.low, confirmed.high)} / year
           </span>
           <span className="text-xs text-[#999999]">
-            {currentProviders} {providerLabel} at {currentUtilization}% adoption
+            {formatNumber(currentMRU)} MRU / {formatNumber(currentLive)} live {providerLabel} at {currentEncounterCoverage}% encounter coverage
           </span>
           <DataSourceBadge source={state.dataSource} />
         </motion.div>
@@ -350,14 +353,24 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
               </div>
               <div>
                 <h2 className="text-sm font-bold text-[#1A1A1A]">Deepen</h2>
-                <p className="text-[10px] text-[#999999] uppercase tracking-wider">Increase utilization</p>
+                <p className="text-[10px] text-[#999999] uppercase tracking-wider">Close the MRU gap</p>
               </div>
             </div>
 
+            {mruGap > 0 && (
+              <div className="bg-white rounded-lg p-3 mb-3 border border-[#E8E2DA]" data-testid="mru-gap-callout">
+                <p className="text-xs text-[#666666]">
+                  <span className="font-semibold text-[#1A1A1A]">{formatNumber(currentLive)}</span> {providerLabel} are live but only{' '}
+                  <span className="font-semibold text-[#EA2C00]">{formatNumber(currentMRU)}</span> are monthly recording users.
+                  Closing this <span className="font-semibold">{formatNumber(mruGap)}-{providerLabel.replace(/s$/, '')}</span> gap increases value without adding a single license.
+                </p>
+              </div>
+            )}
+
             <AdoptionSlider
-              label="Utilization"
+              label="Encounter Coverage"
               value={deepenTarget}
-              min={Math.max(currentUtilization, 10)}
+              min={Math.max(currentEncounterCoverage, 10)}
               max={100}
               step={5}
               suffix="%"
@@ -383,7 +396,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
             </div>
 
             <p className="text-[10px] text-[#AAAAAA] mt-3 italic">
-              Moving from {currentUtilization}% to {deepenTarget}% adoption across existing {providerLabel}
+              Moving {currentMRU} MRUs toward {currentLive} live {providerLabel}, encounter coverage from {currentEncounterCoverage}% to {deepenTarget}%
             </p>
           </motion.div>
 
@@ -400,15 +413,25 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
               </div>
               <div>
                 <h2 className="text-sm font-bold text-[#1A1A1A]">Expand</h2>
-                <p className="text-[10px] text-[#999999] uppercase tracking-wider">Add more {providerLabel}</p>
+                <p className="text-[10px] text-[#999999] uppercase tracking-wider">Close the provider gap</p>
               </div>
             </div>
 
+            {providerGap > 0 && (
+              <div className="bg-white rounded-lg p-3 mb-3 border border-[#E8E2DA]" data-testid="provider-gap-callout">
+                <p className="text-xs text-[#666666]">
+                  <span className="font-semibold text-[#1A1A1A]">{formatNumber(currentLive)}</span> of{' '}
+                  <span className="font-semibold text-[#1A1A1A]">{formatNumber(totalProviders)}</span> {providerLabel} are live.
+                  Rolling out to the remaining <span className="font-semibold">{formatNumber(providerGap)}</span> yields additional value.
+                </p>
+              </div>
+            )}
+
             <AdoptionSlider
-              label={providerLabel.charAt(0).toUpperCase() + providerLabel.slice(1)}
+              label={`Live ${providerLabel.charAt(0).toUpperCase() + providerLabel.slice(1)}`}
               value={expandTarget}
-              min={currentProviders}
-              max={Math.max(totalProviders, currentProviders + 10)}
+              min={currentLive}
+              max={Math.max(totalProviders, currentLive + 10)}
               step={1}
               suffix=""
               onChange={setExpandTarget}
@@ -433,12 +456,12 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
             </div>
 
             <p className="text-[10px] text-[#AAAAAA] mt-3 italic">
-              Scaling from {currentProviders} to {expandTarget} {providerLabel} at current adoption
+              Scaling from {formatNumber(currentLive)} to {formatNumber(expandTarget)} live {providerLabel} at current adoption
             </p>
           </motion.div>
         </div>
 
-        {(deepenTarget > currentUtilization || expandTarget > currentProviders) && (
+        {(deepenTarget > currentEncounterCoverage || expandTarget > currentLive) && (
           <motion.div
             className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 mb-8 text-center"
             initial={{ opacity: 0, y: 16 }}

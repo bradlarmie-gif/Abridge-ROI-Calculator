@@ -82,6 +82,30 @@ function DomainStatusCard({ name, status, stakeholder }: {
   );
 }
 
+function getMetricDelta(state: MeasureState, domain: string): string | null {
+  const te = state.timeEfficiency;
+  const dq = state.documentationQuality;
+  switch (domain) {
+    case 'workforce': {
+      const d = te.timeInNotesWithout - te.timeInNotesWith;
+      return d > 0 ? `${d} min/note saved` : null;
+    }
+    case 'quality': {
+      const d = dq.emLevelWith - dq.emLevelWithout;
+      return d > 0 ? `+${d.toFixed(2)} E/M improvement` : null;
+    }
+    case 'revenue': {
+      const d = dq.wrvuWith - dq.wrvuWithout;
+      return d > 0 ? `+${d.toFixed(2)} wRVU lift` : null;
+    }
+    case 'capacity': {
+      const d = te.sameDayClosureWith - te.sameDayClosureWithout;
+      return d > 0 ? `+${d}% same-day closure` : null;
+    }
+    default: return null;
+  }
+}
+
 function getHowYouGotHere(stage: SettingStage, state: MeasureState): string {
   const domainStatus = stage.domainStatus;
   const strongest = Object.entries(domainStatus).reduce((best, [k, v]) => {
@@ -90,7 +114,7 @@ function getHowYouGotHere(stage: SettingStage, state: MeasureState): string {
   }, { key: 'workforce', p: 0 }).key;
 
   const strongestName = strongest.charAt(0).toUpperCase() + strongest.slice(1);
-  const delta = getStrongestMetricDelta(state, strongest) || 'positive trends';
+  const delta = getMetricDelta(state, strongest) || 'positive trends';
 
   const prevStage = STAGE_ORDER.indexOf(stage.maturityStage) > 0
     ? STAGE_LABELS[STAGE_ORDER[STAGE_ORDER.indexOf(stage.maturityStage) - 1]]
@@ -235,7 +259,7 @@ export default function MeasureStage({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <motion.div
           className="text-center mb-6"

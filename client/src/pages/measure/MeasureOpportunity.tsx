@@ -60,10 +60,10 @@ function MaturityStageCard({ state }: { state: MeasureState }) {
     nextActions.push('Pass the 3-month mark');
   } else if (ctx.maturityStage === 'signaling') {
     if (activeDomains < 3) nextActions.push(`Confirm trends in ${3 - activeDomains}+ more domain${3 - activeDomains > 1 ? 's' : ''} (you have ${activeDomains} active)`);
-    if (state.deployment.utilizationRate < 60) nextActions.push(`Reach 60%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    if (state.deployment.encounterCoverageRate < 60) nextActions.push(`Reach 60%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
     nextActions.push('Months 9\u201318 is the typical window');
   } else if (ctx.maturityStage === 'validated') {
-    if (state.deployment.utilizationRate < 70) nextActions.push(`Reach 70%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    if (state.deployment.encounterCoverageRate < 70) nextActions.push(`Reach 70%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
     nextActions.push('Sustain trends past 18 months');
     nextActions.push('Build board-level narrative');
   }
@@ -207,7 +207,7 @@ export default function MeasureOpportunity({
   const encounterLabel = isInpatient ? "discharges" : isNursing ? "shifts" : "encounters";
 
   const defaultTargetAdoption = 80;
-  const defaultTargetProviders = state.deployment.totalProviders || state.deployment.providers;
+  const defaultTargetProviders = state.deployment.totalProviders > 0 ? state.deployment.totalProviders : state.deployment.providers;
 
   const [targetAdoption, setTargetAdoption] = useState(
     state.expansionTargets?.targetAdoption ?? defaultTargetAdoption
@@ -236,7 +236,7 @@ export default function MeasureOpportunity({
     const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
 
     const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.utilizationRate / 100));
+    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.encounterCoverageRate / 100));
     const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
     const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
 
@@ -333,7 +333,8 @@ export default function MeasureOpportunity({
 
   const { expansion } = calc;
 
-  const adoptionAlreadyHigh = state.deployment.utilizationRate >= targetAdoption;
+  const oppCoverage = state.deployment.encounterCoverageRate;
+  const adoptionAlreadyHigh = oppCoverage >= targetAdoption;
   const canDeepen = !adoptionAlreadyHigh;
   const additionalProviders = expansion.remainingProviders;
   const canExpand = additionalProviders > 0;
@@ -351,7 +352,7 @@ export default function MeasureOpportunity({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={deriveEngagementContext(state)} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={deriveEngagementContext(state)} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <NarrativePanel narrative={narrative} />
 
@@ -391,7 +392,7 @@ export default function MeasureOpportunity({
               value={targetAdoption}
               onChange={handleAdoptionChange}
               suffix="% adoption"
-              min={Math.max(state.deployment.utilizationRate + 1, 10)}
+              min={Math.max(oppCoverage + 1, 10)}
               max={100}
               testId="input-target-adoption"
             />
@@ -401,7 +402,7 @@ export default function MeasureOpportunity({
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
-                <p className="text-sm text-[#666666]">{state.deployment.utilizationRate}% adoption</p>
+                <p className="text-sm text-[#666666]">{oppCoverage}% encounter coverage</p>
                 <p className="text-sm text-[#666666]">{formatNumber(expansion.currentAdoptedEncounters)} {encounterLabel}</p>
                 <p className="text-sm text-[#666666]">{formatNumber(Math.round(calc.totalHoursSaved))} hours saved</p>
               </div>
@@ -447,7 +448,7 @@ export default function MeasureOpportunity({
           </div>
 
           <p className="text-xs text-[#666666]">
-            This is your immediate opportunity. Moving from {state.deployment.utilizationRate}% to {targetAdoption}% adoption captures more value from {providerLabel} who already have access to Abridge.
+            This is your immediate opportunity. Moving from {oppCoverage}% to {targetAdoption}% encounter coverage captures more value from {providerLabel} who already have access to Abridge.
           </p>
         </motion.div>
 
@@ -563,7 +564,7 @@ export default function MeasureOpportunity({
             <div className="bg-[#2A2A2A] rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px]">Today</p><DataSourceBadge source={state.dataSource} /></div>
               <p className="text-sm text-[#AAAAAA] mb-1">{state.deployment.providers} {providerLabel}</p>
-              <p className="text-sm text-[#AAAAAA] mb-3">{state.deployment.utilizationRate}% adoption</p>
+              <p className="text-sm text-[#AAAAAA] mb-3">{oppCoverage}% encounter coverage</p>
               <p className="text-2xl font-bold text-white" data-testid="text-today-value">
                 {formatSmartRange(calc.totalValueLow, calc.totalValueHigh)}
               </p>

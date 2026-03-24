@@ -377,7 +377,7 @@ export default function MeasureInventory({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <motion.div
           className="text-center mb-8"

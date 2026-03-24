@@ -125,7 +125,7 @@ export default function MeasureAllocate({
 
   const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
   const timeSavedPerNote = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
+  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100));
 
   const workforceScaleLow = 75 / 50;
   const workforceScaleHigh = 90 / 50;
@@ -214,7 +214,7 @@ export default function MeasureAllocate({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} />
+        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
 
         <NarrativePanel narrative={narrative} />
 
@@ -246,7 +246,7 @@ export default function MeasureAllocate({
             {heroValue}
           </p>
           <p className="text-sm text-[#888888] mb-1">
-            Across {state.deployment.providers} {providerLabel} at {state.deployment.utilizationRate}% adoption
+            Across {formatNumber(state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers)} active {providerLabel} covering {formatNumber(state.deployment.abridgeEncounters > 0 ? state.deployment.abridgeEncounters : adoptedEncounters)} of {formatNumber(state.deployment.totalEncounters)} encounters
           </p>
           <p className="text-xs text-[#AAAAAA]">
             75{"\u2013"}90% of observed improvement attributed to Abridge
