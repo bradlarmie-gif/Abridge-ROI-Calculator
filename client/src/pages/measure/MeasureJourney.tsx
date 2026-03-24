@@ -17,6 +17,7 @@ import {
   CARE_SETTING_ORDER,
   getTotalAvailableMetrics,
   getSettingDomains,
+  ABRIDGE_NATIVE_METRICS,
   type DomainKey,
 } from "@/lib/measureCareSettings";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
@@ -343,6 +344,70 @@ function StatusBadge({ status }: { status: DomainStatus }) {
   return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500">Pre-Signal</span>;
 }
 
+function AbridgeFootprintRow({ nativeData }: { nativeData: Partial<Record<string, number>> }) {
+  const filledMetrics = ABRIDGE_NATIVE_METRICS.filter(m => (nativeData[m.key] ?? 0) > 0);
+  if (filledMetrics.length === 0) return null;
+
+  return (
+    <motion.div
+      className="flex items-center gap-4 flex-wrap mb-6 py-3 px-4 bg-[#F9F7F4] rounded-lg border border-[#E8E2DA]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.05 }}
+      data-testid="abridge-footprint-row"
+    >
+      <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#999999]">Abridge Footprint</span>
+      <span className="text-[#E5E5E5]">|</span>
+      {filledMetrics.map((m) => (
+        <div key={m.key} className="flex items-center gap-1">
+          <span className="text-sm font-semibold text-[#1A1A1A]">
+            {formatNumber(nativeData[m.key]!)}{m.suffix ? m.suffix : ''}
+          </span>
+          <span className="text-[10px] text-[#999999]">{m.label}</span>
+        </div>
+      ))}
+    </motion.div>
+  );
+}
+
+function PointComparison({ label, nonAbridge, withAbridge, unit, delay = 0 }: {
+  label: string;
+  nonAbridge: number;
+  withAbridge: number;
+  unit?: string;
+  delay?: number;
+}) {
+  if (nonAbridge === 0 && withAbridge === 0) return null;
+  const delta = withAbridge - nonAbridge;
+  const deltaPercent = nonAbridge !== 0 ? ((delta / nonAbridge) * 100) : 0;
+  const improved = delta > 0;
+  const suffix = unit || '';
+
+  return (
+    <motion.div
+      className="flex items-center gap-3 py-1.5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay, duration: 0.3 }}
+    >
+      <span className="text-sm text-[#666666] w-[140px] flex-shrink-0 truncate">{label}</span>
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <span className="text-sm font-medium text-[#999999]">{nonAbridge.toFixed(nonAbridge % 1 ? 2 : 0)}{suffix}</span>
+        <div className="flex-1 h-px bg-[#E5E5E5] relative mx-1">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#CCCCCC]" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#EA2C00]" />
+        </div>
+        <span className="text-sm font-semibold text-[#1A1A1A]">{withAbridge.toFixed(withAbridge % 1 ? 2 : 0)}{suffix}</span>
+      </div>
+      {delta !== 0 && (
+        <span className={`text-xs font-medium ${improved ? 'text-green-600' : 'text-red-500'} flex-shrink-0`}>
+          {improved ? '+' : ''}{delta.toFixed(delta % 1 ? 2 : 1)}{suffix} ({improved ? '+' : ''}{deltaPercent.toFixed(1)}%)
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
 const TREND_METRIC_OPTIONS = [
   { key: 'timeInNotes', label: 'Time in Notes', unit: 'min' },
   { key: 'wrvu', label: 'wRVU', unit: '' },
@@ -497,8 +562,8 @@ export default function MeasureJourney({
       <UnifiedHeader
         pathType="measure"
         currentStep={3}
-        totalSteps={8}
-        stepName="Journey Dashboard"
+        totalSteps={7}
+        stepName="Measurement Picture"
         onBack={onBack}
         onHome={onHome}
       />
@@ -522,6 +587,8 @@ export default function MeasureJourney({
 
         <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={mode !== 'present' ? state.deployment.organizationName : undefined} />
 
+        <AbridgeFootprintRow nativeData={state.abridgeNativeData} />
+
         <motion.div
           className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -529,7 +596,7 @@ export default function MeasureJourney({
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            Your Journey Dashboard
+            Your Measurement Picture
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
             Domain-level progress across your Abridge deployment.
@@ -714,6 +781,31 @@ export default function MeasureJourney({
               </div>
             </div>
             <TrendChart state={state} selectedMetric={trendMetric} />
+          </motion.div>
+        )}
+
+        {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
+          <motion.div
+            className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            data-testid="section-custom-metrics"
+          >
+            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-3">Additional Metrics</h3>
+            <div className="space-y-0">
+              {(state.customMetrics || [])
+                .filter((cm) => cm.label.trim())
+                .map((cm, i) => (
+                  <PointComparison
+                    key={cm.id}
+                    label={cm.label}
+                    nonAbridge={cm.before}
+                    withAbridge={cm.after}
+                    delay={0.55 + i * 0.05}
+                  />
+                ))}
+            </div>
           </motion.div>
         )}
 

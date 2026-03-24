@@ -264,7 +264,7 @@ export default function MeasureStage({
       <UnifiedHeader
         pathType="measure"
         currentStep={4}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Your Stage"
         onBack={onBack}
         onHome={onHome}

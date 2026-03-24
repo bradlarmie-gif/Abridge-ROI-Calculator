@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
-import { ArrowRight, TrendingUp, Users, Zap, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowRight, TrendingUp, Users, Zap, Check, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
+  type MeasureCareSetting,
   type DataSource,
   formatCurrency,
   formatNumber,
@@ -12,6 +13,7 @@ import {
   calculateExpansionResults,
   deriveEngagementContext,
   deriveSettingStage,
+  getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 import NarrativePanel from "@/components/measure/NarrativePanel";
@@ -73,6 +75,97 @@ function AdoptionSlider({ label, value, min, max, step, suffix, onChange }: Adop
   );
 }
 
+function SourceBadge({ source }: { source: string }) {
+  const isAbridge = source.toLowerCase().includes('abridge');
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold ${isAbridge ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
+      {isAbridge ? 'Abridge' : 'Your Systems'}
+    </span>
+  );
+}
+
+function NextChapterSection({ state }: { state: MeasureState }) {
+  const careSetting = state.careSetting || 'outpatient';
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+
+  const activeSettings = useMemo(() => {
+    if (state.activeCareSettings?.length > 0) return state.activeCareSettings;
+    const settings: MeasureCareSetting[] = [];
+    const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
+    for (const s of all) {
+      const d = state.settingData[s];
+      if (d) {
+        const hasMetricData = Object.entries(d).some(([k, v]) =>
+          (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
+        );
+        if (hasMetricData) settings.push(s);
+      }
+    }
+    if (settings.length === 0) settings.push(careSetting);
+    return settings;
+  }, [state, careSetting]);
+
+  const settingStages = useMemo(() => activeSettings.map(s => deriveSettingStage(state, s)), [state, activeSettings]);
+
+  const allMetrics = settingStages.flatMap(s => s.nextStageMetrics);
+  if (allMetrics.length === 0) return null;
+
+  return (
+    <motion.div
+      className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.35 }}
+      data-testid="section-next-chapter"
+    >
+      <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
+        Your Next Chapter
+      </p>
+      <p className="text-sm text-white/60 mb-6 leading-relaxed">
+        These are the metrics that move you to the next stage. Some come from Abridge, some from your own systems.
+      </p>
+
+      {settingStages.map(stage => {
+        if (stage.nextStageMetrics.length === 0) return null;
+        return (
+          <div key={stage.setting} className="mb-6 last:mb-0" data-testid={`next-chapter-${stage.setting}`}>
+            {activeSettings.length > 1 && (
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/40 mb-3">{stage.settingLabel}</p>
+            )}
+            <div className="bg-white/5 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2 border-b border-white/10">
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Metric</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Domain</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Source</span>
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Expected</span>
+              </div>
+              {stage.nextStageMetrics.map((m, i) => {
+                const readyNow = months >= m.expectedAtMonth;
+                return (
+                  <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2.5 border-b border-white/5 last:border-b-0 items-center">
+                    <span className="text-sm text-white/80">{m.metric}</span>
+                    <span className="text-xs text-white/50">{m.domain}</span>
+                    <SourceBadge source={m.source} />
+                    {readyNow ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                        <Check className="w-3 h-3" /> Ready now
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-white/40">
+                        <Clock className="w-3 h-3" /> Month {m.expectedAtMonth}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
 interface MeasureScenariosProps {
   state: MeasureState;
   updateState: (updates: Partial<MeasureState>) => void;
@@ -112,8 +205,6 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
     [state, confirmed, deepenTarget, expandTarget]
   );
 
-  const settingStage = useMemo(() => deriveSettingStage(state, careSetting), [state, careSetting]);
-
   const deepenValueMid = (deepenResults.combinedValueLow + deepenResults.combinedValueHigh) / 2;
   const expandValueMid = (expandResults.expandValueLow + expandResults.expandValueHigh) / 2;
   const currentValueMid = (confirmed.low + confirmed.high) / 2;
@@ -121,23 +212,13 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
   const deepenUplift = deepenValueMid - currentValueMid;
   const expandUplift = expandValueMid - currentValueMid;
 
-  const stageColors: Record<string, { bg: string; border: string; text: string; dot: string }> = {
-    unmeasured: { bg: 'bg-[#FAFAFA]', border: 'border-[#E5E5E5]', text: 'text-[#999999]', dot: 'bg-[#CCCCCC]' },
-    signaling: { bg: 'bg-[#FFF8F0]', border: 'border-[#F5DFC8]', text: 'text-[#C4762C]', dot: 'bg-[#EA8C00]' },
-    validated: { bg: 'bg-[#F0F7FF]', border: 'border-[#C8DCF5]', text: 'text-[#2C6EC4]', dot: 'bg-[#2C6EC4]' },
-    strategic: { bg: 'bg-[#F0FFF5]', border: 'border-[#C8F5D5]', text: 'text-[#2CA55D]', dot: 'bg-[#2CA55D]' },
-  };
-  const stageStyle = stageColors[settingStage.maturityStage] || stageColors.signaling;
-  const stageOrder = ['Unmeasured', 'Signaling', 'Validated', 'Strategic'];
-  const currentStageIdx = stageOrder.findIndex(s => s === settingStage.maturityLabel);
-
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
         currentStep={6}
-        totalSteps={8}
-        stepName="Driving Adoption"
+        totalSteps={7}
+        stepName="Growth Path"
         onBack={onBack}
         onHome={onHome}
       />
@@ -154,7 +235,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            What Driving Adoption Could Mean
+            Your Growth Path
           </h1>
           <p className="text-base text-[#888888]">
             See how deepening utilization and expanding to more {providerLabel} changes the picture.
@@ -301,67 +382,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
           </motion.div>
         )}
 
-        <motion.div
-          className={`${stageStyle.bg} rounded-xl border ${stageStyle.border} p-6 mb-8`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          data-testid="section-next-stage"
-        >
-          <div className="flex items-center gap-2.5 mb-4">
-            <ChevronRight className={`w-5 h-5 ${stageStyle.text}`} />
-            <h2 className={`text-sm font-bold ${stageStyle.text}`}>What{"'"}s Ahead</h2>
-          </div>
-
-          <div className="flex items-center gap-2 mb-4">
-            {stageOrder.map((stage, i) => (
-              <div key={stage} className="flex items-center gap-2">
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
-                  i === currentStageIdx
-                    ? `${stageStyle.dot} bg-opacity-100`
-                    : i < currentStageIdx
-                    ? 'bg-[#E5E5E5]'
-                    : 'bg-transparent border border-[#E5E5E5]'
-                }`}>
-                  <span className={`text-[10px] font-semibold ${
-                    i === currentStageIdx ? 'text-white' : i < currentStageIdx ? 'text-[#999999]' : 'text-[#CCCCCC]'
-                  }`}>
-                    {stage}
-                  </span>
-                </div>
-                {i < stageOrder.length - 1 && <div className="w-4 h-px bg-[#E5E5E5]" />}
-              </div>
-            ))}
-          </div>
-
-          <p className="text-sm text-[#666666] mb-3">
-            You{"'"}re currently at <span className={`font-semibold ${stageStyle.text}`}>{settingStage.maturityLabel}</span> maturity.
-            {settingStage.maturityNext !== settingStage.maturityLabel && (
-              <> Reaching <span className="font-semibold text-[#1A1A1A]">{settingStage.maturityNext}</span> means stronger defensible claims and deeper organizational insight.</>
-            )}
-          </p>
-
-          {settingStage.nextStageMetrics.length > 0 && (
-            <div className="mt-4">
-              <p className="text-xs font-semibold text-[#666666] uppercase tracking-wider mb-2">To reach {settingStage.maturityNext}:</p>
-              <div className="space-y-2">
-                {settingStage.nextStageMetrics.map((metric, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${stageStyle.dot}`} />
-                    <span className="text-sm text-[#666666]">{metric.label || metric.metric}</span>
-                    {metric.source && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                        metric.source === 'abridge' ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'bg-[#F0F0F0] text-[#999999]'
-                      }`}>
-                        {metric.source === 'abridge' ? 'Abridge' : 'Your Systems'}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
+        <NextChapterSection state={state} />
 
         <motion.p
           className="text-[11px] text-[#AAAAAA] text-center mb-8 max-w-2xl mx-auto leading-relaxed"
@@ -384,7 +405,7 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
             className="h-[52px] px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-next"
           >
-            Your Growth Path
+            View Executive Summary
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

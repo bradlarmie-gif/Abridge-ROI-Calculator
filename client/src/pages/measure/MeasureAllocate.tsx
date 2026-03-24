@@ -206,7 +206,7 @@ export default function MeasureAllocate({
       <UnifiedHeader
         pathType="measure"
         currentStep={5}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Your Estimated Impact"
         onBack={onBack}
         onHome={onHome}

@@ -12,10 +12,9 @@ import MeasureJourney from "./MeasureJourney";
 import MeasureStage from "./MeasureStage";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureScenarios from "./MeasureScenarios";
-import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
 
-type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'value' | 'adoption' | 'opportunity' | 'story';
+type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'value' | 'adoption' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -159,19 +158,8 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureScenarios
           state={state}
           updateState={updateState}
-          onNext={() => navigate('opportunity')}
-          onBack={() => navigate('value')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'opportunity':
-      return (
-        <MeasureOpportunity
-          state={state}
-          updateState={updateState}
           onNext={() => navigate('story')}
-          onBack={() => navigate('adoption')}
+          onBack={() => navigate('value')}
           onHome={goHome}
         />
       );
@@ -180,7 +168,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureStory
           state={state}
-          onBack={() => navigate('opportunity')}
+          onBack={() => navigate('adoption')}
           onHome={goHome}
         />
       );

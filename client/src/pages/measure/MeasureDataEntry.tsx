@@ -160,7 +160,7 @@ export default function MeasureDataEntry({
       <UnifiedHeader
         pathType="measure"
         currentStep={1}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Partner Profile"
         onBack={onBack}
         onHome={onHome}

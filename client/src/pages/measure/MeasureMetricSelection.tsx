@@ -165,7 +165,7 @@ export default function MeasureMetricSelection({
       <UnifiedHeader
         pathType="measure"
         currentStep={2}
-        totalSteps={8}
+        totalSteps={7}
         stepName="Select Metrics"
         onBack={onBack}
         onHome={onHome}
