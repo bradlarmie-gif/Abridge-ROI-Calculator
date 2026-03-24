@@ -18,6 +18,8 @@ import {
   getTotalAvailableMetrics,
   getSettingDomains,
   ABRIDGE_NATIVE_METRICS,
+  getMetricLabel,
+  getMetricSuffix,
   type DomainKey,
 } from "@/lib/measureCareSettings";
 import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
@@ -408,15 +410,24 @@ function PointComparison({ label, nonAbridge, withAbridge, unit, delay = 0 }: {
   );
 }
 
-const TREND_METRIC_OPTIONS = [
-  { key: 'timeInNotes', label: 'Time in Notes', unit: 'min' },
-  { key: 'wrvu', label: 'wRVU', unit: '' },
-  { key: 'emLevel', label: 'E/M Level', unit: '' },
-  { key: 'sameDayClosure', label: 'Same-Day Closure', unit: '%' },
-];
+function getAvailableTrendMetrics(state: MeasureState): { key: string; label: string; unit: string }[] {
+  const allKeys = new Set<string>();
+  const enabledMetrics = state.enabledMetrics || {};
+  for (const setting of Object.keys(enabledMetrics)) {
+    const map = enabledMetrics[setting as MeasureCareSetting] || {};
+    for (const [key, isOn] of Object.entries(map)) {
+      if (isOn) allKeys.add(key);
+    }
+  }
+  const monthlyData = state.trendConfig.monthlyData;
+  for (const key of Object.keys(monthlyData)) {
+    if (monthlyData[key]?.length >= 1) allKeys.add(key);
+  }
+  return Array.from(allKeys).map(key => ({ key, label: getMetricLabel(key), unit: getMetricSuffix(key) }));
+}
 
 function TrendChart({ state, selectedMetric }: { state: MeasureState; selectedMetric: string }) {
-  const data = state.trendConfig.monthlyData[selectedMetric as keyof typeof state.trendConfig.monthlyData] || [];
+  const data = state.trendConfig.monthlyData[selectedMetric] || [];
   if (data.length < 2) {
     return (
       <div className="h-[200px] flex items-center justify-center text-xs text-[#CCCCCC] italic">
@@ -426,7 +437,6 @@ function TrendChart({ state, selectedMetric }: { state: MeasureState; selectedMe
   }
 
   const chartData = data.map((val, i) => ({ month: `M${i + 1}`, value: val }));
-  const metricDef = TREND_METRIC_OPTIONS.find(m => m.key === selectedMetric);
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
 
   return (
@@ -438,7 +448,7 @@ function TrendChart({ state, selectedMetric }: { state: MeasureState; selectedMe
           <YAxis tick={{ fontSize: 10, fill: '#999' }} />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E5E5E5' }}
-            formatter={(value: number) => [`${value}${metricDef?.unit || ''}`, metricDef?.label || '']}
+            formatter={(value: number) => [`${value}${getMetricSuffix(selectedMetric)}`, getMetricLabel(selectedMetric)]}
           />
           <Line type="monotone" dataKey="value" stroke="#EA2C00" strokeWidth={2} dot={{ fill: '#EA2C00', r: 3 }} />
           {months >= 3 && <ReferenceLine x="M3" stroke="#E5E5E5" strokeDasharray="3 3" label={{ value: 'Phase 2', fontSize: 9, fill: '#CCC' }} />}
@@ -768,7 +778,7 @@ export default function MeasureJourney({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A]">Month-over-Month Trend</h3>
               <div className="flex gap-1">
-                {TREND_METRIC_OPTIONS.map((opt) => (
+                {getAvailableTrendMetrics(state).map((opt) => (
                   <button
                     key={opt.key}
                     onClick={() => setTrendMetric(opt.key)}

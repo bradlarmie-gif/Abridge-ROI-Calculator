@@ -191,6 +191,30 @@ export default function MeasureMetricSelection({
         </motion.div>
 
         <motion.div
+          className="flex items-center justify-between rounded-lg border border-[#E8E2DA] bg-[#FAF8F5] px-4 py-3 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.12 }}
+        >
+          <div className="flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
+            <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">Monthly Data Entry</span>
+            <span className="text-[10px] text-[#AAAAAA]">
+              {state.trendConfig.enabled ? 'Enter month-by-month values per metric' : 'Simple before / after mode'}
+            </span>
+          </div>
+          <button
+            onClick={() => updateState({
+              trendConfig: { ...state.trendConfig, enabled: !state.trendConfig.enabled },
+            })}
+            className={`w-9 h-[18px] rounded-full transition-colors flex items-center ${state.trendConfig.enabled ? 'bg-[#EA2C00] justify-end' : 'bg-[#E5E5E5] justify-start'}`}
+            data-testid="toggle-trend-enabled"
+          >
+            <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm mx-0.5" />
+          </button>
+        </motion.div>
+
+        <motion.div
           className="mb-4 px-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -339,6 +363,40 @@ export default function MeasureMetricSelection({
                                                   />
                                                 </div>
                                               </div>
+                                              {state.trendConfig.enabled && (() => {
+                                                const monthlyData = state.trendConfig.monthlyData[metric.key] || [];
+                                                const monthCount = Math.max(monthlyData.length, state.deployment.monthsOnAbridge || 6, 6);
+                                                return (
+                                                  <div className="mt-3 pt-3 border-t border-[#E8E2DA]/60">
+                                                    <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-1.5">Monthly Values</p>
+                                                    <div className="flex gap-1 flex-wrap">
+                                                      {Array.from({ length: monthCount }, (_, i) => (
+                                                        <div key={i} className="w-12">
+                                                          <p className="text-[8px] text-[#BBBBBB] text-center mb-0.5">M{i + 1}</p>
+                                                          <input
+                                                            type="number"
+                                                            value={monthlyData[i] ?? ''}
+                                                            onChange={(e) => {
+                                                              const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                                              const newData = [...monthlyData];
+                                                              while (newData.length <= i) newData.push(0);
+                                                              newData[i] = val;
+                                                              updateState({
+                                                                trendConfig: {
+                                                                  ...state.trendConfig,
+                                                                  monthlyData: { ...state.trendConfig.monthlyData, [metric.key]: newData },
+                                                                },
+                                                              });
+                                                            }}
+                                                            className="w-full h-7 text-center text-[11px] bg-[#FAFAF8] border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                                                            data-testid={`input-trend-${metric.key}-${i}`}
+                                                          />
+                                                        </div>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })()}
                                             </div>
                                           </motion.div>
                                         )}
@@ -457,73 +515,6 @@ export default function MeasureMetricSelection({
             </motion.div>
           );
         })}
-
-        <motion.div
-          className="rounded-lg border border-[#E5E5E5] bg-white overflow-hidden mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-        >
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#F0F0F0]">
-            <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
-            <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">Trend Data (Monthly)</span>
-            <div className="ml-auto">
-              <button
-                onClick={() => updateState({
-                  trendConfig: { ...state.trendConfig, enabled: !state.trendConfig.enabled },
-                })}
-                className={`w-9 h-[18px] rounded-full transition-colors flex items-center ${state.trendConfig.enabled ? 'bg-[#EA2C00] justify-end' : 'bg-[#E5E5E5] justify-start'}`}
-                data-testid="toggle-trend-enabled"
-              >
-                <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm mx-0.5" />
-              </button>
-            </div>
-          </div>
-          {state.trendConfig.enabled && (
-            <div className="px-4 py-3 space-y-3">
-              <p className="text-[10px] text-[#999999]">Enter monthly values to track trends over time.</p>
-              {[
-                { key: 'timeInNotes' as const, label: 'Time in Notes (min)' },
-                { key: 'wrvu' as const, label: 'wRVU/encounter' },
-                { key: 'emLevel' as const, label: 'E/M Level' },
-                { key: 'sameDayClosure' as const, label: 'Same-Day Closure (%)' },
-              ].map(trendMetric => {
-                const data = state.trendConfig.monthlyData[trendMetric.key] || [];
-                const monthCount = Math.max(data.length, state.deployment.monthsOnAbridge || 6, 6);
-                return (
-                  <div key={trendMetric.key}>
-                    <p className="text-[11px] font-semibold text-[#666666] mb-1.5">{trendMetric.label}</p>
-                    <div className="flex gap-1 flex-wrap">
-                      {Array.from({ length: monthCount }, (_, i) => (
-                        <div key={i} className="w-12">
-                          <p className="text-[8px] text-[#BBBBBB] text-center mb-0.5">M{i + 1}</p>
-                          <input
-                            type="number"
-                            value={data[i] ?? ''}
-                            onChange={(e) => {
-                              const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                              const newData = [...data];
-                              while (newData.length <= i) newData.push(0);
-                              newData[i] = val;
-                              updateState({
-                                trendConfig: {
-                                  ...state.trendConfig,
-                                  monthlyData: { ...state.trendConfig.monthlyData, [trendMetric.key]: newData },
-                                },
-                              });
-                            }}
-                            className="w-full h-7 text-center text-[11px] bg-[#FAFAF8] border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
-                            data-testid={`input-trend-${trendMetric.key}-${i}`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </motion.div>
 
         <motion.div
           className="rounded-lg overflow-visible mb-6 bg-[#F9F7F4] border border-[#E8E2DA]"

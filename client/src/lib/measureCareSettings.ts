@@ -295,6 +295,28 @@ export const ABRIDGE_NATIVE_METRICS: AbridgeNativeMetricDef[] = [
   { key: 'avgNoteAcceptanceRate', label: 'Note Acceptance Rate', suffix: '%', description: 'Percentage of generated notes accepted by providers' },
 ];
 
+export function getMetricLabel(metricKey: string): string {
+  for (const config of Object.values(CARE_SETTING_CONFIGS)) {
+    for (const section of config.metricSections) {
+      for (const metric of section.metrics) {
+        if (metric.key === metricKey) return metric.label;
+      }
+    }
+  }
+  return metricKey;
+}
+
+export function getMetricSuffix(metricKey: string): string {
+  for (const config of Object.values(CARE_SETTING_CONFIGS)) {
+    for (const section of config.metricSections) {
+      for (const metric of section.metrics) {
+        if (metric.key === metricKey) return metric.suffix || '';
+      }
+    }
+  }
+  return '';
+}
+
 export const CARE_SETTING_ORDER: MeasureCareSetting[] = [
   "outpatient",
   "ed",

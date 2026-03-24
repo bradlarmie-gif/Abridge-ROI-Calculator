@@ -47,13 +47,7 @@ export interface Calibration {
   conversionFactor: number;
 }
 
-// Monthly trend data for advanced mode
-export interface MonthlyMetricData {
-  wrvu: number[];
-  emLevel: number[];
-  timeInNotes: number[];
-  sameDayClosure: number[];
-}
+export type MonthlyMetricData = Record<string, number[]>;
 
 export interface TrendConfig {
   enabled: boolean;
@@ -167,12 +161,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   },
   trendConfig: {
     enabled: false,
-    monthlyData: {
-      wrvu: [],
-      emLevel: [],
-      timeInNotes: [],
-      sameDayClosure: [],
-    },
+    monthlyData: {},
   },
   emDistribution: {
     without: {
@@ -368,12 +357,29 @@ export function generateTrendData(
     },
   };
   
-  const config = metricValues[metric] || metricValues.wrvu;
+  let config = metricValues[metric];
+  if (!config) {
+    let baseline = 0;
+    let current = 0;
+    for (const settingKey of Object.keys(state.settingData || {})) {
+      const sd = state.settingData[settingKey as MeasureCareSetting];
+      if (sd) {
+        const b = sd[`${metric}_before`];
+        const a = sd[`${metric}_after`];
+        if ((b != null && b !== 0) || (a != null && a !== 0)) {
+          baseline = b ?? 0;
+          current = a ?? 0;
+          break;
+        }
+      }
+    }
+    config = { baseline, current };
+  }
   const trendConfig = state.trendConfig;
   
   // Check if we have real monthly data for this metric
   const monthlyValues = trendConfig.enabled ? 
-    trendConfig.monthlyData[metric as keyof MonthlyMetricData] : [];
+    trendConfig.monthlyData[metric] || [] : [];
   
   for (let i = 0; i < months; i++) {
     let abridgeValue: number;

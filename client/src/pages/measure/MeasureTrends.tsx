@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { TrendingUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, generateTrendData } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, generateTrendData } from "@/lib/measureCalculator";
+import { getMetricLabel } from "@/lib/measureCareSettings";
 
 interface MeasureTrendsProps {
   state: MeasureState;
@@ -13,15 +14,37 @@ interface MeasureTrendsProps {
   onHome: () => void;
 }
 
-const METRIC_OPTIONS = [
-  { value: 'wrvu', label: 'wRVU per Encounter' },
-  { value: 'emLevel', label: 'Avg E&M Level' },
-  { value: 'timeInNotes', label: 'Time in Notes' },
-  { value: 'sameDayClosure', label: 'Same-day Closure' },
-];
+function getAvailableMetricOptions(measureState: MeasureState): { value: string; label: string }[] {
+  const allKeys = new Set<string>();
+  const enabledMetrics = measureState.enabledMetrics || {};
+  for (const setting of Object.keys(enabledMetrics)) {
+    const map = enabledMetrics[setting as MeasureCareSetting] || {};
+    for (const [key, isOn] of Object.entries(map)) {
+      if (isOn) allKeys.add(key);
+    }
+  }
+  const monthlyData = measureState.trendConfig.monthlyData;
+  for (const key of Object.keys(monthlyData)) {
+    if (monthlyData[key]?.length >= 1) allKeys.add(key);
+  }
+  if (allKeys.size > 0) {
+    return Array.from(allKeys).map(key => ({ value: key, label: getMetricLabel(key) }));
+  }
+  return [
+    { value: 'wrvu', label: 'wRVU per Encounter' },
+    { value: 'timeInNotes', label: 'Time in Notes' },
+  ];
+}
 
 export default function MeasureTrends({ state, onBack, onHome }: MeasureTrendsProps) {
-  const [selectedMetric, setSelectedMetric] = useState('wrvu');
+  const metricOptions = useMemo(() => getAvailableMetricOptions(state), [state]);
+  const [selectedMetric, setSelectedMetric] = useState(() => metricOptions[0]?.value || 'wrvu');
+
+  useEffect(() => {
+    if (metricOptions.length > 0 && !metricOptions.some(o => o.value === selectedMetric)) {
+      setSelectedMetric(metricOptions[0].value);
+    }
+  }, [metricOptions, selectedMetric]);
   
   const trendData = useMemo(() => 
     generateTrendData(state, selectedMetric),
@@ -29,9 +52,9 @@ export default function MeasureTrends({ state, onBack, onHome }: MeasureTrendsPr
   );
   
   const hasCustomData = state.trendConfig.enabled && 
-    (state.trendConfig.monthlyData[selectedMetric as keyof typeof state.trendConfig.monthlyData]?.length || 0) > 0;
+    (state.trendConfig.monthlyData[selectedMetric]?.length || 0) > 0;
   
-  const metricLabel = METRIC_OPTIONS.find(m => m.value === selectedMetric)?.label || 'wRVU per Encounter';
+  const metricLabel = metricOptions.find(m => m.value === selectedMetric)?.label || selectedMetric;
   
   const firstValue = trendData[0]?.abridge || 0;
   const lastValue = trendData[trendData.length - 1]?.abridge || 0;
@@ -78,7 +101,7 @@ export default function MeasureTrends({ state, onBack, onHome }: MeasureTrendsPr
               <SelectValue placeholder="Select metric" />
             </SelectTrigger>
             <SelectContent>
-              {METRIC_OPTIONS.map(option => (
+              {metricOptions.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
