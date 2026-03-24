@@ -7,11 +7,13 @@ import {
   type MeasureState,
   type MeasureCareSetting,
   type DataSource,
+  type MaturityStage,
   formatCurrency,
   formatNumber,
   calculateConfirmedValue,
   calculateExpansionResults,
   deriveEngagementContext,
+  computeDomainStatus,
   deriveSettingStage,
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
@@ -81,6 +83,81 @@ function SourceBadge({ source }: { source: string }) {
     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold ${isAbridge ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
       {isAbridge ? 'Abridge' : 'Your Systems'}
     </span>
+  );
+}
+
+function MaturityRoadmapCard({ state }: { state: MeasureState }) {
+  const ctx = deriveEngagementContext(state);
+  const domainStatus = computeDomainStatus(state);
+  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
+  const stages: { key: MaturityStage; label: string }[] = [
+    { key: 'unmeasured', label: 'Unmeasured' },
+    { key: 'signaling', label: 'Signaling' },
+    { key: 'validated', label: 'Validated' },
+    { key: 'strategic', label: 'Strategic' },
+  ];
+  const currentIdx = stages.findIndex(s => s.key === ctx.maturityStage);
+
+  const descriptions: Record<MaturityStage, string> = {
+    unmeasured: 'Your deployment is stabilizing. Focus on adoption and establishing baselines.',
+    signaling: 'First metrics are live. One or two domains are beginning to show trends.',
+    validated: 'Trends confirmed across multiple domains. Your data tells a credible story.',
+    strategic: 'Embedded in organizational strategy. Board-level proof established.',
+  };
+
+  const nextActions: string[] = [];
+  if (ctx.maturityStage === 'unmeasured') {
+    nextActions.push('Reach 20%+ utilization');
+    nextActions.push('Pass the 3-month mark');
+  } else if (ctx.maturityStage === 'signaling') {
+    if (activeDomains < 3) nextActions.push(`Confirm trends in ${3 - activeDomains}+ more domain${3 - activeDomains > 1 ? 's' : ''} (you have ${activeDomains} active)`);
+    if (state.deployment.utilizationRate < 60) nextActions.push(`Reach 60%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    nextActions.push('Months 9\u201318 is the typical window');
+  } else if (ctx.maturityStage === 'validated') {
+    if (state.deployment.utilizationRate < 70) nextActions.push(`Reach 70%+ utilization (you're at ${state.deployment.utilizationRate}%)`);
+    nextActions.push('Sustain trends past 18 months');
+    nextActions.push('Build board-level narrative');
+  }
+
+  return (
+    <motion.div
+      className="bg-[#1A1A1A] rounded-xl p-6 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      data-testid="section-maturity-roadmap"
+    >
+      <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-4">Your Maturity Roadmap</p>
+      <div className="flex items-center gap-3 mb-5">
+        {stages.map((s, i) => (
+          <div key={s.key} className="flex items-center gap-3">
+            <div className="flex flex-col items-center">
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
+                ${i === currentIdx ? 'border-[#EA2C00] bg-[#EA2C00]' : i < currentIdx ? 'border-white bg-white' : 'border-white/40 bg-transparent'}`}
+              >
+                {i < currentIdx && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
+              </div>
+              <span className={`text-[10px] mt-1.5 ${i === currentIdx ? 'text-[#EA2C00] font-semibold' : 'text-[#666666]'}`}>{s.label}</span>
+            </div>
+            {i < stages.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-white' : 'bg-[#444444]'} mb-4`} />}
+          </div>
+        ))}
+      </div>
+      <p className="text-sm text-white mb-1">You are in: <span className="font-semibold text-[#EA2C00]">{ctx.maturityLabel}</span></p>
+      <p className="text-xs text-[#AAAAAA] mb-4 italic">{descriptions[ctx.maturityStage]}</p>
+      {nextActions.length > 0 && ctx.maturityStage !== 'strategic' && (
+        <div>
+          <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">To reach {ctx.maturityNext}:</p>
+          <ul className="space-y-1">
+            {nextActions.map((a, i) => (
+              <li key={i} className="text-xs text-[#CCCCCC] flex items-start gap-2">
+                <span className="text-[#EA2C00] mt-0.5">{'\u00B7'}</span> {a}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
@@ -381,6 +458,8 @@ export default function MeasureScenarios({ state, updateState, onNext, onBack, o
             </p>
           </motion.div>
         )}
+
+        <MaturityRoadmapCard state={state} />
 
         <NextChapterSection state={state} />
 

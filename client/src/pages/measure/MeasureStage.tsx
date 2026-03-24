@@ -8,7 +8,6 @@ import {
   type MeasureCareSetting,
   type MaturityStage,
   type DomainStatus,
-  formatCurrency,
   deriveEngagementContext,
   computeDomainStatus,
   deriveSettingStage,
@@ -58,10 +57,9 @@ function StageDotsRow({ currentStage }: { currentStage: MaturityStage }) {
   );
 }
 
-function DomainStatusCard({ name, status, metricDelta, stakeholder }: {
+function DomainStatusCard({ name, status, stakeholder }: {
   name: string;
   status: DomainStatus;
-  metricDelta?: string;
   stakeholder: string;
 }) {
   const isActive = status === 'signaling' || status === 'validated';
@@ -79,40 +77,9 @@ function DomainStatusCard({ name, status, metricDelta, stakeholder }: {
         ${isActive ? 'bg-green-100 text-green-700' : status === 'baseline-only' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
         {isActive ? 'Active' : status === 'baseline-only' ? 'Baseline' : 'Pre-Signal'}
       </span>
-      {metricDelta && <p className="text-xs text-[#666666] mt-1">{metricDelta}</p>}
       <p className="text-[9px] text-[#AAAAAA] mt-1">{stakeholder}</p>
     </div>
   );
-}
-
-function getStrongestMetricDelta(state: MeasureState, domain: string): string | undefined {
-  const te = state.timeEfficiency;
-  const dq = state.documentationQuality;
-  switch (domain) {
-    case 'quality': {
-      const wrvuDelta = dq.wrvuWith - dq.wrvuWithout;
-      if (wrvuDelta > 0) return `+${wrvuDelta.toFixed(2)} wRVU`;
-      const emDelta = dq.emLevelWith - dq.emLevelWithout;
-      if (emDelta > 0) return `+${emDelta.toFixed(2)} E/M`;
-      return undefined;
-    }
-    case 'workforce': {
-      const delta = te.timeInNotesWithout - te.timeInNotesWith;
-      if (delta > 0) return `-${delta.toFixed(0)} min/note`;
-      return undefined;
-    }
-    case 'revenue': {
-      const wrvuDelta = dq.wrvuWith - dq.wrvuWithout;
-      if (wrvuDelta > 0) return `+${wrvuDelta.toFixed(2)} wRVU`;
-      return undefined;
-    }
-    case 'capacity': {
-      const sdc = te.sameDayClosureWith - te.sameDayClosureWithout;
-      if (sdc > 0) return `+${sdc.toFixed(0)}% closure`;
-      return undefined;
-    }
-    default: return undefined;
-  }
 }
 
 function getHowYouGotHere(stage: SettingStage, state: MeasureState): string {
@@ -188,25 +155,21 @@ function StageCard({ stage, state, compact = false }: { stage: SettingStage; sta
         <DomainStatusCard
           name="Quality"
           status={stage.domainStatus.quality}
-          metricDelta={getStrongestMetricDelta(state, 'quality')}
           stakeholder={domainStakeholders.quality}
         />
         <DomainStatusCard
           name="Workforce"
           status={stage.domainStatus.workforce}
-          metricDelta={getStrongestMetricDelta(state, 'workforce')}
           stakeholder={domainStakeholders.workforce}
         />
         <DomainStatusCard
           name="Revenue"
           status={stage.domainStatus.revenue}
-          metricDelta={getStrongestMetricDelta(state, 'revenue')}
           stakeholder={domainStakeholders.revenue}
         />
         <DomainStatusCard
           name={capacityLabel}
           status={stage.domainStatus.capacity}
-          metricDelta={getStrongestMetricDelta(state, 'capacity')}
           stakeholder={domainStakeholders.capacity}
         />
       </div>
