@@ -65,6 +65,7 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
         capacity: 'Capacity',
         throughput: 'Throughput',
         patientFlow: 'Patient Flow',
+        staffing: 'Staffing',
       };
       const domain = domainKeyMap[section.key] || section.label;
 
@@ -167,7 +168,7 @@ const settingIcons: Record<MeasureCareSetting, typeof Stethoscope> = {
   nursing: Users,
 };
 
-const domainOrder = ['Workforce', 'Quality', 'Revenue', 'Capacity', 'Patient Flow', 'Throughput'];
+const domainOrder = ['Workforce', 'Quality', 'Revenue', 'Capacity', 'Patient Flow', 'Throughput', 'Staffing'];
 
 function SignalRing({ active, baseline, total }: { active: number; baseline: number; total: number }) {
   const size = 72;

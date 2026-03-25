@@ -3,7 +3,7 @@ import type { MeasureCareSetting } from "./measureCalculator";
 export interface MetricDefinition {
   id: string;
   label: string;
-  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue' | 'throughput' | 'patientFlow';
+  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue' | 'throughput' | 'patientFlow' | 'staffing';
   phase: 1 | 2 | 3;
   inputType: 'single' | 'before-after';
   unit: string;
@@ -1273,6 +1273,374 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
   },
 ];
 
+export const NURSING_METRICS: MetricDefinition[] = [
+  {
+    id: 'docTimePerShift',
+    label: 'Documentation Time per Shift',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Total active EHR documentation time per shift — flowsheets, assessments, care plans, handoff notes.',
+    whyItMatters: 'The primary platform-native signal for nursing documentation burden.',
+    plainEnglishTemplate:
+      'Nurses are spending {{after}} minutes per shift on documentation, down from {{before}}. ' +
+      "That's {{delta}} minutes back per shift per nurse. " +
+      'Across {{providers}} nurses, that represents significant documentation time returned to patient care.',
+  },
+  {
+    id: 'noteQualityScore',
+    label: 'Assessment / Documentation Quality Score',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'stars',
+    unitLabel: 'rating',
+    lowerIsBetter: false,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Quality of nursing documentation — assessments, care plans, handoff notes.',
+    whyItMatters: 'Complete, specific nursing assessments reduce CDI query burden and support DRG accuracy.',
+    plainEnglishTemplate:
+      'Average nursing documentation quality is {{after}} — up {{delta}} from {{before}}. ' +
+      'Complete, specific nursing assessments reduce CDI query burden, support DRG accuracy, ' +
+      'and are the primary input to nursing-sensitive quality indicators.',
+  },
+  {
+    id: 'chartingAfterShift',
+    label: 'Charting After Shift',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Epic Signal / Time-and-Attendance',
+    description: 'Time nurses spend in the EHR after their scheduled shift end.',
+    whyItMatters: 'Chronic after-shift charting is one of the top drivers of nursing burnout and turnover intent.',
+    plainEnglishTemplate:
+      'After-shift charting is down {{delta}} minutes per nurse — from {{before}} to {{after}} minutes. ' +
+      'Across {{providers}} nurses, ' +
+      "that's significant unpaid or overtime documentation eliminated. " +
+      'This is the most frequently cited burnout driver in nursing workforce surveys.',
+  },
+  {
+    id: 'overtimeHours',
+    label: 'Documentation-Related Overtime',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'hours',
+    unitLabel: 'hours/month',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Payroll / Time-and-Attendance',
+    description: 'Overtime hours attributable to documentation burden.',
+    whyItMatters: 'Direct labor cost exposure from documentation-driven overtime.',
+    plainEnglishTemplate:
+      'Documentation-related overtime is down {{delta}} hours per nurse per month. ' +
+      'Across {{providers}} nurses, that represents significant overtime hours reduced monthly.',
+  },
+  {
+    id: 'burnoutAssessment',
+    label: 'Burnout Assessment (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'score',
+    unitLabel: 'survey score',
+    lowerIsBetter: true,
+    source: 'survey',
+    sourceLabel: 'Nursing Leadership',
+    description: 'Before/after burnout survey score (MBI, single-item, or custom scale).',
+    whyItMatters: 'Documentation burden accounts for a disproportionate share of nursing burnout.',
+    plainEnglishTemplate:
+      'Burnout scores improved from {{before}} to {{after}} on your scale. ' +
+      'Documentation burden is the single largest modifiable driver of nursing burnout. ' +
+      'At {{providers}} nurses, each point of improvement correlates with measurable reduction in turnover intent.',
+  },
+  {
+    id: 'likelihoodToStay',
+    label: 'Likelihood to Stay (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'survey',
+    sourceLabel: 'Nursing Leadership / HR',
+    description: 'Percentage of nurses responding "likely" or "very likely" to stay.',
+    whyItMatters: 'RN turnover cost is $40K–$65K per nurse. At large scale, even 1-point improvement represents significant avoided cost.',
+    plainEnglishTemplate:
+      "Retention intent is up {{delta}} points — {{after}}% of nurses say they're likely to stay, vs {{before}}% before Abridge. " +
+      'At {{providers}} nurses, this improvement in likelihood-to-stay prevents departures and avoids recruitment costs.',
+  },
+  {
+    id: 'patientFallRate',
+    label: 'Patient Fall Rate',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'rate',
+    unitLabel: 'per 1,000 patient days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Quality Department',
+    description: 'NDNQI nursing-sensitive indicator. Falls per 1,000 patient days.',
+    whyItMatters: 'Falls correlate with documentation gaps — incomplete risk assessments, missed reassessments.',
+    plainEnglishTemplate:
+      'Patient fall rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
+      'Each prevented fall avoids an average of $14,000–$30,000 in direct care costs, plus regulatory exposure.',
+  },
+  {
+    id: 'hapiRate',
+    label: 'Hospital-Acquired Pressure Injury (HAPI) Rate',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'rate',
+    unitLabel: 'per 1,000 patient days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Wound Care / Quality',
+    description: 'NDNQI nursing-sensitive indicator. Stage 2+ HAPIs per 1,000 patient days.',
+    whyItMatters: 'Skin assessment documentation completeness is the primary driver — gaps prevent early intervention.',
+    plainEnglishTemplate:
+      'HAPI rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
+      'Stage 2+ HAPIs cost $10,700–$151,700 per event and are non-reimbursable under CMS.',
+  },
+  {
+    id: 'clabsiRate',
+    label: 'CLABSI Rate',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'rate',
+    unitLabel: 'per 1,000 line-days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Infection Prevention',
+    description: 'NHSN-reportable. Central line bundle compliance documentation drives prevention.',
+    whyItMatters: 'Each CLABSI costs $46,000–$68,000 and generates CMS HAC penalty exposure.',
+    plainEnglishTemplate:
+      'CLABSI rate is down from {{before}} to {{after}} per 1,000 line-days. ' +
+      'Each CLABSI event costs approximately $46,000–$68,000 in additional care costs and generates CMS HAC penalty exposure.',
+  },
+  {
+    id: 'cautiRate',
+    label: 'CAUTI Rate',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'rate',
+    unitLabel: 'per 1,000 catheter days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Infection Prevention',
+    description: 'NHSN-reportable. Foley necessity documentation and daily removal prompts.',
+    whyItMatters: 'Each CAUTI costs $896–$2,836 and affects CMS HAC scoring.',
+    plainEnglishTemplate:
+      'CAUTI rate is down from {{before}} to {{after}} per 1,000 catheter days. ' +
+      'Timely documentation of daily necessity review is the primary prevention driver.',
+  },
+  {
+    id: 'medicationErrorRate',
+    label: 'Medication Error / Near-Miss Rate',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'rate',
+    unitLabel: 'per 1,000 patient days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Pharmacy / Safety Reporting',
+    description: 'Documentation clarity and handoff completeness are upstream drivers of nursing medication errors.',
+    whyItMatters: 'Each prevented adverse drug event avoids $5,000–$50,000 in additional care costs.',
+    plainEnglishTemplate:
+      'Medication error / near-miss rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
+      'Clearer handoff documentation and care plan updates reduce the gaps that create medication errors at shift change.',
+  },
+  {
+    id: 'hcahpsNurseCommunication',
+    label: 'HCAHPS Nurse Communication Score',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'percentile',
+    unitLabel: 'percentile',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'HCAHPS Portal',
+    description: 'The nurse communication domain is the highest-weighted component of inpatient HCAHPS.',
+    whyItMatters: 'Time freed from documentation = more time present with patients, directly driving this score.',
+    plainEnglishTemplate:
+      'HCAHPS nurse communication scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'The nurse communication domain carries the highest weight in inpatient patient experience scoring.',
+  },
+  {
+    id: 'bedsideTimeRatio',
+    label: 'Bedside / Direct Care Time Ratio',
+    domain: 'staffing',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent of shift',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Nursing Leadership',
+    description: 'Percent of shift time spent in direct patient care vs. documentation.',
+    whyItMatters: 'National benchmark: nurses spend 35–40% of shift time on documentation.',
+    plainEnglishTemplate:
+      'Direct care time has increased from {{before}}% to {{after}}% of shift time — {{delta}} points more time with patients. ' +
+      'For {{providers}} nurses, that represents additional hours of bedside care annually without adding staff.',
+  },
+  {
+    id: 'travelNurseUtilization',
+    label: 'Travel / Agency Nurse Utilization Rate',
+    domain: 'staffing',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent of FTEs',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Staffing Office / Finance',
+    description: 'Travel or agency nurses as percentage of total nursing FTEs.',
+    whyItMatters: 'Documentation burden drives staff nurse turnover which forces reliance on expensive travel coverage.',
+    plainEnglishTemplate:
+      'Travel and agency nurse utilization is down from {{before}}% to {{after}}% of nursing FTEs — a {{delta}}-point reduction. ' +
+      'Each point of utilization reduction saves significant premium labor costs annually.',
+  },
+  {
+    id: 'openShiftFillRate',
+    label: 'Open Shift Fill Rate',
+    domain: 'staffing',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Staffing Office',
+    description: 'Percentage of open shifts filled by staff nurses vs. agency or left unfilled.',
+    whyItMatters: 'Retention-driven staffing stability metric.',
+    plainEnglishTemplate:
+      'Open shift fill rate by staff nurses is up from {{before}}% to {{after}}% — {{delta}} points more shifts covered internally. ' +
+      'Higher fill rates reflect improved retention and scheduling stability, and directly reduce agency premium spend.',
+  },
+  {
+    id: 'cdiQueryResponseRate',
+    label: 'CDI Query Response Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'CDI Platform',
+    description: 'CDI query response rate — percentage of nursing CDI queries answered within 24h.',
+    whyItMatters: 'Nursing documentation supports CDI queries for DRG accuracy.',
+    plainEnglishTemplate:
+      'CDI query response rate is up from {{before}}% to {{after}}% — {{delta}} points. ' +
+      'Faster, more complete nursing documentation reduces query volume and accelerates DRG assignment.',
+  },
+  {
+    id: 'nursingDocCompletionRate',
+    label: 'Nursing Documentation Completion Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'EHR Compliance Reports',
+    description: 'Percentage of required nursing documentation completed within required timeframes.',
+    whyItMatters: 'Delinquent nursing documentation holds up billing, delays discharge, and creates compliance exposure.',
+    plainEnglishTemplate:
+      'Nursing documentation is now completed on time {{after}}% of the time, up from {{before}}%. ' +
+      'A {{delta}}-point improvement means more encounters per year with complete, timely nursing records.',
+  },
+  {
+    id: 'nurseRetentionRate',
+    label: 'RN Retention Rate',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'hris',
+    sourceLabel: 'HR',
+    description: 'Annual RN retention rate. Turnover cost is $40K–$65K per nurse.',
+    whyItMatters: 'At nursing workforce scale, this is the highest-volume cost lever.',
+    plainEnglishTemplate:
+      'RN retention rate has moved from {{before}}% to {{after}}% — {{delta}} points. ' +
+      'At your scale, this is likely the largest single financial impact in this analysis.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'travelNurseSpend',
+    label: 'Travel / Agency Nurse Annual Spend',
+    domain: 'staffing',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'annual spend',
+    lowerIsBetter: true,
+    source: 'finance',
+    sourceLabel: 'Finance / Contracting',
+    description: 'Total annual travel/agency nursing spend.',
+    whyItMatters: 'The most direct financial expression of improved nursing retention and scheduling stability.',
+    plainEnglishTemplate:
+      'Travel and agency nursing spend is down from {{before}} to {{after}} — {{delta}} in avoided premium labor costs. ' +
+      'This is the most direct financial expression of improved nursing retention.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'nursingOvertimeCost',
+    label: 'Nursing Overtime Cost',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'annual cost',
+    lowerIsBetter: true,
+    source: 'finance',
+    sourceLabel: 'Payroll / Finance',
+    description: 'Total annual nursing overtime cost attributable to documentation burden and staffing gaps.',
+    whyItMatters: 'Documentation-driven overtime and agency coverage are the two largest controllable cost levers.',
+    plainEnglishTemplate:
+      'Annual nursing overtime cost is down from {{before}} to {{after}} — {{delta}} in avoided labor premium.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'pressGaneyNursing',
+    label: 'Press Ganey Nursing / Patient Experience Score',
+    domain: 'quality',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'percentile',
+    unitLabel: 'percentile',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Press Ganey Portal',
+    description: 'Annual Press Ganey overall or nurse-specific percentile rank.',
+    whyItMatters: 'Nursing responsiveness and communication are the largest drivers of inpatient PG composite.',
+    plainEnglishTemplate:
+      'Press Ganey scores have moved from {{before}}th to {{after}}th percentile annually. ' +
+      'Nursing responsiveness and communication are the largest drivers of the inpatient PG composite.',
+    phase3Roadmap: true,
+  },
+];
+
 export interface MetricField {
   key: string;
   label: string;
@@ -1311,7 +1679,7 @@ export interface AllocationField {
   defaultValue: number;
 }
 
-export type DomainKey = 'workforce' | 'revenue' | 'quality' | 'capacity' | 'throughput' | 'patientFlow' | 'foundational';
+export type DomainKey = 'workforce' | 'revenue' | 'quality' | 'capacity' | 'throughput' | 'patientFlow' | 'staffing' | 'foundational';
 
 export interface CareSettingConfig {
   key: MeasureCareSetting;
@@ -1332,6 +1700,7 @@ export const DOMAIN_LABELS: Record<DomainKey, string> = {
   capacity: 'Capacity',
   throughput: 'Throughput',
   patientFlow: 'Patient Flow',
+  staffing: 'Staffing',
   foundational: 'Foundational',
 };
 
@@ -1356,6 +1725,14 @@ export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey
   if (setting === 'inpatient') {
     return [
       { key: 'patientFlow', label: 'Patient Flow' },
+      { key: 'workforce', label: 'Workforce' },
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'quality', label: 'Quality' },
+    ];
+  }
+  if (setting === 'nursing') {
+    return [
+      { key: 'staffing', label: 'Staffing' },
       { key: 'workforce', label: 'Workforce' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'quality', label: 'Quality' },
@@ -1633,6 +2010,9 @@ export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
   }
   if (setting === 'inpatient') {
     return INPATIENT_METRICS.filter(m => !m.phase3Roadmap).length;
+  }
+  if (setting === 'nursing') {
+    return NURSING_METRICS.filter(m => !m.phase3Roadmap).length;
   }
   const config = CARE_SETTING_CONFIGS[setting];
   let count = 0;

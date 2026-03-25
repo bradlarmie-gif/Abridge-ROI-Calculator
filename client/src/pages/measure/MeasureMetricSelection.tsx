@@ -32,6 +32,7 @@ const DOMAIN_COLORS: Record<string, string> = {
   capacity: '#0891B2',
   throughput: '#0891B2',
   patientFlow: '#0891B2',
+  staffing: '#0891B2',
 };
 
 export default function MeasureMetricSelection({

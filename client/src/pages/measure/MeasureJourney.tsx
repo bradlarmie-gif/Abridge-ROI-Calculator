@@ -23,6 +23,7 @@ import {
   OUTPATIENT_METRICS,
   ED_METRICS,
   INPATIENT_METRICS,
+  NURSING_METRICS,
   type DomainKey,
   type MetricDefinition,
 } from "@/lib/measureCareSettings";
@@ -48,6 +49,9 @@ const reductionMetrics = new Set([
   'docTimePerEncounter', 'noteCompletionTime', 'timeToCloseEncounter', 'workAfterHours',
   'doorToProvider', 'doorToDisposition', 'medicalNecessityDenialRate', 'agencyLocumSpend',
   'docTimePerNote', 'timeToSignNote', 'lengthOfStay', 'dischargeDelayRate', 'readmissionRate30Day',
+  'docTimePerShift', 'chartingAfterShift', 'overtimeHours', 'burnoutAssessment',
+  'patientFallRate', 'hapiRate', 'clabsiRate', 'cautiRate', 'medicationErrorRate',
+  'travelNurseUtilization', 'travelNurseSpend', 'nursingOvertimeCost',
 ]);
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -57,6 +61,7 @@ const DOMAIN_COLORS: Record<string, string> = {
   capacity: '#0891B2',
   throughput: '#0891B2',
   patientFlow: '#0891B2',
+  staffing: '#0891B2',
   foundational: '#9333EA',
 };
 
@@ -67,6 +72,7 @@ const DOMAIN_QUESTIONS: Record<string, string> = {
   capacity: 'What is the organization doing with the freed time?',
   throughput: 'How has patient flow improved?',
   patientFlow: 'What is the impact on patient movement?',
+  staffing: 'Has documentation burden reduction improved staffing stability?',
   foundational: 'Is the Abridge platform being adopted and used effectively?',
 };
 
@@ -306,6 +312,71 @@ function getInpatientMetricRows(state: MeasureState): MetricRowData[] {
   return rows;
 }
 
+const NURSING_LEGACY_KEY_MAP: Record<string, string> = {
+  docTimePerShift: 'docTimePerShift',
+  chartingAfterShift: 'afterShiftCharting',
+  overtimeHours: 'overtimeHours',
+};
+
+function getNursingMetricRows(state: MeasureState): MetricRowData[] {
+  const rows: MetricRowData[] = [];
+  const nm = state.nursingMetrics || {};
+  const sd = state.settingData?.nursing || {};
+
+  const domainKeyMap: Record<string, string> = {
+    workforce: 'Workforce', revenue: 'Revenue', quality: 'Quality',
+    staffing: 'Staffing',
+  };
+
+  for (const metric of NURSING_METRICS) {
+    if (metric.phase3Roadmap) continue;
+
+    const mv = nm[metric.id];
+
+    let before = mv?.before ?? 0;
+    let after = mv?.after ?? 0;
+
+    if (before === 0 && after === 0) {
+      const legacyKey = NURSING_LEGACY_KEY_MAP[metric.id];
+      if (legacyKey) {
+        const lb = sd[`${legacyKey}_before`] ?? 0;
+        const la = sd[`${legacyKey}_after`] ?? 0;
+        if (lb > 0 || la > 0) {
+          before = lb;
+          after = la;
+        }
+      }
+    }
+
+    const delta = after - before;
+
+    let status: 'active' | 'baseline' | 'not-measuring';
+    if (before > 0 && after > 0 && Math.abs(delta) > 0) {
+      status = 'active';
+    } else if (before > 0) {
+      status = 'baseline';
+    } else {
+      status = 'not-measuring';
+    }
+
+    rows.push({
+      label: metric.label,
+      metricKey: metric.id,
+      domain: domainKeyMap[metric.domain] || metric.domain,
+      domainKey: metric.domain,
+      setting: 'nursing',
+      status,
+      before: before || undefined,
+      after: after || undefined,
+      delta: Math.abs(delta) > 0 ? delta : undefined,
+      unit: metric.unit,
+      step: metric.unit === '%' ? 0.1 : metric.unit === 'rate' ? 0.01 : 1,
+    });
+  }
+
+  return rows;
+}
+
 function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting): MetricRowData[] {
   if (setting === 'outpatient') {
     return getOutpatientMetricRows(state);
@@ -315,6 +386,9 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
   }
   if (setting === 'inpatient') {
     return getInpatientMetricRows(state);
+  }
+  if (setting === 'nursing') {
+    return getNursingMetricRows(state);
   }
 
   const config = CARE_SETTING_CONFIGS[setting];
@@ -421,7 +495,7 @@ function renderPlainEnglish(template: string, vars: Record<string, string | numb
 }
 
 function getMetricInterpretation(row: MetricRowData, state: MeasureState): string | null {
-  const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey) || ED_METRICS.find(m => m.id === row.metricKey) || INPATIENT_METRICS.find(m => m.id === row.metricKey);
+  const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey) || ED_METRICS.find(m => m.id === row.metricKey) || INPATIENT_METRICS.find(m => m.id === row.metricKey) || NURSING_METRICS.find(m => m.id === row.metricKey);
   if (!metricDef) return null;
 
   const isSingleValue = metricDef.inputType === 'single';
@@ -480,7 +554,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
 }
 
 function getPhase3MetricsForDomain(domainKey: string, setting: MeasureCareSetting): MetricDefinition[] {
-  const metricsSource = setting === 'inpatient' ? INPATIENT_METRICS : setting === 'ed' ? ED_METRICS : OUTPATIENT_METRICS;
+  const metricsSource = setting === 'nursing' ? NURSING_METRICS : setting === 'inpatient' ? INPATIENT_METRICS : setting === 'ed' ? ED_METRICS : OUTPATIENT_METRICS;
   return metricsSource.filter(m => {
     if (!m.phase3Roadmap) return false;
     return m.domain === domainKey;
@@ -573,7 +647,7 @@ function DomainProgressCard({
                     const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
                     const interpretation = hasStructuredMetrics && state ? getMetricInterpretation(row, state) : null;
                     const metricDef = hasStructuredMetrics
-                      ? (structuredSetting === 'inpatient' ? INPATIENT_METRICS.find(m => m.id === row.metricKey) : structuredSetting === 'ed' ? ED_METRICS.find(m => m.id === row.metricKey) : OUTPATIENT_METRICS.find(m => m.id === row.metricKey))
+                      ? (structuredSetting === 'nursing' ? NURSING_METRICS.find(m => m.id === row.metricKey) : structuredSetting === 'inpatient' ? INPATIENT_METRICS.find(m => m.id === row.metricKey) : structuredSetting === 'ed' ? ED_METRICS.find(m => m.id === row.metricKey) : OUTPATIENT_METRICS.find(m => m.id === row.metricKey))
                       : null;
 
                     return (
@@ -918,6 +992,14 @@ export default function MeasureJourney({
     return 'no-data';
   }, [domainRows]);
 
+  const staffingStatus: DomainStatus = useMemo(() => {
+    const dr = domainRows['staffing'];
+    if (!dr) return 'no-data';
+    if (dr.active.length > 0) return 'validated';
+    if (dr.baseline.length > 0) return 'signaling';
+    return 'no-data';
+  }, [domainRows]);
+
   const domainStatusMap: Record<string, DomainStatus> = {
     workforce: domainStatus.workforce,
     revenue: domainStatus.revenue,
@@ -925,6 +1007,7 @@ export default function MeasureJourney({
     capacity: domainStatus.capacity,
     throughput: throughputStatus,
     patientFlow: patientFlowStatus,
+    staffing: staffingStatus,
     foundational: foundationalStatus,
   };
 
@@ -1105,8 +1188,8 @@ export default function MeasureJourney({
                 delay={0.15 + i * 0.05}
                 reducedMotion={!!prefersReducedMotion}
                 state={state}
-                hasStructuredMetrics={activeSettings.includes('outpatient') || activeSettings.includes('ed') || activeSettings.includes('inpatient')}
-                structuredSetting={activeSettings.includes('inpatient') ? 'inpatient' : activeSettings.includes('ed') ? 'ed' : 'outpatient'}
+                hasStructuredMetrics={activeSettings.includes('outpatient') || activeSettings.includes('ed') || activeSettings.includes('inpatient') || activeSettings.includes('nursing')}
+                structuredSetting={activeSettings.includes('nursing') ? 'nursing' : activeSettings.includes('inpatient') ? 'inpatient' : activeSettings.includes('ed') ? 'ed' : 'outpatient'}
               />
             );
           })}

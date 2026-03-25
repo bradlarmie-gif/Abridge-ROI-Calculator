@@ -136,7 +136,7 @@ function StageCard({ stage, state, compact = false }: { stage: SettingStage; sta
     capacity: 'COO, Dept Chiefs',
   };
 
-  const capacityLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
+  const capacityLabel = isNursing ? 'Staffing' : isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
 
   return (
     <motion.div

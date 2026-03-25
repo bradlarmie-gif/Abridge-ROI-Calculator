@@ -92,6 +92,27 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.inpatientAbridgeNativeData) {
         parsed.inpatientAbridgeNativeData = DEFAULT_MEASURE_STATE.inpatientAbridgeNativeData;
       }
+      if (!parsed.nursingMetrics) {
+        parsed.nursingMetrics = { ...DEFAULT_MEASURE_STATE.nursingMetrics };
+        const legacyNr = parsed.settingData?.nursing;
+        if (legacyNr) {
+          const reverseMap: Record<string, string> = {
+            docTimePerShift: 'docTimePerShift',
+            afterShiftCharting: 'chartingAfterShift',
+            overtimeHours: 'overtimeHours',
+          };
+          for (const [legacyKey, newKey] of Object.entries(reverseMap)) {
+            const b = legacyNr[`${legacyKey}_before`];
+            const a = legacyNr[`${legacyKey}_after`];
+            if ((b != null && b > 0) || (a != null && a > 0)) {
+              parsed.nursingMetrics[newKey] = { before: b ?? 0, after: a ?? 0 };
+            }
+          }
+        }
+      }
+      if (!parsed.nursingAbridgeNativeData) {
+        parsed.nursingAbridgeNativeData = DEFAULT_MEASURE_STATE.nursingAbridgeNativeData;
+      }
       if (parsed.deployment) {
         if (parsed.deployment.liveProviders === undefined) {
           parsed.deployment.liveProviders = parsed.deployment.providers || 0;

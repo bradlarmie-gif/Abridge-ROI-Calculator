@@ -1,7 +1,7 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
-import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS } from './measureCareSettings';
+import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS } from './measureCareSettings';
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -134,6 +134,11 @@ export interface MeasureState {
     noteQualityScore?: MetricValue;
     wowTime?: MetricValue;
   };
+  nursingMetrics: Record<string, MetricValue>;
+  nursingAbridgeNativeData: {
+    docTimePerShift?: MetricValue;
+    noteQualityScore?: MetricValue;
+  };
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
@@ -237,6 +242,10 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     INPATIENT_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
   ),
   inpatientAbridgeNativeData: {},
+  nursingMetrics: Object.fromEntries(
+    NURSING_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
+  ),
+  nursingAbridgeNativeData: {},
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
 };
@@ -404,6 +413,37 @@ export function syncInpatientMetricsToLegacy(state: MeasureState): Partial<Measu
   settingData.inpatient = ipData;
 
   return { timeEfficiency, settingData, inpatientMetrics: im };
+}
+
+const NURSING_LEGACY_KEY_MAP: Record<string, string> = {
+  docTimePerShift: 'docTimePerShift',
+  chartingAfterShift: 'afterShiftCharting',
+  overtimeHours: 'overtimeHours',
+};
+
+export function syncNursingMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
+  const nm = { ...state.nursingMetrics };
+  const nd = state.nursingAbridgeNativeData;
+
+  if (nd?.docTimePerShift) {
+    nm.docTimePerShift = nd.docTimePerShift;
+  }
+  if (nd?.noteQualityScore) {
+    nm.noteQualityScore = nd.noteQualityScore;
+  }
+
+  const settingData = { ...state.settingData };
+  const nursingData = { ...(settingData.nursing || {}) };
+  for (const [newKey, legacyKey] of Object.entries(NURSING_LEGACY_KEY_MAP)) {
+    const mv = nm[newKey];
+    if (mv) {
+      nursingData[`${legacyKey}_before`] = mv.before ?? 0;
+      nursingData[`${legacyKey}_after`] = mv.after ?? 0;
+    }
+  }
+  settingData.nursing = nursingData;
+
+  return { settingData, nursingMetrics: nm };
 }
 
 export interface MeasureResults {
@@ -1002,7 +1042,7 @@ const PHASE_THIRD_LABELS: Record<MeasureCareSetting, string> = {
   outpatient: 'Capacity',
   ed: 'Throughput',
   inpatient: 'Patient Flow',
-  nursing: 'Quality',
+  nursing: 'Staffing',
 };
 
 const NEXT_STAGE_METRICS: Record<MeasureCareSetting, Record<number, NextStageMetric[]>> = {

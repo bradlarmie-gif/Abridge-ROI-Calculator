@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type MetricValue, syncOutpatientMetricsToLegacy, syncEdMetricsToLegacy, syncInpatientMetricsToLegacy } from "@/lib/measureCalculator";
-import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics, OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
+import { type MeasureState, type MeasureCareSetting, type MetricValue, syncOutpatientMetricsToLegacy, syncEdMetricsToLegacy, syncInpatientMetricsToLegacy, syncNursingMetricsToLegacy } from "@/lib/measureCalculator";
+import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics, OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -625,6 +625,266 @@ function EdMetricSections({ state, updateState }: { state: MeasureState; updateS
                 key={m.id}
                 className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#E5E5E5] text-[11px] text-[#999999] italic bg-white"
                 data-testid={`chip-ed-phase3-${m.id}`}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </>
+  );
+}
+
+function NursingMetricSections({ state, updateState }: { state: MeasureState; updateState: (updates: Partial<MeasureState>) => void }) {
+  const updateMetric = useCallback((id: string, value: MetricValue) => {
+    const updated = { ...state.nursingMetrics, [id]: value };
+    const newState = { ...state, nursingMetrics: updated };
+    const legacy = syncNursingMetricsToLegacy(newState);
+    updateState({ nursingMetrics: updated, ...legacy });
+  }, [state, updateState]);
+
+  const updateNative = useCallback((key: keyof typeof state.nursingAbridgeNativeData, value: MetricValue) => {
+    const updated = { ...state.nursingAbridgeNativeData, [key]: value };
+    const newState = { ...state, nursingAbridgeNativeData: updated };
+    const legacy = syncNursingMetricsToLegacy(newState);
+    updateState({ nursingAbridgeNativeData: updated, ...legacy });
+  }, [state, updateState]);
+
+  const NR_ABRIDGE_IDS = new Set(['docTimePerShift', 'noteQualityScore']);
+  const abridgePlatformMetrics = useMemo(() => NURSING_METRICS.filter(m => NR_ABRIDGE_IDS.has(m.id)), []);
+  const workforceMetrics = useMemo(() => NURSING_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source !== 'survey'), []);
+  const workforceSurveyMetrics = useMemo(() => NURSING_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source === 'survey'), []);
+  const staffingMetrics = useMemo(() => NURSING_METRICS.filter(m => m.domain === 'staffing' && !m.phase3Roadmap), []);
+  const qualityAlwaysVisible = useMemo(() => NURSING_METRICS.filter(m => m.domain === 'quality' && !m.phase3Roadmap && m.source !== 'abridge' && ['patientFallRate', 'hapiRate'].includes(m.id)), []);
+  const qualityInfection = useMemo(() => NURSING_METRICS.filter(m => ['clabsiRate', 'cautiRate'].includes(m.id)), []);
+  const qualityPatientExp = useMemo(() => NURSING_METRICS.filter(m => ['hcahpsNurseCommunication', 'medicationErrorRate'].includes(m.id)), []);
+  const revenueMetrics = useMemo(() => NURSING_METRICS.filter(m => m.domain === 'revenue' && !m.phase3Roadmap), []);
+  const phase3Metrics = useMemo(() => NURSING_METRICS.filter(m => m.phase3Roadmap), []);
+
+  const [showSurveys, setShowSurveys] = useState(false);
+  const [showInfection, setShowInfection] = useState(false);
+  const [showPatientExp, setShowPatientExp] = useState(false);
+
+  const nm = state.nursingMetrics || {};
+
+  return (
+    <>
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 border border-[#E8E2DA]"
+        style={{ backgroundColor: '#F5F0EB' }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        data-testid="section-nursing-abridge-platform"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">From Abridge</span>
+          <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">These pull directly from your Abridge deployment data.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+        {abridgePlatformMetrics.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={nm[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => {
+              updateMetric(m.id, v);
+              if (NR_ABRIDGE_IDS.has(m.id)) {
+                updateNative(m.id as keyof typeof state.nursingAbridgeNativeData, v);
+              }
+            }}
+            note={m.description}
+          />
+        ))}
+      </motion.div>
+
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        data-testid="section-nursing-workforce"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Workforce</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">Documentation burden and nursing wellbeing. These are the highest-stakes metrics at nursing scale.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+
+        {workforceMetrics.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={nm[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => updateMetric(m.id, v)}
+          />
+        ))}
+
+        {workforceSurveyMetrics.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowSurveys(!showSurveys)}
+              className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+              data-testid="toggle-nursing-workforce-surveys"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSurveys ? 'rotate-180' : ''}`} />
+              {showSurveys ? 'Hide' : '+'} Workforce Surveys (Before / After)
+            </button>
+            <AnimatePresence>
+              {showSurveys && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-[10px] text-[#AAAAAA] italic mb-2">Use the same survey instrument for both surveys. Document scale used in Presenter Notes (MBI, single-item, etc.).</p>
+                  {workforceSurveyMetrics.map(m => (
+                    <MetricRow
+                      key={m.id}
+                      metric={m}
+                      value={nm[m.id] || { before: null, after: null, singleValue: null }}
+                      onChange={(v) => updateMetric(m.id, v)}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </motion.div>
+
+      <DomainSection
+        domain="staffing"
+        label="Staffing"
+        subtitle="Scheduling stability and direct care time. Source: staffing office and EHR activity reports."
+        metrics={staffingMetrics}
+        metricsMap={nm}
+        updateMetric={updateMetric}
+      />
+
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        data-testid="section-nursing-quality"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Quality — Nursing-Sensitive Indicators</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">NDNQI and NHSN metrics. Source: quality department and infection prevention.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+
+        {qualityAlwaysVisible.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={nm[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => updateMetric(m.id, v)}
+          />
+        ))}
+
+        {qualityInfection.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowInfection(!showInfection)}
+              className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+              data-testid="toggle-nursing-infection-prevention"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showInfection ? 'rotate-180' : ''}`} />
+              {showInfection ? 'Hide' : '+'} Infection Prevention
+            </button>
+            <AnimatePresence>
+              {showInfection && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  {qualityInfection.map(m => (
+                    <MetricRow
+                      key={m.id}
+                      metric={m}
+                      value={nm[m.id] || { before: null, after: null, singleValue: null }}
+                      onChange={(v) => updateMetric(m.id, v)}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+
+        {qualityPatientExp.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowPatientExp(!showPatientExp)}
+              className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+              data-testid="toggle-nursing-patient-experience"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPatientExp ? 'rotate-180' : ''}`} />
+              {showPatientExp ? 'Hide' : '+'} Patient Experience
+            </button>
+            <AnimatePresence>
+              {showPatientExp && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  {qualityPatientExp.map(m => (
+                    <MetricRow
+                      key={m.id}
+                      metric={m}
+                      value={nm[m.id] || { before: null, after: null, singleValue: null }}
+                      onChange={(v) => updateMetric(m.id, v)}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </motion.div>
+
+      <DomainSection
+        domain="nursing-revenue"
+        label="Revenue"
+        subtitle="CDI contribution and documentation compliance. Nursing documentation supports DRG accuracy and billing timeliness."
+        metrics={revenueMetrics}
+        metricsMap={nm}
+        updateMetric={updateMetric}
+      />
+
+      {phase3Metrics.length > 0 && (
+        <motion.div
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAFAF8] border border-dashed border-[#E5E5E5]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          data-testid="section-nursing-phase3-roadmap"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold text-[#999999] uppercase tracking-[1.5px]">Phase 3 — Strategic Metrics</span>
+          </div>
+          <p className="text-[11px] text-[#AAAAAA] italic mb-3">
+            Annual metrics measured after 12+ months. No inputs yet — these appear in your roadmap.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {phase3Metrics.map(m => (
+              <span
+                key={m.id}
+                className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#E5E5E5] text-[11px] text-[#999999] italic bg-white"
+                data-testid={`chip-nursing-phase3-${m.id}`}
               >
                 {m.label}
               </span>
@@ -1371,6 +1631,8 @@ export default function MeasureDataEntry({
           <EdMetricSections state={state} updateState={updateState} />
         ) : activeSettings.includes('inpatient') ? (
           <InpatientMetricSections state={state} updateState={updateState} />
+        ) : activeSettings.includes('nursing') ? (
+          <NursingMetricSections state={state} updateState={updateState} />
         ) : (
           <motion.div
             className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
