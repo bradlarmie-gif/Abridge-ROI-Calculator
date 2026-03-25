@@ -3,13 +3,13 @@ import type { MeasureCareSetting } from "./measureCalculator";
 export interface MetricDefinition {
   id: string;
   label: string;
-  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue' | 'throughput';
+  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue' | 'throughput' | 'patientFlow';
   phase: 1 | 2 | 3;
   inputType: 'single' | 'before-after';
   unit: string;
   unitLabel: string;
   lowerIsBetter: boolean;
-  source: 'abridge' | 'epic' | 'rcm' | 'coding' | 'survey' | 'cdi' | 'hris' | 'finance';
+  source: 'abridge' | 'epic' | 'rcm' | 'coding' | 'survey' | 'cdi' | 'hris' | 'finance' | 'partner';
   sourceLabel: string;
   description: string;
   whyItMatters: string;
@@ -863,6 +863,416 @@ export const ED_METRICS: MetricDefinition[] = [
   },
 ];
 
+export const INPATIENT_METRICS: MetricDefinition[] = [
+  {
+    id: 'docTimePerNote',
+    label: 'Documentation Time per Note',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Active time spent documenting per inpatient encounter. Includes H&P, progress notes, and discharge documentation.',
+    whyItMatters: 'Abridge platform metric. Active time spent documenting per inpatient encounter.',
+    plainEnglishTemplate:
+      'Inpatient providers are spending {{after}} minutes per note, down from {{before}}. ' +
+      "That's {{delta}} minutes back per admission — across {{providers}} providers and {{encounters}} annual admissions, " +
+      "that's {{totalHours}} hours of documentation time returned annually.",
+  },
+  {
+    id: 'noteQualityScore',
+    label: 'Note Quality Score (Star Rating)',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'stars',
+    unitLabel: 'avg stars (1–5)',
+    lowerIsBetter: false,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'In inpatient, note quality is directly upstream of CC/MCC capture and DRG assignment accuracy.',
+    whyItMatters: 'Abridge platform metric. Documentation quality drives DRG accuracy, CC/MCC capture, and compliance.',
+    plainEnglishTemplate:
+      'Average note quality is {{after}} stars — up {{delta}} from {{before}}. ' +
+      'In inpatient, documentation quality is the upstream driver of DRG accuracy, CC/MCC capture, and compliance defensibility.',
+  },
+  {
+    id: 'wowTime',
+    label: 'Words on Workday (WoW) Time',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'After-hours and outside-shift documentation burden. Particularly significant for hospitalists covering overnight.',
+    whyItMatters: 'After-hours documentation burden sourced from Epic Clarity or Abridge platform.',
+    plainEnglishTemplate:
+      'WoW time is down {{delta}} minutes per admission. ' +
+      "For {{providers}} hospitalists, that's {{totalHours}} hours of after-hours documentation eliminated annually — " +
+      'a direct driver of overnight burden and on-call burnout.',
+  },
+  {
+    id: 'timeToSignNote',
+    label: 'Time to Sign Note',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'hours',
+    unitLabel: 'hours',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'EHR Timestamps',
+    description: 'Time from end of patient interaction to completed, signed note. CMS requires H&Ps within 24h.',
+    whyItMatters: 'Source: EHR timestamp reports. CMS requires H&Ps within 24h; discharge summaries within 30 days.',
+    plainEnglishTemplate:
+      'Note sign-off time is down from {{before}}h to {{after}}h. ' +
+      'Across {{providers}} providers and {{encounters}} annual admissions, ' +
+      'this eliminates delinquent-record risk and reduces the after-shift burden that drives hospitalist turnover.',
+  },
+  {
+    id: 'workAfterHours',
+    label: 'Work After Hours',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes/week',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'EHR / Epic Signal',
+    description: 'After-hours EHR activity per provider per week. Hospitalists are disproportionately affected.',
+    whyItMatters: 'Source: Epic Signal, pajama time reports, or provider self-report.',
+    plainEnglishTemplate:
+      "After-hours documentation is down {{delta}} minutes per provider per week. " +
+      "For {{providers}} inpatient providers over 52 weeks, that's {{totalHours}} hours of protected time returned annually.",
+  },
+  {
+    id: 'burnoutAssessment',
+    label: 'Burnout Assessment (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'score',
+    unitLabel: 'survey score',
+    lowerIsBetter: true,
+    source: 'survey',
+    sourceLabel: 'Clinician Survey',
+    description: 'Before/after survey comparison using MBI, single-item, or Maslach scale.',
+    whyItMatters: 'Hospitalist burnout is heavily documentation-driven — high-signal metric for inpatient Abridge deployments.',
+    plainEnglishTemplate:
+      'Burnout scores improved from {{before}} to {{after}} on your survey scale. ' +
+      'Documentation burden accounts for roughly 40–60% of hospitalist burnout drivers.',
+  },
+  {
+    id: 'likelihoodToStay',
+    label: 'Likelihood to Stay (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'survey',
+    sourceLabel: 'Clinician Survey',
+    description: 'Before/after pulse survey — % responding "likely" or "very likely" to stay.',
+    whyItMatters: 'Hospitalist turnover costs $300K–$500K+ per physician. Align with medical staff office on instrument.',
+    plainEnglishTemplate:
+      "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
+  },
+  {
+    id: 'caseMixIndex',
+    label: 'Case Mix Index (CMI)',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'index',
+    unitLabel: 'CMI',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Finance / DRG Analytics',
+    description: 'The single most important inpatient revenue metric. CMI is a weighted average of DRG relative weights.',
+    whyItMatters: 'Even small CMI movements represent significant revenue at scale. Source: finance / DRG analytics team.',
+    plainEnglishTemplate:
+      'Case Mix Index has moved from {{before}} to {{after}} — a {{delta}} point improvement. ' +
+      'At your volume of {{encounters}} annual admissions, each 0.1 CMI improvement is worth significant additional net revenue.',
+  },
+  {
+    id: 'ccMccCaptureRate',
+    label: 'CC/MCC Capture Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'CDI / Coding QA',
+    description: 'CC/MCC capture rate — documentation completeness is the primary lever.',
+    whyItMatters: 'If it is not in the note, CDI cannot query it. Source: CDI platform or coding QA.',
+    plainEnglishTemplate:
+      'CC/MCC capture rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Each percentage point of CC/MCC improvement drives DRG weight and directly impacts CMI.',
+  },
+  {
+    id: 'drgAccuracyRate',
+    label: 'DRG Accuracy Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Revenue Cycle',
+    description: 'Percentage of cases where initial DRG assignment matches final DRG after coding review.',
+    whyItMatters: 'Higher accuracy means fewer reworks and faster billing. Source: coding QA or CDI platform.',
+    plainEnglishTemplate:
+      'DRG accuracy is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Fewer DRG corrections means faster claim submission and reduced coding rework.',
+  },
+  {
+    id: 'diagnosisCapture',
+    label: 'Diagnosis Capture Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'coding',
+    sourceLabel: 'CDI / Coding QA',
+    description: 'Completeness of diagnosis coding per admission.',
+    whyItMatters: 'Undercaptured diagnoses reduce HCC scores and risk-adjustment revenue.',
+    plainEnglishTemplate:
+      'Diagnosis capture is up {{delta}} points — from {{before}}% to {{after}}% of admissions fully coded.',
+  },
+  {
+    id: 'medicalNecessityDenialRate',
+    label: 'Medical Necessity Denial Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: true,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'Denials tied to insufficient clinical documentation supporting the admission or procedure.',
+    whyItMatters: 'Inpatient denials are high-dollar. Documentation completeness is the primary lever.',
+    plainEnglishTemplate:
+      'Medical necessity denial rate is down from {{before}}% to {{after}}% — a {{delta}}-point improvement.',
+  },
+  {
+    id: 'cleanClaimRate',
+    label: 'Clean Claim Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'Percentage of inpatient claims that pass on first submission.',
+    whyItMatters: 'Documentation completeness is the primary driver.',
+    plainEnglishTemplate:
+      'Clean claim rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Each point of improvement reduces rework cost and accelerates cash flow.',
+  },
+  {
+    id: 'lengthOfStay',
+    label: 'Average Length of Stay (ALOS)',
+    domain: 'patientFlow',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'days',
+    unitLabel: 'days',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'ADT / Case Management',
+    description: 'The signature inpatient flow metric. Documentation delays are a meaningful component of excess days.',
+    whyItMatters: 'Each excess day costs $2,000–$4,000+. Documentation completeness drives discharge readiness.',
+    plainEnglishTemplate:
+      'Average length of stay is down {{delta}} days — from {{before}} to {{after}} days. ' +
+      "At {{encounters}} annual admissions, that's {{totalDays}} patient-days freed annually.",
+  },
+  {
+    id: 'dischargeBeforeNoon',
+    label: 'Discharge Before Noon Rate',
+    domain: 'patientFlow',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'ADT / EHR',
+    description: 'Discharge timing drives ED boarding and admit-from-ED flow.',
+    whyItMatters: 'Source: ADT/EHR discharge timestamp reports.',
+    plainEnglishTemplate:
+      'Discharge before noon rate is up {{delta}} points — from {{before}}% to {{after}}% of discharges. ' +
+      'Earlier discharges free beds for afternoon admits and reduce ED boarding time.',
+  },
+  {
+    id: 'dischargeDelayRate',
+    label: 'Discharge Delay Rate',
+    domain: 'patientFlow',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Case Management',
+    description: 'Percentage of discharges delayed due to incomplete documentation.',
+    whyItMatters: 'Each delayed discharge costs the hospital approximately $2,000–$4,000 in extra bed-days.',
+    plainEnglishTemplate:
+      'Documentation-related discharge delays are down {{delta}} points — from {{before}}% to {{after}}% of cases.',
+  },
+  {
+    id: 'readmissionRate30Day',
+    label: '30-Day Readmission Rate',
+    domain: 'patientFlow',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: true,
+    source: 'partner',
+    sourceLabel: 'Quality Department',
+    description: 'CMS-reportable metric. Discharge summary completeness is a primary driver.',
+    whyItMatters: 'Under HRRP, excess readmissions generate CMS penalties. Source: quality department or EHR analytics.',
+    plainEnglishTemplate:
+      '30-day readmission rate is down {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'At {{encounters}} admissions, a {{delta}}-point reduction reduces penalty exposure and uncompensated care.',
+  },
+  {
+    id: 'hcahpsScore',
+    label: 'HCAHPS Composite Score',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'percentile',
+    unitLabel: 'percentile rank',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Patient Experience',
+    description: 'Inpatient patient experience. "Communication with doctors" domain is most directly affected.',
+    whyItMatters: 'HCAHPS performance affects value-based purchasing payments and health system reputation.',
+    plainEnglishTemplate:
+      'HCAHPS scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'The "communication with doctors" domain is most directly tied to ambient documentation.',
+  },
+  {
+    id: 'coreQualityMeasureCompliance',
+    label: 'Core Quality Measure Compliance',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Quality Department',
+    description: 'CMS/TJC core measures. Documentation completeness is often the compliance gap.',
+    whyItMatters: 'Documentation components (sepsis bundle timing, VTE documentation) improve without additional provider effort.',
+    plainEnglishTemplate:
+      'Core quality measure compliance is up {{delta}} points — from {{before}}% to {{after}}%.',
+  },
+  {
+    id: 'pressGaney',
+    label: 'Press Ganey Inpatient Score',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'percentile',
+    unitLabel: 'percentile rank',
+    lowerIsBetter: false,
+    source: 'partner',
+    sourceLabel: 'Patient Experience',
+    description: 'Inpatient-specific PG score. Physician communication domain is the primary lever.',
+    whyItMatters: 'Provider attentiveness — enabled by not typing during the encounter — is the primary driver.',
+    plainEnglishTemplate:
+      'Press Ganey inpatient scores have improved from {{before}}th to {{after}}th percentile. ' +
+      'Provider attentiveness carries the highest weight in the inpatient PG composite.',
+  },
+  {
+    id: 'physicianRetention',
+    label: 'Hospitalist / Inpatient Physician Retention Rate',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'hris',
+    sourceLabel: 'HR / Medical Staff',
+    description: 'Annual retention rate. Hospitalist turnover cost is typically $300K–$500K per physician.',
+    whyItMatters: 'Source: HR / medical staff office.',
+    plainEnglishTemplate:
+      'Inpatient physician retention has moved from {{before}}% to {{after}}% — {{delta}} points.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'agencyLocumSpend',
+    label: 'Agency / Locum Spend',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'annual spend',
+    lowerIsBetter: true,
+    source: 'finance',
+    sourceLabel: 'Finance / Contracting',
+    description: 'Annual total spend on locum/agency hospitalist coverage.',
+    whyItMatters: 'Reflects improved hospitalist stability and reduced scheduling gaps.',
+    plainEnglishTemplate:
+      'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'netPatientRevenue',
+    label: 'Net Patient Revenue per Admission',
+    domain: 'revenue',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'per admission',
+    lowerIsBetter: false,
+    source: 'finance',
+    sourceLabel: 'Finance',
+    description: 'Rolls up CMI improvement, denial reduction, LOS reduction, and DRG accuracy into a per-admission figure.',
+    whyItMatters: 'Annual strategic metric. Source: finance.',
+    plainEnglishTemplate:
+      'Net patient revenue per admission has moved from {{before}} to {{after}} — up {{delta}} per case. ' +
+      'This rolls up CMI improvement, CC/MCC capture, denial reduction, and LOS savings into one number.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'valueBasedCarePerformance',
+    label: 'Value-Based Care Contract Performance',
+    domain: 'quality',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'incentive earned',
+    lowerIsBetter: false,
+    source: 'finance',
+    sourceLabel: 'Value-Based Care Team',
+    description: 'HCAHPS, readmission rates, and quality measures all feed into VBP/shared savings performance.',
+    whyItMatters: 'Source: value-based care team or payer contracts.',
+    plainEnglishTemplate:
+      'Value-based care performance has improved from {{before}} to {{after}} in earned incentives — {{delta}} in incremental performance pay.',
+    phase3Roadmap: true,
+  },
+];
+
 export interface MetricField {
   key: string;
   label: string;
@@ -938,6 +1348,14 @@ export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey
   if (setting === 'ed') {
     return [
       { key: 'throughput', label: 'Throughput' },
+      { key: 'workforce', label: 'Workforce' },
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'quality', label: 'Quality' },
+    ];
+  }
+  if (setting === 'inpatient') {
+    return [
+      { key: 'patientFlow', label: 'Patient Flow' },
       { key: 'workforce', label: 'Workforce' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'quality', label: 'Quality' },
@@ -1212,6 +1630,9 @@ export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
   }
   if (setting === 'ed') {
     return ED_METRICS.filter(m => !m.phase3Roadmap).length;
+  }
+  if (setting === 'inpatient') {
+    return INPATIENT_METRICS.filter(m => !m.phase3Roadmap).length;
   }
   const config = CARE_SETTING_CONFIGS[setting];
   let count = 0;

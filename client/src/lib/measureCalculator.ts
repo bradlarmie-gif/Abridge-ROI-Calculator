@@ -1,7 +1,7 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
-import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS, ED_METRICS } from './measureCareSettings';
+import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS } from './measureCareSettings';
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -128,6 +128,12 @@ export interface MeasureState {
     wowTime?: MetricValue;
     noteQualityScore?: MetricValue;
   };
+  inpatientMetrics: Record<string, MetricValue>;
+  inpatientAbridgeNativeData: {
+    docTimePerNote?: MetricValue;
+    noteQualityScore?: MetricValue;
+    wowTime?: MetricValue;
+  };
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
@@ -227,6 +233,10 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     ED_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
   ),
   edAbridgeNativeData: {},
+  inpatientMetrics: Object.fromEntries(
+    INPATIENT_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
+  ),
+  inpatientAbridgeNativeData: {},
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
 };
@@ -353,6 +363,47 @@ export function syncEdMetricsToLegacy(state: MeasureState): Partial<MeasureState
   settingData.ed = edData;
 
   return { documentationQuality, timeEfficiency, settingData, edMetrics: em };
+}
+
+const INPATIENT_LEGACY_KEY_MAP: Record<string, string> = {
+  docTimePerNote: 'timeInNotes',
+  workAfterHours: 'afterHours',
+  caseMixIndex: 'caseMixIndex',
+  lengthOfStay: 'los',
+};
+
+export function syncInpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
+  const im = { ...state.inpatientMetrics };
+  const nd = state.inpatientAbridgeNativeData;
+
+  if (nd?.docTimePerNote) {
+    im.docTimePerNote = nd.docTimePerNote;
+  }
+  if (nd?.noteQualityScore) {
+    im.noteQualityScore = nd.noteQualityScore;
+  }
+  if (nd?.wowTime) {
+    im.wowTime = nd.wowTime;
+  }
+
+  const timeEfficiency = {
+    ...state.timeEfficiency,
+    timeInNotesWithout: im.docTimePerNote?.before ?? state.timeEfficiency.timeInNotesWithout,
+    timeInNotesWith: im.docTimePerNote?.after ?? state.timeEfficiency.timeInNotesWith,
+  };
+
+  const settingData = { ...state.settingData };
+  const ipData = { ...(settingData.inpatient || {}) };
+  for (const [newKey, legacyKey] of Object.entries(INPATIENT_LEGACY_KEY_MAP)) {
+    const mv = im[newKey];
+    if (mv) {
+      ipData[`${legacyKey}_before`] = mv.before ?? 0;
+      ipData[`${legacyKey}_after`] = mv.after ?? 0;
+    }
+  }
+  settingData.inpatient = ipData;
+
+  return { timeEfficiency, settingData, inpatientMetrics: im };
 }
 
 export interface MeasureResults {

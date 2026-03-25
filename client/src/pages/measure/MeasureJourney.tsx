@@ -22,6 +22,7 @@ import {
   getMetricSuffix,
   OUTPATIENT_METRICS,
   ED_METRICS,
+  INPATIENT_METRICS,
   type DomainKey,
   type MetricDefinition,
 } from "@/lib/measureCareSettings";
@@ -46,6 +47,7 @@ const reductionMetrics = new Set([
   'annual_turnover', 'readmission_rate', 'patient_wait_time',
   'docTimePerEncounter', 'noteCompletionTime', 'timeToCloseEncounter', 'workAfterHours',
   'doorToProvider', 'doorToDisposition', 'medicalNecessityDenialRate', 'agencyLocumSpend',
+  'docTimePerNote', 'timeToSignNote', 'lengthOfStay', 'dischargeDelayRate', 'readmissionRate30Day',
 ]);
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -238,12 +240,81 @@ function getEdMetricRows(state: MeasureState): MetricRowData[] {
   return rows;
 }
 
+const INPATIENT_LEGACY_KEY_MAP: Record<string, string> = {
+  docTimePerNote: 'timeInNotes',
+  workAfterHours: 'afterHours',
+  caseMixIndex: 'caseMixIndex',
+  lengthOfStay: 'los',
+};
+
+function getInpatientMetricRows(state: MeasureState): MetricRowData[] {
+  const rows: MetricRowData[] = [];
+  const im = state.inpatientMetrics || {};
+  const sd = state.settingData?.inpatient || {};
+
+  const domainKeyMap: Record<string, string> = {
+    workforce: 'Workforce', revenue: 'Revenue', quality: 'Quality',
+    patientFlow: 'Patient Flow',
+  };
+
+  for (const metric of INPATIENT_METRICS) {
+    if (metric.phase3Roadmap) continue;
+
+    const mv = im[metric.id];
+
+    let before = mv?.before ?? 0;
+    let after = mv?.after ?? 0;
+
+    if (before === 0 && after === 0) {
+      const legacyKey = INPATIENT_LEGACY_KEY_MAP[metric.id];
+      if (legacyKey) {
+        const lb = sd[`${legacyKey}_before`] ?? 0;
+        const la = sd[`${legacyKey}_after`] ?? 0;
+        if (lb > 0 || la > 0) {
+          before = lb;
+          after = la;
+        }
+      }
+    }
+
+    const delta = after - before;
+
+    let status: 'active' | 'baseline' | 'not-measuring';
+    if (before > 0 && after > 0 && Math.abs(delta) > 0) {
+      status = 'active';
+    } else if (before > 0) {
+      status = 'baseline';
+    } else {
+      status = 'not-measuring';
+    }
+
+    rows.push({
+      label: metric.label,
+      metricKey: metric.id,
+      domain: domainKeyMap[metric.domain] || metric.domain,
+      domainKey: metric.domain,
+      setting: 'inpatient',
+      status,
+      before: before || undefined,
+      after: after || undefined,
+      delta: Math.abs(delta) > 0 ? delta : undefined,
+      unit: metric.unit,
+      step: metric.unit === '%' ? 0.1 : 1,
+    });
+  }
+
+  return rows;
+}
+
 function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting): MetricRowData[] {
   if (setting === 'outpatient') {
     return getOutpatientMetricRows(state);
   }
   if (setting === 'ed') {
     return getEdMetricRows(state);
+  }
+  if (setting === 'inpatient') {
+    return getInpatientMetricRows(state);
   }
 
   const config = CARE_SETTING_CONFIGS[setting];
@@ -350,7 +421,7 @@ function renderPlainEnglish(template: string, vars: Record<string, string | numb
 }
 
 function getMetricInterpretation(row: MetricRowData, state: MeasureState): string | null {
-  const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey) || ED_METRICS.find(m => m.id === row.metricKey);
+  const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey) || ED_METRICS.find(m => m.id === row.metricKey) || INPATIENT_METRICS.find(m => m.id === row.metricKey);
   if (!metricDef) return null;
 
   const isSingleValue = metricDef.inputType === 'single';
@@ -385,6 +456,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
     ? Math.round(delta * adoptedEncounters)
     : 0;
   const totalMinutes = metricDef.unit === 'min' ? formatNumber(Math.round(Math.abs(delta) * adoptedEncounters)) : '0';
+  const totalDays = metricDef.unit === 'days' ? formatNumber(Math.round(Math.abs(delta) * adoptedEncounters)) : '0';
   const total = metricDef.unit === 'count' ? delta * state.deployment.providers : 0;
   const cf = state.calibration?.conversionFactor ?? 33;
   const wrvuValue = metricDef.id === 'wrvu' ? formatCurrency(delta * adoptedEncounters * cf * 0.5) : '';
@@ -399,6 +471,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
     providers: String(state.deployment.providers),
     totalHours: formatNumber(totalHours),
     totalMinutes,
+    totalDays,
     total: formatNumber(total),
     value: wrvuValue,
     cf: String(cf),
@@ -407,7 +480,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
 }
 
 function getPhase3MetricsForDomain(domainKey: string, setting: MeasureCareSetting): MetricDefinition[] {
-  const metricsSource = setting === 'ed' ? ED_METRICS : OUTPATIENT_METRICS;
+  const metricsSource = setting === 'inpatient' ? INPATIENT_METRICS : setting === 'ed' ? ED_METRICS : OUTPATIENT_METRICS;
   return metricsSource.filter(m => {
     if (!m.phase3Roadmap) return false;
     return m.domain === domainKey;
@@ -500,7 +573,7 @@ function DomainProgressCard({
                     const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
                     const interpretation = hasStructuredMetrics && state ? getMetricInterpretation(row, state) : null;
                     const metricDef = hasStructuredMetrics
-                      ? (structuredSetting === 'ed' ? ED_METRICS.find(m => m.id === row.metricKey) : OUTPATIENT_METRICS.find(m => m.id === row.metricKey))
+                      ? (structuredSetting === 'inpatient' ? INPATIENT_METRICS.find(m => m.id === row.metricKey) : structuredSetting === 'ed' ? ED_METRICS.find(m => m.id === row.metricKey) : OUTPATIENT_METRICS.find(m => m.id === row.metricKey))
                       : null;
 
                     return (
@@ -837,13 +910,21 @@ export default function MeasureJourney({
     return 'no-data';
   }, [domainRows, domainStatus.capacity]);
 
+  const patientFlowStatus: DomainStatus = useMemo(() => {
+    const dr = domainRows['patientFlow'];
+    if (!dr) return 'no-data';
+    if (dr.active.length > 0) return 'validated';
+    if (dr.baseline.length > 0) return 'signaling';
+    return 'no-data';
+  }, [domainRows]);
+
   const domainStatusMap: Record<string, DomainStatus> = {
     workforce: domainStatus.workforce,
     revenue: domainStatus.revenue,
     quality: domainStatus.quality,
     capacity: domainStatus.capacity,
     throughput: throughputStatus,
-    patientFlow: domainStatus.capacity,
+    patientFlow: patientFlowStatus,
     foundational: foundationalStatus,
   };
 
@@ -1024,8 +1105,8 @@ export default function MeasureJourney({
                 delay={0.15 + i * 0.05}
                 reducedMotion={!!prefersReducedMotion}
                 state={state}
-                hasStructuredMetrics={activeSettings.includes('outpatient') || activeSettings.includes('ed')}
-                structuredSetting={activeSettings.includes('ed') ? 'ed' : 'outpatient'}
+                hasStructuredMetrics={activeSettings.includes('outpatient') || activeSettings.includes('ed') || activeSettings.includes('inpatient')}
+                structuredSetting={activeSettings.includes('inpatient') ? 'inpatient' : activeSettings.includes('ed') ? 'ed' : 'outpatient'}
               />
             );
           })}

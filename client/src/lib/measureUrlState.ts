@@ -70,6 +70,28 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.edAbridgeNativeData) {
         parsed.edAbridgeNativeData = DEFAULT_MEASURE_STATE.edAbridgeNativeData;
       }
+      if (!parsed.inpatientMetrics) {
+        parsed.inpatientMetrics = { ...DEFAULT_MEASURE_STATE.inpatientMetrics };
+        const legacyIp = parsed.settingData?.inpatient;
+        if (legacyIp) {
+          const reverseMap: Record<string, string> = {
+            timeInNotes: 'docTimePerNote',
+            afterHours: 'workAfterHours',
+            caseMixIndex: 'caseMixIndex',
+            los: 'lengthOfStay',
+          };
+          for (const [legacyKey, newKey] of Object.entries(reverseMap)) {
+            const b = legacyIp[`${legacyKey}_before`];
+            const a = legacyIp[`${legacyKey}_after`];
+            if ((b != null && b > 0) || (a != null && a > 0)) {
+              parsed.inpatientMetrics[newKey] = { before: b ?? 0, after: a ?? 0 };
+            }
+          }
+        }
+      }
+      if (!parsed.inpatientAbridgeNativeData) {
+        parsed.inpatientAbridgeNativeData = DEFAULT_MEASURE_STATE.inpatientAbridgeNativeData;
+      }
       if (parsed.deployment) {
         if (parsed.deployment.liveProviders === undefined) {
           parsed.deployment.liveProviders = parsed.deployment.providers || 0;
