@@ -380,6 +380,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
     ? state.deployment.abridgeEncounters
     : Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100));
   const totalHours = metricDef.unit === 'min' ? Math.round((delta * adoptedEncounters) / 60) : 0;
+  const totalMinutes = metricDef.unit === 'min' ? formatNumber(Math.round(Math.abs(delta) * adoptedEncounters)) : '0';
   const total = metricDef.unit === 'count' ? delta * state.deployment.providers : 0;
   const cf = state.calibration?.conversionFactor ?? 33;
   const wrvuValue = metricDef.id === 'wrvu' ? formatCurrency(delta * adoptedEncounters * cf * 0.5) : '';
@@ -393,6 +394,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
     encounters: formatNumber(adoptedEncounters),
     providers: String(state.deployment.providers),
     totalHours: formatNumber(totalHours),
+    totalMinutes,
     total: formatNumber(total),
     value: wrvuValue,
     cf: String(cf),

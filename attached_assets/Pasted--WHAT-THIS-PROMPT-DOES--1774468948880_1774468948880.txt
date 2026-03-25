@@ -1,0 +1,232 @@
+ WHAT THIS PROMPT DOES
+                                                                                                                                                                                                               
+  Three things:                                             
+  1. Strip metric input sections out of MeasureDataEntry.tsx (Partner Profile). That page becomes org context only.                                                                                            
+  2. Rebuild the Select Metrics page as the primary data entry experience — fast, lightweight, designed for a live call.                                                                                       
+  3. Wire multi-setting support so selecting Outpatient + ED surfaces the right metrics for both without doubling the form.
+                                                                                                                                                                                                               
+  Read all sections before touching any file.                                                                                                                                                                  
+                                              
+  ---                                                                                                                                                                                                          
+  PART 1 — Strip MeasureDataEntry.tsx                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Remove all domain metric sections (Quality, Capacity, Workforce, Revenue, and any Phase-labeled sections). Keep only:                                                                                        
+                                                                                                                                                                                                               
+  - Org name                                                                                                                                                                                                   
+  - Care setting selector (multi-select: Outpatient, ED, Inpatient, Nursing)
+  - Go-live date per setting                                                                                                                                                                                   
+  - Provider count per setting                              
+  - Annual encounter/admission volume per setting                                                                                                                                                              
+  - Monthly data toggle (move this to the Select Metrics page)                                                                                                                                                 
+                                                                                                                                                                                                               
+  The Partner Profile page should be completable in under 2 minutes. No metric inputs, no before/after fields, no domain sections.                                                                             
+                                                                                                                                                                                                               
+  ---                                                       
+  PART 2 — Rebuild the Select Metrics page                                                                                                                                                                     
+                                                            
+  This is the main work. The file is likely MeasureJourney.tsx or similar — find it from the "Select Metrics" route.                                                                                           
+                                                            
+  Page header                                                                                                                                                                                                  
+   
+  WHAT ARE YOU MEASURING?                                                                                                                                                                                      
+  [care setting pills — e.g. "Outpatient  ·  ED"]           
+                                                                                                                                                                                                               
+  [progress bar]  4 of 14 metrics active                    
+                                                                                                                                                                                                               
+  Progress bar fills as metrics are activated. No percentage label — just the fill and the count.                                                                                                              
+                                                                                                                                                                                                               
+  Foundational section                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Always visible, no toggle, no collapse. These are the Abridge platform metrics — always on for every setting:
+                                                                                                                                                                                                               
+  ─── FOUNDATIONAL ─────────────────────────────────────── always on ──
+                                                                                                                                                                                                               
+    Documentation Time                                      
+      Outpatient    [ before ] → [ after ]                                                                                                                                                                     
+      ED            [ before ] → [ after ]                  
+                                                                                                                                                                                                               
+    Note Quality Score                        
+      Outpatient    [ before ] → [ after ]                                                                                                                                                                     
+      ED            [ before ] → [ after ]                  
+                                                                                                                                                                                                               
+  If single setting, no setting label — just the two fields.
+                                                                                                                                                                                                               
+  Domain accordions                                         
+                                                                                                                                                                                                               
+  Four domain rows below Foundational. Each shows name + active metric count + chevron.
+                                                                                                                                                                                                               
+    CAPACITY / THROUGHPUT              0 of 4 active  ›     
+    WORKFORCE                          0 of 6 active  ›                                                                                                                                                        
+    REVENUE                            0 of 5 active  ›
+    QUALITY                            0 of 3 active  ›                                                                                                                                                        
+                                                                                                                                                                                                               
+  Domain label uses the setting-aware display name:
+  - capacity → "Capacity" (outpatient), "Throughput" (ED), "Patient Flow" (inpatient), "Staffing" (nursing)                                                                                                    
+  - Multi-setting: show the primary setting's label, e.g. "Capacity / Throughput" if outpatient + ED are both active                                                                                           
+                                                                                                                                                                                                               
+  When a domain expands, it reveals three chapter sections:                                                                                                                                                    
+                                                                                                                                                                                                               
+  ---                                                       
+  Chapter structure within each domain                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ── Documentation impact ─────────────────────────────────────────────                                                                                                                                        
+  [metrics]                                                                                                                                                                                                    
+                                                            
+  ── Efficiency gains ─────────────────────────────────────────────────
+  [metrics]                                                                                                                                                                                                    
+   
+  ── [Setting-specific label] ─────────────────────────────────────────                                                                                                                                        
+  [metrics — visually dimmed: opacity-40, no hover state change]
+                                              
+  Third chapter label by setting:                                                                                                                                                                              
+  - Outpatient → "Capacity gains"         
+  - ED → "Throughput gains"                                                                                                                                                                                    
+  - Inpatient → "Flow outcomes"                                                                                                                                                                                
+  - Nursing → "Staffing outcomes"                                                                                                                                                                              
+  - Multi-setting: use primary setting label                                                                                                                                                                   
+                                                            
+  The third chapter is opacity-40. It renders. It's clickable. But it does not call attention to itself. No lock icon, no tooltip, no explanation — just visually receded. A user who knows they have that data
+   can still enter it.                        
+                                                                                                                                                                                                               
+  ---
+  Metric row states                                                                                                                                                                                            
+                                                            
+  Empty metric (not yet added):                                                                                                                                                                                
+    Time to Close Encounter           + Add                 
+  Single row. Right-aligned "+ Add" in muted text. Clicking "+ Add" expands inline inputs — the row grows to show the fields. Nothing else on the page moves or collapses.
+                                              
+  Active metric — single setting:                                                                                                                                                                              
+    ✓  Time to Close Encounter   [ 2.4 h ] → [ 0.8 h ]   −67%  ↗
+  Collapsed to one line. Delta badge appears immediately when both fields have values. Clicking anywhere on the row expands to edit.                                                                           
+                                                                                                                                                                                                               
+  Active metric — multi-setting (different values per setting):                                                                                                                                                
+    ✓  Time to Close Encounter                                                                                                                                                                                 
+         Outpatient   [ 2.4 h ] → [ 0.8 h ]   −67%  ↗                                                                                                                                                          
+         ED           [ 3.1 h ] → [ 1.4 h ]   −55%  ↗                                                                                                                                                          
+                                                                                                                                                                                                               
+  Shared org-wide metric (burnout, likelihood to stay):                                                                                                                                                        
+    ✓  Burnout Assessment   All settings   [ 72 ] → [ 48 ]   −33%  ↗
+  Single entry regardless of how many settings are active. Label reads "All settings" in muted text.                                                                                                           
+                                                                                                                                                                                                               
+  Monthly trend toggle:                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Right of each active metric row, a quiet toggle:                                                                                                                                                             
+                                                                                                                                                                                                               
+    ✓  Time to Close   [ 2.4 ] → [ 0.8 ]   −67%  ↗   ↕ trend                                                                                                                                                   
+                                                                                                                                                                                                               
+  "↕ trend" in muted gray. Clicking replaces the two before/after fields with a compact month-by-month grid — one cell per month since go-live. The grid starts at go-live month and adds one column per month
+  elapsed. Before/after mode can be restored by clicking "↕ simple."                                                                                                                                           
+                                                                                                                                                                                                               
+  Monthly grid example (4 months live):                                                                                                                                                                        
+    Time to Close   Oct  Nov  Dec  Jan                                                                                                                                                                         
+                    2.4  2.1  1.6  0.8                                                                                                                                                                         
+  Tab navigates across cells left to right, then to the next metric.                                                                                                                                           
+                                              
+  ---                                                                                                                                                                                                          
+  Interaction model                                         
+                                                                                                                                                                                                               
+  - Tab key moves forward through active + empty metric fields in order, top to bottom within the current chapter, then to the next chapter, then to the next domain                                           
+  - Enter on a "+ Add" row activates the metric and focuses the first field                                                                                                                                    
+  - Escape collapses an expanded metric row back to its summary state                                                                                                                                          
+  - Delta badge calculates and appears the moment both fields have non-empty values — no submit, no blur event delay
+  - Auto-save on every keystroke — state is never lost                                                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Footer                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ─────────────────────────────────────────────────────────────────────                                                                                                                                        
+  MODEL ASSUMPTIONS     Defaults applied  ✎  ›                                                                                                                                                                 
+                                                            
+  [ View Journey Dashboard → ]                
+                                                                                                                                                                                                               
+  "View Journey Dashboard" button:
+  - Disabled + muted when zero metrics are active                                                                                                                                                              
+  - Active (orange/red, clickable) the moment any single metric has both fields filled
+  - Does not require completing all domains                                                                                                                                                                    
+                                                            
+  Model Assumptions expands inline — shows the assumption values (provider rate, overhead %, conversion factors) as editable fields. Defaults pre-filled. Collapsed by default.                                
+                                              
+  ---                                                                                                                                                                                                          
+  PART 3 — Multi-setting metric resolution logic            
+                                                                                                                                                                                                               
+  In measureCareSettings.ts, add a resolver function:       
+                                                                                                                                                                                                               
+  export function getMetricsForSettings(settings: CareSetting[]): {                                                                                                                                            
+    metric: MetricDefinition;                 
+    settings: CareSetting[];  // which settings this metric applies to                                                                                                                                         
+    isOrgWide: boolean;       // true for burnout, likelihoodToStay
+  }[] {                                                                                                                                                                                                        
+    const ORG_WIDE_METRIC_IDS = ['burnoutAssessment', 'likelihoodToStay'];                                                                                                                                     
+                                                                                                                                                                                                               
+    const allMetrics = settings.flatMap(setting => {                                                                                                                                                           
+      const metricsForSetting = getMetricsForSetting(setting); // existing function
+      return metricsForSetting.map(m => ({ metric: m, setting }));                                                                                                                                             
+    });                                                     
+                                                                                                                                                                                                               
+    // Group by metric id                                                                                                                                                                                      
+    const grouped = new Map<string, { metric: MetricDefinition; settings: CareSetting[] }>();                                                                                                                  
+    for (const { metric, setting } of allMetrics) {                                                                                                                                                            
+      if (!grouped.has(metric.id)) {                                                                                                                                                                           
+        grouped.set(metric.id, { metric, settings: [] });   
+      }                                                                                                                                                                                                        
+      grouped.get(metric.id)!.settings.push(setting);
+    }                                                                                                                                                                                                          
+                                                            
+    return Array.from(grouped.values()).map(({ metric, settings }) => ({                                                                                                                                       
+      metric,                                               
+      settings,
+      isOrgWide: ORG_WIDE_METRIC_IDS.includes(metric.id),                                                                                                                                                      
+    }));
+  }                                                                                                                                                                                                            
+                                                            
+  For org-wide metrics, always render a single input regardless of how many settings are active.
+  For per-setting metrics present in multiple settings, render one input row per setting.
+  For setting-specific metrics (LWBS, LOS, etc.), render once with the setting tagged.
+                                                                                                                                                                                                               
+  ---                                     
+  PART 4 — State model updates in measureCalculator.ts                                                                                                                                                         
+                                                                                                                                                                                                               
+  MeasureState needs to store metric values keyed by metricId + setting:
+                                                                                                                                                                                                               
+  interface MetricEntry {                                                                                                                                                                                      
+    before: number | null;
+    after: number | null;                                                                                                                                                                                      
+    monthlyData?: number[];  // populated when monthly trend mode is on
+    isMonthlyMode: boolean;                                                                                                                                                                                    
+  }                                                         
+                                          
+  // In MeasureState:                                                                                                                                                                                          
+  metricValues: Record<string, MetricEntry>;                                                                                                                                                                   
+  // Key format: `${metricId}` for org-wide, `${metricId}__${setting}` for per-setting                                                                                                                         
+                                                                                                                                                                                                               
+  Helper:                                                   
+  export function metricKey(metricId: string, setting?: CareSetting): string {                                                                                                                                 
+    return setting ? `${metricId}__${setting}` : metricId;                                                                                                                                                     
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                       
+  PART 5 — Visual / animation spec                                                                                                                                                                             
+                                                                                                                                                                                                               
+  - Domain accordion open/close: height animation, 200ms ease-out. Use AnimatePresence + motion.div with initial={{ height: 0 }} animate={{ height: 'auto' }}.                                                 
+  - Metric row expand (when "+ Add" clicked): same height animation, 150ms. The row grows in place — nothing else jumps.                                                                                       
+  - Delta badge appear: opacity + translateX fade-in from right, 100ms, triggers when delta is first computed.
+  - Progress bar fill: width transition, 300ms ease-out, updates when any metric is activated or deactivated.
+  - Third chapter section: opacity: 0.4 applied to the entire section container — label, metric rows, everything. No transition on hover.                                                                      
+                                                                                                                                                                                                               
+  Spacing: domain rows have py-4 border-bottom. Chapter labels are small-caps, muted, text-xs tracking-widest. Metric rows are py-3. Active metrics with data have a subtle left border in the domain color    
+  (border-l-2).                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  VERIFICATION                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  1. Partner Profile page has no metric inputs — just org context fields
+  2. Selecting Outpatient + ED on Partner Profile → Select Metrics page shows both settings' metrics
+  3. Burnout and Likelihood to Stay show single "All settings" input regardless of how many settings are active                                                                                                
+  4. LWBS Rate only appears when ED is an active setting
+  5. LOS only appears when Inpatient is an active setting                                                                                                                                                      
+  6. Third chapter in every domain is visually receded — not locked, not hidden, just quiet                                                                                                                    
+  7. Delta badge appears immediately on both-fields-filled with no delay                                                                                                                                       
+  8. View Journey Dashboard button is active as soon as one metric has complete before/after data                                                                                                              
+  9. Tab key navigates forward through fields without focus traps                                                                                                                                              
+  10. Monthly trend toggle is visible per metric and replaces before/after fields when activated                                                                                                               
+  11. Progress bar count updates correctly as metrics are added/removed  
