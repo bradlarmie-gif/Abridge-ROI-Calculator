@@ -1,0 +1,706 @@
+Confirmed Outpatient Domain Map                                                                                                                                                                              
+                                                                                                                                                                                                               
+  ┌──────────────┬─────────────────────────────────┬───────┬──────────────────┬──────────────────────────────────┐                                                                                             
+  │    Domain    │             Metric              │ Phase │      Source      │            Input Type            │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Foundational │ % Utilization                   │ 1     │ Abridge Platform │ Single value                     │
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                             
+  │ Foundational │ Patient Consent Rate            │ 1     │ Abridge Platform │ Single value %                   │
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                             
+  │ Foundational │ % Abridge User Retention        │ 2     │ Abridge Platform │ Single value %                   │                                                                                           
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                             
+  │ Quality      │ Avg Note Star Rating            │ 1     │ Abridge Platform │ Before / After (0–5)             │
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                             
+  │ Quality      │ Diagnosis Capture Rate          │ 2     │ Coding Analytics │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Quality      │ Diagnosis Specificity           │ 2     │ Coding Analytics │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Workforce    │ Time to Close Encounter         │ 1     │ Epic Clarity     │ Before / After (minutes)         │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Workforce    │ Work After Hours — Perceived    │ 1     │ Pulse Survey     │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Workforce    │ Work Outside Work — Empirical   │ 1     │ Epic Clarity     │ Before / After (hrs/week)        │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Workforce    │ Burnout Assessment Score        │ 1     │ Clinician Survey │ Before / After (0–100)           │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Workforce    │ Likelihood to Stay              │ 2     │ Clinician Survey │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Capacity     │ Time in Note per Appt           │ 1     │ Epic Clarity     │ Before / After (minutes)         │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Capacity     │ % Effort Reduction              │ 1     │ Clinician Survey │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Capacity     │ Patients per Provider per Month │ 2     │ Epic Clarity     │ Before / After (count)           │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Capacity     │ Visits per Clinician Hour       │ 2     │ Epic Clarity     │ Before / After (ratio)           │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Revenue      │ wRVU per Encounter              │ 1     │ Epic Clarity     │ Before / After (decimal)         │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Revenue      │ Level of Service / E/M Level    │ 1     │ RCM Platform     │ Before / After (99211–99215 avg) │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Revenue      │ HCC Capture Rate                │ 2     │ Coding Analytics │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Revenue      │ Clean Claim Rate                │ 2     │ RCM Platform     │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤
+  │ Revenue      │ Initial Denial Rate             │ 2     │ RCM Platform     │ Before / After %                 │                                                                                             
+  ├──────────────┼─────────────────────────────────┼───────┼──────────────────┼──────────────────────────────────┤                                                                                           
+  │ Revenue      │ Net Collection Rate             │ 2     │ RCM Platform     │ Before / After %                 │
+  └──────────────┴─────────────────────────────────┴───────┴──────────────────┴──────────────────────────────────┘
+                                                                                                                                                                                                               
+  Phase 3 — shown as roadmap only, no data entry:
+  3rd Next Available, Physician Retention, HEDIS, RAF Scores, MIPS, Net Patient Revenue, Recapture Dx                                                                                                          
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  REPLIT PROMPT: Outpatient Metric Definitions                                                                                                                                                               
+                                                                                                                                                                                                               
+  Update the outpatient metric definitions across the Measure path.                                                                                                                                            
+  Read the existing files before changing anything.
+  Files to modify:                                                                                                                                                                                             
+    client/src/lib/measureCareSettings.ts                                                                                                                                                                    
+    client/src/lib/measureCalculator.ts                                                                                                                                                                        
+    client/src/pages/measure/MeasureDataEntry.tsx                                                                                                                                                              
+    client/src/pages/measure/MeasureInventory.tsx                                                                                                                                                              
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                   
+  PART 1: METRIC DEFINITIONS                                                                                                                                                                                   
+  Update measureCareSettings.ts                                                                                                                                                                              
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                             
+  Replace or update the outpatient metric configuration with the                                                                                                                                               
+  following complete definition. This is the source of truth.                                                                                                                                                
+                                                                                                                                                                                                               
+  export interface MetricDefinition {                                                                                                                                                                          
+    id: string                                                                                                                                                                                                 
+    label: string                                                                                                                                                                                              
+    domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue'                                                                                                                                
+    phase: 1 | 2 | 3                                                                                                                                                                                           
+    inputType: 'single' | 'before-after'                                                                                                                                                                     
+    unit: string               // display unit: 'min' | '%' | 'hrs/wk' | 'wRVU' | 'score' | 'count' | 'ratio'
+    unitLabel: string          // human label: 'minutes' | 'percent' | etc.                                                                                                                                    
+    lowerIsBetter: boolean     // true = improvement means the after value is lower
+    source: 'abridge' | 'epic' | 'rcm' | 'coding' | 'survey' | 'cdi' | 'hris' | 'finance'                                                                                                                      
+    sourceLabel: string        // display: 'Abridge Platform' | 'Epic Clarity' | etc.                                                                                                                          
+    description: string        // one sentence: what this metric is                                                                                                                                            
+    whyItMatters: string       // one sentence: why Abridge affects this                                                                                                                                       
+    plainEnglishTemplate: string  // template for the interpretation sentence                                                                                                                                  
+                                  // uses {{delta}}, {{unit}}, {{encounters}},                                                                                                                                 
+                                  // {{providers}}, {{totalHours}} as variables                                                                                                                                
+    phase3Roadmap?: boolean    // true = shown as "coming" only, no data entry                                                                                                                                 
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export const OUTPATIENT_METRICS: MetricDefinition[] = [                                                                                                                                                      
+                                                                                                                                                                                                               
+    // ─── FOUNDATIONAL ───────────────────────────────────────────                                                                                                                                          
+    {                                                                                                                                                                                                          
+      id: 'utilization',                                                                                                                                                                                     
+      label: '% Utilization',                                                                                                                                                                                  
+      domain: 'foundational',                                                                                                                                                                                
+      phase: 1,                                                                                                                                                                                                
+      inputType: 'single',                                                                                                                                                                                   
+      unit: '%',                                                                                                                                                                                               
+      unitLabel: 'percent',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'abridge',                                                                                                                                                                                     
+      sourceLabel: 'Abridge Platform',        
+      description: 'Share of eligible encounters where Abridge was actively used.',
+      whyItMatters: 'Everything downstream depends on this. Below 60%, signals are from early adopters, not the full deployment.',
+      plainEnglishTemplate: '{{value}}% of your eligible encounters are documented with Abridge — across {{providers}} providers.',                                                                            
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'consent_rate',                                                                                                                                                                                      
+      label: 'Patient Consent Rate',                                                                                                                                                                           
+      domain: 'foundational',                                                                                                                                                                                  
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'single',                
+      unit: '%',
+      unitLabel: 'percent',                                                                                                                                                                                    
+      lowerIsBetter: false,
+      source: 'abridge',                                                                                                                                                                                       
+      sourceLabel: 'Abridge Platform',                                                                                                                                                                       
+      description: 'Percentage of Abridge-eligible encounters where documented patient consent was captured.',
+      whyItMatters: 'A high consent rate signals provider confidence in presenting ambient AI to patients.',
+      plainEnglishTemplate: '{{value}}% of patients consented to ambient documentation in their visit.',
+      phase3Roadmap: false,                                                                                                                                                                                    
+    },                                        
+    {                                                                                                                                                                                                          
+      id: 'user_retention',                                                                                                                                                                                    
+      label: '% Abridge User Retention',                                                                                                                                                                       
+      domain: 'foundational',                                                                                                                                                                                  
+      phase: 2,                                                                                                                                                                                                
+      inputType: 'single',                                                                                                                                                                                   
+      unit: '%',
+      unitLabel: 'percent',                   
+      lowerIsBetter: false,               
+      source: 'abridge',
+      sourceLabel: 'Abridge Platform',                                                                                                                                                                         
+      description: 'Percentage of providers who continue using Abridge month-over-month.',
+      whyItMatters: 'Retention above 80% signals the tool is working, not just adopted out of mandate.',                                                                                                       
+      plainEnglishTemplate: '{{value}}% of providers who started using Abridge are still using it — a leading indicator of workforce ROI.',                                                                  
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── QUALITY ────────────────────────────────────────────────                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'note_star_rating',                                                                                                                                                                                  
+      label: 'Avg Note Star Rating',                                                                                                                                                                         
+      domain: 'quality',                  
+      phase: 1,
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: '/ 5',
+      unitLabel: 'out of 5',                                                                                                                                                                                   
+      lowerIsBetter: false,                                                                                                                                                                                  
+      source: 'abridge',                  
+      sourceLabel: 'Abridge Platform',
+      description: 'AI-assessed documentation quality score on a 1–5 scale.',                                                                                                                                  
+      whyItMatters: 'Note quality is the upstream driver of every downstream revenue and risk metric.',
+      plainEnglishTemplate: 'Note quality improved from {{before}} to {{after}} — a {{delta}} point lift on a 5-point scale.',                                                                                 
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'diagnosis_capture',                                                                                                                                                                                 
+      label: 'Diagnosis Capture Rate',                                                                                                                                                                         
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',
+      unit: '%',                                                                                                                                                                                               
+      unitLabel: 'percent',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'coding',                                                                                                                                                                                      
+      sourceLabel: 'Coding Analytics',        
+      description: 'Percentage of clinically relevant diagnoses that are documented and coded per encounter.',
+      whyItMatters: 'Abridge captures conditions discussed in the visit that providers previously missed in their notes.',
+      plainEnglishTemplate: 'Diagnosis capture improved {{delta}} points — more conditions discussed are making it into the record.',                                                                          
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'diagnosis_specificity',                                                                                                                                                                             
+      label: 'Diagnosis Specificity',                                                                                                                                                                          
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',              
+      unit: '%',                          
+      unitLabel: 'percent',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'coding',
+      sourceLabel: 'Coding Analytics',                                                                                                                                                                         
+      description: 'Percentage of diagnoses coded to the highest level of ICD-10 specificity available.',                                                                                                    
+      whyItMatters: 'Specific diagnoses support accurate risk adjustment, quality measures, and payer negotiations.',
+      plainEnglishTemplate: 'Diagnosis specificity improved {{delta}} points — more conditions are coded at the level payers and quality programs require.',
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── WORKFORCE ──────────────────────────────────────────────                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'time_to_close',                                                                                                                                                                                     
+      label: 'Time to Close Encounter',                                                                                                                                                                        
+      domain: 'workforce',
+      phase: 1,                                                                                                                                                                                                
+      inputType: 'before-after',                                                                                                                                                                             
+      unit: 'min',                            
+      unitLabel: 'minutes',               
+      lowerIsBetter: true,
+      source: 'epic',                                                                                                                                                                                          
+      sourceLabel: 'Epic Clarity',
+      description: 'Average minutes from encounter end to note signed and encounter closed.',                                                                                                                  
+      whyItMatters: 'Long close times mean after-hours documentation. Reducing this returns evenings to providers.',                                                                                         
+      plainEnglishTemplate: 'Close time dropped {{delta}} minutes per encounter — across {{encounters}} encounters, that\'s {{totalHours}} hours no longer spent finishing charts after hours.',
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'work_after_hours_perceived',                                                                                                                                                                        
+      label: 'Work After Hours (Perceived)',                                                                                                                                                                   
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: '%',
+      unitLabel: 'percent reporting after-hours work',                                                                                                                                                         
+      lowerIsBetter: true,                                                                                                                                                                                   
+      source: 'survey',
+      sourceLabel: 'Clinician Survey',                                                                                                                                                                         
+      description: 'Percentage of providers who report regularly completing documentation outside of scheduled hours.',
+      whyItMatters: 'After-hours charting is the primary driver of clinician burnout. This is the perception signal.',                                                                                         
+      plainEnglishTemplate: 'The share of providers reporting after-hours documentation work dropped {{delta}} points — from {{before}}% to {{after}}%.',                                                      
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'work_outside_work_empirical',                                                                                                                                                                       
+      label: 'Work Outside Work (Empirical)',                                                                                                                                                                  
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: 'hrs/wk',
+      unitLabel: 'hours per week',                                                                                                                                                                             
+      lowerIsBetter: true,                                                                                                                                                                                   
+      source: 'epic',                     
+      sourceLabel: 'Epic Clarity',
+      description: 'Average hours per week each provider spends on documentation outside of scheduled shift hours.',                                                                                           
+      whyItMatters: 'The empirical version of after-hours work — measurable from Epic timestamp data vs. scheduling system.',
+      plainEnglishTemplate: 'Empirical after-hours documentation dropped {{delta}} hrs/week per provider — {{providers}} providers getting {{totalHours}} hours back per year collectively.',                  
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'burnout_assessment',                                                                                                                                                                                
+      label: 'Burnout Assessment Score',                                                                                                                                                                       
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                                                                                                                                                                                
+      inputType: 'before-after',
+      unit: 'score',                                                                                                                                                                                           
+      unitLabel: 'score (0–100, lower = more burned out)',                                                                                                                                                   
+      lowerIsBetter: false,                   
+      source: 'survey',                   
+      sourceLabel: 'Clinician Survey',                                                                                                                                                                         
+      description: 'Composite burnout score from a validated survey instrument (MBI or equivalent), scaled 0–100.',                                                                                            
+      whyItMatters: 'Documentation burden is the #1 driver of physician burnout. This is the direct wellbeing signal.',                                                                                        
+      plainEnglishTemplate: 'Burnout scores improved {{delta}} points — from {{before}} to {{after}} on a 100-point scale.',                                                                                   
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'likelihood_to_stay',                                                                                                                                                                                
+      label: 'Likelihood to Stay',                                                                                                                                                                             
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',              
+      unit: '%',                          
+      unitLabel: 'percent likely to stay',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'survey',
+      sourceLabel: 'Clinician Survey',                                                                                                                                                                         
+      description: 'Percentage of providers who indicate they are likely to remain at the organization in the next 12 months.',                                                                              
+      whyItMatters: 'The leading indicator for physician retention ROI. Moves before actual retention data is available.',
+      plainEnglishTemplate: 'Provider intent to stay improved {{delta}} points — from {{before}}% to {{after}}% indicating they plan to remain.',
+      phase3Roadmap: false,                                                                                                                                                                                    
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── CAPACITY ───────────────────────────────────────────────                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'time_in_note',                                                                                                                                                                                      
+      label: 'Time in Note per Appt',                                                                                                                                                                          
+      domain: 'capacity',
+      phase: 1,                                                                                                                                                                                                
+      inputType: 'before-after',                                                                                                                                                                             
+      unit: 'min',                        
+      unitLabel: 'minutes',
+      lowerIsBetter: true,                                                                                                                                                                                     
+      source: 'epic',
+      sourceLabel: 'Epic Clarity',                                                                                                                                                                             
+      description: 'Average minutes a provider spends actively editing a note per appointment.',                                                                                                             
+      whyItMatters: 'This is the primary time-savings metric. Every minute recovered is capacity that can be reallocated.',
+      plainEnglishTemplate: 'Note time dropped {{delta}} minutes per encounter. Across {{encounters}} Abridge encounters, that\'s {{totalHours}} hours of capacity recovered.',
+      phase3Roadmap: false,                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'effort_reduction',                                                                                                                                                                                  
+      label: '% Effort Reduction',                                                                                                                                                                             
+      domain: 'capacity',                                                                                                                                                                                      
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'before-after',
+      unit: '%',                                                                                                                                                                                               
+      unitLabel: 'percent effort reduction reported',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'survey',                                                                                                                                                                                      
+      sourceLabel: 'Clinician Survey',    
+      description: 'Self-reported percentage reduction in documentation effort compared to before Abridge.',
+      whyItMatters: 'The perceived version of efficiency gain — correlates with note time savings and provider satisfaction.',                                                                                 
+      plainEnglishTemplate: 'Providers report {{after}}% reduction in documentation effort — up from {{before}}% baseline.',
+      phase3Roadmap: false,                                                                                                                                                                                    
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'patients_per_provider_month',                                                                                                                                                                       
+      label: 'Patients per Provider per Month',                                                                                                                                                                
+      domain: 'capacity',                                                                                                                                                                                      
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: 'count',
+      unitLabel: 'patients per month',                                                                                                                                                                         
+      lowerIsBetter: false,                                                                                                                                                                                  
+      source: 'epic',                     
+      sourceLabel: 'Epic Clarity',
+      description: 'Average number of patients seen per provider per month.',                                                                                                                                  
+      whyItMatters: 'The capacity unlock made possible when documentation time savings are reinvested in patient access.',
+      plainEnglishTemplate: 'Providers are seeing {{delta}} more patients per month on average — {{providers}} providers × {{delta}} patients = {{total}} additional patient visits per month.',               
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'visits_per_clinician_hour',                                                                                                                                                                         
+      label: 'Visits per Clinician Hour',                                                                                                                                                                      
+      domain: 'capacity',                                                                                                                                                                                      
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',          
+      unit: 'ratio',
+      unitLabel: 'visits per hour',                                                                                                                                                                            
+      lowerIsBetter: false,
+      source: 'epic',                                                                                                                                                                                          
+      sourceLabel: 'Epic Clarity',                                                                                                                                                                           
+      description: 'Number of completed patient visits per scheduled clinician hour.',
+      whyItMatters: 'Throughput efficiency — the scheduling-level signal that documentation savings are translating to access.',
+      plainEnglishTemplate: 'Throughput improved from {{before}} to {{after}} visits per clinician hour — a {{delta}} visit improvement per hour scheduled.',
+      phase3Roadmap: false,                                                                                                                                                                                    
+    },                                    
+                                                                                                                                                                                                               
+    // ─── REVENUE ────────────────────────────────────────────────                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'wrvu',                                                                                                                                                                                              
+      label: 'wRVU per Encounter',                                                                                                                                                                           
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'before-after',          
+      unit: 'wRVU',
+      unitLabel: 'work RVUs',                                                                                                                                                                                  
+      lowerIsBetter: false,                   
+      source: 'epic',                                                                                                                                                                                          
+      sourceLabel: 'Epic Clarity',                                                                                                                                                                           
+      description: 'Average work Relative Value Units generated per encounter.',                                                                                                                               
+      whyItMatters: 'Better documentation captures the complexity of the visit — directly increasing wRVU capture.',
+      plainEnglishTemplate: 'wRVU per encounter improved {{delta}} — across {{encounters}} encounters at ${{cf}} conversion, that\'s {{value}} in additional revenue.',                                        
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'em_level',                                                                                                                                                                                          
+      label: 'Level of Service (E/M)',                                                                                                                                                                         
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 1,                                                                                                                                                                                              
+      inputType: 'before-after',          
+      unit: 'level',
+      unitLabel: 'avg E/M level (1–5)',                                                                                                                                                                        
+      lowerIsBetter: false,                   
+      source: 'rcm',                                                                                                                                                                                           
+      sourceLabel: 'RCM Platform',                                                                                                                                                                           
+      description: 'Average E/M level (99211–99215) across Abridge-documented encounters.',                                                                                                                    
+      whyItMatters: 'Documentation specificity supports higher E/M level assignment — each level up represents meaningful revenue per encounter.',
+      plainEnglishTemplate: 'Average E/M level improved from {{before}} to {{after}} — documentation is supporting more accurate visit complexity coding.',                                                    
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'hcc_capture',                                                                                                                                                                                       
+      label: 'HCC Capture Rate',                                                                                                                                                                               
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: '%',
+      unitLabel: 'percent of HCC gaps closed',                                                                                                                                                                 
+      lowerIsBetter: false,                                                                                                                                                                                  
+      source: 'coding',                   
+      sourceLabel: 'Coding Analytics',
+      description: 'Percentage of known Hierarchical Condition Category gaps that are documented and coded at the visit.',                                                                                     
+      whyItMatters: 'In Medicare Advantage, undocumented HCCs mean underfunded capitation. Abridge captures conditions discussed but not written.',
+      plainEnglishTemplate: 'HCC capture improved {{delta}} points — more chronic conditions discussed in the visit are making it into the coded record, supporting accurate risk adjustment.',                
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'clean_claim_rate',                                                                                                                                                                                  
+      label: 'Clean Claim Rate',                                                                                                                                                                               
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',              
+      unit: '%',                          
+      unitLabel: 'percent first-pass clean',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'rcm',                      
+      sourceLabel: 'RCM Platform',                                                                                                                                                                             
+      description: 'Percentage of claims accepted on first submission without requiring correction or additional documentation.',                                                                              
+      whyItMatters: 'Better documentation means fewer incomplete or unsupported claims — less rework, faster payment.',
+      plainEnglishTemplate: 'Clean claim rate improved from {{before}}% to {{after}}% — {{delta}} points fewer claims requiring rework or resubmission.',                                                      
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'initial_denial_rate',                                                                                                                                                                               
+      label: 'Initial Denial Rate',                                                                                                                                                                            
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: '%',
+      unitLabel: 'percent denied on first submission',                                                                                                                                                         
+      lowerIsBetter: true,                                                                                                                                                                                   
+      source: 'rcm',                      
+      sourceLabel: 'RCM Platform',
+      description: 'Percentage of claims denied on first submission.',                                                                                                                                         
+      whyItMatters: 'Denials are directly tied to documentation gaps. Abridge reduces the gaps that trigger denials.',
+      plainEnglishTemplate: 'Initial denial rate dropped from {{before}}% to {{after}}% — {{delta}} points fewer claims denied on first submission.',                                                          
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'net_collection_rate',                                                                                                                                                                               
+      label: 'Net Collection Rate',                                                                                                                                                                            
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                              
+      inputType: 'before-after',          
+      unit: '%',
+      unitLabel: 'percent of net collectible revenue collected',                                                                                                                                               
+      lowerIsBetter: false,                   
+      source: 'rcm',                                                                                                                                                                                           
+      sourceLabel: 'RCM Platform',                                                                                                                                                                           
+      description: 'Net collections as a percentage of net collectible revenue after adjustments.',                                                                                                            
+      whyItMatters: 'The downstream impact of cleaner documentation and fewer denials — more of what\'s owed is actually collected.',
+      plainEnglishTemplate: 'Net collection rate improved from {{before}}% to {{after}}% — more of what\'s billed is being collected.',                                                                        
+      phase3Roadmap: false,                                                                                                                                                                                  
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 3 ROADMAP ONLY ───────────────────────────────────                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'physician_retention',                                                                                                                                                                               
+      label: 'Physician Retention Rate',                                                                                                                                                                       
+      domain: 'workforce',
+      phase: 3,                                                                                                                                                                                                
+      inputType: 'before-after',                                                                                                                                                                             
+      unit: '%',
+      unitLabel: 'percent annual retention',                                                                                                                                                                   
+      lowerIsBetter: false,
+      source: 'hris',                                                                                                                                                                                          
+      sourceLabel: 'HRIS',                                                                                                                                                                                   
+      description: 'Annual physician retention rate by department.',
+      whyItMatters: 'The long-term workforce ROI signal. Each retained physician represents $500K–$1M in avoided replacement cost.',
+      plainEnglishTemplate: 'Physician retention improved from {{before}}% to {{after}}%.',                                                                                                                    
+      phase3Roadmap: true,                    
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'third_next_available',                                                                                                                                                                              
+      label: '3rd Next Available',                                                                                                                                                                             
+      domain: 'capacity',                                                                                                                                                                                      
+      phase: 3,                                                                                                                                                                                              
+      inputType: 'before-after',          
+      unit: 'days',
+      unitLabel: 'days to 3rd next available appointment',                                                                                                                                                     
+      lowerIsBetter: true,
+      source: 'epic',                                                                                                                                                                                          
+      sourceLabel: 'Epic Cadence',                                                                                                                                                                           
+      description: 'Days until the third next available appointment slot per provider — the standard measure of access.',
+      whyItMatters: 'When time savings are reinvested in scheduling capacity, access improves. This is the proof.',                                                                                            
+      plainEnglishTemplate: 'Time to 3rd next available dropped from {{before}} to {{after}} days — patients are getting in sooner.',
+      phase3Roadmap: true,                                                                                                                                                                                     
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'hedis',                                                                                                                                                                                             
+      label: 'HEDIS Performance',                                                                                                                                                                              
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 3,                                                                                                                                                                                              
+      inputType: 'before-after',
+      unit: 'score',                                                                                                                                                                                           
+      unitLabel: 'composite score',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'coding',                                                                                                                                                                                      
+      sourceLabel: 'Quality Registry',
+      description: 'Performance on HEDIS quality measures relevant to the patient population.',                                                                                                                
+      whyItMatters: 'Better documentation upstream feeds better quality measure performance downstream.',
+      plainEnglishTemplate: 'HEDIS performance improved from {{before}} to {{after}}.',                                                                                                                        
+      phase3Roadmap: true,                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'raf_scores',                                                                                                                                                                                        
+      label: 'RAF Scores',                                                                                                                                                                                     
+      domain: 'revenue',                                                                                                                                                                                     
+      phase: 3,                                                                                                                                                                                                
+      inputType: 'before-after',                                                                                                                                                                             
+      unit: 'score',                      
+      unitLabel: 'avg risk adjustment factor',
+      lowerIsBetter: false,                                                                                                                                                                                    
+      source: 'coding',
+      sourceLabel: 'Coding Analytics',                                                                                                                                                                         
+      description: 'Average Risk Adjustment Factor score for Medicare Advantage patient population.',                                                                                                        
+      whyItMatters: 'RAF scores drive MA capitation payments. Better HCC capture and diagnosis specificity compound into higher RAF scores annually.',
+      plainEnglishTemplate: 'Average RAF score improved from {{before}} to {{after}} — supporting more accurate capitation payments.',                                                                         
+      phase3Roadmap: true,                    
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'net_patient_revenue',                                                                                                                                                                               
+      label: 'Net Patient Revenue',                                                                                                                                                                            
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 3,                                                                                                                                                                                              
+      inputType: 'before-after',                                                                                                                                                                               
+      unit: '$M',
+      unitLabel: 'millions',                                                                                                                                                                                   
+      lowerIsBetter: false,                                                                                                                                                                                  
+      source: 'finance',                  
+      sourceLabel: 'Finance System',
+      description: 'Annual net patient revenue after adjustments, denials, and write-offs.',                                                                                                                   
+      whyItMatters: 'The full compounded impact of Phase 1 and Phase 2 improvements on the bottom line.',
+      plainEnglishTemplate: 'Net patient revenue grew from ${{before}}M to ${{after}}M over the deployment period.',                                                                                           
+      phase3Roadmap: true,                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+  ]                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 2: STATE MODEL                                                                                                                                                                                          
+  Update measureCalculator.ts                                                                                                                                                                                  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                                                                                                                                                                                                               
+  In MeasureState, replace the current flat metric fields with a                                                                                                                                               
+  structured metric values map for outpatient:
+                                                                                                                                                                                                               
+    outpatientMetrics: Record<string, MetricValue>                                                                                                                                                             
+                                                                                                                                                                                                               
+  Where:                                                                                                                                                                                                       
+    interface MetricValue {                                                                                                                                                                                    
+      before: number | null                                                                                                                                                                                    
+      after: number | null                                                                                                                                                                                     
+      singleValue: number | null   // for single-value metrics like utilization                                                                                                                              
+    }                                         
+                                          
+  Default value for all metric entries:       
+    { before: null, after: null, singleValue: null }                                                                                                                                                           
+   
+  Initialize with one entry per metric id from OUTPATIENT_METRICS.                                                                                                                                             
+                                                                                                                                                                                                             
+  Backward compatibility: keep the existing                                                                                                                                                                    
+  documentationQuality.wrvuWith/wrvuWithout and                                                                                                                                                                
+  timeEfficiency.timeInNotesWithout/timeInNotesWith fields
+  populated from outpatientMetrics when the care setting is                                                                                                                                                    
+  outpatient — so existing calculation functions still work.                                                                                                                                                 
+                                                                                                                                                                                                               
+    Mapping:                                                                                                                                                                                                   
+      outpatientMetrics['wrvu'].before   → documentationQuality.wrvuWithout                                                                                                                                    
+      outpatientMetrics['wrvu'].after    → documentationQuality.wrvuWith                                                                                                                                       
+      outpatientMetrics['em_level'].before → documentationQuality.emLevelWithout                                                                                                                               
+      outpatientMetrics['em_level'].after  → documentationQuality.emLevelWith                                                                                                                                  
+      outpatientMetrics['time_in_note'].before → timeEfficiency.timeInNotesWithout                                                                                                                             
+      outpatientMetrics['time_in_note'].after  → timeEfficiency.timeInNotesWith                                                                                                                                
+      outpatientMetrics['work_outside_work_empirical'].before → timeEfficiency.workOutsideWithout                                                                                                              
+      outpatientMetrics['work_outside_work_empirical'].after  → timeEfficiency.workOutsideWith                                                                                                                 
+                                                                                                                                                                                                             
+  Add a helper function that keeps these in sync whenever                                                                                                                                                      
+  outpatientMetrics is updated.                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Also add to MeasureState:                                                                                                                                                                                    
+    abridgeNativeData: {                                                                                                                                                                                       
+      utilization: number | null       // maps to deployment.utilizationRate                                                                                                                                   
+      consentRate: number | null                                                                                                                                                                             
+      userRetention: number | null        
+      noteStarRatingBefore: number | null                                                                                                                                                                      
+      noteStarRatingAfter: number | null                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                   
+  PART 3: DATA ENTRY FORM                                                                                                                                                                                      
+  Update MeasureDataEntry.tsx — Outpatient tab                                                                                                                                                                 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    
+                                                                                                                                                                                                               
+  When careSetting is 'outpatient', replace the current metric                                                                                                                                                 
+  entry fields with sections driven by OUTPATIENT_METRICS.                                                                                                                                                     
+                                                                                                                                                                                                               
+  STRUCTURE:                                                                                                                                                                                                   
+                                                                                                                                                                                                             
+  SECTION 1 — "FROM ABRIDGE" (cream background #F5F0EB)                                                                                                                                                        
+    Label: "ABRIDGE PLATFORM DATA"                                                                                                                                                                           
+    Caption: "Pull these from your Abridge analytics dashboard"                                                                                                                                                
+                                                                                                                                                                                                               
+    Show these metrics as compact inline inputs:
+      % Utilization (single value, %)                                                                                                                                                                          
+      Patient Consent Rate (single value, %)                                                                                                                                                                   
+      % Abridge User Retention (single value, %)                                                                                                                                                               
+      Avg Note Star Rating (before/after, 0–5 with 0.1 step)                                                                                                                                                   
+                                                                                                                                                                                                               
+    Each field: label on left, input(s) on right, inline row.                                                                                                                                                
+    Input width: narrow (~80px). Not full-width form fields.                                                                                                                                                   
+                                                                                                                                                                                                               
+    "Optional" label in small gray text after the section heading —                                                                                                                                            
+    these fields enrich the story but aren't required to proceed.                                                                                                                                              
+                                                                                                                                                                                                               
+  SECTION 2 — "CAPACITY"                                                                                                                                                                                       
+    Label: "CAPACITY"                                                                                                                                                                                          
+    Phase badge: "Phase 1" (orange pill)                                                                                                                                                                       
+                                                                                                                                                                                                             
+    Phase 1 metrics (show by default):                                                                                                                                                                         
+      Time in Note per Appt (before/after, minutes)                                                                                                                                                            
+      % Effort Reduction (before/after, %)
+                                                                                                                                                                                                               
+    Phase 2 metrics (show collapsed under "+ Phase 2 metrics"):                                                                                                                                              
+      Patients per Provider per Month (before/after, count)                                                                                                                                                    
+      Visits per Clinician Hour (before/after, decimal)                                                                                                                                                        
+                                                                                                                                                                                                               
+  SECTION 3 — "WORKFORCE"                                                                                                                                                                                      
+    Label: "WORKFORCE"                                                                                                                                                                                         
+    Phase badge: "Phase 1"                                                                                                                                                                                   
+                                                                                                                                                                                                               
+    Phase 1:
+      Time to Close Encounter (before/after, minutes)                                                                                                                                                          
+      Work After Hours — Perceived (before/after, %)                                                                                                                                                         
+      Work Outside Work — Empirical (before/after, hrs/wk)
+      Burnout Assessment Score (before/after, 0–100)
+        Note below: "Use MBI, Maslach, or your survey instrument                                                                                                                                               
+        scaled to 100. Higher = less burned out."
+                                                                                                                                                                                                               
+    Phase 2 (collapsed):                                                                                                                                                                                     
+      Likelihood to Stay (before/after, %)                                                                                                                                                                     
+        Note: "From your clinician survey — % responding                                                                                                                                                       
+        'likely' or 'very likely' to stay."                                                                                                                                                                    
+                                                                                                                                                                                                               
+  SECTION 4 — "REVENUE"                                                                                                                                                                                        
+    Label: "REVENUE"                                                                                                                                                                                           
+    Phase badge: "Phase 1"                                                                                                                                                                                     
+                                                                                                                                                                                                               
+    Phase 1:                                                                                                                                                                                                 
+      wRVU per Encounter (before/after, decimal to 2 places)                                                                                                                                                   
+      Level of Service / E/M Level (before/after, decimal 1–5)                                                                                                                                               
+        Note: "Average across 99211–99215. E.g. 3.2 = avg between
+        level 3 and 4."                       
+                                                                                                                                                                                                               
+    Phase 2 (collapsed):                                                                                                                                                                                       
+      HCC Capture Rate (before/after, %)                                                                                                                                                                       
+      Clean Claim Rate (before/after, %)                                                                                                                                                                       
+      Initial Denial Rate (before/after, %)                                                                                                                                                                    
+      Net Collection Rate (before/after, %)                                                                                                                                                                    
+                                                                                                                                                                                                             
+  SECTION 5 — "QUALITY"
+    Label: "QUALITY"                                                                                                                                                                                           
+   
+    Phase 2:                                                                                                                                                                                                   
+      Diagnosis Capture Rate (before/after, %)                                                                                                                                                               
+      Diagnosis Specificity (before/after, %) 
+                                          
+  SECTION 6 — "PHASE 3 ROADMAP" (muted, no inputs)
+    Label: "PHASE 3 — LONG-TERM OUTCOMES"                                                                                                                                                                      
+    Caption: "These metrics typically emerge at 6–18 months.
+    No data entry yet — they'll appear here when you're ready."                                                                                                                                                
+                                                                                                                                                                                                             
+    Show as a simple list of chips (no inputs):                                                                                                                                                                
+      Physician Retention · 3rd Next Available · HEDIS ·                                                                                                                                                       
+      RAF Scores · Net Patient Revenue                                                                                                                                                                         
+                                                                                                                                                                                                               
+    Style: muted gray chips, italic text, light border.                                                                                                                                                        
+                                                                                                                                                                                                               
+  INPUT COMPONENT for before/after pairs:                                                                                                                                                                      
+    Side by side: [Non-Abridge ___] → [With Abridge ___]                                                                                                                                                       
+    Labels: "Non-Abridge" and "With Abridge" (not "Before"/"After")                                                                                                                                            
+    Gap between: a small arrow →                                                                                                                                                                               
+    Each input: compact, ~90px wide                                                                                                                                                                          
+                                                                                                                                                                                                               
+    When both values are entered and delta is positive (or negative                                                                                                                                            
+    for lowerIsBetter metrics), show a small delta badge to the right:                                                                                                                                         
+      Improvement: green "↓ X min" or "↑ X%"                                                                                                                                                                   
+      No change or regression: gray "→ no change"                                                                                                                                                              
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  PART 4: INVENTORY PAGE DOMAIN CARDS                                                                                                                                                                          
+  Update MeasureInventory.tsx — Outpatient metrics                                                                                                                                                             
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                             
+  Update the domain card content for outpatient using                                                                                                                                                          
+  OUTPATIENT_METRICS as the source.                                                                                                                                                                          
+                                                                                                                                                                                                               
+  For the plain-English interpretation in each expanded                                                                                                                                                        
+  accordion section, use the plainEnglishTemplate from the                                                                                                                                                     
+  metric definition. Substitute variables:                                                                                                                                                                     
+                                                                                                                                                                                                             
+    {{delta}}        = Math.abs(after - before) formatted with unit
+    {{before}}       = before value formatted
+    {{after}}        = after value formatted                                                                                                                                                                   
+    {{encounters}}   = formatNumber(adoptedEncounters)                                                                                                                                                         
+    {{providers}}    = state.deployment.providers                                                                                                                                                              
+    {{totalHours}}   = computed: delta × encounters ÷ 60 for minute metrics                                                                                                                                    
+    {{total}}        = delta × providers for count metrics                                                                                                                                                   
+    {{value}}        = dollarized value where applicable                                                                                                                                                       
+    {{cf}}           = state.calibration.conversionFactor                                                                                                                                                      
+                                                                                                                                                                                                               
+  For Phase 3 roadmap metrics in the "What's next" section                                                                                                                                                     
+  of each domain accordion, show them with a "Phase 3" badge                                                                                                                                                   
+  instead of a clickable chip — and the label "Available at                                                                                                                                                    
+  6–18 months" in small gray italic below.                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+  WHAT NOT TO CHANGE                                                                                                                                                                                           
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                                                                                                                                                                     
+                                                                                                                                                                                                               
+  - ED, Inpatient, Nursing metric definitions — unchanged for now                                                                                                                                            
+  - All calculation functions (calculateConfirmedValue,                                                                                                                                                        
+    calculateScenario, etc.) — unchanged                                                                                                                                                                       
+  - All other screens beyond DataEntry and Inventory — unchanged                                                                                                                                               
+  - All brand colors, animations, component structure — unchanged  
