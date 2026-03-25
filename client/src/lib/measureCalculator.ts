@@ -932,6 +932,35 @@ export interface ConfirmedValue {
   domains: ConfirmedDomainValues;
 }
 
+export function getActiveMetrics(state: MeasureState): {
+  metricId: string;
+  setting?: MeasureCareSetting;
+  before: number;
+  after: number;
+  monthlyData?: number[];
+  isOrgWide: boolean;
+}[] {
+  const ORG_WIDE_IDS = ['burnoutAssessment', 'likelihoodToStay'];
+  if (!state.metricValues) return [];
+
+  return Object.entries(state.metricValues)
+    .filter(([, entry]) => entry.before != null && entry.after != null &&
+      entry.before !== 0 && entry.after !== 0)
+    .map(([key, entry]) => {
+      const parts = key.split('__');
+      const metricId = parts[0];
+      const setting = parts[1] as MeasureCareSetting | undefined;
+      return {
+        metricId,
+        setting,
+        before: entry.before!,
+        after: entry.after!,
+        monthlyData: entry.isMonthlyMode ? entry.monthlyData : undefined,
+        isOrgWide: ORG_WIDE_IDS.includes(metricId),
+      };
+    });
+}
+
 export function calculateConfirmedValue(state: MeasureState): ConfirmedValue {
   const te = state.timeEfficiency;
   const cal = state.calibration;
