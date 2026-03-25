@@ -1,0 +1,533 @@
+CONTEXT
+
+  You've already implemented the MetricDefinition interface and OUTPATIENT_METRICS array in measureCareSettings.ts. Now do the same for Emergency Department. Follow the exact same pattern — same interface,
+  same structure, same naming conventions.
+
+  ---
+  STEP 1 — Add ED_METRICS to measureCareSettings.ts
+
+  After the OUTPATIENT_METRICS array, add:
+
+  export const ED_METRICS: MetricDefinition[] = [
+
+    // ─── PHASE 1: ABRIDGE PLATFORM DATA (Abridge-native, no partner data needed) ───
+
+    {
+      id: 'docTimePerEncounter',
+      label: 'Documentation Time per Encounter',
+      domain: 'quality',
+      phase: 1,
+      dataSource: 'abridge',
+      unit: 'minutes',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Avg time in note (minutes)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Pulled from Abridge platform data. Measures active time spent in the note per ED encounter.',
+      plainEnglishTemplate:
+        'ED providers are spending {after} minutes per note, down from {before}. ' +
+        'That\'s {delta} minutes back per encounter — across {providers} providers and {encounters} annual encounters, ' +
+        'that\'s {totalHours} hours of documentation time returned annually.',
+    },
+
+    {
+      id: 'wowTime',
+      label: 'Words on Workday (WoW) Time',
+      domain: 'quality',
+      phase: 1,
+      dataSource: 'abridge',
+      unit: 'minutes',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Avg WoW time (minutes)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'ED-specific Abridge metric. Captures after-hours and outside-shift documentation burden on Epic Clarity.',
+      plainEnglishTemplate:
+        'WoW time is down {delta} minutes per encounter. ' +
+        'For {providers} ED providers, that\'s approximately {totalHours} hours of after-hours documentation eliminated annually.',
+    },
+
+    {
+      id: 'noteCompletionTime',
+      label: 'Note Completion Time',
+      domain: 'workforce',
+      phase: 1,
+      dataSource: 'abridge',
+      unit: 'hours',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Avg time to complete note after encounter (hours)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Time from end of encounter to note sign-off. Pulled from Abridge platform or EHR timestamp data.',
+      plainEnglishTemplate:
+        'Note completion time has dropped from {before}h to {after}h after the encounter ends. ' +
+        'That\'s {delta} hours per note — for {providers} providers doing {encounters} encounters, ' +
+        'this represents {totalHours} hours of shifted or eliminated after-hours work annually.',
+    },
+
+    {
+      id: 'timeToCloseEncounter',
+      label: 'Time to Close Encounter',
+      domain: 'workforce',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'hours',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Avg time from discharge to chart close (hours)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Time from patient discharge to full encounter closure in the EHR. Typically sourced from Epic reporting.',
+      plainEnglishTemplate:
+        'Encounter close time is down from {before}h to {after}h — a {deltaPercent}% improvement. ' +
+        'Faster closures reduce after-hours work and improve billing lag for your {providers} ED providers.',
+    },
+
+    {
+      id: 'workAfterHours',
+      label: 'Work After Hours',
+      domain: 'workforce',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'minutes',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Avg after-hours documentation per provider per week (minutes)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'After-hours EHR activity per provider per week. Source: Epic Signal, Abridge platform, or provider self-report.',
+      plainEnglishTemplate:
+        'After-hours documentation is down {delta} minutes per provider per week — {deltaPercent}% less time on the clock after shifts end. ' +
+        'Across {providers} ED providers over 52 weeks, that\'s {totalHours} hours of protected time returned annually.',
+    },
+
+    {
+      id: 'burnoutAssessment',
+      label: 'Burnout Assessment (Survey)',
+      domain: 'workforce',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'score',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Burnout score (survey scale, e.g. 0–10 or MBI)',
+      beforeLabel: 'Pre-Abridge survey',
+      afterLabel: 'Post-Abridge survey',
+      contextNote: 'Before/after survey comparison. Use consistent scale (MBI, single-item, Maslach, etc.). Note scale used in Presenter Notes.',
+      plainEnglishTemplate:
+        'Burnout scores improved from {before} to {after} on your survey scale — a {deltaPercent}% improvement. ' +
+        'This is a leading indicator for retention. For ED physicians, each turnover event typically costs $500K–$1M+ in replacement costs.',
+    },
+
+    {
+      id: 'likelihoodToStay',
+      label: 'Likelihood to Stay (Survey)',
+      domain: 'workforce',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: true,
+      inputLabel: 'Likelihood to stay (% responding "likely" or "very likely")',
+      beforeLabel: 'Pre-Abridge survey',
+      afterLabel: 'Post-Abridge survey',
+      contextNote: 'Before/after pulse survey. Align with HR and medical staff office on survey instrument and timing.',
+      plainEnglishTemplate:
+        'Provider retention intent is up {delta} points — {after}% now say they\'re likely to stay, vs {before}% before Abridge. ' +
+        'Even a 1-point improvement in likelihood-to-stay at your scale can represent $X–$Y in avoided turnover costs.',
+    },
+
+    // ─── PHASE 1: REVENUE (E/M + wRVU) ───
+
+    {
+      id: 'wrvu',
+      label: 'wRVU per Provider per Shift',
+      domain: 'revenue',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'rvu',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'wRVU per provider per shift',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Per-shift wRVU comparison. Source: provider productivity reports from EHR or billing system.',
+      plainEnglishTemplate:
+        'wRVU per shift is up {delta} — from {before} to {after}. ' +
+        'At your conversion rate, that\'s {dollarDelta} per shift per provider. ' +
+        'Across {providers} providers and {shiftsPerYear} annual shifts, the annual revenue impact is {totalRevenue}.',
+    },
+
+    {
+      id: 'emLevel',
+      label: 'Average E/M Level (99281–99285)',
+      domain: 'revenue',
+      phase: 1,
+      dataSource: 'partner',
+      unit: 'level',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'Avg E/M level (1.0–5.0 scale, where 1=99281, 5=99285)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'ED E/M uses 99281–99285 (not 99201–99215). Each level step represents meaningful revenue. Source: charge capture / billing system.',
+      plainEnglishTemplate:
+        'Average E/M level has moved from {before} to {after} on the 99281–99285 scale. ' +
+        'Each level step in ED billing is worth approximately $25–$80 per encounter. ' +
+        'At {encounters} annual encounters, a {delta}-level improvement represents {totalRevenue} in additional captured revenue.',
+    },
+
+    // ─── PHASE 2: THROUGHPUT ───
+
+    {
+      id: 'lwbsRate',
+      label: 'Left Without Being Seen (LWBS) Rate',
+      domain: 'throughput',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: false,
+      inputLabel: 'LWBS rate (%)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'The signature ED throughput metric. Each LWBS patient is lost revenue and a potential HCAHPS/quality flag. Source: ADT system or ED dashboard.',
+      plainEnglishTemplate:
+        'LWBS rate is down from {before}% to {after}% — {delta} percentage points. ' +
+        'At {encounters} annual ED visits and an average ED visit revenue of ${avgRevenuePerVisit}, ' +
+        'that\'s approximately {recoveredPatients} patients no longer leaving — worth {totalRevenue} annually.',
+    },
+
+    {
+      id: 'doorToProvider',
+      label: 'Door-to-Provider Time',
+      domain: 'throughput',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'minutes',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Door-to-provider time (minutes)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Time from patient arrival to first provider contact. Foundational throughput metric. Source: ED tracking board / EHR timestamps.',
+      plainEnglishTemplate:
+        'Door-to-provider time is down {delta} minutes — from {before} to {after} minutes. ' +
+        'Faster initial contact drives HCAHPS scores, LWBS reduction, and is a direct input to CMS quality measures.',
+    },
+
+    {
+      id: 'doorToDisposition',
+      label: 'Door-to-Disposition Time',
+      domain: 'throughput',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'minutes',
+      format: 'decimal',
+      higherIsBetter: false,
+      inputLabel: 'Door-to-disposition time (minutes)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Time from arrival to admit/discharge decision. Source: EHR timestamp reports or ED analytics platform.',
+      plainEnglishTemplate:
+        'Door-to-disposition is down {delta} minutes — from {before} to {after} minutes. ' +
+        'For {encounters} annual visits, that\'s {totalMinutes} minutes of throughput recaptured — ' +
+        'reducing boarding, improving bed availability, and lowering the conditions that create LWBS.',
+    },
+
+    {
+      id: 'patientProviderRatio',
+      label: 'Patients per Provider per Shift',
+      domain: 'throughput',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'count',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'Patients seen per provider per shift',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Provider throughput — a direct measure of capacity. Increase here without quality degradation is the strongest throughput signal. Source: scheduling + EHR charge data.',
+      plainEnglishTemplate:
+        'Providers are seeing {after} patients per shift, up from {before} — {delta} more patients per shift per provider. ' +
+        'Across {providers} providers and {shiftsPerYear} shifts, that\'s {extraPatients} additional patient encounters annually. ' +
+        'At average ED revenue per visit, that\'s {totalRevenue} in throughput-driven revenue.',
+    },
+
+    // ─── PHASE 2: REVENUE (CODING + BILLING) ───
+
+    {
+      id: 'diagnosisCapture',
+      label: 'Diagnosis Capture Rate',
+      domain: 'revenue',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: true,
+      inputLabel: 'Diagnosis capture rate (% of encounters with complete diagnosis coding)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Completeness of diagnosis coding per encounter. Undercaptured diagnoses in the ED = missed HCC recapture and claim under-value. Source: CDI or coding QA reports.',
+      plainEnglishTemplate:
+        'Diagnosis capture is up {delta} points — from {before}% to {after}% of encounters fully coded. ' +
+        'Each uncaptured diagnosis in the ED reduces HCC scores, risk-adjustment revenue, and downstream quality metrics. ' +
+        'At {encounters} annual encounters, a {delta}-point improvement means {additionalEncounters} more encounters with complete coding.',
+    },
+
+    {
+      id: 'diagnosisSpecificity',
+      label: 'Diagnosis Specificity Score',
+      domain: 'revenue',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'score',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'Diagnosis specificity score (internal CDI scoring scale)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Specificity of ICD-10 coding (e.g. % coded to highest specificity level). Source: CDI platform or coding audit. Coordinate with your CDI team on scoring method.',
+      plainEnglishTemplate:
+        'Diagnosis specificity has improved from {before} to {after} on your CDI scoring scale. ' +
+        'Higher specificity means more defensible coding, fewer denials, and better case mix index — ' +
+        'which affects both reimbursement rates and quality reporting scores.',
+    },
+
+    {
+      id: 'medicalNecessityDenialRate',
+      label: 'Medical Necessity Denial Rate',
+      domain: 'revenue',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: false,
+      inputLabel: 'Medical necessity denial rate (% of ED claims denied)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'ED-specific denial category. Denials often tied to insufficient clinical documentation supporting the E/M level billed. Source: revenue cycle / denials management system.',
+      plainEnglishTemplate:
+        'Medical necessity denial rate is down from {before}% to {after}% — a {delta}-point improvement. ' +
+        'At {encounters} annual ED claims and average claim value of ${avgClaimValue}, ' +
+        'reducing denials by {delta} points recovers approximately {recoveredRevenue} annually.',
+    },
+
+    {
+      id: 'cleanClaimRate',
+      label: 'Clean Claim Rate',
+      domain: 'revenue',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: true,
+      inputLabel: 'Clean claim rate (%)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Percentage of ED claims that pass on first submission. Documentation completeness is the primary driver. Source: revenue cycle system.',
+      plainEnglishTemplate:
+        'Clean claim rate is up {delta} points — from {before}% to {after}%. ' +
+        'Each point of improvement reduces rework cost and accelerates cash flow. ' +
+        'At {encounters} annual ED claims, this improvement reduces denial-rework on approximately {additionalCleanClaims} encounters.',
+    },
+
+    {
+      id: 'netCollectionRate',
+      label: 'Net Collection Rate',
+      domain: 'revenue',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: true,
+      inputLabel: 'Net collection rate (%)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'Percentage of collectible revenue actually collected. Downstream of denial rate and clean claim rate. Source: revenue cycle dashboard.',
+      plainEnglishTemplate:
+        'Net collection rate improved from {before}% to {after}%. ' +
+        'At {annualRevenue} in collectible ED revenue, each point of improvement is worth approximately {pointValue}.',
+    },
+
+    // ─── PHASE 2: QUALITY ───
+
+    {
+      id: 'noteQualityScore',
+      label: 'Note Quality Score (Star Rating)',
+      domain: 'quality',
+      phase: 2,
+      dataSource: 'abridge',
+      unit: 'stars',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'Avg note quality rating (1.0–5.0 stars)',
+      beforeLabel: 'Before Abridge (if available)',
+      afterLabel: 'With Abridge',
+      contextNote: 'Abridge platform metric. In ED context, note quality reflects clinical documentation completeness — directly tied to defensibility, denial prevention, and CMS quality measures.',
+      plainEnglishTemplate:
+        'Average note quality is now {after} stars — up {delta} from {before}. ' +
+        'In the ED, note quality is the upstream driver of coding accuracy, denial rates, and compliance defensibility. ' +
+        '{after}-star notes mean your documentation can withstand audit and support the E/M level billed.',
+    },
+
+    {
+      id: 'pressGaney',
+      label: 'Press Ganey / Patient Experience Score',
+      domain: 'quality',
+      phase: 2,
+      dataSource: 'partner',
+      unit: 'percentile',
+      format: 'decimal',
+      higherIsBetter: true,
+      inputLabel: 'Press Ganey percentile rank (or top-box score)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',
+      contextNote: 'ED-specific HCAHPS/PG domain. Provider attentiveness and communication are the primary drivers in ED. Source: Press Ganey portal or patient experience team.',
+      plainEnglishTemplate:
+        'Patient experience scores have moved from {before}th to {after}th percentile — a {delta}-point improvement. ' +
+        'In the ED, provider attentiveness accounts for the largest share of the top-box score. ' +
+        'This directly affects value-based care contract performance and network reputation.',
+    },
+
+    // ─── PHASE 3: STRATEGIC / ANNUAL METRICS ───
+
+    {
+      id: 'physicianRetention',
+      label: 'ED Physician / APP Retention Rate',
+      domain: 'workforce',
+      phase: 3,
+      dataSource: 'partner',
+      unit: 'percent',
+      format: 'percent',
+      higherIsBetter: true,
+      inputLabel: 'Annual retention rate (%)',
+      beforeLabel: 'Pre-Abridge baseline year',
+      afterLabel: 'Post-Abridge year',
+      contextNote: 'Annual metric. ED physician turnover cost is typically $500K–$1M+ per physician. Source: HR / medical staff office.',
+      plainEnglishTemplate:
+        'ED physician/APP retention has moved from {before}% to {after}% — {delta} points. ' +
+        'At your team size of {providers} providers, each percentage point improvement prevents approximately {turnoverPrevented} turnover events annually. ' +
+        'At {turnoverCost} per replacement, that\'s {totalSavings} in avoided costs.',
+    },
+
+    {
+      id: 'agencyLocumSpend',
+      label: 'Agency / Locum Spend',
+      domain: 'workforce',
+      phase: 3,
+      dataSource: 'partner',
+      unit: 'dollars',
+      format: 'currency',
+      higherIsBetter: false,
+      inputLabel: 'Annual agency/locum spend ($)',
+      beforeLabel: 'Pre-Abridge year',
+      afterLabel: 'Most recent year',
+      contextNote: 'Annual total spend on locum/agency coverage. Reduction correlates with improved retention and reduced scheduling gaps. Source: finance / contracting.',
+      plainEnglishTemplate:
+        'Agency and locum spend is down from {before} to {after} — a {delta} reduction. ' +
+        'This reflects {delta} in avoided premium labor costs and signals improved scheduling stability for your ED.',
+    },
+
+    {
+      id: 'netPatientRevenue',
+      label: 'Net Patient Revenue per ED Visit',
+      domain: 'revenue',
+      phase: 3,
+      dataSource: 'partner',
+      unit: 'dollars',
+      format: 'currency',
+      higherIsBetter: true,
+      inputLabel: 'Net patient revenue per ED visit ($)',
+      beforeLabel: 'Pre-Abridge year',
+      afterLabel: 'Most recent year',
+      contextNote: 'Annual strategic metric. Rolls up E/M improvement, denial reduction, and collection rate into a single per-visit revenue figure. Source: finance.',
+      plainEnglishTemplate:
+        'Net patient revenue per visit has moved from {before} to {after} — up {delta} per visit. ' +
+        'At {encounters} annual ED visits, that\'s {totalRevenue} in incremental net revenue. ' +
+        'This rolls up documentation quality, coding accuracy, and denial reduction into a single financial outcome.',
+    },
+
+  ];
+
+  ---
+  STEP 2 — Add ED-specific state fields to MeasureState in measureCalculator.ts
+
+  Find the MeasureState interface and add these fields:
+
+  // ED-specific
+  edMetrics?: Record<string, MetricValue>;
+  edAbridgeNativeData?: {
+    docTimePerEncounter?: MetricValue;
+    wowTime?: MetricValue;
+    noteQualityScore?: MetricValue;
+  };
+
+  ---
+  STEP 3 — Add ED data entry tab sections to MeasureDataEntry.tsx
+
+  Inside the ED tab (the careSetting === 'ed' branch), replace any existing flat inputs with these 6 sections. Follow the exact same pattern as the outpatient tab:
+
+  Section 1: Abridge Platform Data
+  Label: "From Abridge"
+  Subtitle: "These pull directly from your Abridge deployment data."
+  Metrics: docTimePerEncounter, wowTime, noteQualityScore
+
+  Section 2: Throughput
+  Label: "Throughput"
+  Subtitle: "ED flow metrics. Source: EHR timestamp reports or ED tracking board."
+  Metrics: lwbsRate, doorToProvider, doorToDisposition, patientProviderRatio
+
+  Section 3: Workforce
+  Label: "Workforce"
+  Subtitle: "Documentation burden and provider wellbeing signals."
+  Metrics: noteCompletionTime, timeToCloseEncounter, workAfterHours
+  Expandable sub-section "Workforce Surveys (Before / After)":
+    Metrics: burnoutAssessment, likelihoodToStay
+    Note: "Use the same survey instrument for before and after. Note scale in Presenter Notes."
+
+  Section 4: Revenue
+  Label: "Revenue"
+  Subtitle: "E/M level and wRVU from Phase 1. Coding and billing metrics from Phase 2."
+  Phase 1 (always visible): wrvu, emLevel
+  Expandable "Coding & Billing (Phase 2)": diagnosisCapture, diagnosisSpecificity, medicalNecessityDenialRate, cleanClaimRate, netCollectionRate
+
+  Section 5: Quality
+  Label: "Quality"
+  Subtitle: "Note quality and patient experience."
+  Metrics: pressGaney
+
+  Section 6: Phase 3 Roadmap (chip display only, no inputs)
+  Label: "Phase 3 — Strategic Metrics"
+  Subtitle: "Annual metrics measured after 12+ months. No inputs yet — these appear in your roadmap."
+  Chip display: physicianRetention, agencyLocumSpend, netPatientRevenue
+
+  ---
+  STEP 4 — Update MeasureInventory.tsx for ED domain labels
+
+  When careSetting === 'ed', the Capacity domain should display as "Throughput" instead of "Capacity". The domain key stays capacity in the data model — only the display label changes.
+
+  In the domain configuration array, add a condition:
+
+  const domainDisplayLabel = (domain: string, setting: string): string => {
+    if (domain === 'capacity' && setting === 'ed') return 'Throughput';
+    if (domain === 'capacity' && setting === 'inpatient') return 'Patient Flow';
+    return domain.charAt(0).toUpperCase() + domain.slice(1);
+  };
+
+  Use this function wherever domain labels are rendered in MeasureInventory.
+
+  The ED Throughput domain's primary delta badge (the collapsed header metric) should be lwbsRate if available, falling back to doorToProvider, falling back to patientProviderRatio.
+
+  ---
+  STEP 5 — Update MeasureStage.tsx phase 3 label
+
+  When careSetting === 'ed', the Phase 3 label should read "Throughput" (not "Capacity"). This affects:
+  - The phase progression indicator text
+  - The "Phase 3 unlocks" description
+
+  Phase 3 description for ED:
+  "Throughput: Full flow optimization — LWBS reduction, door-to-disposition improvement, and per-shift capacity gains that translate to measurable revenue recovery."
