@@ -538,7 +538,7 @@ export default function MeasureDataEntry({
           <div className="flex items-center gap-2 mb-3 md:mb-4">
             <Sparkles className="w-4 h-4 text-[#EA2C00]" />
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
-            <span className="text-[10px] text-[#AAAAAA] font-normal lowercase ml-1">(optional)</span>
+            <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
           </div>
           <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
