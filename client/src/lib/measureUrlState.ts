@@ -113,6 +113,9 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.nursingAbridgeNativeData) {
         parsed.nursingAbridgeNativeData = DEFAULT_MEASURE_STATE.nursingAbridgeNativeData;
       }
+      if (!parsed.metricValues) {
+        parsed.metricValues = {};
+      }
       if (parsed.deployment) {
         if (parsed.deployment.liveProviders === undefined) {
           parsed.deployment.liveProviders = parsed.deployment.providers || 0;

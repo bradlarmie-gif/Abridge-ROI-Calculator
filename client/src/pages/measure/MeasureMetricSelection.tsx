@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Check, Plus, X, Activity, Settings2, Pencil, ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
+import { ArrowRight, Check, Plus, X, Settings2, Pencil, ChevronDown, ChevronUp, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,13 +8,20 @@ import {
   type MeasureState,
   type MeasureCareSetting,
   type SurveyMetric,
+  type MetricEntry,
+  metricKey,
 } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
-  getSettingDomains,
-  getTotalAvailableMetrics,
   getDefaultMetrics,
+  getMetricsForSettings,
+  FOUNDATIONAL_GROUPS,
+  ORG_WIDE_METRIC_IDS,
+  SETTING_THIRD_CHAPTER_LABELS,
+  DOMAIN_LABELS,
   type DomainKey,
+  type MetricDefinition,
+  type ResolvedMetric,
 } from "@/lib/measureCareSettings";
 
 interface MeasureMetricSelectionProps {
@@ -35,6 +42,33 @@ const DOMAIN_COLORS: Record<string, string> = {
   staffing: '#0891B2',
 };
 
+const CAPACITY_DOMAIN_LABEL: Record<MeasureCareSetting, string> = {
+  outpatient: 'Capacity',
+  ed: 'Throughput',
+  inpatient: 'Patient Flow',
+  nursing: 'Staffing',
+};
+
+function DeltaBadge({ before, after, metric }: { before: number; after: number; metric: MetricDefinition }) {
+  if (before === 0 && after === 0) return null;
+  const delta = after - before;
+  if (delta === 0) return null;
+  const pctChange = before !== 0 ? Math.round((delta / before) * 100) : 0;
+  const isImprovement = metric.lowerIsBetter ? delta < 0 : delta > 0;
+  const arrow = isImprovement ? '\u2197' : '\u2198';
+  return (
+    <motion.span
+      initial={{ opacity: 0, x: 8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.1 }}
+      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${isImprovement ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'}`}
+      data-testid={`delta-${metric.id}`}
+    >
+      {pctChange !== 0 ? `${pctChange > 0 ? '+' : ''}${pctChange}%` : ''} {arrow}
+    </motion.span>
+  );
+}
+
 export default function MeasureMetricSelection({
   state,
   updateState,
@@ -43,89 +77,207 @@ export default function MeasureMetricSelection({
   onHome,
 }: MeasureMetricSelectionProps) {
   const [expandedDomains, setExpandedDomains] = useState<Record<string, boolean>>({});
+  const [expandedMetrics, setExpandedMetrics] = useState<Record<string, boolean>>({});
   const [showAssumptions, setShowAssumptions] = useState(false);
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
     : [state.careSetting || 'outpatient' as MeasureCareSetting];
 
-  const toggleMetric = useCallback((setting: MeasureCareSetting, metricKey: string) => {
-    const current = state.enabledMetrics?.[setting] || {};
-    const wasEnabled = !!current[metricKey];
-    const updated = { ...current, [metricKey]: !wasEnabled };
-    const stateUpdate: Partial<MeasureState> = {
-      enabledMetrics: { ...state.enabledMetrics, [setting]: updated },
-    };
-    if (wasEnabled) {
-      const settingData = { ...(state.settingData[setting] || {}) };
-      settingData[`${metricKey}_before`] = 0;
-      settingData[`${metricKey}_after`] = 0;
-      stateUpdate.settingData = { ...state.settingData, [setting]: settingData };
+  const multiSetting = activeSettings.length > 1;
+
+  const resolvedMetrics = useMemo(() => getMetricsForSettings(activeSettings), [activeSettings]);
+
+  const foundationalMetrics = useMemo(() => {
+    return resolvedMetrics.filter(rm => rm.metric.domain === 'foundational' && !rm.metric.phase3Roadmap);
+  }, [resolvedMetrics]);
+
+  const domainMetrics = useMemo(() => {
+    return resolvedMetrics.filter(rm => rm.metric.domain !== 'foundational' && !rm.metric.phase3Roadmap);
+  }, [resolvedMetrics]);
+
+  const domainGroups = useMemo(() => {
+    const groups = new Map<string, { domainKey: string; label: string; metrics: ResolvedMetric[] }>();
+    const capacityDomains = ['capacity', 'throughput', 'patientFlow', 'staffing'];
+
+    for (const rm of domainMetrics) {
+      const dk = rm.metric.domain;
+      const groupKey = capacityDomains.includes(dk) ? 'capacity-group' : dk;
+
+      if (!groups.has(groupKey)) {
+        let label: string;
+        if (groupKey === 'capacity-group') {
+          if (multiSetting) {
+            const labels = activeSettings
+              .map(s => CAPACITY_DOMAIN_LABEL[s])
+              .filter((v, i, a) => a.indexOf(v) === i);
+            label = labels.join(' / ');
+          } else {
+            label = CAPACITY_DOMAIN_LABEL[activeSettings[0]];
+          }
+        } else {
+          label = DOMAIN_LABELS[dk as DomainKey] || dk;
+        }
+        groups.set(groupKey, { domainKey: groupKey, label, metrics: [] });
+      }
+      groups.get(groupKey)!.metrics.push(rm);
     }
-    updateState(stateUpdate);
-  }, [state.enabledMetrics, state.settingData, updateState]);
+    return Array.from(groups.values());
+  }, [domainMetrics, activeSettings, multiSetting]);
 
-  const updateMetricValue = useCallback((setting: MeasureCareSetting, key: string, value: number) => {
-    const current = state.settingData?.[setting] || {};
-    updateState({
-      settingData: { ...state.settingData, [setting]: { ...current, [key]: value } },
-    });
-  }, [state.settingData, updateState]);
+  const getMetricValue = useCallback((metricId: string, setting?: MeasureCareSetting): { before: number; after: number } => {
+    const isOrgWide = ORG_WIDE_METRIC_IDS.includes(metricId);
+    const key = isOrgWide ? metricId : metricKey(metricId, setting);
+    const entry = state.metricValues[key];
+    if (entry) return { before: entry.before ?? 0, after: entry.after ?? 0 };
 
-  const updateSettingMetric = useCallback((setting: MeasureCareSetting, key: string, value: number) => {
-    const current = state.settingData?.[setting] || getDefaultMetrics(setting);
-    updateState({
-      settingData: { ...state.settingData, [setting]: { ...current, [key]: value } },
-    });
-  }, [state.settingData, updateState]);
+    if (setting) {
+      const sd = state.settingData[setting] || {};
+      return { before: sd[`${metricId}_before`] ?? 0, after: sd[`${metricId}_after`] ?? 0 };
+    }
+    return { before: 0, after: 0 };
+  }, [state.metricValues, state.settingData]);
 
-  const getSurveyMetricsForSettingDomain = useCallback((setting: MeasureCareSetting, domainKey: string): SurveyMetric[] => {
-    return (state.surveyMetrics || []).filter(sm => {
-      const smDomain = (sm.domain || 'Workforce').toLowerCase();
-      return smDomain === domainKey && sm.setting === setting;
+  const setMetricValue = useCallback((metricId: string, field: 'before' | 'after', value: number, setting?: MeasureCareSetting) => {
+    const isOrgWide = ORG_WIDE_METRIC_IDS.includes(metricId);
+    const key = isOrgWide ? metricId : metricKey(metricId, setting);
+    const current = state.metricValues[key] || { before: null, after: null, isMonthlyMode: false };
+    const updatedEntry: MetricEntry = { ...current, [field]: value };
+    const newMetricValues = { ...state.metricValues, [key]: updatedEntry };
+
+    const updates: Partial<MeasureState> = { metricValues: newMetricValues };
+
+    if (setting) {
+      const sd = { ...(state.settingData[setting] || {}) };
+      sd[`${metricId}_${field}`] = value;
+      updates.settingData = { ...state.settingData, [setting]: sd };
+
+      const enabledMap = { ...(state.enabledMetrics?.[setting] || {}) };
+      enabledMap[metricId] = true;
+      updates.enabledMetrics = { ...state.enabledMetrics, [setting]: enabledMap };
+    } else if (isOrgWide) {
+      for (const s of activeSettings) {
+        const sd = { ...(state.settingData[s] || {}) };
+        sd[`${metricId}_${field}`] = value;
+        updates.settingData = { ...(updates.settingData || state.settingData), [s]: sd };
+        const enabledMap = { ...(state.enabledMetrics?.[s] || {}) };
+        enabledMap[metricId] = true;
+        updates.enabledMetrics = { ...(updates.enabledMetrics || state.enabledMetrics), [s]: enabledMap };
+      }
+    }
+
+    updateState(updates);
+  }, [state.metricValues, state.settingData, state.enabledMetrics, activeSettings, updateState]);
+
+  const isMetricActive = useCallback((metricId: string, setting?: MeasureCareSetting): boolean => {
+    if (setting) {
+      const key = metricKey(metricId, setting);
+      const entry = state.metricValues[key];
+      if (entry && (entry.before !== null || entry.after !== null)) return true;
+      const sd = state.settingData[setting] || {};
+      return (sd[`${metricId}_before`] ?? 0) !== 0 || (sd[`${metricId}_after`] ?? 0) !== 0;
+    }
+    const isOrgWide = ORG_WIDE_METRIC_IDS.includes(metricId);
+    if (isOrgWide) {
+      const entry = state.metricValues[metricId];
+      if (entry && (entry.before !== null || entry.after !== null)) return true;
+      return activeSettings.some(s => {
+        const sd = state.settingData[s] || {};
+        return (sd[`${metricId}_before`] ?? 0) !== 0 || (sd[`${metricId}_after`] ?? 0) !== 0;
+      });
+    }
+    return false;
+  }, [state.metricValues, state.settingData, activeSettings]);
+
+  const removeMetric = useCallback((metricId: string, setting?: MeasureCareSetting) => {
+    const isOrgWide = ORG_WIDE_METRIC_IDS.includes(metricId);
+    const newMetricValues = { ...state.metricValues };
+    const updates: Partial<MeasureState> = {};
+
+    if (isOrgWide) {
+      delete newMetricValues[metricId];
+      const newSettingData = { ...state.settingData };
+      const newEnabledMetrics = { ...state.enabledMetrics };
+      for (const s of activeSettings) {
+        const sd = { ...(newSettingData[s] || {}) };
+        sd[`${metricId}_before`] = 0;
+        sd[`${metricId}_after`] = 0;
+        newSettingData[s] = sd;
+        const em = { ...(newEnabledMetrics[s] || {}) };
+        delete em[metricId];
+        newEnabledMetrics[s] = em;
+      }
+      updates.settingData = newSettingData;
+      updates.enabledMetrics = newEnabledMetrics;
+    } else if (setting) {
+      const key = metricKey(metricId, setting);
+      delete newMetricValues[key];
+      const sd = { ...(state.settingData[setting] || {}) };
+      sd[`${metricId}_before`] = 0;
+      sd[`${metricId}_after`] = 0;
+      updates.settingData = { ...state.settingData, [setting]: sd };
+      const em = { ...(state.enabledMetrics?.[setting] || {}) };
+      delete em[metricId];
+      updates.enabledMetrics = { ...state.enabledMetrics, [setting]: em };
+    }
+
+    updates.metricValues = newMetricValues;
+    setExpandedMetrics(prev => {
+      const next = { ...prev };
+      if (setting) delete next[metricKey(metricId, setting)];
+      else delete next[metricId];
+      return next;
     });
-  }, [state.surveyMetrics]);
+    updateState(updates);
+  }, [state.metricValues, state.settingData, state.enabledMetrics, activeSettings, updateState]);
+
+  const removeMetricFromAllSettings = useCallback((metricId: string, settings: MeasureCareSetting[]) => {
+    const newMetricValues = { ...state.metricValues };
+    const newSettingData = { ...state.settingData };
+    const newEnabledMetrics = { ...state.enabledMetrics };
+    for (const s of settings) {
+      const key = metricKey(metricId, s);
+      delete newMetricValues[key];
+      const sd = { ...(newSettingData[s] || {}) };
+      sd[`${metricId}_before`] = 0;
+      sd[`${metricId}_after`] = 0;
+      newSettingData[s] = sd;
+      const em = { ...(newEnabledMetrics[s] || {}) };
+      delete em[metricId];
+      newEnabledMetrics[s] = em;
+    }
+    setExpandedMetrics(prev => {
+      const next = { ...prev };
+      delete next[metricId];
+      return next;
+    });
+    updateState({ metricValues: newMetricValues, settingData: newSettingData, enabledMetrics: newEnabledMetrics });
+  }, [state.metricValues, state.settingData, state.enabledMetrics, updateState]);
 
   const totalStats = useMemo(() => {
+    let totalActive = 0;
     let totalAvailable = 0;
-    let totalEnabled = 0;
-    for (const s of activeSettings) {
-      totalAvailable += getTotalAvailableMetrics(s);
-      const enabled = state.enabledMetrics?.[s] || {};
-      for (const [, isOn] of Object.entries(enabled)) {
-        if (isOn) totalEnabled++;
+    for (const rm of resolvedMetrics) {
+      if (rm.metric.phase3Roadmap) continue;
+      if (rm.isOrgWide) {
+        totalAvailable += 1;
+        if (isMetricActive(rm.metric.id)) totalActive++;
+      } else {
+        for (const s of rm.settings) {
+          totalAvailable += 1;
+          if (isMetricActive(rm.metric.id, s)) totalActive++;
+        }
       }
     }
     const validSurvey = (state.surveyMetrics || []).filter(sm => sm.label.trim()).length;
-    return { totalAvailable: totalAvailable + validSurvey, totalEnabled: totalEnabled + validSurvey };
-  }, [activeSettings, state.enabledMetrics, state.surveyMetrics]);
+    return { totalAvailable: totalAvailable + validSurvey, totalActive: totalActive + validSurvey };
+  }, [resolvedMetrics, isMetricActive, state.surveyMetrics]);
 
-  const nudgeText = useMemo(() => {
-    if (totalStats.totalEnabled === 0) return null;
-    const activeDomainKeys = new Set<string>();
-    let totalDomainKeys = new Set<string>();
-    for (const s of activeSettings) {
-      const domains = getSettingDomains(s);
-      const enabledMap = state.enabledMetrics?.[s] || {};
-      const config = CARE_SETTING_CONFIGS[s];
-      for (const domain of domains) {
-        totalDomainKeys.add(domain.key);
-        const section = config.metricSections.find(sec => sec.key === domain.key);
-        const hasEnabledMetric = section?.metrics.some(m => m.hasBeforeAfter && enabledMap[m.key]);
-        const hasSurveyMetric = (state.surveyMetrics || []).some(
-          sm => sm.setting === s && sm.label.trim() && (sm.domain || '').toLowerCase() === domain.key
-        );
-        if (hasEnabledMetric || hasSurveyMetric) activeDomainKeys.add(domain.key);
-      }
-    }
-    const active = activeDomainKeys.size;
-    const total = totalDomainKeys.size;
-    if (active >= total) return 'Full domain coverage — strongest defensible position';
-    if (active >= 2) return `Tracking across ${active} domains — your data story is getting stronger`;
-    return 'Measuring across more domains strengthens your story';
-  }, [activeSettings, state.enabledMetrics, state.surveyMetrics, totalStats.totalEnabled]);
+  const hasAnyData = useMemo(() => {
+    return totalStats.totalActive > 0;
+  }, [totalStats.totalActive]);
 
-  const addSurveyMetric = useCallback((setting: MeasureCareSetting, domainKey: string) => {
+  const addSurveyMetric = useCallback((domainKey: string) => {
     const domainLabel = domainKey.charAt(0).toUpperCase() + domainKey.slice(1);
     const newMetric: SurveyMetric = {
       id: `sm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -133,10 +285,10 @@ export default function MeasureMetricSelection({
       before: 0,
       after: 0,
       domain: domainLabel,
-      setting,
+      setting: activeSettings[0],
     };
     updateState({ surveyMetrics: [...(state.surveyMetrics || []), newMetric] });
-  }, [state.surveyMetrics, updateState]);
+  }, [state.surveyMetrics, activeSettings, updateState]);
 
   const updateSurveyMetric = useCallback((id: string, updates: Partial<SurveyMetric>) => {
     const updated = (state.surveyMetrics || []).map(m =>
@@ -153,6 +305,10 @@ export default function MeasureMetricSelection({
     setExpandedDomains(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const toggleMetricExpand = (key: string) => {
+    setExpandedMetrics(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const activeSetting = state.careSetting || activeSettings[0] || 'outpatient';
   const config = CARE_SETTING_CONFIGS[activeSetting];
   const settingMetrics = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
@@ -160,6 +316,212 @@ export default function MeasureMetricSelection({
   const allocationKeys = config.allocationFields.map(f => f.key);
   const allocationTotal = allocationKeys.reduce((sum, key) => sum + (settingMetrics[key] ?? config.allocationFields.find(f => f.key === key)?.defaultValue ?? 0), 0);
   const allocationValid = allocationTotal === 100;
+
+  const renderMetricRow = (rm: ResolvedMetric) => {
+    const { metric, settings: metricSettings, isOrgWide } = rm;
+
+    if (isOrgWide) {
+      const val = getMetricValue(metric.id);
+      const active = isMetricActive(metric.id);
+      const expandKey = metric.id;
+      const isExpanded = expandedMetrics[expandKey] || false;
+      const hasBoth = val.before !== 0 && val.after !== 0;
+
+      if (!active && !isExpanded) {
+        return (
+          <div key={metric.id} className="py-3 flex items-center justify-between border-b border-[#EDE8E1] last:border-b-0">
+            <span className="text-sm text-[#888888]">{metric.label}</span>
+            <button
+              onClick={() => toggleMetricExpand(expandKey)}
+              className="text-[11px] text-[#AAAAAA] hover:text-[#EA2C00] transition-colors"
+              data-testid={`add-metric-${metric.id}`}
+            >
+              + Add
+            </button>
+          </div>
+        );
+      }
+
+      return (
+        <div
+          key={metric.id}
+          className={`py-3 border-b border-[#EDE8E1] last:border-b-0 ${hasBoth ? 'border-l-2 pl-3' : ''}`}
+          style={hasBoth ? { borderLeftColor: DOMAIN_COLORS[metric.domain] || '#999' } : undefined}
+          data-testid={`metric-row-${metric.id}`}
+        >
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleMetricExpand(expandKey)}
+          >
+            <div className="flex items-center gap-2">
+              {hasBoth && <Check className="w-3.5 h-3.5 text-[#2D8A4E] flex-shrink-0" />}
+              <span className={`text-sm font-medium ${hasBoth ? 'text-[#1A1A1A]' : 'text-[#666666]'}`}>{metric.label}</span>
+              <span className="text-[10px] text-[#BBBBBB]">All settings</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {hasBoth && <DeltaBadge before={val.before} after={val.after} metric={metric} />}
+              {active && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeMetric(metric.id); }}
+                  className="w-5 h-5 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+                  data-testid={`remove-metric-${metric.id}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="overflow-hidden"
+              >
+                <div className="pt-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-0.5">
+                      <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Non-Abridge</label>
+                      <FormattedNumberInput
+                        value={val.before}
+                        onChange={(v) => setMetricValue(metric.id, 'before', v)}
+                        step={metric.step || 1}
+                        className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                        data-testid={`input-orgwide-${metric.id}-before`}
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">With Abridge</label>
+                      <FormattedNumberInput
+                        value={val.after}
+                        onChange={(v) => setMetricValue(metric.id, 'after', v)}
+                        step={metric.step || 1}
+                        className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                        data-testid={`input-orgwide-${metric.id}-after`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    }
+
+    const anyActive = metricSettings.some(s => isMetricActive(metric.id, s));
+    const expandKey = metric.id;
+    const isExpanded = expandedMetrics[expandKey] || false;
+
+    if (!anyActive && !isExpanded) {
+      return (
+        <div key={metric.id} className="py-3 flex items-center justify-between border-b border-[#EDE8E1] last:border-b-0">
+          <span className="text-sm text-[#888888]">{metric.label}</span>
+          <button
+            onClick={() => toggleMetricExpand(expandKey)}
+            className="text-[11px] text-[#AAAAAA] hover:text-[#EA2C00] transition-colors"
+            data-testid={`add-metric-${metric.id}`}
+          >
+            + Add
+          </button>
+        </div>
+      );
+    }
+
+    const hasBothAny = metricSettings.some(s => {
+      const v = getMetricValue(metric.id, s);
+      return v.before !== 0 && v.after !== 0;
+    });
+
+    return (
+      <div
+        key={metric.id}
+        className={`py-3 border-b border-[#EDE8E1] last:border-b-0 ${hasBothAny ? 'border-l-2 pl-3' : ''}`}
+        style={hasBothAny ? { borderLeftColor: DOMAIN_COLORS[metric.domain] || '#999' } : undefined}
+        data-testid={`metric-row-${metric.id}`}
+      >
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => toggleMetricExpand(expandKey)}
+        >
+          <div className="flex items-center gap-2">
+            {hasBothAny && <Check className="w-3.5 h-3.5 text-[#2D8A4E] flex-shrink-0" />}
+            <span className={`text-sm font-medium ${hasBothAny ? 'text-[#1A1A1A]' : 'text-[#666666]'}`}>{metric.label}</span>
+            {!multiSetting && metricSettings.length === 1 && hasBothAny && (() => {
+              const v = getMetricValue(metric.id, metricSettings[0]);
+              return <DeltaBadge before={v.before} after={v.after} metric={metric} />;
+            })()}
+          </div>
+          <div className="flex items-center gap-2">
+            {anyActive && (
+              <button
+                onClick={(e) => { e.stopPropagation(); removeMetricFromAllSettings(metric.id, metricSettings); }}
+                className="w-5 h-5 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+                data-testid={`remove-metric-${metric.id}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {(isExpanded || anyActive) && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="pt-2 space-y-2">
+                {metricSettings.map(s => {
+                  const val = getMetricValue(metric.id, s);
+                  const hasBoth = val.before !== 0 && val.after !== 0;
+                  return (
+                    <div key={s}>
+                      {multiSetting && (
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] text-[#AAAAAA] uppercase tracking-[1px]">
+                            {CARE_SETTING_CONFIGS[s].shortLabel}
+                          </span>
+                          {hasBoth && <DeltaBadge before={val.before} after={val.after} metric={metric} />}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-0.5">
+                          {!multiSetting && <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Non-Abridge</label>}
+                          <FormattedNumberInput
+                            value={val.before}
+                            onChange={(v) => setMetricValue(metric.id, 'before', v, s)}
+                            step={metric.step || 1}
+                            className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                            data-testid={`input-${s}-${metric.id}-before`}
+                          />
+                        </div>
+                        <div className="space-y-0.5">
+                          {!multiSetting && <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">With Abridge</label>}
+                          <FormattedNumberInput
+                            value={val.after}
+                            onChange={(v) => setMetricValue(metric.id, 'after', v, s)}
+                            step={metric.step || 1}
+                            className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                            data-testid={`input-${s}-${metric.id}-after`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
@@ -175,7 +537,7 @@ export default function MeasureMetricSelection({
 
       <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -186,336 +548,275 @@ export default function MeasureMetricSelection({
           >
             What Are You Measuring?
           </h1>
-          <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
-            Toggle metrics and enter before/after data for your care settings.
-          </p>
+          <div className="flex items-center justify-center gap-2 mt-2" data-testid="pills-active-settings">
+            {activeSettings.map((s, i) => (
+              <span key={s} className="text-sm text-[#666666] font-medium">
+                {i > 0 && <span className="text-[#CCCCCC] mx-1">&middot;</span>}
+                {CARE_SETTING_CONFIGS[s].label}
+              </span>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div
-          className="flex items-center justify-between rounded-lg border border-[#E8E2DA] bg-[#FAF8F5] px-4 py-3 mb-6"
+          className="mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.12 }}
+          transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
-            <span className="text-xs font-semibold uppercase tracking-[1.5px] text-[#666666]">Monthly Data Entry</span>
-            <span className="text-[10px] text-[#AAAAAA]">
-              {state.trendConfig.enabled ? 'Enter month-by-month values per metric' : 'Simple before / after mode'}
+          <div className="flex items-center gap-3 px-1 mb-1.5">
+            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-active-count">
+              {totalStats.totalActive} of {totalStats.totalAvailable} metrics active
             </span>
           </div>
-          <button
-            onClick={() => updateState({
-              trendConfig: { ...state.trendConfig, enabled: !state.trendConfig.enabled },
-            })}
-            className={`w-9 h-[18px] rounded-full transition-colors flex items-center ${state.trendConfig.enabled ? 'bg-[#EA2C00] justify-end' : 'bg-[#E5E5E5] justify-start'}`}
-            data-testid="toggle-trend-enabled"
-          >
-            <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm mx-0.5" />
-          </button>
+          <div className="h-2 bg-[#E8E2DA] rounded-full overflow-hidden" data-testid="progress-bar">
+            <motion.div
+              className="h-full bg-[#EA2C00] rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: totalStats.totalAvailable > 0 ? `${(totalStats.totalActive / totalStats.totalAvailable) * 100}%` : '0%' }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            />
+          </div>
         </motion.div>
 
         <motion.div
-          className="mb-4 px-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          className="rounded-xl p-4 md:p-5 mb-4 bg-white border border-[#E8E2DA] shadow-sm"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
+          data-testid="section-foundational"
         >
-          <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-enabled-count">
-            {totalStats.totalEnabled} metrics selected
-          </span>
-          {nudgeText && (
-            <p className="text-xs text-[#9A9590] mt-1" data-testid="text-nudge">
-              {nudgeText}
-            </p>
-          )}
-        </motion.div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+            <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#4A4A4A]">Foundational</span>
+            <span className="text-[10px] text-[#AAAAAA] ml-auto">always on</span>
+          </div>
+          <div className="h-px bg-[#E8E2DA] mb-3" />
 
-        {activeSettings.map((setting, settingIdx) => {
-          const settingConfig = CARE_SETTING_CONFIGS[setting];
-          const domains = getSettingDomains(setting);
-          const enabledMap = state.enabledMetrics?.[setting] || {};
-          const settingData = state.settingData[setting] || {};
+          {FOUNDATIONAL_GROUPS.map(group => {
+            const matchingMetrics = foundationalMetrics.filter(rm =>
+              group.metricIds.includes(rm.metric.id)
+            );
+            if (matchingMetrics.length === 0) return null;
 
-          return (
-            <motion.div
-              key={setting}
-              className="mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + settingIdx * 0.1 }}
-            >
-              {activeSettings.length > 1 && (
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-4 rounded-full bg-[#EA2C00]" />
-                  <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#666666]">
-                    {settingConfig.label}
-                  </span>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {domains.map(domain => {
-                  const section = settingConfig.metricSections.find(s => s.key === domain.key);
-                  const domainMetrics = section?.metrics.filter(m => m.hasBeforeAfter) || [];
-                  const enabledInDomain = domainMetrics.filter(m => enabledMap[m.key]).length;
-                  const expandKey = `${setting}_${domain.key}`;
-                  const isExpanded = expandedDomains[expandKey] ?? (enabledInDomain > 0);
-                  const domainSurveyMetrics = getSurveyMetricsForSettingDomain(setting, domain.key);
-
-                  return (
-                    <div
-                      key={domain.key}
-                      className="rounded-xl border border-[#E8E2DA] bg-[#FAF8F5] overflow-hidden shadow-sm"
-                      data-testid={`domain-card-${setting}-${domain.key}`}
-                    >
-                      <button
-                        onClick={() => toggleDomain(expandKey)}
-                        className="w-full flex items-center gap-2.5 px-4 py-3.5 text-left group"
-                        data-testid={`domain-toggle-${setting}-${domain.key}`}
-                      >
-                        <div
-                          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: DOMAIN_COLORS[domain.key] || '#999' }}
-                        />
-                        <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#4A4A4A] flex-1">
-                          {domain.label}
-                        </span>
-                        {domainMetrics.length > 0 && (
-                          <span className="text-[10px] text-[#AAAAAA] font-medium">
-                            {enabledInDomain}/{domainMetrics.length}
-                          </span>
-                        )}
-                        {domainMetrics.length === 0 && domainSurveyMetrics.length === 0 && (
-                          <span className="text-[10px] text-[#CCCCCC] italic">
-                            Add custom metrics below
-                          </span>
-                        )}
-                        <ChevronRight
-                          className={`w-4 h-4 text-[#BBBBBB] transition-transform duration-200 group-hover:text-[#888888] ${isExpanded ? 'rotate-90' : ''}`}
-                        />
-                      </button>
-
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2, ease: 'easeInOut' }}
-                            className="overflow-hidden border-t border-[#E8E2DA]/60"
-                          >
-                            {domainMetrics.length > 0 && (
-                              <div className="divide-y divide-[#EDE8E1]">
-                                {domainMetrics.map(metric => {
-                                  const isEnabled = !!enabledMap[metric.key];
-
-                                  return (
-                                    <div key={metric.key} className="transition-all duration-200">
-                                      <button
-                                        onClick={() => toggleMetric(setting, metric.key)}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
-                                          ${isEnabled ? 'bg-white/70' : 'bg-transparent'}
-                                        `}
-                                        data-testid={`toggle-metric-${setting}-${metric.key}`}
-                                      >
-                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all
-                                          ${isEnabled ? 'bg-[#EA2C00] border-[#EA2C00]' : 'border-[#D0D0D0] bg-white'}
-                                        `}>
-                                          {isEnabled && <Check className="w-3 h-3 text-white" />}
-                                        </div>
-                                        <span className={`text-sm font-medium flex-1 ${isEnabled ? 'text-[#1A1A1A]' : 'text-[#AAAAAA]'}`}>
-                                          {metric.label}
-                                        </span>
-                                        {isEnabled && (settingData[`${metric.key}_before`] ?? 0) !== 0 && (settingData[`${metric.key}_after`] ?? 0) !== 0 && (
-                                          <Check className="w-3.5 h-3.5 text-[#2D8A4E] flex-shrink-0" />
-                                        )}
-                                      </button>
-
-                                      <AnimatePresence>
-                                        {isEnabled && (
-                                          <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2, ease: 'easeInOut' }}
-                                            className="overflow-hidden"
-                                          >
-                                            <div className="px-4 pb-3 pt-1">
-                                              <div className="grid grid-cols-2 gap-3">
-                                                <div className="space-y-1">
-                                                  <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Non-Abridge</label>
-                                                  <FormattedNumberInput
-                                                    value={settingData[`${metric.key}_before`] ?? 0}
-                                                    onChange={(v) => updateMetricValue(setting, `${metric.key}_before`, v)}
-                                                    step={metric.step}
-                                                    className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
-                                                    data-testid={`input-${setting}-${metric.key}-before`}
-                                                  />
-                                                </div>
-                                                <div className="space-y-1">
-                                                  <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">With Abridge</label>
-                                                  <FormattedNumberInput
-                                                    value={settingData[`${metric.key}_after`] ?? 0}
-                                                    onChange={(v) => updateMetricValue(setting, `${metric.key}_after`, v)}
-                                                    step={metric.step}
-                                                    className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
-                                                    data-testid={`input-${setting}-${metric.key}-after`}
-                                                  />
-                                                </div>
-                                              </div>
-                                              {state.trendConfig.enabled && (() => {
-                                                const monthlyData = state.trendConfig.monthlyData[metric.key] || [];
-                                                const monthCount = Math.max(monthlyData.length, state.deployment.monthsOnAbridge || 6, 6);
-                                                return (
-                                                  <div className="mt-3 pt-3 border-t border-[#E8E2DA]/60">
-                                                    <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-1.5">Monthly Values</p>
-                                                    <div className="flex gap-1 flex-wrap">
-                                                      {Array.from({ length: monthCount }, (_, i) => (
-                                                        <div key={i} className="w-12">
-                                                          <p className="text-[8px] text-[#BBBBBB] text-center mb-0.5">M{i + 1}</p>
-                                                          <input
-                                                            type="number"
-                                                            value={monthlyData[i] ?? ''}
-                                                            onChange={(e) => {
-                                                              const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                                                              const newData = [...monthlyData];
-                                                              while (newData.length <= i) newData.push(0);
-                                                              newData[i] = val;
-                                                              updateState({
-                                                                trendConfig: {
-                                                                  ...state.trendConfig,
-                                                                  monthlyData: { ...state.trendConfig.monthlyData, [metric.key]: newData },
-                                                                },
-                                                              });
-                                                            }}
-                                                            className="w-full h-7 text-center text-[11px] bg-[#FAFAF8] border border-[#E5E5E5] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
-                                                            data-testid={`input-trend-${metric.key}-${i}`}
-                                                          />
-                                                        </div>
-                                                      ))}
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })()}
-                                            </div>
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-
-                            {domainSurveyMetrics.length > 0 && (
-                              <div className="border-t border-[#E8E2DA]/60">
-                                {domainSurveyMetrics.map(sm => (
-                                  <div key={sm.id} className="px-4 py-3 border-b border-[#F5F5F5] last:border-b-0" data-testid={`survey-metric-${sm.id}`}>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Activity className="w-3 h-3 text-[#EA2C00] flex-shrink-0" />
-                                      <input
-                                        type="text"
-                                        value={sm.label}
-                                        onChange={e => updateSurveyMetric(sm.id, { label: e.target.value })}
-                                        placeholder="Metric name (e.g., Clinician Satisfaction)"
-                                        className="flex-1 h-8 bg-white border border-[#E5E5E5] rounded-md px-2.5 text-sm font-medium text-black placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]/50"
-                                        data-testid={`input-survey-label-${sm.id}`}
-                                      />
-                                      <button
-                                        onClick={() => removeSurveyMetric(sm.id)}
-                                        className="w-7 h-7 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] hover:bg-[#FFF0EC] transition-colors"
-                                        data-testid={`button-remove-survey-${sm.id}`}
-                                      >
-                                        <X className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <div className="space-y-1">
-                                        <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Before</label>
-                                        <FormattedNumberInput
-                                          value={sm.before}
-                                          onChange={v => updateSurveyMetric(sm.id, { before: v })}
-                                          step={0.1}
-                                          className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
-                                          data-testid={`input-survey-before-${sm.id}`}
-                                        />
-                                      </div>
-                                      <div className="space-y-1">
-                                        <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">After</label>
-                                        <FormattedNumberInput
-                                          value={sm.after}
-                                          onChange={v => updateSurveyMetric(sm.id, { after: v })}
-                                          step={0.1}
-                                          className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
-                                          data-testid={`input-survey-after-${sm.id}`}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="mt-2">
-                                      <input
-                                        type="text"
-                                        value={sm.unit || ''}
-                                        onChange={e => updateSurveyMetric(sm.id, { unit: e.target.value })}
-                                        placeholder="Unit (%, score, NPS)"
-                                        className="h-7 w-28 bg-white border border-[#E5E5E5] rounded-md px-2 text-[11px] text-[#666666] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
-                                        data-testid={`input-survey-unit-${sm.id}`}
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="px-4 py-2.5 border-t border-[#E8E2DA]/60">
-                              <button
-                                onClick={() => addSurveyMetric(setting, domain.key)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
-                                data-testid={`button-add-custom-${setting}-${domain.key}`}
-                              >
-                                <Plus className="w-3 h-3" />
-                                Add Custom Metric
-                              </button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {settingConfig.deploymentFields && settingConfig.deploymentFields.length > 0 && (
-                <div className="rounded-lg border border-[#E5E5E5] bg-[#FAFAF8] p-4 mt-3">
-                  <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-2 block">
-                    {settingConfig.label} Deployment
-                  </span>
-                  <div className="grid grid-cols-2 gap-3">
-                    {settingConfig.deploymentFields.map(field => {
-                      const currentMetrics = state.settingData?.[setting] || getDefaultMetrics(setting);
-                      return (
-                        <div key={field.key} className="space-y-1">
-                          <label className="text-xs font-medium text-black">{field.label}</label>
-                          <div className="relative">
+            return (
+              <div key={group.label} className="mb-4 last:mb-0">
+                <p className="text-sm font-medium text-[#1A1A1A] mb-2">{group.label}</p>
+                {matchingMetrics.map(rm => {
+                  if (rm.settings.length === 1 && !multiSetting) {
+                    const s = rm.settings[0];
+                    const val = getMetricValue(rm.metric.id, s);
+                    const hasBoth = val.before !== 0 && val.after !== 0;
+                    return (
+                      <div key={rm.metric.id} className="mb-2">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-0.5">
+                            <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Non-Abridge</label>
                             <FormattedNumberInput
-                              value={currentMetrics[`deploy_${field.key}`] ?? 0}
-                              onChange={(v) => updateSettingMetric(setting, `deploy_${field.key}`, v)}
-                              className={`h-9 bg-white border-[#E5E5E5] text-right text-sm ${field.suffix ? "pr-8" : ""}`}
-                              data-testid={`input-deploy-${field.key}`}
+                              value={val.before}
+                              onChange={(v) => setMetricValue(rm.metric.id, 'before', v, s)}
+                              step={rm.metric.step || 1}
+                              className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                              data-testid={`input-foundational-${rm.metric.id}-before`}
                             />
-                            {field.suffix && (
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-xs">{field.suffix}</span>
-                            )}
+                          </div>
+                          <div className="space-y-0.5">
+                            <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">With Abridge</label>
+                            <FormattedNumberInput
+                              value={val.after}
+                              onChange={(v) => setMetricValue(rm.metric.id, 'after', v, s)}
+                              step={rm.metric.step || 1}
+                              className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                              data-testid={`input-foundational-${rm.metric.id}-after`}
+                            />
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
+                        {hasBoth && (
+                          <div className="mt-1 text-right">
+                            <DeltaBadge before={val.before} after={val.after} metric={rm.metric} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return rm.settings.map(s => {
+                    const val = getMetricValue(rm.metric.id, s);
+                    const hasBoth = val.before !== 0 && val.after !== 0;
+                    return (
+                      <div key={`${rm.metric.id}-${s}`} className="mb-2">
+                        <span className="text-[10px] text-[#AAAAAA] uppercase tracking-[1px] block mb-1">
+                          {CARE_SETTING_CONFIGS[s].shortLabel}
+                        </span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <FormattedNumberInput
+                              value={val.before}
+                              onChange={(v) => setMetricValue(rm.metric.id, 'before', v, s)}
+                              step={rm.metric.step || 1}
+                              className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                              data-testid={`input-foundational-${s}-${rm.metric.id}-before`}
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FormattedNumberInput
+                              value={val.after}
+                              onChange={(v) => setMetricValue(rm.metric.id, 'after', v, s)}
+                              step={rm.metric.step || 1}
+                              className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm flex-1"
+                              data-testid={`input-foundational-${s}-${rm.metric.id}-after`}
+                            />
+                            {hasBoth && <DeltaBadge before={val.before} after={val.after} metric={rm.metric} />}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })}
+              </div>
+            );
+          })}
+        </motion.div>
+
+        <div className="space-y-3 mb-6">
+          {domainGroups.map((group, gi) => {
+            const phase1Metrics = group.metrics.filter(rm => rm.metric.phase === 1);
+            const phase2Metrics = group.metrics.filter(rm => rm.metric.phase === 2);
+            const activeInDomain = group.metrics.filter(rm =>
+              rm.isOrgWide ? isMetricActive(rm.metric.id) : rm.settings.some(s => isMetricActive(rm.metric.id, s))
+            ).length;
+            const totalInDomain = group.metrics.length;
+            const expandKey = group.domainKey;
+            const isExpanded = expandedDomains[expandKey] ?? false;
+            const domainColor = DOMAIN_COLORS[group.domainKey === 'capacity-group' ? 'capacity' : group.domainKey] || '#999';
+
+            return (
+              <motion.div
+                key={group.domainKey}
+                className="rounded-xl border border-[#E8E2DA] bg-[#FAF8F5] overflow-hidden shadow-sm"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + gi * 0.05 }}
+                data-testid={`domain-accordion-${group.domainKey}`}
+              >
+                <button
+                  onClick={() => toggleDomain(expandKey)}
+                  className="w-full flex items-center gap-2.5 px-4 py-4 text-left group border-b border-transparent"
+                  data-testid={`domain-toggle-${group.domainKey}`}
+                >
+                  <div
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: domainColor }}
+                  />
+                  <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#4A4A4A] flex-1">
+                    {group.label}
+                  </span>
+                  <span className="text-[10px] text-[#AAAAAA] font-medium">
+                    {activeInDomain} of {totalInDomain} active
+                  </span>
+                  <ChevronRight
+                    className={`w-4 h-4 text-[#BBBBBB] transition-transform duration-200 group-hover:text-[#888888] ${isExpanded ? 'rotate-90' : ''}`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="overflow-hidden border-t border-[#E8E2DA]/60"
+                    >
+                      <div className="px-4 py-2">
+                        {phase1Metrics.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-1">
+                              Documentation impact
+                            </p>
+                            {phase1Metrics.map(rm => renderMetricRow(rm))}
+                          </div>
+                        )}
+
+                        {phase2Metrics.length > 0 && (
+                          <div className="opacity-40 mt-3">
+                            <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-1">
+                              {multiSetting
+                                ? SETTING_THIRD_CHAPTER_LABELS[activeSettings[0]]
+                                : SETTING_THIRD_CHAPTER_LABELS[activeSettings[0]]
+                              }
+                            </p>
+                            {phase2Metrics.map(rm => renderMetricRow(rm))}
+                          </div>
+                        )}
+
+                        <div className="pt-2 border-t border-[#E8E2DA]/40 mt-2">
+                          <button
+                            onClick={() => addSurveyMetric(group.domainKey === 'capacity-group' ? 'capacity' : group.domainKey)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
+                            data-testid={`button-add-custom-${group.domainKey}`}
+                          >
+                            <Plus className="w-3 h-3" />
+                            Add Custom Metric
+                          </button>
+                        </div>
+
+                        {(state.surveyMetrics || []).filter(sm => {
+                          const smDomain = (sm.domain || '').toLowerCase();
+                          return group.domainKey === 'capacity-group'
+                            ? ['capacity', 'throughput', 'patientFlow', 'staffing'].includes(smDomain)
+                            : smDomain === group.domainKey;
+                        }).map(sm => (
+                          <div key={sm.id} className="px-0 py-2 border-b border-[#F5F5F5] last:border-b-0" data-testid={`survey-metric-${sm.id}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <input
+                                type="text"
+                                value={sm.label}
+                                onChange={e => updateSurveyMetric(sm.id, { label: e.target.value })}
+                                placeholder="Metric name"
+                                className="flex-1 h-8 bg-white border border-[#E5E5E5] rounded-md px-2.5 text-sm font-medium text-black placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                                data-testid={`input-survey-label-${sm.id}`}
+                              />
+                              <button
+                                onClick={() => removeSurveyMetric(sm.id)}
+                                className="w-7 h-7 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+                                data-testid={`button-remove-survey-${sm.id}`}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-0.5">
+                                <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Before</label>
+                                <FormattedNumberInput
+                                  value={sm.before}
+                                  onChange={v => updateSurveyMetric(sm.id, { before: v })}
+                                  step={0.1}
+                                  className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                                  data-testid={`input-survey-before-${sm.id}`}
+                                />
+                              </div>
+                              <div className="space-y-0.5">
+                                <label className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">After</label>
+                                <FormattedNumberInput
+                                  value={sm.after}
+                                  onChange={v => updateSurveyMetric(sm.id, { after: v })}
+                                  step={0.1}
+                                  className="h-9 bg-[#FAFAF8] border-[#E5E5E5] text-right text-sm"
+                                  data-testid={`input-survey-after-${sm.id}`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
 
         <motion.div
           className="rounded-lg overflow-visible mb-6 bg-[#F9F7F4] border border-[#E8E2DA]"
@@ -574,7 +875,12 @@ export default function MeasureMetricSelection({
                           {field.prefix && <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#888888] text-xs">{field.prefix}</span>}
                           <FormattedNumberInput
                             value={settingMetrics[`vm_${field.key}`] ?? field.defaultValue}
-                            onChange={(v) => updateSettingMetric(activeSetting, `vm_${field.key}`, v)}
+                            onChange={(v) => {
+                              const current = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
+                              updateState({
+                                settingData: { ...state.settingData, [activeSetting]: { ...current, [`vm_${field.key}`]: v } },
+                              });
+                            }}
                             className={`h-9 bg-white border-[#E5E5E5] text-right text-sm ${field.prefix ? "pl-6" : ""} ${field.suffix ? "pr-8" : ""}`}
                             data-testid={`input-vm-${field.key}`}
                           />
@@ -598,7 +904,12 @@ export default function MeasureMetricSelection({
                           <div className="relative">
                             <FormattedNumberInput
                               value={settingMetrics[field.key] ?? field.defaultValue}
-                              onChange={(v) => updateSettingMetric(activeSetting, field.key, Math.max(0, Math.min(100, v)))}
+                              onChange={(v) => {
+                                const current = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
+                                updateState({
+                                  settingData: { ...state.settingData, [activeSetting]: { ...current, [field.key]: Math.max(0, Math.min(100, v)) } },
+                                });
+                              }}
                               className="h-9 bg-white border-[#E5E5E5] text-right text-sm pr-7"
                               data-testid={`input-alloc-${field.key}`}
                             />
@@ -625,9 +936,9 @@ export default function MeasureMetricSelection({
         >
           <Button
             onClick={onNext}
-            disabled={totalStats.totalEnabled === 0 || !allocationValid}
+            disabled={!hasAnyData || !allocationValid}
             className={`h-[52px] px-8 font-semibold rounded-lg text-base gap-2 transition-all
-              ${totalStats.totalEnabled > 0 && allocationValid
+              ${hasAnyData && allocationValid
                 ? 'bg-[#EA2C00] hover:bg-[#D42800] text-white'
                 : 'bg-[#E0E0E0] text-[#999999] cursor-not-allowed'
               }`}

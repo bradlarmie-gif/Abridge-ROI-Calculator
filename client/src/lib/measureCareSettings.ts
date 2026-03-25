@@ -15,6 +15,7 @@ export interface MetricDefinition {
   whyItMatters: string;
   plainEnglishTemplate: string;
   phase3Roadmap?: boolean;
+  step?: number;
 }
 
 export const OUTPATIENT_METRICS: MetricDefinition[] = [
@@ -1703,6 +1704,57 @@ export const DOMAIN_LABELS: Record<DomainKey, string> = {
   staffing: 'Staffing',
   foundational: 'Foundational',
 };
+
+export const ORG_WIDE_METRIC_IDS = ['burnoutAssessment', 'likelihoodToStay'];
+
+export const FOUNDATIONAL_GROUPS: { label: string; metricIds: string[] }[] = [
+  { label: 'Documentation Time', metricIds: ['docTimePerNote', 'docTimePerEncounter', 'docTimePerShift'] },
+  { label: 'Note Quality Score', metricIds: ['noteQualityScore'] },
+];
+
+export const SETTING_THIRD_CHAPTER_LABELS: Record<MeasureCareSetting, string> = {
+  outpatient: 'Capacity gains',
+  ed: 'Throughput gains',
+  inpatient: 'Flow outcomes',
+  nursing: 'Staffing outcomes',
+};
+
+export interface ResolvedMetric {
+  metric: MetricDefinition;
+  settings: MeasureCareSetting[];
+  isOrgWide: boolean;
+}
+
+export function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
+  switch (setting) {
+    case 'outpatient': return OUTPATIENT_METRICS;
+    case 'ed': return ED_METRICS;
+    case 'inpatient': return INPATIENT_METRICS;
+    case 'nursing': return NURSING_METRICS;
+    default: return OUTPATIENT_METRICS;
+  }
+}
+
+export function getMetricsForSettings(settings: MeasureCareSetting[]): ResolvedMetric[] {
+  const allMetrics = settings.flatMap(setting => {
+    const metricsForSetting = getMetricsForSetting(setting);
+    return metricsForSetting.map(m => ({ metric: m, setting }));
+  });
+
+  const grouped = new Map<string, { metric: MetricDefinition; settings: MeasureCareSetting[] }>();
+  for (const { metric, setting } of allMetrics) {
+    if (!grouped.has(metric.id)) {
+      grouped.set(metric.id, { metric, settings: [] });
+    }
+    grouped.get(metric.id)!.settings.push(setting);
+  }
+
+  return Array.from(grouped.values()).map(({ metric, settings: metricSettings }) => ({
+    metric,
+    settings: metricSettings,
+    isOrgWide: ORG_WIDE_METRIC_IDS.includes(metric.id),
+  }));
+}
 
 export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey; label: string }[] {
   if (setting === 'outpatient') {

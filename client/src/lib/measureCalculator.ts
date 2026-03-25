@@ -94,6 +94,17 @@ export interface MetricValue {
   singleValue: number | null;
 }
 
+export interface MetricEntry {
+  before: number | null;
+  after: number | null;
+  monthlyData?: number[];
+  isMonthlyMode: boolean;
+}
+
+export function metricKey(metricId: string, setting?: MeasureCareSetting): string {
+  return setting ? `${metricId}__${setting}` : metricId;
+}
+
 export interface AbridgeNativeDataModel {
   utilization: number | null;
   consentRate: number | null;
@@ -139,6 +150,7 @@ export interface MeasureState {
     docTimePerShift?: MetricValue;
     noteQualityScore?: MetricValue;
   };
+  metricValues: Record<string, MetricEntry>;
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
@@ -246,6 +258,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     NURSING_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
   ),
   nursingAbridgeNativeData: {},
+  metricValues: {},
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
 };
