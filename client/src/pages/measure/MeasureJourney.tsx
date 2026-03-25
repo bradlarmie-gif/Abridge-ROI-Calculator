@@ -379,7 +379,11 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
   const adoptedEncounters = state.deployment.abridgeEncounters > 0
     ? state.deployment.abridgeEncounters
     : Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100));
-  const totalHours = metricDef.unit === 'min' ? Math.round((delta * adoptedEncounters) / 60) : 0;
+  const totalHours = metricDef.unit === 'min'
+    ? Math.round((delta * adoptedEncounters) / 60)
+    : metricDef.unit === 'hours'
+    ? Math.round(delta * adoptedEncounters)
+    : 0;
   const totalMinutes = metricDef.unit === 'min' ? formatNumber(Math.round(Math.abs(delta) * adoptedEncounters)) : '0';
   const total = metricDef.unit === 'count' ? delta * state.deployment.providers : 0;
   const cf = state.calibration?.conversionFactor ?? 33;
