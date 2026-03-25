@@ -422,7 +422,8 @@ function EdMetricSections({ state, updateState }: { state: MeasureState; updateS
     updateState({ edAbridgeNativeData: updated, ...legacy });
   }, [state, updateState]);
 
-  const abridgePlatformMetrics = useMemo(() => ED_METRICS.filter(m => m.source === 'abridge' && !m.phase3Roadmap), []);
+  const ED_ABRIDGE_PLATFORM_IDS = new Set(['docTimePerEncounter', 'wowTime', 'noteQualityScore']);
+  const abridgePlatformMetrics = useMemo(() => ED_METRICS.filter(m => ED_ABRIDGE_PLATFORM_IDS.has(m.id)), []);
   const throughputMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'throughput' && !m.phase3Roadmap), []);
   const workforceMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source !== 'survey'), []);
   const workforceSurveyMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source === 'survey'), []);
