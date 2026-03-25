@@ -41,7 +41,7 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
         parsed.abridgeNativeData = {};
       }
       if (!parsed.outpatientMetrics) {
-        parsed.outpatientMetrics = {};
+        parsed.outpatientMetrics = DEFAULT_MEASURE_STATE.outpatientMetrics;
       }
       if (!parsed.outpatientNativeData) {
         parsed.outpatientNativeData = DEFAULT_MEASURE_STATE.outpatientNativeData;
