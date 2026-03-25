@@ -529,7 +529,7 @@ export default function MeasureDataEntry({
         </AnimatePresence>
 
         <motion.div
-          className="rounded-xl bg-white border border-[#E5E5E5] p-3.5 md:p-5 mb-3.5 md:mb-5"
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -539,7 +539,7 @@ export default function MeasureDataEntry({
             <Sparkles className="w-4 h-4 text-[#EA2C00]" />
             <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
           </div>
-          <p className="text-[11px] text-[#999999] mb-3 md:mb-4">Optional. If you have access to Abridge analytics, enter these platform-native metrics.</p>
+          <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             {ABRIDGE_NATIVE_METRICS.map((metric) => (
               <div key={metric.key} className="space-y-1.5">
