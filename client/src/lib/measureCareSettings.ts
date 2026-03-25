@@ -532,6 +532,7 @@ export const DOMAIN_LABELS: Record<DomainKey, string> = {
   capacity: 'Capacity',
   throughput: 'Throughput',
   patientFlow: 'Patient Flow',
+  foundational: 'Foundational',
 };
 
 export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey; label: string }[] {
@@ -808,6 +809,9 @@ export const CARE_SETTING_ORDER: MeasureCareSetting[] = [
 export type SettingMetrics = Record<string, number>;
 
 export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
+  if (setting === 'outpatient') {
+    return OUTPATIENT_METRICS.filter(m => !m.phase3Roadmap).length;
+  }
   const config = CARE_SETTING_CONFIGS[setting];
   let count = 0;
   for (const section of config.metricSections) {

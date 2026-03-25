@@ -278,6 +278,27 @@ function renderPlainEnglish(template: string, vars: Record<string, string | numb
 function getMetricInterpretation(row: MetricRowData, state: MeasureState): string | null {
   const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey);
   if (!metricDef) return null;
+
+  const isSingleValue = metricDef.inputType === 'single';
+
+  if (isSingleValue) {
+    const val = row.after;
+    if (!val) return null;
+    const fmtVal = val < 1 ? val.toFixed(2) : val < 10 ? val.toFixed(1) : Math.round(val).toString();
+    return renderPlainEnglish(metricDef.plainEnglishTemplate, {
+      value: fmtVal,
+      delta: '0',
+      before: '0',
+      after: fmtVal,
+      encounters: formatNumber(state.deployment.totalEncounters),
+      providers: String(state.deployment.providers),
+      totalHours: '0',
+      total: '0',
+      cf: '0',
+      unit: metricDef.unitLabel,
+    });
+  }
+
   if (!row.before || !row.after) return null;
 
   const delta = Math.abs((row.after ?? 0) - (row.before ?? 0));
