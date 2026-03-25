@@ -3,7 +3,7 @@ import type { MeasureCareSetting } from "./measureCalculator";
 export interface MetricDefinition {
   id: string;
   label: string;
-  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue';
+  domain: 'foundational' | 'quality' | 'workforce' | 'capacity' | 'revenue' | 'throughput';
   phase: 1 | 2 | 3;
   inputType: 'single' | 'before-after';
   unit: string;
@@ -473,6 +473,396 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
   },
 ];
 
+export const ED_METRICS: MetricDefinition[] = [
+  {
+    id: 'docTimePerEncounter',
+    label: 'Documentation Time per Encounter',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Active time spent in the note per ED encounter.',
+    whyItMatters: 'Pulled from Abridge platform data. Measures documentation burden per encounter.',
+    plainEnglishTemplate:
+      'ED providers are spending {{after}} minutes per note, down from {{before}}. ' +
+      "That's {{delta}} minutes back per encounter — across {{providers}} providers and {{encounters}} annual encounters, " +
+      "that's {{totalHours}} hours of documentation time returned annually.",
+  },
+  {
+    id: 'wowTime',
+    label: 'Words on Workday (WoW) Time',
+    domain: 'quality',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'ED-specific Abridge metric capturing after-hours documentation burden.',
+    whyItMatters: 'Captures after-hours and outside-shift documentation burden on Epic Clarity.',
+    plainEnglishTemplate:
+      "WoW time is down {{delta}} minutes per encounter. " +
+      "For {{providers}} ED providers, that's approximately {{totalHours}} hours of after-hours documentation eliminated annually.",
+  },
+  {
+    id: 'noteCompletionTime',
+    label: 'Note Completion Time',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'hours',
+    unitLabel: 'hours',
+    lowerIsBetter: true,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Time from end of encounter to note sign-off.',
+    whyItMatters: 'Pulled from Abridge platform or EHR timestamp data.',
+    plainEnglishTemplate:
+      "Note completion time has dropped from {{before}}h to {{after}}h after the encounter ends. " +
+      "That's {{delta}} hours per note — for {{providers}} providers doing {{encounters}} encounters, " +
+      'this represents {{totalHours}} hours of shifted or eliminated after-hours work annually.',
+  },
+  {
+    id: 'timeToCloseEncounter',
+    label: 'Time to Close Encounter',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'hours',
+    unitLabel: 'hours',
+    lowerIsBetter: true,
+    source: 'epic',
+    sourceLabel: 'EHR / Epic',
+    description: 'Time from patient discharge to full encounter closure in the EHR.',
+    whyItMatters: 'Typically sourced from Epic reporting.',
+    plainEnglishTemplate:
+      'Encounter close time is down from {{before}}h to {{after}}h. ' +
+      'Faster closures reduce after-hours work and improve billing lag for your {{providers}} ED providers.',
+  },
+  {
+    id: 'workAfterHours',
+    label: 'Work After Hours',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes/week',
+    lowerIsBetter: true,
+    source: 'epic',
+    sourceLabel: 'EHR / Epic Signal',
+    description: 'After-hours EHR activity per provider per week.',
+    whyItMatters: 'Source: Epic Signal, Abridge platform, or provider self-report.',
+    plainEnglishTemplate:
+      "After-hours documentation is down {{delta}} minutes per provider per week. " +
+      "Across {{providers}} ED providers over 52 weeks, that's {{totalHours}} hours of protected time returned annually.",
+  },
+  {
+    id: 'burnoutAssessment',
+    label: 'Burnout Assessment (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'score',
+    unitLabel: 'survey score',
+    lowerIsBetter: true,
+    source: 'survey',
+    sourceLabel: 'Clinician Survey',
+    description: 'Before/after survey comparison using MBI, single-item, or Maslach scale.',
+    whyItMatters: 'Leading indicator for retention. Each ED turnover event typically costs $500K–$1M+.',
+    plainEnglishTemplate:
+      'Burnout scores improved from {{before}} to {{after}} on your survey scale. ' +
+      'This is a leading indicator for retention. For ED physicians, each turnover event typically costs $500K–$1M+ in replacement costs.',
+  },
+  {
+    id: 'likelihoodToStay',
+    label: 'Likelihood to Stay (Survey)',
+    domain: 'workforce',
+    phase: 1,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'survey',
+    sourceLabel: 'Clinician Survey',
+    description: 'Before/after pulse survey — % responding "likely" or "very likely" to stay.',
+    whyItMatters: 'Align with HR and medical staff office on survey instrument and timing.',
+    plainEnglishTemplate:
+      "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
+  },
+  {
+    id: 'wrvu',
+    label: 'wRVU per Provider per Shift',
+    domain: 'revenue',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'rvu',
+    unitLabel: 'wRVU',
+    lowerIsBetter: false,
+    source: 'epic',
+    sourceLabel: 'EHR / Billing',
+    description: 'Per-shift wRVU comparison from provider productivity reports.',
+    whyItMatters: 'Source: provider productivity reports from EHR or billing system.',
+    plainEnglishTemplate:
+      'wRVU per shift is up {{delta}} — from {{before}} to {{after}}. ' +
+      "At your conversion rate, that's {{value}} per shift per provider.",
+  },
+  {
+    id: 'emLevel',
+    label: 'Average E/M Level (99281–99285)',
+    domain: 'revenue',
+    phase: 1,
+    inputType: 'before-after',
+    unit: 'level',
+    unitLabel: 'E/M level',
+    lowerIsBetter: false,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'ED E/M uses 99281–99285 scale. Each level step represents meaningful revenue.',
+    whyItMatters: 'Source: charge capture / billing system.',
+    plainEnglishTemplate:
+      'Average E/M level has moved from {{before}} to {{after}} on the 99281–99285 scale. ' +
+      'Each level step in ED billing is worth approximately $25–$80 per encounter.',
+  },
+  {
+    id: 'lwbsRate',
+    label: 'Left Without Being Seen (LWBS) Rate',
+    domain: 'throughput',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: true,
+    source: 'epic',
+    sourceLabel: 'ADT / ED Dashboard',
+    description: 'The signature ED throughput metric. Each LWBS patient is lost revenue.',
+    whyItMatters: 'Each LWBS patient is lost revenue and a potential HCAHPS/quality flag.',
+    plainEnglishTemplate:
+      'LWBS rate is down from {{before}}% to {{after}}% — {{delta}} percentage points.',
+  },
+  {
+    id: 'doorToProvider',
+    label: 'Door-to-Provider Time',
+    domain: 'throughput',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'epic',
+    sourceLabel: 'EHR Timestamps',
+    description: 'Time from patient arrival to first provider contact.',
+    whyItMatters: 'Foundational throughput metric driving HCAHPS scores and LWBS reduction.',
+    plainEnglishTemplate:
+      'Door-to-provider time is down {{delta}} minutes — from {{before}} to {{after}} minutes. ' +
+      'Faster initial contact drives HCAHPS scores, LWBS reduction, and CMS quality measures.',
+  },
+  {
+    id: 'doorToDisposition',
+    label: 'Door-to-Disposition Time',
+    domain: 'throughput',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'min',
+    unitLabel: 'minutes',
+    lowerIsBetter: true,
+    source: 'epic',
+    sourceLabel: 'EHR Timestamps',
+    description: 'Time from arrival to admit/discharge decision.',
+    whyItMatters: 'Reducing door-to-disposition improves boarding and bed availability.',
+    plainEnglishTemplate:
+      'Door-to-disposition is down {{delta}} minutes — from {{before}} to {{after}} minutes. ' +
+      "For {{encounters}} annual visits, that's {{totalMinutes}} minutes of throughput recaptured.",
+  },
+  {
+    id: 'patientProviderRatio',
+    label: 'Patients per Provider per Shift',
+    domain: 'throughput',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'count',
+    unitLabel: 'patients/shift',
+    lowerIsBetter: false,
+    source: 'epic',
+    sourceLabel: 'Scheduling / EHR',
+    description: 'Provider throughput — a direct measure of capacity.',
+    whyItMatters: 'Increase without quality degradation is the strongest throughput signal.',
+    plainEnglishTemplate:
+      'Providers are seeing {{after}} patients per shift, up from {{before}} — {{delta}} more per shift per provider.',
+  },
+  {
+    id: 'diagnosisCapture',
+    label: 'Diagnosis Capture Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'coding',
+    sourceLabel: 'CDI / Coding QA',
+    description: 'Completeness of diagnosis coding per encounter.',
+    whyItMatters: 'Undercaptured diagnoses in the ED reduce HCC scores and risk-adjustment revenue.',
+    plainEnglishTemplate:
+      'Diagnosis capture is up {{delta}} points — from {{before}}% to {{after}}% of encounters fully coded.',
+  },
+  {
+    id: 'diagnosisSpecificity',
+    label: 'Diagnosis Specificity Score',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'score',
+    unitLabel: 'specificity score',
+    lowerIsBetter: false,
+    source: 'cdi',
+    sourceLabel: 'CDI Platform',
+    description: 'Specificity of ICD-10 coding per encounter.',
+    whyItMatters: 'Higher specificity means more defensible coding and fewer denials.',
+    plainEnglishTemplate:
+      'Diagnosis specificity has improved from {{before}} to {{after}} on your CDI scoring scale. ' +
+      'Higher specificity means more defensible coding, fewer denials, and better case mix index.',
+  },
+  {
+    id: 'medicalNecessityDenialRate',
+    label: 'Medical Necessity Denial Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: true,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'ED-specific denial category tied to insufficient clinical documentation.',
+    whyItMatters: 'Denials often tied to insufficient documentation supporting the E/M level billed.',
+    plainEnglishTemplate:
+      'Medical necessity denial rate is down from {{before}}% to {{after}}% — a {{delta}}-point improvement.',
+  },
+  {
+    id: 'cleanClaimRate',
+    label: 'Clean Claim Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'Percentage of ED claims that pass on first submission.',
+    whyItMatters: 'Documentation completeness is the primary driver.',
+    plainEnglishTemplate:
+      'Clean claim rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Each point of improvement reduces rework cost and accelerates cash flow.',
+  },
+  {
+    id: 'netCollectionRate',
+    label: 'Net Collection Rate',
+    domain: 'revenue',
+    phase: 2,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'rcm',
+    sourceLabel: 'Revenue Cycle',
+    description: 'Percentage of collectible revenue actually collected.',
+    whyItMatters: 'Downstream of denial rate and clean claim rate.',
+    plainEnglishTemplate:
+      'Net collection rate improved from {{before}}% to {{after}}%.',
+  },
+  {
+    id: 'noteQualityScore',
+    label: 'Note Quality Score (Star Rating)',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'stars',
+    unitLabel: 'avg stars (1–5)',
+    lowerIsBetter: false,
+    source: 'abridge',
+    sourceLabel: 'Abridge Platform',
+    description: 'Abridge platform metric reflecting clinical documentation completeness.',
+    whyItMatters: 'Note quality is the upstream driver of coding accuracy, denial rates, and compliance.',
+    plainEnglishTemplate:
+      'Average note quality is now {{after}} stars — up {{delta}} from {{before}}. ' +
+      'In the ED, note quality drives coding accuracy, denial rates, and compliance defensibility.',
+  },
+  {
+    id: 'pressGaney',
+    label: 'Press Ganey / Patient Experience Score',
+    domain: 'quality',
+    phase: 2,
+    inputType: 'before-after',
+    unit: 'percentile',
+    unitLabel: 'percentile rank',
+    lowerIsBetter: false,
+    source: 'survey',
+    sourceLabel: 'Patient Experience',
+    description: 'ED-specific HCAHPS/PG domain. Provider attentiveness is the primary driver.',
+    whyItMatters: 'Directly affects value-based care contract performance and network reputation.',
+    plainEnglishTemplate:
+      'Patient experience scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'Provider attentiveness accounts for the largest share of the top-box score in the ED.',
+  },
+  {
+    id: 'physicianRetention',
+    label: 'ED Physician / APP Retention Rate',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: '%',
+    unitLabel: 'percent',
+    lowerIsBetter: false,
+    source: 'hris',
+    sourceLabel: 'HR / Medical Staff',
+    description: 'Annual retention rate. ED physician turnover cost is typically $500K–$1M+ per physician.',
+    whyItMatters: 'Source: HR / medical staff office.',
+    plainEnglishTemplate:
+      'ED physician/APP retention has moved from {{before}}% to {{after}}% — {{delta}} points.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'agencyLocumSpend',
+    label: 'Agency / Locum Spend',
+    domain: 'workforce',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'annual spend',
+    lowerIsBetter: true,
+    source: 'finance',
+    sourceLabel: 'Finance / Contracting',
+    description: 'Annual total spend on locum/agency coverage.',
+    whyItMatters: 'Reduction correlates with improved retention and reduced scheduling gaps.',
+    plainEnglishTemplate:
+      'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
+    phase3Roadmap: true,
+  },
+  {
+    id: 'netPatientRevenue',
+    label: 'Net Patient Revenue per ED Visit',
+    domain: 'revenue',
+    phase: 3,
+    inputType: 'before-after',
+    unit: 'dollars',
+    unitLabel: 'per visit',
+    lowerIsBetter: false,
+    source: 'finance',
+    sourceLabel: 'Finance',
+    description: 'Rolls up E/M improvement, denial reduction, and collection rate into a per-visit figure.',
+    whyItMatters: 'Annual strategic metric.',
+    plainEnglishTemplate:
+      'Net patient revenue per visit has moved from {{before}} to {{after}} — up {{delta}} per visit.',
+    phase3Roadmap: true,
+  },
+];
+
 export interface MetricField {
   key: string;
   label: string;
@@ -540,6 +930,14 @@ export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey
     return [
       { key: 'foundational', label: 'Foundational' },
       { key: 'capacity', label: 'Capacity' },
+      { key: 'workforce', label: 'Workforce' },
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'quality', label: 'Quality' },
+    ];
+  }
+  if (setting === 'ed') {
+    return [
+      { key: 'throughput', label: 'Throughput' },
       { key: 'workforce', label: 'Workforce' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'quality', label: 'Quality' },
@@ -811,6 +1209,9 @@ export type SettingMetrics = Record<string, number>;
 export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
   if (setting === 'outpatient') {
     return OUTPATIENT_METRICS.filter(m => !m.phase3Roadmap).length;
+  }
+  if (setting === 'ed') {
+    return ED_METRICS.filter(m => !m.phase3Roadmap).length;
   }
   const config = CARE_SETTING_CONFIGS[setting];
   let count = 0;

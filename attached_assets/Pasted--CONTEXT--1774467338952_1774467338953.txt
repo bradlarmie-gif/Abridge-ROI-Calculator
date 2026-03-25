@@ -1,0 +1,596 @@
+ CONTEXT
+                                                                                                                                                                                                               
+  You've already implemented OUTPATIENT_METRICS and ED_METRICS in measureCareSettings.ts. Now do the same for Inpatient. Follow the exact same pattern. The Phase 3 label for inpatient is "Patient Flow" (not
+  "Capacity" or "Throughput"). Inpatient billing is DRG-based — there are no E/M codes. Revenue metrics center on Case Mix Index, CC/MCC capture, and DRG accuracy.
+                                                                                                                                                                                                               
+  ---
+  STEP 1 — Add INPATIENT_METRICS to measureCareSettings.ts                                                                                                                                                     
+                                                            
+  After the ED_METRICS array, add:                                                                                                                                                                             
+                                                            
+  export const INPATIENT_METRICS: MetricDefinition[] = [                                                                                                                                                       
+                                              
+    // ─── PHASE 1: ABRIDGE PLATFORM DATA (Abridge-native) ───                                                                                                                                                 
+                                                            
+    {                                                                                                                                                                                                          
+      id: 'docTimePerNote',                                                                                                                                                                                    
+      label: 'Documentation Time per Note',                                                                                                                                                                    
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 1,                                             
+      dataSource: 'abridge',                  
+      unit: 'minutes',                    
+      format: 'decimal',
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Avg time in note per admission (minutes)',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',                           
+      contextNote: 'Abridge platform metric. Active time spent documenting per inpatient encounter. Includes H&P, progress notes, and discharge documentation.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Inpatient providers are spending {after} minutes per note, down from {before}. ' +                                                                                                                    
+        'That\'s {delta} minutes back per admission — across {providers} providers and {encounters} annual admissions, ' +                                                                                     
+        'that\'s {totalHours} hours of documentation time returned annually.',                                                                                                                                 
+    },                                                      
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'noteQualityScore',                                                                                                                                                                                  
+      label: 'Note Quality Score (Star Rating)',                                                                                                                                                               
+      domain: 'quality',                                    
+      phase: 1,
+      dataSource: 'abridge',                                                                                                                                                                                   
+      unit: 'stars',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Avg note quality rating (1.0–5.0 stars)',
+      beforeLabel: 'Before Abridge (if available)',                                                                                                                                                            
+      afterLabel: 'With Abridge',         
+      contextNote: 'Abridge platform metric. In inpatient, note quality is directly upstream of CC/MCC capture and DRG assignment accuracy.',                                                                  
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Average note quality is {after} stars — up {delta} from {before}. ' +
+        'In inpatient, documentation quality is the upstream driver of DRG accuracy, CC/MCC capture, and compliance defensibility. ' +                                                                         
+        '{after}-star notes mean your H&Ps and progress notes support the complexity level being billed.',                                                                                                     
+    },                                        
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'wowTime',                                                                                                                                                                                           
+      label: 'Words on Workday (WoW) Time',                                                                                                                                                                    
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'abridge',                                                                                                                                                                                   
+      unit: 'minutes',                                      
+      format: 'decimal',                  
+      higherIsBetter: false,
+      inputLabel: 'Avg WoW time per admission (minutes)',                                                                                                                                                      
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'After-hours and outside-shift documentation burden, sourced from Epic Clarity or Abridge platform. Particularly significant for hospitalists covering overnight.',
+      plainEnglishTemplate:                   
+        'WoW time is down {delta} minutes per admission. ' +
+        'For {providers} hospitalists and inpatient providers, that\'s {totalHours} hours of after-hours documentation eliminated annually — ' +                                                               
+        'a direct driver of overnight burden and on-call burnout.',                                                                                                                                            
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 1: WORKFORCE ───                                                                                                                                                                              
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'timeToSignNote',                                                                                                                                                                                    
+      label: 'Time to Sign Note',                           
+      domain: 'workforce',                
+      phase: 1,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'hours',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'Avg time from encounter to note sign-off (hours)',
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Time from end of patient interaction (rounds, consult, discharge) to completed, signed note. Source: EHR timestamp reports. CMS requires H&Ps within 24h; discharge summaries within 30 
+  days.',                                                                                                                                                                                                      
+      plainEnglishTemplate:                                 
+        'Note sign-off time is down from {before}h to {after}h — {deltaPercent}% faster. ' +                                                                                                                   
+        'Across {providers} providers and {encounters} annual admissions, ' +                                                                                                                                  
+        'this eliminates delinquent-record risk and reduces the after-shift burden that drives hospitalist turnover.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {
+      id: 'workAfterHours',                                                                                                                                                                                    
+      label: 'Work After Hours',                            
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'minutes',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'Avg after-hours EHR time per provider per week (minutes)',
+      beforeLabel: 'Before Abridge',      
+      afterLabel: 'With Abridge',             
+      contextNote: 'After-hours EHR activity per provider per week. Source: Epic Signal, pajama time reports, or provider self-report. Hospitalists are disproportionately affected due to overnight coverage  
+  structure.',                                
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'After-hours documentation is down {delta} minutes per provider per week — {deltaPercent}% reduction. ' +
+        'For {providers} inpatient providers over 52 weeks, that\'s {totalHours} hours of protected time returned annually. ' +                                                                                
+        'This is a primary driver of hospitalist satisfaction and retention.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'burnoutAssessment',                                                                                                                                                                                 
+      label: 'Burnout Assessment (Survey)',                                                                                                                                                                    
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'partner',                  
+      unit: 'score',                      
+      format: 'decimal',
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Burnout score (survey scale — e.g. MBI, 0–10, Maslach)',
+      beforeLabel: 'Pre-Abridge survey',                                                                                                                                                                       
+      afterLabel: 'Post-Abridge survey',                    
+      contextNote: 'Before/after survey. Hospitalist burnout is heavily documentation-driven — making this a high-signal metric for inpatient Abridge deployments. Use consistent scale across both surveys.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Burnout scores improved from {before} to {after} — a {deltaPercent}% improvement on your scale. ' +
+        'Documentation burden accounts for roughly 40–60% of hospitalist burnout drivers. ' +                                                                                                                  
+        'Improvement here is a leading indicator for retention and a lagging indicator for the WoW and time-to-sign improvements above.',                                                                      
+    },                                        
+                                                                                                                                                                                                               
+    {                                                       
+      id: 'likelihoodToStay',                                                                                                                                                                                  
+      label: 'Likelihood to Stay (Survey)',                 
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'partner',
+      unit: 'percent',                                                                                                                                                                                         
+      format: 'percent',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Likelihood to stay (% responding "likely" or "very likely")',
+      beforeLabel: 'Pre-Abridge survey',      
+      afterLabel: 'Post-Abridge survey',  
+      contextNote: 'Before/after pulse survey. Hospitalist turnover costs $300K–$500K+ per physician. Align with your medical staff office on instrument and timing.',                                         
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Provider retention intent is up {delta} points — {after}% now say they\'re likely to stay, vs {before}% before Abridge. ' +                                                                           
+        'For a hospitalist program of {providers} physicians, each percentage point improvement prevents roughly {turnoverPrevented} turnover events, ' +                                                      
+        'avoiding approximately {turnoverCost} in recruitment and onboarding costs.',                                                                                                                          
+    },                                    
+                                                                                                                                                                                                               
+    // ─── PHASE 2: REVENUE (DRG-based, no E/M codes) ───                                                                                                                                                      
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'caseMixIndex',                                                                                                                                                                                      
+      label: 'Case Mix Index (CMI)',
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'index',                                                                                                                                                                                           
+      format: 'decimal',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Case Mix Index (e.g. 1.85)',             
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',         
+      contextNote: 'The single most important inpatient revenue metric. CMI is a weighted average of DRG relative weights. Even small CMI movements represent significant revenue at scale. Source: finance /  
+  DRG analytics team.',                                                                                                                                                                                        
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Case Mix Index has moved from {before} to {after} — a {delta} point improvement. ' +                                                                                                                  
+        'At your volume of {encounters} annual admissions and a Medicare base rate of approximately ${baseRate}, ' +                                                                                           
+        'each 0.1 CMI improvement is worth approximately {pointValue} in annual net revenue. ' +
+        'Your {delta} improvement represents {totalRevenue} in additional captured revenue.',                                                                                                                  
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'ccMccCaptureRate',                                                                                                                                                                                  
+      label: 'CC/MCC Capture Rate',                                                                                                                                                                            
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',                                      
+      format: 'percent',                  
+      higherIsBetter: true,
+      inputLabel: 'CC/MCC capture rate (% of eligible cases with CC or MCC coded)',                                                                                                                            
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Complications and Comorbidities (CC) / Major CC capture rate. Documentation completeness is the primary lever — if it\'s not in the note, CDI can\'t query it. Source: CDI platform or 
+  coding QA reports.',                                                                                                                                                                                         
+      plainEnglishTemplate:               
+        'CC/MCC capture rate is up {delta} points — from {before}% to {after}% of eligible cases. ' +                                                                                                          
+        'Each CC or MCC that gets captured moves the case to a higher-weighted DRG. ' +                                                                                                                        
+        'At {encounters} admissions, a {delta}-point improvement in capture means {additionalCases} more cases coded to a higher DRG tier.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'drgAccuracyRate',                                                                                                                                                                                   
+      label: 'DRG Accuracy / Optimization Rate',                                                                                                                                                               
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',              
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,
+      inputLabel: 'DRG accuracy rate (% of cases assigned correct/optimal DRG)',                                                                                                                               
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',         
+      contextNote: 'Percentage of cases landing in the correct DRG based on clinical complexity. Documentation gaps are the primary source of DRG downcoding. Source: CDI audit reports or DRG analytics 
+  platform.',                                                                                                                                                                                                  
+      plainEnglishTemplate:               
+        'DRG accuracy rate improved from {before}% to {after}%. ' +                                                                                                                                            
+        'At your volume, a {delta}-point improvement means {additionalCases} cases per year coded to their correct DRG — ' +                                                                                   
+        'recovering revenue that was previously left on the table due to documentation gaps.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'medicalNecessityDenialRate',                                                                                                                                                                        
+      label: 'Medical Necessity Denial Rate',                                                                                                                                                                  
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                                                                                                                                                                                
+      dataSource: 'partner',                                
+      unit: 'percent',
+      format: 'percent',                      
+      higherIsBetter: false,              
+      inputLabel: 'Medical necessity denial rate (% of inpatient claims denied)',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',             
+      contextNote: 'Inpatient denials for medical necessity are almost always documentation-driven. Source: revenue cycle / denials management system.',                                                       
+      plainEnglishTemplate:                                 
+        'Medical necessity denial rate is down from {before}% to {after}% — a {delta}-point improvement. ' +                                                                                                   
+        'At {encounters} annual admissions and average inpatient claim value of ${avgClaimValue}, ' +
+        'reducing denials by {delta} points recovers approximately {recoveredRevenue} annually.',                                                                                                              
+    },                                                      
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'cleanClaimRate',                                                                                                                                                                                    
+      label: 'Clean Claim Rate',                                                                                                                                                                               
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'percent',                        
+      format: 'percent',                  
+      higherIsBetter: true,
+      inputLabel: 'Clean claim rate (%)',                                                                                                                                                                      
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Percentage of inpatient claims passing on first submission. Source: revenue cycle system.',
+      plainEnglishTemplate:                   
+        'Clean claim rate is up {delta} points — from {before}% to {after}%. ' +
+        'Inpatient claims failing first pass create significant rework cost and payment lag. ' +                                                                                                               
+        'At {encounters} annual admissions, this improvement reduces first-pass failures on approximately {additionalCleanClaims} cases.',                                                                     
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'diagnosisCapture',                                                                                                                                                                                  
+      label: 'Diagnosis Capture Rate',                                                                                                                                                                         
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',                                      
+      format: 'percent',
+      higherIsBetter: true,                   
+      inputLabel: 'Diagnosis capture rate (% of encounters with complete secondary diagnosis coding)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Completeness of secondary diagnosis coding per admission. Secondary diagnoses that qualify as CCs or MCCs are the primary DRG revenue lever. Source: CDI or coding audit reports.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Diagnosis capture is up {delta} points — from {before}% to {after}% of admissions fully coded for secondary diagnoses. ' +                                                                            
+        'In inpatient, secondary diagnoses that qualify as CCs or MCCs directly upgrade the DRG assignment. ' +
+        'More complete capture means less CDI query burden and faster, more accurate coding.',                                                                                                                 
+    },                                                      
+                                                                                                                                                                                                               
+    // ─── PHASE 2: PATIENT FLOW ───                                                                                                                                                                           
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'lengthOfStay',                                                                                                                                                                                      
+      label: 'Average Length of Stay (ALOS)',               
+      domain: 'patientFlow',                                                                                                                                                                                   
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'days',                                                                                                                                                                                            
+      format: 'decimal',
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Average length of stay (days)',          
+      beforeLabel: 'Before Abridge',      
+      afterLabel: 'With Abridge',
+      contextNote: 'Core inpatient flow metric. LOS reduction means more bed capacity, lower cost per case, and better margin on DRG reimbursement. Source: EHR / operations dashboard.',                      
+      plainEnglishTemplate:                   
+        'Average length of stay is down {delta} days — from {before} to {after} days. ' +                                                                                                                      
+        'At {encounters} annual admissions and approximately ${costPerDay} cost per hospital day, ' +
+        'a {delta}-day ALOS reduction represents {totalSavings} in cost-per-case improvement annually. ' +                                                                                                     
+        'It also frees {bedsFreed} bed-days per year, increasing effective capacity without adding beds.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'dischargeBeforeNoon',                                                                                                                                                                               
+      label: 'Discharge Before Noon Rate',                                                                                                                                                                     
+      domain: 'patientFlow',                                                                                                                                                                                   
+      phase: 2,                                             
+      dataSource: 'partner',              
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,
+      inputLabel: 'Discharge before noon rate (%)',                                                                                                                                                            
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',         
+      contextNote: 'Discharge timing drives ED boarding and admit-from-ED flow. Source: ADT/EHR discharge timestamp reports.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Discharge before noon rate is up {delta} points — from {before}% to {after}% of discharges. ' +
+        'Earlier discharges free beds for afternoon admits and reduce ED boarding time. ' +                                                                                                                    
+        'At {encounters} annual admissions, {delta} points of improvement means {additionalEarlyDischarges} more patients discharged before noon annually.',                                                   
+    },                                        
+                                                                                                                                                                                                               
+    {                                                       
+      id: 'dischargeDelayRate',                                                                                                                                                                                
+      label: 'Discharge Delay Rate',                        
+      domain: 'patientFlow',                                                                                                                                                                                   
+      phase: 2,                                             
+      dataSource: 'partner',              
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: false,
+      inputLabel: 'Discharge delay rate (% of discharges with documentation-related delay)',                                                                                                                   
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',         
+      contextNote: 'Percentage of discharges delayed due to incomplete documentation (unsigned discharge summary, missing H&P, pending attestations). Source: case management or utilization review tracking.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Documentation-related discharge delays are down {delta} points — from {before}% to {after}% of cases. ' +
+        'Each delayed discharge costs the hospital approximately ${delayedDischargeCost} in extra bed-days. ' +                                                                                                
+        'At {encounters} admissions, reducing delays by {delta} points eliminates approximately {avoidedDelays} delayed discharges per year.',                                                                 
+    },                                        
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'readmissionRate30Day',                                                                                                                                                                              
+      label: '30-Day Readmission Rate',                                                                                                                                                                        
+      domain: 'patientFlow',                                                                                                                                                                                   
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: '30-day readmission rate (%)',
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'CMS-reportable metric. Discharge summary completeness is a primary driver — incomplete instructions and care transitions correlate with higher readmission rates. Source: quality 
+  department or EHR analytics.',                                                                                                                                                                               
+      plainEnglishTemplate:                                 
+        '30-day readmission rate is down {delta} points — from {before}% to {after}%. ' +
+        'Under HRRP, excess readmissions generate CMS penalties. At {encounters} admissions, ' +                                                                                                               
+        'a {delta}-point reduction means approximately {avoidedReadmissions} fewer readmissions per year — ' +
+        'reducing penalty exposure and the cost of uncompensated readmission care.',                                                                                                                           
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 2: QUALITY ───                                                                                                                                                                                
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'hcahpsScore',                                                                                                                                                                                       
+      label: 'HCAHPS Composite Score',                      
+      domain: 'quality',                  
+      phase: 2,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percentile',                     
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'HCAHPS composite or communication-with-doctors score (percentile rank or top-box %)',                                                                                                       
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Inpatient patient experience. "Communication with doctors" domain is most directly affected by ambient documentation — providers maintaining eye contact and being present in the room 
+  rather than typing. Source: HCAHPS portal or patient experience team.',                                                                                                                                      
+      plainEnglishTemplate:               
+        'HCAHPS scores have moved from {before}th to {after}th percentile — a {delta}-point improvement. ' +                                                                                                   
+        'The "communication with doctors" domain is the largest driver and the one most directly tied to ambient documentation. ' +                                                                            
+        'HCAHPS performance affects value-based purchasing payments and health system reputation.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'coreQualityMeasureCompliance',                                                                                                                                                                      
+      label: 'Core Quality Measure Compliance',                                                                                                                                                                
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Core measure compliance rate (% passing applicable measures)',                                                                                                                              
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',         
+      contextNote: 'CMS/TJC core measures applicable to your service lines (e.g. sepsis bundle, VTE prophylaxis, pneumonia). Documentation completeness is often the compliance gap. Source: quality 
+  department.',                                                                                                                                                                                                
+      plainEnglishTemplate:               
+        'Core quality measure compliance is up {delta} points — from {before}% to {after}%. ' +                                                                                                                
+        'For measures with documentation components (sepsis bundle timing, VTE documentation, discharge instructions), ' +                                                                                     
+        'Abridge\'s structured notes directly improve completion rates without additional provider effort.',
+    },                                                                                                                                                                                                         
+                                                            
+    {                                                                                                                                                                                                          
+      id: 'pressGaney',                                                                                                                                                                                        
+      label: 'Press Ganey Inpatient Score',                                                                                                                                                                    
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'percentile',                                                                                                                                                                                      
+      format: 'decimal',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Press Ganey percentile rank (inpatient)',
+      beforeLabel: 'Before Abridge',      
+      afterLabel: 'With Abridge',
+      contextNote: 'Inpatient-specific PG score. Physician communication domain is the primary lever. Source: Press Ganey portal.',                                                                            
+      plainEnglishTemplate:                   
+        'Press Ganey inpatient scores have improved from {before}th to {after}th percentile. ' +                                                                                                               
+        'Provider attentiveness — enabled by not typing during the encounter — is the primary driver of the physician communication domain, ' +
+        'which carries the highest weight in the inpatient PG composite.',                                                                                                                                     
+    },                                        
+                                                                                                                                                                                                               
+    // ─── PHASE 3: STRATEGIC / ANNUAL METRICS ───                                                                                                                                                             
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'physicianRetention',                                                                                                                                                                                
+      label: 'Hospitalist / Inpatient Physician Retention Rate',
+      domain: 'workforce',                
+      phase: 3,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',                        
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Annual retention rate (%)',                                                                                                                                                                 
+      beforeLabel: 'Pre-Abridge baseline year',
+      afterLabel: 'Post-Abridge year',                                                                                                                                                                         
+      contextNote: 'Annual metric. Hospitalist turnover cost is typically $300K–$500K per physician. Documentation burden is the leading driver of hospitalist dissatisfaction. Source: HR / medical staff 
+  office.',                                   
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Inpatient physician retention has moved from {before}% to {after}% — {delta} points. ' +
+        'At your team size of {providers} hospitalists, each percentage point improvement prevents approximately {turnoverPrevented} turnover events annually. ' +                                             
+        'At {turnoverCost} per replacement, that\'s {totalSavings} in avoided costs.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'agencyLocumSpend',                                                                                                                                                                                  
+      label: 'Agency / Locum Spend',                                                                                                                                                                           
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 3,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'dollars',                    
+      format: 'currency',                                                                                                                                                                                      
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Annual agency/locum spend ($)',
+      beforeLabel: 'Pre-Abridge year',                                                                                                                                                                         
+      afterLabel: 'Most recent year',                       
+      contextNote: 'Annual total spend on locum/agency hospitalist coverage. Source: finance / contracting.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Agency and locum spend is down from {before} to {after} — {delta} in avoided premium labor costs. ' +
+        'This reflects improved hospitalist stability and reduced scheduling gaps driven by higher retention.',                                                                                                
+    },                                                                                                                                                                                                         
+                                          
+    {                                                                                                                                                                                                          
+      id: 'netPatientRevenue',                                                                                                                                                                                 
+      label: 'Net Patient Revenue per Admission',                                                                                                                                                              
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 3,                                             
+      dataSource: 'partner',              
+      unit: 'dollars',
+      format: 'currency',                                                                                                                                                                                      
+      higherIsBetter: true,
+      inputLabel: 'Net patient revenue per admission ($)',                                                                                                                                                     
+      beforeLabel: 'Pre-Abridge year',                      
+      afterLabel: 'Most recent year',     
+      contextNote: 'Annual strategic metric. Rolls up CMI improvement, denial reduction, LOS reduction, and DRG accuracy into a single per-admission revenue figure. Source: finance.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Net patient revenue per admission has moved from {before} to {after} — up {delta} per case. ' +
+        'At {encounters} annual admissions, that\'s {totalRevenue} in incremental net revenue. ' +                                                                                                             
+        'This rolls up CMI improvement, CC/MCC capture, denial reduction, and LOS savings into one number.',                                                                                                   
+    },                                        
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'valueBasedCarePerformance',                                                                                                                                                                         
+      label: 'Value-Based Care Contract Performance',                                                                                                                                                          
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 3,                                             
+      dataSource: 'partner',
+      unit: 'dollars',                                                                                                                                                                                         
+      format: 'currency',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Value-based care incentive earned or at-risk amount ($)',
+      beforeLabel: 'Pre-Abridge year',        
+      afterLabel: 'Most recent year',     
+      contextNote: 'Annual. HCAHPS, readmission rates, and quality measures all feed into VBP/shared savings performance. Source: value-based care team or payer contracts.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Value-based care performance has improved from {before} to {after} in earned incentives — {delta} in incremental performance pay. ' +
+        'Quality measure compliance, readmission rate reduction, and HCAHPS improvement — all documented above — are the direct drivers.',                                                                     
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ];                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 2 — Add inpatient state fields to MeasureState in measureCalculator.ts                                                                                                                                  
+                                                                             
+  Find the MeasureState interface and add:
+                                              
+  // Inpatient-specific                                                                                                                                                                                        
+  inpatientMetrics?: Record<string, MetricValue>;
+  inpatientAbridgeNativeData?: {                                                                                                                                                                               
+    docTimePerNote?: MetricValue;                           
+    noteQualityScore?: MetricValue;                                                                                                                                                                            
+    wowTime?: MetricValue;                                                                                                                                                                                     
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 3 — Add inpatient data entry tab sections to MeasureDataEntry.tsx
+                                                                                                                                                                                                               
+  Inside the careSetting === 'inpatient' branch, use these 6 sections:
+                                              
+  Section 1: Abridge Platform Data                                                                                                                                                                             
+  Label: "From Abridge"                   
+  Subtitle: "These pull directly from your Abridge deployment data."                                                                                                                                           
+  Metrics: docTimePerNote, noteQualityScore, wowTime                                                                                                                                                           
+                                                                                                                                                                                                               
+  Section 2: Patient Flow                                                                                                                                                                                      
+  Label: "Patient Flow"                                                                                                                                                                                        
+  Subtitle: "Length of stay and discharge timing metrics. Source: ADT system and EHR reports."                                                                                                                 
+  Metrics: lengthOfStay, dischargeBeforeNoon, dischargeDelayRate, readmissionRate30Day                                                                                                                         
+                                                                                                                                                                                                               
+  Section 3: Workforce                                      
+  Label: "Workforce"                                                                                                                                                                                           
+  Subtitle: "Documentation burden and hospitalist wellbeing signals."                                                                                                                                          
+  Metrics (always visible): timeToSignNote, workAfterHours                                                                                                                                                     
+  Expandable sub-section "Workforce Surveys (Before / After)":                                                                                                                                                 
+    Metrics: burnoutAssessment, likelihoodToStay              
+    Note: "Use the same survey instrument for before and after. Note scale in Presenter Notes."                                                                                                                
+                                                                                               
+  Section 4: Revenue                                                                                                                                                                                           
+  Label: "Revenue"                                                                                                                                                                                             
+  Subtitle: "DRG-based inpatient revenue metrics. No E/M codes — CMI and CC/MCC are the primary levers."                                                                                                       
+  Phase 1 (always visible): caseMixIndex, ccMccCaptureRate                                                                                                                                                     
+  Expandable "Coding & Billing (Phase 2)": drgAccuracyRate, diagnosisCapture, medicalNecessityDenialRate, cleanClaimRate                                                                                       
+                                                                                                                                                                                                               
+  Section 5: Quality                                                                                                                                                                                           
+  Label: "Quality"                                                                                                                                                                                             
+  Subtitle: "Patient experience and clinical quality measures."                                                                                                                                                
+  Metrics: hcahpsScore, pressGaney, coreQualityMeasureCompliance                                                                                                                                               
+                                                                                                                                                                                                               
+  Section 6: Phase 3 Roadmap (chip display only, no inputs)                                                                                                                                                    
+  Label: "Phase 3 — Strategic Metrics"                      
+  Subtitle: "Annual metrics measured after 12+ months. No inputs yet — these appear in your roadmap."                                                                                                          
+  Chip display: physicianRetention, agencyLocumSpend, netPatientRevenue, valueBasedCarePerformance   
+                                                                                                                                                                                                               
+  ---                                                       
+  STEP 4 — Update MeasureInventory.tsx for inpatient domain labels                                                                                                                                             
+                                                                                                                                                                                                               
+  The existing domainDisplayLabel function already handles this:                                                                                                                                               
+                                                                                                                                                                                                               
+  if (domain === 'capacity' && setting === 'inpatient') return 'Patient Flow';                                                                                                                                 
+                                                            
+  The inpatient Patient Flow domain's primary delta badge (collapsed header metric) should be lengthOfStay if available, falling back to dischargeBeforeNoon, falling back to readmissionRate30Day.            
+                                                            
+  The Revenue domain's primary badge should be caseMixIndex if available (not wRVU — inpatient has no E/M).                                                                                                    
+                                                                                                                                                                                                               
+  ---
+  STEP 5 — Update MeasureStage.tsx phase 3 label for inpatient                                                                                                                                                 
+                                                              
+  When careSetting === 'inpatient', Phase 3 label is "Patient Flow".                                                                                                                                           
+                                                            
+  Phase 3 description for inpatient:                                                                                                                                                                           
+  "Patient Flow: Full throughput optimization — length of stay reduction, discharge velocity improvement, and readmission rate reduction that translate to margin improvement and capacity gains without adding
+   beds."                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 6 — Add patientFlow as a recognized domain key                                                                                                                                                          
+                                                            
+  In any place the code iterates over domains (domain cards, domain status row, scoring, etc.), ensure patientFlow is recognized as the inpatient variant of capacity. The simplest approach:                  
+                                                            
+  const DOMAIN_KEYS = {                   
+    outpatient: ['quality', 'workforce', 'revenue', 'capacity'],                                                                                                                                               
+    ed:         ['quality', 'workforce', 'revenue', 'capacity'],  // displayed as "Throughput"                                                                                                                 
+    inpatient:  ['quality', 'workforce', 'revenue', 'capacity'],  // displayed as "Patient Flow"                                                                                                               
+  };                                                                                                                                                                                                           
+                                                            
+  The data model key stays capacity — only the display label changes. This keeps the scoring and calculation logic uniform across settings.                                                                    
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  VERIFICATION                                                                                                                                                                                                 
+                                                            
+  After implementing, confirm:                                                                                                                                                                                 
+                                                            
+  1. Inpatient tab in data entry shows 6 sections in order, with Phase 2 coding metrics collapsed
+  2. caseMixIndex and ccMccCaptureRate are always visible in the Revenue section (not hidden under expandable)
+  3. MeasureInventory with inpatient setting shows "Patient Flow" as the fourth domain label
+  4. LOS drives the Patient Flow domain's collapsed-state primary badge                                                                                                                                        
+  5. Revenue domain badge shows CMI (not wRVU — inpatient has no E/M)
+  6. Note Quality Score shows as "From Abridge" (distinct visual treatment)                                                                                                                                    
+  7. Phase 3 metrics are chip display only — no input fields                                                                                                                                                   
+  8. MeasureStage.tsx Phase 3 label reads "Patient Flow" for inpatient setting                                                                                                                                 
+  9. readmissionRate30Day is in Patient Flow domain (not Quality) — it's a flow outcome, not a quality measure per se, though it touches both                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Same structure as outpatient and ED. Key inpatient distinctions from the others: DRG/CMI revenue model (no E/M), patientFlow as the capacity-equivalent domain, hospitalist-specific WoW/burnout framing, and
+   LOS as the signature flow metric rather than LWBS or utilization.                                                                                                                                           
+                                                            

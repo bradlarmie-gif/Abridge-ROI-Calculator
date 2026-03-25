@@ -1,7 +1,7 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
-import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS } from './measureCareSettings';
+import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS, ED_METRICS } from './measureCareSettings';
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -122,6 +122,12 @@ export interface MeasureState {
   surveyMetrics: SurveyMetric[];
   outpatientMetrics: Record<string, MetricValue>;
   outpatientNativeData: AbridgeNativeDataModel;
+  edMetrics: Record<string, MetricValue>;
+  edAbridgeNativeData: {
+    docTimePerEncounter?: MetricValue;
+    wowTime?: MetricValue;
+    noteQualityScore?: MetricValue;
+  };
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
@@ -217,6 +223,10 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     noteStarRatingBefore: null,
     noteStarRatingAfter: null,
   },
+  edMetrics: Object.fromEntries(
+    ED_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
+  ),
+  edAbridgeNativeData: {},
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
 };
@@ -289,6 +299,60 @@ export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<Meas
   }
 
   return { documentationQuality, timeEfficiency, settingData, deployment, outpatientMetrics: om };
+}
+
+const ED_LEGACY_KEY_MAP: Record<string, string> = {
+  docTimePerEncounter: 'timeInNotes',
+  workAfterHours: 'afterHours',
+  emLevel: 'emLevel',
+  wrvu: 'wrvuPerEncounter',
+  lwbsRate: 'lwbsRate',
+  doorToProvider: 'doorToDoc',
+};
+
+export function syncEdMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
+  const em = { ...state.edMetrics };
+  const nd = state.edAbridgeNativeData;
+  if (!em) return {};
+
+  if (nd?.docTimePerEncounter) {
+    em.docTimePerEncounter = nd.docTimePerEncounter;
+  }
+  if (nd?.wowTime) {
+    em.wowTime = nd.wowTime;
+  }
+  if (nd?.noteQualityScore) {
+    em.noteQualityScore = nd.noteQualityScore;
+  }
+
+  const timeEfficiency: TimeEfficiency = {
+    ...state.timeEfficiency,
+    timeInNotesWithout: em.docTimePerEncounter?.before ?? state.timeEfficiency.timeInNotesWithout,
+    timeInNotesWith: em.docTimePerEncounter?.after ?? state.timeEfficiency.timeInNotesWith,
+    workOutsideWithout: em.workAfterHours?.before ?? state.timeEfficiency.workOutsideWithout,
+    workOutsideWith: em.workAfterHours?.after ?? state.timeEfficiency.workOutsideWith,
+  };
+
+  const documentationQuality: DocumentationQuality = {
+    ...state.documentationQuality,
+    wrvuWithout: em.wrvu?.before ?? state.documentationQuality.wrvuWithout,
+    wrvuWith: em.wrvu?.after ?? state.documentationQuality.wrvuWith,
+    emLevelWithout: em.emLevel?.before ?? state.documentationQuality.emLevelWithout,
+    emLevelWith: em.emLevel?.after ?? state.documentationQuality.emLevelWith,
+  };
+
+  const settingData = { ...state.settingData };
+  const edData = { ...(settingData.ed || {}) };
+  for (const [newKey, legacyKey] of Object.entries(ED_LEGACY_KEY_MAP)) {
+    const mv = em[newKey];
+    if (mv) {
+      edData[`${legacyKey}_before`] = mv.before ?? 0;
+      edData[`${legacyKey}_after`] = mv.after ?? 0;
+    }
+  }
+  settingData.ed = edData;
+
+  return { documentationQuality, timeEfficiency, settingData, edMetrics: em };
 }
 
 export interface MeasureResults {

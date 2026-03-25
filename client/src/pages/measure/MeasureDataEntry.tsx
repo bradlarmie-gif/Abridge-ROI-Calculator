@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, type MetricValue, syncOutpatientMetricsToLegacy } from "@/lib/measureCalculator";
-import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics, OUTPATIENT_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
+import { type MeasureState, type MeasureCareSetting, type MetricValue, syncOutpatientMetricsToLegacy, syncEdMetricsToLegacy } from "@/lib/measureCalculator";
+import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics, OUTPATIENT_METRICS, ED_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -128,19 +128,25 @@ function DomainSection({
   label,
   phaseBadge,
   metrics,
-  state,
+  metricsMap,
   updateMetric,
   notes,
+  subtitle,
   phase2ExpandedByDefault = false,
+  phase2Label,
+  children,
 }: {
   domain: string;
   label: string;
   phaseBadge?: number;
   metrics: MetricDefinition[];
-  state: MeasureState;
+  metricsMap: Record<string, MetricValue>;
   updateMetric: (id: string, v: MetricValue) => void;
   notes?: Record<string, string>;
+  subtitle?: string;
   phase2ExpandedByDefault?: boolean;
+  phase2Label?: string;
+  children?: React.ReactNode;
 }) {
   const [showPhase2, setShowPhase2] = useState(phase2ExpandedByDefault);
   const phase1 = metrics.filter(m => m.phase === 1);
@@ -162,17 +168,20 @@ function DomainSection({
           </span>
         )}
       </div>
+      {subtitle && <p className="text-[11px] text-[#888888] mb-3">{subtitle}</p>}
       <div className="h-px bg-[#E8E2DA] mb-3" />
 
       {phase1.map(m => (
         <MetricRow
           key={m.id}
           metric={m}
-          value={state.outpatientMetrics?.[m.id] || { before: null, after: null, singleValue: null }}
+          value={metricsMap[m.id] || { before: null, after: null, singleValue: null }}
           onChange={(v) => updateMetric(m.id, v)}
           note={notes?.[m.id]}
         />
       ))}
+
+      {children}
 
       {phase2.length > 0 && (
         <>
@@ -182,7 +191,7 @@ function DomainSection({
             data-testid={`toggle-phase2-${domain}`}
           >
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPhase2 ? 'rotate-180' : ''}`} />
-            {showPhase2 ? 'Hide' : '+'} Phase 2 metrics
+            {showPhase2 ? 'Hide' : '+'} {phase2Label || 'Phase 2 metrics'}
           </button>
           <AnimatePresence>
             {showPhase2 && (
@@ -197,7 +206,7 @@ function DomainSection({
                   <MetricRow
                     key={m.id}
                     metric={m}
-                    value={state.outpatientMetrics?.[m.id] || { before: null, after: null, singleValue: null }}
+                    value={metricsMap[m.id] || { before: null, after: null, singleValue: null }}
                     onChange={(v) => updateMetric(m.id, v)}
                     note={notes?.[m.id]}
                   />
@@ -327,7 +336,7 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
         label="Capacity"
         phaseBadge={1}
         metrics={capacityMetrics}
-        state={state}
+        metricsMap={state.outpatientMetrics || {}}
         updateMetric={updateMetric}
       />
 
@@ -336,7 +345,7 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
         label="Workforce"
         phaseBadge={1}
         metrics={workforceMetrics}
-        state={state}
+        metricsMap={state.outpatientMetrics || {}}
         updateMetric={updateMetric}
         notes={{
           burnout_assessment: 'Use MBI, Maslach, or your survey instrument scaled to 100. Higher = less burned out.',
@@ -349,7 +358,7 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
         label="Revenue"
         phaseBadge={1}
         metrics={revenueMetrics}
-        state={state}
+        metricsMap={state.outpatientMetrics || {}}
         updateMetric={updateMetric}
         notes={{
           em_level: 'Average across 99211–99215. E.g. 3.2 = avg between level 3 and 4.',
@@ -361,7 +370,7 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
           domain="quality"
           label="Quality"
           metrics={qualityMetrics}
-          state={state}
+          metricsMap={state.outpatientMetrics || {}}
           updateMetric={updateMetric}
           phase2ExpandedByDefault={true}
         />
@@ -387,6 +396,234 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
                 key={m.id}
                 className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#E5E5E5] text-[11px] text-[#999999] italic bg-white"
                 data-testid={`chip-phase3-${m.id}`}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </>
+  );
+}
+
+function EdMetricSections({ state, updateState }: { state: MeasureState; updateState: (updates: Partial<MeasureState>) => void }) {
+  const updateMetric = useCallback((id: string, value: MetricValue) => {
+    const updated = { ...state.edMetrics, [id]: value };
+    const newState = { ...state, edMetrics: updated };
+    const legacy = syncEdMetricsToLegacy(newState);
+    updateState({ edMetrics: updated, ...legacy });
+  }, [state, updateState]);
+
+  const updateNative = useCallback((key: keyof typeof state.edAbridgeNativeData, value: MetricValue) => {
+    const updated = { ...state.edAbridgeNativeData, [key]: value };
+    const newState = { ...state, edAbridgeNativeData: updated };
+    const legacy = syncEdMetricsToLegacy(newState);
+    updateState({ edAbridgeNativeData: updated, ...legacy });
+  }, [state, updateState]);
+
+  const abridgePlatformMetrics = useMemo(() => ED_METRICS.filter(m => m.source === 'abridge' && !m.phase3Roadmap), []);
+  const throughputMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'throughput' && !m.phase3Roadmap), []);
+  const workforceMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source !== 'survey'), []);
+  const workforceSurveyMetrics = useMemo(() => ED_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap && m.source === 'survey'), []);
+  const revenueP1 = useMemo(() => ED_METRICS.filter(m => m.domain === 'revenue' && m.phase === 1 && !m.phase3Roadmap), []);
+  const revenueP2 = useMemo(() => ED_METRICS.filter(m => m.domain === 'revenue' && m.phase === 2 && !m.phase3Roadmap), []);
+  const qualityNonAbridge = useMemo(() => ED_METRICS.filter(m => m.domain === 'quality' && !m.phase3Roadmap && m.source !== 'abridge'), []);
+  const phase3Metrics = useMemo(() => ED_METRICS.filter(m => m.phase3Roadmap), []);
+
+  const [showSurveys, setShowSurveys] = useState(false);
+  const [showCodingBilling, setShowCodingBilling] = useState(false);
+
+  const em = state.edMetrics || {};
+
+  return (
+    <>
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 border border-[#E8E2DA]"
+        style={{ backgroundColor: '#F5F0EB' }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        data-testid="section-ed-abridge-platform"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">From Abridge</span>
+          <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">These pull directly from your Abridge deployment data.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+        {abridgePlatformMetrics.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={em[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => {
+              updateMetric(m.id, v);
+              if (['docTimePerEncounter', 'wowTime', 'noteQualityScore'].includes(m.id)) {
+                updateNative(m.id as keyof typeof state.edAbridgeNativeData, v);
+              }
+            }}
+            note={m.description}
+          />
+        ))}
+      </motion.div>
+
+      <DomainSection
+        domain="throughput"
+        label="Throughput"
+        subtitle="ED flow metrics. Source: EHR timestamp reports or ED tracking board."
+        metrics={throughputMetrics}
+        metricsMap={em}
+        updateMetric={updateMetric}
+      />
+
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        data-testid="section-ed-workforce"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Workforce</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">Documentation burden and provider wellbeing signals.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+
+        {workforceMetrics.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={em[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => updateMetric(m.id, v)}
+          />
+        ))}
+
+        {workforceSurveyMetrics.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowSurveys(!showSurveys)}
+              className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+              data-testid="toggle-ed-workforce-surveys"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSurveys ? 'rotate-180' : ''}`} />
+              {showSurveys ? 'Hide' : '+'} Workforce Surveys (Before / After)
+            </button>
+            <AnimatePresence>
+              {showSurveys && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-[10px] text-[#AAAAAA] italic mb-2">Use the same survey instrument for before and after. Note scale in Presenter Notes.</p>
+                  {workforceSurveyMetrics.map(m => (
+                    <MetricRow
+                      key={m.id}
+                      metric={m}
+                      value={em[m.id] || { before: null, after: null, singleValue: null }}
+                      onChange={(v) => updateMetric(m.id, v)}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </motion.div>
+
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        data-testid="section-ed-revenue"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Revenue</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">E/M level and wRVU from Phase 1. Coding and billing metrics from Phase 2.</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+
+        {revenueP1.map(m => (
+          <MetricRow
+            key={m.id}
+            metric={m}
+            value={em[m.id] || { before: null, after: null, singleValue: null }}
+            onChange={(v) => updateMetric(m.id, v)}
+            note={m.id === 'emLevel' ? 'ED E/M uses 99281–99285 scale. Each level step represents meaningful revenue.' : undefined}
+          />
+        ))}
+
+        {revenueP2.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowCodingBilling(!showCodingBilling)}
+              className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+              data-testid="toggle-ed-coding-billing"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showCodingBilling ? 'rotate-180' : ''}`} />
+              {showCodingBilling ? 'Hide' : '+'} Coding & Billing (Phase 2)
+            </button>
+            <AnimatePresence>
+              {showCodingBilling && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  {revenueP2.map(m => (
+                    <MetricRow
+                      key={m.id}
+                      metric={m}
+                      value={em[m.id] || { before: null, after: null, singleValue: null }}
+                      onChange={(v) => updateMetric(m.id, v)}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </motion.div>
+
+      {qualityNonAbridge.length > 0 && (
+        <DomainSection
+          domain="ed-quality"
+          label="Quality"
+          subtitle="Note quality and patient experience."
+          metrics={qualityNonAbridge}
+          metricsMap={em}
+          updateMetric={updateMetric}
+          phase2ExpandedByDefault={true}
+        />
+      )}
+
+      {phase3Metrics.length > 0 && (
+        <motion.div
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAFAF8] border border-dashed border-[#E5E5E5]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          data-testid="section-ed-phase3-roadmap"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold text-[#999999] uppercase tracking-[1.5px]">Phase 3 — Strategic Metrics</span>
+          </div>
+          <p className="text-[11px] text-[#AAAAAA] italic mb-3">
+            Annual metrics measured after 12+ months. No inputs yet — these appear in your roadmap.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {phase3Metrics.map(m => (
+              <span
+                key={m.id}
+                className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#E5E5E5] text-[11px] text-[#999999] italic bg-white"
+                data-testid={`chip-ed-phase3-${m.id}`}
               >
                 {m.label}
               </span>
@@ -901,6 +1138,8 @@ export default function MeasureDataEntry({
 
         {activeSettings.includes('outpatient') ? (
           <OutpatientMetricSections state={state} updateState={updateState} />
+        ) : activeSettings.includes('ed') ? (
+          <EdMetricSections state={state} updateState={updateState} />
         ) : (
           <motion.div
             className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"

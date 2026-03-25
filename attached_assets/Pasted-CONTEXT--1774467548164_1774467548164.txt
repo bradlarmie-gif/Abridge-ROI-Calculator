@@ -1,0 +1,541 @@
+CONTEXT
+                                                                                                                                                                                                               
+  You've already implemented OUTPATIENT_METRICS, ED_METRICS, and INPATIENT_METRICS in measureCareSettings.ts. Now do the same for Nursing. Follow the exact same pattern.
+                                                                                                                                                                                                               
+  Key nursing distinctions from the physician settings:     
+  - Abridge for nursing reduces documentation burden on flowsheets, assessments, handoff notes, and care plans — not SOAP notes
+  - No E/M or DRG coding. Revenue contribution comes through CDI documentation quality and nursing-sensitive billing accuracy                                                                                  
+  - The signature nursing quality metrics are NSIs (Nursing-Sensitive Indicators): falls, HAPIs, CLABSI, CAUTI                                                                                                 
+  - Workforce is the highest-stakes domain — nursing has the highest turnover rates of any clinical role and the largest workforce cost exposure                                                               
+  - The Phase 3 label for nursing is "Staffing" — documentation burden reduction translates to agency/travel nurse reduction and scheduling stability                                                          
+  - Nurse turnover cost is $40K–$65K per RN (vs $300K+ for physicians) — volume of turnover events makes this the key financial lever                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 1 — Add NURSING_METRICS to measureCareSettings.ts                                                                                                                                                       
+                                                                                                                                                                                                               
+  After the INPATIENT_METRICS array, add:                                                                                                                                                                      
+                                                                                                                                                                                                               
+  export const NURSING_METRICS: MetricDefinition[] = [                                                                                                                                                         
+                                                            
+    // ─── PHASE 1: ABRIDGE PLATFORM DATA (Abridge-native) ───                                                                                                                                                 
+                                                            
+    {                                                                                                                                                                                                          
+      id: 'docTimePerShift',                                                                                                                                                                                   
+      label: 'Documentation Time per Shift',                                                                                                                                                                   
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 1,                                             
+      dataSource: 'abridge',              
+      unit: 'minutes',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,
+      inputLabel: 'Avg documentation time per nurse per shift (minutes)',                                                                                                                                      
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',             
+      contextNote: 'Abridge platform metric. Total active EHR documentation time per shift — flowsheets, assessments, care plans, handoff notes. The primary platform-native signal for nursing.',             
+      plainEnglishTemplate:                   
+        'Nurses are spending {after} minutes per shift on documentation, down from {before}. ' +                                                                                                               
+        'That\'s {delta} minutes back per shift per nurse. ' +
+        'Across {providers} nurses at {shiftsPerYear} shifts per year, that\'s {totalHours} hours of documentation time returned annually — ' +                                                                
+        'time that was previously taken from patient care or added onto the end of shifts.',                                                                                                                   
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'noteQualityScore',                                                                                                                                                                                  
+      label: 'Assessment / Documentation Quality Score',                                                                                                                                                       
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 1,                                             
+      dataSource: 'abridge',
+      unit: 'stars',                                                                                                                                                                                           
+      format: 'decimal',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Avg documentation quality rating (1.0–5.0)',
+      beforeLabel: 'Before Abridge (if available)',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Abridge platform metric adapted for nursing assessments. Quality of nursing documentation is upstream of CDI queries, care plan accuracy, and care transition completeness.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Average nursing documentation quality is {after} — up {delta} from {before}. ' +                                                                                                                      
+        'Complete, specific nursing assessments reduce CDI query burden, support DRG accuracy, ' +
+        'and are the primary input to nursing-sensitive quality indicators.',                                                                                                                                  
+    },                                                      
+                                                                                                                                                                                                               
+    // ─── PHASE 1: WORKFORCE ───                                                                                                                                                                              
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'charttingAfterShift',                                                                                                                                                                               
+      label: 'Charting After Shift',                        
+      domain: 'workforce',                
+      phase: 1,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'minutes',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'Avg time spent charting after shift ends (minutes)',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',             
+      contextNote: 'Time nurses spend in the EHR after their scheduled shift end. Chronic after-shift charting is one of the top drivers of nursing burnout and turnover intent. Source: Epic Signal,          
+  time-and-attendance, or self-report survey.',             
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'After-shift charting is down {delta} minutes per nurse — from {before} to {after} minutes. ' +
+        'Across {providers} nurses over {shiftsPerYear} annual shifts, ' +                                                                                                                                     
+        'that\'s {totalHours} hours of unpaid or overtime documentation eliminated annually. ' +
+        'This is the most frequently cited burnout driver in nursing workforce surveys.',                                                                                                                      
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'overtimeHours',                                                                                                                                                                                     
+      label: 'Documentation-Related Overtime',                                                                                                                                                                 
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'hours',                                        
+      format: 'decimal',
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Avg documentation-related overtime hours per nurse per month',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',                           
+      contextNote: 'Overtime hours attributable to documentation burden. Isolate from patient-care overtime where possible. Source: payroll / time-and-attendance system.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Documentation-related overtime is down {delta} hours per nurse per month. ' +
+        'Across {providers} nurses, that\'s {totalHours} overtime hours per month — approximately {annualHours} annually. ' +                                                                                  
+        'At an overtime rate of ${overtimeRate}/hr, that\'s {totalCost} in direct labor cost avoided.',                                                                                                        
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'burnoutAssessment',                                                                                                                                                                                 
+      label: 'Burnout Assessment (Survey)',                                                                                                                                                                    
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'score',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'Burnout score (survey scale — e.g. MBI, single-item, 0–10)',
+      beforeLabel: 'Pre-Abridge survey',      
+      afterLabel: 'Post-Abridge survey',                                                                                                                                                                       
+      contextNote: 'Before/after survey. Documentation burden accounts for a disproportionate share of nursing burnout — making this a high-signal metric for nursing Abridge deployments. Use consistent 
+  scale.',                                                                                                                                                                                                     
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Burnout scores improved from {before} to {after} — {deltaPercent}% improvement on your scale. ' +                                                                                                     
+        'Documentation burden is the single largest modifiable driver of nursing burnout. ' +                                                                                                                  
+        'This improvement is a leading indicator for retention — and at {providers} nurses, ' +
+        'each point of improvement in burnout scores correlates with measurable reduction in turnover intent.',                                                                                                
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'likelihoodToStay',                                                                                                                                                                                  
+      label: 'Likelihood to Stay (Survey)',                                                                                                                                                                    
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 1,                                             
+      dataSource: 'partner',                  
+      unit: 'percent',                    
+      format: 'percent',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Likelihood to stay (% responding "likely" or "very likely")',
+      beforeLabel: 'Pre-Abridge survey',                                                                                                                                                                       
+      afterLabel: 'Post-Abridge survey',                    
+      contextNote: 'Before/after pulse survey. RN turnover cost is $40K–$65K per nurse. At large nursing workforce scale, even a 1-point improvement in likelihood-to-stay represents significant avoided cost.
+   Source: nursing leadership / HR.',                                                                                                                                                                          
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Retention intent is up {delta} points — {after}% of nurses say they\'re likely to stay, vs {before}% before Abridge. ' +                                                                              
+        'At {providers} nurses and an average turnover cost of ${turnoverCost} per RN, ' +                                                                                                                     
+        'a {delta}-point improvement in likelihood-to-stay prevents approximately {turnoverPrevented} departures annually — ' +
+        'worth {totalSavings} in avoided recruitment, onboarding, and agency coverage costs.',                                                                                                                 
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 2: QUALITY (Nursing-Sensitive Indicators) ───                                                                                                                                                 
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'patientFallRate',                                                                                                                                                                                   
+      label: 'Patient Fall Rate',                           
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'rate',
+      format: 'decimal',                      
+      higherIsBetter: false,              
+      inputLabel: 'Falls per 1,000 patient days',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',         
+      contextNote: 'NDNQI nursing-sensitive indicator. Falls correlate with documentation gaps — incomplete fall risk assessments, missed reassessments, care plan updates not completed. Source: quality      
+  department or EHR safety reporting.',                                                                                                                                                                        
+      plainEnglishTemplate:               
+        'Patient fall rate is down from {before} to {after} per 1,000 patient days — a {deltaPercent}% reduction. ' +                                                                                          
+        'Each prevented fall avoids an average of $14,000–$30,000 in direct care costs, plus regulatory and liability exposure. ' +                                                                            
+        'At {patientDays} annual patient days, this improvement prevents approximately {avoidedFalls} falls per year.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'hapiRate',                                                                                                                                                                                          
+      label: 'Hospital-Acquired Pressure Injury (HAPI) Rate',                                                                                                                                                  
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'rate',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'HAPI rate (stage 2+ per 1,000 patient days)',                                                                                                                                               
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',         
+      contextNote: 'NDNQI nursing-sensitive indicator. Skin assessment documentation completeness is the primary driver — gaps in assessment timing or specificity prevent early intervention. Source: wound 
+  care team or quality department.',                                                                                                                                                                           
+      plainEnglishTemplate:               
+        'HAPI rate is down from {before} to {after} per 1,000 patient days — {deltaPercent}% reduction. ' +                                                                                                    
+        'Stage 2+ HAPIs cost an average of $10,700–$151,700 per event in additional treatment costs, and are non-reimbursable under CMS. ' +                                                                   
+        'At {patientDays} patient days, this improvement prevents approximately {avoidedHAPIs} injuries per year.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'clabsiRate',                                                                                                                                                                                        
+      label: 'CLABSI Rate',                                                                                                                                                                                    
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'rate',                           
+      format: 'decimal',                  
+      higherIsBetter: false,
+      inputLabel: 'CLABSI rate per 1,000 central line days',                                                                                                                                                   
+      beforeLabel: 'Before Abridge',
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'NHSN-reportable. Documentation of central line bundle compliance (daily necessity review, dressing change timing, access documentation) drives both prevention and defensibility. Source: 
+  infection prevention.',                     
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'CLABSI rate is down from {before} to {after} per 1,000 line-days. ' +
+        'Each CLABSI event costs approximately $46,000–$68,000 in additional care costs and generates CMS HAC penalty exposure. ' +                                                                            
+        'Complete bundle documentation is both a prevention tool and a regulatory defense.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'cautiRate',                                                                                                                                                                                         
+      label: 'CAUTI Rate',                                                                                                                                                                                     
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'rate',                                                                                                                                                                                            
+      format: 'decimal',
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'CAUTI rate per 1,000 catheter days',     
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',         
+      contextNote: 'NHSN-reportable. Foley necessity documentation and daily removal prompts are the primary nursing-documentation lever. Source: infection prevention.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'CAUTI rate is down from {before} to {after} per 1,000 catheter days. ' +
+        'Each CAUTI event costs $896–$2,836 in direct costs and affects CMS HAC scoring. ' +                                                                                                                   
+        'Timely documentation of daily necessity review is the primary prevention driver.',                                                                                                                    
+    },                                    
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'medicationErrorRate',          
+      label: 'Medication Error / Near-Miss Rate',                                                                                                                                                              
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'rate',                                         
+      format: 'decimal',                      
+      higherIsBetter: false,              
+      inputLabel: 'Reported medication errors or near-misses per 1,000 patient days',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',             
+      contextNote: 'Documentation clarity and handoff completeness are the upstream drivers of most nursing medication errors. Source: pharmacy / safety event reporting system.',                             
+      plainEnglishTemplate:                                 
+        'Medication error / near-miss rate is down from {before} to {after} per 1,000 patient days. ' +                                                                                                        
+        'Clearer, more complete handoff documentation and care plan updates reduce the gaps that create medication errors at shift change. ' +
+        'Each prevented adverse drug event avoids an estimated $5,000–$50,000 in additional care costs.',                                                                                                      
+    },                                                      
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'hcahpsNurseCommunication',                                                                                                                                                                          
+      label: 'HCAHPS Nurse Communication Score',                                                                                                                                                               
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percentile',
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'HCAHPS nurse communication domain (percentile rank or top-box %)',
+      beforeLabel: 'Before Abridge',                                                                                                                                                                           
+      afterLabel: 'With Abridge',             
+      contextNote: 'The nurse communication domain is the highest-weighted component of inpatient HCAHPS. Time freed from documentation = more time present with patients, directly driving this score. Source:
+   HCAHPS portal.',                                                                                                                                                                                            
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'HCAHPS nurse communication scores have moved from {before}th to {after}th percentile — a {delta}-point improvement. ' +                                                                               
+        'The nurse communication domain carries the highest weight in inpatient patient experience scoring. ' +                                                                                                
+        'Every {delta} minutes freed from documentation per shift is time nurses can spend at the bedside — and patients notice.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 2: STAFFING (Capacity-equivalent for nursing) ───                                                                                                                                             
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'bedsideTimeRatio',                                                                                                                                                                                  
+      label: 'Bedside / Direct Care Time Ratio',            
+      domain: 'staffing',                                                                                                                                                                                      
+      phase: 2,                                             
+      dataSource: 'partner',              
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,
+      inputLabel: 'Percent of shift time spent in direct patient care (vs. documentation)',                                                                                                                    
+      beforeLabel: 'Before Abridge',                        
+      afterLabel: 'With Abridge',             
+      contextNote: 'Time-motion study or self-report data. National benchmark: nurses spend 35–40% of shift time on documentation. Source: nursing leadership time-and-motion study or EHR activity reports.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Direct care time has increased from {before}% to {after}% of shift time — {delta} points more time with patients. ' +                                                                                 
+        'For {providers} nurses on {shiftsPerYear} shifts per year, that\'s {totalHours} additional hours of bedside care annually ' +                                                                         
+        'without adding staff.',                                                                                                                                                                               
+    },                                                      
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'travelNurseUtilization',                                                                                                                                                                            
+      label: 'Travel / Agency Nurse Utilization Rate',                                                                                                                                                         
+      domain: 'staffing',                                   
+      phase: 2,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',                        
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: false,                                
+      inputLabel: 'Travel / agency nurses as % of total nursing FTEs',                                                                                                                                         
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Proportion of nursing shifts covered by travel or agency staff. Documentation burden drives staff nurse turnover which forces reliance on expensive travel coverage. Source: staffing 
+  office / finance.',                                                                                                                                                                                          
+      plainEnglishTemplate:               
+        'Travel and agency nurse utilization is down from {before}% to {after}% of nursing FTEs — a {delta}-point reduction. ' +                                                                               
+        'At {totalFTEs} nursing FTEs and an average premium of ${travelPremium}/FTE over staff rates, ' +                                                                                                      
+        'each point of utilization reduction saves approximately {pointSavings} annually.',                                                                                                                    
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'openShiftFillRate',                                                                                                                                                                                 
+      label: 'Open Shift Fill Rate',                                                                                                                                                                           
+      domain: 'staffing',                                                                                                                                                                                      
+      phase: 2,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Percentage of open shifts filled by staff nurses (vs. agency or left unfilled)',
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Retention-driven staffing stability metric. Source: staffing office / scheduling system.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Open shift fill rate by staff nurses is up from {before}% to {after}% — {delta} points more shifts covered internally. ' +
+        'Higher fill rates reflect improved retention and scheduling stability, and directly reduce agency premium spend.',                                                                                    
+    },                                                                                                                                                                                                         
+                                          
+    // ─── PHASE 2: REVENUE (CDI contribution) ───                                                                                                                                                             
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'cdiQueryResponseRate',                                                                                                                                                                              
+      label: 'CDI Query Response Rate',                     
+      domain: 'revenue',                  
+      phase: 2,
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',                        
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'CDI query response rate (% of nursing CDI queries answered within 24h)',                                                                                                                    
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',                                                                                                                                                                              
+      contextNote: 'Nursing documentation supports CDI queries for DRG accuracy. Complete assessments reduce query volume; faster responses close documentation gaps that hold up coding. Source: CDI 
+  platform.',                                                                                                                                                                                                  
+      plainEnglishTemplate:               
+        'CDI query response rate is up from {before}% to {after}% — {delta} points. ' +                                                                                                                        
+        'Faster, more complete nursing documentation reduces the volume of queries CDI needs to issue ' +                                                                                                      
+        'and accelerates the responses that hold up DRG assignment and billing.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'nursingDocCompletionRate',                                                                                                                                                                          
+      label: 'Nursing Documentation Completion Rate',                                                                                                                                                          
+      domain: 'revenue',                                                                                                                                                                                       
+      phase: 2,                                             
+      dataSource: 'partner',
+      unit: 'percent',                                                                                                                                                                                         
+      format: 'percent',
+      higherIsBetter: true,                                                                                                                                                                                    
+      inputLabel: 'Nursing documentation completion rate within required timeframes (%)',
+      beforeLabel: 'Before Abridge',          
+      afterLabel: 'With Abridge',         
+      contextNote: 'Percentage of required nursing documentation completed on time (assessments, care plans, handoff notes). Delinquent records affect billing hold rates and discharge timing. Source: EHR 
+  compliance reports.',                                                                                                                                                                                        
+      plainEnglishTemplate:               
+        'Nursing documentation is now completed on time {after}% of the time, up from {before}%. ' +                                                                                                           
+        'Delinquent nursing documentation holds up billing, delays discharge, and creates compliance exposure. ' +                                                                                             
+        'A {delta}-point improvement means {additionalEncounters} more encounters per year with complete, timely nursing records.',
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // ─── PHASE 3: STRATEGIC / ANNUAL METRICS ───                                                                                                                                                             
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'nurseRetentionRate',                                                                                                                                                                                
+      label: 'RN Retention Rate',                           
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 3,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percent',
+      format: 'percent',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Annual RN retention rate (%)',
+      beforeLabel: 'Pre-Abridge baseline year',
+      afterLabel: 'Post-Abridge year',
+      contextNote: 'Annual metric. RN turnover cost is $40K–$65K per nurse. At nursing workforce scale, this is the highest-volume cost lever in the tool. Source: HR.',                                       
+      plainEnglishTemplate:                   
+        'RN retention rate has moved from {before}% to {after}% — {delta} points. ' +                                                                                                                          
+        'At {providers} nurses and a turnover cost of ${turnoverCost} per RN, ' +                                                                                                                              
+        'each percentage point improvement prevents approximately {turnoverPrevented} departures annually — ' +                                                                                                
+        'worth {totalSavings} in avoided costs. ' +                                                                                                                                                            
+        'At your scale, this is likely the largest single financial impact in this analysis.',                                                                                                                 
+    },                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {                                                                                                                                                                                                          
+      id: 'travelNurseSpend',                                                                                                                                                                                  
+      label: 'Travel / Agency Nurse Annual Spend',          
+      domain: 'staffing',                                                                                                                                                                                      
+      phase: 3,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'dollars',                    
+      format: 'currency',                                                                                                                                                                                      
+      higherIsBetter: false,                                                                                                                                                                                   
+      inputLabel: 'Total annual travel/agency nursing spend ($)',
+      beforeLabel: 'Pre-Abridge year',                                                                                                                                                                         
+      afterLabel: 'Most recent year',                       
+      contextNote: 'Annual total. The COVID-era travel nurse premium normalized at 2–3x staff rates. Source: finance / contracting.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Travel and agency nursing spend is down from {before} to {after} — {delta} in avoided premium labor costs. ' +
+        'This is the most direct financial expression of improved nursing retention and scheduling stability.',                                                                                                
+    },                                                                                                                                                                                                         
+                                          
+    {                                                                                                                                                                                                          
+      id: 'nursingOvertimeCost',                                                                                                                                                                               
+      label: 'Nursing Overtime Cost',                                                                                                                                                                          
+      domain: 'workforce',                                                                                                                                                                                     
+      phase: 3,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'dollars',
+      format: 'currency',                                                                                                                                                                                      
+      higherIsBetter: false,                                
+      inputLabel: 'Total annual nursing overtime cost ($)',
+      beforeLabel: 'Pre-Abridge year',
+      afterLabel: 'Most recent year',                                                                                                                                                                          
+      contextNote: 'Annual total overtime spend attributable to documentation burden and staffing gaps. Source: payroll / finance.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Annual nursing overtime cost is down from {before} to {after} — {delta} in avoided labor premium. ' +
+        'Documentation-driven overtime and agency coverage are the two largest controllable cost levers in nursing operations.',
+    },                                                                                                                                                                                                         
+                                          
+    {                                                                                                                                                                                                          
+      id: 'pressGaneyNursing',                                                                                                                                                                                 
+      label: 'Press Ganey Nursing / Patient Experience Score',                                                                                                                                                 
+      domain: 'quality',                                                                                                                                                                                       
+      phase: 3,                                             
+      dataSource: 'partner',                                                                                                                                                                                   
+      unit: 'percentile',                     
+      format: 'decimal',                                                                                                                                                                                       
+      higherIsBetter: true,                                 
+      inputLabel: 'Press Ganey overall or nurse-specific percentile rank',                                                                                                                                     
+      beforeLabel: 'Pre-Abridge year',        
+      afterLabel: 'Most recent year',                                                                                                                                                                          
+      contextNote: 'Annual strategic metric. Nursing communication and responsiveness are the primary PG drivers from a nursing standpoint. Source: Press Ganey portal.',
+      plainEnglishTemplate:                                                                                                                                                                                    
+        'Press Ganey scores have moved from {before}th to {after}th percentile annually. ' +
+        'Nursing responsiveness and communication — both enabled when nurses spend less time documenting — ' +                                                                                                 
+        'are the largest drivers of the inpatient PG composite.',                                                                                                                                              
+    },                                    
+                                                                                                                                                                                                               
+  ];                                                                                                                                                                                                           
+                                          
+  ---                                                                                                                                                                                                          
+  STEP 2 — Add nursing state fields to MeasureState in measureCalculator.ts                                                                                                                                    
+                                              
+  // Nursing-specific                                                                                                                                                                                          
+  nursingMetrics?: Record<string, MetricValue>;             
+  nursingAbridgeNativeData?: {                                                                                                                                                                                 
+    docTimePerShift?: MetricValue;            
+    noteQualityScore?: MetricValue;                                                                                                                                                                            
+  };                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 3 — Add nursing data entry tab sections to MeasureDataEntry.tsx                                                                                                                                         
+                                                                                                                                                                                                               
+  Inside the careSetting === 'nursing' branch, use these 6 sections:
+                                              
+  Section 1: Abridge Platform Data                                                                                                                                                                             
+  Label: "From Abridge"                   
+  Subtitle: "These pull directly from your Abridge deployment data."                                                                                                                                           
+  Metrics: docTimePerShift, noteQualityScore                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Section 2: Workforce                                                                                                                                                                                         
+  Label: "Workforce"                                                                                                                                                                                           
+  Subtitle: "Documentation burden and nursing wellbeing. These are the highest-stakes metrics at nursing scale."                                                                                               
+  Metrics (always visible): chartingAfterShift, overtimeHours                                                                                                                                                  
+  Expandable "Workforce Surveys (Before / After)":                                                                                                                                                             
+    Metrics: burnoutAssessment, likelihoodToStay            
+    Note: "Use the same survey instrument for both surveys. Document scale used in Presenter Notes (MBI, single-item, etc.)."                                                                                  
+                                                                                                                                                                                                               
+  Section 3: Staffing                                                                                                                                                                                          
+  Label: "Staffing"                                                                                                                                                                                            
+  Subtitle: "Scheduling stability and direct care time. Source: staffing office and EHR activity reports."                                                                                                     
+  Metrics: bedsideTimeRatio, travelNurseUtilization, openShiftFillRate                                                                                                                                         
+                                                                                                                                                                                                               
+  Section 4: Quality (NSIs)                                                                                                                                                                                    
+  Label: "Quality — Nursing-Sensitive Indicators"                                                                                                                                                              
+  Subtitle: "NDNQI and NHSN metrics. Source: quality department and infection prevention."                                                                                                                     
+  Always visible: patientFallRate, hapiRate                                               
+  Expandable "Infection Prevention":                                                                                                                                                                           
+    Metrics: clabsiRate, cautiRate                          
+  Expandable "Patient Experience":                                                                                                                                                                             
+    Metrics: hcahpsNurseCommunication, medicationErrorRate                                                                                                                                                     
+                                                                                                                                                                                                               
+  Section 5: Revenue                                                                                                                                                                                           
+  Label: "Revenue"                                                                                                                                                                                             
+  Subtitle: "CDI contribution and documentation compliance. Nursing documentation supports DRG accuracy and billing timeliness."                                                                               
+  Metrics: cdiQueryResponseRate, nursingDocCompletionRate                                                                       
+                                                                                                                                                                                                               
+  Section 6: Phase 3 Roadmap (chip display only, no inputs) 
+  Label: "Phase 3 — Strategic Metrics"        
+  Subtitle: "Annual metrics measured after 12+ months. No inputs yet — these appear in your roadmap."
+  Chip display: nurseRetentionRate, travelNurseSpend, nursingOvertimeCost, pressGaneyNursing
+                                                                                                                                                                                                               
+  ---                                     
+  STEP 4 — Update MeasureInventory.tsx for nursing domain labels                                                                                                                                               
+                                                                                                                                                                                                               
+  Add to the domainDisplayLabel function: 
+                                                                                                                                                                                                               
+  if (domain === 'capacity' && setting === 'nursing') return 'Staffing';                                                                                                                                       
+                                              
+  The nursing Staffing domain's primary delta badge (collapsed header metric) should be travelNurseUtilization if available, falling back to bedsideTimeRatio, falling back to openShiftFillRate.              
+                                                            
+  The Workforce domain's primary badge for nursing should be chartingAfterShift — it's the most immediately legible signal and the one nursing leaders track most closely.                                     
+                                                                                                                                                                                                               
+  The Quality domain's primary badge should be patientFallRate — the signature NSI.                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                       
+  STEP 5 — Update MeasureStage.tsx phase 3 label for nursing                                                                                                                                                   
+                                                            
+  When careSetting === 'nursing', Phase 3 label is "Staffing".                                                                                                                                                 
+                                                            
+  Phase 3 description for nursing:                                                                                                                                                                             
+  "Staffing: Documentation burden reduction translates to retention improvement, travel nurse dependency reduction, and scheduling stability — the compounding financial outcome of everything measured above."
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 6 — Add staffing as a recognized domain key for nursing                                                                                                                                                 
+                                                                                                                                                                                                               
+  Same pattern as patientFlow for inpatient:                
+                                                                                                                                                                                                               
+  const DOMAIN_KEYS = {                                     
+    outpatient: ['quality', 'workforce', 'revenue', 'capacity'],                                                                                                                                               
+    ed:         ['quality', 'workforce', 'revenue', 'capacity'],  // displayed as "Throughput"                                                                                                                 
+    inpatient:  ['quality', 'workforce', 'revenue', 'capacity'],  // displayed as "Patient Flow"                                                                                                               
+    nursing:    ['quality', 'workforce', 'revenue', 'capacity'],  // displayed as "Staffing"                                                                                                                   
+  };                                                        
+                                                                                                                                                                                                               
+  Data model key stays capacity. Only the display label changes.                                                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  STEP 7 — Nursing-specific context note in MeasureStage.tsx                                                                                                                                                   
+                                                            
+  For nursing at Stage 1 (Unmeasured), the stage description should read:                                                                                                                                      
+                                                            
+  "You're collecting Abridge platform data but haven't yet connected it to workforce or quality outcomes. The next step is a before/after survey on burnout and likelihood to stay — these are fast to run and 
+  provide the most defensible workforce signal at this stage."
+                                                                                                                                                                                                               
+  This replaces the generic Stage 1 copy for nursing only. Nursing leaders respond to workforce framing first, not revenue.      

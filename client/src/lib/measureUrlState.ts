@@ -46,6 +46,12 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.outpatientNativeData) {
         parsed.outpatientNativeData = DEFAULT_MEASURE_STATE.outpatientNativeData;
       }
+      if (!parsed.edMetrics) {
+        parsed.edMetrics = DEFAULT_MEASURE_STATE.edMetrics;
+      }
+      if (!parsed.edAbridgeNativeData) {
+        parsed.edAbridgeNativeData = DEFAULT_MEASURE_STATE.edAbridgeNativeData;
+      }
       if (parsed.deployment) {
         if (parsed.deployment.liveProviders === undefined) {
           parsed.deployment.liveProviders = parsed.deployment.providers || 0;
