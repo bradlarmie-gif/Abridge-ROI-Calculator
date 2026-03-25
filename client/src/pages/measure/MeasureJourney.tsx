@@ -22,7 +22,6 @@ import {
   getMetricSuffix,
   type DomainKey,
 } from "@/lib/measureCareSettings";
-import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
 import NarrativePanel from "@/components/measure/NarrativePanel";
 import { generateNarrative } from "@/lib/measureNarrative";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -168,45 +167,6 @@ function getSurveyMetricRows(state: MeasureState, activeSettings: MeasureCareSet
     });
   }
   return rows;
-}
-
-function SignalRing({ active, baseline, total }: { active: number; baseline: number; total: number }) {
-  const size = 72;
-  const stroke = 6;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const activeRatio = total > 0 ? active / total : 0;
-  const baselineRatio = total > 0 ? baseline / total : 0;
-  const activeLen = circumference * activeRatio;
-  const baselineLen = circumference * baselineRatio;
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#F0F0F0" strokeWidth={stroke} />
-        {active > 0 && (
-          <circle
-            cx={size / 2} cy={size / 2} r={radius} fill="none"
-            stroke="#EA2C00" strokeWidth={stroke} strokeLinecap="round"
-            strokeDasharray={`${activeLen} ${circumference - activeLen}`}
-            strokeDashoffset={0}
-          />
-        )}
-        {baseline > 0 && (
-          <circle
-            cx={size / 2} cy={size / 2} r={radius} fill="none"
-            stroke="#F5C6B3" strokeWidth={stroke} strokeLinecap="round"
-            strokeDasharray={`${baselineLen} ${circumference - baselineLen}`}
-            strokeDashoffset={-activeLen}
-          />
-        )}
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-white" data-testid="text-signal-active-count">{active}</span>
-        <span className="text-[8px] uppercase tracking-[1px] text-white/50">active</span>
-      </div>
-    </div>
-  );
 }
 
 function DomainProgressCard({
@@ -595,60 +555,77 @@ export default function MeasureJourney({
           </motion.div>
         )}
 
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={mode !== 'present' ? state.deployment.organizationName : undefined} deployment={state.deployment} />
-
         <AbridgeFootprintRow nativeData={state.abridgeNativeData} />
 
-        <motion.div
-          className="text-center mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            Your Measurement Picture
-          </h1>
-          <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
-            Domain-level progress across your Abridge deployment.
-          </p>
-        </motion.div>
-
         <NarrativePanel narrative={narrative} mode={mode} />
+      </div>
 
-        <motion.div
-          className="rounded-2xl bg-[#1A1A1A] p-6 mb-6"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.5 }}
-          data-testid="stats-header"
-        >
-          <div className="flex items-center gap-6">
-            <SignalRing active={signalCounts.active} baseline={signalCounts.baseline} total={signalCounts.total} />
+      <motion.section
+        className="relative overflow-hidden"
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.5 }}
+        data-testid="stats-header"
+      >
+        <div className="absolute inset-0 bg-black" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
 
-            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-providers">{formatNumber(state.deployment.providers)}</p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Providers</p>
+        <div className="relative max-w-5xl mx-auto px-6 py-10 md:py-14">
+          <div className="flex justify-center mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs" data-testid="badge-hero-context">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+              {orgName} • Phase {context.phase} {context.phaseLabel} • {context.maturityLabel}
+            </span>
+          </div>
+
+          <div className="text-center mb-10">
+            <div className="text-white/40 text-xs uppercase tracking-[0.2em] mb-3">
+              Signals Active
+            </div>
+            <div className="relative inline-block">
+              <div
+                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[#EA2C00]"
+                data-testid="text-hero-signal-count"
+              >
+                {signalCounts.active} of {signalCounts.total}
               </div>
-              <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-encounters">{formatNumber(state.deployment.totalEncounters)}</p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Encounters</p>
+            </div>
+            <div className="mt-4 text-white/50 text-sm" data-testid="text-hero-subtitle">
+              across {settingDomains.length} domain{settingDomains.length !== 1 ? 's' : ''} with {formatNumber(state.deployment.providers)} providers on Abridge
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="stat-providers">
+                {formatNumber(state.deployment.providers)}
               </div>
-              <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-settings">{activeSettings.length}</p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Settings</p>
+              <div className="text-white/40 text-xs uppercase tracking-wider">
+                Providers
               </div>
-              <div>
-                <p className="text-2xl font-bold text-white" data-testid="stat-active-metrics">
-                  {measuredCount}<span className="text-base text-white/40 font-normal">/{signalCounts.total}</span>
-                </p>
-                <p className="text-[10px] text-white/50 uppercase tracking-[1.5px] mt-0.5">Measuring</p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="stat-encounters">
+                {formatNumber(state.deployment.totalEncounters)}
+              </div>
+              <div className="text-white/40 text-xs uppercase tracking-wider">
+                Encounters
+              </div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="stat-settings">
+                {activeSettings.length}
+              </div>
+              <div className="text-white/40 text-xs uppercase tracking-wider">
+                Care Settings
               </div>
             </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-4 text-[11px]">
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="flex items-center gap-6 text-[11px]">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                 <span className="text-white/60">{signalCounts.active} Active</span>
@@ -661,23 +638,36 @@ export default function MeasureJourney({
                 <span className="w-2 h-2 rounded-full bg-white/20" />
                 <span className="text-white/60">{signalCounts.notMeasuring} Not yet</span>
               </div>
-              <div className="ml-auto">
-                <div className="flex h-1.5 rounded-full overflow-hidden w-28">
-                  {signalCounts.active > 0 && (
-                    <div className="bg-[#EA2C00]" style={{ width: `${(signalCounts.active / signalCounts.total) * 100}%` }} />
-                  )}
-                  {signalCounts.baseline > 0 && (
-                    <div className="bg-[#F5C6B3]" style={{ width: `${(signalCounts.baseline / signalCounts.total) * 100}%` }} />
-                  )}
-                  {signalCounts.notMeasuring > 0 && (
-                    <div className="bg-white/20" style={{ width: `${(signalCounts.notMeasuring / signalCounts.total) * 100}%` }} />
-                  )}
-                </div>
-              </div>
+            </div>
+            <div className="flex h-2 rounded-full overflow-hidden w-64">
+              {signalCounts.active > 0 && (
+                <div className="bg-[#EA2C00]" style={{ width: `${(signalCounts.active / signalCounts.total) * 100}%` }} />
+              )}
+              {signalCounts.baseline > 0 && (
+                <div className="bg-[#F5C6B3]" style={{ width: `${(signalCounts.baseline / signalCounts.total) * 100}%` }} />
+              )}
+              {signalCounts.notMeasuring > 0 && (
+                <div className="bg-white/20" style={{ width: `${(signalCounts.notMeasuring / signalCounts.total) * 100}%` }} />
+              )}
             </div>
           </div>
-        </motion.div>
 
+          <div className="mt-8 text-center">
+            <p className="text-white/40 text-sm max-w-xl mx-auto" data-testid="text-hero-strategic">
+              {context.maturityStage === 'unmeasured'
+                ? `Your deployment is in the ${context.maturityLabel} phase. Begin capturing baseline data to unlock early signals across your active domains.`
+                : context.maturityStage === 'signaling'
+                ? `Your deployment is in the ${context.maturityLabel} phase. Early signals are emerging across ${settingDomains.length} domain${settingDomains.length !== 1 ? 's' : ''} — continue building measurement depth to reach Validated status.`
+                : context.maturityStage === 'validated'
+                ? `Your deployment has reached ${context.maturityLabel} status. Metrics are tracking consistently across ${settingDomains.length} domain${settingDomains.length !== 1 ? 's' : ''}, building a strong evidence base.`
+                : `Your deployment is at the ${context.maturityLabel} level. Comprehensive measurement across ${settingDomains.length} domain${settingDomains.length !== 1 ? 's' : ''} provides a clear picture of Abridge's organizational impact.`
+              }
+            </p>
+          </div>
+        </div>
+      </motion.section>
+
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {settingDomains.map((domain, i) => {
             const dr = domainRows[domain.key] || { active: [], baseline: [], total: 0 };
