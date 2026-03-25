@@ -511,7 +511,7 @@ export interface AllocationField {
   defaultValue: number;
 }
 
-export type DomainKey = 'workforce' | 'revenue' | 'quality' | 'capacity' | 'throughput' | 'patientFlow';
+export type DomainKey = 'workforce' | 'revenue' | 'quality' | 'capacity' | 'throughput' | 'patientFlow' | 'foundational';
 
 export interface CareSettingConfig {
   key: MeasureCareSetting;
@@ -535,6 +535,15 @@ export const DOMAIN_LABELS: Record<DomainKey, string> = {
 };
 
 export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey; label: string }[] {
+  if (setting === 'outpatient') {
+    return [
+      { key: 'foundational', label: 'Foundational' },
+      { key: 'capacity', label: 'Capacity' },
+      { key: 'workforce', label: 'Workforce' },
+      { key: 'revenue', label: 'Revenue' },
+      { key: 'quality', label: 'Quality' },
+    ];
+  }
   const config = CARE_SETTING_CONFIGS[setting];
   return [
     { key: 'workforce', label: 'Workforce' },

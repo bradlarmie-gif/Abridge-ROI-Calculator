@@ -233,6 +233,15 @@ export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<Meas
       singleValue: null,
     };
   }
+  if (nd?.utilization != null) {
+    om.utilization = { before: null, after: null, singleValue: nd.utilization };
+  }
+  if (nd?.consentRate != null) {
+    om.consent_rate = { before: null, after: null, singleValue: nd.consentRate };
+  }
+  if (nd?.userRetention != null) {
+    om.user_retention = { before: null, after: null, singleValue: nd.userRetention };
+  }
 
   const documentationQuality: DocumentationQuality = {
     ...state.documentationQuality,

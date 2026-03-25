@@ -131,6 +131,7 @@ function DomainSection({
   state,
   updateMetric,
   notes,
+  phase2ExpandedByDefault = false,
 }: {
   domain: string;
   label: string;
@@ -139,8 +140,9 @@ function DomainSection({
   state: MeasureState;
   updateMetric: (id: string, v: MetricValue) => void;
   notes?: Record<string, string>;
+  phase2ExpandedByDefault?: boolean;
 }) {
-  const [showPhase2, setShowPhase2] = useState(false);
+  const [showPhase2, setShowPhase2] = useState(phase2ExpandedByDefault);
   const phase1 = metrics.filter(m => m.phase === 1);
   const phase2 = metrics.filter(m => m.phase === 2);
 
@@ -361,6 +363,7 @@ function OutpatientMetricSections({ state, updateState }: { state: MeasureState;
           metrics={qualityMetrics}
           state={state}
           updateMetric={updateMetric}
+          phase2ExpandedByDefault={true}
         />
       )}
 

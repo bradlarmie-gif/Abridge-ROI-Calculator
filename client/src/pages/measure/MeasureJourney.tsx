@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, TrendingUp, TrendingDown, Minus, ChevronRight } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -52,6 +52,7 @@ const DOMAIN_COLORS: Record<string, string> = {
   capacity: '#0891B2',
   throughput: '#0891B2',
   patientFlow: '#0891B2',
+  foundational: '#9333EA',
 };
 
 const DOMAIN_QUESTIONS: Record<string, string> = {
@@ -61,6 +62,7 @@ const DOMAIN_QUESTIONS: Record<string, string> = {
   capacity: 'What is the organization doing with the freed time?',
   throughput: 'How has patient flow improved?',
   patientFlow: 'What is the impact on patient movement?',
+  foundational: 'Is the Abridge platform being adopted and used effectively?',
 };
 
 interface MetricRowData {
@@ -100,9 +102,27 @@ function getOutpatientMetricRows(state: MeasureState): MetricRowData[] {
 
   for (const metric of OUTPATIENT_METRICS) {
     if (metric.phase3Roadmap) continue;
-    if (metric.inputType === 'single') continue;
 
     const mv = om[metric.id];
+
+    if (metric.inputType === 'single') {
+      const singleVal = mv?.singleValue ?? 0;
+      const status: 'active' | 'baseline' | 'not-measuring' = singleVal > 0 ? 'active' : 'not-measuring';
+
+      rows.push({
+        label: metric.label,
+        metricKey: metric.id,
+        domain: domainKeyMap[metric.domain] || metric.domain,
+        domainKey: metric.domain,
+        setting: 'outpatient',
+        status,
+        after: singleVal || undefined,
+        unit: metric.unit,
+        step: 0.1,
+      });
+      continue;
+    }
+
     let before = mv?.before ?? 0;
     let after = mv?.after ?? 0;
 
@@ -129,13 +149,11 @@ function getOutpatientMetricRows(state: MeasureState): MetricRowData[] {
       status = 'not-measuring';
     }
 
-    const domainKey = metric.domain === 'foundational' ? 'quality' : metric.domain;
-
     rows.push({
       label: metric.label,
       metricKey: metric.id,
       domain: domainKeyMap[metric.domain] || metric.domain,
-      domainKey,
+      domainKey: metric.domain,
       setting: 'outpatient',
       status,
       before: before || undefined,
@@ -290,8 +308,7 @@ function getMetricInterpretation(row: MetricRowData, state: MeasureState): strin
 function getPhase3MetricsForDomain(domainKey: string): MetricDefinition[] {
   return OUTPATIENT_METRICS.filter(m => {
     if (!m.phase3Roadmap) return false;
-    const mappedDomain = m.domain === 'foundational' ? 'quality' : m.domain;
-    return mappedDomain === domainKey;
+    return m.domain === domainKey;
   });
 }
 
@@ -368,15 +385,17 @@ function DomainProgressCard({
                     const s = row.step ?? 1;
                     const decimals = s < 1 ? Math.ceil(-Math.log10(s)) : 0;
                     const formatVal = (v: number) => decimals > 0 ? v.toFixed(decimals) : v.toLocaleString();
-                    const delta = (row.after ?? 0) - (row.before ?? 0);
+                    const isSingleValue = !row.before && row.after;
+                    const delta = isSingleValue ? 0 : (row.after ?? 0) - (row.before ?? 0);
                     const absDelta = Math.abs(delta);
                     const pctChange = row.before && row.before !== 0 ? Math.round((absDelta / row.before) * 100) : 0;
                     const isReduction = reductionMetrics.has(row.metricKey);
-                    const isPositive = isReduction ? delta < 0 : delta > 0;
+                    const isPositive = isSingleValue ? true : (isReduction ? delta < 0 : delta > 0);
                     const accentColor = isPositive ? '#2D8A4E' : '#DC2626';
                     const bgColor = isPositive ? '#F0FDF4' : '#FEF2F2';
                     const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
                     const interpretation = isOutpatient && state ? getMetricInterpretation(row, state) : null;
+                    const metricDef = isOutpatient ? OUTPATIENT_METRICS.find(m => m.id === row.metricKey) : null;
 
                     return (
                       <motion.div
@@ -389,16 +408,29 @@ function DomainProgressCard({
                         <div className="flex items-center gap-3">
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                           <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
-                          <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
-                          <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
-                          <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
-                          <div
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
-                            style={{ backgroundColor: bgColor, color: accentColor }}
-                          >
-                            <DeltaIcon className="w-3 h-3" />
-                            {pctChange > 0 && <span>{pctChange}%</span>}
-                          </div>
+                          {isSingleValue ? (
+                            <>
+                              <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">
+                                {formatVal(row.after!)}{metricDef?.unit === '%' ? '%' : ''}
+                              </span>
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0 bg-blue-50 text-blue-700">
+                                <CheckCircle2 className="w-3 h-3" />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
+                              <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
+                              <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
+                              <div
+                                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
+                                style={{ backgroundColor: bgColor, color: accentColor }}
+                              >
+                                <DeltaIcon className="w-3 h-3" />
+                                {pctChange > 0 && <span>{pctChange}%</span>}
+                              </div>
+                            </>
+                          )}
                         </div>
                         {interpretation && (
                           <p className="text-[11px] text-[#888888] mt-1 ml-4 italic" data-testid={`interpretation-${row.metricKey}`}>
@@ -638,9 +670,8 @@ export default function MeasureJourney({
         if (!grouped[d.key]) grouped[d.key] = { active: [], baseline: [], total: 0 };
         if (s === 'outpatient') {
           const domainMetrics = OUTPATIENT_METRICS.filter(m => {
-            if (m.phase3Roadmap || m.inputType === 'single') return false;
-            const mappedDomain = m.domain === 'foundational' ? 'quality' : m.domain;
-            return mappedDomain === d.key;
+            if (m.phase3Roadmap) return false;
+            return m.domain === d.key;
           });
           grouped[d.key].total += domainMetrics.length;
         } else {
@@ -674,6 +705,18 @@ export default function MeasureJourney({
     return result;
   }, [activeSettings]);
 
+  const foundationalStatus: DomainStatus = useMemo(() => {
+    if (!activeSettings.includes('outpatient')) return 'no-data';
+    const nd = state.outpatientNativeData;
+    const om = state.outpatientMetrics || {};
+    const hasUtil = (nd?.utilization ?? 0) > 0;
+    const hasConsent = (nd?.consentRate ?? 0) > 0;
+    const hasRetention = (nd?.userRetention ?? 0) > 0;
+    const hasSingle = hasUtil || hasConsent || hasRetention;
+    if (!hasSingle) return 'no-data';
+    return 'signaling';
+  }, [state.outpatientNativeData, state.outpatientMetrics, activeSettings]);
+
   const domainStatusMap: Record<string, DomainStatus> = {
     workforce: domainStatus.workforce,
     revenue: domainStatus.revenue,
@@ -681,6 +724,7 @@ export default function MeasureJourney({
     capacity: domainStatus.capacity,
     throughput: domainStatus.capacity,
     patientFlow: domainStatus.capacity,
+    foundational: foundationalStatus,
   };
 
   const orgName = state.deployment.organizationName || 'Your Organization';
