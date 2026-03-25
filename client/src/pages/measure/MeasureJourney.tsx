@@ -720,7 +720,19 @@ export default function MeasureJourney({
           </motion.div>
         )}
 
-        <AbridgeFootprintRow nativeData={state.abridgeNativeData} />
+        <AbridgeFootprintRow nativeData={
+          activeSettings.includes('outpatient') && state.outpatientNativeData
+            ? {
+                ...state.abridgeNativeData,
+                notesGenerated: state.abridgeNativeData?.notesGenerated,
+                encountersCaptured: state.abridgeNativeData?.encountersCaptured,
+                noteAcceptanceRate: state.abridgeNativeData?.noteAcceptanceRate,
+                utilization: state.outpatientNativeData.utilization ?? undefined,
+                consentRate: state.outpatientNativeData.consentRate ?? undefined,
+                userRetention: state.outpatientNativeData.userRetention ?? undefined,
+              }
+            : state.abridgeNativeData
+        } />
 
         <NarrativePanel narrative={narrative} mode={mode} />
       </div>
