@@ -47,7 +47,25 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
         parsed.outpatientNativeData = DEFAULT_MEASURE_STATE.outpatientNativeData;
       }
       if (!parsed.edMetrics) {
-        parsed.edMetrics = DEFAULT_MEASURE_STATE.edMetrics;
+        parsed.edMetrics = { ...DEFAULT_MEASURE_STATE.edMetrics };
+        const legacyEd = parsed.settingData?.ed;
+        if (legacyEd) {
+          const reverseMap: Record<string, string> = {
+            timeInNotes: 'docTimePerEncounter',
+            afterHours: 'workAfterHours',
+            emLevel: 'emLevel',
+            wrvuPerEncounter: 'wrvu',
+            lwbsRate: 'lwbsRate',
+            doorToDoc: 'doorToProvider',
+          };
+          for (const [legacyKey, newKey] of Object.entries(reverseMap)) {
+            const b = legacyEd[`${legacyKey}_before`];
+            const a = legacyEd[`${legacyKey}_after`];
+            if ((b != null && b > 0) || (a != null && a > 0)) {
+              parsed.edMetrics[newKey] = { before: b ?? 0, after: a ?? 0 };
+            }
+          }
+        }
       }
       if (!parsed.edAbridgeNativeData) {
         parsed.edAbridgeNativeData = DEFAULT_MEASURE_STATE.edAbridgeNativeData;
