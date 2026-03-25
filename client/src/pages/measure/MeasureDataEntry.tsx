@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from "react";
-import { ArrowRight, Sparkles, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { ArrowRight, Sparkles, Building2, Stethoscope, Siren, BedDouble, Heart, ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
-import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
+import { type MeasureState, type MeasureCareSetting, type MetricValue, syncOutpatientMetricsToLegacy } from "@/lib/measureCalculator";
+import { ABRIDGE_NATIVE_METRICS, CARE_SETTING_CONFIGS, getDefaultMetrics, OUTPATIENT_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -26,6 +26,374 @@ const SETTING_OPTIONS: {
   { key: 'inpatient', label: 'Inpatient', description: 'Hospital medicine', icon: Stethoscope },
   { key: 'nursing', label: 'Nursing', description: 'Nursing units', icon: Heart },
 ];
+
+function DeltaBadge({ before, after, metric }: { before: number | null; after: number | null; metric: MetricDefinition }) {
+  if (before == null || after == null || before === 0 && after === 0) return null;
+  const delta = after - before;
+  if (delta === 0) return <span className="text-[10px] text-[#AAAAAA] ml-1">{"\u2192"} no change</span>;
+  const isImprovement = metric.lowerIsBetter ? delta < 0 : delta > 0;
+  const absDelta = Math.abs(delta);
+  const arrow = metric.lowerIsBetter ? (delta < 0 ? '\u2193' : '\u2191') : (delta > 0 ? '\u2191' : '\u2193');
+  const fmt = absDelta < 1 ? absDelta.toFixed(2) : absDelta < 10 ? absDelta.toFixed(1) : Math.round(absDelta).toString();
+  const unitSuffix = metric.unit === '%' ? '%' : metric.unit === 'min' ? ' min' : metric.unit === 'hrs/wk' ? ' hrs/wk' : '';
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ml-1 ${isImprovement ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'}`}
+      data-testid={`delta-${metric.id}`}
+    >
+      {arrow} {fmt}{unitSuffix}
+    </span>
+  );
+}
+
+function BeforeAfterInput({
+  metric,
+  value,
+  onChange,
+}: {
+  metric: MetricDefinition;
+  value: MetricValue;
+  onChange: (v: MetricValue) => void;
+}) {
+  const step = metric.unit === 'wRVU' || metric.unit === 'ratio' || metric.unit === 'level' ? 0.01
+    : metric.unit === 'stars' ? 0.1
+    : metric.unit === 'score' ? 1
+    : metric.unit === '%' ? 0.1
+    : 1;
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap" data-testid={`input-pair-${metric.id}`}>
+      <div className="flex flex-col">
+        <span className="text-[9px] text-[#AAAAAA] uppercase tracking-wide mb-0.5">Non-Abridge</span>
+        <FormattedNumberInput
+          value={value.before ?? 0}
+          onChange={(v) => onChange({ ...value, before: v || null })}
+          step={step}
+          className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm"
+          data-testid={`input-${metric.id}-before`}
+        />
+      </div>
+      <span className="text-[#CCCCCC] text-sm mt-3">{"\u2192"}</span>
+      <div className="flex flex-col">
+        <span className="text-[9px] text-[#AAAAAA] uppercase tracking-wide mb-0.5">With Abridge</span>
+        <FormattedNumberInput
+          value={value.after ?? 0}
+          onChange={(v) => onChange({ ...value, after: v || null })}
+          step={step}
+          className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm"
+          data-testid={`input-${metric.id}-after`}
+        />
+      </div>
+      <DeltaBadge before={value.before} after={value.after} metric={metric} />
+    </div>
+  );
+}
+
+function MetricRow({
+  metric,
+  value,
+  onChange,
+  note,
+}: {
+  metric: MetricDefinition;
+  value: MetricValue;
+  onChange: (v: MetricValue) => void;
+  note?: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-2.5 border-b border-[#E8E2DA]/40 last:border-b-0" data-testid={`metric-row-${metric.id}`}>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium text-[#1A1A1A]">{metric.label}</span>
+        {note && <p className="text-[10px] text-[#AAAAAA] mt-0.5 italic">{note}</p>}
+      </div>
+      {metric.inputType === 'before-after' ? (
+        <BeforeAfterInput metric={metric} value={value} onChange={onChange} />
+      ) : (
+        <div className="flex flex-col" data-testid={`input-single-${metric.id}`}>
+          <FormattedNumberInput
+            value={value.singleValue ?? 0}
+            onChange={(v) => onChange({ ...value, singleValue: v || null })}
+            step={0.1}
+            className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm"
+            data-testid={`input-${metric.id}-single`}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DomainSection({
+  domain,
+  label,
+  phaseBadge,
+  metrics,
+  state,
+  updateMetric,
+  notes,
+}: {
+  domain: string;
+  label: string;
+  phaseBadge?: number;
+  metrics: MetricDefinition[];
+  state: MeasureState;
+  updateMetric: (id: string, v: MetricValue) => void;
+  notes?: Record<string, string>;
+}) {
+  const [showPhase2, setShowPhase2] = useState(false);
+  const phase1 = metrics.filter(m => m.phase === 1);
+  const phase2 = metrics.filter(m => m.phase === 2);
+
+  return (
+    <motion.div
+      className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      data-testid={`section-${domain}`}
+    >
+      <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">{label}</span>
+        {phaseBadge && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold bg-orange-100 text-orange-700">
+            Phase {phaseBadge}
+          </span>
+        )}
+      </div>
+      <div className="h-px bg-[#E8E2DA] mb-3" />
+
+      {phase1.map(m => (
+        <MetricRow
+          key={m.id}
+          metric={m}
+          value={state.outpatientMetrics?.[m.id] || { before: null, after: null, singleValue: null }}
+          onChange={(v) => updateMetric(m.id, v)}
+          note={notes?.[m.id]}
+        />
+      ))}
+
+      {phase2.length > 0 && (
+        <>
+          <button
+            onClick={() => setShowPhase2(!showPhase2)}
+            className="flex items-center gap-1.5 mt-2 mb-1 text-[11px] font-semibold text-[#EA2C00] hover:text-[#D42800] transition-colors"
+            data-testid={`toggle-phase2-${domain}`}
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPhase2 ? 'rotate-180' : ''}`} />
+            {showPhase2 ? 'Hide' : '+'} Phase 2 metrics
+          </button>
+          <AnimatePresence>
+            {showPhase2 && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                {phase2.map(m => (
+                  <MetricRow
+                    key={m.id}
+                    metric={m}
+                    value={state.outpatientMetrics?.[m.id] || { before: null, after: null, singleValue: null }}
+                    onChange={(v) => updateMetric(m.id, v)}
+                    note={notes?.[m.id]}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </motion.div>
+  );
+}
+
+function OutpatientMetricSections({ state, updateState }: { state: MeasureState; updateState: (updates: Partial<MeasureState>) => void }) {
+  const updateMetric = useCallback((id: string, value: MetricValue) => {
+    const updated = { ...state.outpatientMetrics, [id]: value };
+    const newState = { ...state, outpatientMetrics: updated };
+    const legacy = syncOutpatientMetricsToLegacy(newState);
+    updateState({ outpatientMetrics: updated, ...legacy });
+  }, [state, updateState]);
+
+  const updateNative = useCallback((key: keyof typeof state.outpatientNativeData, value: number | null) => {
+    const updated = { ...state.outpatientNativeData, [key]: value };
+    const newState = { ...state, outpatientNativeData: updated };
+    const legacy = syncOutpatientMetricsToLegacy(newState);
+    updateState({ outpatientNativeData: updated, ...legacy });
+  }, [state, updateState]);
+
+  const abridgeMetrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.source === 'abridge' && !m.phase3Roadmap), []);
+  const capacityMetrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.domain === 'capacity' && !m.phase3Roadmap), []);
+  const workforceMetrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.domain === 'workforce' && !m.phase3Roadmap), []);
+  const revenueMetrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.domain === 'revenue' && !m.phase3Roadmap), []);
+  const qualityMetrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.domain === 'quality' && !m.phase3Roadmap && m.source !== 'abridge'), []);
+  const phase3Metrics = useMemo(() => OUTPATIENT_METRICS.filter(m => m.phase3Roadmap), []);
+
+  const nd = state.outpatientNativeData;
+
+  return (
+    <>
+      <motion.div
+        className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 border border-[#E8E2DA]"
+        style={{ backgroundColor: '#F5F0EB' }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        data-testid="section-abridge-platform"
+      >
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+          <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
+          <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
+        </div>
+        <p className="text-[11px] text-[#888888] mb-3">Pull these from your Abridge analytics dashboard</p>
+        <div className="h-px bg-[#E8E2DA] mb-3" />
+
+        <div className="flex items-start justify-between gap-3 py-2.5 border-b border-[#E8E2DA]/40">
+          <span className="text-sm font-medium text-[#1A1A1A]">% Utilization</span>
+          <div className="relative">
+            <FormattedNumberInput
+              value={nd.utilization ?? 0}
+              onChange={(v) => updateNative('utilization', v || null)}
+              step={0.1}
+              className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm pr-7"
+              data-testid="input-native-utilization"
+            />
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#888888] text-xs">%</span>
+          </div>
+        </div>
+        <div className="flex items-start justify-between gap-3 py-2.5 border-b border-[#E8E2DA]/40">
+          <span className="text-sm font-medium text-[#1A1A1A]">Patient Consent Rate</span>
+          <div className="relative">
+            <FormattedNumberInput
+              value={nd.consentRate ?? 0}
+              onChange={(v) => updateNative('consentRate', v || null)}
+              step={0.1}
+              className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm pr-7"
+              data-testid="input-native-consent"
+            />
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#888888] text-xs">%</span>
+          </div>
+        </div>
+        <div className="flex items-start justify-between gap-3 py-2.5 border-b border-[#E8E2DA]/40">
+          <span className="text-sm font-medium text-[#1A1A1A]">% Abridge User Retention</span>
+          <div className="relative">
+            <FormattedNumberInput
+              value={nd.userRetention ?? 0}
+              onChange={(v) => updateNative('userRetention', v || null)}
+              step={0.1}
+              className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm pr-7"
+              data-testid="input-native-retention"
+            />
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#888888] text-xs">%</span>
+          </div>
+        </div>
+        <div className="flex items-start justify-between gap-3 py-2.5">
+          <div>
+            <span className="text-sm font-medium text-[#1A1A1A]">Avg Note Star Rating</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="flex flex-col">
+              <span className="text-[9px] text-[#AAAAAA] uppercase tracking-wide mb-0.5">Non-Abridge</span>
+              <FormattedNumberInput
+                value={nd.noteStarRatingBefore ?? 0}
+                onChange={(v) => updateNative('noteStarRatingBefore', v || null)}
+                step={0.1}
+                className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm"
+                data-testid="input-native-stars-before"
+              />
+            </div>
+            <span className="text-[#CCCCCC] text-sm mt-3">{"\u2192"}</span>
+            <div className="flex flex-col">
+              <span className="text-[9px] text-[#AAAAAA] uppercase tracking-wide mb-0.5">With Abridge</span>
+              <FormattedNumberInput
+                value={nd.noteStarRatingAfter ?? 0}
+                onChange={(v) => updateNative('noteStarRatingAfter', v || null)}
+                step={0.1}
+                className="h-9 w-[90px] bg-white border-[#E5E5E5] text-right text-sm"
+                data-testid="input-native-stars-after"
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <DomainSection
+        domain="capacity"
+        label="Capacity"
+        phaseBadge={1}
+        metrics={capacityMetrics}
+        state={state}
+        updateMetric={updateMetric}
+      />
+
+      <DomainSection
+        domain="workforce"
+        label="Workforce"
+        phaseBadge={1}
+        metrics={workforceMetrics}
+        state={state}
+        updateMetric={updateMetric}
+        notes={{
+          burnout_assessment: 'Use MBI, Maslach, or your survey instrument scaled to 100. Higher = less burned out.',
+          likelihood_to_stay: 'From your clinician survey — % responding "likely" or "very likely" to stay.',
+        }}
+      />
+
+      <DomainSection
+        domain="revenue"
+        label="Revenue"
+        phaseBadge={1}
+        metrics={revenueMetrics}
+        state={state}
+        updateMetric={updateMetric}
+        notes={{
+          em_level: 'Average across 99211–99215. E.g. 3.2 = avg between level 3 and 4.',
+        }}
+      />
+
+      {qualityMetrics.length > 0 && (
+        <DomainSection
+          domain="quality"
+          label="Quality"
+          metrics={qualityMetrics}
+          state={state}
+          updateMetric={updateMetric}
+        />
+      )}
+
+      {phase3Metrics.length > 0 && (
+        <motion.div
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAFAF8] border border-dashed border-[#E5E5E5]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          data-testid="section-phase3-roadmap"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold text-[#999999] uppercase tracking-[1.5px]">Phase 3 — Long-Term Outcomes</span>
+          </div>
+          <p className="text-[11px] text-[#AAAAAA] italic mb-3">
+            These metrics typically emerge at 6–18 months. No data entry yet — they'll appear here when you're ready.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {phase3Metrics.map(m => (
+              <span
+                key={m.id}
+                className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#E5E5E5] text-[11px] text-[#999999] italic bg-white"
+                data-testid={`chip-phase3-${m.id}`}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </>
+  );
+}
 
 export default function MeasureDataEntry({
   state,
@@ -528,44 +896,48 @@ export default function MeasureDataEntry({
           )}
         </AnimatePresence>
 
-        <motion.div
-          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          data-testid="section-abridge-native"
-        >
-          <div className="flex items-center gap-2 mb-3 md:mb-4">
-            <Sparkles className="w-4 h-4 text-[#EA2C00]" />
-            <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
-            <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
-          </div>
-          <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-            {ABRIDGE_NATIVE_METRICS.map((metric) => (
-              <div key={metric.key} className="space-y-1.5">
-                <label className="text-sm font-medium text-black">{metric.label}</label>
-                <div className="relative">
-                  <FormattedNumberInput
-                    value={state.abridgeNativeData[metric.key] ?? 0}
-                    onChange={(v) => {
-                      updateState({
-                        abridgeNativeData: { ...state.abridgeNativeData, [metric.key]: v },
-                      });
-                    }}
-                    step={metric.suffix === '%' ? 0.1 : 1}
-                    className={`h-10 bg-white border-[#E5E5E5] text-right ${metric.suffix ? 'pr-10' : ''}`}
-                    data-testid={`input-native-${metric.key}`}
-                  />
-                  {metric.suffix && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">{metric.suffix}</span>
-                  )}
+        {activeSettings.includes('outpatient') ? (
+          <OutpatientMetricSections state={state} updateState={updateState} />
+        ) : (
+          <motion.div
+            className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            data-testid="section-abridge-native"
+          >
+            <div className="flex items-center gap-2 mb-3 md:mb-4">
+              <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+              <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">Abridge Platform Data</span>
+              <span className="text-[10px] text-[#AAAAAA] font-normal ml-1">Optional</span>
+            </div>
+            <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+              {ABRIDGE_NATIVE_METRICS.map((metric) => (
+                <div key={metric.key} className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">{metric.label}</label>
+                  <div className="relative">
+                    <FormattedNumberInput
+                      value={state.abridgeNativeData[metric.key] ?? 0}
+                      onChange={(v) => {
+                        updateState({
+                          abridgeNativeData: { ...state.abridgeNativeData, [metric.key]: v },
+                        });
+                      }}
+                      step={metric.suffix === '%' ? 0.1 : 1}
+                      className={`h-10 bg-white border-[#E5E5E5] text-right ${metric.suffix ? 'pr-10' : ''}`}
+                      data-testid={`input-native-${metric.key}`}
+                    />
+                    {metric.suffix && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">{metric.suffix}</span>
+                    )}
+                  </div>
+                  {metric.description && <p className="text-[10px] text-[#BBBBBB] hidden md:block">{metric.description}</p>}
                 </div>
-                {metric.description && <p className="text-[10px] text-[#BBBBBB] hidden md:block">{metric.description}</p>}
-              </div>
-            ))}
-          </div>
-        </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           className="max-w-[480px] mx-auto text-center mt-5 md:mt-8"

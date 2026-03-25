@@ -1,7 +1,7 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
-import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig } from './measureCareSettings';
+import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATIENT_METRICS } from './measureCareSettings';
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -88,6 +88,20 @@ export type DataSource = 'analytics' | 'benchmark' | 'estimate';
 
 export type MetricDataSource = 'ehr' | 'survey';
 
+export interface MetricValue {
+  before: number | null;
+  after: number | null;
+  singleValue: number | null;
+}
+
+export interface AbridgeNativeDataModel {
+  utilization: number | null;
+  consentRate: number | null;
+  userRetention: number | null;
+  noteStarRatingBefore: number | null;
+  noteStarRatingAfter: number | null;
+}
+
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
   dataSource: DataSource;
@@ -106,6 +120,8 @@ export interface MeasureState {
   abridgeNativeData: Partial<Record<string, number>>;
   customMetrics: CustomMetric[];
   surveyMetrics: SurveyMetric[];
+  outpatientMetrics: Record<string, MetricValue>;
+  outpatientNativeData: AbridgeNativeDataModel;
   enabledMetrics: Partial<Record<MeasureCareSetting, Record<string, boolean>>>;
   activeCareSettings: MeasureCareSetting[];
   expansionTargets?: {
@@ -191,9 +207,80 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   abridgeNativeData: {},
   customMetrics: [],
   surveyMetrics: [],
+  outpatientMetrics: Object.fromEntries(
+    OUTPATIENT_METRICS.filter(m => !m.phase3Roadmap).map(m => [m.id, { before: null, after: null, singleValue: null }])
+  ),
+  outpatientNativeData: {
+    utilization: null,
+    consentRate: null,
+    userRetention: null,
+    noteStarRatingBefore: null,
+    noteStarRatingAfter: null,
+  },
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
 };
+
+export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
+  const om = { ...state.outpatientMetrics };
+  const nd = state.outpatientNativeData;
+  if (!om) return {};
+
+  if (nd?.noteStarRatingBefore != null || nd?.noteStarRatingAfter != null) {
+    om.note_star_rating = {
+      before: nd.noteStarRatingBefore,
+      after: nd.noteStarRatingAfter,
+      singleValue: null,
+    };
+  }
+
+  const documentationQuality: DocumentationQuality = {
+    ...state.documentationQuality,
+    wrvuWithout: om.wrvu?.before ?? state.documentationQuality.wrvuWithout,
+    wrvuWith: om.wrvu?.after ?? state.documentationQuality.wrvuWith,
+    emLevelWithout: om.em_level?.before ?? state.documentationQuality.emLevelWithout,
+    emLevelWith: om.em_level?.after ?? state.documentationQuality.emLevelWith,
+  };
+
+  const timeEfficiency: TimeEfficiency = {
+    ...state.timeEfficiency,
+    timeInNotesWithout: om.time_in_note?.before ?? state.timeEfficiency.timeInNotesWithout,
+    timeInNotesWith: om.time_in_note?.after ?? state.timeEfficiency.timeInNotesWith,
+    workOutsideWithout: om.work_outside_work_empirical?.before ?? state.timeEfficiency.workOutsideWithout,
+    workOutsideWith: om.work_outside_work_empirical?.after ?? state.timeEfficiency.workOutsideWith,
+  };
+
+  const settingData = { ...state.settingData };
+  const outpatientData = { ...(settingData.outpatient || {}) };
+  if (om.wrvu) {
+    outpatientData.wrvuPerEncounter_before = om.wrvu.before ?? 0;
+    outpatientData.wrvuPerEncounter_after = om.wrvu.after ?? 0;
+  }
+  if (om.em_level) {
+    outpatientData.emLevel_before = om.em_level.before ?? 0;
+    outpatientData.emLevel_after = om.em_level.after ?? 0;
+  }
+  if (om.time_in_note) {
+    outpatientData.timeInNotes_before = om.time_in_note.before ?? 0;
+    outpatientData.timeInNotes_after = om.time_in_note.after ?? 0;
+  }
+  if (om.work_outside_work_empirical) {
+    outpatientData.afterHours_before = om.work_outside_work_empirical.before ?? 0;
+    outpatientData.afterHours_after = om.work_outside_work_empirical.after ?? 0;
+  }
+  if (om.time_to_close) {
+    outpatientData.daysToClose_before = om.time_to_close.before ?? 0;
+    outpatientData.daysToClose_after = om.time_to_close.after ?? 0;
+  }
+  settingData.outpatient = outpatientData;
+
+  const deployment = { ...state.deployment };
+  if (nd?.utilization != null) {
+    deployment.utilizationRate = nd.utilization;
+  }
+
+  return { documentationQuality, timeEfficiency, settingData, deployment, outpatientMetrics: om };
+}
 
 export interface MeasureResults {
   wrvuDelta: number;

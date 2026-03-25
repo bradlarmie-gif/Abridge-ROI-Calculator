@@ -20,8 +20,11 @@ import {
   ABRIDGE_NATIVE_METRICS,
   getMetricLabel,
   getMetricSuffix,
+  OUTPATIENT_METRICS,
   type DomainKey,
+  type MetricDefinition,
 } from "@/lib/measureCareSettings";
+import { formatCurrency } from "@/lib/measureCalculator";
 import NarrativePanel from "@/components/measure/NarrativePanel";
 import { generateNarrative } from "@/lib/measureNarrative";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -38,6 +41,8 @@ const reductionMetrics = new Set([
   'timeInNotes', 'timeToClose', 'workOutside', 'chartingTime', 'overtimeHours',
   'denialsPer100', 'doorToDoc', 'lwbsRate', 'fallsRate', 'hapiRate', 'turnoverRate',
   'daysToClose', 'afterHours', 'afterShiftCharting', 'cdiQueriesPer100', 'readmissionRate', 'los',
+  'time_in_note', 'work_outside_work_empirical', 'denial_rate', 'staff_turnover_rate',
+  'annual_turnover', 'readmission_rate', 'patient_wait_time',
 ]);
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -73,7 +78,82 @@ interface MetricRowData {
   dataSource?: 'ehr' | 'survey';
 }
 
+const OUTPATIENT_LEGACY_KEY_MAP: Record<string, string> = {
+  time_in_note: 'timeInNotes',
+  same_day_closure: 'sameDayClosure',
+  wrvu: 'wrvuPerEncounter',
+  em_level: 'emLevel',
+  work_outside_work_empirical: 'afterHours',
+  time_to_close: 'daysToClose',
+};
+
+function getOutpatientMetricRows(state: MeasureState): MetricRowData[] {
+  const rows: MetricRowData[] = [];
+  const om = state.outpatientMetrics || {};
+  const sd = state.settingData?.outpatient || {};
+  const enabledMap = state.enabledMetrics?.outpatient || {};
+
+  const domainKeyMap: Record<string, string> = {
+    workforce: 'Workforce', revenue: 'Revenue', quality: 'Quality',
+    capacity: 'Capacity', foundational: 'Foundational',
+  };
+
+  for (const metric of OUTPATIENT_METRICS) {
+    if (metric.phase3Roadmap) continue;
+    if (metric.inputType === 'single') continue;
+
+    const mv = om[metric.id];
+    let before = mv?.before ?? 0;
+    let after = mv?.after ?? 0;
+
+    if (before === 0 && after === 0) {
+      const legacyKey = OUTPATIENT_LEGACY_KEY_MAP[metric.id];
+      if (legacyKey) {
+        const lb = sd[`${legacyKey}_before`] ?? 0;
+        const la = sd[`${legacyKey}_after`] ?? 0;
+        if (lb > 0 || la > 0) {
+          before = lb;
+          after = la;
+        }
+      }
+    }
+
+    const delta = after - before;
+
+    let status: 'active' | 'baseline' | 'not-measuring';
+    if (before > 0 && after > 0 && Math.abs(delta) > 0) {
+      status = 'active';
+    } else if (before > 0) {
+      status = 'baseline';
+    } else {
+      status = 'not-measuring';
+    }
+
+    const domainKey = metric.domain === 'foundational' ? 'quality' : metric.domain;
+
+    rows.push({
+      label: metric.label,
+      metricKey: metric.id,
+      domain: domainKeyMap[metric.domain] || metric.domain,
+      domainKey,
+      setting: 'outpatient',
+      status,
+      before: before || undefined,
+      after: after || undefined,
+      delta: Math.abs(delta) > 0 ? delta : undefined,
+      unit: metric.unit,
+      step: metric.unit === 'wRVU' || metric.unit === 'ratio' || metric.unit === 'level' ? 0.01 : metric.unit === '%' ? 0.1 : 1,
+    });
+  }
+
+  return rows;
+}
+
 function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting): MetricRowData[] {
+  if (setting === 'outpatient') {
+    return getOutpatientMetricRows(state);
+  }
+
   const config = CARE_SETTING_CONFIGS[setting];
   const settingData = state.settingData[setting] || {};
   const rows: MetricRowData[] = [];
@@ -120,7 +200,7 @@ function getSettingMetricRows(state: MeasureState, setting: MeasureCareSetting):
     }
   }
 
-  if ((setting === 'outpatient' || setting === 'ed') && enabledMap['timeInNotes']) {
+  if (setting === 'ed' && enabledMap['timeInNotes']) {
     const te = state.timeEfficiency;
     if (te.timeInNotesWithout > 0 || te.timeInNotesWith > 0) {
       const existing = rows.find(r => r.metricKey === 'timeInNotes');
@@ -169,6 +249,52 @@ function getSurveyMetricRows(state: MeasureState, activeSettings: MeasureCareSet
   return rows;
 }
 
+function renderPlainEnglish(template: string, vars: Record<string, string | number>): string {
+  let result = template;
+  for (const [key, val] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(val));
+  }
+  return result;
+}
+
+function getMetricInterpretation(row: MetricRowData, state: MeasureState): string | null {
+  const metricDef = OUTPATIENT_METRICS.find(m => m.id === row.metricKey);
+  if (!metricDef) return null;
+  if (!row.before || !row.after) return null;
+
+  const delta = Math.abs((row.after ?? 0) - (row.before ?? 0));
+  const adoptedEncounters = state.deployment.abridgeEncounters > 0
+    ? state.deployment.abridgeEncounters
+    : Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100));
+  const totalHours = metricDef.unit === 'min' ? Math.round((delta * adoptedEncounters) / 60) : 0;
+  const total = metricDef.unit === 'count' ? delta * state.deployment.providers : 0;
+  const cf = state.calibration?.conversionFactor ?? 33;
+  const wrvuValue = metricDef.id === 'wrvu' ? formatCurrency(delta * adoptedEncounters * cf * 0.5) : '';
+
+  const fmtDelta = delta < 1 ? delta.toFixed(2) : delta < 10 ? delta.toFixed(1) : Math.round(delta).toString();
+
+  return renderPlainEnglish(metricDef.plainEnglishTemplate, {
+    delta: fmtDelta,
+    before: row.before < 1 ? row.before.toFixed(2) : row.before < 10 ? row.before.toFixed(1) : Math.round(row.before).toString(),
+    after: row.after < 1 ? row.after.toFixed(2) : row.after < 10 ? row.after.toFixed(1) : Math.round(row.after).toString(),
+    encounters: formatNumber(adoptedEncounters),
+    providers: String(state.deployment.providers),
+    totalHours: formatNumber(totalHours),
+    total: formatNumber(total),
+    value: wrvuValue,
+    cf: String(cf),
+    unit: metricDef.unitLabel,
+  });
+}
+
+function getPhase3MetricsForDomain(domainKey: string): MetricDefinition[] {
+  return OUTPATIENT_METRICS.filter(m => {
+    if (!m.phase3Roadmap) return false;
+    const mappedDomain = m.domain === 'foundational' ? 'quality' : m.domain;
+    return mappedDomain === domainKey;
+  });
+}
+
 function DomainProgressCard({
   domainKey,
   domainLabel,
@@ -178,6 +304,8 @@ function DomainProgressCard({
   totalMetrics,
   delay = 0,
   reducedMotion,
+  state,
+  isOutpatient = false,
 }: {
   domainKey: string;
   domainLabel: string;
@@ -187,12 +315,15 @@ function DomainProgressCard({
   totalMetrics: number;
   delay?: number;
   reducedMotion?: boolean;
+  state?: MeasureState;
+  isOutpatient?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const muted = status === 'no-data';
   const color = DOMAIN_COLORS[domainKey] || '#999';
   const question = DOMAIN_QUESTIONS[domainKey] || '';
   const measuredCount = activeRows.length + baselineRows.length;
+  const phase3Items = isOutpatient ? getPhase3MetricsForDomain(domainKey) : [];
 
   return (
     <motion.div
@@ -245,27 +376,35 @@ function DomainProgressCard({
                     const accentColor = isPositive ? '#2D8A4E' : '#DC2626';
                     const bgColor = isPositive ? '#F0FDF4' : '#FEF2F2';
                     const DeltaIcon = isPositive ? TrendingUp : TrendingDown;
+                    const interpretation = isOutpatient && state ? getMetricInterpretation(row, state) : null;
 
                     return (
                       <motion.div
                         key={row.metricKey}
-                        className="flex items-center gap-3 py-2.5 border-b border-[#E8E2DA]/50 last:border-b-0"
+                        className="py-2.5 border-b border-[#E8E2DA]/50 last:border-b-0"
                         initial={reducedMotion ? false : { opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={reducedMotion ? { duration: 0 } : { delay: delay + 0.1 + i * 0.05, duration: 0.4 }}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                        <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
-                        <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
-                        <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
-                        <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
-                        <div
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
-                          style={{ backgroundColor: bgColor, color: accentColor }}
-                        >
-                          <DeltaIcon className="w-3 h-3" />
-                          {pctChange > 0 && <span>{pctChange}%</span>}
+                        <div className="flex items-center gap-3">
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <span className="text-sm text-[#1A1A1A] flex-1 min-w-0 font-medium">{row.label}</span>
+                          <span className="text-[13px] text-[#999999] tabular-nums hidden sm:inline">{formatVal(row.before ?? 0)}</span>
+                          <span className="text-[#CCCCCC] hidden sm:inline">{"\u2192"}</span>
+                          <span className="text-[13px] font-semibold text-[#1A1A1A] tabular-nums">{formatVal(row.after ?? 0)}</span>
+                          <div
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0"
+                            style={{ backgroundColor: bgColor, color: accentColor }}
+                          >
+                            <DeltaIcon className="w-3 h-3" />
+                            {pctChange > 0 && <span>{pctChange}%</span>}
+                          </div>
                         </div>
+                        {interpretation && (
+                          <p className="text-[11px] text-[#888888] mt-1 ml-4 italic" data-testid={`interpretation-${row.metricKey}`}>
+                            {interpretation}
+                          </p>
+                        )}
                       </motion.div>
                     );
                   })}
@@ -275,6 +414,23 @@ function DomainProgressCard({
                   <p className={`text-xs italic ${muted ? 'text-[#CCCCCC]' : 'text-[#999999]'}`}>
                     {muted ? question : baselineRows.length > 0 ? `${baselineRows.length} baseline metric${baselineRows.length > 1 ? 's' : ''} set` : 'No data entered yet'}
                   </p>
+                </div>
+              )}
+
+              {phase3Items.length > 0 && (
+                <div className="mt-3 pt-2 border-t border-[#E8E2DA]/50" data-testid={`phase3-${domainKey}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-semibold text-[#BBBBBB] uppercase tracking-[1px]">What's next</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-semibold bg-gray-100 text-gray-500">Phase 3</span>
+                  </div>
+                  <div className="space-y-1">
+                    {phase3Items.map(m => (
+                      <div key={m.id} className="flex items-center gap-2">
+                        <span className="text-[11px] text-[#999999]">{m.label}</span>
+                        <span className="text-[9px] text-[#CCCCCC] italic">Available at 6–18 months</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -480,9 +636,18 @@ export default function MeasureJourney({
       for (const d of domains) {
         allDomainKeys.add(d.key);
         if (!grouped[d.key]) grouped[d.key] = { active: [], baseline: [], total: 0 };
-        const section = CARE_SETTING_CONFIGS[s].metricSections.find(sec => sec.key === d.key);
-        if (section) {
-          grouped[d.key].total += section.metrics.filter(m => m.hasBeforeAfter).length;
+        if (s === 'outpatient') {
+          const domainMetrics = OUTPATIENT_METRICS.filter(m => {
+            if (m.phase3Roadmap || m.inputType === 'single') return false;
+            const mappedDomain = m.domain === 'foundational' ? 'quality' : m.domain;
+            return mappedDomain === d.key;
+          });
+          grouped[d.key].total += domainMetrics.length;
+        } else {
+          const section = CARE_SETTING_CONFIGS[s].metricSections.find(sec => sec.key === d.key);
+          if (section) {
+            grouped[d.key].total += section.metrics.filter(m => m.hasBeforeAfter).length;
+          }
         }
       }
     }
@@ -682,6 +847,8 @@ export default function MeasureJourney({
                 totalMetrics={dr.total}
                 delay={0.15 + i * 0.05}
                 reducedMotion={!!prefersReducedMotion}
+                state={state}
+                isOutpatient={activeSettings.includes('outpatient')}
               />
             );
           })}
