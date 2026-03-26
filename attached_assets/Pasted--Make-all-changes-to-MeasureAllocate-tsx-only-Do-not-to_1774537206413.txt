@@ -1,0 +1,270 @@
+  Make all changes to MeasureAllocate.tsx only. Do not touch other files.                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Part 1 — Fix ID mismatches in computeFinancials                                                                                                                                                              
+                                                                                                                                                                                                               
+  1a. wRVU lookup                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                        
+  const wrvuMetric = activeMetrics.find(m =>
+    m.metricId === 'wrvuPerEncounter' && (!m.setting || m.setting === s)                                                                                                                                       
+  );                                                                                                                                                                                                           
+  Replace with:                               
+  const wrvuMetric = activeMetrics.find(m =>                                                                                                                                                                   
+    ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)                                                                                                                     
+  );                                                                                                                                                                                                           
+                                              
+  1b. E/M level lookup                                                                                                                                                                                         
+                                                                                                                                                                                                             
+  Find:                                                                                                                                                                                                        
+  const emMetric = activeMetrics.find(m =>
+    m.metricId === 'emLevel' && (!m.setting || m.setting === s)                                                                                                                                                
+  );                                                                                                                                                                                                         
+  Replace with:
+  const emMetric = activeMetrics.find(m =>                                                                                                                                                                     
+    ['emLevel', 'em_level'].includes(m.metricId) && (!m.setting || m.setting === s)
+  );                                                                                                                                                                                                           
+                                                                                                                                                                                                             
+  1c. After-hours lookup                  
+
+  Find the array of after-hours metric IDs:                                                                                                                                                                    
+  ['afterHours', 'workOutsideHours', 'workAfterHours', 'afterHoursWork']
+  Replace with:                                                                                                                                                                                                
+  ['afterHours', 'workOutsideHours', 'workAfterHours', 'afterHoursWork', 'work_outside_work_empirical', 'wowTime']                                                                                             
+                                                                                                                  
+  Note: wowTime (Words on Workday) is the Abridge-specific metric for ED and inpatient after-hours documentation burden. Its unit is min/week, same as workAfterHours. Both should feed the payroll            
+  calculation.                                                                                                                                                                                                 
+                                          
+  1d. Denial rate — fix ID and apply to all settings                                                                                                                                                           
+                                                                                                                                                                                                               
+  The current denial rate calculation only runs inside if (isED) and looks for keys like initial_denial_rate_before. This misses ED's medicalNecessityDenialRate and ignores outpatient and inpatient entirely.
+                                                                                                                                                                                                               
+  Replace the entire denial rate block (currently inside the ED revenue recovery loop) with a per-setting calculation that runs for all settings:                                                            
+                                                                                                                                                                                                               
+  // Denial rate — applies to all settings with different avg costs
+  const denialMetric = activeMetrics.find(m =>                                                                                                                                                                 
+    ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)                                                                         
+    && (!m.setting || m.setting === s)                                                                                                                                                                         
+  );                                                                                                                                                                                                           
+  const denialB = denialMetric?.before ??                                                                                                                                                                      
+    (sData.initial_denial_rate_before ?? sData.medicalNecessityDenialRate_before ?? sData.denialRate_before ?? 0);                                                                                             
+  const denialA = denialMetric?.after ??                                                                                                                                                                       
+    (sData.initial_denial_rate_after ?? sData.medicalNecessityDenialRate_after ?? sData.denialRate_after ?? 0);                                                                                                
+  const denialDelta = denialB - denialA;                                                                                                                                                                       
+                                                                                                                                                                                                               
+  if (denialDelta > 0 && effectiveEncounters > 0) {                                                                                                                                                            
+    // Denial cost varies significantly by setting                                                                                                                                                             
+    const avgDenialCost = s === 'inpatient' ? 3_500 : s === 'ed' ? 500 : 350;                                                                                                                                
+    const base = (denialDelta / 100) * effectiveEncounters * avgDenialCost;                                                                                                                                    
+    revenueRecoveryLow += base * attrLow;                                                                                                                                                                    
+    revenueRecoveryHigh += base * attrHigh;                                                                                                                                                                    
+    recoveryDetails.push({                                                                                                                                                                                     
+      label: `Denial rate reduction: −${denialDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s})` : ''}`,                                                                                             
+      detail: `${formatNumber(effectiveEncounters)} encounters · avg denial cost: $${avgDenialCost.toLocaleString()}/case`,                                                                                    
+    });                                                                                                                                                                                                        
+  }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Part 2 — Add 4 new financial calculations                                                                                                                                                                    
+                                                                                                                                                                                                               
+  2a. Add costPerBedDay to the Assumptions interface and defaults                                                                                                                                            
+                                              
+  interface Assumptions {                 
+    attribution: number;
+    realization: number;                                                                                                                                                                                       
+    conversionFactor: number;
+    otPremiumRate: number;                                                                                                                                                                                     
+    edRevenuePerVisit: number;                                                                                                                                                                               
+    drgBaseRate: number;                  
+    costPerBedDay: number;      // NEW
+    revenuePerVisit: number;    // NEW — outpatient capacity revenue                                                                                                                                           
+  }                                           
+                                                                                                                                                                                                               
+  const DEFAULT_ASSUMPTIONS: Assumptions = {                                                                                                                                                                 
+    // ...existing...                                                                                                                                                                                          
+    costPerBedDay: 2500,                      
+    revenuePerVisit: 200,                                                                                                                                                                                      
+  };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  2b. ALOS — inpatient bed day savings        
+                                                                                                                                                                                                               
+  Add this block after the existing billing capture loop, before cost reduction. Only runs when activeSettings.includes('inpatient'):                                                                        
+                                                                                                                                                                                                               
+  let patientFlowLow = 0;
+  let patientFlowHigh = 0;                                                                                                                                                                                     
+  const patientFlowDetails: { label: string; detail: string; formula: string }[] = [];                                                                                                                       
+                                                                                                                                                                                                               
+  if (activeSettings.includes('inpatient')) {                                                                                                                                                                
+    const alosMetric = activeMetrics.find(m =>
+      ['lengthOfStay', 'alos', 'averageLengthOfStay'].includes(m.metricId)                                                                                                                                     
+    );                                        
+    const ipData = state.settingData?.inpatient || {};                                                                                                                                                         
+    const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);                                                                                                                                
+    const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);                                                                                                                                   
+    const alosDelta = Math.max(0, alosBefore - alosAfter); // reduction is positive                                                                                                                            
+                                                                                                                                                                                                               
+    const ipEncounters = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);                                                                                                 
+                                                                                                                                                                                                               
+    if (alosDelta > 0 && ipEncounters > 0) {                                                                                                                                                                   
+      const base = alosDelta * ipEncounters * assumptions.costPerBedDay;                                                                                                                                       
+      patientFlowLow += base * attrLow;                                                                                                                                                                        
+      patientFlowHigh += base * attrHigh;                                                                                                                                                                      
+      patientFlowDetails.push({                                                                                                                                                                              
+        label: `ALOS reduction: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,                                                                            
+        detail: `${formatNumber(ipEncounters)} annual admissions · cost per bed day: $${assumptions.costPerBedDay.toLocaleString()}`,                                                                          
+        formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} admissions × $${assumptions.costPerBedDay.toLocaleString()} = ${fmt(base)}`,
+      });                                                                                                                                                                                                      
+    }                                                                                                                                                                                                          
+  }
+                                                                                                                                                                                                               
+  const hasPatientFlow = patientFlowLow > 0;                                                                                                                                                                 
+                                                                                                                                                                                                               
+  2c. Patients per provider per month — outpatient capacity revenue                                                                                                                                          
+                                                                                                                                                                                                               
+  Add this block for outpatient capacity converted to revenue:
+                                                                                                                                                                                                               
+  let capacityRevenueLow = 0;                                                                                                                                                                                
+  let capacityRevenueHigh = 0;                                                                                                                                                                                 
+  let hasCapacityRevenue = false;
+                                                                                                                                                                                                               
+  if (activeSettings.includes('outpatient')) {                                                                                                                                                               
+    const patientsMetric = activeMetrics.find(m =>
+      ['patients_per_provider_month', 'patientsPerProviderMonth'].includes(m.metricId)                                                                                                                         
+    );                                        
+    if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {                                                                                                                     
+      const patientDelta = patientsMetric.after - patientsMetric.before;                                                                                                                                     
+      if (patientDelta > 0 && providers > 0) {                                                                                                                                                                 
+        hasCapacityRevenue = true;            
+        const annualAdditionalVisits = patientDelta * providers * 12;                                                                                                                                          
+        const base = annualAdditionalVisits * assumptions.revenuePerVisit;                                                                                                                                     
+        capacityRevenueLow = base * attrLow * realLow;                                                                                                                                                         
+        capacityRevenueHigh = base * attrHigh * realHigh;                                                                                                                                                      
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                             
+  2d. Agency/locum spend — direct dollar cost reduction                                                                                                                                                        
+                                                                                                                                                                                                             
+  Add inside the cost reduction block. This metric's unit is dollars, so the delta IS the savings — no per-formula calculation needed:
+                                                                                                                                                                                                               
+  const agencyMetric = activeMetrics.find(m =>
+    ['agencyLocumSpend', 'agency_locum_spend'].includes(m.metricId)                                                                                                                                            
+  );                                                                                                                                                                                                         
+  if (agencyMetric && agencyMetric.before != null && agencyMetric.after != null) {                                                                                                                             
+    const agencySavings = Math.max(0, agencyMetric.before - agencyMetric.after);                                                                                                                               
+    if (agencySavings > 0) {                  
+      // This is a directly observed cost reduction — apply attribution but no realization adjustment                                                                                                          
+      costReductionLow += agencySavings * attrLow;                                                                                                                                                             
+      costReductionHigh += agencySavings * attrHigh;                                                                                                                                                           
+      // Add a note to a new `agencyDetails` field in the return value                                                                                                                                         
+    }                                                                                                                                                                                                          
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  2e. Physician retention rate — actual turnover cost avoidance                                                                                                                                                
+                                                                                                                                                                                                             
+  The current burnout/likelihood signal produces a rough $50K–$450K range. If the user has entered actual physician retention rate before/after, use that instead for a more precise calculation. Add this     
+  block after the existing burnout/likelihood check:                                                                                                                                                           
+   
+  const physicianRetentionMetric = activeMetrics.find(m =>                                                                                                                                                     
+    ['physicianRetention', 'physician_retention'].includes(m.metricId)                                                                                                                                       
+  );                                                                                                                                                                                                           
+                                                                                                                                                                                                             
+  if (physicianRetentionMetric && physicianRetentionMetric.before != null && physicianRetentionMetric.after != null) {
+    const retentionDelta = physicianRetentionMetric.after - physicianRetentionMetric.before; // e.g. 88 → 92 = +4
+    if (retentionDelta > 0 && providers > 0) {
+      // Override the burnout-signal-based retention estimate with this data-backed calculation                                                                                                                
+      hasRetentionSignal = true;              
+      const turnoversAvoided = (retentionDelta / 100) * providers;                                                                                                                                             
+      const replacementCostLow = 300_000; // conservative for mixed MD/APP                                                                                                                                     
+      const replacementCostHigh = 750_000; // optimistic for physician-heavy                                                                                                                                   
+      // Replace (don't add to) existing retentionLow/High if this is more precise                                                                                                                             
+      const newRetentionLow = turnoversAvoided * replacementCostLow * attrLow;                                                                                                                                 
+      const newRetentionHigh = turnoversAvoided * replacementCostHigh * attrHigh;                                                                                                                              
+      if (newRetentionLow > retentionLow) {                                                                                                                                                                    
+        // Use the more precise data-backed estimate                                                                                                                                                           
+        costReductionLow = costReductionLow - retentionLow + newRetentionLow;                                                                                                                                  
+        costReductionHigh = costReductionHigh - retentionHigh + newRetentionHigh;                                                                                                                              
+        retentionLow = newRetentionLow;                                                                                                                                                                      
+        retentionHigh = newRetentionHigh;                                                                                                                                                                      
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  Part 3 — Update totals and return object                                                                                                                                                                   
+                                          
+  Update the total calculation to include patient flow and capacity revenue:
+                                              
+  const totalLow = billingCaptureLow + revenueRecoveryLow + patientFlowLow + capacityRevenueLow + costReductionLow;
+  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
+                                                                                                                                                                                                               
+  Add to the return object:               
+  hasPatientFlow,                                                                                                                                                                                              
+  patientFlowLow,                                                                                                                                                                                              
+  patientFlowHigh,                                                                                                                                                                                             
+  patientFlowDetails,                                                                                                                                                                                          
+  hasCapacityRevenue,                                                                                                                                                                                        
+  capacityRevenueLow,
+  capacityRevenueHigh,                                                                                                                                                                                         
+   
+  ---                                                                                                                                                                                                          
+  Part 4 — Add new rows to the page JSX                                                                                                                                                                      
+                                              
+  After the Revenue Recovery row and before Cost Reduction, add:
+                                              
+  Patient Flow row (inpatient ALOS, only renders when fin.hasPatientFlow):                                                                                                                                     
+  {fin.hasPatientFlow && (                
+    <motion.div className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6" ...>                                                                                                                           
+      <div className="flex items-center justify-between mb-4">                                                                                                                                                 
+        <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Patient Flow</h3>                                                                                                           
+        <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Inpatient</span>                                                                                     
+      </div>                                                                                                                                                                                                 
+      {fin.patientFlowDetails.map((d, i) => (                                                                                                                                                                  
+        <div key={i} className="mb-3">                                                                                                                                                                         
+          <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>                                                                                                                                      
+          <p className="text-xs text-[#999999]">{d.detail}</p>                                                                                                                                                 
+        </div>                                                                                                                                                                                                 
+      ))}                                                                                                                                                                                                      
+      <div className="mt-4 pt-4 border-t border-[#E5E5E5] flex items-center justify-between">                                                                                                                  
+        <span className="text-xs text-[#666666]">Estimated impact</span>                                                                                                                                       
+        <span className="text-lg font-bold text-[#EA2C00]">{fmtRange(Math.round(fin.patientFlowLow), Math.round(fin.patientFlowHigh))} / year</span>                                                           
+      </div>                                                                                                                                                                                                   
+    </motion.div>                                                                                                                                                                                            
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Capacity Revenue row (outpatient patients/month, only renders when fin.hasCapacityRevenue):                                                                                                                  
+  Same structure, label "Capacity Revenue", tag "Outpatient", show capacityRevenueLow/High and the patients delta detail.                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Part 5 — Add costPerBedDay to sensitivity panel                                                                                                                                                              
+                                                                                                                                                                                                               
+  Inside the collapsible sensitivity panel, after the existing DRG base rate input, add:                                                                                                                       
+                                                                                                                                                                                                               
+  {activeSettings.includes('inpatient') && (                                                                                                                                                                 
+    <div>                                     
+      <label className="text-xs font-medium text-[#666666] block mb-1">Cost per bed day</label>                                                                                                                
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-[#999999]">$</span>                                                                                                                                                      
+        <Input                                                                                                                                                                                               
+          type="number"                                                                                                                                                                                        
+          value={assumptions.costPerBedDay}                                                                                                                                                                  
+          onChange={e => updateAssumption('costPerBedDay', Number(e.target.value))}                                                                                                                            
+          className="h-9 w-28 text-sm"                                                                                                                                                                       
+        />                                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+      <p className="text-[10px] text-[#AAAAAA] mt-1">Direct variable cost per inpatient day. Range: $1,500–$5,000</p>
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification                            
+                                                                                                                                                                                                               
+  1. Enter wRVU before=1.8 / after=2.1 on outpatient Page 2 → Billing Capture row appears with correct dollar range                                                                                            
+  2. Enter em_level before=3.1 / after=3.4 on outpatient → E/M row appears in Billing Capture
+  3. Enter work_outside_work_empirical before=4.2 / after=2.8 on outpatient → Cost Reduction row shows OT payroll savings                                                                                      
+  4. Enter medicalNecessityDenialRate before=8 / after=5 on inpatient → Revenue Recovery row with $3,500/case avg denial cost                                                                                
+  5. Enter ALOS before=4.2 / after=3.7 on inpatient → Patient Flow row shows bed day savings, costPerBedDay field visible in sensitivity                                                                       
+  6. Enter patients_per_provider_month before=120 / after=132 → Capacity Revenue row shows incremental visit revenue                                                                                           
+  7. Enter agencyLocumSpend before=1800000 / after=1200000 → Cost Reduction total increases by $600K × attribution                                                                                             
+  8. Enter physicianRetention before=88 / after=93 across 40 providers → retention estimate uses data-backed formula, not just burnout signal range                                                            
+  9. All existing tests still pass: burnout/likelihood signal still works when retention rate is NOT entered  

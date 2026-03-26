@@ -32,6 +32,8 @@ interface Assumptions {
   otPremiumRate: number;
   edRevenuePerVisit: number;
   drgBaseRate: number;
+  costPerBedDay: number;
+  revenuePerVisit: number;
 }
 
 const DEFAULT_ASSUMPTIONS: Assumptions = {
@@ -41,6 +43,8 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
   otPremiumRate: 75,
   edRevenuePerVisit: 480,
   drgBaseRate: 6800,
+  costPerBedDay: 2500,
+  revenuePerVisit: 200,
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
@@ -67,7 +71,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const multiSetting = activeSettings.length > 1;
 
   const afterHoursMetric = activeMetrics.find(m =>
-    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId)
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift', 'afterHoursWork', 'workOutsideHours', 'wowTime'].includes(m.metricId)
   );
   const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
   const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
@@ -145,8 +149,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   let revenueRecoveryHigh = 0;
   const recoveryDetails: { label: string; detail: string }[] = [];
 
-  for (const s of activeSettings) {
-    if (s !== 'ed') continue;
+  if (activeSettings.includes('ed')) {
     const edSettingData = state.settingData?.ed || {};
     const edTotalEncounters = edSettingData.deploy_totalEncounters || totalEncounters;
 
@@ -165,25 +168,84 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
         detail: `Monthly ED visits: ${formatNumber(edTotalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
       });
     }
+  }
+
+  for (const s of activeSettings) {
+    const sData = state.settingData?.[s] || {};
+    const effectiveEncounters = sData.deploy_totalEncounters || totalEncounters;
 
     const denialMetric = activeMetrics.find(m =>
-      ['initial_denial_rate', 'initialDenialRate', 'denialRate', 'claimDenialRate', 'medicalNecessityDenialRate'].includes(m.metricId)
+      ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
+      && (!m.setting || m.setting === s)
     );
-    const denialB = denialMetric?.before ?? (edSettingData.initial_denial_rate_before ?? edSettingData.denialRate_before ?? 0);
-    const denialA = denialMetric?.after ?? (edSettingData.initial_denial_rate_after ?? edSettingData.denialRate_after ?? 0);
-    const denialD = denialB - denialA;
-    if (denialD > 0 && edTotalEncounters > 0) {
-      const base = (denialD / 100) * edTotalEncounters * 12 * 350;
+    const denialB = denialMetric?.before ??
+      (sData.initial_denial_rate_before ?? sData.medicalNecessityDenialRate_before ?? sData.denialRate_before ?? 0);
+    const denialA = denialMetric?.after ??
+      (sData.initial_denial_rate_after ?? sData.medicalNecessityDenialRate_after ?? sData.denialRate_after ?? 0);
+    const denialDelta = denialB - denialA;
+
+    if (denialDelta > 0 && effectiveEncounters > 0) {
+      const avgDenialCost = s === 'inpatient' ? 3_500 : s === 'ed' ? 500 : 350;
+      const base = (denialDelta / 100) * effectiveEncounters * avgDenialCost;
       revenueRecoveryLow += base * attrLow;
       revenueRecoveryHigh += base * attrHigh;
       recoveryDetails.push({
-        label: `Denial rate reduction: −${denialD.toFixed(1)} pts (ED)`,
-        detail: `Average denial cost: $350/case`,
+        label: `Denial rate reduction: −${denialDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `${formatNumber(effectiveEncounters)} encounters · avg denial cost: $${avgDenialCost.toLocaleString()}/case`,
       });
     }
   }
 
   const hasRevenueRecovery = revenueRecoveryLow > 0;
+
+  let patientFlowLow = 0;
+  let patientFlowHigh = 0;
+  const patientFlowDetails: { label: string; detail: string; formula: string }[] = [];
+
+  if (activeSettings.includes('inpatient')) {
+    const alosMetric = activeMetrics.find(m =>
+      ['lengthOfStay', 'alos', 'averageLengthOfStay'].includes(m.metricId)
+    );
+    const ipData = state.settingData?.inpatient || {};
+    const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);
+    const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
+    const alosDelta = Math.max(0, alosBefore - alosAfter);
+
+    const ipEncounters = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
+
+    if (alosDelta > 0 && ipEncounters > 0) {
+      const base = alosDelta * ipEncounters * assumptions.costPerBedDay;
+      patientFlowLow += base * attrLow;
+      patientFlowHigh += base * attrHigh;
+      patientFlowDetails.push({
+        label: `ALOS reduction: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,
+        detail: `${formatNumber(ipEncounters)} annual admissions · cost per bed day: $${assumptions.costPerBedDay.toLocaleString()}`,
+        formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} admissions × $${assumptions.costPerBedDay.toLocaleString()} = ${fmt(base)}`,
+      });
+    }
+  }
+
+  const hasPatientFlow = patientFlowLow > 0;
+
+  let capacityRevenueLow = 0;
+  let capacityRevenueHigh = 0;
+  let hasCapacityRevenue = false;
+
+  if (activeSettings.includes('outpatient')) {
+    const patientsMetric = activeMetrics.find(m =>
+      ['patients_per_provider_month', 'patientsPerProviderMonth'].includes(m.metricId)
+    );
+    if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {
+      const patientDelta = patientsMetric.after - patientsMetric.before;
+      if (patientDelta > 0 && providers > 0) {
+        hasCapacityRevenue = true;
+        const annualAdditionalVisits = patientDelta * providers * 12;
+        const base = annualAdditionalVisits * assumptions.revenuePerVisit;
+        capacityRevenueLow = base * attrLow * realLow;
+        capacityRevenueHigh = base * attrHigh * realHigh;
+      }
+    }
+  }
 
   let costReductionLow = 0;
   let costReductionHigh = 0;
@@ -245,10 +307,54 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     costReductionHigh += retentionHigh;
   }
 
-  const hasCostReduction = hasAfterHours || hasRetentionSignal;
+  let hasPhysicianRetentionOverride = false;
+  let retentionOverrideProviders = 0;
+  let retentionOverrideDelta = 0;
 
-  const totalLow = billingCaptureLow + revenueRecoveryLow + costReductionLow;
-  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + costReductionHigh;
+  const physicianRetentionMetric = activeMetrics.find(m =>
+    ['physicianRetention', 'physician_retention'].includes(m.metricId)
+  );
+
+  if (physicianRetentionMetric && physicianRetentionMetric.before != null && physicianRetentionMetric.after != null) {
+    const retentionDelta = physicianRetentionMetric.after - physicianRetentionMetric.before;
+    if (retentionDelta > 0 && providers > 0) {
+      hasRetentionSignal = true;
+      const turnoversAvoided = (retentionDelta / 100) * providers;
+      const replacementCostLow = 300_000;
+      const replacementCostHigh = 750_000;
+      const newRetentionLow = turnoversAvoided * replacementCostLow * attrLow;
+      const newRetentionHigh = turnoversAvoided * replacementCostHigh * attrHigh;
+      if (newRetentionLow > retentionLow) {
+        hasPhysicianRetentionOverride = true;
+        retentionOverrideProviders = providers;
+        retentionOverrideDelta = retentionDelta;
+        costReductionLow = costReductionLow - retentionLow + newRetentionLow;
+        costReductionHigh = costReductionHigh - retentionHigh + newRetentionHigh;
+        retentionLow = newRetentionLow;
+        retentionHigh = newRetentionHigh;
+      }
+    }
+  }
+
+  const agencyMetric = activeMetrics.find(m =>
+    ['agencyLocumSpend', 'agency_locum_spend'].includes(m.metricId)
+  );
+  let hasAgencySavings = false;
+  let agencySavingsAmount = 0;
+  if (agencyMetric && agencyMetric.before != null && agencyMetric.after != null) {
+    const agencySavings = Math.max(0, agencyMetric.before - agencyMetric.after);
+    if (agencySavings > 0) {
+      hasAgencySavings = true;
+      agencySavingsAmount = agencySavings;
+      costReductionLow += agencySavings * attrLow;
+      costReductionHigh += agencySavings * attrHigh;
+    }
+  }
+
+  const hasCostReduction = hasAfterHours || hasRetentionSignal || hasAgencySavings;
+
+  const totalLow = billingCaptureLow + revenueRecoveryLow + patientFlowLow + capacityRevenueLow + costReductionLow;
+  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
   const hasAnyFinancial = totalLow > 0;
 
   return {
@@ -279,6 +385,18 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     likelihoodDelta,
     retentionLow,
     retentionHigh,
+    hasPhysicianRetentionOverride,
+    retentionOverrideProviders,
+    retentionOverrideDelta,
+    hasPatientFlow,
+    patientFlowLow,
+    patientFlowHigh,
+    patientFlowDetails,
+    hasCapacityRevenue,
+    capacityRevenueLow,
+    capacityRevenueHigh,
+    hasAgencySavings,
+    agencySavingsAmount,
     totalLow,
     totalHigh,
     hasAnyFinancial,
@@ -491,6 +609,54 @@ export default function MeasureAllocate({
             </motion.div>
           )}
 
+          {fin.hasPatientFlow && (
+            <motion.div
+              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22 }}
+              data-testid="row-patient-flow"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Patient Flow</h3>
+                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Inpatient</span>
+              </div>
+              {fin.patientFlowDetails.map((d, i) => (
+                <div key={i} className="mb-3">
+                  <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>
+                  <p className="text-xs text-[#999999]">{d.detail}</p>
+                </div>
+              ))}
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5] flex items-center justify-between">
+                <span className="text-xs text-[#666666]">Estimated impact</span>
+                <span className="text-lg font-bold text-[#EA2C00]">{fmtRange(Math.round(fin.patientFlowLow), Math.round(fin.patientFlowHigh))} / year</span>
+              </div>
+            </motion.div>
+          )}
+
+          {fin.hasCapacityRevenue && (
+            <motion.div
+              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.23 }}
+              data-testid="row-capacity-revenue"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Capacity Revenue</h3>
+                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Outpatient</span>
+              </div>
+              <div className="mb-3">
+                <p className="text-sm font-medium text-[#1A1A1A]">Additional patient capacity converted to revenue</p>
+                <p className="text-xs text-[#999999]">{fin.providers} providers · ${assumptions.revenuePerVisit}/visit</p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5] flex items-center justify-between">
+                <span className="text-xs text-[#666666]">Estimated impact</span>
+                <span className="text-lg font-bold text-[#EA2C00]">{fmtRange(Math.round(fin.capacityRevenueLow), Math.round(fin.capacityRevenueHigh))} / year</span>
+              </div>
+            </motion.div>
+          )}
+
           {fin.hasCostReduction && (
             <motion.div
               className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
@@ -525,27 +691,59 @@ export default function MeasureAllocate({
                 </div>
               )}
 
+              {fin.hasAgencySavings && (
+                <div className={fin.hasAfterHours ? "pt-4 border-t border-[#E5E5E5] mb-4" : "mb-4"}>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">Agency / locum spend reduction</p>
+                  <p className="text-sm text-[#1A1A1A]">
+                    Observed reduction: <span className="font-bold">{fmt(fin.agencySavingsAmount)}</span>
+                  </p>
+                  <p className="text-sm font-bold text-[#1A1A1A] mt-2">
+                    Attributed savings: <span className="text-[#EA2C00]">{fmtRange(
+                      Math.round(fin.agencySavingsAmount * fin.attrLow),
+                      Math.round(fin.agencySavingsAmount * fin.attrHigh)
+                    )} / year</span>
+                  </p>
+                </div>
+              )}
+
               {fin.hasRetentionSignal && (
-                <div className={fin.hasAfterHours ? "pt-4 border-t border-[#E5E5E5]" : ""}>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">Retention signal</p>
-                  <div className="flex items-center gap-4 mb-2">
-                    {fin.burnoutDelta > 0 && (
-                      <p className="text-sm text-[#1A1A1A]">Burnout signal: <span className="font-bold">−{Math.round(fin.burnoutDelta)} pts</span></p>
-                    )}
-                    {fin.likelihoodDelta > 0 && (
-                      <p className="text-sm text-[#1A1A1A]">Likelihood to stay: <span className="font-bold">+{Math.round(fin.likelihoodDelta)}%</span></p>
-                    )}
-                  </div>
+                <div className={(fin.hasAfterHours || fin.hasAgencySavings) ? "pt-4 border-t border-[#E5E5E5]" : ""}>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">
+                    {fin.hasPhysicianRetentionOverride ? 'Physician retention' : 'Retention signal'}
+                  </p>
+                  {!fin.hasPhysicianRetentionOverride && (
+                    <div className="flex items-center gap-4 mb-2">
+                      {fin.burnoutDelta > 0 && (
+                        <p className="text-sm text-[#1A1A1A]">Burnout signal: <span className="font-bold">−{Math.round(fin.burnoutDelta)} pts</span></p>
+                      )}
+                      {fin.likelihoodDelta > 0 && (
+                        <p className="text-sm text-[#1A1A1A]">Likelihood to stay: <span className="font-bold">+{Math.round(fin.likelihoodDelta)}%</span></p>
+                      )}
+                    </div>
+                  )}
+                  {fin.hasPhysicianRetentionOverride && (
+                    <p className="text-sm text-[#1A1A1A] mb-2">
+                      Retention rate improvement: <span className="font-bold">+{fin.retentionOverrideDelta} pts</span> across {fin.retentionOverrideProviders} providers
+                    </p>
+                  )}
                   <p className="text-sm font-bold text-[#1A1A1A]">
-                    Estimated retention value (MGMA benchmarks): <span className="text-[#EA2C00]">{fmtRange(Math.round(fin.retentionLow), Math.round(fin.retentionHigh))} / year</span>
+                    Estimated retention value{fin.hasPhysicianRetentionOverride ? '' : ' (MGMA benchmarks)'}: <span className="text-[#EA2C00]">{fmtRange(Math.round(fin.retentionLow), Math.round(fin.retentionHigh))} / year</span>
                   </p>
-                  <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
-                    Low = 1 turnover avoided × $50K/MD replacement cost × 50% attribution<br />
-                    High = 3 turnovers avoided × $150K/MD replacement cost × 75% attribution
-                  </p>
-                  <p className="text-[10px] text-[#AAAAAA] mt-1.5 italic">
-                    Not a direct calculation — a signal-based range using published MGMA benchmarks ($50K–$150K per physician)
-                  </p>
+                  {fin.hasPhysicianRetentionOverride ? (
+                    <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
+                      ({(fin.retentionOverrideDelta / 100 * fin.retentionOverrideProviders).toFixed(1)}) turnovers avoided × $300K–$750K replacement cost × attribution
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
+                        Low = 1 turnover avoided × $50K/MD replacement cost × 50% attribution<br />
+                        High = 3 turnovers avoided × $150K/MD replacement cost × 75% attribution
+                      </p>
+                      <p className="text-[10px] text-[#AAAAAA] mt-1.5 italic">
+                        Not a direct calculation — a signal-based range using published MGMA benchmarks ($50K–$150K per physician)
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -677,6 +875,40 @@ export default function MeasureAllocate({
                         className="h-9 bg-white border-[#E5E5E5] text-sm"
                         data-testid="input-drg-rate"
                       />
+                    </div>
+                  )}
+
+                  {fin.activeSettings.includes('inpatient') && (
+                    <div>
+                      <label className="text-xs font-medium text-[#666666] block mb-1">Cost per bed day</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[#999999]">$</span>
+                        <Input
+                          type="number"
+                          value={assumptions.costPerBedDay}
+                          onChange={e => updateAssumption('costPerBedDay', Number(e.target.value) || 0)}
+                          className="h-9 w-28 text-sm"
+                          data-testid="input-cost-per-bed-day"
+                        />
+                      </div>
+                      <p className="text-[10px] text-[#AAAAAA] mt-1">Direct variable cost per inpatient day. Range: $1,500–$5,000</p>
+                    </div>
+                  )}
+
+                  {fin.activeSettings.includes('outpatient') && (
+                    <div>
+                      <label className="text-xs font-medium text-[#666666] block mb-1">Revenue per visit ($)</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[#999999]">$</span>
+                        <Input
+                          type="number"
+                          value={assumptions.revenuePerVisit}
+                          onChange={e => updateAssumption('revenuePerVisit', Number(e.target.value) || 0)}
+                          className="h-9 w-28 text-sm"
+                          data-testid="input-revenue-per-visit"
+                        />
+                      </div>
+                      <p className="text-[10px] text-[#AAAAAA] mt-1">Average outpatient visit revenue for capacity calculation</p>
                     </div>
                   )}
                 </div>
