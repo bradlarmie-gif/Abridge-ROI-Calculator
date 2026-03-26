@@ -13,8 +13,8 @@ import {
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import {
+  CARE_SETTING_CONFIGS,
   getMetricsForSettings,
-  FOUNDATIONAL_GROUPS,
   ORG_WIDE_METRIC_IDS,
   SETTING_THIRD_CHAPTER_LABELS,
   DOMAIN_LABELS,
@@ -31,7 +31,8 @@ interface MeasureMetricSelectionProps {
   onHome: () => void;
 }
 
-const DOMAIN_ORDER: DomainKey[] = ['quality', 'workforce', 'revenue', 'capacity', 'throughput', 'patientFlow', 'staffing'];
+const CANONICAL_DOMAINS = ['quality', 'workforce', 'revenue'] as const;
+const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
 
 const DOMAIN_QUESTIONS: Record<string, string> = {
   quality: 'What changed in documentation quality?',
@@ -43,6 +44,12 @@ const DOMAIN_QUESTIONS: Record<string, string> = {
   staffing: 'Has burden reduction improved staffing stability?',
   foundational: 'Is the Abridge platform being adopted effectively?',
 };
+
+function getFourthDomain(settings: MeasureCareSetting[]): { key: DomainKey; label: string } {
+  const primary = settings[0] || 'outpatient';
+  const config = CARE_SETTING_CONFIGS[primary];
+  return { key: config.fourthDomainKey, label: config.fourthDomainLabel };
+}
 
 const CHAPTER_LABELS: Record<number, string> = {
   1: 'Documentation impact',
@@ -232,7 +239,12 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
               <MonthlyGrid
                 entry={e}
                 monthLabels={monthLabels}
-                onChange={(data) => onUpdate(k, { monthlyData: data })}
+                onChange={(data) => {
+                  const nonZero = data.filter(v => v > 0);
+                  const derivedBefore = nonZero.length > 0 ? nonZero[0] : null;
+                  const derivedAfter = nonZero.length > 1 ? nonZero[nonZero.length - 1] : derivedBefore;
+                  onUpdate(k, { monthlyData: data, before: derivedBefore, after: derivedAfter });
+                }}
               />
             </div>
           );
@@ -312,23 +324,37 @@ export default function MeasureMetricSelection({
 
   const allMetrics = useMemo(() => getMetricsForSettings(activeSettings), [activeSettings]);
 
+  const fourthDomain = useMemo(() => getFourthDomain(activeSettings), [activeSettings]);
+
   const domainGroups = useMemo(() => {
-    const groups: { domainKey: DomainKey; label: string; chapters: { phase: number; label: string; metrics: ResolvedMetric[] }[] }[] = [];
+    const fourDomainKeys: DomainKey[] = ['quality', 'workforce', 'revenue', fourthDomain.key];
+    const fourDomainLabels: Record<string, string> = {
+      quality: 'Quality',
+      workforce: 'Workforce',
+      revenue: 'Revenue',
+      [fourthDomain.key]: fourthDomain.label,
+    };
+
     const domainMap = new Map<DomainKey, ResolvedMetric[]>();
+    for (const dk of fourDomainKeys) {
+      domainMap.set(dk, []);
+    }
 
     for (const rm of allMetrics) {
       const dk = rm.metric.domain as DomainKey;
-      if (dk === 'foundational') continue;
-      if (!domainMap.has(dk)) domainMap.set(dk, []);
-      domainMap.get(dk)!.push(rm);
+      if (dk === 'foundational') {
+        domainMap.get('quality')!.push(rm);
+      } else if (FOURTH_DOMAIN_VARIANTS.includes(dk) && dk !== fourthDomain.key) {
+        domainMap.get(fourthDomain.key)!.push(rm);
+      } else if (domainMap.has(dk)) {
+        domainMap.get(dk)!.push(rm);
+      }
     }
 
-    const foundational = allMetrics.filter(rm => rm.metric.domain === 'foundational');
+    const thirdLabel = SETTING_THIRD_CHAPTER_LABELS[activeSettings[0]] || 'Downstream outcomes';
 
-    for (const dk of DOMAIN_ORDER) {
-      const metrics = domainMap.get(dk);
-      if (!metrics || metrics.length === 0) continue;
-
+    return fourDomainKeys.map(dk => {
+      const metrics = domainMap.get(dk) || [];
       const byPhase = new Map<number, ResolvedMetric[]>();
       for (const rm of metrics) {
         const p = rm.metric.phase;
@@ -336,35 +362,29 @@ export default function MeasureMetricSelection({
         byPhase.get(p)!.push(rm);
       }
 
-      const thirdLabel = SETTING_THIRD_CHAPTER_LABELS[activeSettings[0]] || 'Downstream outcomes';
-
       const chapters: { phase: number; label: string; metrics: ResolvedMetric[] }[] = [];
-      if (byPhase.has(1)) chapters.push({ phase: 1, label: CHAPTER_LABELS[1] || 'Documentation impact', metrics: byPhase.get(1)! });
-      if (byPhase.has(2)) chapters.push({ phase: 2, label: CHAPTER_LABELS[2] || 'Efficiency gains', metrics: byPhase.get(2)! });
-      if (byPhase.has(3)) chapters.push({ phase: 3, label: thirdLabel, metrics: byPhase.get(3)! });
+      const foundationalInDomain = metrics.filter(rm => rm.metric.domain === 'foundational');
+      if (foundationalInDomain.length > 0) {
+        chapters.push({ phase: 0, label: 'Platform adoption', metrics: foundationalInDomain });
+      }
+      const nonFoundational = metrics.filter(rm => rm.metric.domain !== 'foundational');
+      const nfByPhase = new Map<number, ResolvedMetric[]>();
+      for (const rm of nonFoundational) {
+        const p = rm.metric.phase;
+        if (!nfByPhase.has(p)) nfByPhase.set(p, []);
+        nfByPhase.get(p)!.push(rm);
+      }
+      if (nfByPhase.has(1)) chapters.push({ phase: 1, label: CHAPTER_LABELS[1] || 'Documentation impact', metrics: nfByPhase.get(1)! });
+      if (nfByPhase.has(2)) chapters.push({ phase: 2, label: CHAPTER_LABELS[2] || 'Efficiency gains', metrics: nfByPhase.get(2)! });
+      if (nfByPhase.has(3)) chapters.push({ phase: 3, label: thirdLabel, metrics: nfByPhase.get(3)! });
 
-      groups.push({
+      return {
         domainKey: dk,
-        label: DOMAIN_LABELS[dk] || dk,
+        label: fourDomainLabels[dk] || DOMAIN_LABELS[dk] || dk,
         chapters,
-      });
-    }
-
-    if (foundational.length > 0) {
-      groups.unshift({
-        domainKey: 'foundational',
-        label: 'Foundational',
-        chapters: [{ phase: 0, label: 'Platform adoption', metrics: foundational }],
-      });
-    }
-
-    return groups;
-  }, [allMetrics, activeSettings]);
-
-  const getMetricEntry = useCallback((mId: string, setting?: MeasureCareSetting): MetricEntry | undefined => {
-    const k = metricKey(mId, setting);
-    return state.metricValues?.[k];
-  }, [state.metricValues]);
+      };
+    });
+  }, [allMetrics, activeSettings, fourthDomain]);
 
   const isMetricActive = useCallback((mId: string, rm: ResolvedMetric): boolean => {
     const isOrgWide = ORG_WIDE_METRIC_IDS.includes(mId);

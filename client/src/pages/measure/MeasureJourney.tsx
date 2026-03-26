@@ -10,9 +10,9 @@ import {
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
 import {
+  CARE_SETTING_CONFIGS,
   DOMAIN_LABELS,
   getMetricsForSettings,
-  ORG_WIDE_METRIC_IDS,
   type DomainKey,
   type MetricDefinition,
 } from "@/lib/measureCareSettings";
@@ -25,7 +25,13 @@ interface MeasureJourneyProps {
   mode?: 'build' | 'present';
 }
 
-const DOMAIN_ORDER: DomainKey[] = ['quality', 'workforce', 'revenue', 'capacity', 'throughput', 'patientFlow', 'staffing', 'foundational'];
+const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
+
+function getFourthDomain(settings: MeasureCareSetting[]): { key: DomainKey; label: string } {
+  const primary = settings[0] || 'outpatient';
+  const config = CARE_SETTING_CONFIGS[primary];
+  return { key: config.fourthDomainKey, label: config.fourthDomainLabel };
+}
 
 const DOMAIN_QUESTIONS: Record<string, string> = {
   quality: 'What changed in documentation quality?',
@@ -160,30 +166,50 @@ export default function MeasureJourney({
     ? state.activeCareSettings
     : [state.careSetting || 'outpatient'];
 
+  const fourthDomain = useMemo(() => getFourthDomain(activeSettings), [activeSettings]);
   const allResolved = useMemo(() => getMetricsForSettings(activeSettings), [activeSettings]);
   const activeMetrics = useMemo(() => getActiveMetrics(state), [state]);
 
   const domainSections = useMemo(() => {
+    const fourDomainKeys: DomainKey[] = ['quality', 'workforce', 'revenue', fourthDomain.key];
+    const fourDomainLabels: Record<string, string> = {
+      quality: 'Quality',
+      workforce: 'Workforce',
+      revenue: 'Revenue',
+      [fourthDomain.key]: fourthDomain.label,
+    };
+
     const metricDefMap = new Map<string, MetricDefinition>();
     for (const rm of allResolved) {
       metricDefMap.set(rm.metric.id, rm.metric);
     }
 
     const sectionMap = new Map<DomainKey, DomainSectionData>();
+    for (const dk of fourDomainKeys) {
+      sectionMap.set(dk, {
+        domainKey: dk,
+        label: fourDomainLabels[dk] || DOMAIN_LABELS[dk] || dk,
+        metrics: [],
+      });
+    }
 
     for (const am of activeMetrics) {
       const def = metricDefMap.get(am.metricId);
       if (!def) continue;
       const dk = def.domain as DomainKey;
 
-      if (!sectionMap.has(dk)) {
-        sectionMap.set(dk, {
-          domainKey: dk,
-          label: DOMAIN_LABELS[dk] || dk,
-          metrics: [],
-        });
+      let targetDk: DomainKey;
+      if (dk === 'foundational') {
+        targetDk = 'quality';
+      } else if (FOURTH_DOMAIN_VARIANTS.includes(dk) && dk !== fourthDomain.key) {
+        targetDk = fourthDomain.key;
+      } else if (sectionMap.has(dk)) {
+        targetDk = dk;
+      } else {
+        continue;
       }
-      sectionMap.get(dk)!.metrics.push({
+
+      sectionMap.get(targetDk)!.metrics.push({
         metricDef: def,
         before: am.before,
         after: am.after,
@@ -191,29 +217,8 @@ export default function MeasureJourney({
       });
     }
 
-    const result: DomainSectionData[] = [];
-    for (const dk of DOMAIN_ORDER) {
-      if (sectionMap.has(dk)) {
-        result.push(sectionMap.get(dk)!);
-      }
-    }
-
-    const emptyDomains: DomainSectionData[] = [];
-    for (const dk of DOMAIN_ORDER) {
-      if (!sectionMap.has(dk) && dk !== 'foundational') {
-        const hasMetricsInDomain = allResolved.some(rm => rm.metric.domain === dk);
-        if (hasMetricsInDomain) {
-          emptyDomains.push({
-            domainKey: dk,
-            label: DOMAIN_LABELS[dk] || dk,
-            metrics: [],
-          });
-        }
-      }
-    }
-
-    return [...result, ...emptyDomains];
-  }, [activeMetrics, allResolved]);
+    return fourDomainKeys.map(dk => sectionMap.get(dk)!);
+  }, [activeMetrics, allResolved, fourthDomain]);
 
   const domainsSignaling = domainSections.filter(ds => ds.metrics.length > 0).length;
   const totalMetrics = activeMetrics.length;
@@ -254,6 +259,12 @@ export default function MeasureJourney({
             <span className="font-semibold text-gray-700">{state.deployment.providers}</span>
             <span>providers</span>
           </div>
+          {state.deployment.totalEncounters > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-gray-700">{state.deployment.totalEncounters.toLocaleString()}</span>
+              <span>encounters documented</span>
+            </div>
+          )}
           {months > 0 && (
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-gray-700">{months}</span>
