@@ -1,0 +1,16 @@
+Replit Prompt — Delete orphaned Measure path files                                                                                                                                                           
+                                              
+  ---                                                                                                                                                                                                          
+  Delete the following six files. They are not imported anywhere in the codebase — confirmed by grep. The active 5-page flow uses MeasureFlow.tsx, MeasureDataEntry, MeasureMetricSelection, MeasureJourney,
+  MeasureAllocate, and MeasureOpportunity only. Everything below is dead code from prior iterations.                                                                                                           
+                                                                                                          
+  client/src/pages/measure/MeasureScenarios.tsx                                                                                                                                                                
+  client/src/pages/measure/MeasureInventory.tsx                                                                                                                                                                
+  client/src/pages/measure/MeasureStage.tsx
+  client/src/pages/measure/MeasureStory.tsx                                                                                                                                                                    
+  client/src/pages/measure/MeasureWelcome.tsx                                                             
+  client/src/pages/measure/MeasureTrends.tsx
+                                                                                                                                                                                                               
+  Before deleting each file, confirm it has no import references in any other .ts or .tsx file under client/src/. If any imports are found, remove those import lines first, then delete the file.
+                                                                                                                                                                                                               
+  After deletion, verify the app still compiles without errors. The measure path should still function normally — all six deleted files are unreachable from MeasureFlow.tsx.
