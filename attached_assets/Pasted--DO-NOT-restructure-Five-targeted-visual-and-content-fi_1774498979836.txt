@@ -1,0 +1,79 @@
+ DO NOT restructure. Five targeted visual and content fixes only.                                                                                                                                             
+                                                                                                                                                                                                               
+  ---                                     
+  Fix 1 — Card backgrounds: white → beige on both pages                                                                                                                                                        
+                                                                                                                                                                                                               
+  On Page 2 (What You're Measuring), every domain section card:
+  bg-white → bg-[#F5F0EB]                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  On Page 3 (The Journey), every domain card: 
+  bg-white → bg-[#F5F0EB]                                                                                                                                                                                      
+                                                                                                                                                                                                             
+  The page body background stays bg-[#FAFAFA]. Cards are #F5F0EB. This creates warmth and depth without adding visual noise.                                                                                   
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  Fix 2 — Before bar color: needs contrast against beige                                                                                                                                                     
+                                                                                                                                                                                                               
+  Find every instance of the "Before" bar. Change its background color:
+  bg-[#E5E5E5] → bg-[#C8C2BB]                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  #C8C2BB is a warm gray that reads clearly against #F5F0EB cream. The before/after contrast is now: warm gray full-width → orange partial. The gap reads immediately.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Fix 3 — Dimmed third-chapter items: increase opacity                                                                                                                                                         
+                                                                                                                                                                                                               
+  Find every instance of the third chapter section opacity treatment. Change:
+  opacity-25 → opacity-45                                                                                                                                                                                      
+                                                                                                                                                                                                             
+  At opacity-45 the items are clearly de-emphasized but readable. A user can click on them and understand what they're activating. At opacity-25 they're decorative at best.
+                                                                                                                                                                                                               
+  ---                                     
+  Fix 4 — % Utilization: auto-populate from Partner Profile, not blank input                                                                                                                                   
+                                                                                                                                                                                                               
+  % Utilization is already collected on the Partner Profile page as state.deployment.utilizationRate. It should not appear as a blank input field on Page 2.
+                                                                                                                                                                                                               
+  In the Foundational section, find the % Utilization metric row. Replace the + Measure this button with a read-only display:                                                                                
+                                          
+  // Instead of the activate button, show the pre-filled value                                                                                                                                                 
+  <div className="flex items-center justify-between py-3 px-4 rounded-lg bg-[#F5F0EB]">                                                                                                                        
+    <div>                                                                                                                                                                                                      
+      <p className="text-sm font-medium text-[#1A1A1A]">% Utilization</p>                                                                                                                                      
+      <p className="text-xs text-[#999999] mt-0.5">                                                                                                                                                            
+        Encounter coverage — from your partner profile                                                                                                                                                         
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                     
+    <div className="text-right">                                                                                                                                                                               
+      <p className="text-lg font-bold text-[#EA2C00]">                                                                                                                                                         
+        {state.deployment.utilizationRate}%                                                                                                                                                                    
+      </p>                                                                                                                                                                                                   
+      <p className="text-[10px] text-[#999999]">auto-populated</p>                                                                                                                                             
+    </div>                                    
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                             
+  This shows the value is already there, already considered, and tells them what it means ("Encounter coverage") without requiring them to re-enter it.                                                        
+                                          
+  ---                                                                                                                                                                                                          
+  Fix 5 — "Why this matters" signal context on Page 3                                                                                                                                                          
+                                                     
+  Below each metric's plain-English interpretation on Page 3, add a subtle "what does this signal" line. This uses the contextNote field from MetricDefinition but shortened to the first sentence and framed  
+  as a signal:                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  {metric.contextNote && (
+    <p className="text-[10px] text-[#999999] mt-1.5 leading-relaxed border-t border-[#EDE8E3] pt-1.5">                                                                                                         
+      <span className="font-medium text-[#CCCCCC] uppercase tracking-wider text-[9px] mr-1">                                                                                                                 
+        Signal                                                                                                                                                                                                 
+      </span>                                                                                                                                                                                                
+      {metric.contextNote.split('.')[0]}.                                                                                                                                                                      
+    </p>                                                                                                                                                                                                       
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Small, muted, labeled "SIGNAL" in tiny caps. Tells the partner success person what to say if the client asks "why does this matter." Doesn't clutter the visual but it's there when needed.                  
+                                          
+  ---                                                                                                                                                                                                          
+  VERIFY:                                                                                                                                                                                                      
+         
+  1. Both page domain cards background is #F5F0EB — warm cream, not white                                                                                                                                      
+  2. "Before" bars are #C8C2BB — visibly distinct from the beige card background                                                                                                                             
+  3. Third-chapter dimmed items are readable at opacity-45
+  4. % Utilization on Page 2 shows as a pre-filled read-only card with the value from Partner Profile — no blank input, no + Measure this
+  5. Page 3 metric rows show a "SIGNAL" context line in tiny muted caps below the plain-English interpretation    

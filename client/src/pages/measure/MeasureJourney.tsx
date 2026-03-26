@@ -80,13 +80,14 @@ function SignalDots({ count, max = 4 }: { count: number; max?: number }) {
   );
 }
 
-function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay = 0 }: {
+function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItMatters, delay = 0 }: {
   label: string;
   before: number;
   after: number;
   lowerIsBetter: boolean;
   unit: string;
   template: string;
+  whyItMatters?: string;
   delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -140,14 +141,14 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay 
       <div className="my-3 space-y-1.5">
         <div className="flex items-center gap-3">
           <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">Before</span>
-          <div className="flex-1 h-2 bg-[#E5E5E5] rounded-full" />
+          <div className="flex-1 h-2 bg-[#C8C2BB] rounded-full" />
           <span className="text-xs text-[#999999] w-16 text-right tabular-nums">
             {before}{unitSuffix}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">After</span>
-          <div className="flex-1 h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-[#C8C2BB] rounded-full overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-[#EA2C00]"
               initial={{ width: '100%' }}
@@ -163,6 +164,12 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay 
 
       {interpretation && (
         <p className="text-xs text-[#999999] mt-2 leading-relaxed">{interpretation}</p>
+      )}
+      {whyItMatters && (
+        <p className="text-[10px] text-[#999999] mt-1.5 leading-relaxed border-t border-[#EDE8E3] pt-1.5">
+          <span className="font-medium text-[#CCCCCC] uppercase tracking-wider text-[9px] mr-1">Signal</span>
+          {whyItMatters.split('.')[0]}.
+        </p>
       )}
     </div>
   );
@@ -313,7 +320,7 @@ export default function MeasureJourney({
             return (
               <div
                 key={section.domainKey}
-                className="rounded-2xl border border-gray-200 transition-all bg-white"
+                className="rounded-2xl border border-gray-200 transition-all bg-[#F5F0EB]"
                 style={{ borderLeftWidth: '4px', borderLeftColor: hasData ? '#EA2C00' : '#E5E5E5' }}
                 data-testid={`journey-domain-${section.domainKey}`}
               >
@@ -339,6 +346,7 @@ export default function MeasureJourney({
                           lowerIsBetter={m.metricDef.lowerIsBetter}
                           unit={m.metricDef.unit}
                           template={m.metricDef.plainEnglishTemplate}
+                          whyItMatters={m.metricDef.whyItMatters}
                           delay={si * 200 + mi * 100}
                         />
                       ))}
@@ -350,7 +358,7 @@ export default function MeasureJourney({
                         <div className="space-y-2 mb-4">
                           {section.allMetricNames.slice(0, 3).map((name, idx) => (
                             <div key={name} className="flex items-center gap-2 opacity-25">
-                              <div className="h-1.5 rounded-full bg-[#E5E5E5]" style={{ width: `${40 + (idx * 17) % 40}%` }} />
+                              <div className="h-1.5 rounded-full bg-[#C8C2BB]" style={{ width: `${40 + (idx * 17) % 40}%` }} />
                               <span className="text-xs text-[#999999]">{name}</span>
                             </div>
                           ))}

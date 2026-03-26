@@ -500,7 +500,7 @@ export default function MeasureMetricSelection({
               <div
                 key={group.domainKey}
                 ref={el => { domainRefs.current[group.domainKey] = el; }}
-                className="rounded-2xl border border-gray-200 transition-all bg-white"
+                className="rounded-2xl border border-gray-200 transition-all bg-[#F5F0EB]"
                 style={{ borderLeftWidth: '4px', borderLeftColor: isActive ? '#EA2C00' : '#E5E5E5' }}
                 data-testid={`domain-section-${group.domainKey}`}
               >
@@ -532,13 +532,28 @@ export default function MeasureMetricSelection({
                         {group.chapters.map((chapter, ci) => {
                           const isThirdChapter = chapter.phase === 3;
                           return (
-                            <div key={chapter.phase} className={`${ci > 0 ? 'mt-4' : 'mt-3'} ${isThirdChapter ? 'opacity-50' : ''}`}>
+                            <div key={chapter.phase} className={`${ci > 0 ? 'mt-4' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
                               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-[1.5px] mb-2">
                                 {chapter.label}
                               </p>
                               <div className="space-y-1">
                                 {chapter.metrics.map(rm => {
                                   const mActive = isMetricActive(rm.metric.id, rm);
+
+                                  if (rm.metric.id === 'utilization' && state.deployment.utilizationRate > 0) {
+                                    return (
+                                      <div key={rm.metric.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-[#F5F0EB]" data-testid={`metric-row-${rm.metric.id}`}>
+                                        <div>
+                                          <p className="text-sm font-medium text-[#1A1A1A]">% Utilization</p>
+                                          <p className="text-xs text-[#999999] mt-0.5">Encounter coverage — from your partner profile</p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-lg font-bold text-[#EA2C00]">{state.deployment.utilizationRate}%</p>
+                                          <p className="text-[10px] text-[#999999]">auto-populated</p>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
 
                                   return (
                                     <MetricEntryRow
