@@ -116,7 +116,7 @@ function MonthlyGrid({ entry, monthLabels, onChange }: {
         <div className="flex-1 h-12">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
-              <Area type="monotone" dataKey="y" stroke="#EA580C" fill="#EA580C" fillOpacity={0.1} strokeWidth={1.5} dot={false} />
+              <Area type="monotone" dataKey="y" stroke="#EA2C00" fill="#EA2C00" fillOpacity={0.1} strokeWidth={1.5} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -135,7 +135,7 @@ function MonthlyGrid({ entry, monthLabels, onChange }: {
                 onChange(next);
               }}
               onKeyDown={e => handleKeyDown(e, i)}
-              className="w-full h-8 text-center text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#EA580C]/40 bg-white"
+              className="w-full h-8 text-center text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/40 bg-white"
               data-testid={`input-monthly-${i}`}
             />
           </div>
@@ -164,7 +164,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
   if (!isActive) {
     return (
       <div
-        className="group flex items-center justify-between py-3 px-3 rounded-lg hover:bg-[#FFF8F5] transition-colors cursor-pointer"
+        className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-[#FFF8F5] transition-colors cursor-pointer"
         onClick={onToggle}
         data-testid={`metric-row-${metric.id}`}
       >
@@ -172,13 +172,13 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
           <p className="text-sm font-medium text-gray-800">{metric.label}</p>
           <p className="text-xs text-gray-400 mt-0.5 truncate">{metric.description}</p>
         </div>
-        <button
-          className="opacity-60 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-[#EA580C] bg-[#FFF0EC] rounded-full"
+        <span
+          className="flex items-center gap-1 border border-[#EA2C00] text-[#EA2C00] text-xs px-2.5 py-1 rounded-md font-medium shrink-0 ml-3"
           data-testid={`button-measure-${metric.id}`}
         >
           <Plus className="w-3 h-3" />
           Measure this
-        </button>
+        </span>
       </div>
     );
   }
@@ -207,7 +207,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
                   onUpdate(k, { isMonthlyMode: !isMonthly });
                 });
               }}
-              className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${isMonthly ? 'bg-[#EA580C]/10 text-[#EA580C]' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${isMonthly ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'text-gray-400 hover:text-gray-600'}`}
               data-testid={`toggle-monthly-${metric.id}`}
             >
               <TrendingUp className="w-3 h-3" />
@@ -261,7 +261,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
                     <FormattedNumberInput
                       value={e.before ?? ''}
                       onChange={(v: number) => onUpdate(k, { before: v })}
-                      className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA580C]/30 bg-[#FAFAFA]"
+                      className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/30 bg-[#FAFAFA]"
                       placeholder="—"
                       data-testid={`input-before-${metric.id}`}
                     />
@@ -271,7 +271,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
                     <FormattedNumberInput
                       value={e.after ?? ''}
                       onChange={(v: number) => onUpdate(k, { after: v })}
-                      className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA580C]/30 bg-[#FAFAFA]"
+                      className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/30 bg-[#FAFAFA]"
                       placeholder="—"
                       data-testid={`input-after-${metric.id}`}
                     />
@@ -288,7 +288,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
                   <FormattedNumberInput
                     value={e.after ?? ''}
                     onChange={(v: number) => onUpdate(k, { after: v, before: v })}
-                    className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA580C]/30 bg-[#FAFAFA]"
+                    className="h-14 w-full text-center text-lg font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#EA2C00]/30 bg-[#FAFAFA]"
                     placeholder="—"
                     data-testid={`input-single-${metric.id}`}
                   />
@@ -325,8 +325,9 @@ export default function MeasureMetricSelection({
   const fourthDomain = useMemo(() => getFourthDomain(activeSettings), [activeSettings]);
 
   const domainGroups = useMemo(() => {
-    const fourDomainKeys: DomainKey[] = ['quality', 'workforce', 'revenue', fourthDomain.key];
-    const fourDomainLabels: Record<string, string> = {
+    const fiveDomainKeys: DomainKey[] = ['foundational', 'quality', 'workforce', 'revenue', fourthDomain.key];
+    const fiveDomainLabels: Record<string, string> = {
+      foundational: 'Foundational',
       quality: 'Quality',
       workforce: 'Workforce',
       revenue: 'Revenue',
@@ -334,14 +335,14 @@ export default function MeasureMetricSelection({
     };
 
     const domainMap = new Map<DomainKey, ResolvedMetric[]>();
-    for (const dk of fourDomainKeys) {
+    for (const dk of fiveDomainKeys) {
       domainMap.set(dk, []);
     }
 
     for (const rm of allMetrics) {
       const dk = rm.metric.domain as DomainKey;
       if (dk === 'foundational') {
-        domainMap.get('quality')!.push(rm);
+        domainMap.get('foundational')!.push(rm);
       } else if (FOURTH_DOMAIN_VARIANTS.includes(dk) && dk !== fourthDomain.key) {
         domainMap.get(fourthDomain.key)!.push(rm);
       } else if (domainMap.has(dk)) {
@@ -351,28 +352,30 @@ export default function MeasureMetricSelection({
 
     const thirdLabel = SETTING_THIRD_CHAPTER_LABELS[activeSettings[0]] || 'Downstream outcomes';
 
-    return fourDomainKeys.map(dk => {
+    return fiveDomainKeys.map(dk => {
       const metrics = domainMap.get(dk) || [];
 
       const chapters: { phase: number; label: string; metrics: ResolvedMetric[] }[] = [];
-      const foundationalInDomain = metrics.filter(rm => rm.metric.domain === 'foundational');
-      if (foundationalInDomain.length > 0) {
-        chapters.push({ phase: 0, label: 'Platform adoption', metrics: foundationalInDomain });
+
+      if (dk === 'foundational') {
+        if (metrics.length > 0) {
+          chapters.push({ phase: 0, label: 'Platform adoption', metrics });
+        }
+      } else {
+        const byPhase = new Map<number, ResolvedMetric[]>();
+        for (const rm of metrics) {
+          const p = rm.metric.phase;
+          if (!byPhase.has(p)) byPhase.set(p, []);
+          byPhase.get(p)!.push(rm);
+        }
+        if (byPhase.has(1)) chapters.push({ phase: 1, label: CHAPTER_LABELS[1] || 'Documentation impact', metrics: byPhase.get(1)! });
+        if (byPhase.has(2)) chapters.push({ phase: 2, label: CHAPTER_LABELS[2] || 'Efficiency gains', metrics: byPhase.get(2)! });
+        if (byPhase.has(3)) chapters.push({ phase: 3, label: thirdLabel, metrics: byPhase.get(3)! });
       }
-      const nonFoundational = metrics.filter(rm => rm.metric.domain !== 'foundational');
-      const nfByPhase = new Map<number, ResolvedMetric[]>();
-      for (const rm of nonFoundational) {
-        const p = rm.metric.phase;
-        if (!nfByPhase.has(p)) nfByPhase.set(p, []);
-        nfByPhase.get(p)!.push(rm);
-      }
-      if (nfByPhase.has(1)) chapters.push({ phase: 1, label: CHAPTER_LABELS[1] || 'Documentation impact', metrics: nfByPhase.get(1)! });
-      if (nfByPhase.has(2)) chapters.push({ phase: 2, label: CHAPTER_LABELS[2] || 'Efficiency gains', metrics: nfByPhase.get(2)! });
-      if (nfByPhase.has(3)) chapters.push({ phase: 3, label: thirdLabel, metrics: nfByPhase.get(3)! });
 
       return {
         domainKey: dk,
-        label: fourDomainLabels[dk] || DOMAIN_LABELS[dk] || dk,
+        label: fiveDomainLabels[dk] || DOMAIN_LABELS[dk] || dk,
         chapters,
       };
     });
@@ -450,7 +453,7 @@ export default function MeasureMetricSelection({
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAF9F7]" data-testid="page-metric-selection">
+    <div className="min-h-screen bg-[#FAFAFA]" data-testid="page-metric-selection">
       <UnifiedHeader
         pathType="measure"
         currentStep={2}
@@ -462,7 +465,7 @@ export default function MeasureMetricSelection({
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2" data-testid="text-page-title">
+          <h1 className="text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             What You're Measuring
           </h1>
           <p className="text-sm text-gray-500">
@@ -478,18 +481,18 @@ export default function MeasureMetricSelection({
               <button
                 key={group.domainKey}
                 onClick={() => scrollToDomain(group.domainKey)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${isActive ? 'bg-[#EA580C]/10 text-[#EA580C] ring-1 ring-[#EA580C]/20' : 'bg-gray-100 text-gray-400 hover:bg-gray-150'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${isActive ? 'bg-[#EA2C00] text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
                 data-testid={`pill-domain-${group.domainKey}`}
               >
                 {group.label}
-                <span className={`ml-1.5 rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px] ${count > 0 ? 'bg-[#EA580C] text-white' : 'bg-gray-200 text-gray-400'}`}>{count}</span>
+                <span className={`ml-1.5 rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px] ${isActive ? 'bg-white/30 text-white' : 'bg-gray-200 text-gray-400'}`}>{count}</span>
               </button>
             );
           })}
         </div>
 
         <div className="space-y-4">
-          {domainGroups.map((group, gi) => {
+          {domainGroups.map((group) => {
             const count = domainActiveCounts[group.domainKey] || 0;
             const isActive = count > 0;
             const isExpanded = expandedDomains.has(group.domainKey);
@@ -498,8 +501,8 @@ export default function MeasureMetricSelection({
               <div
                 key={group.domainKey}
                 ref={el => { domainRefs.current[group.domainKey] = el; }}
-                className={`rounded-2xl border transition-all ${isActive ? 'border-[#EA580C]/30 bg-white' : 'border-gray-200 bg-white'}`}
-                style={{ borderLeftWidth: '4px', borderLeftColor: isActive ? '#EA580C' : '#E5E5E5' }}
+                className="rounded-2xl border border-gray-200 transition-all bg-white"
+                style={{ borderLeftWidth: '4px', borderLeftColor: isActive ? '#EA2C00' : '#E5E5E5' }}
                 data-testid={`domain-section-${group.domainKey}`}
               >
                 <button
@@ -512,7 +515,7 @@ export default function MeasureMetricSelection({
                     <p className="text-xs text-gray-400 mt-0.5">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>
                   </div>
                   {count > 0 && (
-                    <span className="text-[10px] font-medium text-[#EA580C]">{count} active</span>
+                    <span className="text-[10px] font-medium text-[#EA2C00]">{count} active</span>
                   )}
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
@@ -564,14 +567,14 @@ export default function MeasureMetricSelection({
           })}
         </div>
 
-        <div className="mt-8 border border-gray-200 rounded-xl bg-white" data-testid="model-assumptions">
+        <div className="mt-6">
           <button
             onClick={() => setShowAssumptions(!showAssumptions)}
-            className="w-full flex items-center justify-between px-5 py-3 text-left"
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
             data-testid="toggle-assumptions"
           >
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Model Assumptions</span>
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showAssumptions ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3 h-3 transition-transform ${showAssumptions ? 'rotate-180' : ''}`} />
+            Model assumptions
           </button>
           <AnimatePresence>
             {showAssumptions && (
@@ -580,25 +583,15 @@ export default function MeasureMetricSelection({
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="overflow-hidden border-t border-gray-100"
+                className="overflow-hidden"
               >
-                <div className="px-5 py-4 text-xs text-gray-500 space-y-2">
-                  <div className="flex justify-between">
-                    <span>Care settings</span>
-                    <span className="font-medium text-gray-700">{activeSettings.join(', ')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Providers</span>
-                    <span className="font-medium text-gray-700">{state.deployment.providers}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Months on Abridge</span>
-                    <span className="font-medium text-gray-700">{monthCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Encounters / month</span>
-                    <span className="font-medium text-gray-700">{state.deployment.totalEncounters.toLocaleString()}</span>
-                  </div>
+                <div className="mt-3 p-4 bg-gray-50 rounded-xl text-xs text-gray-500 space-y-1">
+                  <p><span className="font-semibold text-gray-600">Providers:</span> {state.deployment.providers}</p>
+                  <p><span className="font-semibold text-gray-600">Encounters:</span> {state.deployment.totalEncounters.toLocaleString()}</p>
+                  {state.deployment.organizationName && (
+                    <p><span className="font-semibold text-gray-600">Organization:</span> {state.deployment.organizationName}</p>
+                  )}
+                  <p><span className="font-semibold text-gray-600">Months on Abridge:</span> {monthCount}</p>
                 </div>
               </motion.div>
             )}
@@ -609,7 +602,7 @@ export default function MeasureMetricSelection({
           <Button
             onClick={totalActive > 0 ? onNext : undefined}
             disabled={totalActive === 0}
-            className={`px-8 py-3 rounded-full text-sm font-semibold shadow-md ${totalActive > 0 ? 'bg-[#EA580C] hover:bg-[#DC4F07] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            className={`px-8 py-3 rounded-full text-sm font-semibold shadow-md ${totalActive > 0 ? 'bg-[#EA2C00] hover:bg-[#D12800] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
             data-testid="button-next"
           >
             {totalActive > 0 ? 'View the Journey' : 'Add at least one metric to continue'}
