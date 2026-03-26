@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -68,13 +68,14 @@ function interpolateTemplate(template: string, before: number, after: number): s
 function SignalDots({ count, max = 4 }: { count: number; max?: number }) {
   return (
     <div className="flex items-center gap-1.5" data-testid="signal-dots">
-      {Array.from({ length: max }).map((_, i) => (
+      {[0, 1, 2, 3].map(i => (
         <div
           key={i}
-          className={`w-3 h-3 rounded-full transition-colors ${i < count ? 'bg-[#EA2C00]' : 'bg-gray-200'}`}
+          className="w-3 h-3 rounded-full"
+          style={{ backgroundColor: i < count ? '#EA2C00' : '#E5E5E5' }}
         />
       ))}
-      <span className="text-xs text-gray-400 ml-1">{count} of {max} signals</span>
+      <span className="text-xs text-[#999999] ml-1 tabular-nums">{count}/{max}</span>
     </div>
   );
 }
@@ -88,18 +89,15 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay 
   template: string;
   delay?: number;
 }) {
-  const [animated, setAnimated] = useState(false);
-  const [showDelta, setShowDelta] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let timer1: ReturnType<typeof setTimeout>;
-    let timer2: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout>;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          timer1 = setTimeout(() => setAnimated(true), delay);
-          timer2 = setTimeout(() => setShowDelta(true), delay + 800);
+          timer = setTimeout(() => setVisible(true), delay);
           observer.disconnect();
         }
       },
@@ -108,67 +106,63 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay 
     if (ref.current) observer.observe(ref.current);
     return () => {
       observer.disconnect();
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+      clearTimeout(timer);
     };
   }, [delay]);
-
-  const maxVal = Math.max(before, after);
-  const beforeWidth = maxVal > 0 ? (before / maxVal) * 100 : 0;
-  const afterWidth = maxVal > 0 ? (after / maxVal) * 100 : 0;
 
   const higherIsBetter = !lowerIsBetter;
   const delta = after - before;
   const improved = higherIsBetter ? delta > 0 : delta < 0;
-  const pctChange = before !== 0 ? Math.round(Math.abs(delta / before) * 100) : 0;
-  const arrow = improved ? (delta < 0 ? '↓' : '↑') : (delta < 0 ? '↓' : '↑');
+  const deltaPercent = before !== 0 ? (delta / before) * 100 : 0;
+  const afterRatio = before !== 0 ? Math.min((after / before) * 100, 150) : 100;
   const interpretation = interpolateTemplate(template, before, after);
+  const unitSuffix = unit ? ` ${unit}` : '';
 
   return (
     <div ref={ref} className="mb-6" data-testid={`metric-bar-${label.toLowerCase().replace(/\s+/g, '-')}`}>
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        {showDelta && pctChange > 0 && (
-          <motion.span
-            initial={{ opacity: 0, x: -8 }}
+      <div className="flex items-start justify-between mb-1">
+        <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
+        {visible && Math.abs(deltaPercent) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`text-lg font-bold ${improved ? 'text-[#EA2C00]' : 'text-red-500'}`}
+            transition={{ delay: 0.5 }}
+            className="flex items-baseline gap-1 mb-1"
             data-testid="badge-pct-change"
           >
-            {arrow} {pctChange}%
-          </motion.span>
+            <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#EA2C00]' : 'text-[#F87171]'}`}>
+              {improved ? '↓' : '↑'}{Math.abs(deltaPercent).toFixed(1)}%
+            </span>
+          </motion.div>
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-gray-400 w-10 shrink-0">Before</span>
-          <div className="flex-1 relative h-6 rounded bg-gray-100 overflow-hidden">
-            <motion.div
-              className="absolute inset-y-0 left-0 rounded bg-[#E5E5E5]"
-              initial={{ width: 0 }}
-              animate={{ width: animated ? `${beforeWidth}%` : 0 }}
-              transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1], delay: delay / 1000 }}
-            />
-          </div>
-          <span className="text-xs font-semibold text-gray-500 w-16 text-right shrink-0">{before}{unit}</span>
+      <div className="my-3 space-y-1.5">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">Before</span>
+          <div className="flex-1 h-2 bg-[#E5E5E5] rounded-full" />
+          <span className="text-xs text-[#999999] w-16 text-right tabular-nums">
+            {before}{unitSuffix}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-gray-400 w-10 shrink-0">After</span>
-          <div className="flex-1 relative h-6 rounded bg-gray-100 overflow-hidden">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">After</span>
+          <div className="flex-1 h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
             <motion.div
-              className="absolute inset-y-0 left-0 rounded bg-[#EA2C00]"
-              initial={{ width: 0 }}
-              animate={{ width: animated ? `${afterWidth}%` : 0 }}
-              transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1], delay: (delay / 1000) + 0.15 }}
+              className="h-full rounded-full bg-[#EA2C00]"
+              initial={{ width: '100%' }}
+              animate={{ width: visible ? `${afterRatio}%` : '100%' }}
+              transition={{ delay: delay / 1000, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
-          <span className="text-xs font-semibold text-gray-700 w-16 text-right shrink-0">{after}{unit}</span>
+          <span className="text-xs font-semibold text-[#1A1A1A] w-16 text-right tabular-nums">
+            {after}{unitSuffix}
+          </span>
         </div>
       </div>
 
       {interpretation && (
-        <p className="text-xs text-gray-400 mt-2 leading-relaxed">{interpretation}</p>
+        <p className="text-xs text-[#999999] mt-2 leading-relaxed">{interpretation}</p>
       )}
     </div>
   );
@@ -290,34 +284,26 @@ export default function MeasureJourney({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+        <div className="mb-10" data-testid="page-hero">
+          <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-2">
+            {[state.deployment.organizationName, settingLabels, state.goLiveDate ? `Live since ${state.goLiveDate}` : '', months > 0 ? `${months} months` : ''].filter(Boolean).join(' · ')}
+          </p>
+          <h1 className="text-3xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A] mb-6" data-testid="text-page-title">
             The Journey at Abridge
           </h1>
-          <p className="text-sm text-gray-400">
-            {[state.deployment.organizationName, settingLabels, months > 0 ? `${months} months` : ''].filter(Boolean).join(' · ')}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3 mb-8 p-4 bg-[#FFF8F2] rounded-xl" data-testid="summary-strip">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm">
-            <span className="text-sm font-bold text-gray-800">{domainsSignaling}</span>
-            <span className="text-xs text-gray-500">Signal{domainsSignaling !== 1 ? 's' : ''}</span>
+          <div className="flex gap-8 pb-6 border-b border-[#F0F0F0]" data-testid="summary-strip">
+            {[
+              { label: 'Domains signaling', value: `${domainsSignaling} of 4` },
+              { label: 'Metrics active', value: String(totalMetrics) },
+              { label: 'Providers', value: String(state.deployment.providers) },
+              { label: 'Encounters documented', value: state.deployment.totalEncounters > 0 ? state.deployment.totalEncounters.toLocaleString() : '—' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <p className="text-[11px] text-[#999999] mb-0.5">{stat.label}</p>
+                <p className="text-xl font-bold text-[#1A1A1A]">{stat.value}</p>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm">
-            <span className="text-sm font-bold text-gray-800">{totalMetrics}</span>
-            <span className="text-xs text-gray-500">Metric{totalMetrics !== 1 ? 's' : ''}</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm">
-            <span className="text-sm font-bold text-gray-800">{state.deployment.providers}</span>
-            <span className="text-xs text-gray-500">Providers</span>
-          </div>
-          {state.deployment.totalEncounters > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm">
-              <span className="text-sm font-bold text-gray-800">{state.deployment.totalEncounters.toLocaleString()}</span>
-              <span className="text-xs text-gray-500">Encounters</span>
-            </div>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -338,7 +324,7 @@ export default function MeasureJourney({
                     </h3>
                     <SignalDots count={Math.min(section.metrics.length, 4)} />
                   </div>
-                  <p className="text-xs text-gray-400 mb-5">
+                  <p className="text-sm text-[#666666] mb-5">
                     {DOMAIN_QUESTIONS[section.domainKey] || ''}
                   </p>
 
@@ -358,12 +344,15 @@ export default function MeasureJourney({
                       ))}
                     </div>
                   ) : (
-                    <div className="py-2">
-                      <p className="text-xs text-gray-300 mb-3">No data yet</p>
+                    <div className="py-4">
+                      <p className="text-xs text-[#CCCCCC] mb-3">No data entered for this domain.</p>
                       {section.allMetricNames.length > 0 && (
-                        <div className="space-y-1 mb-4">
-                          {section.allMetricNames.map(name => (
-                            <p key={name} className="text-xs text-gray-300 opacity-30">· {name}</p>
+                        <div className="space-y-2 mb-4">
+                          {section.allMetricNames.slice(0, 3).map((name, idx) => (
+                            <div key={name} className="flex items-center gap-2 opacity-25">
+                              <div className="h-1.5 rounded-full bg-[#E5E5E5]" style={{ width: `${40 + (idx * 17) % 40}%` }} />
+                              <span className="text-xs text-[#999999]">{name}</span>
+                            </div>
                           ))}
                         </div>
                       )}

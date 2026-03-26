@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { ArrowRight, Plus, X, ChevronDown, TrendingUp } from "lucide-react";
+import { ArrowRight, X, ChevronDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -172,13 +172,12 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
           <p className="text-sm font-medium text-gray-800">{metric.label}</p>
           <p className="text-xs text-gray-400 mt-0.5 truncate">{metric.description}</p>
         </div>
-        <span
-          className="flex items-center gap-1 border border-[#EA2C00] text-[#EA2C00] text-xs px-2.5 py-1 rounded-md font-medium shrink-0 ml-3"
+        <button
+          className="flex-shrink-0 text-xs font-medium text-[#EA2C00] border border-[#EA2C00]/40 px-3 py-1.5 rounded-lg hover:bg-[#EA2C00]/5 hover:border-[#EA2C00] transition-all ml-3"
           data-testid={`button-measure-${metric.id}`}
         >
-          <Plus className="w-3 h-3" />
-          Measure this
-        </span>
+          + Measure this
+        </button>
       </div>
     );
   }
@@ -481,7 +480,7 @@ export default function MeasureMetricSelection({
               <button
                 key={group.domainKey}
                 onClick={() => scrollToDomain(group.domainKey)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${isActive ? 'bg-[#EA2C00] text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${isActive ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EDE8E3]'}`}
                 data-testid={`pill-domain-${group.domainKey}`}
               >
                 {group.label}
