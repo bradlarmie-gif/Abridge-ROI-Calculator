@@ -4,20 +4,24 @@ import {
   Text,
   View,
   StyleSheet,
-  Image,
   pdf,
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import type { MeasureState } from "@/lib/measureCalculator";
-import { calculateExpansionResults } from "@/lib/measureCalculator";
-import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import type { MeasureState, MeasureCareSetting } from "@/lib/measureCalculator";
+import { getActiveMetrics, getMonthsFromGoLive } from "@/lib/measureCalculator";
+import {
+  OUTPATIENT_METRICS,
+  ED_METRICS,
+  INPATIENT_METRICS,
+  NURSING_METRICS,
+  type MetricDefinition,
+} from "@/lib/measureCareSettings";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
-import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
 Font.registerHyphenationCallback((word) => [word]);
-
 Font.register({
   family: "Manrope",
   fonts: [
@@ -26,852 +30,784 @@ Font.register({
   ],
 });
 
-const colors = {
-  background: "#FFFFFF",
-  cards: "#F5F0EB",
-  primary: "#EA2C00",
-  primaryText: "#1A1A1A",
-  secondary: "#666666",
-  tertiary: "#999999",
-  border: "#E0E0E0",
-  assumptionBg: "#F7F7F5",
+const C = {
+  bg: "#FFFFFF",
+  card: "#F5F0EB",
+  orange: "#EA2C00",
+  dark: "#1A1A1A",
+  mid: "#666666",
+  muted: "#999999",
+  border: "#E5E5E5",
+  altRow: "#FAFAF8",
 };
 
-const TOTAL_PAGES = 7;
-
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   page: {
     padding: 54,
     paddingBottom: 50,
     fontFamily: "Manrope",
-    fontSize: 10.5,
-    color: colors.primaryText,
-    backgroundColor: colors.background,
-  },
-  pageWrapper: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  confidentialHeader: {
-    fontSize: 7.5,
-    color: colors.tertiary,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    textAlign: "right",
-    marginBottom: 16,
-  },
-  sectionLabel: {
-    fontSize: 9,
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
-    fontWeight: "bold",
-  },
-  sectionLabelGray: {
-    fontSize: 9,
-    color: colors.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
-    fontWeight: "bold",
-  },
-  sectionHeadline: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.primaryText,
-    marginBottom: 8,
-  },
-  narrative: {
-    fontSize: 10.5,
-    color: colors.secondary,
-    lineHeight: 1.65,
-    marginBottom: 14,
-  },
-  body: {
-    fontSize: 10.5,
-    color: colors.secondary,
-    lineHeight: 1.5,
-    marginBottom: 12,
-  },
-  caption: {
-    fontSize: 8.5,
-    color: colors.tertiary,
-  },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginVertical: 10,
-  },
-  thickDivider: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    marginVertical: 12,
-  },
-  cardBg: {
-    backgroundColor: colors.cards,
-    padding: 14,
-    borderRadius: 4,
-  },
-  assumptionBox: {
-    backgroundColor: colors.assumptionBg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 10,
-  },
-  calloutBox: {
-    backgroundColor: colors.cards,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    padding: 12,
-  },
-  footer: {
-    marginTop: "auto",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerLeft: {
     fontSize: 10,
-    color: colors.primary,
-    fontWeight: "bold",
+    color: C.dark,
+    backgroundColor: C.bg,
   },
-  footerCenter: {
-    fontSize: 8.5,
-    color: colors.secondary,
-  },
-  footerRight: {
-    fontSize: 8.5,
-    color: colors.tertiary,
-  },
-  contextCard: {
-    flex: 1,
-    backgroundColor: colors.cards,
-    padding: 12,
-    borderRadius: 4,
-    alignItems: "center",
-  },
-  metricCard: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 8,
-  },
-  tableRow: {
-    flexDirection: "row",
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  tableHeader: {
-    flexDirection: "row",
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.assumptionBg,
-  },
+  wrap: { flex: 1, flexDirection: "column" },
+  eyebrow: { fontSize: 8, color: C.orange, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 },
+  headline: { fontSize: 20, fontWeight: "bold", color: C.dark, lineHeight: 1.2, marginBottom: 4 },
+  subline: { fontSize: 9, color: C.muted, marginBottom: 14 },
+  narrative: { fontSize: 10, color: C.mid, lineHeight: 1.65, marginBottom: 12 },
+  rule: { borderBottomWidth: 1, borderBottomColor: C.border, marginVertical: 10 },
+  card: { backgroundColor: C.card, borderRadius: 4, padding: 14, marginBottom: 8 },
+  cardOutline: { backgroundColor: C.bg, borderWidth: 1, borderColor: C.border, borderRadius: 4, padding: 12, marginBottom: 8 },
+  callout: { backgroundColor: C.card, borderLeftWidth: 3, borderLeftColor: C.orange, padding: 12, marginBottom: 8, borderRadius: 4 },
+  footer: { marginTop: "auto", flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTopWidth: 1, borderTopColor: C.border },
+  footerLeft: { fontSize: 9, color: C.orange, fontWeight: "bold" },
+  footerCenter: { fontSize: 8, color: C.mid },
+  footerRight: { fontSize: 8, color: C.muted },
+  confHeader: { fontSize: 7.5, color: C.muted, textTransform: "uppercase", letterSpacing: 1.5, textAlign: "right", marginBottom: 14 },
+  statRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
+  statCard: { flex: 1, backgroundColor: C.card, padding: 12, borderRadius: 4, alignItems: "center" },
+  statNum: { fontSize: 20, fontWeight: "bold", color: C.dark, marginBottom: 2 },
+  statLabel: { fontSize: 8, color: C.muted, textAlign: "center" },
+  metricRowHeader: { flexDirection: "row", paddingVertical: 6, paddingHorizontal: 10, backgroundColor: C.card, borderBottomWidth: 2, borderBottomColor: C.border, alignItems: "center" },
+  metricRow: { flexDirection: "row", paddingVertical: 7, paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: C.border, alignItems: "flex-start" },
+  mName: { fontSize: 10, fontWeight: "bold", color: C.dark, flex: 1 },
+  mBefore: { fontSize: 10, color: C.mid, width: 72, textAlign: "right" },
+  mArrow: { fontSize: 10, color: C.muted, width: 18, textAlign: "center" },
+  mAfter: { fontSize: 10, fontWeight: "bold", color: C.dark, width: 72, textAlign: "right" },
+  mDelta: { fontSize: 10, fontWeight: "bold", color: C.orange, width: 60, textAlign: "right" },
+  finRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
+  finLabel: { fontSize: 11, fontWeight: "bold", color: C.dark, flex: 1 },
+  finValue: { fontSize: 11, fontWeight: "bold", color: C.orange },
+  finCat: { fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
+  finDetail: { fontSize: 9.5, color: C.mid, lineHeight: 1.5, marginBottom: 3 },
+  finFormula: { fontSize: 8.5, color: C.mid, lineHeight: 1.5, backgroundColor: C.card, padding: 8, borderRadius: 3, marginBottom: 6 },
+  signalCard: { backgroundColor: C.card, borderRadius: 4, padding: 12, marginBottom: 8 },
+  signalDomain: { fontSize: 8, color: C.orange, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 },
+  signalTitle: { fontSize: 10, fontWeight: "bold", color: C.dark, marginBottom: 4 },
+  signalChange: { fontSize: 9, color: C.muted, marginBottom: 5 },
+  signalText: { fontSize: 9.5, color: C.mid, lineHeight: 1.55 },
+  pipRow: { flexDirection: "row", gap: 4, marginBottom: 8 },
+  pip: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.border },
+  pipOn: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.orange },
+  bulletRow: { flexDirection: "row", gap: 8, marginBottom: 6, alignItems: "flex-start" },
+  bullet: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.orange, marginTop: 3 },
+  bulletText: { fontSize: 9.5, color: C.mid, flex: 1, lineHeight: 1.5 },
+  methRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: C.border },
+  methKey: { fontSize: 9, color: C.mid },
+  methVal: { fontSize: 9, fontWeight: "bold", color: C.dark },
 });
 
-interface MeasurePDFData {
-  state: MeasureState;
-  clientName?: string;
-  preparedBy?: string;
+const ALL_METRICS: MetricDefinition[] = [
+  ...OUTPATIENT_METRICS,
+  ...ED_METRICS,
+  ...INPATIENT_METRICS,
+  ...NURSING_METRICS,
+];
+const METRIC_MAP = new Map<string, MetricDefinition>();
+for (const m of ALL_METRICS) {
+  if (!METRIC_MAP.has(m.id)) METRIC_MAP.set(m.id, m);
 }
 
-const formatCurrency = (num: number): string => {
-  if (Math.abs(num) >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
-  if (Math.abs(num) >= 1000) return `$${Math.round(num / 1000)}K`;
-  return `$${Math.round(num).toLocaleString()}`;
+const FINANCIAL_IDS = new Set([
+  "wrvu", "wrvuPerEncounter",
+  "em_level", "emLevel",
+  "caseMixIndex", "cmi", "cc_mcc_capture", "ccMccCaptureRate",
+  "lwbsRate", "lwbs_rate",
+  "initial_denial_rate", "initialDenialRate", "medicalNecessityDenialRate",
+  "work_outside_work_empirical", "workAfterHours", "wow_time", "wowTime",
+  "burnout_assessment", "burnoutAssessment",
+  "likelihood_to_stay", "likelihoodToStay",
+  "lengthOfStay", "length_of_stay", "alos",
+  "patients_per_provider_month", "patientsPerProviderMonth",
+  "agencyLocumSpend", "agency_locum_spend",
+  "physician_retention", "physicianRetention",
+]);
+
+const DEFAULT_ASMP = {
+  attribution: 62,
+  realization: 80,
+  conversionFactor: 33,
+  otPremiumRate: 75,
+  edRevenuePerVisit: 480,
+  drgBaseRate: 6800,
+  costPerBedDay: 2500,
+  revenuePerVisit: 200,
 };
 
-const formatNumber = (num: number): string => Math.round(num).toLocaleString();
+function computeFinancials(state: MeasureState) {
+  const activeSettings = state.activeCareSettings?.length
+    ? state.activeCareSettings
+    : [state.careSetting || "outpatient"];
+  const setting = activeSettings[0];
+  const isED = activeSettings.includes("ed");
+  const isIP = activeSettings.includes("inpatient");
+  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
+  const totalEncounters = state.deployment.totalEncounters || 0;
+  const utilRate = state.deployment.utilizationRate || 0;
+  const adopted = Math.round(totalEncounters * (utilRate / 100));
+  const cf = state.calibration.conversionFactor || DEFAULT_ASMP.conversionFactor;
+  const activeMetrics = getActiveMetrics(state);
 
-const formatSmartRange = (low: number, high: number): string => {
-  const lowFmt = formatCurrency(low);
-  const highFmt = formatCurrency(high);
-  if (lowFmt === highFmt) return lowFmt;
-  return `${lowFmt} \u2013 ${highFmt}`;
-};
+  const attrMid = DEFAULT_ASMP.attribution / 100;
+  const attrLo = Math.max(0.30, attrMid - 0.12);
+  const attrHi = Math.min(0.95, attrMid + 0.12);
+  const realLo = Math.max(0.40, DEFAULT_ASMP.realization / 100 - 0.10);
+  const realHi = Math.min(0.99, DEFAULT_ASMP.realization / 100 + 0.10);
 
-const ConfidentialHeader = ({ orgName }: { orgName: string }) => (
-  <Text style={styles.confidentialHeader}>Confidential {"\u2014"} Prepared for {orgName}</Text>
+  let billLo = 0, billHi = 0;
+  const billDetails: { label: string; formula: string }[] = [];
+
+  for (const cs of activeSettings) {
+    const sd = state.settingData?.[cs] || {};
+    const sAdopted = sd.deploy_totalEncounters
+      ? Math.round(sd.deploy_totalEncounters * (utilRate / 100))
+      : adopted;
+
+    const wrvuMetric = activeMetrics.find(m =>
+      ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === cs)
+    );
+    const wrvuD = wrvuMetric
+      ? (wrvuMetric.after ?? 0) - (wrvuMetric.before ?? 0)
+      : cs === setting ? (state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout) : 0;
+
+    if (wrvuD > 0 && sAdopted > 0) {
+      const base = wrvuD * sAdopted * cf;
+      billLo += base * attrLo * realLo;
+      billHi += base * attrHi * realHi;
+      billDetails.push({
+        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
+        formula: `+${wrvuD.toFixed(2)} wRVU \u00D7 ${fmtN(sAdopted)} encounters \u00D7 $${cf}/wRVU \u00D7 ${DEFAULT_ASMP.realization}% realization`,
+      });
+    }
+
+    const emMetric = activeMetrics.find(m =>
+      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === cs)
+    );
+    const emD = emMetric
+      ? (emMetric.after ?? 0) - (emMetric.before ?? 0)
+      : cs === setting ? (state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout) : 0;
+
+    if (emD > 0 && sAdopted > 0) {
+      const base = emD * sAdopted * 45;
+      billLo += base * attrLo * realLo;
+      billHi += base * attrHi * realHi;
+      billDetails.push({
+        label: `E/M level improvement: +${emD.toFixed(1)} levels${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
+        formula: `+${emD.toFixed(1)} E/M \u00D7 ${fmtN(sAdopted)} encounters \u00D7 ~$45/level`,
+      });
+    }
+
+    if (cs === 'inpatient') {
+      const cmiB = sd.cmi_before ?? 0;
+      const cmiA = sd.cmi_after ?? 0;
+      const cmiD = Math.max(0, cmiA - cmiB);
+      const discharges = sd.deploy_totalEncounters || totalEncounters;
+      if (cmiD > 0 && discharges > 0) {
+        const base = cmiD * discharges * DEFAULT_ASMP.drgBaseRate;
+        billLo += base * attrLo * realLo;
+        billHi += base * attrHi * realHi;
+        billDetails.push({
+          label: `CMI improvement: +${cmiD.toFixed(3)}`,
+          formula: `+${cmiD.toFixed(3)} CMI \u00D7 ${fmtN(discharges)} discharges \u00D7 $${fmtN(DEFAULT_ASMP.drgBaseRate)} DRG base rate`,
+        });
+      }
+    }
+  }
+
+  let recLo = 0, recHi = 0;
+  const recDetails: { label: string; formula: string }[] = [];
+
+  if (isED) {
+    const edSD = state.settingData?.ed || {};
+    const edEnc = edSD.deploy_totalEncounters || totalEncounters;
+    const lwbsD = (edSD.lwbsRate_before ?? 0) - (edSD.lwbsRate_after ?? 0);
+    if (lwbsD > 0 && edEnc > 0) {
+      const annualVisits = edEnc * 12;
+      const recovered = (lwbsD / 100) * annualVisits;
+      recLo += recovered * DEFAULT_ASMP.edRevenuePerVisit * attrLo;
+      recHi += recovered * DEFAULT_ASMP.edRevenuePerVisit * attrHi;
+      recDetails.push({
+        label: `LWBS reduction: \u2212${lwbsD.toFixed(1)} percentage points`,
+        formula: `${lwbsD.toFixed(1)}pp \u00D7 ${fmtN(annualVisits)} annual visits \u00D7 $${DEFAULT_ASMP.edRevenuePerVisit}/visit`,
+      });
+    }
+  }
+
+  for (const cs of activeSettings) {
+    const sd = state.settingData?.[cs] || {};
+    const effectiveEnc = sd.deploy_totalEncounters || totalEncounters;
+
+    const denialMetric = activeMetrics.find(m =>
+      ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
+      && (!m.setting || m.setting === cs)
+    );
+    const denialB = denialMetric?.before ??
+      (sd.initial_denial_rate_before ?? sd.medicalNecessityDenialRate_before ?? sd.denialRate_before ?? 0);
+    const denialA = denialMetric?.after ??
+      (sd.initial_denial_rate_after ?? sd.medicalNecessityDenialRate_after ?? sd.denialRate_after ?? 0);
+    const denialD = denialB - denialA;
+    if (denialD > 0 && effectiveEnc > 0) {
+      const avgCost = cs === 'inpatient' ? 3_500 : cs === 'ed' ? 500 : 350;
+      const base = (denialD / 100) * effectiveEnc * avgCost;
+      recLo += base * attrLo;
+      recHi += base * attrHi;
+      recDetails.push({
+        label: `Denial rate reduction: \u2212${denialD.toFixed(1)} pts${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
+        formula: `${denialD.toFixed(1)}pp \u00D7 ${fmtN(effectiveEnc)} encounters \u00D7 $${avgCost.toLocaleString()}/denial`,
+      });
+    }
+  }
+
+  let pfLo = 0, pfHi = 0;
+  const pfDetails: { label: string; formula: string }[] = [];
+  if (isIP) {
+    const ipData = state.settingData?.inpatient || {};
+    const alosMetric = activeMetrics.find(m =>
+      ['lengthOfStay', 'alos', 'averageLengthOfStay'].includes(m.metricId)
+    );
+    const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);
+    const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
+    const alosD = Math.max(0, alosBefore - alosAfter);
+    const ipEnc = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
+    if (alosD > 0 && ipEnc > 0) {
+      const base = alosD * ipEnc * DEFAULT_ASMP.costPerBedDay;
+      pfLo += base * attrLo;
+      pfHi += base * attrHi;
+      pfDetails.push({
+        label: `ALOS reduction: ${alosBefore.toFixed(1)} \u2192 ${alosAfter.toFixed(1)} days`,
+        formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} admissions \u00D7 $${DEFAULT_ASMP.costPerBedDay.toLocaleString()}/bed day`,
+      });
+    }
+  }
+
+  let capLo = 0, capHi = 0;
+  if (activeSettings.includes('outpatient')) {
+    const patientsMetric = activeMetrics.find(m =>
+      ['patients_per_provider_month', 'patientsPerProviderMonth'].includes(m.metricId)
+    );
+    if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {
+      const patientD = patientsMetric.after - patientsMetric.before;
+      if (patientD > 0 && providers > 0) {
+        const annualVisits = patientD * providers * 12;
+        const base = annualVisits * DEFAULT_ASMP.revenuePerVisit;
+        capLo = base * attrLo * realLo;
+        capHi = base * attrHi * realHi;
+      }
+    }
+  }
+
+  let costLo = 0, costHi = 0;
+  const costDetails: { label: string; formula: string }[] = [];
+
+  const ahMetric = activeMetrics.find(m =>
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift', 'afterHoursWork', 'workOutsideHours'].includes(m.metricId)
+  );
+  const ahWithout = ahMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
+  const ahWith = ahMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
+  const ahDelta = Math.max(0, ahWithout - ahWith);
+  if (ahDelta > 0 && providers > 0) {
+    const metricDef = ahMetric ? METRIC_MAP.get(ahMetric.metricId) : undefined;
+    const metricUnit = metricDef?.unit || '';
+    let hrsPerWeek: number;
+    if (metricUnit === 'min' || metricUnit === 'min/day') {
+      hrsPerWeek = (ahDelta / 60) * 5;
+    } else if (metricUnit === 'hrs/wk' || metricUnit === 'min/wk') {
+      hrsPerWeek = metricUnit === 'min/wk' ? ahDelta / 60 : ahDelta;
+    } else {
+      hrsPerWeek = ahDelta * 5;
+    }
+    const annual = hrsPerWeek * providers * DEFAULT_ASMP.otPremiumRate * 52;
+    costLo += annual * attrLo;
+    costHi += annual * attrHi;
+    costDetails.push({
+      label: `After-hours OT premium reduction: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
+      formula: `${hrsPerWeek.toFixed(1)} hrs/wk \u00D7 ${providers} providers \u00D7 $${DEFAULT_ASMP.otPremiumRate}/hr OT \u00D7 52 wks`,
+    });
+  }
+
+  const agencyMetric = activeMetrics.find(m =>
+    ['agencyLocumSpend', 'agency_locum_spend'].includes(m.metricId)
+  );
+  if (agencyMetric && agencyMetric.before != null && agencyMetric.after != null) {
+    const agencySavings = Math.max(0, agencyMetric.before - agencyMetric.after);
+    if (agencySavings > 0) {
+      costLo += agencySavings * attrLo;
+      costHi += agencySavings * attrHi;
+      costDetails.push({
+        label: `Agency/locum spend reduction: \u2212${fmtC(agencySavings)}`,
+        formula: `Observed reduction ${fmtC(agencySavings)} \u00D7 ${DEFAULT_ASMP.attribution}% attribution`,
+      });
+    }
+  }
+
+  const mv = state.metricValues || {};
+  let burnoutD = 0, stayD = 0;
+  let retentionLo = 0, retentionHi = 0;
+  for (const k of Object.keys(mv)) {
+    const e = mv[k];
+    if (!e || e.before == null || e.after == null) continue;
+    if (k.startsWith("burnout") && e.before > e.after) burnoutD = Math.max(burnoutD, e.before - e.after);
+    if (k.startsWith("likelihood") && e.after > e.before) stayD = Math.max(stayD, e.after - e.before);
+  }
+  if (burnoutD > 0 || stayD > 0) {
+    retentionLo = 1 * 50_000 * attrLo;
+    retentionHi = 3 * 150_000 * attrHi;
+    costLo += retentionLo;
+    costHi += retentionHi;
+    const signal = burnoutD > 0
+      ? `Burnout score improved ${burnoutD.toFixed(0)} pts`
+      : `Likelihood to stay improved ${stayD.toFixed(0)} pts`;
+    costDetails.push({
+      label: "Physician retention signal",
+      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 $50K\u2013$150K replacement cost (MGMA benchmark)`,
+    });
+  }
+
+  const physRetMetric = activeMetrics.find(m =>
+    ['physicianRetention', 'physician_retention'].includes(m.metricId)
+  );
+  if (physRetMetric && physRetMetric.before != null && physRetMetric.after != null) {
+    const retD = physRetMetric.after - physRetMetric.before;
+    if (retD > 0 && providers > 0) {
+      const turnoversAvoided = (retD / 100) * providers;
+      const newLo = turnoversAvoided * 300_000 * attrLo;
+      const newHi = turnoversAvoided * 750_000 * attrHi;
+      if (newLo > retentionLo) {
+        costLo = costLo - retentionLo + newLo;
+        costHi = costHi - retentionHi + newHi;
+        costDetails.push({
+          label: `Physician retention: +${retD} pts across ${providers} providers`,
+          formula: `${turnoversAvoided.toFixed(1)} turnovers avoided \u00D7 $300K\u2013$750K replacement cost`,
+        });
+      }
+    }
+  }
+
+  const totalLo = billLo + recLo + pfLo + capLo + costLo;
+  const totalHi = billHi + recHi + pfHi + capHi + costHi;
+  return {
+    hasBill: billLo > 0, billLo, billHi, billDetails,
+    hasRec: recLo > 0, recLo, recHi, recDetails,
+    hasPF: pfLo > 0, pfLo, pfHi, pfDetails,
+    hasCap: capLo > 0, capLo, capHi,
+    hasCost: costLo > 0, costLo, costHi, costDetails,
+    totalLo, totalHi, hasAny: totalLo > 0,
+    attrRange: `${Math.round(attrLo * 100)}\u2013${Math.round(attrHi * 100)}%`,
+  };
+}
+
+function fmtC(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
+}
+function fmtRange(lo: number, hi: number): string {
+  const a = fmtC(lo), b = fmtC(hi);
+  return a === b ? a : `${a} \u2013 ${b}`;
+}
+function fmtN(n: number): string { return Math.round(n).toLocaleString(); }
+function fmtDelta(before: number, after: number, unit: string): string {
+  const d = after - before;
+  const sign = d > 0 ? "+" : "";
+  const val = Math.abs(d) < 10 ? d.toFixed(2) : Math.round(d).toString();
+  const suffix = unit === "%" ? "pp" : ` ${unit}`;
+  const pctStr = before !== 0 ? ` (${sign}${Math.round((d / before) * 100)}%)` : "";
+  return `${sign}${val}${suffix}${pctStr}`;
+}
+function settingShort(sv: MeasureCareSetting | string): string {
+  if (sv === "ed") return "ED";
+  if (sv === "inpatient") return "IP";
+  if (sv === "nursing") return "NR";
+  return "OP";
+}
+function settingFull(sv: string): string {
+  if (sv === "ed") return "Emergency Department";
+  if (sv === "inpatient") return "Inpatient";
+  if (sv === "nursing") return "Nursing";
+  return "Outpatient";
+}
+
+const Conf = ({ org }: { org: string }) => (
+  <Text style={s.confHeader}>Confidential \u2014 Prepared for {org}</Text>
 );
 
-const PageFooter = ({ pageNum, orgName }: { pageNum: number; orgName: string }) => (
-  <View style={styles.footer}>
-    <Text style={styles.footerLeft}>ABRIDGE</Text>
-    <Text style={styles.footerCenter}>{orgName} {"\u00B7"} Value Story</Text>
-    <Text style={styles.footerRight}>Page {pageNum} of {TOTAL_PAGES}</Text>
+const Footer = ({ n, total, org }: { n: number; total: number; org: string }) => (
+  <View style={s.footer}>
+    <Text style={s.footerLeft}>ABRIDGE</Text>
+    <Text style={s.footerCenter}>{org} \u00B7 Executive Business Review</Text>
+    <Text style={s.footerRight}>Page {n} of {total}</Text>
   </View>
 );
 
-const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) => {
-  const displayPreparedBy = preparedBy || "Abridge Partner Success";
-  const orgName = clientName || state.deployment.organizationName || "Organization";
-  const careSetting = state.careSetting
-    ? state.careSetting.charAt(0).toUpperCase() + state.careSetting.slice(1)
-    : "Outpatient";
+const MeasureEBR = ({ state }: { state: MeasureState }) => {
+  const orgName = state.deployment.organizationName || "Your Organization";
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
+  const totalProviders = state.deployment.totalProviders || providers;
+  const totalEncounters = state.deployment.totalEncounters || 0;
+  const utilRate = state.deployment.utilizationRate || 0;
+  const adopted = Math.round(totalEncounters * (utilRate / 100));
+  const activeCareSettings = state.activeCareSettings?.length
+    ? state.activeCareSettings
+    : [state.careSetting || "outpatient"];
+  const settingLabel = activeCareSettings.map(settingFull).join(" \u00B7 ");
 
-  const capacityPercent = state.allocation.capacityPercent ?? 20;
-  const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
-  const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
+  const activeMetrics = getActiveMetrics(state);
+  const signalMetrics = activeMetrics.filter((m) => !FINANCIAL_IDS.has(m.metricId));
+  const fin = computeFinancials(state);
 
-  const timeSavedPerNote = state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith;
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
-  const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
+  const hasMetrics = activeMetrics.length > 0;
+  const hasFinancials = fin.hasAny;
+  const hasSignals = signalMetrics.length > 0;
 
-  const savingsHours = totalHoursSaved * (savingsPercent / 100);
+  const TOTAL = 4 + (hasFinancials ? 1 : 0) + (hasSignals ? 1 : 0);
+  let pageN = 0;
+  const P = () => ++pageN;
 
-  const capacityHours = totalHoursSaved * (capacityPercent / 100);
-  const additionalVisits = capacityHours * (60 / state.calibration.minutesPerVisit);
-  const capacityValue = additionalVisits * state.calibration.revenuePerVisit;
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
-  const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
-  const hoursPerProviderPerWeek = state.deployment.providers > 0
-    ? wellbeingHours / state.deployment.providers / (state.deployment.monthsOnAbridge * 4.33)
-    : 0;
+  const activeDomains = new Set(
+    activeMetrics.map((m) => METRIC_MAP.get(m.metricId)?.domain).filter(Boolean)
+  ).size;
 
-  const adjustedTimeValue = capacityValue;
-
-  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
-  const wrvuDeltaPercent = state.documentationQuality.wrvuWithout > 0
-    ? (wrvuDelta / state.documentationQuality.wrvuWithout) * 100
-    : 0;
-  const additionalWRVUs = wrvuDelta * adoptedEncounters;
-  const docValueLow = additionalWRVUs * state.calibration.conversionFactor * 0.50;
-  const docValueHigh = additionalWRVUs * state.calibration.conversionFactor * 0.75;
-
-  const totalValueLow = adjustedTimeValue + docValueLow;
-  const totalValueHigh = adjustedTimeValue + docValueHigh;
-
-  const sameDayClosureDelta = state.timeEfficiency.sameDayClosureWith - state.timeEfficiency.sameDayClosureWithout;
-  const timeToCloseDelta = state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith;
-  const workOutsideDelta = state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith;
-
-  const expansion = calculateExpansionResults(
-    state, totalValueLow, totalValueHigh, totalHoursSaved,
-    state.expansionTargets?.targetAdoption,
-    state.expansionTargets?.targetProviders
-  );
-
-  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
-  const hoursPerWeekReturned = state.deployment.providers > 0
-    ? (totalHoursSaved / state.deployment.providers / (state.deployment.monthsOnAbridge * 4.33))
-    : 0;
-
-  const timeDeltaPercent = state.timeEfficiency.timeInNotesWithout > 0
-    ? Math.round(((state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith) / state.timeEfficiency.timeInNotesWithout) * 100)
-    : 0;
-
-  const perProviderValuePerYear = state.deployment.providers > 0
-    ? ((totalValueLow + totalValueHigh) / 2) / state.deployment.providers
-    : 0;
-  const perEncounterValue = adoptedEncounters > 0
-    ? ((totalValueLow + totalValueHigh) / 2) / adoptedEncounters
-    : 0;
-
-  const targetAdoption = state.expansionTargets?.targetAdoption ?? 80;
-
-  const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  let maturityIdx = 0;
+  if (utilRate >= 20 && activeMetrics.length >= 1) maturityIdx = 1;
+  if (activeDomains >= 3 && utilRate >= 60) maturityIdx = 2;
+  if (activeDomains >= 4 && utilRate >= 70 && hasFinancials) maturityIdx = 3;
+  const maturityLabels = ["Unmeasured", "Signaling", "Validated", "Strategic"];
+  const maturityDescs = [
+    "Adoption is still ramping or baselines haven\u2019t been established yet.",
+    "One or two domains are showing before/after trends. Baselines are confirmed.",
+    "Three or more domains have confirmed trends with at least 60% utilization.",
+    "Abridge is embedded in organizational strategy with board-ready proof.",
+  ];
 
   return (
     <Document>
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* COVER PAGE (kept as-is)                                       */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
       <PDFCoverPage
-        reportLabel="YOUR VALUE STORY"
+        reportLabel="Executive Business Review"
         title={orgName}
-        subtitle={`${state.deployment.providers} providers \u00B7 ${state.deployment.monthsOnAbridge} months \u00B7 ${careSetting}`}
-        preparedBy={displayPreparedBy}
+        subtitle={`${providers} providers \u00B7 ${months} months \u00B7 ${settingLabel}`}
+        preparedBy="Abridge Partner Success"
+        disclaimerText="This EBR reflects actual deployment data and Abridge methodology. Estimates are ranges, not audited projections. See the methodology page for full assumptions and limitations."
       />
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 1: YOUR PARTNERSHIP AT A GLANCE                          */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>YOUR PARTNERSHIP</Text>
-          <Text style={styles.sectionHeadline}>Understanding Your Abridge Impact</Text>
+      {/* PAGE 1: Partnership */}
+      <Page size="LETTER" style={s.page} wrap={false}>
+        <View style={s.wrap}>
+          <Conf org={orgName} />
+          <Text style={s.eyebrow}>Your Partnership</Text>
+          <Text style={s.headline}>Abridge at {orgName}</Text>
+          <Text style={s.subline}>{settingLabel} \u00B7 {months} months since go-live \u00B7 Generated {today}</Text>
 
-          <Text style={styles.narrative}>
-            Over the past {state.deployment.monthsOnAbridge} months, {orgName} has partnered with Abridge across {state.deployment.providers} providers, representing {Math.round(state.deployment.utilizationRate)}% adoption within your {state.deployment.totalProviders}-provider organization. During this period, approximately {formatNumber(adoptedEncounters)} encounters were documented with Abridge assistance. This report explores what we can observe from that experience {"\u2014"} where the data is strong, where it suggests opportunity, and where your finance and operations teams can dig deeper.
+          <View style={s.statRow}>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{providers}</Text>
+              <Text style={s.statLabel}>Providers on Abridge</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{totalProviders}</Text>
+              <Text style={s.statLabel}>Total Providers</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{utilRate}%</Text>
+              <Text style={s.statLabel}>Utilization Rate</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{fmtN(adopted)}</Text>
+              <Text style={s.statLabel}>Adopted Encounters</Text>
+            </View>
+          </View>
+
+          <View style={s.callout}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>A note on methodology</Text>
+            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
+              All financial estimates in this report use an attribution range of {fin.attrRange} and a realization rate of {DEFAULT_ASMP.realization}%.
+              These reflect the portion of observed improvement we attribute to Abridge and the share of theoretical value typically captured in practice.
+              Where before/after data exists, we use the observed delta. Where only directional signals exist (e.g., burnout scores), we apply published benchmark ranges.
+            </Text>
+          </View>
+
+          <Text style={s.narrative}>
+            {orgName} has deployed Abridge across {providers} providers in {settingLabel.toLowerCase()},
+            achieving {utilRate}% utilization over {months} months. This review summarizes
+            {hasMetrics ? ` ${activeMetrics.length} tracked metric${activeMetrics.length > 1 ? "s" : ""}` : " the deployment"}{" "}
+            and{hasFinancials ? " quantifies the financial impact of observed improvements." : " outlines the path to measurable financial impact."}
           </Text>
 
-          <View style={styles.divider} />
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
-            <View style={styles.contextCard}>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{state.deployment.providers}</Text>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Providers on Abridge</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary }}>(of {state.deployment.totalProviders} total)</Text>
-            </View>
-            <View style={styles.contextCard}>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{state.deployment.monthsOnAbridge}</Text>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Months Observed</Text>
-            </View>
-            <View style={styles.contextCard}>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{formatNumber(adoptedEncounters)}</Text>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Encounters w/ Abridge</Text>
-            </View>
-            <View style={styles.contextCard}>
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>{Math.round(state.deployment.utilizationRate)}%</Text>
-              <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Adoption Rate</Text>
-            </View>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          <View style={styles.assumptionBox}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>A note on this analysis</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
-              The estimates in this report are modeled from the data your team provided and Abridge's deployment experience across similar organizations. They are not audited financial projections. We present ranges rather than point estimates, clearly label our assumptions, and distinguish between directly measurable outcomes and modeled values. Our goal is to give your leadership a credible starting point for internal ROI conversations {"\u2014"} not to replace your finance team's analysis.
-            </Text>
-          </View>
-
-          <View style={{ marginTop: "auto", marginBottom: 6 }}>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5 }}>
-              All figures in this report are estimates based on user-provided inputs and Abridge deployment methodology. See the Methodology section (page {TOTAL_PAGES}) for complete assumptions and limitations.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={1} orgName={orgName} />
+          <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
       </Page>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 2: WHAT WE OBSERVED — TIME & EFFICIENCY                  */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>WHAT WE OBSERVED</Text>
-          <Text style={styles.sectionHeadline}>What Changed in Documentation Time</Text>
+      {/* PAGE 2: What Your Data Shows */}
+      <Page size="LETTER" style={s.page} wrap={false}>
+        <View style={s.wrap}>
+          <Conf org={orgName} />
+          <Text style={s.eyebrow}>Measurement</Text>
+          <Text style={s.headline}>What Your Data Shows</Text>
+          <Text style={s.subline}>{activeMetrics.length} metric{activeMetrics.length !== 1 ? "s" : ""} tracked across {activeDomains} domain{activeDomains !== 1 ? "s" : ""}</Text>
 
-          <Text style={styles.narrative}>
-            Before Abridge, your providers spent an average of {state.timeEfficiency.timeInNotesWithout} minutes per encounter on documentation. With Abridge, that dropped to {state.timeEfficiency.timeInNotesWith} minutes {"\u2014"} a {timeSavedPerNote}-minute reduction per note. Across {formatNumber(adoptedEncounters)} Abridge-documented encounters, that translates to approximately {formatNumber(Math.round(totalHoursSaved))} hours of documentation time returned to your providers over {state.deployment.monthsOnAbridge} months.
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                WITHOUT ABRIDGE
-              </Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>
-                {state.timeEfficiency.timeInNotesWithout} min
-              </Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>per encounter</Text>
-            </View>
-            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-                WITH ABRIDGE
-              </Text>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>
-                {state.timeEfficiency.timeInNotesWith} min
-              </Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>per encounter</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, marginTop: 2 }}>{timeDeltaPercent}% reduction</Text>
-            </View>
+          <View style={s.metricRowHeader}>
+            <Text style={[s.mName, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Metric</Text>
+            <Text style={[s.mBefore, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Before</Text>
+            <Text style={[s.mArrow, { fontSize: 8 }]}></Text>
+            <Text style={[s.mAfter, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>After</Text>
+            <Text style={[s.mDelta, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Change</Text>
           </View>
 
-          <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 10 }}>
-            For each of your {state.deployment.providers} providers on Abridge, that is roughly {hoursPerProvider} hours over this period {"\u2014"} time that was previously spent in notes, now available for patient care, earlier departures, or reduced weekend catch-up.
-          </Text>
+          {activeMetrics.map((am, idx) => {
+            const def = METRIC_MAP.get(am.metricId);
+            const label = def?.label || am.metricId;
+            const unit = def?.unit || "";
+            const hasBoth = am.before != null && am.after != null;
+            const settingTag = am.setting && activeCareSettings.length > 1 ? ` (${settingShort(am.setting)})` : "";
 
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionLabelGray}>ADDITIONAL METRICS</Text>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>Same-Day Closure</Text>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>+{sameDayClosureDelta} percentage points</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
-              {state.timeEfficiency.sameDayClosureWithout}% {"\u2192"} {state.timeEfficiency.sameDayClosureWith}%
-            </Text>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
-              A higher same-day closure rate means fewer open notes carrying over, reducing compliance risk and cognitive load.
-            </Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>Days to Close</Text>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>-{timeToCloseDelta.toFixed(1)} days</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
-              {state.timeEfficiency.timeToCloseWithout} days {"\u2192"} {state.timeEfficiency.timeToCloseWith} days
-            </Text>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
-              Faster note completion improves billing cycle time and reduces documentation backlog.
-            </Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>After-Hours Documentation</Text>
-              <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>-{workOutsideDelta.toFixed(1)} hrs/day</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 4 }}>
-              {state.timeEfficiency.workOutsideWithout} hrs/day {"\u2192"} {state.timeEfficiency.workOutsideWith} hrs/day
-            </Text>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
-              This is time your providers are getting back in their personal lives {"\u2014"} evenings, weekends, time with family.
-            </Text>
-          </View>
-
-          {(state.customMetrics || []).filter(cm => cm.label.trim()).map((cm) => {
-            const delta = cm.after - cm.before;
-            const pct = cm.before !== 0 ? ((delta / cm.before) * 100).toFixed(1) : "N/A";
             return (
-              <View key={cm.id} style={styles.metricCard}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                  <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primaryText }}>{cm.label}</Text>
-                  <Text style={{ fontSize: 10.5, fontWeight: "bold", color: colors.primary }}>{delta > 0 ? "+" : ""}{delta.toFixed(delta % 1 !== 0 ? 2 : 0)}{pct !== "N/A" ? ` (${pct}%)` : ""}</Text>
-                </View>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>
-                  {cm.before} {"\u2192"} {cm.after}
-                </Text>
+              <View key={`${am.metricId}-${am.setting}-${idx}`} style={[s.metricRow, idx % 2 === 1 ? { backgroundColor: C.altRow } : {}]}>
+                <Text style={s.mName}>{label}{settingTag}</Text>
+                <Text style={s.mBefore}>{hasBoth ? `${am.before}${unit === "%" ? "%" : ` ${unit}`}` : "\u2014"}</Text>
+                <Text style={s.mArrow}>{hasBoth ? "\u2192" : ""}</Text>
+                <Text style={s.mAfter}>{hasBoth ? `${am.after}${unit === "%" ? "%" : ` ${unit}`}` : (am.after != null ? `${am.after}${unit === "%" ? "%" : ` ${unit}`}` : "\u2014")}</Text>
+                <Text style={s.mDelta}>{hasBoth ? fmtDelta(am.before!, am.after!, unit) : ""}</Text>
               </View>
             );
           })}
 
-          <View style={[styles.cardBg, { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 16, marginTop: 4 }]}>
-            <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1 }}>TOTAL HOURS RECLAIMED</Text>
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
-              <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primary }}>{formatNumber(Math.round(totalHoursSaved))}</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>{hoursPerProvider} hrs/provider</Text>
-            </View>
-          </View>
-
-          <PageFooter pageNum={2} orgName={orgName} />
+          <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
       </Page>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 3: WHAT WE OBSERVED — DOCUMENTATION QUALITY              */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
-          <Text style={styles.sectionHeadline}>What Changed in Clinical Capture</Text>
+      {/* PAGE 3: Financial Impact (conditional) */}
+      {hasFinancials && (
+        <Page size="LETTER" style={s.page} wrap={false}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Financial Impact</Text>
+            <Text style={s.headline}>Estimated Annual Value</Text>
 
-          <Text style={styles.narrative}>
-            Documentation quality is not just about speed {"\u2014"} it is about capturing the clinical complexity that actually occurred. Your providers' average wRVU per encounter moved from {state.documentationQuality.wrvuWithout.toFixed(2)} to {state.documentationQuality.wrvuWith.toFixed(2)}, a {Math.round(wrvuDeltaPercent)}% increase. While multiple factors influence coding patterns, this shift is consistent with what we observe when AI-assisted documentation captures clinical detail that might otherwise be lost in manual note-writing.
-          </Text>
-
-          <Text style={styles.sectionLabelGray}>wRVU PER ENCOUNTER</Text>
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-            <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 12 }]}>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>WITHOUT</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWithout.toFixed(2)}</Text>
+            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 16 }]}>
+              <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
+              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>estimated annual financial impact (attribution: {fin.attrRange})</Text>
             </View>
-            <View style={{ justifyContent: "center", alignItems: "center", paddingHorizontal: 2 }}>
-              <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
-            </View>
-            <View style={{ flex: 1, padding: 12, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, alignItems: "center" }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WITH</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText }}>{state.documentationQuality.wrvuWith.toFixed(2)}</Text>
-            </View>
-          </View>
 
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primary, marginBottom: 10 }}>
-            +{wrvuDelta.toFixed(2)} per encounter {"\u00B7"} {Math.round(wrvuDeltaPercent)}% improvement
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
-              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(adoptedEncounters)}</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters analyzed</Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
-              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(additionalWRVUs))}</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>additional wRVUs</Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 10, borderRadius: 4, alignItems: "center" }}>
-              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>estimated revenue potential</Text>
-            </View>
-          </View>
-
-          <Text style={styles.narrative}>
-            If we attribute 50{"\u2013"}75% of this wRVU lift to improved documentation capture (our default assumption range based on published literature and deployment data), the {formatNumber(adoptedEncounters)} Abridge-documented encounters represent an estimated {formatSmartRange(docValueLow, docValueHigh)} in additional revenue capture annually.
-          </Text>
-
-          <View style={styles.assumptionBox}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Attribution note</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
-              Not all coding improvement can be attributed to Abridge. Provider behavior changes, coding education, payer mix shifts, and other factors also play a role. The 50{"\u2013"}75% range reflects our conservative estimate of Abridge's contribution. Your coding and compliance teams can refine this based on internal analysis.
-            </Text>
-          </View>
-
-          <PageFooter pageNum={3} orgName={orgName} />
-        </View>
-      </Page>
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 4: ESTIMATING YOUR VALUE                                 */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>YOUR VALUE</Text>
-          <Text style={styles.sectionHeadline}>Putting the Pieces Together</Text>
-
-          <Text style={styles.narrative}>
-            Translating time savings into organizational value requires assumptions about how that time gets used. Rather than assigning a single dollar figure, we break this into what is directly measurable and what represents organizational potential.
-          </Text>
-
-          <View style={styles.thickDivider} />
-
-          <Text style={styles.sectionLabel}>SECTION A: MEASURABLE VALUE</Text>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Patient Capacity Opportunity</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatCurrency(capacityValue)}</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-              {capacityPercent}% of the {formatNumber(Math.round(totalHoursSaved))} hours saved were allocated to patient capacity. At {state.calibration.minutesPerVisit} minutes per visit, that is approximately {formatNumber(Math.round(additionalVisits))} additional patient visits. At ${state.calibration.revenuePerVisit} per visit, this represents {formatCurrency(capacityValue)} in potential additional revenue.
-            </Text>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
-              Whether this capacity is realized depends on scheduling, demand, and operational decisions {"\u2014"} but the time is available.
-            </Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Documentation Quality Lift</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              +{wrvuDelta.toFixed(2)} wRVU per encounter across {formatNumber(adoptedEncounters)} encounters, at ${state.calibration.conversionFactor} conversion, with 50{"\u2013"}75% attribution. See page 3 for the full methodology and attribution discussion.
-            </Text>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          <Text style={styles.sectionLabel}>SECTION B: NON-DOLLAR IMPACT</Text>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Time Returned to Providers</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(Math.round(savingsHours))} hours</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {formatNumber(Math.round(savingsHours))} hours of documentation time were returned to your {state.deployment.providers} providers. This time has real organizational value {"\u2014"} but how it is deployed varies. Some organizations see it in throughput. Others see it in provider satisfaction scores, reduced turnover intent, or simply better work-life balance.
-            </Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Provider Wellbeing Signal</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</Text>
-            </View>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-              Your providers are reclaiming approximately {hoursPerProviderPerWeek.toFixed(1)} hours per week of time previously spent on documentation. In a national environment where clinician burnout drives costly turnover, this is a meaningful retention signal.
-            </Text>
-            <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.4 }}>
-              Industry benchmark: Replacing a single physician costs $300K{"\u2013"}$500K in recruitment, onboarding, and lost revenue. While we do not claim Abridge alone prevents turnover, reduced documentation burden is consistently cited as a top factor in provider satisfaction.
-            </Text>
-          </View>
-
-          <View style={styles.thickDivider} />
-
-          <View style={[styles.cardBg, { paddingVertical: 14, paddingHorizontal: 18 }]}>
-            <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>ESTIMATED ANNUAL VALUE SUMMARY</Text>
-
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Patient Capacity</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatCurrency(capacityValue)}</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation Quality</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatSmartRange(docValueLow, docValueHigh)}</Text>
-            </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>Total Measurable Value</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
-            </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>Time Returned</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(Math.round(savingsHours))} hours (not dollarized)</Text>
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>Wellbeing</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>{hoursPerProviderPerWeek.toFixed(1)} hrs/wk back per provider</Text>
-            </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 9, color: colors.tertiary }}>Per provider: ~{formatCurrency(perProviderValuePerYear)}/year</Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary }}>Per encounter: ~${Math.round(perEncounterValue)}</Text>
-            </View>
-          </View>
-
-          <PageFooter pageNum={4} orgName={orgName} />
-        </View>
-      </Page>
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 5: THE OPPORTUNITY AHEAD                                 */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>THE OPPORTUNITY AHEAD</Text>
-          <Text style={styles.sectionHeadline}>Where This Could Go</Text>
-
-          <Text style={styles.narrative}>
-            Your current results reflect {Math.round(state.deployment.utilizationRate)}% adoption across {state.deployment.providers} of {state.deployment.totalProviders} providers. This is a snapshot of early impact {"\u2014"} not the ceiling.
-          </Text>
-
-          <View style={styles.thickDivider} />
-
-          <Text style={styles.sectionLabel}>DEEPEN: INCREASE ADOPTION</Text>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>
-            More encounters with your current {state.deployment.providers} providers
-          </Text>
-
-          <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 14, marginBottom: 10 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-              <View>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>TODAY</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>{Math.round(state.deployment.utilizationRate)}% adoption</Text>
-                <Text style={{ fontSize: 10, color: colors.secondary }}>{formatNumber(adoptedEncounters)} encounters</Text>
+            {fin.hasBill && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={s.finCat}>Billing Capture</Text>
+                <View style={s.finRow}>
+                  <Text style={s.finLabel}>Total billing capture</Text>
+                  <Text style={s.finValue}>{fmtRange(Math.round(fin.billLo), Math.round(fin.billHi))} / yr</Text>
+                </View>
+                {fin.billDetails.map((d, i) => (
+                  <View key={i}>
+                    <Text style={s.finDetail}>{d.label}</Text>
+                    <Text style={s.finFormula}>{d.formula}</Text>
+                  </View>
+                ))}
               </View>
-              <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
-                <Text style={{ fontSize: 14, color: colors.tertiary }}>{"\u2192"}</Text>
+            )}
+
+            {fin.hasRec && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={s.finCat}>Revenue Recovery</Text>
+                <View style={s.finRow}>
+                  <Text style={s.finLabel}>Total revenue recovery</Text>
+                  <Text style={s.finValue}>{fmtRange(Math.round(fin.recLo), Math.round(fin.recHi))} / yr</Text>
+                </View>
+                {fin.recDetails.map((d, i) => (
+                  <View key={i}>
+                    <Text style={s.finDetail}>{d.label}</Text>
+                    <Text style={s.finFormula}>{d.formula}</Text>
+                  </View>
+                ))}
               </View>
-              <View>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>AT {targetAdoption}% ADOPTION</Text>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(expansion.deepenEncounters)} encounters</Text>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>{formatNumber(Math.round(expansion.deepenHoursSaved))} hours saved</Text>
+            )}
+
+            {fin.hasPF && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={s.finCat}>Patient Flow</Text>
+                <View style={s.finRow}>
+                  <Text style={s.finLabel}>ALOS bed day savings</Text>
+                  <Text style={s.finValue}>{fmtRange(Math.round(fin.pfLo), Math.round(fin.pfHi))} / yr</Text>
+                </View>
+                {fin.pfDetails.map((d, i) => (
+                  <View key={i}>
+                    <Text style={s.finDetail}>{d.label}</Text>
+                    <Text style={s.finFormula}>{d.formula}</Text>
+                  </View>
+                ))}
               </View>
+            )}
+
+            {fin.hasCap && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={s.finCat}>Capacity Revenue</Text>
+                <View style={s.finRow}>
+                  <Text style={s.finLabel}>Outpatient capacity revenue</Text>
+                  <Text style={s.finValue}>{fmtRange(Math.round(fin.capLo), Math.round(fin.capHi))} / yr</Text>
+                </View>
+              </View>
+            )}
+
+            {fin.hasCost && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={s.finCat}>Actual Cost Reduction</Text>
+                <View style={s.finRow}>
+                  <Text style={s.finLabel}>Total cost reduction</Text>
+                  <Text style={s.finValue}>{fmtRange(Math.round(fin.costLo), Math.round(fin.costHi))} / yr</Text>
+                </View>
+                {fin.costDetails.map((d, i) => (
+                  <View key={i}>
+                    <Text style={s.finDetail}>{d.label}</Text>
+                    <Text style={s.finFormula}>{d.formula}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <Footer n={P()} total={TOTAL} org={orgName} />
+          </View>
+        </Page>
+      )}
+
+      {/* PAGE 4: Signals Worth Watching (conditional) */}
+      {hasSignals && (
+        <Page size="LETTER" style={s.page} wrap={false}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Beyond the Numbers</Text>
+            <Text style={s.headline}>Signals Worth Watching</Text>
+            <Text style={s.subline}>These metrics don't directly feed a financial formula, but they tell the story of how Abridge is changing care delivery.</Text>
+
+            {signalMetrics.map((sm, i) => {
+              const def = METRIC_MAP.get(sm.metricId);
+              if (!def) return null;
+              const hasBoth = sm.before != null && sm.after != null;
+              return (
+                <View key={i} style={s.signalCard}>
+                  <Text style={s.signalDomain}>{def.domain}</Text>
+                  <Text style={s.signalTitle}>{def.label}</Text>
+                  {hasBoth && (
+                    <Text style={s.signalChange}>
+                      {sm.before}{def.unit === "%" ? "%" : ` ${def.unit}`} \u2192 {sm.after}{def.unit === "%" ? "%" : ` ${def.unit}`}
+                      {" "}({fmtDelta(sm.before!, sm.after!, def.unit)})
+                    </Text>
+                  )}
+                  <Text style={s.signalText}>{def.whyItMatters}</Text>
+                </View>
+              );
+            })}
+
+            <Footer n={P()} total={TOTAL} org={orgName} />
+          </View>
+        </Page>
+      )}
+
+      {/* PAGE 5: Maturity & What's Next */}
+      <Page size="LETTER" style={s.page} wrap={false}>
+        <View style={s.wrap}>
+          <Conf org={orgName} />
+          <Text style={s.eyebrow}>Maturity</Text>
+          <Text style={s.headline}>Where You Are &amp; What{"\u2019"}s Next</Text>
+
+          <View style={s.card}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 6 }}>Measurement Maturity</Text>
+            <View style={s.pipRow}>
+              {[0, 1, 2, 3].map((i) => (
+                <View key={i} style={i <= maturityIdx ? s.pipOn : s.pip} />
+              ))}
             </View>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 8 }} />
-            <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
-              Additional value: +{formatCurrency(expansion.deepenAdditionalValue)}/year
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary }}>
-              No additional investment required. This is value from your existing deployment.
-            </Text>
+            <Text style={{ fontSize: 12, fontWeight: "bold", color: C.orange, marginBottom: 4 }}>{maturityLabels[maturityIdx]}</Text>
+            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5 }}>{maturityDescs[maturityIdx]}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={s.rule} />
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Recommended Next Moves</Text>
 
-          <Text style={styles.sectionLabel}>EXPAND: BRING ABRIDGE TO MORE PROVIDERS</Text>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>
-            Extending to your broader organization
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>~{formatCurrency(perProviderValuePerYear)}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>value per</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>provider/year</Text>
+          {[
+            {
+              text: maturityIdx < 2
+                ? `Increase utilization from ${utilRate}% toward 60%+ to unlock validated measurement across more domains.`
+                : `Sustain ${utilRate}% utilization and extend measurement to remaining domains.`,
+            },
+            {
+              text: hasFinancials
+                ? "Socialize this financial impact report with finance and operational leaders to build board-level awareness."
+                : "Focus on capturing before/after data in revenue and quality domains to enable financial quantification.",
+            },
+            {
+              text: activeCareSettings.length < 3
+                ? `Expand Abridge to additional care settings beyond ${settingLabel.toLowerCase()} to capture organization-wide value.`
+                : "Deepen measurement in each care setting by adding setting-specific metrics (CMI for inpatient, LWBS for ED).",
+            },
+            {
+              text: "Schedule a follow-up EBR in 90 days to track trend lines and refine financial attribution as more data accumulates.",
+            },
+          ].map((item, i) => (
+            <View key={i} style={s.bulletRow}>
+              <View style={s.bullet} />
+              <Text style={s.bulletText}>{item.text}</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{hoursPerProvider} hrs</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>saved per provider</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>over {state.deployment.monthsOnAbridge} months</Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>{expansion.remainingProviders}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>providers not yet</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>on Abridge</Text>
-            </View>
-          </View>
+          ))}
 
-          <Text style={styles.narrative}>
-            Extending Abridge to all {state.deployment.totalProviders} providers, at current per-provider economics, would represent an estimated {formatSmartRange(expansion.expandValueLow, expansion.expandValueHigh)} annually. Your {expansion.remainingProviders} providers not yet on Abridge represent the largest untapped opportunity.
-          </Text>
-
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionLabelGray}>COMBINED OUTLOOK</Text>
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-            <View style={[styles.cardBg, { flex: 1, paddingVertical: 12 }]}>
-              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{state.deployment.providers} providers</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{Math.round(state.deployment.utilizationRate)}% adoption</Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
-            </View>
-            <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>FULL DEPLOYMENT</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 2 }}>{expansion.combinedProviders} providers</Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 6 }}>{targetAdoption}% adoption</Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}</Text>
-            </View>
-          </View>
-
-          <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5 }}>
-            These projections assume consistent per-provider economics as you scale. Actual results will depend on specialty mix, encounter volume, workflow integration, and organizational support for adoption. We recommend revisiting these estimates quarterly as your deployment matures.
-          </Text>
-
-          <PageFooter pageNum={5} orgName={orgName} />
+          <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
       </Page>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 6: METHODOLOGY & ASSUMPTIONS                             */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <ConfidentialHeader orgName={orgName} />
-          <Text style={styles.sectionLabel}>METHODOLOGY</Text>
-          <Text style={styles.sectionHeadline}>How We Built These Estimates</Text>
+      {/* PAGE 6: Methodology */}
+      <Page size="LETTER" style={s.page} wrap={false}>
+        <View style={s.wrap}>
+          <Conf org={orgName} />
+          <Text style={s.eyebrow}>Methodology</Text>
+          <Text style={s.headline}>How We Calculate Value</Text>
+          <Text style={s.subline}>Transparency is core to the Abridge measurement philosophy.</Text>
 
-          <Text style={styles.body}>
-            Provider counts, encounter volumes, and before/after metrics were provided by {orgName} for this analysis. Model defaults are informed by Abridge deployment data across health systems nationwide.
-          </Text>
-
-          <Text style={styles.sectionLabelGray}>KEY ASSUMPTIONS</Text>
-          <View style={{ marginBottom: 10 }}>
-            <View style={styles.tableHeader}>
-              <Text style={{ flex: 2.5, fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>Assumption</Text>
-              <Text style={{ flex: 1.2, fontSize: 9, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>Value Used</Text>
-              <Text style={{ flex: 1.5, fontSize: 9, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>Source</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Provider hourly rate</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.otHourlyRate}/hr</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Visit duration</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{state.calibration.minutesPerVisit} min</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Revenue per visit</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.revenuePerVisit}</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>wRVU conversion factor</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>${state.calibration.conversionFactor}</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>CMS national avg</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Attribution range</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>50{"\u2013"}75%</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Deployment data</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Adoption target (Deepen)</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{targetAdoption}%</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Model default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Capacity</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{capacityPercent}%</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Returned</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{savingsPercent}%</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
-            </View>
-            <View style={{ ...styles.tableRow, borderBottomWidth: 0 }}>
-              <Text style={{ flex: 2.5, fontSize: 9.5, color: colors.primaryText }}>Time allocation: Wellbeing</Text>
-              <Text style={{ flex: 1.2, fontSize: 9.5, color: colors.secondary, textAlign: "right" }}>{wellbeingPercent}%</Text>
-              <Text style={{ flex: 1.5, fontSize: 9.5, color: colors.tertiary, textAlign: "right" }}>Organization input</Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionLabelGray}>CALCULATION METHODOLOGY</Text>
-          <View style={{ backgroundColor: colors.assumptionBg, padding: 12, borderRadius: 4, marginBottom: 10 }}>
-            <Text style={{ fontSize: 9, color: colors.secondary, fontFamily: "Courier", lineHeight: 1.7 }}>
-              Time savings: {timeSavedPerNote} min saved {"\u00D7"} {formatNumber(adoptedEncounters)} adopted encounters = {formatNumber(Math.round(totalHoursSaved))} hours{"\n"}
-              Patient capacity: {capacityPercent}% of hours {"\u00F7"} {state.calibration.minutesPerVisit} min {"\u00D7"} ${state.calibration.revenuePerVisit}/visit{"\n"}
-              wRVU lift: +{wrvuDelta.toFixed(2)} {"\u00D7"} {formatNumber(adoptedEncounters)} encounters {"\u00D7"} ${state.calibration.conversionFactor} {"\u00D7"} 50-75%{"\n"}
-              Expansion: Per-provider economics {"\u00D7"} provider count {"\u00D7"} adoption rate
+          <View style={s.card}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Attribution Model</Text>
+            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
+              We apply a conservative attribution range ({fin.attrRange}) to all financial calculations.
+              This reflects our assessment that Abridge is one contributor among many to observed improvements.
+              The range accounts for secular trends, concurrent initiatives, and natural variance.
             </Text>
           </View>
 
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionLabelGray}>LIMITATIONS</Text>
-          <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.65 }}>
-            This analysis is a modeled estimate, not an audited financial projection. It does not account for payer mix variation, specialty-specific differences in documentation patterns, seasonal volume fluctuations, or concurrent workflow changes. We recommend validating key metrics (particularly wRVU lift and same-day closure rates) with your revenue cycle and compliance teams. Abridge is committed to partnering with your team to refine these estimates over time.
-          </Text>
-
-          <PageFooter pageNum={6} orgName={orgName} />
-        </View>
-      </Page>
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* PAGE 7: CLOSING PAGE                                          */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <Page size="LETTER" style={styles.page} wrap={false}>
-        <View style={styles.pageWrapper}>
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Image src={abridgeLogoPath} style={{ width: 120, marginBottom: 40 }} />
-
-            <Text style={{ fontSize: 14, color: colors.secondary, marginBottom: 8, textAlign: "center" }}>
-              Prepared for
-            </Text>
-            <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 24, textAlign: "center" }}>
-              {orgName}
-            </Text>
-
-            <View style={{ width: 60, height: 2, backgroundColor: colors.primary, marginBottom: 24 }} />
-
-            <Text style={{ fontSize: 12, color: colors.secondary, marginBottom: 6, textAlign: "center" }}>
-              {today}
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.secondary, marginBottom: 40, textAlign: "center" }}>
-              {displayPreparedBy}
-            </Text>
-
-            <View style={{ backgroundColor: colors.cards, padding: 20, borderRadius: 6, maxWidth: 360 }}>
-              <Text style={{ fontSize: 11, color: colors.primaryText, textAlign: "center", lineHeight: 1.6 }}>
-                Questions about this analysis?{"\n"}Contact your Abridge partnership team.
-              </Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark, marginTop: 10, marginBottom: 6 }}>Assumptions</Text>
+          {[
+            { k: "Attribution range", v: fin.attrRange },
+            { k: "Realization rate", v: `${DEFAULT_ASMP.realization}%` },
+            { k: "Conversion factor ($/wRVU)", v: `$${DEFAULT_ASMP.conversionFactor}` },
+            { k: "OT premium rate", v: `$${DEFAULT_ASMP.otPremiumRate}/hr` },
+            { k: "ED revenue per visit", v: `$${DEFAULT_ASMP.edRevenuePerVisit}` },
+            { k: "DRG base rate", v: `$${fmtN(DEFAULT_ASMP.drgBaseRate)}` },
+            { k: "Cost per bed day", v: `$${fmtN(DEFAULT_ASMP.costPerBedDay)}` },
+            { k: "Revenue per visit (OP)", v: `$${DEFAULT_ASMP.revenuePerVisit}` },
+            { k: "Adopted encounters", v: `${fmtN(adopted)} (${utilRate}% of ${fmtN(totalEncounters)})` },
+          ].map((row, i) => (
+            <View key={i} style={s.methRow}>
+              <Text style={s.methKey}>{row.k}</Text>
+              <Text style={s.methVal}>{row.v}</Text>
             </View>
-          </View>
+          ))}
 
-          <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 }}>
-            <Text style={{ fontSize: 8, color: colors.tertiary, textAlign: "center", lineHeight: 1.5 }}>
-              This document contains confidential information prepared exclusively for {orgName}. The estimates and projections herein are modeled from organization-provided data and Abridge deployment methodology. They are not audited financial projections and should not be used as the sole basis for investment decisions. {"\u00A9"} {new Date().getFullYear()} Abridge AI, Inc. All rights reserved.
+          <View style={[s.callout, { marginTop: 14 }]}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What we don{"\u2019"}t count</Text>
+            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
+              Provider satisfaction and intent to stay, recruitment advantage ("{"\u201C"}physicians ask about Abridge{"\u201D"}),
+              reduced administrative backlog and prior auth delays, and audit readiness / documentation defensibility.
+              These are real but difficult to isolate financially. We mention them but do not include them in any dollar estimate.
             </Text>
           </View>
+
+          <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
       </Page>
     </Document>
   );
 };
 
-export async function generateMeasurePDF(
-  state: MeasureState,
-  clientName?: string,
-  preparedBy?: string
-): Promise<void> {
-  const blob = await pdf(
-    <MeasurePDFDocument state={state} clientName={clientName} preparedBy={preparedBy} />
-  ).toBlob();
-
-  const orgName = clientName ? clientName.replace(/[^a-zA-Z0-9]/g, "_") : "Organization";
-  await savePdfBlob(blob, `Abridge_Value_Story_${orgName}.pdf`);
+export async function generateMeasurePDF(state: MeasureState): Promise<void> {
+  const doc = <MeasureEBR state={state} />;
+  const blob = await pdf(doc).toBlob();
+  const orgName = state.deployment.organizationName || "EBR";
+  const dateStr = new Date().toISOString().slice(0, 10);
+  await savePdfBlob(blob, `${orgName.replace(/\s+/g, "-")}_EBR_${dateStr}.pdf`);
 }
