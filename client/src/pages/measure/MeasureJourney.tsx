@@ -86,18 +86,24 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, delay 
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let timer1: ReturnType<typeof setTimeout>;
+    let timer2: ReturnType<typeof setTimeout>;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          const timer1 = setTimeout(() => setAnimated(true), delay);
-          const timer2 = setTimeout(() => setShowDelta(true), delay + 800);
-          return () => { clearTimeout(timer1); clearTimeout(timer2); };
+          timer1 = setTimeout(() => setAnimated(true), delay);
+          timer2 = setTimeout(() => setShowDelta(true), delay + 800);
+          observer.disconnect();
         }
       },
       { threshold: 0.3 }
     );
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [delay]);
 
   const ratio = before !== 0 ? Math.min(after / before, 2) : 1;
