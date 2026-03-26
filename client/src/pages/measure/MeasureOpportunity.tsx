@@ -58,7 +58,10 @@ function fmtRange(low: number, high: number): string {
 }
 
 function computeConfirmedRange(state: MeasureState): { low: number; high: number } {
-  const setting = state.careSetting || 'outpatient';
+  const activeSettings = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const primarySetting = activeSettings[0];
   const providers = state.deployment.providers || state.deployment.mruProviders || 0;
   const totalEncounters = state.deployment.totalEncounters || 0;
   const utilizationRate = state.deployment.utilizationRate || 0;
@@ -73,56 +76,65 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
   let totalLow = 0;
   let totalHigh = 0;
 
-  const settingData = state.settingData?.[setting] || {};
   const activeMetrics = getActiveMetrics(state);
 
-  const wrvuMetric = activeMetrics.find(m =>
-    ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === setting)
-  );
-  const wrvuDelta = (wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0) -
-    (wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0);
-  if (wrvuDelta > 0 && adoptedEncounters > 0) {
-    const base = wrvuDelta * adoptedEncounters * cf;
-    totalLow += base * attrLow * realLow;
-    totalHigh += base * attrHigh * realHigh;
-  }
-
-  const emMetric = activeMetrics.find(m =>
-    ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === setting)
-  );
-  const emDelta = (emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0) -
-    (emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0);
-  if (emDelta > 0 && adoptedEncounters > 0) {
-    const base = emDelta * adoptedEncounters * 45;
-    totalLow += base * attrLow * realLow;
-    totalHigh += base * attrHigh * realHigh;
-  }
-
-  if (setting === 'inpatient') {
-    const cmiMetric = activeMetrics.find(m =>
-      ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+  for (const s of activeSettings) {
+    const sSettingData = state.settingData?.[s] || {};
+    const sAdoptedEncounters = Math.round(
+      (sSettingData.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100)
     );
-    const cmiDelta = Math.max(0, (cmiMetric?.after ?? settingData.cmi_after ?? 0) - (cmiMetric?.before ?? settingData.cmi_before ?? 0));
-    if (cmiDelta > 0) {
-      const base = cmiDelta * totalEncounters * 6800;
+    const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
+
+    const wrvuMetric = activeMetrics.find(m =>
+      ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const wrvuDelta = (wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0)) -
+      (wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0));
+    if (wrvuDelta > 0 && effectiveAdopted > 0) {
+      const base = wrvuDelta * effectiveAdopted * cf;
       totalLow += base * attrLow * realLow;
       totalHigh += base * attrHigh * realHigh;
     }
-  }
 
-  if (setting === 'ed') {
-    const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
-    const lwbsDelta = (lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0) - (lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0);
-    if (lwbsDelta > 0 && totalEncounters > 0) {
-      const recovered = (lwbsDelta / 100) * totalEncounters * 12;
-      totalLow += recovered * 480 * attrLow;
-      totalHigh += recovered * 480 * attrHigh;
+    const emMetric = activeMetrics.find(m =>
+      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const emDelta = (emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0)) -
+      (emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0));
+    if (emDelta > 0 && effectiveAdopted > 0) {
+      const base = emDelta * effectiveAdopted * 45;
+      totalLow += base * attrLow * realLow;
+      totalHigh += base * attrHigh * realHigh;
+    }
+
+    if (s === 'inpatient') {
+      const cmiMetric = activeMetrics.find(m =>
+        ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+      );
+      const cmiDelta = Math.max(0, (cmiMetric?.after ?? sSettingData.cmi_after ?? 0) - (cmiMetric?.before ?? sSettingData.cmi_before ?? 0));
+      if (cmiDelta > 0) {
+        const discharges = sSettingData.deploy_totalEncounters || totalEncounters;
+        const base = cmiDelta * discharges * 6800;
+        totalLow += base * attrLow * realLow;
+        totalHigh += base * attrHigh * realHigh;
+      }
+    }
+
+    if (s === 'ed') {
+      const edSettingData = state.settingData?.ed || {};
+      const edTotalEncounters = edSettingData.deploy_totalEncounters || totalEncounters;
+      const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+      const lwbsDelta = (lwbsMetric?.before ?? edSettingData.lwbsRate_before ?? 0) - (lwbsMetric?.after ?? edSettingData.lwbsRate_after ?? 0);
+      if (lwbsDelta > 0 && edTotalEncounters > 0) {
+        const recovered = (lwbsDelta / 100) * edTotalEncounters * 12;
+        totalLow += recovered * 480 * attrLow;
+        totalHigh += recovered * 480 * attrHigh;
+      }
     }
   }
 
   const afterHoursMetric = activeMetrics.find(m =>
-    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId) &&
-    (!m.setting || m.setting === setting)
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId)
   );
   const afterHoursDelta = Math.max(0,
     (afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0) -
@@ -171,8 +183,13 @@ export default function MeasureOpportunity({
   const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
   const orgName = state.deployment.organizationName || "Your Organization";
-  const setting = state.careSetting || "outpatient";
-  const settingLabel = setting === 'ed' ? 'Emergency Department' : setting === 'inpatient' ? 'Inpatient' : setting === 'nursing' ? 'Nursing' : 'Outpatient';
+  const activeSettingsList = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const settingLabel = activeSettingsList.map((s: string) =>
+    s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
+  ).join(' · ');
+  const setting = activeSettingsList[0];
 
   const confirmed = useMemo(() => computeConfirmedRange(state), [state]);
   const hasConfirmedValue = confirmed.low > 0;

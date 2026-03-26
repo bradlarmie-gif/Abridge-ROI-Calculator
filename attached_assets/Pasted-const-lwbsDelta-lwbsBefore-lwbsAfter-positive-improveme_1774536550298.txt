@@ -1,0 +1,991 @@
+const lwbsDelta = lwbsBefore - lwbsAfter;  // positive = improvement
+
+  // CMI — inpatient
+  const cmiBefore = settingData.cmi_before ?? 0;
+  const cmiAfter = settingData.cmi_after ?? 0;
+  const cmiDelta = cmiAfter - cmiBefore;
+
+  For burnout/likelihood-to-stay signal: check state.customMetrics for entries with section === 'workforce' that have a before and after value. If any exist with a positive improvement direction, show the
+  retention signal sub-row.
+
+  ---
+  Component Interface
+
+  The component receives the same props as the current MeasureScenarios.tsx:
+
+  interface MeasureScenariosProps {
+    state: MeasureState;
+    updateState: (updates: Partial<MeasureState>) => void;
+    onNext: () => void;
+    onBack: () => void;
+    onHome: () => void;
+  }
+
+  Keep the same export name MeasureScenarios so MeasureFlow.tsx doesn't need changes.
+
+  ---
+  useCountUp Hook
+
+  If client/src/hooks/useCountUp.ts doesn't exist, create it:
+
+  import { useState, useEffect, useRef } from 'react';
+
+  function easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  export function useCountUp(target: number, duration = 1200, delay = 300): number {
+    const [current, setCurrent] = useState(0);
+    const rafRef = useRef<number>(0);
+    const startRef = useRef<number | null>(null);
+
+    useEffect(() => {
+      if (target === 0) { setCurrent(0); return; }
+      const timeout = setTimeout(() => {
+        const animate = (timestamp: number) => {
+          if (!startRef.current) startRef.current = timestamp;
+          const elapsed = timestamp - startRef.current;
+          const progress = Math.min(elapsed / duration, 1);
+          setCurrent(Math.round(target * easeOutCubic(progress)));
+          if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+        };
+        rafRef.current = requestAnimationFrame(animate);
+      }, delay);
+      return () => { clearTimeout(timeout); cancelAnimationFrame(rafRef.current); startRef.current = null; };
+    }, [target, duration, delay]);
+
+    return current;
+  }
+
+  ---
+  Verification
+
+  1. Enter only wRVU before/after → billing capture row appears, hero counts up to non-zero range, no other rows render
+  2. Enter only after-hours before/after → cost reduction row appears, hero shows OT savings range
+  3. Enter both → hero combines both ranges, two rows visible
+  4. Enter nothing → hero hidden entirely, soft prompt visible
+  5. Move realization slider → all numbers update instantly, no page jump
+  6. ED setting → revenue recovery row visible when LWBS entered, "ED revenue per visit" field appears in sensitivity panel
+  7. Inpatient setting → CMI row shows inside billing capture, "DRG base rate" field in sensitivity
+  8. "Also Real. Not Quantified." renders below calculated rows regardless of data state
+  9. No white cards anywhere — all section backgrounds are bg-[#F5F0EB]
+  10. No time × hourly rate calculation anywhere in the file
+
+  ---
+  That's the full prompt. The key architectural shift: the page only renders rows and a hero when there's something real to show. The sensitivity panel lets users adjust assumptions without hiding the
+  methodology. The burnout/turnover section is honest about being signal-based, not a direct calculation — which is actually more credible with health system finance teams than fake precision.
+
+✻ Crunched for 4m 54s · 1 background task still running (↓ to manage)
+
+❯ okay made those edits.. now what do we do for the next page after this 
+
+⏺ Let me check what exists before designing anything.
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Good timing to step back for a second. The current codebase has two pages after financial: MeasureOpportunity (maturity + expansion) and MeasureStory (PDF export summary). Both are weak as separate
+  destinations. Page 5 should absorb both and become the closing argument of the EBR.
+
+  Here's what Page 5 needs to do in a room full of health system leaders:
+
+  1. Show where they stand on a maturity track — not time-based, capability-based. Four stages: Unmeasured → Signaling → Validated → Strategic. Their dot lands somewhere real.
+  2. Show what they leave on the table if they stay at their current adoption/scope — expansion as unrealized value, not generic upsell.
+  3. Name the next 2–3 moves that advance their maturity — specific, operational, non-generic.
+  4. Let them export the whole story as a PDF — this is what they bring to the CFO.
+
+  The page should feel like a conclusion, not a sales pitch. The tone is: "here is your position, here is the distance to the next level, here is what it takes."
+
+  ---
+  Replit Prompt — Page 5: "What's Next"
+
+  ---
+  Rewrite client/src/pages/measure/MeasureOpportunity.tsx as the final page of the 5-page EBR flow, and eliminate MeasureStory.tsx from the routing — PDF export moves here. Update MeasureFlow.tsx to remove
+  the story phase entirely; MeasureOpportunity becomes the terminal page.
+
+  ---
+  Page Structure
+
+  WHAT'S NEXT
+  [org] · [setting] · [N months with Abridge]
+
+  ── MATURITY STAGE TRACK ──────────────────────────────────
+
+  ── EXPANSION OPPORTUNITY ─────────────────────────────────
+
+  ── NEXT MOVES ────────────────────────────────────────────
+
+  ── EXPORT ────────────────────────────────────────────────
+
+  ---
+  Section 1: Maturity Stage Track
+
+  Four stages on a horizontal rail. The current stage has a filled orange dot. Completed stages have a check. Future stages are grayed out and dimmed.
+
+  Unmeasured  ──●──  Signaling  ──○──  Validated  ──○──  Strategic
+                 ↑ you are here
+
+  Stage definitions — NOT time-based, capability-based:
+
+  ┌────────────┬──────────────────────────────────────────────────────────────┐
+  │   Stage    │                        What It Means                         │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Unmeasured │ Adoption under 20% or baselines not yet established          │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Signaling  │ 1–2 domains showing before/after trends, baselines confirmed │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Validated  │ 3+ domains with confirmed trends, ≥60% utilization           │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Strategic  │ Embedded in org strategy, ≥70% adoption, board-ready proof   │
+  └────────────┴──────────────────────────────────────────────────────────────┘
+
+  Below the track: a single descriptive sentence about the current stage. Then a "What gets you to [next stage]" list — 2–3 specific, concrete items derived from actual state:
+
+  - If utilization < 20%: "Reach 20% Abridge adoption (you're at X%)"
+  - If active domains < 3: "Establish before/after data in [missing domains]"
+  - If months < 6 and utilization < 60%: "Reach 60% utilization across the cohort"
+  - If at Validated: "Document outcomes in a formal internal report for CFO/CMO review"
+  - If at Strategic: "Publish findings — you have board-level proof"
+
+  Use deriveEngagementContext(state) and computeDomainStatus(state) from measureCalculator.ts.
+
+  Style:
+  - Track rail: bg-[#E5E5E5] line, w-3 h-3 dots
+  - Current stage dot: bg-[#EA2C00] filled, ring-4 ring-[#EA2C00]/20
+  - Completed stages: bg-[#1A1A1A] with a checkmark
+  - Future stages: bg-[#E5E5E5]
+  - Stage labels: current = font-bold text-[#1A1A1A], future = text-[#999999]
+  - Card background: bg-[#F5F0EB]
+
+  ---
+  Section 2: Expansion Opportunity
+
+  Three expansion levers. Only show levers where there's unrealized headroom. Each lever is a beige card with a single projected number.
+
+  Lever 1: Deepen Adoption
+  Only show if utilizationRate < 75%.
+
+  ┌─────────────────────────────────────┐
+  │ DEEPEN ADOPTION                     │
+  │                                     │
+  │ You're at X%. If you reach 75%:    │
+  │                                     │
+  │  +$XX,000 — $XX,000 / year         │
+  │  additional confirmed value         │
+  │                                     │
+  │ [X additional providers would need  │
+  │  to regularly use Abridge]          │
+  └─────────────────────────────────────┘
+
+  Calculation: scale the Page 4 confirmed value range proportionally.
+  targetRate = 75%, currentRate = utilizationRate
+  additionalLow = confirmedLow × (targetRate/currentRate - 1)
+  additionalHigh = confirmedHigh × (targetRate/currentRate - 1)
+
+  If Page 4 has no confirmed value (no financial metrics entered), show encounter count instead:
+  "X additional encounters per year would be Abridge-assisted"
+
+  Lever 2: Expand Providers
+  Only show if providers < totalProviders.
+
+  ┌─────────────────────────────────────┐
+  │ EXPAND PROVIDER COHORT              │
+  │                                     │
+  │ X of Y providers are on Abridge.   │
+  │ At full deployment:                 │
+  │                                     │
+  │  +$XX,000 — $XX,000 / year         │
+  │  additional value from Z providers  │
+  └─────────────────────────────────────┘
+
+  Calculation: additionalProviders = totalProviders - providers
+  perProviderValueLow = confirmedLow / providers
+  additionalLow = perProviderValueLow × additionalProviders
+
+  Lever 3: Add a Care Setting
+  Only show if only one care setting is active.
+
+  ┌─────────────────────────────────────┐
+  │ ADD A CARE SETTING                  │
+  │                                     │
+  │ Currently measuring: Outpatient     │
+  │ Next setting to consider: ED        │
+  │                                     │
+  │ ED deployments at peer systems      │
+  │ have shown:                         │
+  │  • LWBS rate −0.6 to −1.2 pts      │
+  │  • Door-to-doc time −18%            │
+  │  • Note time −42%                   │
+  └─────────────────────────────────────┘
+
+  Don't show a dollar amount here — no data to calculate from. Show benchmark signal language only. Suggest the most logical next setting based on current setting:
+  - Outpatient → suggest ED
+  - ED → suggest Inpatient
+  - Inpatient → suggest Outpatient
+  - Nursing → suggest Inpatient
+
+  If all 3 levers have no headroom (full adoption, full providers, all settings), replace section with a single card: "You've reached full deployment maturity. The work now is validation and publication."
+
+  Use calculateExpansionResults() from measureCalculator.ts for the math.
+
+  ---
+  Section 3: Next Moves
+
+  A short, prioritized list of 2–4 actions. Derive from state. This is NOT generic — it reads the actual data.
+
+  Logic:
+  const nextMoves: { label: string; detail: string }[] = [];
+
+  if (utilizationRate < 40%) {
+    nextMoves.push({ label: 'Drive adoption', detail: `${org} is at ${utilizationRate}% — next milestone is 40%. Schedule department-level Abridge sessions.` });
+  }
+  if (activeMetrics.length < 4) {
+    nextMoves.push({ label: 'Add measurement depth', detail: 'You have data in fewer than 4 metrics. Broader coverage makes the story more defensible.' });
+  }
+  if (maturityStage === 'signaling') {
+    nextMoves.push({ label: 'Formalize the comparison', detail: 'Run a structured Abridge vs. non-Abridge encounter analysis for the CMO. The data is there.' });
+  }
+  if (maturityStage === 'validated' || maturityStage === 'strategic') {
+    nextMoves.push({ label: 'Publish internally', detail: 'Prepare a one-page findings brief for finance and quality leadership. Use this EBR as the source.' });
+  }
+  nextMoves.push({ label: 'Set a 90-day goal', detail: 'Name one metric, one target, one owner. Schedule a check-in.' });
+
+  Display as a numbered list inside a beige card. Numbers in bg-[#EA2C00] circles. Max 4 items.
+
+  ---
+  Section 4: Export
+
+  A single prominent button. No modal needed — use browser print or generateMeasurePDF if it already exists.
+
+  [↓ Download EBR Summary — PDF]
+
+  Import generateMeasurePDF from @/components/measure/MeasurePDFExport and call it on click passing state. If that function doesn't exist or fails, fall back to window.print().
+
+  Button style: bg-[#1A1A1A] text-white h-14 w-full rounded-xl font-bold text-base with a Download icon from lucide.
+
+  Also a secondary text link: "Back to Financial Impact" (onBack handler).
+
+  ---
+  Flow Changes in MeasureFlow.tsx
+
+  Remove the story phase entirely. MeasureOpportunity becomes the terminal page:
+
+  // Remove:
+  case 'story': ...
+
+  // Change:
+  type MeasurePhase = 'data' | 'change' | 'scenarios' | 'value' | 'opportunity';
+
+  // opportunity case — remove onNext, it's the last page:
+  case 'opportunity':
+    return (
+      <MeasureOpportunity
+        state={state}
+        updateState={updateState}
+        onBack={() => navigate('value')}
+        onHome={goHome}
+      />
+    );
+
+  Remove the MeasureStory import from MeasureFlow.tsx.
+
+  ---
+  Style Consistency
+
+  - All cards: bg-[#F5F0EB] border border-[#E5E5E5] rounded-2xl
+  - No white cards, no green/blue/teal dots
+  - Section headers: text-xs font-bold uppercase tracking-widest text-[#666666] mb-4
+  - Large projected values: text-2xl font-bold text-[#EA2C00]
+  - Greyed-out future stages: opacity-40
+  - Page background: bg-[#FAFAFA]
+  - font-abridge on the page H1 only
+
+  ---
+  Verification
+
+  1. At signaling maturity → track shows filled dot on Signaling, Validated and Strategic dimmed, "next moves" list shows formalize-the-comparison item
+  2. utilizationRate = 40% → Deepen Adoption lever appears with math showing 75% target delta
+  3. providers = 8, totalProviders = 22 → Expand Provider Cohort lever shows additional 14 providers value
+  4. Single care setting active → Add a Care Setting lever shows benchmark language, no dollar amount
+  5. Full deployment (utilization ≥ 75%, providers = totalProviders, all settings) → replacement card appears
+  6. PDF button calls generateMeasurePDF — if unavailable, falls back to window.print()
+  7. MeasureFlow no longer references story phase, no import of MeasureStory
+  8. Back button from this page goes to the financial page
+
+  ---
+  The tone for the whole page is: you've seen the proof, here's where you are, here's the gap, here's how you close it. No empty encouragement. No generic next steps. Everything derived from what they
+  actually entered.
+
+✻ Cogitated for 1m 31s · 1 background task still running (↓ to manage)
+
+❯ so after this page what do we need ? 
+
+⏺ Honestly? Step back and think about what you actually have vs. what you need to ship this as a real EBR tool.
+
+  The 5 pages are designed. But there are deeper gaps:
+
+  ---
+  The structural problem nobody has fixed yet
+
+  The old MeasureState still uses flat fields — documentationQuality.wrvuWithout, timeEfficiency.timeInNotesWithout, etc. The new metric entry system (Page 2) writes to state.metricValues (a keyed store).
+  These two worlds aren't connected. Page 4's financial calculations still read from the old flat fields, which is why it showed $0. The Page 4 prompt I wrote still reads from the old fields
+  (state.documentationQuality.wrvuWith, etc.) — so unless Page 2 writes to both places, it will still break.
+
+  This needs a deliberate migration decision: either update the calculators to read from state.metricValues, or have Page 2 write to both the keyed store and the legacy flat fields as a bridge.
+
+  ---
+  What's actually left to do, in priority order:
+
+  1. Verify Pages 2 and 3 actually exist and work
+  Were those prompts entered and working? If Page 2 (metrics entry) doesn't write correctly and Page 3 (journey) doesn't read it correctly, Pages 4 and 5 have nothing to show.
+
+  2. Wire the state bridge
+  The financial calculation in Page 4 needs to read from wherever Page 2 writes. Right now they're disconnected.
+
+  3. The PDF export
+  generateMeasurePDF is referenced in the old MeasureStory.tsx. It almost certainly doesn't reflect the new 5-page data model. Before Page 5 ships the PDF button, someone needs to update that function —
+  otherwise the "download EBR summary" button exports an outdated or broken document. This is the deliverable that leaves the room and goes to the CFO. It can't be broken.
+
+  4. Multi-setting state
+  You said if they select Outpatient + ED, both settings' metrics should surface. That routing logic in Page 2 and Page 3 needs to actually work, not just be designed.
+
+  5. Shareability
+  The PSM uses this tool before a meeting. They need to be able to save progress and share a URL. measureUrlState.ts exists — is it wired to the new state shape?
+
+  ---
+  What I'd actually do next
+
+  Before writing more page prompts, enter a diagnostic prompt that:
+  1. Audits what Page 2 actually writes to state and what Page 3/4 actually reads
+  2. Identifies the exact field mismatch
+  3. Patches the bridge in one place (measureCalculator.ts)
+
+  That one fix probably unlocks the $0 problem on Page 4, makes Page 3's bars actually animate, and makes Page 5's expansion math real.
+
+  Want me to write that diagnostic/bridge prompt?
+
+✻ Crunched for 46s · 1 background task still running (↓ to manage)
+
+❯ /Users/brad/Downloads/The-ROI-Calculator\ \(17\).zip  i wanted you to be able to see the measure path now.. and tell me what you think.. be hyper critical. we haven't touched the pdf yet so you can    
+  ignore that for now                                                                                                                                                                                      
+
+⏺ Bash(cd /tmp && unzip -q "/Users/brad/Downloads/The-ROI-Calculator (17).zip" -d roi-calc-v17 2>&1 | head -5; echo "Done")
+  ⎿  Done
+
+⏺ Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Explore(Read all measure path files for review)
+  ⎿  Done (13 tool uses · 112.1k tokens · 27s)
+  (ctrl+o to expand)
+
+⏺ Searched for 2 patterns, read 6 files (ctrl+o to expand)
+
+⏺ OK, I have a comprehensive picture now. Here's my honest, unfiltered take.
+
+  ---
+  What's working well
+
+  The architecture is legitimately good. The 5-page flow is clean. MeasureJourney (Page 3) with the two-line bars, IntersectionObserver-triggered animations, and signal dots is the strongest page in the tool
+   — it would hold up in a real EBR room. MeasureAllocate (Page 4) has the right structure: beige cards, count-up hero, sensitivity panel, no $0 empty state message. The component decisions are solid.
+
+  ---
+  The showstopper bug
+
+  Page 4 will show $0 for wRVU, E/M, and after-hours, no matter what you enter on Page 2.
+
+  Here's why: MeasureMetricSelection writes everything to state.metricValues (keyed like wrvuPerEncounter__outpatient: { before: 1.8, after: 2.1 }). But MeasureAllocate's financial calculations read from the
+   legacy flat fields — state.documentationQuality.wrvuWith, state.timeEfficiency.workOutsideWithout. These are populated by syncSettingToState(), which reads from state.settingData[setting] using
+  underscore-key format like wrvuPerEncounter_before. MeasureMetricSelection never writes to settingData. So settingData stays at its initialized defaults (all zeros), syncSettingToState runs and writes
+  zeros to documentationQuality, and Page 4 gets zeros.
+
+  The only thing that works on Page 4 right now is the burnout/retention signal — because computeFinancials directly reads from state.metricValues for those two metrics specifically (lines 178–216).
+  Everything else is dead.
+
+  The fix is one of two options:
+  - Have MeasureMetricSelection write to both metricValues AND settingData simultaneously when a user enters before/after values
+  - Have computeFinancials in MeasureAllocate read directly from state.metricValues instead of the legacy fields — and then applySettingSync becomes irrelevant for the financial page
+
+  Option 2 is cleaner. getActiveMetrics(state) already does this work — it returns all metrics with before/after from metricValues. The financial page should use that, not the legacy struct.
+
+  Page 5 (MeasureOpportunity) has the same problem — its computeConfirmedRange also reads state.documentationQuality.wrvuWith, so expansion projections will also be $0.
+
+  ---
+  Page 2 — three UX problems
+
+  1. All domains start collapsed. The user lands on Page 2 and sees five collapsed domain headers. Nothing is open. In an EBR context where you have 30 minutes, the first impression of this page is a blank
+  wall of section titles. At minimum, the first domain (Foundational) should auto-expand. Better: auto-expand the first two.
+
+  2. Active metric cards are white (bg-white). You established beige (#F5F0EB) as the Abridge feel. The inactive row backgrounds match that (the hover state goes to #FFF8F5). But the activated expanded card
+  goes bg-white — it visually pops out in the wrong direction. Should be bg-[#F5F0EB] border border-[#E8E2DA].
+
+  3. Delta badge is green. bg-green-50 text-green-700. You've been explicit that non-orange accent colors feel wrong here. The delta badge should use bg-[#EA2C00]/10 text-[#EA2C00] when improved, and a
+  neutral gray when not improved. No green anywhere.
+
+  ---
+  Page 3 — one bug
+
+  Arrow direction is inverted for higher-is-better metrics. The badge shows ↓ when improved === true for all metrics. For time-in-notes going from 3 min to 1.5 min, ↓44% is right — it went down and that's
+  good. But for wRVU going from 1.8 to 2.1, the badge shows ↓16.7% — which implies it declined. It should show ↑16.7%. The fix is one line:
+
+  // current (wrong for higherIsBetter)
+  {improved ? '↓' : '↑'}
+
+  // correct
+  {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}
+
+  ---
+  Dead code
+
+  MeasureScenarios.tsx is a 517-line file that does the old Conservative/Typical/Optimistic thing and isn't in the flow anymore. It's not imported anywhere now. Delete it — it's a distraction and it uses the
+   time×hourly-rate calculation you explicitly don't want.
+
+  ---
+  Page 4 — minor but real
+
+  The sensitivity panel defaults to showing attribution: 62% but the range description says Low = 50%, High = 75%. The user can see the slider but not understand why it matters — there's no explanation of
+  what "attribution" means in plain language. One sentence like "What portion of these outcomes is directly attributable to Abridge vs. other factors" would make this defensible in a meeting instead of
+  confusing.
+
+  ---
+  What to fix first
+
+  1. The state bridge bug — Page 4 is broken without this. Fix computeFinancials to read from state.metricValues directly, not from legacy fields.
+  2. Arrow directions — one-line fix, high visibility bug.
+  3. Auto-expand first domain on Page 2 — trivial but changes the first impression completely.
+  4. Green → orange on delta badge — one class change.
+  5. Delete MeasureScenarios.tsx — cleanup.
+
+  Want me to write the prompt that fixes all five?
+
+✻ Baked for 4m 17s · 1 background task still running (↓ to manage)
+
+❯ yes 
+
+⏺ Replit Prompt — Fix 5 bugs across the Measure path
+
+  ---
+  Make the following five targeted fixes. Do not refactor anything beyond what is described. Do not change visual design, animation logic, or page structure.
+
+  ---
+  Fix 1 — State bridge: MeasureAllocate.tsx and MeasureOpportunity.tsx read $0
+
+  Root cause: computeFinancials() in MeasureAllocate.tsx reads wRVU, E/M, CMI, and after-hours from legacy flat fields (state.documentationQuality.wrvuWith, state.timeEfficiency.workOutsideWithout, etc.).
+  But MeasureMetricSelection writes user-entered values to state.metricValues (keyed store), never to those legacy fields. So every financial calculation except burnout/retention shows $0.
+
+  Fix: Update computeFinancials() to read from state.metricValues first, with legacy fields as fallback. Import getActiveMetrics from @/lib/measureCalculator at the top of MeasureAllocate.tsx.
+
+  Replace the current variable declarations at the top of computeFinancials():
+
+  // OLD:
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
+  // ... and further down:
+  const afterHoursWithout = state.timeEfficiency.workOutsideWithout;
+  const afterHoursWith = state.timeEfficiency.workOutsideWith;
+  // ... and for settingData CMI/LWBS reads
+
+  // NEW:
+  const activeMetrics = getActiveMetrics(state);
+
+  // wRVU — check metricValues first, fall back to legacy
+  const wrvuMetric = activeMetrics.find(m =>
+    m.metricId === 'wrvuPerEncounter' && (!m.setting || m.setting === setting)
+  );
+  const wrvuBefore = wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0;
+  const wrvuAfter = wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0;
+  const wrvuDelta = wrvuAfter - wrvuBefore;
+
+  // E/M level
+  const emMetric = activeMetrics.find(m =>
+    m.metricId === 'emLevel' && (!m.setting || m.setting === setting)
+  );
+  const emBefore = emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0;
+  const emAfter = emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0;
+  const emDelta = emAfter - emBefore;
+
+  // After-hours / work outside hours
+  const afterHoursMetric = activeMetrics.find(m =>
+    ['afterHours', 'workOutsideHours', 'workAfterHours', 'afterHoursWork'].includes(m.metricId) &&
+    (!m.setting || m.setting === setting)
+  );
+  const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
+  const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
+
+  // CMI (inpatient)
+  const cmiMetric = activeMetrics.find(m =>
+    ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+  );
+  const cmiBefore = cmiMetric?.before ?? settingData.cmi_before ?? 0;
+  const cmiAfter = cmiMetric?.after ?? settingData.cmi_after ?? 0;
+  const cmiDelta = isInpatient ? Math.max(0, cmiAfter - cmiBefore) : 0;
+
+  // LWBS (ED)
+  const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+  const lwbsBefore = lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0;
+  const lwbsAfter = lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0;
+  const lwbsDelta = lwbsBefore - lwbsAfter;
+
+  // Denial rate (ED)
+  const denialMetric = activeMetrics.find(m =>
+    ['initialDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
+  );
+  const denialBefore = denialMetric?.before ?? settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
+  const denialAfter = denialMetric?.after ?? settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;
+  const denialDelta = denialBefore - denialAfter;
+
+  Then update the rest of computeFinancials() to use these new variables instead of re-reading settingData for CMI/LWBS/denial. Specifically, replace:
+  - Any settingData.lwbsRate_before/after with lwbsBefore/lwbsAfter and use the already-computed lwbsDelta
+  - Any settingData.initial_denial_rate_before/after with denialBefore/denialAfter and use denialDelta
+  - The existing afterHoursWithout/afterHoursWith var declarations (they will now conflict — remove the old ones)
+  - The existing cmiBefore/cmiAfter inside the if (cmiDelta > 0) block — remove those re-declarations
+
+  Also apply the same fix to MeasureOpportunity.tsx: find computeConfirmedRange() (or whatever function computes the confirmed value range on that page) and apply the same getActiveMetrics + fallback pattern
+   for wRVU and CMI reads.
+
+  ---
+  Fix 2 — Arrow direction inverted on higher-is-better metrics in MeasureJourney.tsx
+
+  In the MetricBar component, find the delta badge JSX. It currently reads something like:
+
+  {improved ? '↓' : '↑'}{Math.abs(deltaPercent).toFixed(1)}%
+
+  Replace with:
+
+  {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}{Math.abs(deltaPercent).toFixed(1)}%
+
+  This ensures wRVU going from 1.8 → 2.1 shows ↑16.7% (improvement), and time-in-notes going from 3 → 1.5 shows ↓50% (improvement). Do not change any other logic in MetricBar.
+
+  ---
+  Fix 3 — Auto-expand first domain on Page 2 in MeasureMetricSelection.tsx
+
+  The expandedDomains state currently initializes as an empty Set, so the user lands on Page 2 with every domain collapsed.
+
+  Find:
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
+
+  Replace with:
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
+
+  This opens the first two domain sections on load so users see actual metrics immediately instead of a blank page.
+
+  ---
+  Fix 4 — Delta badge colors: green → orange in MeasureMetricSelection.tsx
+
+  Find the DeltaBadge component. It currently has:
+  className={`... ${improved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}
+
+  Replace with:
+  className={`... ${improved ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'bg-[#F5F0EB] text-[#999999]'}`}
+
+  No green. When a metric hasn't improved, show it in neutral gray — not alarming red. The before/after bar on Page 3 already communicates direction; the badge on Page 2 just needs to confirm improvement.
+
+  ---
+  Fix 5 — Delete orphaned file
+
+  Delete client/src/pages/measure/MeasureScenarios.tsx. It is not imported or used anywhere in the flow. Verify it is not imported before deleting — if it is imported somewhere, remove that import too.
+
+  ---
+  Verification
+
+  After these changes:
+
+  1. Enter wrvuPerEncounter before=1.8 / after=2.1 on Page 2 → Page 4 billing capture row appears with a non-zero range, hero counts up
+  2. Enter afterHours before=1.5 / after=0.3 on Page 2 → Page 4 cost reduction row appears
+  3. On Page 3, find a metric where higher is better (wRVU) — confirm badge shows ↑, not ↓
+  4. On Page 3, find a metric where lower is better (time in notes) — confirm badge shows ↓
+  5. Land on Page 2 — "Foundational" and "Quality" domains are open by default
+  6. Activate a metric and enter before/after values — delta badge is orange, not green
+  7. MeasureScenarios.tsx no longer exists in the codebase
+
+✻ Crunched for 1m 0s · 1 background task still running (↓ to manage)
+
+❯ okay what else do we have to work on 
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Three real things left, plus the PDF.
+
+  ---
+  1. The state bridge fix is incomplete
+
+  Fix 1 from the previous prompt patches computeFinancials to read from metricValues. But computeDomainStatus() — which drives the maturity stage on Page 5 — still reads from the legacy flat fields
+  (documentationQuality.wrvuWith, timeEfficiency.workOutsideWithout, etc.). So even after Fix 1, Page 5 will show "Unmeasured" for everyone regardless of what they entered.
+
+  The right solution isn't to patch every downstream function one by one. It's to fix the source: make MeasureMetricSelection write to both state.metricValues AND state.settingData simultaneously when a user
+   enters a value. Then applySettingSync (which already exists and runs on navigation) picks up settingData, populates the legacy fields correctly, and every downstream function — computeDomainStatus,
+  computeFinancials, computeConfirmedRange, all of it — just works without further changes.
+
+  That's one change in updateMetricValue inside MeasureMetricSelection. Write metricValues[key] as before AND write settingData[setting][metricId + '_before'] / _after simultaneously.
+
+  2. Multi-setting on Pages 4 and 5
+
+  computeFinancials() in MeasureAllocate uses state.careSetting || 'outpatient' — a single setting. If Outpatient + ED are both active, Page 4 only processes one setting's financial data. If a user has both
+  wRVU (Outpatient) and LWBS (ED) entered, only one shows up depending on which setting is careSetting. This needs to loop over state.activeCareSettings and aggregate across all active settings.
+
+  Same issue on Page 5 — expansion math is single-setting.
+
+  3. ~2000 lines of dead code to delete
+
+  Five files exist in the codebase that aren't in the flow:
+
+  ┌──────────────────────┬───────┬──────────────────────────────────────────┐
+  │         File         │ Lines │               What it was                │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureScenarios.tsx │ 517   │ Old growth path (being deleted by Fix 5) │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureInventory.tsx │ 688   │ Old metric inventory                     │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureStage.tsx     │ 323   │ Old "Your Stage" page                    │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureStory.tsx     │ 429   │ Old executive summary/PDF page           │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureWelcome.tsx   │ 308   │ Old welcome screen                       │
+  ├──────────────────────┼───────┼──────────────────────────────────────────┤
+  │ MeasureTrends.tsx    │ 208   │ Old trend charts                         │
+  └──────────────────────┴───────┴──────────────────────────────────────────┘
+
+  Nearly 2,500 lines of dead React that confuses anyone touching the codebase, slows build analysis, and contains the old time×hourly-rate calculations you explicitly don't want in here.
+
+  4. PDF export
+
+  You've deferred it and that's fine. But it's the thing that leaves the room. When you're ready: the existing MeasurePDFExport.tsx component needs a full rewrite to reflect the 5-page flow — it currently
+  generates a summary of the old multi-domain card layout, not the new clinical journey + financial breakdown structure.
+
+  ---
+  Order I'd do them:
+
+  1. The settingData dual-write fix (unblocks maturity stage on Page 5, makes Fix 1 fully redundant and cleaner)
+  2. Dead code deletion (10-minute cleanup, reduces noise for everything after)
+  3. Multi-setting on Pages 4 and 5 (important if your partners ever run dual-setting EBRs)
+  4. PDF (when you're ready)
+
+  Want the prompt for the settingData dual-write fix first?
+
+✻ Worked for 1m 40s · 1 background task still running (↓ to manage)
+
+❯ yes 
+
+⏺ Replit Prompt — Fix the settingData dual-write in MeasureMetricSelection.tsx
+
+  ---
+  Make one targeted change to MeasureMetricSelection.tsx. Do not touch any other file.
+
+  ---
+  The problem
+
+  When a user enters before/after values on Page 2, updateMetricValue writes to state.metricValues only. But applySettingSync() — which runs on navigation and populates the legacy flat fields that
+  computeDomainStatus, maturity calculations, and several other functions depend on — reads from state.settingData. Since settingData is never updated by Page 2, the maturity stage on Page 5 always shows
+  "Unmeasured" regardless of what the user entered.
+
+  The fix
+
+  Find the updateMetricValue callback in MeasureMetricSelection.tsx. It currently looks like this:
+
+  const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {
+    updateState({
+      metricValues: {
+        ...state.metricValues,
+        [key]: { ...(state.metricValues?.[key] || {}), ...updates },
+      },
+    });
+  }, [state.metricValues, updateState]);
+
+  Replace it with this:
+
+  const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {
+    // Parse the metric key — format is `${metricId}__${setting}` or just `${metricId}` for org-wide
+    const separatorIdx = key.indexOf('__');
+    const metricId = separatorIdx >= 0 ? key.slice(0, separatorIdx) : key;
+    const setting = separatorIdx >= 0 ? key.slice(separatorIdx + 2) as MeasureCareSetting : null;
+
+    const updatedMetricValues = {
+      ...state.metricValues,
+      [key]: { ...(state.metricValues?.[key] || {}), ...updates },
+    };
+
+    // Also write to settingData so applySettingSync can populate legacy fields
+    // (computeDomainStatus, maturity stage, and scenario calculations all read from there)
+    if (setting && (updates.before !== undefined || updates.after !== undefined)) {
+      const currentSettingData = state.settingData?.[setting] || {};
+      const updatedSettingData = { ...currentSettingData };
+      if (updates.before !== null && updates.before !== undefined) {
+        updatedSettingData[`${metricId}_before`] = updates.before;
+      }
+      if (updates.after !== null && updates.after !== undefined) {
+        updatedSettingData[`${metricId}_after`] = updates.after;
+      }
+      updateState({
+        metricValues: updatedMetricValues,
+        settingData: { ...state.settingData, [setting]: updatedSettingData },
+      });
+    } else {
+      updateState({ metricValues: updatedMetricValues });
+    }
+  }, [state.metricValues, state.settingData, updateState]);
+
+  Note the updated dependency array now includes state.settingData.
+
+  ---
+  Why this works
+
+  When the user enters wRVU before=1.8 / after=2.1 for Outpatient, the key is wrvuPerEncounter__outpatient. This fix writes:
+  - state.metricValues['wrvuPerEncounter__outpatient'] = { before: 1.8, after: 2.1 } (existing)
+  - state.settingData.outpatient['wrvuPerEncounter_before'] = 1.8 (new)
+  - state.settingData.outpatient['wrvuPerEncounter_after'] = 2.1 (new)
+
+  When the user navigates from Page 2 → Page 3, applySettingSync() runs, reads settingData.outpatient.wrvuPerEncounter_before/after, and writes them into state.documentationQuality.wrvuWithout/With. From
+  that point, every downstream function — computeDomainStatus, deriveEngagementContext, maturity stage, all of it — reads populated values instead of zeros.
+
+  Org-wide metrics (burnout, likelihood to stay) have no __setting suffix so setting is null — the settingData write is skipped for them, which is correct because they don't map to any settingData fields.
+
+  ---
+  Verification
+
+  1. Enter wrvuPerEncounter before=1.8 / after=2.1 for Outpatient on Page 2 → navigate to Page 3 → Quality domain shows a bar with ↑16.7%
+  2. Navigate to Page 5 → maturity stage is not "Unmeasured" (shows "Signaling" or higher depending on other inputs)
+  3. Enter afterHours before=1.5 / after=0.3 → Page 4 cost reduction row appears
+  4. Toggle monthly mode on a metric, enter values → the derived before/after from first/last monthly values also write through to settingData
+  5. Org-wide metric (burnout) — entering values does NOT cause a JavaScript error (the setting === null branch is taken cleanly)
+
+✻ Crunched for 50s · 1 background task still running (↓ to manage)
+
+❯ okay can we do the dead code cleanup next 
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ Clean — none of them are imported anywhere outside themselves. The prompt is short:
+
+  ---
+  Replit Prompt — Delete orphaned Measure path files
+
+  ---
+  Delete the following six files. They are not imported anywhere in the codebase — confirmed by grep. The active 5-page flow uses MeasureFlow.tsx, MeasureDataEntry, MeasureMetricSelection, MeasureJourney,
+  MeasureAllocate, and MeasureOpportunity only. Everything below is dead code from prior iterations.
+
+  client/src/pages/measure/MeasureScenarios.tsx
+  client/src/pages/measure/MeasureInventory.tsx
+  client/src/pages/measure/MeasureStage.tsx
+  client/src/pages/measure/MeasureStory.tsx
+  client/src/pages/measure/MeasureWelcome.tsx
+  client/src/pages/measure/MeasureTrends.tsx
+
+  Before deleting each file, confirm it has no import references in any other .ts or .tsx file under client/src/. If any imports are found, remove those import lines first, then delete the file.
+
+  After deletion, verify the app still compiles without errors. The measure path should still function normally — all six deleted files are unreachable from MeasureFlow.tsx.
+
+  ---
+  That's it. Six deletes, nothing else.
+
+❯ okay now lets work on the multi-setting support 
+
+⏺ Let me read the relevant parts before writing anything.
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Now I have the full picture. Here's what multi-setting actually affects:
+
+  Page 3 (MeasureJourney): Already correct — it uses activeSettings, labels metrics with their setting in parentheses, and the context bar joins all settings. Nothing to fix here.
+
+  Page 4 (MeasureAllocate): computeFinancials uses state.careSetting (single). With Outpatient + ED active, if Outpatient is primary, LWBS never appears. If ED is primary, wRVU doesn't get processed. Needs
+  to loop over all active settings for billing capture and revenue recovery.
+
+  Page 5 (MeasureOpportunity): Context line shows single settingLabel. computeConfirmedRange uses single setting. The "Add a Care Setting" lever already correctly checks activeCareSettings.length <= 1 — that
+   part is fine.
+
+  ---
+  Replit Prompt — Multi-setting support for Pages 4 and 5
+
+  ---
+  Make targeted changes to MeasureAllocate.tsx and MeasureOpportunity.tsx. Do not touch any other files.
+
+  ---
+  Changes to MeasureAllocate.tsx
+
+  1. Fix computeFinancials to aggregate across all active settings
+
+  The function currently reads const setting = state.careSetting || "outpatient" and only processes one setting's billing capture and revenue recovery. Replace the single-setting approach with a loop across
+  all active settings.
+
+  At the top of computeFinancials, replace:
+  const setting = state.careSetting || "outpatient";
+  const isED = setting === "ed";
+  const isInpatient = setting === "inpatient";
+
+  With:
+  const activeSettings = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const primarySetting = activeSettings[0];
+  const isED = activeSettings.includes('ed');
+  const isInpatient = activeSettings.includes('inpatient');
+  // Keep `setting` for settingData lookups and other single-setting logic
+  const setting = primarySetting;
+
+  Then replace the billing capture block (wRVU, E/M, CMI) to loop across settings:
+
+  // Billing Capture — loop across all active settings
+  const activeMetrics = getActiveMetrics(state);
+
+  for (const s of activeSettings) {
+    const sAdoptedEncounters = Math.round(
+      (state.settingData?.[s]?.deploy_totalEncounters || totalEncounters) *
+      (utilizationRate / 100)
+    );
+    const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
+
+    // wRVU for this setting
+    const wrvuMetric = activeMetrics.find(m =>
+      m.metricId === 'wrvuPerEncounter' && (!m.setting || m.setting === s)
+    );
+    const wrvuB = wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0);
+    const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0);
+    const wrvuD = wrvuA - wrvuB;
+
+    if (wrvuD > 0 && effectiveAdopted > 0) {
+      const base = wrvuD * effectiveAdopted * assumptions.conversionFactor;
+      billingCaptureLow += base * attrLow * realLow;
+      billingCaptureHigh += base * attrHigh * realHigh;
+      billingDetails.push({
+        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${activeSettings.length > 1 ? ` (${s})` : ''}`,
+        detail: `Adopted encounters: ${formatNumber(effectiveAdopted)}/yr`,
+        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(effectiveAdopted)} × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
+      });
+    }
+
+    // E/M level for this setting
+    const emMetric = activeMetrics.find(m =>
+      m.metricId === 'emLevel' && (!m.setting || m.setting === s)
+    );
+    const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0);
+    const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0);
+    const emD = emA - emB;
+
+    if (emD > 0 && effectiveAdopted > 0) {
+      const avgEmValue = 45;
+      const base = emD * effectiveAdopted * avgEmValue;
+      billingCaptureLow += base * attrLow * realLow;
+      billingCaptureHigh += base * attrHigh * realHigh;
+      billingDetails.push({
+        label: `E/M level improvement: +${emD.toFixed(1)} levels${activeSettings.length > 1 ? ` (${s})` : ''}`,
+        detail: `${formatNumber(effectiveAdopted)} adopted encounters`,
+        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(effectiveAdopted)} × ~$${avgEmValue}/level = ${fmt(base)}`,
+      });
+    }
+
+    // CMI for inpatient
+    if (s === 'inpatient') {
+      const cmiMetric = activeMetrics.find(m => ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId));
+      const cmiB = cmiMetric?.before ?? (state.settingData?.inpatient?.cmi_before ?? 0);
+      const cmiA = cmiMetric?.after ?? (state.settingData?.inpatient?.cmi_after ?? 0);
+      const cmiD = Math.max(0, cmiA - cmiB);
+      if (cmiD > 0) {
+        const discharges = state.settingData?.inpatient?.deploy_totalEncounters || totalEncounters;
+        const base = cmiD * discharges * assumptions.drgBaseRate;
+        billingCaptureLow += base * attrLow * realLow;
+        billingCaptureHigh += base * attrHigh * realHigh;
+        billingDetails.push({
+          label: `CMI improvement: +${cmiD.toFixed(3)}${activeSettings.length > 1 ? ' (Inpatient)' : ''}`,
+          detail: `${formatNumber(discharges)} annual discharges × $${formatNumber(assumptions.drgBaseRate)} DRG base rate`,
+          formula: `+${cmiD.toFixed(3)} CMI × ${formatNumber(discharges)} × $${formatNumber(assumptions.drgBaseRate)} = ${fmt(base)}`,
+        });
+      }
+    }
+  }
+
+  const hasBillingCapture = billingCaptureLow > 0;
+
+  Replace the revenue recovery block to loop across settings similarly:
+
+  // Revenue Recovery — ED-specific, loop in case multiple settings contribute
+  for (const s of activeSettings) {
+    if (s !== 'ed') continue;
+    const edSettingData = state.settingData?.ed || {};
+    const edTotalEncounters = edSettingData.deploy_totalEncounters || totalEncounters;
+
+    const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+    const lwbsB = lwbsMetric?.before ?? (edSettingData.lwbsRate_before ?? 0);
+    const lwbsA = lwbsMetric?.after ?? (edSettingData.lwbsRate_after ?? 0);
+    const lwbsD = lwbsB - lwbsA;
+
+    if (lwbsD > 0 && edTotalEncounters > 0) {
+      const annualVisits = edTotalEncounters * 12;
+      const recovered = (lwbsD / 100) * annualVisits;
+      revenueRecoveryLow += recovered * assumptions.edRevenuePerVisit * attrLow;
+      revenueRecoveryHigh += recovered * assumptions.edRevenuePerVisit * attrHigh;
+      recoveryDetails.push({
+        label: `LWBS reduction: ${lwbsB.toFixed(1)}% → ${lwbsA.toFixed(1)}% (−${lwbsD.toFixed(1)} pts)`,
+        detail: `Monthly ED visits: ${formatNumber(edTotalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
+      });
+    }
+
+    const denialMetric = activeMetrics.find(m =>
+      ['initialDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
+    );
+    const denialB = denialMetric?.before ?? (edSettingData.initial_denial_rate_before ?? edSettingData.denialRate_before ?? 0);
+    const denialA = denialMetric?.after ?? (edSettingData.initial_denial_rate_after ?? edSettingData.denialRate_after ?? 0);
+    const denialD = denialB - denialA;
+    if (denialD > 0 && edTotalEncounters > 0) {
+      const base = (denialD / 100) * edTotalEncounters * 12 * 350;
+      revenueRecoveryLow += base * attrLow;
+      revenueRecoveryHigh += base * attrHigh;
+      recoveryDetails.push({
+        label: `Denial rate reduction: −${denialD.toFixed(1)} pts (ED)`,
+        detail: `Average denial cost: $350/case`,
+      });
+    }
+  }
+
+  const hasRevenueRecovery = revenueRecoveryLow > 0;
+
+  Cost reduction (after-hours, burnout) stays as-is — these are org-wide and should not be summed per setting. The existing code for that block is correct; do not change it.
+
+  2. Fix the setting label in the context line
+
+  Find:
+  const settingLabel = fin.setting === 'ed' ? 'Emergency Department' : ...
+
+  Replace with:
+  const activeSettingsList = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const settingLabel = activeSettingsList.map(s =>
+    s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
+  ).join(' · ');
+
+  ---
+  Changes to MeasureOpportunity.tsx
+
+  1. Fix the setting label in the context line
+
+  Find:
+  const setting = state.careSetting || "outpatient";
+  const settingLabel = setting === 'ed' ? 'Emergency Department' : ...
+
+  Replace with:
+  const activeSettingsList = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const settingLabel = activeSettingsList.map(s =>
+    s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
+  ).join(' · ');
+  const setting = activeSettingsList[0]; // keep for single-setting logic below
+
+  2. Fix computeConfirmedRange to aggregate across active settings
+
+  The computeConfirmedRange function reads state.documentationQuality.wrvuWith/Without and state.careSetting. Apply the same pattern as the computeFinancials fix above: loop over activeSettings, read from
+  getActiveMetrics(state) first with legacy fallback, sum billing and revenue values across settings.
+
+  Import getActiveMetrics at the top of MeasureOpportunity.tsx if not already imported.
+
+  The fix follows the identical pattern as computeFinancials — replace the single-setting wRVU/CMI/LWBS reads with a for (const s of activeSettings) loop using getActiveMetrics. Cost reduction (after-hours,
+  burnout) stays single-pass.
+
+  ---
+  Verification
+
+  1. Set Outpatient + ED active on Page 1. Enter wRVU on Page 2 under Outpatient, LWBS under ED. On Page 4: both Billing Capture (with "Outpatient" tag) and Revenue Recovery rows appear; hero sums both
+  ranges.
+  2. Single setting (Outpatient only) — behavior identical to before, no setting tags visible on billing rows.
+  3. Page 4 context line shows "Outpatient · ED" when both are active.
+  4. Page 5 context line shows all active settings.
+  5. Page 5 "Add a Care Setting" lever: hidden when 2+ settings active, visible when only 1 active.
+  6. Inpatient + Outpatient active: CMI row shows under Billing Capture tagged "(Inpatient)", wRVU row shows untagged or tagged "(Outpatient)".

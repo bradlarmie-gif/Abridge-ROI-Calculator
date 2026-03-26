@@ -44,9 +44,13 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
-  const setting = state.careSetting || "outpatient";
-  const isED = setting === "ed";
-  const isInpatient = setting === "inpatient";
+  const activeSettings = state.activeCareSettings?.length > 0
+    ? state.activeCareSettings
+    : [state.careSetting || 'outpatient'];
+  const primarySetting = activeSettings[0];
+  const isED = activeSettings.includes('ed');
+  const isInpatient = activeSettings.includes('inpatient');
+  const setting = primarySetting;
   const providers = state.deployment.providers || state.deployment.mruProviders || 0;
   const totalEncounters = state.deployment.totalEncounters || 0;
   const utilizationRate = state.deployment.utilizationRate || 0;
@@ -59,92 +63,80 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const realLow = Math.max(0.40, realPct - 0.10);
   const realHigh = Math.min(0.99, realPct + 0.10);
 
-  const settingData = state.settingData?.[setting] || {};
   const activeMetrics = getActiveMetrics(state);
-
-  const wrvuMetric = activeMetrics.find(m =>
-    ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === setting)
-  );
-  const wrvuBefore = wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0;
-  const wrvuAfter = wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0;
-  const wrvuDelta = wrvuAfter - wrvuBefore;
-
-  const emMetric = activeMetrics.find(m =>
-    ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === setting)
-  );
-  const emBefore = emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0;
-  const emAfter = emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0;
-  const emDelta = emAfter - emBefore;
+  const multiSetting = activeSettings.length > 1;
 
   const afterHoursMetric = activeMetrics.find(m =>
-    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId) &&
-    (!m.setting || m.setting === setting)
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId)
   );
   const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
   const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
-
-  const cmiMetric = activeMetrics.find(m =>
-    ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
-  );
-  const cmiBefore = cmiMetric?.before ?? settingData.cmi_before ?? 0;
-  const cmiAfter = cmiMetric?.after ?? settingData.cmi_after ?? 0;
-  const cmiDelta = isInpatient ? Math.max(0, cmiAfter - cmiBefore) : 0;
-
-  const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
-  const lwbsBefore = lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0;
-  const lwbsAfter = lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0;
-  const lwbsDelta = lwbsBefore - lwbsAfter;
-
-  const denialMetric = activeMetrics.find(m =>
-    ['initial_denial_rate', 'initialDenialRate', 'denialRate', 'claimDenialRate', 'medicalNecessityDenialRate'].includes(m.metricId)
-  );
-  const denialBefore = denialMetric?.before ?? settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
-  const denialAfter = denialMetric?.after ?? settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;
-  const denialDelta = denialBefore - denialAfter;
 
   let billingCaptureLow = 0;
   let billingCaptureHigh = 0;
   const billingDetails: { label: string; detail: string; formula: string }[] = [];
 
-  if (wrvuDelta > 0 && adoptedEncounters > 0) {
-    const base = wrvuDelta * adoptedEncounters * assumptions.conversionFactor;
-    const low = base * attrLow * realLow;
-    const high = base * attrHigh * realHigh;
-    billingCaptureLow += low;
-    billingCaptureHigh += high;
-    billingDetails.push({
-      label: `wRVU lift: +${wrvuDelta.toFixed(2)} per encounter`,
-      detail: `Adopted encounters: ${formatNumber(adoptedEncounters)}/yr`,
-      formula: `+${wrvuDelta.toFixed(2)} wRVU × ${formatNumber(adoptedEncounters)} encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% realization = ${fmt(base * (assumptions.realization / 100))}`,
-    });
-  }
+  for (const s of activeSettings) {
+    const sSettingData = state.settingData?.[s] || {};
+    const sAdoptedEncounters = Math.round(
+      (sSettingData.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100)
+    );
+    const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
 
-  if (emDelta > 0 && adoptedEncounters > 0) {
-    const avgEmValue = 45;
-    const base = emDelta * adoptedEncounters * avgEmValue;
-    const low = base * attrLow * realLow;
-    const high = base * attrHigh * realHigh;
-    billingCaptureLow += low;
-    billingCaptureHigh += high;
-    billingDetails.push({
-      label: `E/M level improvement: +${emDelta.toFixed(1)} levels`,
-      detail: `${formatNumber(adoptedEncounters)} adopted encounters`,
-      formula: `+${emDelta.toFixed(1)} E/M × ${formatNumber(adoptedEncounters)} encounters × ~$${avgEmValue}/level = ${fmt(base)}`,
-    });
-  }
+    const wrvuMetric = activeMetrics.find(m =>
+      ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const wrvuB = wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0);
+    const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0);
+    const wrvuD = wrvuA - wrvuB;
 
-  if (cmiDelta > 0) {
-    const discharges = totalEncounters;
-    const base = cmiDelta * discharges * assumptions.drgBaseRate;
-    const low = base * attrLow * realLow;
-    const high = base * attrHigh * realHigh;
-    billingCaptureLow += low;
-    billingCaptureHigh += high;
-    billingDetails.push({
-      label: `CMI improvement: +${cmiDelta.toFixed(3)}`,
-      detail: `${formatNumber(discharges)} annual discharges × $${formatNumber(assumptions.drgBaseRate)} DRG base rate`,
-      formula: `+${cmiDelta.toFixed(3)} CMI × ${formatNumber(discharges)} discharges × $${formatNumber(assumptions.drgBaseRate)} = ${fmt(base)}`,
-    });
+    if (wrvuD > 0 && effectiveAdopted > 0) {
+      const base = wrvuD * effectiveAdopted * assumptions.conversionFactor;
+      billingCaptureLow += base * attrLow * realLow;
+      billingCaptureHigh += base * attrHigh * realHigh;
+      billingDetails.push({
+        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `Adopted encounters: ${formatNumber(effectiveAdopted)}/yr`,
+        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(effectiveAdopted)} × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
+      });
+    }
+
+    const emMetric = activeMetrics.find(m =>
+      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0);
+    const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0);
+    const emD = emA - emB;
+
+    if (emD > 0 && effectiveAdopted > 0) {
+      const avgEmValue = 45;
+      const base = emD * effectiveAdopted * avgEmValue;
+      billingCaptureLow += base * attrLow * realLow;
+      billingCaptureHigh += base * attrHigh * realHigh;
+      billingDetails.push({
+        label: `E/M level improvement: +${emD.toFixed(1)} levels${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `${formatNumber(effectiveAdopted)} adopted encounters`,
+        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(effectiveAdopted)} × ~$${avgEmValue}/level = ${fmt(base)}`,
+      });
+    }
+
+    if (s === 'inpatient') {
+      const cmiMetric = activeMetrics.find(m => ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId));
+      const cmiB = cmiMetric?.before ?? (sSettingData.cmi_before ?? 0);
+      const cmiA = cmiMetric?.after ?? (sSettingData.cmi_after ?? 0);
+      const cmiD = Math.max(0, cmiA - cmiB);
+      if (cmiD > 0) {
+        const discharges = sSettingData.deploy_totalEncounters || totalEncounters;
+        const base = cmiD * discharges * assumptions.drgBaseRate;
+        billingCaptureLow += base * attrLow * realLow;
+        billingCaptureHigh += base * attrHigh * realHigh;
+        billingDetails.push({
+          label: `CMI improvement: +${cmiD.toFixed(3)}${multiSetting ? ' (Inpatient)' : ''}`,
+          detail: `${formatNumber(discharges)} annual discharges × $${formatNumber(assumptions.drgBaseRate)} DRG base rate`,
+          formula: `+${cmiD.toFixed(3)} CMI × ${formatNumber(discharges)} × $${formatNumber(assumptions.drgBaseRate)} = ${fmt(base)}`,
+        });
+      }
+    }
   }
 
   const hasBillingCapture = billingCaptureLow > 0;
@@ -153,28 +145,40 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   let revenueRecoveryHigh = 0;
   const recoveryDetails: { label: string; detail: string }[] = [];
 
-  if (isED) {
-    if (lwbsDelta > 0 && totalEncounters > 0) {
-      const annualVisits = totalEncounters * 12;
-      const recoveredVisits = (lwbsDelta / 100) * annualVisits;
-      const low = recoveredVisits * assumptions.edRevenuePerVisit * attrLow;
-      const high = recoveredVisits * assumptions.edRevenuePerVisit * attrHigh;
-      revenueRecoveryLow += low;
-      revenueRecoveryHigh += high;
+  for (const s of activeSettings) {
+    if (s !== 'ed') continue;
+    const edSettingData = state.settingData?.ed || {};
+    const edTotalEncounters = edSettingData.deploy_totalEncounters || totalEncounters;
+
+    const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+    const lwbsB = lwbsMetric?.before ?? (edSettingData.lwbsRate_before ?? 0);
+    const lwbsA = lwbsMetric?.after ?? (edSettingData.lwbsRate_after ?? 0);
+    const lwbsD = lwbsB - lwbsA;
+
+    if (lwbsD > 0 && edTotalEncounters > 0) {
+      const annualVisits = edTotalEncounters * 12;
+      const recovered = (lwbsD / 100) * annualVisits;
+      revenueRecoveryLow += recovered * assumptions.edRevenuePerVisit * attrLow;
+      revenueRecoveryHigh += recovered * assumptions.edRevenuePerVisit * attrHigh;
       recoveryDetails.push({
-        label: `LWBS reduction: ${lwbsBefore.toFixed(1)}% → ${lwbsAfter.toFixed(1)}% (−${lwbsDelta.toFixed(1)} pts)`,
-        detail: `Monthly ED visits: ${formatNumber(totalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
+        label: `LWBS reduction: ${lwbsB.toFixed(1)}% → ${lwbsA.toFixed(1)}% (−${lwbsD.toFixed(1)} pts)`,
+        detail: `Monthly ED visits: ${formatNumber(edTotalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
       });
     }
 
-    if (denialDelta > 0 && totalEncounters > 0) {
-      const avgDenialCost = 350;
-      const base = (denialDelta / 100) * totalEncounters * 12 * avgDenialCost;
+    const denialMetric = activeMetrics.find(m =>
+      ['initial_denial_rate', 'initialDenialRate', 'denialRate', 'claimDenialRate', 'medicalNecessityDenialRate'].includes(m.metricId)
+    );
+    const denialB = denialMetric?.before ?? (edSettingData.initial_denial_rate_before ?? edSettingData.denialRate_before ?? 0);
+    const denialA = denialMetric?.after ?? (edSettingData.initial_denial_rate_after ?? edSettingData.denialRate_after ?? 0);
+    const denialD = denialB - denialA;
+    if (denialD > 0 && edTotalEncounters > 0) {
+      const base = (denialD / 100) * edTotalEncounters * 12 * 350;
       revenueRecoveryLow += base * attrLow;
       revenueRecoveryHigh += base * attrHigh;
       recoveryDetails.push({
-        label: `Denial rate reduction: −${denialDelta.toFixed(1)} pts`,
-        detail: `Average denial cost: $${avgDenialCost}/case`,
+        label: `Denial rate reduction: −${denialD.toFixed(1)} pts (ED)`,
+        detail: `Average denial cost: $350/case`,
       });
     }
   }
@@ -255,9 +259,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     adoptedEncounters,
     totalEncounters,
     utilizationRate,
-    wrvuDelta,
-    emDelta,
-    cmiDelta,
+    activeSettings,
     hasBillingCapture,
     billingCaptureLow,
     billingCaptureHigh,
@@ -310,7 +312,10 @@ export default function MeasureAllocate({
   const fin = useMemo(() => computeFinancials(state, assumptions), [state, assumptions]);
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
   const orgName = state.deployment.organizationName || "Your Organization";
-  const settingLabel = fin.setting === 'ed' ? 'Emergency Department' : fin.setting === 'inpatient' ? 'Inpatient' : fin.setting === 'nursing' ? 'Nursing' : 'Outpatient';
+  const activeSettingsList = fin.activeSettings || [fin.setting];
+  const settingLabel = activeSettingsList.map((s: string) =>
+    s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
+  ).join(' · ');
 
   const heroLow = useCountUp(Math.round(fin.totalLow), 1200, 300);
   const heroHigh = useCountUp(Math.round(fin.totalHigh), 1200, 500);
@@ -410,7 +415,7 @@ export default function MeasureAllocate({
                 <div key={i} className="mb-3">
                   <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>
                   <p className="text-xs text-[#999999]">{d.detail}</p>
-                  {fin.wrvuDelta > 0 && i === 0 && (
+                  {d.label.includes('wRVU') && (
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-[#999999]">Conversion factor:</span>
                       <span className="text-xs font-medium text-[#1A1A1A]">${assumptions.conversionFactor}/wRVU</span>
