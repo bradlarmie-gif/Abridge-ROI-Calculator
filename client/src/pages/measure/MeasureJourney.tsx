@@ -131,7 +131,7 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItM
             className="flex items-baseline gap-1 mb-1"
             data-testid="badge-pct-change"
           >
-            <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#EA2C00]' : 'text-[#F87171]'}`}>
+            <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#16A34A]' : 'text-[#F87171]'}`}>
               {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}{Math.abs(deltaPercent).toFixed(1)}%
             </span>
           </motion.div>

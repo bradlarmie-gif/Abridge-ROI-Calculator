@@ -82,7 +82,7 @@ function DeltaBadge({ before, after, lowerIsBetter, unit }: { before: number; af
 
   return (
     <span
-      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${improved ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'bg-[#F5F0EB] text-[#999999]'}`}
+      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${improved ? 'bg-[#16A34A]/10 text-[#16A34A]' : 'bg-[#F5F0EB] text-[#999999]'}`}
       data-testid="badge-delta"
     >
       {sign}{delta.toFixed(1)}{displayUnit}
@@ -566,6 +566,22 @@ export default function MeasureMetricSelection({
                                         </div>
                                         <div className="text-right">
                                           <p className="text-lg font-bold text-[#EA2C00]">{state.deployment.utilizationRate}%</p>
+                                          <p className="text-[10px] text-[#999999]">auto-populated</p>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+
+                                  if (rm.metric.id === 'user_retention' && state.deployment.mruProviders > 0 && state.deployment.liveProviders > 0) {
+                                    const retentionPct = Math.round((state.deployment.mruProviders / state.deployment.liveProviders) * 100);
+                                    return (
+                                      <div key={rm.metric.id} className="flex items-center justify-between py-3 px-4 rounded-lg bg-[#F5F0EB]" data-testid={`metric-row-${rm.metric.id}`}>
+                                        <div>
+                                          <p className="text-sm font-medium text-[#1A1A1A]">% Abridge User Retention</p>
+                                          <p className="text-xs text-[#999999] mt-0.5">MRUs / providers on Abridge — from your partner profile</p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-lg font-bold text-[#EA2C00]">{retentionPct}%</p>
                                           <p className="text-[10px] text-[#999999]">auto-populated</p>
                                         </div>
                                       </div>
