@@ -115,9 +115,16 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItM
   const delta = after - before;
   const improved = higherIsBetter ? delta > 0 : delta < 0;
   const deltaPercent = before !== 0 ? (delta / before) * 100 : 0;
-  const afterRatio = before !== 0 ? Math.min((after / before) * 100, 150) : 100;
   const interpretation = interpolateTemplate(template, before, after);
   const unitSuffix = unit ? ` ${unit}` : '';
+
+  const maxVal = Math.max(before, after, 0.001);
+  const beforePct = (before / maxVal) * 100;
+  const afterPct = (after / maxVal) * 100;
+
+  const arrow = lowerIsBetter
+    ? (improved ? '↓' : '↑')
+    : (improved ? '↑' : '↓');
 
   return (
     <div ref={ref} className="mb-6" data-testid={`metric-bar-${label.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -131,8 +138,8 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItM
             className="flex items-baseline gap-1 mb-1"
             data-testid="badge-pct-change"
           >
-            <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#16A34A]' : 'text-[#F87171]'}`}>
-              {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}{Math.abs(deltaPercent).toFixed(1)}%
+            <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#EA2C00]' : 'text-[#F87171]'}`}>
+              {arrow}{Math.abs(deltaPercent).toFixed(1)}%
             </span>
           </motion.div>
         )}
@@ -141,19 +148,28 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItM
       <div className="my-3 space-y-1.5">
         <div className="flex items-center gap-3">
           <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">Before</span>
-          <div className="flex-1 h-2 bg-[#C8C2BB] rounded-full" />
+          <div className="flex-1 relative h-2">
+            <div className="absolute inset-y-0 left-0 right-0 rounded-full bg-[#EDE8E3]" />
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full bg-[#C8C2BB]"
+              initial={{ width: '0%' }}
+              animate={{ width: visible ? `${beforePct}%` : '0%' }}
+              transition={{ delay: delay / 1000, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </div>
           <span className="text-xs text-[#999999] w-16 text-right tabular-nums">
             {before}{unitSuffix}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] text-[#CCCCCC] w-10 flex-shrink-0 text-right">After</span>
-          <div className="flex-1 h-2 bg-[#C8C2BB] rounded-full overflow-hidden">
+          <div className="flex-1 relative h-2">
+            <div className="absolute inset-y-0 left-0 right-0 rounded-full bg-[#EDE8E3]" />
             <motion.div
-              className="h-full rounded-full bg-[#EA2C00]"
-              initial={{ width: '100%' }}
-              animate={{ width: visible ? `${afterRatio}%` : '100%' }}
-              transition={{ delay: delay / 1000, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-y-0 left-0 rounded-full bg-[#EA2C00]"
+              initial={{ width: '0%' }}
+              animate={{ width: visible ? `${afterPct}%` : '0%' }}
+              transition={{ delay: delay / 1000 + 0.12, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
           <span className="text-xs font-semibold text-[#1A1A1A] w-16 text-right tabular-nums">
