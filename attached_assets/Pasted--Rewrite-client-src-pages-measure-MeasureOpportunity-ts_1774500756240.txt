@@ -1,0 +1,213 @@
+  ---
+  Rewrite client/src/pages/measure/MeasureOpportunity.tsx as the final page of the 5-page EBR flow, and eliminate MeasureStory.tsx from the routing — PDF export moves here. Update MeasureFlow.tsx to remove
+  the story phase entirely; MeasureOpportunity becomes the terminal page.
+
+  ---
+  Page Structure
+
+  WHAT'S NEXT
+  [org] · [setting] · [N months with Abridge]
+
+  ── MATURITY STAGE TRACK ──────────────────────────────────
+
+  ── EXPANSION OPPORTUNITY ─────────────────────────────────
+
+  ── NEXT MOVES ────────────────────────────────────────────
+
+  ── EXPORT ────────────────────────────────────────────────
+
+  ---
+  Section 1: Maturity Stage Track
+
+  Four stages on a horizontal rail. The current stage has a filled orange dot. Completed stages have a check. Future stages are grayed out and dimmed.
+
+  Unmeasured  ──●──  Signaling  ──○──  Validated  ──○──  Strategic
+                 ↑ you are here
+
+  Stage definitions — NOT time-based, capability-based:
+
+  ┌────────────┬──────────────────────────────────────────────────────────────┐
+  │   Stage    │                        What It Means                         │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Unmeasured │ Adoption under 20% or baselines not yet established          │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Signaling  │ 1–2 domains showing before/after trends, baselines confirmed │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Validated  │ 3+ domains with confirmed trends, ≥60% utilization           │
+  ├────────────┼──────────────────────────────────────────────────────────────┤
+  │ Strategic  │ Embedded in org strategy, ≥70% adoption, board-ready proof   │
+  └────────────┴──────────────────────────────────────────────────────────────┘
+
+  Below the track: a single descriptive sentence about the current stage. Then a "What gets you to [next stage]" list — 2–3 specific, concrete items derived from actual state:
+
+  - If utilization < 20%: "Reach 20% Abridge adoption (you're at X%)"
+  - If active domains < 3: "Establish before/after data in [missing domains]"
+  - If months < 6 and utilization < 60%: "Reach 60% utilization across the cohort"
+  - If at Validated: "Document outcomes in a formal internal report for CFO/CMO review"
+  - If at Strategic: "Publish findings — you have board-level proof"
+
+  Use deriveEngagementContext(state) and computeDomainStatus(state) from measureCalculator.ts.
+
+  Style:
+  - Track rail: bg-[#E5E5E5] line, w-3 h-3 dots
+  - Current stage dot: bg-[#EA2C00] filled, ring-4 ring-[#EA2C00]/20
+  - Completed stages: bg-[#1A1A1A] with a checkmark
+  - Future stages: bg-[#E5E5E5]
+  - Stage labels: current = font-bold text-[#1A1A1A], future = text-[#999999]
+  - Card background: bg-[#F5F0EB]
+
+  ---
+  Section 2: Expansion Opportunity
+
+  Three expansion levers. Only show levers where there's unrealized headroom. Each lever is a beige card with a single projected number.
+
+  Lever 1: Deepen Adoption
+  Only show if utilizationRate < 75%.
+
+  ┌─────────────────────────────────────┐
+  │ DEEPEN ADOPTION                     │
+  │                                     │
+  │ You're at X%. If you reach 75%:    │
+  │                                     │
+  │  +$XX,000 — $XX,000 / year         │
+  │  additional confirmed value         │
+  │                                     │
+  │ [X additional providers would need  │
+  │  to regularly use Abridge]          │
+  └─────────────────────────────────────┘
+
+  Calculation: scale the Page 4 confirmed value range proportionally.
+  targetRate = 75%, currentRate = utilizationRate
+  additionalLow = confirmedLow × (targetRate/currentRate - 1)
+  additionalHigh = confirmedHigh × (targetRate/currentRate - 1)
+
+  If Page 4 has no confirmed value (no financial metrics entered), show encounter count instead:
+  "X additional encounters per year would be Abridge-assisted"
+
+  Lever 2: Expand Providers
+  Only show if providers < totalProviders.
+
+  ┌─────────────────────────────────────┐
+  │ EXPAND PROVIDER COHORT              │
+  │                                     │
+  │ X of Y providers are on Abridge.   │
+  │ At full deployment:                 │
+  │                                     │
+  │  +$XX,000 — $XX,000 / year         │
+  │  additional value from Z providers  │
+  └─────────────────────────────────────┘
+
+  Calculation: additionalProviders = totalProviders - providers
+  perProviderValueLow = confirmedLow / providers
+  additionalLow = perProviderValueLow × additionalProviders
+
+  Lever 3: Add a Care Setting
+  Only show if only one care setting is active.
+
+  ┌─────────────────────────────────────┐
+  │ ADD A CARE SETTING                  │
+  │                                     │
+  │ Currently measuring: Outpatient     │
+  │ Next setting to consider: ED        │
+  │                                     │
+  │ ED deployments at peer systems      │
+  │ have shown:                         │
+  │  • LWBS rate −0.6 to −1.2 pts      │
+  │  • Door-to-doc time −18%            │
+  │  • Note time −42%                   │
+  └─────────────────────────────────────┘
+
+  Don't show a dollar amount here — no data to calculate from. Show benchmark signal language only. Suggest the most logical next setting based on current setting:
+  - Outpatient → suggest ED
+  - ED → suggest Inpatient
+  - Inpatient → suggest Outpatient
+  - Nursing → suggest Inpatient
+
+  If all 3 levers have no headroom (full adoption, full providers, all settings), replace section with a single card: "You've reached full deployment maturity. The work now is validation and publication."
+
+  Use calculateExpansionResults() from measureCalculator.ts for the math.
+
+  ---
+  Section 3: Next Moves
+
+  A short, prioritized list of 2–4 actions. Derive from state. This is NOT generic — it reads the actual data.
+
+  Logic:
+  const nextMoves: { label: string; detail: string }[] = [];
+
+  if (utilizationRate < 40%) {
+    nextMoves.push({ label: 'Drive adoption', detail: `${org} is at ${utilizationRate}% — next milestone is 40%. Schedule department-level Abridge sessions.` });
+  }
+  if (activeMetrics.length < 4) {
+    nextMoves.push({ label: 'Add measurement depth', detail: 'You have data in fewer than 4 metrics. Broader coverage makes the story more defensible.' });
+  }
+  if (maturityStage === 'signaling') {
+    nextMoves.push({ label: 'Formalize the comparison', detail: 'Run a structured Abridge vs. non-Abridge encounter analysis for the CMO. The data is there.' });
+  }
+  if (maturityStage === 'validated' || maturityStage === 'strategic') {
+    nextMoves.push({ label: 'Publish internally', detail: 'Prepare a one-page findings brief for finance and quality leadership. Use this EBR as the source.' });
+  }
+  nextMoves.push({ label: 'Set a 90-day goal', detail: 'Name one metric, one target, one owner. Schedule a check-in.' });
+
+  Display as a numbered list inside a beige card. Numbers in bg-[#EA2C00] circles. Max 4 items.
+
+  ---
+  Section 4: Export
+
+  A single prominent button. No modal needed — use browser print or generateMeasurePDF if it already exists.
+
+  [↓ Download EBR Summary — PDF]
+
+  Import generateMeasurePDF from @/components/measure/MeasurePDFExport and call it on click passing state. If that function doesn't exist or fails, fall back to window.print().
+
+  Button style: bg-[#1A1A1A] text-white h-14 w-full rounded-xl font-bold text-base with a Download icon from lucide.
+
+  Also a secondary text link: "Back to Financial Impact" (onBack handler).
+
+  ---
+  Flow Changes in MeasureFlow.tsx
+
+  Remove the story phase entirely. MeasureOpportunity becomes the terminal page:
+
+  // Remove:
+  case 'story': ...
+
+  // Change:
+  type MeasurePhase = 'data' | 'change' | 'scenarios' | 'value' | 'opportunity';
+
+  // opportunity case — remove onNext, it's the last page:
+  case 'opportunity':
+    return (
+      <MeasureOpportunity
+        state={state}
+        updateState={updateState}
+        onBack={() => navigate('value')}
+        onHome={goHome}
+      />
+    );
+
+  Remove the MeasureStory import from MeasureFlow.tsx.
+
+  ---
+  Style Consistency
+
+  - All cards: bg-[#F5F0EB] border border-[#E5E5E5] rounded-2xl
+  - No white cards, no green/blue/teal dots
+  - Section headers: text-xs font-bold uppercase tracking-widest text-[#666666] mb-4
+  - Large projected values: text-2xl font-bold text-[#EA2C00]
+  - Greyed-out future stages: opacity-40
+  - Page background: bg-[#FAFAFA]
+  - font-abridge on the page H1 only
+
+  ---
+  Verification
+
+  1. At signaling maturity → track shows filled dot on Signaling, Validated and Strategic dimmed, "next moves" list shows formalize-the-comparison item
+  2. utilizationRate = 40% → Deepen Adoption lever appears with math showing 75% target delta
+  3. providers = 8, totalProviders = 22 → Expand Provider Cohort lever shows additional 14 providers value
+  4. Single care setting active → Add a Care Setting lever shows benchmark language, no dollar amount
+  5. Full deployment (utilization ≥ 75%, providers = totalProviders, all settings) → replacement card appears
+  6. PDF button calls generateMeasurePDF — if unavailable, falls back to window.print()
+  7. MeasureFlow no longer references story phase, no import of MeasureStory
+  8. Back button from this page goes to the financial page
+

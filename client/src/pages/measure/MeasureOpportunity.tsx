@@ -1,727 +1,522 @@
-import { useState, useMemo, useCallback } from "react";
-import { ArrowRight, TrendingUp, Users, Info, Pencil, Check, Clock } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Download, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { 
-  type MeasureState, 
-  type MeasureCareSetting,
-  type DataSource,
+import {
+  type MeasureState,
   type MaturityStage,
-  type NextStageMetric,
-  formatCurrency, 
   formatNumber,
-  calculateExpansionResults,
   deriveEngagementContext,
   computeDomainStatus,
   getMonthsFromGoLive,
-  deriveSettingStage,
 } from "@/lib/measureCalculator";
-import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
-import NarrativePanel from "@/components/measure/NarrativePanel";
-import { generateNarrative } from "@/lib/measureNarrative";
 
-function DataSourceBadge({ source }: { source: DataSource }) {
-  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
-  };
-  const c = config[source] || config.estimate;
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
-      {c.label}
-    </span>
-  );
+const STAGES: { key: MaturityStage; label: string }[] = [
+  { key: 'unmeasured', label: 'Unmeasured' },
+  { key: 'signaling', label: 'Signaling' },
+  { key: 'validated', label: 'Validated' },
+  { key: 'strategic', label: 'Strategic' },
+];
+
+const STAGE_DESCRIPTIONS: Record<MaturityStage, string> = {
+  unmeasured: 'Adoption is still ramping or baselines haven\'t been established yet.',
+  signaling: 'One or two domains are showing before/after trends. Baselines are confirmed.',
+  validated: 'Three or more domains have confirmed trends with at least 60% utilization.',
+  strategic: 'Abridge is embedded in organizational strategy with board-ready proof.',
+};
+
+const SETTING_SUGGESTIONS: Record<string, { label: string; benchmarks: string[] }> = {
+  outpatient: {
+    label: 'Emergency Department',
+    benchmarks: ['LWBS rate −0.6 to −1.2 pts', 'Door-to-doc time −18%', 'Note time −42%'],
+  },
+  ed: {
+    label: 'Inpatient',
+    benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],
+  },
+  inpatient: {
+    label: 'Outpatient',
+    benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],
+  },
+  nursing: {
+    label: 'Inpatient',
+    benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],
+  },
+};
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
 }
 
-function MaturityStageCard({ state }: { state: MeasureState }) {
-  const ctx = deriveEngagementContext(state);
-  const domainStatus = computeDomainStatus(state);
-  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
-  const stages: { key: MaturityStage; label: string }[] = [
-    { key: 'unmeasured', label: 'Unmeasured' },
-    { key: 'signaling', label: 'Signaling' },
-    { key: 'validated', label: 'Validated' },
-    { key: 'strategic', label: 'Strategic' },
-  ];
-  const currentIdx = stages.findIndex(s => s.key === ctx.maturityStage);
+function fmtRange(low: number, high: number): string {
+  if (low === high) return fmt(low);
+  return `${fmt(low)} — ${fmt(high)}`;
+}
 
-  const descriptions: Record<MaturityStage, string> = {
-    unmeasured: 'Your deployment is stabilizing. Focus on adoption and establishing baselines.',
-    signaling: 'First metrics are live. One or two domains are beginning to show trends.',
-    validated: 'Trends confirmed across multiple domains. Your data tells a credible story.',
-    strategic: 'Embedded in organizational strategy. Board-level proof established.',
-  };
+function computeConfirmedRange(state: MeasureState): { low: number; high: number } {
+  const setting = state.careSetting || 'outpatient';
+  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
+  const totalEncounters = state.deployment.totalEncounters || 0;
+  const utilizationRate = state.deployment.utilizationRate || 0;
+  const adoptedEncounters = Math.round(totalEncounters * (utilizationRate / 100));
 
-  const nextActions: string[] = [];
-  if (ctx.maturityStage === 'unmeasured') {
-    nextActions.push('Reach 20%+ utilization');
-    nextActions.push('Pass the 3-month mark');
-  } else if (ctx.maturityStage === 'signaling') {
-    if (activeDomains < 3) nextActions.push(`Confirm trends in ${3 - activeDomains}+ more domain${3 - activeDomains > 1 ? 's' : ''} (you have ${activeDomains} active)`);
-    if (state.deployment.encounterCoverageRate < 60) nextActions.push(`Reach 60%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
-    nextActions.push('Months 9\u201318 is the typical window');
-  } else if (ctx.maturityStage === 'validated') {
-    if (state.deployment.encounterCoverageRate < 70) nextActions.push(`Reach 70%+ encounter coverage (you're at ${state.deployment.encounterCoverageRate}%)`);
-    nextActions.push('Sustain trends past 18 months');
-    nextActions.push('Build board-level narrative');
+  const attrLow = 0.50;
+  const attrHigh = 0.75;
+  const realLow = 0.70;
+  const realHigh = 0.90;
+  const cf = state.calibration.conversionFactor || 33;
+
+  let totalLow = 0;
+  let totalHigh = 0;
+
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  if (wrvuDelta > 0 && adoptedEncounters > 0) {
+    const base = wrvuDelta * adoptedEncounters * cf;
+    totalLow += base * attrLow * realLow;
+    totalHigh += base * attrHigh * realHigh;
   }
 
-  return (
-    <motion.div
-      className="bg-[#1A1A1A] rounded-xl p-6 mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.05 }}
-      data-testid="section-maturity-stage"
-    >
-      <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-4">Your Maturity Stage</p>
-      <div className="flex items-center gap-3 mb-5">
-        {stages.map((s, i) => (
-          <div key={s.key} className="flex items-center gap-3">
-            <div className="flex flex-col items-center">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
-                ${i === currentIdx ? 'border-[#EA2C00] bg-[#EA2C00]' : i < currentIdx ? 'border-white bg-white' : 'border-white/40 bg-transparent'}`}
-              >
-                {i < currentIdx && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
-              </div>
-              <span className={`text-[10px] mt-1.5 ${i === currentIdx ? 'text-[#EA2C00] font-semibold' : 'text-[#666666]'}`}>{s.label}</span>
-            </div>
-            {i < stages.length - 1 && <div className={`w-8 h-px ${i < currentIdx ? 'bg-white' : 'bg-[#444444]'} mb-4`} />}
-          </div>
-        ))}
-      </div>
-      <p className="text-sm text-white mb-1">You are in: <span className="font-semibold text-[#EA2C00]">{ctx.maturityLabel}</span></p>
-      <p className="text-xs text-[#AAAAAA] mb-4 italic">{descriptions[ctx.maturityStage]}</p>
-      {nextActions.length > 0 && ctx.maturityStage !== 'strategic' && (
-        <div>
-          <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">To reach {ctx.maturityNext}:</p>
-          <ul className="space-y-1">
-            {nextActions.map((a, i) => (
-              <li key={i} className="text-xs text-[#CCCCCC] flex items-start gap-2">
-                <span className="text-[#EA2C00] mt-0.5">{'\u00B7'}</span> {a}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </motion.div>
-  );
-}
+  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
+  if (emDelta > 0 && adoptedEncounters > 0) {
+    const base = emDelta * adoptedEncounters * 45;
+    totalLow += base * attrLow * realLow;
+    totalHigh += base * attrHigh * realHigh;
+  }
 
-function formatSmartRange(low: number, high: number): string {
-  const lowFmt = formatCurrency(low);
-  const highFmt = formatCurrency(high);
-  if (lowFmt === highFmt) return lowFmt;
-  return `${lowFmt} \u2013 ${highFmt}`;
+  const settingData = state.settingData?.[setting] || {};
+  if (setting === 'inpatient') {
+    const cmiDelta = Math.max(0, (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0));
+    if (cmiDelta > 0) {
+      const base = cmiDelta * totalEncounters * 6800;
+      totalLow += base * attrLow * realLow;
+      totalHigh += base * attrHigh * realHigh;
+    }
+  }
+
+  if (setting === 'ed') {
+    const lwbsDelta = (settingData.lwbsRate_before ?? 0) - (settingData.lwbsRate_after ?? 0);
+    if (lwbsDelta > 0 && totalEncounters > 0) {
+      const recovered = (lwbsDelta / 100) * totalEncounters * 12;
+      totalLow += recovered * 480 * attrLow;
+      totalHigh += recovered * 480 * attrHigh;
+    }
+  }
+
+  const afterHoursDelta = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
+  if (afterHoursDelta > 0 && providers > 0) {
+    const annual = afterHoursDelta * 5 * providers * 75 * 52;
+    totalLow += annual * attrLow;
+    totalHigh += annual * attrHigh;
+  }
+
+  const mv = state.metricValues || {};
+  let hasBurnout = false;
+  for (const k of Object.keys(mv)) {
+    if (k.startsWith('burnout') || k.startsWith('likelihood')) {
+      const e = mv[k];
+      if (e && e.before != null && e.after != null) {
+        if ((k.startsWith('burnout') && e.before > e.after) ||
+            (k.startsWith('likelihood') && e.after > e.before)) {
+          hasBurnout = true;
+        }
+      }
+    }
+  }
+  if (hasBurnout) {
+    totalLow += 1 * 50000 * attrLow;
+    totalHigh += 3 * 150000 * attrHigh;
+  }
+
+  return { low: totalLow, high: totalHigh };
 }
 
 interface MeasureOpportunityProps {
   state: MeasureState;
   updateState: (updates: Partial<MeasureState>) => void;
-  onNext: () => void;
   onBack: () => void;
   onHome: () => void;
 }
 
-function InlineEdit({ 
-  value, 
-  onChange, 
-  suffix, 
-  min, 
-  max,
-  testId,
-}: { 
-  value: number; 
-  onChange: (v: number) => void; 
-  suffix: string; 
-  min: number; 
-  max: number;
-  testId: string;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(String(value));
-
-  const commit = useCallback(() => {
-    const parsed = parseInt(draft, 10);
-    if (!isNaN(parsed)) {
-      const clamped = Math.min(max, Math.max(min, parsed));
-      onChange(clamped);
-      setDraft(String(clamped));
-    } else {
-      setDraft(String(value));
-    }
-    setEditing(false);
-  }, [draft, min, max, onChange, value]);
-
-  if (editing) {
-    return (
-      <span className="inline-flex items-center gap-1">
-        <input
-          type="number"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => { if (e.key === 'Enter') commit(); }}
-          className="w-[72px] bg-white border border-[#EA2C00] rounded-md px-2 py-0.5 text-sm font-semibold text-[#1A1A1A] text-center outline-none focus:ring-2 focus:ring-[#EA2C00]/20"
-          min={min}
-          max={max}
-          autoFocus
-          data-testid={testId}
-        />
-        <span className="text-sm font-semibold text-[#EA2C00]">{suffix}</span>
-      </span>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => { setDraft(String(value)); setEditing(true); }}
-      className="inline-flex items-center gap-1.5 group cursor-pointer"
-      data-testid={`${testId}-trigger`}
-    >
-      <span className="text-sm font-semibold text-[#EA2C00] border-b border-dashed border-[#EA2C00]/40 group-hover:border-[#EA2C00] transition-colors">
-        {value}{suffix}
-      </span>
-      <Pencil className="w-3 h-3 text-[#EA2C00]/50 group-hover:text-[#EA2C00] transition-colors" />
-    </button>
-  );
-}
-
-export default function MeasureOpportunity({ 
-  state, 
-  updateState,
-  onNext, 
+export default function MeasureOpportunity({
+  state,
   onBack,
   onHome,
 }: MeasureOpportunityProps) {
-  const narrative = useMemo(() => generateNarrative('opportunity', state), [state]);
-  const careSetting = state.careSetting || "outpatient";
-  const isInpatient = careSetting === "inpatient";
-  const isED = careSetting === "ed";
-  const isNursing = careSetting === "nursing";
+  const ctx = useMemo(() => deriveEngagementContext(state), [state]);
+  const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
+  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const orgName = state.deployment.organizationName || "Your Organization";
+  const setting = state.careSetting || "outpatient";
+  const settingLabel = setting === 'ed' ? 'Emergency Department' : setting === 'inpatient' ? 'Inpatient' : setting === 'nursing' ? 'Nursing' : 'Outpatient';
 
-  const providerLabel = isNursing ? "nurses" : "providers";
-  const providerLabelSingular = isNursing ? "nurse" : "provider";
-  const encounterLabel = isInpatient ? "discharges" : isNursing ? "shifts" : "encounters";
+  const confirmed = useMemo(() => computeConfirmedRange(state), [state]);
+  const hasConfirmedValue = confirmed.low > 0;
 
-  const defaultTargetAdoption = 80;
-  const defaultTargetProviders = state.deployment.totalProviders > 0 ? state.deployment.totalProviders : state.deployment.providers;
+  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
+  const totalProviders = state.deployment.totalProviders || providers;
+  const utilizationRate = state.deployment.utilizationRate || 0;
+  const activeDomains = Object.values(domainStatus).filter(s => s === 'signaling' || s === 'validated').length;
 
-  const [targetAdoption, setTargetAdoption] = useState(
-    state.expansionTargets?.targetAdoption ?? defaultTargetAdoption
-  );
-  const [targetProviders, setTargetProviders] = useState(
-    state.expansionTargets?.targetProviders ?? defaultTargetProviders
-  );
+  const activeMetricCount = useMemo(() => {
+    const mv = state.metricValues || {};
+    return Object.keys(mv).filter(k => {
+      const e = mv[k];
+      return e && (e.before != null || e.after != null);
+    }).length;
+  }, [state.metricValues]);
 
-  const handleAdoptionChange = useCallback((v: number) => {
-    setTargetAdoption(v);
-    updateState({ expansionTargets: { targetAdoption: v, targetProviders } });
-  }, [updateState, targetProviders]);
+  const currentStageIdx = STAGES.findIndex(s => s.key === ctx.maturityStage);
 
-  const handleProvidersChange = useCallback((v: number) => {
-    setTargetProviders(v);
-    updateState({ expansionTargets: { targetAdoption, targetProviders: v } });
-  }, [updateState, targetAdoption]);
+  const nextStageActions = useMemo(() => {
+    const actions: string[] = [];
+    const stage = ctx.maturityStage;
 
-  const calc = useMemo(() => {
-    const deployment = state.deployment;
-    const timeEfficiency = state.timeEfficiency;
-    const calibration = state.calibration;
-    const docQuality = state.documentationQuality;
-
-    const capacityPercent = state.allocation.capacityPercent ?? 20;
-    const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
-
-    const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
-    const adoptedEncounters = Math.round(deployment.totalEncounters * (deployment.encounterCoverageRate / 100));
-    const totalHoursSaved = (timeSavedPerNote * adoptedEncounters) / 60;
-    const annualFactor = 12 / Math.max(deployment.monthsOnAbridge, 1);
-
-    let totalValueLow: number;
-    let totalValueHigh: number;
-
-    if (careSetting === "inpatient") {
-      const metrics = state.settingData?.inpatient || {};
-      const hourlyRate = metrics.vm_hourlyRate ?? calibration.otHourlyRate ?? 175;
-      const cmiDelta = Math.max(0, (metrics.cmi_after ?? 0) - (metrics.cmi_before ?? 0));
-      const cmiPointValue = metrics.vm_cmiPointValue ?? calibration.conversionFactor ?? 1500;
-      const denialsDelta = Math.max(0, (metrics.denialsPer100_before ?? 0) - (metrics.denialsPer100_after ?? 0));
-      const denialCostPerCase = metrics.vm_denialCostPerCase ?? 3200;
-      const cdiDelta = Math.max(0, (metrics.cdiQueriesPer100_before ?? 0) - (metrics.cdiQueriesPer100_after ?? 0));
-      const cdiFteCost = metrics.vm_cdiFteCost ?? 85000;
-      const casesPerCdiFte = metrics.vm_casesPerCdiFte ?? 2500;
-      const inpSavingsPercent = state.allocation.hardSavingsPercent ?? 60;
-
-      const drgLow = cmiDelta * adoptedEncounters * cmiPointValue * 0.50 * annualFactor;
-      const drgHigh = cmiDelta * adoptedEncounters * cmiPointValue * 0.75 * annualFactor;
-      const denialValue = (denialsDelta / 100) * adoptedEncounters * denialCostPerCase * annualFactor;
-      const cdiValue = casesPerCdiFte > 0 ? ((cdiDelta / 100) * adoptedEncounters / casesPerCdiFte) * cdiFteCost * annualFactor : 0;
-      const savingsValue = totalHoursSaved * (inpSavingsPercent / 100) * hourlyRate * annualFactor;
-
-      totalValueLow = drgLow + denialValue + cdiValue + savingsValue;
-      totalValueHigh = drgHigh + denialValue + cdiValue + savingsValue;
-    } else if (careSetting === "ed") {
-      const throughputPercent = state.allocation.capacityPercent ?? 40;
-      const edSavingsPercent = state.allocation.hardSavingsPercent ?? 40;
-
-      const throughputHours = totalHoursSaved * (throughputPercent / 100);
-      const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
-      const throughputValue = additionalPatients * calibration.revenuePerVisit * annualFactor;
-      const savingsValue = totalHoursSaved * (edSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
-      const timeSubtotal = throughputValue + savingsValue;
-
-      const lwbsBefore = timeEfficiency.sameDayClosureWithout;
-      const lwbsAfter = timeEfficiency.sameDayClosureWith;
-      const lwbsReduction = Math.max(0, lwbsBefore - lwbsAfter);
-      const patientsRetained = Math.round((lwbsReduction / 100) * adoptedEncounters);
-      const lwbsValue = patientsRetained * calibration.revenuePerVisit * annualFactor;
-
-      const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
-      const emLevelValue = emLevelLift * adoptedEncounters * calibration.conversionFactor;
-
-      totalValueLow = timeSubtotal + lwbsValue + emLevelValue * 0.50 * annualFactor;
-      totalValueHigh = timeSubtotal + lwbsValue + emLevelValue * 0.75 * annualFactor;
-    } else if (careSetting === "nursing") {
-      const nursingMetrics = state.settingData?.nursing || {};
-      const nursingSavingsPercent = state.allocation.hardSavingsPercent ?? 50;
-      const savingsValue = totalHoursSaved * (nursingSavingsPercent / 100) * calibration.otHourlyRate * annualFactor;
-
-      const overtimeSaved = Math.max(0, timeEfficiency.workOutsideWithout - timeEfficiency.workOutsideWith);
-      const weeklyOtSavings = overtimeSaved * deployment.providers * calibration.otHourlyRate * 1.5;
-      const annualOtSavings = weeklyOtSavings * 52;
-
-      const turnoverReduction = Math.max(0, (nursingMetrics.turnoverRate_before ?? 0) - (nursingMetrics.turnoverRate_after ?? 0));
-      const nursesRetained = Math.round((turnoverReduction / 100) * deployment.providers);
-      const retentionValue = nursesRetained * 56000;
-
-      totalValueLow = savingsValue + annualOtSavings + retentionValue;
-      totalValueHigh = totalValueLow;
-    } else {
-      const capacityHours = totalHoursSaved * (capacityPercent / 100);
-      const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
-      const capacityValue = additionalVisits * calibration.revenuePerVisit * annualFactor;
-
-      const savingsHours = totalHoursSaved * (savingsPercent / 100);
-      const savingsValue = savingsHours * calibration.otHourlyRate * annualFactor;
-
-      const timeValueSubtotal = capacityValue + savingsValue;
-
-      const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
-      const docValueLow = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.50 * annualFactor;
-      const docValueHigh = wrvuLift * adoptedEncounters * calibration.conversionFactor * 0.75 * annualFactor;
-
-      totalValueLow = timeValueSubtotal + docValueLow;
-      totalValueHigh = timeValueSubtotal + docValueHigh;
+    if (stage === 'unmeasured') {
+      actions.push(`Reach 20% Abridge adoption (you're at ${Math.round(utilizationRate)}%)`);
+      if (activeDomains < 1) actions.push('Establish before/after data in at least one domain');
+    } else if (stage === 'signaling') {
+      if (activeDomains < 3) {
+        const missing = 3 - activeDomains;
+        actions.push(`Establish before/after data in ${missing} more domain${missing > 1 ? 's' : ''}`);
+      }
+      if (utilizationRate < 60) actions.push(`Reach 60% utilization across the cohort (you're at ${Math.round(utilizationRate)}%)`);
+      actions.push('Run a structured Abridge vs. non-Abridge encounter analysis');
+    } else if (stage === 'validated') {
+      actions.push('Document outcomes in a formal internal report for CFO/CMO review');
+      if (utilizationRate < 70) actions.push(`Reach 70% adoption (you're at ${Math.round(utilizationRate)}%)`);
+    } else if (stage === 'strategic') {
+      actions.push('Publish findings — you have board-level proof');
     }
 
-    const expansion = calculateExpansionResults(
-      state, totalValueLow, totalValueHigh, totalHoursSaved,
-      targetAdoption, targetProviders
-    );
+    return actions;
+  }, [ctx.maturityStage, utilizationRate, activeDomains]);
 
-    return {
-      totalHoursSaved,
-      totalValueLow,
-      totalValueHigh,
-      timeSavedPerNote,
-      expansion,
-    };
-  }, [state, careSetting, targetAdoption, targetProviders]);
+  const showDeepenAdoption = utilizationRate < 75;
+  const showExpandProviders = providers < totalProviders;
+  const showAddSetting = (state.activeCareSettings || [setting]).length <= 1;
+  const allFullyDeployed = !showDeepenAdoption && !showExpandProviders && !showAddSetting;
 
-  const { expansion } = calc;
+  const deepenValue = useMemo(() => {
+    if (!showDeepenAdoption || !hasConfirmedValue || utilizationRate <= 0) return null;
+    const scale = 75 / utilizationRate - 1;
+    return { low: Math.round(confirmed.low * scale), high: Math.round(confirmed.high * scale) };
+  }, [showDeepenAdoption, hasConfirmedValue, confirmed, utilizationRate]);
 
-  const oppCoverage = state.deployment.encounterCoverageRate;
-  const adoptionAlreadyHigh = oppCoverage >= targetAdoption;
-  const canDeepen = !adoptionAlreadyHigh;
-  const additionalProviders = expansion.remainingProviders;
-  const canExpand = additionalProviders > 0;
+  const additionalProviders = totalProviders - providers;
+  const expandValue = useMemo(() => {
+    if (!showExpandProviders || !hasConfirmedValue || providers <= 0) return null;
+    const perProviderLow = confirmed.low / providers;
+    const perProviderHigh = confirmed.high / providers;
+    return { low: Math.round(perProviderLow * additionalProviders), high: Math.round(perProviderHigh * additionalProviders) };
+  }, [showExpandProviders, hasConfirmedValue, confirmed, providers, additionalProviders]);
+
+  const additionalEncountersAtTarget = useMemo(() => {
+    if (!showDeepenAdoption) return 0;
+    const total = state.deployment.totalEncounters || 0;
+    const current = Math.round(total * (utilizationRate / 100));
+    const target = Math.round(total * 0.75);
+    return Math.max(0, target - current);
+  }, [showDeepenAdoption, state.deployment.totalEncounters, utilizationRate]);
+
+  const additionalProvidersNeeded = useMemo(() => {
+    if (!showDeepenAdoption || providers <= 0) return 0;
+    const currentAdopted = Math.round(providers * (utilizationRate / 100));
+    const targetAdopted = Math.round(providers * 0.75);
+    return Math.max(0, targetAdopted - currentAdopted);
+  }, [showDeepenAdoption, providers, utilizationRate]);
+
+  const nextMoves = useMemo(() => {
+    const moves: { label: string; detail: string }[] = [];
+
+    if (utilizationRate < 40) {
+      moves.push({ label: 'Drive adoption', detail: `${orgName} is at ${Math.round(utilizationRate)}% — next milestone is 40%. Schedule department-level Abridge sessions.` });
+    }
+    if (activeMetricCount < 4) {
+      moves.push({ label: 'Add measurement depth', detail: 'You have data in fewer than 4 metrics. Broader coverage makes the story more defensible.' });
+    }
+    if (ctx.maturityStage === 'signaling') {
+      moves.push({ label: 'Formalize the comparison', detail: 'Run a structured Abridge vs. non-Abridge encounter analysis for the CMO. The data is there.' });
+    }
+    if (ctx.maturityStage === 'validated' || ctx.maturityStage === 'strategic') {
+      moves.push({ label: 'Publish internally', detail: 'Prepare a one-page findings brief for finance and quality leadership. Use this EBR as the source.' });
+    }
+    moves.push({ label: 'Set a 90-day goal', detail: 'Name one metric, one target, one owner. Schedule a check-in.' });
+
+    return moves.slice(0, 4);
+  }, [utilizationRate, activeMetricCount, ctx.maturityStage, orgName]);
+
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleExport = async () => {
+    setPdfLoading(true);
+    try {
+      const mod = await import('@/components/measure/MeasurePDFExport');
+      if (mod.generateMeasurePDF) {
+        await mod.generateMeasurePDF(state);
+      } else {
+        window.print();
+      }
+    } catch {
+      window.print();
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const suggestionData = SETTING_SUGGESTIONS[setting] || SETTING_SUGGESTIONS.outpatient;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <UnifiedHeader
         pathType="measure"
         currentStep={5}
         totalSteps={5}
-        stepName="Where You're Going"
+        stepName="What's Next"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={deriveEngagementContext(state)} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
-
-        <NarrativePanel narrative={narrative} />
-
-        <motion.div 
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: 20 }}
+      <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
+          className="mb-2"
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            Where You{"'"}re Going
-          </h1>
-          <p className="text-base text-[#666666] max-w-lg mx-auto" data-testid="text-page-subtitle">
-            You{"'"}ve demonstrated the model with {state.deployment.providers} {providerLabel}. Here{"'"}s what your data suggests about what{"'"}s next.
+          <p className="text-xs text-[#999999] uppercase tracking-widest font-medium">
+            {orgName} · {settingLabel} · {months} month{months !== 1 ? 's' : ''} with Abridge
           </p>
         </motion.div>
 
-        <MaturityStageCard state={state} />
+        <motion.h1
+          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight mb-8"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          data-testid="text-page-title"
+        >
+          What's Next
+        </motion.h1>
 
         <motion.div
-          className="bg-white rounded-xl border border-[#E5E5E5] p-6 md:p-8 mb-6"
+          className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          data-testid="section-deepen"
+          data-testid="section-maturity-stage"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
-            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
-              Layer 1: Deepen
-            </p>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-x-1.5 mb-6">
-            <span className="text-sm text-[#666666]">
-              Increase adoption within your current {state.deployment.providers} {providerLabel} to
-            </span>
-            <InlineEdit
-              value={targetAdoption}
-              onChange={handleAdoptionChange}
-              suffix="% adoption"
-              min={Math.max(oppCoverage + 1, 10)}
-              max={100}
-              testId="input-target-adoption"
-            />
+          <h2 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-5">Maturity Stage</h2>
+
+          <div className="flex items-center justify-between mb-6 px-2">
+            {STAGES.map((s, i) => {
+              const isCompleted = i < currentStageIdx;
+              const isCurrent = i === currentStageIdx;
+              const isFuture = i > currentStageIdx;
+
+              return (
+                <div key={s.key} className="flex items-center flex-1 last:flex-initial">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-3 h-3 rounded-full flex items-center justify-center ${
+                        isCurrent ? 'bg-[#EA2C00] ring-4 ring-[#EA2C00]/20' :
+                        isCompleted ? 'bg-[#1A1A1A]' :
+                        'bg-[#E5E5E5]'
+                      }`}
+                    >
+                      {isCompleted && <Check className="w-2 h-2 text-white" />}
+                    </div>
+                    <span className={`text-[10px] mt-2 whitespace-nowrap ${
+                      isCurrent ? 'font-bold text-[#1A1A1A]' :
+                      isFuture ? 'text-[#999999]' :
+                      'text-[#666666]'
+                    }`}>
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < STAGES.length - 1 && (
+                    <div className={`flex-1 h-px mx-3 mb-5 ${
+                      i < currentStageIdx ? 'bg-[#1A1A1A]' : 'bg-[#E5E5E5]'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
-                <p className="text-sm text-[#666666]">{oppCoverage}% encounter coverage</p>
-                <p className="text-sm text-[#666666]">{formatNumber(expansion.currentAdoptedEncounters)} {encounterLabel}</p>
-                <p className="text-sm text-[#666666]">{formatNumber(Math.round(calc.totalHoursSaved))} hours saved</p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
-                  At {targetAdoption}% Adoption
-                </p>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={targetAdoption}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <p className="text-sm font-medium text-[#1A1A1A]">{targetAdoption}% adoption</p>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{formatNumber(expansion.deepenEncounters)} {encounterLabel}</p>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{formatNumber(Math.round(expansion.deepenHoursSaved))} hours saved</p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+          {currentStageIdx >= 0 && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-[#999999]">↑ you are here</span>
             </div>
+          )}
 
-            {canDeepen && (
-              <div className="border-t border-[#E5E5E5] mt-4 pt-4">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={expansion.deepenAdditionalValue}
-                    className="text-base font-bold text-[#EA2C00]"
-                    data-testid="text-deepen-value"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    Additional value from adoption alone: +{formatCurrency(expansion.deepenAdditionalValue)}/year
-                  </motion.p>
-                </AnimatePresence>
-                <p className="text-xs text-[#666666] mt-1">
-                  No additional investment required.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <p className="text-xs text-[#666666]">
-            This is your immediate opportunity. Moving from {oppCoverage}% to {targetAdoption}% encounter coverage captures more value from {providerLabel} who already have access to Abridge.
+          <p className="text-sm text-[#666666] mb-4">
+            {STAGE_DESCRIPTIONS[ctx.maturityStage]}
           </p>
+
+          {nextStageActions.length > 0 && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-2">
+                {ctx.maturityStage === 'strategic' ? 'Your next step' : `What gets you to ${ctx.maturityNext}`}
+              </p>
+              <ul className="space-y-1.5">
+                {nextStageActions.map((action, i) => (
+                  <li key={i} className="text-sm text-[#666666] flex items-start gap-2">
+                    <span className="text-[#EA2C00] mt-0.5 flex-shrink-0">·</span>
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
-          className="bg-white rounded-xl border border-[#E5E5E5] p-6 md:p-8 mb-6"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          data-testid="section-expand"
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-4 h-4 text-[#EA2C00]" />
-            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
-              Layer 2: Expand
-            </p>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-x-1.5 mb-6">
-            <span className="text-sm text-[#666666]">
-              Bring Abridge to
-            </span>
-            <InlineEdit
-              value={targetProviders}
-              onChange={handleProvidersChange}
-              suffix={` ${providerLabel}`}
-              min={state.deployment.providers + 1}
-              max={10000}
-              testId="input-target-providers"
-            />
-            <span className="text-sm text-[#666666]">
-              across your organization
-            </span>
-          </div>
-
-          <div className="bg-[#F5F0EB] rounded-lg p-5 mb-5">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Today</p>
-                <p className="text-sm text-[#666666]">{state.deployment.providers} {providerLabel}</p>
-                <p className="text-sm text-[#666666]">{formatSmartRange(calc.totalValueLow, calc.totalValueHigh)}/year</p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-2">
-                  At {expansion.expandProviders} {isNursing ? "Nurses" : "Providers"}
-                </p>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={targetProviders}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <p className="text-sm font-medium text-[#1A1A1A]">{expansion.expandProviders} {providerLabel}</p>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{formatSmartRange(expansion.expandValueLow, expansion.expandValueHigh)}/year</p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#666666] mt-4 pt-3 border-t border-[#E5E5E5]">
-              At {formatCurrency(expansion.perProviderValue)} per {providerLabelSingular}, each additional {providerLabelSingular} added represents meaningful incremental value.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-[#1A1A1A] rounded-lg p-4">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={expansion.perProviderValue}
-                  className="text-xl font-bold text-white"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {formatCurrency(expansion.perProviderValue)}
-                </motion.p>
-              </AnimatePresence>
-              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">value per {providerLabelSingular}/year</p>
-            </div>
-            <div className="bg-[#1A1A1A] rounded-lg p-4">
-              <p className="text-xl font-bold text-white">{Math.round(expansion.hoursPerProvider)} hrs</p>
-              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">saved per {providerLabelSingular}/{getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge)} mo</p>
-            </div>
-            <div className="bg-[#1A1A1A] rounded-lg p-4">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={expansion.remainingProviders}
-                  className="text-xl font-bold text-white"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {expansion.remainingProviders}
-                </motion.p>
-              </AnimatePresence>
-              <p className="text-[12px] text-[#999999] uppercase tracking-[1px] mt-1">not yet on Abridge of {targetProviders} total</p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          data-testid="section-combined"
-        >
-          <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-6">
-            Your Combined Opportunity
-          </p>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-[#2A2A2A] rounded-lg p-5">
-              <div className="flex items-center gap-2 mb-3"><p className="text-[12px] font-semibold text-[#999999] uppercase tracking-[1px]">Today</p><DataSourceBadge source={state.dataSource} /></div>
-              <p className="text-sm text-[#AAAAAA] mb-1">{state.deployment.providers} {providerLabel}</p>
-              <p className="text-sm text-[#AAAAAA] mb-3">{oppCoverage}% encounter coverage</p>
-              <p className="text-2xl font-bold text-white" data-testid="text-today-value">
-                {formatSmartRange(calc.totalValueLow, calc.totalValueHigh)}
-              </p>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg p-5 border border-[#EA2C00]/30">
-              <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-3">With Deeper + Wider Adoption</p>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${targetAdoption}-${targetProviders}`}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <p className="text-sm text-[#AAAAAA] mb-1">{expansion.combinedProviders} {providerLabel}</p>
-                  <p className="text-sm text-[#AAAAAA] mb-3">{targetAdoption}% adoption</p>
-                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-combined-value">
-                    {formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-5 border-t border-[#333333]">
-            <p className="text-xs text-[#AAAAAA] leading-relaxed mb-3">
-              Unlike programs that scale linearly with headcount, AI documentation cost per {providerLabelSingular} decreases as adoption grows, while value per {isInpatient ? "discharge" : isNursing ? "shift" : "encounter"} remains consistent.
-            </p>
-            <p className="text-[10px] text-[#666666] italic">
-              Benchmark: Abridge deployments with {">"}60% adoption and {">"}6 months tenure typically see {isInpatient ? '$400K\u2013$1.2M' : isED ? '$300K\u2013$800K' : isNursing ? '$200K\u2013$600K' : '$500K\u2013$1.5M'} in verified annual value for a similar provider count.
-            </p>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
           className="mb-8"
         >
-          <div className="flex items-start gap-2">
-            <Info className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
-            <p className="text-[12px] text-[#999999] leading-relaxed">
-              Projections assume current time savings ({calc.timeSavedPerNote} min/{isNursing ? "shift" : isInpatient ? "discharge" : "encounter"}), adoption rates, and {isInpatient ? "documentation" : isED ? "throughput" : isNursing ? "efficiency" : "wRVU"} improvements continue. Deeper adoption assumes {targetAdoption}% utilization. Expansion assumes same per-{providerLabelSingular} economics. Click the highlighted values above to customize your targets.
-            </p>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-4">Expansion Opportunity</h2>
+
+          {allFullyDeployed ? (
+            <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 text-center">
+              <p className="text-sm text-[#666666]">
+                You've reached full deployment maturity. The work now is validation and publication.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {showDeepenAdoption && (
+                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-deepen">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Deepen Adoption</h3>
+                  <p className="text-sm text-[#666666] mb-3">
+                    You're at {Math.round(utilizationRate)}%. If you reach 75%:
+                  </p>
+                  {deepenValue ? (
+                    <p className="text-2xl font-bold text-[#EA2C00] mb-2" data-testid="text-deepen-value">
+                      +{fmtRange(deepenValue.low, deepenValue.high)} / year
+                    </p>
+                  ) : (
+                    <p className="text-sm text-[#666666] mb-2">
+                      {formatNumber(additionalEncountersAtTarget)} additional encounters per year would be Abridge-assisted
+                    </p>
+                  )}
+                  <p className="text-sm text-[#666666]">additional confirmed value</p>
+                  <p className="text-xs text-[#999999] mt-2">
+                    {additionalProvidersNeeded > 0 && `${additionalProvidersNeeded} additional providers would need to regularly use Abridge`}
+                  </p>
+                </div>
+              )}
+
+              {showExpandProviders && (
+                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-expand">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Expand Provider Cohort</h3>
+                  <p className="text-sm text-[#666666] mb-3">
+                    {providers} of {totalProviders} providers are on Abridge. At full deployment:
+                  </p>
+                  {expandValue ? (
+                    <>
+                      <p className="text-2xl font-bold text-[#EA2C00] mb-2" data-testid="text-expand-value">
+                        +{fmtRange(expandValue.low, expandValue.high)} / year
+                      </p>
+                      <p className="text-sm text-[#666666]">
+                        additional value from {additionalProviders} providers
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-[#666666]">
+                      {additionalProviders} additional providers would gain Abridge documentation support
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {showAddSetting && (
+                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-add-setting">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Add a Care Setting</h3>
+                  <p className="text-sm text-[#666666] mb-1">
+                    Currently measuring: {settingLabel}
+                  </p>
+                  <p className="text-sm text-[#666666] mb-3">
+                    Next setting to consider: <span className="font-medium text-[#1A1A1A]">{suggestionData.label}</span>
+                  </p>
+                  <p className="text-xs text-[#999999] mb-2">
+                    {suggestionData.label} deployments at peer systems have shown:
+                  </p>
+                  <ul className="space-y-1">
+                    {suggestionData.benchmarks.map((b, i) => (
+                      <li key={i} className="text-sm text-[#666666] flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-0.5 flex-shrink-0">•</span>
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+
+        <motion.div
+          className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          data-testid="section-next-moves"
+        >
+          <h2 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-4">Next Moves</h2>
+          <div className="space-y-4">
+            {nextMoves.map((move, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="w-7 h-7 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-white">{i + 1}</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#1A1A1A]">{move.label}</p>
+                  <p className="text-sm text-[#666666] mt-0.5">{move.detail}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
 
-        <NextChapterSection state={state} />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-6"
+          data-testid="section-export"
+        >
+          <Button
+            onClick={handleExport}
+            disabled={pdfLoading}
+            className="w-full h-14 bg-[#1A1A1A] hover:bg-[#333333] text-white font-bold text-base rounded-xl gap-3"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-5 h-5" />
+            {pdfLoading ? 'Generating...' : 'Download EBR Summary — PDF'}
+          </Button>
+        </motion.div>
 
-        <motion.div 
-          className="max-w-[480px] mx-auto"
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
+          className="text-center"
         >
-          <Button
-            onClick={onNext}
-            className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-full text-base gap-2"
-            data-testid="button-see-story"
+          <button
+            onClick={onBack}
+            className="text-sm text-[#999999] hover:text-[#666666] transition-colors inline-flex items-center gap-1.5"
+            data-testid="link-back-financial"
           >
-            View Executive Summary
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to Financial Impact
+          </button>
         </motion.div>
       </div>
     </div>
-  );
-}
-
-function SourceBadge({ source }: { source: string }) {
-  const isAbridge = source.toLowerCase().includes('abridge');
-  return (
-    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold ${isAbridge ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
-      {isAbridge ? 'Abridge' : 'Your Systems'}
-    </span>
-  );
-}
-
-function NextChapterSection({ state }: { state: MeasureState }) {
-  const careSetting = state.careSetting || 'outpatient';
-  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
-
-  const activeSettings = useMemo(() => {
-    if (state.activeCareSettings?.length > 0) return state.activeCareSettings;
-    const settings: MeasureCareSetting[] = [];
-    const all: MeasureCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
-    for (const s of all) {
-      const d = state.settingData[s];
-      if (d) {
-        const hasMetricData = Object.entries(d).some(([k, v]) =>
-          (k.endsWith('_before') || k.endsWith('_after')) && v !== 0
-        );
-        if (hasMetricData) settings.push(s);
-      }
-    }
-    if (settings.length === 0) settings.push(careSetting);
-    return settings;
-  }, [state, careSetting]);
-
-  const settingStages = useMemo(() => activeSettings.map(s => deriveSettingStage(state, s)), [state, activeSettings]);
-
-  const allMetrics = settingStages.flatMap(s => s.nextStageMetrics);
-  if (allMetrics.length === 0) return null;
-
-  return (
-    <motion.div
-      className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.28 }}
-      data-testid="section-next-chapter"
-    >
-      <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
-        Your Next Chapter
-      </p>
-      <p className="text-sm text-white/60 mb-6 leading-relaxed">
-        These are the metrics that move you to the next stage. Some come from Abridge, some from your own systems.
-      </p>
-
-      {settingStages.map(stage => {
-        if (stage.nextStageMetrics.length === 0) return null;
-        return (
-          <div key={stage.setting} className="mb-6 last:mb-0" data-testid={`next-chapter-${stage.setting}`}>
-            {activeSettings.length > 1 && (
-              <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/40 mb-3">{stage.settingLabel}</p>
-            )}
-            <div className="bg-white/5 rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2 border-b border-white/10">
-                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Metric</span>
-                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Domain</span>
-                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Source</span>
-                <span className="text-[10px] font-bold uppercase tracking-[1px] text-white/30">Expected</span>
-              </div>
-              {stage.nextStageMetrics.map((m, i) => {
-                const readyNow = months >= m.expectedAtMonth;
-                return (
-                  <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-4 py-2.5 border-b border-white/5 last:border-b-0 items-center">
-                    <span className="text-sm text-white/80">{m.metric}</span>
-                    <span className="text-xs text-white/50">{m.domain}</span>
-                    <SourceBadge source={m.source} />
-                    {readyNow ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
-                        <Check className="w-3 h-3" /> Ready now
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-white/40">
-                        <Clock className="w-3 h-3" /> Month {m.expectedAtMonth}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </motion.div>
   );
 }

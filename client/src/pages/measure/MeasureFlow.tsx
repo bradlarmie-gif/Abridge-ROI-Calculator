@@ -145,7 +145,6 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureOpportunity
           state={state}
           updateState={updateState}
-          onNext={goHome}
           onBack={() => navigate('financial')}
           onHome={goHome}
         />
