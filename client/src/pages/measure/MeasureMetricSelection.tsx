@@ -482,7 +482,7 @@ export default function MeasureMetricSelection({
                 data-testid={`pill-domain-${group.domainKey}`}
               >
                 {group.label}
-                {count > 0 && <span className="ml-1.5 bg-[#EA580C] text-white rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px]">{count}</span>}
+                <span className={`ml-1.5 rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px] ${count > 0 ? 'bg-[#EA580C] text-white' : 'bg-gray-200 text-gray-400'}`}>{count}</span>
               </button>
             );
           })}
@@ -606,20 +606,15 @@ export default function MeasureMetricSelection({
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-3" data-testid="cta-section">
-          {totalActive > 0 ? (
-            <Button
-              onClick={onNext}
-              className="bg-[#EA580C] hover:bg-[#DC4F07] text-white px-8 py-3 rounded-full text-sm font-semibold shadow-md"
-              data-testid="button-next"
-            >
-              View the Journey
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          ) : (
-            <p className="text-sm text-gray-400" data-testid="text-no-metrics">
-              Add at least one metric to continue
-            </p>
-          )}
+          <Button
+            onClick={totalActive > 0 ? onNext : undefined}
+            disabled={totalActive === 0}
+            className={`px-8 py-3 rounded-full text-sm font-semibold shadow-md ${totalActive > 0 ? 'bg-[#EA580C] hover:bg-[#DC4F07] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            data-testid="button-next"
+          >
+            {totalActive > 0 ? 'View the Journey' : 'Add at least one metric to continue'}
+            {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
+          </Button>
         </div>
       </div>
     </div>

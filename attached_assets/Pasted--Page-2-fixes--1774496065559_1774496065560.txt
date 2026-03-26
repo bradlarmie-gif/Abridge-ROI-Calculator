@@ -1,0 +1,38 @@
+ Page 2 fixes:
+                                                                                                                                                                                                               
+  1. Active domain tab: bg-[#EA2C00] text-white — not a subtle border change, a full fill change          
+  2. Active section left border: border-l-[#EA2C00] 4px — visible, orange, intentional                                                                                                                         
+  3. Every metric row: replace invisible hover button with always-visible small pill — border border-[#EA2C00] text-[#EA2C00] text-xs px-2.5 py-1 rounded-md — "Measure this" always in view
+  4. Page title: font-abridge uppercase text-3xl font-bold tracking-tight — it should hit
+  5. Background: bg-[#FAFAFA] on page, bg-white on expanded domain section — create depth                                                                                                                      
+  6. Fix domain-chapter mapping: Platform Adoption (% Utilization, Consent Rate, Retention) moves to its own Foundational section at top, NOT inside Quality                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Page 3 fixes:                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  1. Add page hero before domain cards:                                                                                                                                                                        
+  THE JOURNEY AT ABRIDGE          ← font-abridge uppercase text-3xl                                                                                                                                            
+  [Org] · Outpatient · 14 months  ← small, gray, contextual                                               
+                                                           
+  [Signals: 2]  [Metrics: 5]  [Providers: 48]  [Encounters: 48,000]                                                                                                                                            
+                ← 4 stat pills, warm cream background, clean       
+                                                                                                                                                                                                               
+  2. Redesign the metric bars — replace single orange bar with explicit before/after two-line treatment:                                                                                                       
+  Time to Close Encounter                              ↓ 33%                                                                                                                                                   
+  Before   ████████████████████████████████   2.4 min   ← gray (#E5E5E5)                                                                                                                                       
+  After    ███████████████                    0.8 min   ← orange (#EA2C00)                                                                                                                                     
+  Two stacked bars, same left-aligned start, after is clearly shorter/longer than before. The GAP is the story.                                                                                                
+                                                                                                                                                                                                               
+  3. The percentage badge: text-lg font-bold text-[#EA2C00] right-aligned — make it the hero of each metric row, not a parenthetical                                                                           
+  4. Signal dots: make them w-3 h-3 not w-2 h-2, filled orange for active signals, increase spacing, add count label 2 of 4 signals                                                                            
+  5. Empty domain cards: show the ghost metrics that would appear — opacity-30 list of metric names — so it looks intentional not broken:                                                                      
+  QUALITY  ○○○○  No data yet                                                                                                                                                                                   
+  What changed in documentation quality?                                                                                                                                                                       
+                                                                                                                                                                                                               
+    · Avg Note Star Rating                                                                                                                                                                                     
+    · Diagnosis Capture Rate          ← ghost list, opacity-30                                                                                                                                                 
+    · Note Completion Time                                                                                                                                                                                     
+                                                                                                          
+    ← Back to add metrics                                                                                                                                                                                      
+                                                                                                          
+  6. Domain headers: font-abridge uppercase text-xl not text-sm font-semibold — they should feel authoritative      

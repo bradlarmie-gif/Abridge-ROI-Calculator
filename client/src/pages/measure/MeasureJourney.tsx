@@ -17,6 +17,13 @@ import {
   type MetricDefinition,
 } from "@/lib/measureCareSettings";
 
+const SETTING_DISPLAY_LABELS: Record<string, string> = {
+  outpatient: 'Outpatient',
+  ed: 'ED',
+  inpatient: 'Inpatient',
+  nursing: 'Nursing',
+};
+
 interface MeasureJourneyProps {
   state: MeasureState;
   onNext: () => void;
@@ -307,7 +314,7 @@ export default function MeasureJourney({
                       {section.metrics.map((m, mi) => (
                         <MetricBar
                           key={`${m.metricDef.id}-${m.setting || 'org'}`}
-                          label={m.setting ? `${m.metricDef.label} (${m.setting})` : m.metricDef.label}
+                          label={m.setting ? `${m.metricDef.label} (${SETTING_DISPLAY_LABELS[m.setting] || m.setting})` : m.metricDef.label}
                           before={m.before}
                           after={m.after}
                           lowerIsBetter={m.metricDef.lowerIsBetter}
