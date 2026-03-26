@@ -29,7 +29,6 @@ interface MeasureJourneyProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  mode?: 'build' | 'present';
 }
 
 const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
@@ -174,7 +173,6 @@ export default function MeasureJourney({
   onNext,
   onBack,
   onHome,
-  mode,
 }: MeasureJourneyProps) {
   const activeSettings = state.activeCareSettings?.length
     ? state.activeCareSettings

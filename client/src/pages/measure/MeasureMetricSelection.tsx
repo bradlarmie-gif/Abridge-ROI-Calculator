@@ -173,7 +173,7 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
           <p className="text-xs text-gray-400 mt-0.5 truncate">{metric.description}</p>
         </div>
         <button
-          className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-[#EA580C] bg-[#FFF0EC] rounded-full"
+          className="opacity-60 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-[#EA580C] bg-[#FFF0EC] rounded-full"
           data-testid={`button-measure-${metric.id}`}
         >
           <Plus className="w-3 h-3" />

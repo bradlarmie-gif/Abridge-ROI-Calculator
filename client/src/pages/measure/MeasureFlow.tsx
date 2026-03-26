@@ -126,7 +126,6 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
           onNext={() => navigate('financial')}
           onBack={() => navigate('metrics')}
           onHome={goHome}
-          mode={mode}
         />
       );
 
