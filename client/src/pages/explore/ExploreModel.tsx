@@ -1663,16 +1663,10 @@ export default function ExploreModel({
                       <span className="text-[#666666]">• HAPI Risk Reduction</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
                     </div>
-                    {state.docQualityInputs.nursingHapiEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(6.5% rate · Dowding et al., JAMIA 2012)</p>
-                    )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• Fall Risk Visibility Gap</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
                     </div>
-                    {state.docQualityInputs.nursingFallsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(documentation gap rate · Joint Commission sentinel data)</p>
-                    )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• HAC Penalty</span>
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingHacEnabled && nursingHacValue > 0 ? formatCurrency(nursingHacValue) : '—'}</span>
