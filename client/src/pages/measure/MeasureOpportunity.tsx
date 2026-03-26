@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { Download, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
+import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
@@ -239,18 +240,25 @@ export default function MeasureOpportunity({
   const allFullyDeployed = !showDeepenAdoption && !showExpandProviders && !showAddSetting;
 
   const deepenValue = useMemo(() => {
-    if (!showDeepenAdoption || !hasConfirmedValue || utilizationRate <= 0) return null;
-    const scale = 75 / utilizationRate - 1;
-    return { low: Math.round(confirmed.low * scale), high: Math.round(confirmed.high * scale) };
-  }, [showDeepenAdoption, hasConfirmedValue, confirmed, utilizationRate]);
+    if (!hasConfirmedValue || utilizationRate <= 0 || targetAdoption <= utilizationRate) return null;
+    const scale = targetAdoption / utilizationRate;
+    return {
+      additional: { low: Math.round(confirmed.low * (scale - 1)), high: Math.round(confirmed.high * (scale - 1)) },
+      total: { low: Math.round(confirmed.low * scale), high: Math.round(confirmed.high * scale) },
+    };
+  }, [hasConfirmedValue, confirmed, utilizationRate, targetAdoption]);
 
-  const additionalProviders = totalProviders - providers;
+  const additionalProviders = targetProviderCount - providers;
   const expandValue = useMemo(() => {
-    if (!showExpandProviders || !hasConfirmedValue || providers <= 0) return null;
+    if (!showExpandProviders || !hasConfirmedValue || providers <= 0 || targetProviderCount <= providers) return null;
     const perProviderLow = confirmed.low / providers;
     const perProviderHigh = confirmed.high / providers;
-    return { low: Math.round(perProviderLow * additionalProviders), high: Math.round(perProviderHigh * additionalProviders) };
-  }, [showExpandProviders, hasConfirmedValue, confirmed, providers, additionalProviders]);
+    return {
+      additional: { low: Math.round(perProviderLow * additionalProviders), high: Math.round(perProviderHigh * additionalProviders) },
+      total: { low: Math.round(confirmed.low + perProviderLow * additionalProviders), high: Math.round(confirmed.high + perProviderHigh * additionalProviders) },
+      addedCount: additionalProviders,
+    };
+  }, [showExpandProviders, hasConfirmedValue, confirmed, providers, additionalProviders, targetProviderCount]);
 
   const additionalEncountersAtTarget = useMemo(() => {
     if (!showDeepenAdoption) return 0;
@@ -288,6 +296,15 @@ export default function MeasureOpportunity({
   }, [utilizationRate, activeMetricCount, ctx.maturityStage, orgName]);
 
   const [pdfLoading, setPdfLoading] = useState(false);
+
+    const minAdoptionTarget = Math.min(100, Math.max(Math.ceil(utilizationRate) + 5, 60));
+    const [targetAdoption, setTargetAdoption] = useState(() =>
+      Math.min(100, Math.max(minAdoptionTarget, 75))
+    );
+    const maxProviderTarget = Math.max(totalProviders, providers + 1);
+    const [targetProviderCount, setTargetProviderCount] = useState(() =>
+      totalProviders > providers ? totalProviders : providers + 1
+    );
 
   const handleExport = async () => {
     setPdfLoading(true);
@@ -427,75 +444,138 @@ export default function MeasureOpportunity({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {showDeepenAdoption && (
-                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-deepen">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Deepen Adoption</h3>
-                  <p className="text-sm text-[#666666] mb-3">
-                    You're at {Math.round(utilizationRate)}%. If you reach 75%:
-                  </p>
-                  {deepenValue ? (
-                    <p className="text-2xl font-bold text-[#EA2C00] mb-2" data-testid="text-deepen-value">
-                      +{fmtRange(deepenValue.low, deepenValue.high)} / year
-                    </p>
-                  ) : (
-                    <p className="text-sm text-[#666666] mb-2">
-                      {formatNumber(additionalEncountersAtTarget)} additional encounters per year would be Abridge-assisted
-                    </p>
-                  )}
-                  <p className="text-sm text-[#666666]">additional confirmed value</p>
-                  <p className="text-xs text-[#999999] mt-2">
-                    {additionalProvidersNeeded > 0 && `${additionalProvidersNeeded} additional providers would need to regularly use Abridge`}
-                  </p>
-                </div>
-              )}
+              <div className="space-y-4">
+                {showDeepenAdoption && (
+                  <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-deepen">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Deepen Adoption</h3>
+                      <span className="text-xs text-[#999999]">currently {Math.round(utilizationRate)}%</span>
+                    </div>
+                    <div className="mb-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-[#999999]">{Math.round(utilizationRate)}%</span>
+                        <span className="text-sm font-bold text-[#1A1A1A]">
+                          Target: <span className="text-[#EA2C00]">{Math.round(targetAdoption)}%</span>
+                        </span>
+                        <span className="text-xs text-[#999999]">100%</span>
+                      </div>
+                      <Slider
+                        min={minAdoptionTarget}
+                        max={100}
+                        step={1}
+                        value={[targetAdoption]}
+                        onValueChange={([v]) => setTargetAdoption(v)}
+                        className="[&_[data-slot=slider-track]]:bg-[#E5E5E5] [&_[data-slot=slider-range]]:bg-[#EA2C00] [&_[data-slot=slider-thumb]]:border-[#EA2C00] [&_[data-slot=slider-thumb]]:bg-white
+  [&_[data-slot=slider-thumb]]:shadow-md"
+                      />
+                    </div>
+                    <AnimatePresence mode="wait">
+                      {deepenValue ? (
+                        <motion.div
+                          key={`deepen-${targetAdoption}`}
+                          initial={{ opacity: 0.6 }}
+                          animate={{ opacity: 1 }}
+                          className="bg-white rounded-xl border border-[#E5E5E5] p-4"
+                        >
+                          <p className="text-xs text-[#999999] uppercase tracking-widest mb-3">
+                            At {Math.round(targetAdoption)}% adoption
+                          </p>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <span className="text-xs text-[#666666]">Additional value</span>
+                            <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-deepen-value">
+                              +{fmtRange(deepenValue.additional.low, deepenValue.additional.high)}<span className="text-sm font-normal text-[#999999]"> /yr</span>
+                            </span>
+                          </div>
+                          <div className="flex items-baseline justify-between pt-2 border-t border-[#F0EBE5]">
+                            <span className="text-xs text-[#666666]">Total at target</span>
+                            <span className="text-sm font-bold text-[#1A1A1A]">
+                              {fmtRange(deepenValue.total.low, deepenValue.total.high)}<span className="text-xs font-normal text-[#999999]"> /yr</span>
+                            </span>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.p key="deepen-no-financial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-[#999999] italic">
+                          Enter financial metrics on the previous page to see projected value.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
 
-              {showExpandProviders && (
-                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-expand">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Expand Provider Cohort</h3>
-                  <p className="text-sm text-[#666666] mb-3">
-                    {providers} of {totalProviders} providers are on Abridge. At full deployment:
-                  </p>
-                  {expandValue ? (
-                    <>
-                      <p className="text-2xl font-bold text-[#EA2C00] mb-2" data-testid="text-expand-value">
-                        +{fmtRange(expandValue.low, expandValue.high)} / year
-                      </p>
-                      <p className="text-sm text-[#666666]">
-                        additional value from {additionalProviders} providers
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-[#666666]">
-                      {additionalProviders} additional providers would gain Abridge documentation support
-                    </p>
-                  )}
-                </div>
-              )}
+                {showExpandProviders && (
+                  <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-expand">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Expand Provider Cohort</h3>
+                      <span className="text-xs text-[#999999]">{providers} of {totalProviders} on Abridge now</span>
+                    </div>
+                    <div className="mb-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-[#999999]">{providers}</span>
+                        <span className="text-sm font-bold text-[#1A1A1A]">
+                          Target: <span className="text-[#EA2C00]">{targetProviderCount} providers</span>
+                        </span>
+                        <span className="text-xs text-[#999999]">{maxProviderTarget}</span>
+                      </div>
+                      <Slider
+                        min={providers + 1}
+                        max={maxProviderTarget}
+                        step={1}
+                        value={[targetProviderCount]}
+                        onValueChange={([v]) => setTargetProviderCount(v)}
+                        className="[&_[data-slot=slider-track]]:bg-[#E5E5E5] [&_[data-slot=slider-range]]:bg-[#EA2C00] [&_[data-slot=slider-thumb]]:border-[#EA2C00] [&_[data-slot=slider-thumb]]:bg-white
+  [&_[data-slot=slider-thumb]]:shadow-md"
+                      />
+                    </div>
+                    <AnimatePresence mode="wait">
+                      {expandValue ? (
+                        <motion.div
+                          key={`expand-${targetProviderCount}`}
+                          initial={{ opacity: 0.6 }}
+                          animate={{ opacity: 1 }}
+                          className="bg-white rounded-xl border border-[#E5E5E5] p-4"
+                        >
+                          <p className="text-xs text-[#999999] uppercase tracking-widest mb-3">
+                            Adding {expandValue.addedCount} provider{expandValue.addedCount !== 1 ? 's' : ''}
+                          </p>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <span className="text-xs text-[#666666]">Additional value</span>
+                            <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-expand-value">
+                              +{fmtRange(expandValue.additional.low, expandValue.additional.high)}<span className="text-sm font-normal text-[#999999]"> /yr</span>
+                            </span>
+                          </div>
+                          <div className="flex items-baseline justify-between pt-2 border-t border-[#F0EBE5]">
+                            <span className="text-xs text-[#666666]">Total at target</span>
+                            <span className="text-sm font-bold text-[#1A1A1A]">
+                              {fmtRange(expandValue.total.low, expandValue.total.high)}<span className="text-xs font-normal text-[#999999]"> /yr</span>
+                            </span>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.p key="expand-no-financial" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-[#999999] italic">
+                          Enter financial metrics on the previous page to see projected value.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
 
-              {showAddSetting && (
-                <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-add-setting">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Add a Care Setting</h3>
-                  <p className="text-sm text-[#666666] mb-1">
-                    Currently measuring: {settingLabel}
-                  </p>
-                  <p className="text-sm text-[#666666] mb-3">
-                    Next setting to consider: <span className="font-medium text-[#1A1A1A]">{suggestionData.label}</span>
-                  </p>
-                  <p className="text-xs text-[#999999] mb-2">
-                    {suggestionData.label} deployments at peer systems have shown:
-                  </p>
-                  <ul className="space-y-1">
-                    {suggestionData.benchmarks.map((b, i) => (
-                      <li key={i} className="text-sm text-[#666666] flex items-start gap-2">
-                        <span className="text-[#EA2C00] mt-0.5 flex-shrink-0">•</span>
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+                {showAddSetting && (
+                  <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-add-setting">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Add a Care Setting</h3>
+                    <p className="text-sm text-[#666666] mb-1">Currently measuring: {settingLabel}</p>
+                    <p className="text-sm text-[#666666] mb-3">Next setting to consider: <span className="font-medium text-[#1A1A1A]">{suggestionData.label}</span></p>
+                    <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments at peer systems have shown:</p>
+                    <ul className="space-y-1">
+                      {suggestionData.benchmarks.map((b, i) => (
+                        <li key={i} className="text-sm text-[#666666] flex items-start gap-2">
+                          <span className="text-[#EA2C00] mt-0.5 flex-shrink-0">•</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
           )}
         </motion.div>
 
