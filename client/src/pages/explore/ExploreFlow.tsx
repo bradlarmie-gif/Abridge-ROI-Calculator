@@ -246,9 +246,9 @@ export interface DocQualityInputs {
   nursingClabsiExpanded: boolean;
   nursingSepsisEnabled: boolean;
   nursingSepsisRatePerThousand: number;
-  nursingSepsisComplianceImprovement: number;
-  nursingSepsisLosReduction: number;
-  nursingSepsisDailyCost: number;
+  nursingSepsisCurrentCompliance: number;
+  nursingSepsisDocLagPercent: number;
+  nursingSepsisExcessCostPerCase: number;
   nursingSepsisRealization: number;
   nursingSepsisExpanded: boolean;
 
@@ -508,9 +508,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingClabsiExpanded: true,
     nursingSepsisEnabled: false,
     nursingSepsisRatePerThousand: 2.0,
-    nursingSepsisComplianceImprovement: 8,
-    nursingSepsisLosReduction: 0.5,
-    nursingSepsisDailyCost: 3000,
+    nursingSepsisCurrentCompliance: 75,
+    nursingSepsisDocLagPercent: 30,
+    nursingSepsisExcessCostPerCase: 3500,
     nursingSepsisRealization: 60,
     nursingSepsisExpanded: true,
     // Expanded states (auto-expand when first toggled on)

@@ -1,0 +1,49 @@
+Replit prompt:                              
+                                          
+  Rebuild the Sepsis SEP-1 model across 4 files. Replace the LOS-based model with an excess-cost-per-non-compliant-case model — same structure as CAUTI/CLABSI.                                                
+                                                                                                                                                                                                               
+  FILE 1: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                             
+                                                                                                                                                                                                               
+  In DocQualityInputs interface, replace:                                                                                                                                                                      
+    nursingSepsisLosPerImproved: number;                                                                                                                                                                       
+    nursingSepsisDailyCost: number;                                                                                                                                                                            
+  with:                                                                                                                                                                                                        
+    nursingSepsisExcessCostPerCase: number; // excess cost of non-compliant vs. compliant sepsis case                                                                                                        
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE, replace those defaults with:
+    nursingSepsisExcessCostPerCase: 3500,                                                                                                                                                                      
+                                                                                                                                                                                                               
+  FILE 2: client/src/pages/explore/ExploreCareQuality.tsx
+                                                                                                                                                                                                               
+  Update sepsisValue useMemo:                                                                                                                                                                                  
+    sepsisValue = sepsisDocLagCases × nursingSepsisExcessCostPerCase × (realization/100)                                                                                                                       
+                                                                                                                                                                                                               
+  Replace the card content:                                                                                                                                                                                    
+  - Step 1: Sepsis volume (same)                                                                                                                                                                             
+  - Step 2: COMPLIANCE GAP — current SEP-1 compliance % + non-compliant cases/year (computed)                                                                                                                  
+  - Step 3: DOCUMENTATION-ATTRIBUTABLE FAILURES — doc-lag % + "cases addressable by Abridge" (computed)
+  - Step 4: EXCESS COST PER NON-COMPLIANT CASE — single input: $ (default $3,500), realization %                                                                                                               
+    - Helper text: "HCUP cost data and Seymour et al. NEJM 2017 show non-compliant cases cost $3,000–$5,000 more — more ICU time, more antibiotic days, more complications. This is a per-case cost            
+  differential, not an LOS claim."                                                                                                                                                                             
+  - Step 5: POTENTIAL VALUE formula box showing the full 5-line chain                                                                                                                                          
+  - Footer note: "Modeled as excess cost of non-compliant vs. compliant cases — same structure as CAUTI and CLABSI."                                                                                           
+  - Keep the orange "MORTALITY SIGNAL — NOT MODELED" callout box with Kumar et al. citation.                                                                                                                   
+                                                                                                                                                                                                               
+  FILE 3: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                            
+                                                                                                                                                                                                               
+  Update nursingSepsisValue useMemo and nursingCareQualityPotential to:                                                                                                                                        
+    value = docLagCases × excessCostPerCase × (realization/100)                                                                                                                                                
+                                                                                                                                                                                                               
+  Update PDF data assembly: replace nursingSepsisLosPerImproved + nursingSepsisDailyCost                                                                                                                       
+  with nursingSepsisExcessCostPerCase.    
+                                                                                                                                                                                                               
+  FILE 4: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                   
+                                                                                                                                                                                                               
+  Update interface: replace nursingSepsisLosPerImproved + nursingSepsisDailyCost                                                                                                                               
+  with nursingSepsisExcessCostPerCase.                                                                                                                                                                         
+                                              
+  Update narrative: "...each case converted from non-compliant to compliant saves approximately $X in excess hospitalization cost (HCUP; Seymour NEJM 2017)..."                                                
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  The model is now structurally identical to CAUTI/CLABSI — countable events, per-case cost, direct compliance attribution. The only difference is the mechanism: instead of infections prevented, it's        
+  compliance failures resolved. The mortality science sits as a CMO signal, deliberately not quantified.

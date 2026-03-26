@@ -383,10 +383,11 @@ export interface ExplorePDFData {
   nursingSepsisEnabled?: boolean;
   nursingSepsisRatePerThousand?: number;
   nursingSepsisPerYear?: number;
-  nursingSepsisComplianceImprovement?: number;
-  nursingSepsisImproved?: number;
-  nursingSepsisLosReduction?: number;
-  nursingSepsisDailyCost?: number;
+  nursingSepsisCurrentCompliance?: number;
+  nursingSepsisNonCompliant?: number;
+  nursingSepsisDocLagPercent?: number;
+  nursingSepsisDocLagCases?: number;
+  nursingSepsisExcessCostPerCase?: number;
   nursingSepsisRealization?: number;
   nursingSepsisValue?: number;
 
@@ -3212,10 +3213,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(sepsisVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      At {safe(data.nursingSepsisRatePerThousand)} cases per 1,000 patient days ({safe(data.nursingSepsisPerYear)} cases/year), a {safe(data.nursingSepsisComplianceImprovement)}% compliance improvement affects {safe(data.nursingSepsisImproved)} cases. Each saves {safe(data.nursingSepsisLosReduction)} LOS days at {fmtCurrency(safe(data.nursingSepsisDailyCost))}/day with {safe(data.nursingSepsisRealization)}% realization.
+                      At {safe(data.nursingSepsisRatePerThousand)} cases per 1,000 patient days ({safe(data.nursingSepsisPerYear)} cases/year), {safe(data.nursingSepsisCurrentCompliance)}% current compliance leaves {safe(data.nursingSepsisNonCompliant)} non-compliant cases. Of those, {safe(data.nursingSepsisDocLagPercent)}% ({safe(data.nursingSepsisDocLagCases)} cases) are attributable to documentation-timing failures. Each case converted from non-compliant to compliant saves approximately {fmtCurrency(safe(data.nursingSepsisExcessCostPerCase))} in excess hospitalization cost (HCUP; Seymour NEJM 2017), applied at {safe(data.nursingSepsisRealization)}% realization.
                     </Text>
                     <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
-                      Modeled as LOS reduction from earlier bundle initiation, not mortality. This is less contested and more quantifiable.
+                      Modeled as excess cost of non-compliant vs. compliant cases — same structure as CAUTI and CLABSI.
                     </Text>
                   </View>
                 </View>

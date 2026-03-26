@@ -251,8 +251,9 @@ export default function ExploreModel({
     }
     if (docQualityInputs.nursingSepsisEnabled) {
       const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
-      const improved = sepsisPerYear * (docQualityInputs.nursingSepsisComplianceImprovement / 100);
-      total += improved * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
+      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
+      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
+      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
     }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
@@ -300,8 +301,9 @@ export default function ExploreModel({
     if (!isNursing || !state.docQualityInputs.nursingSepsisEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const sepsisPerYear = (patientDays / 1000) * state.docQualityInputs.nursingSepsisRatePerThousand;
-    const improved = sepsisPerYear * (state.docQualityInputs.nursingSepsisComplianceImprovement / 100);
-    return Math.round(improved * state.docQualityInputs.nursingSepsisLosReduction * state.docQualityInputs.nursingSepsisDailyCost * (state.docQualityInputs.nursingSepsisRealization / 100));
+    const nonCompliant = sepsisPerYear * ((100 - state.docQualityInputs.nursingSepsisCurrentCompliance) / 100);
+    const docLagCases = nonCompliant * (state.docQualityInputs.nursingSepsisDocLagPercent / 100);
+    return Math.round(docLagCases * state.docQualityInputs.nursingSepsisExcessCostPerCase * (state.docQualityInputs.nursingSepsisRealization / 100));
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   // 3-year projection (10% growth per year)
@@ -1073,7 +1075,8 @@ export default function ExploreModel({
           const clabsiPrevented = parseFloat((clabsiPerYr * (docQualityInputs.nursingClabsiPreventionRate / 100)).toFixed(2));
 
           const sepsisPerYr = parseFloat(((patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand).toFixed(1));
-          const sepsisImproved = parseFloat((sepsisPerYr * (docQualityInputs.nursingSepsisComplianceImprovement / 100)).toFixed(2));
+          const sepsisNonCompliant = parseFloat((sepsisPerYr * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100)).toFixed(1));
+          const sepsisDocLagCases = parseFloat((sepsisNonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100)).toFixed(1));
 
           const nFullScaleBeds = expandedProviders;
           const nFullScaleAdoption = expandedUtilization;
@@ -1151,10 +1154,11 @@ export default function ExploreModel({
             nursingSepsisEnabled: docQualityInputs.nursingSepsisEnabled,
             nursingSepsisRatePerThousand: docQualityInputs.nursingSepsisRatePerThousand,
             nursingSepsisPerYear: sepsisPerYr,
-            nursingSepsisComplianceImprovement: docQualityInputs.nursingSepsisComplianceImprovement,
-            nursingSepsisImproved: sepsisImproved,
-            nursingSepsisLosReduction: docQualityInputs.nursingSepsisLosReduction,
-            nursingSepsisDailyCost: docQualityInputs.nursingSepsisDailyCost,
+            nursingSepsisCurrentCompliance: docQualityInputs.nursingSepsisCurrentCompliance,
+            nursingSepsisNonCompliant: sepsisNonCompliant,
+            nursingSepsisDocLagPercent: docQualityInputs.nursingSepsisDocLagPercent,
+            nursingSepsisDocLagCases: sepsisDocLagCases,
+            nursingSepsisExcessCostPerCase: docQualityInputs.nursingSepsisExcessCostPerCase,
             nursingSepsisRealization: docQualityInputs.nursingSepsisRealization,
             nursingSepsisValue: nursingSepsisValue,
 

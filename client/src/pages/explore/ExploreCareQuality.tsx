@@ -123,9 +123,17 @@ export default function ExploreCareQuality({
     return (patientDaysPerYear / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
   }, [patientDaysPerYear, docQualityInputs.nursingSepsisRatePerThousand]);
 
+  const sepsisNonCompliant = useMemo(() => {
+    return sepsisVolume * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
+  }, [sepsisVolume, docQualityInputs.nursingSepsisCurrentCompliance]);
+
+  const sepsisDocLagCases = useMemo(() => {
+    return sepsisNonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
+  }, [sepsisNonCompliant, docQualityInputs.nursingSepsisDocLagPercent]);
+
   const sepsisValue = useMemo(() => {
-    return sepsisVolume * (docQualityInputs.nursingSepsisComplianceImprovement / 100) * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
-  }, [sepsisVolume, docQualityInputs.nursingSepsisComplianceImprovement, docQualityInputs.nursingSepsisLosReduction, docQualityInputs.nursingSepsisDailyCost, docQualityInputs.nursingSepsisRealization]);
+    return sepsisDocLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
+  }, [sepsisDocLagCases, docQualityInputs.nursingSepsisExcessCostPerCase, docQualityInputs.nursingSepsisRealization]);
 
   const totalPotentialValue = useMemo(() => {
     return (docQualityInputs.nursingHapiEnabled ? hapiValue : 0) +
@@ -812,7 +820,7 @@ export default function ExploreCareQuality({
                           POTENTIAL
                         </span>
                       </div>
-                      <p className="text-sm text-[#888888]">Earlier documentation of sepsis screening triggers faster bundle initiation, reducing length of stay</p>
+                      <p className="text-sm text-[#888888]">Non-compliant sepsis cases cost significantly more — timely documentation converts failures to compliant care</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       {docQualityInputs.nursingSepsisEnabled && (
@@ -842,7 +850,7 @@ export default function ExploreCareQuality({
                       <div className="bg-white rounded-b-lg p-5 pt-0">
                         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
-                          We model sepsis value as LOS reduction from earlier bundle initiation — not mortality reduction. This is less contested and more quantifiable. Earlier documentation of sepsis screening criteria triggers faster 3-hour and 6-hour bundle completion.
+                          Non-compliant sepsis cases cost $3,000–$5,000 more than compliant cases — more ICU time, more antibiotic days, more complications (HCUP; Seymour et al. NEJM 2017). We model the excess cost of non-compliant cases that are addressable through documentation-timing improvements.
                         </p>
 
                         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: SEPSIS VOLUME</p>
@@ -866,45 +874,66 @@ export default function ExploreCareQuality({
                           </div>
                         </div>
 
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: LOS REDUCTION MODEL</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: COMPLIANCE GAP</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                           <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Compliance Improvement %</label>
+                            <label className="text-sm text-[#888888]">Current SEP-1 Compliance %</label>
                             <div className="relative">
                               <FormattedNumberInput
-                                value={docQualityInputs.nursingSepsisComplianceImprovement}
-                                onChange={(v: number) => updateDocQualityInputs({ nursingSepsisComplianceImprovement: v })}
+                                value={docQualityInputs.nursingSepsisCurrentCompliance}
+                                onChange={(v: number) => updateDocQualityInputs({ nursingSepsisCurrentCompliance: v })}
                                 className="h-12 bg-[#F5F0EB] pr-8 text-base"
                                 data-testid="input-sepsis-compliance"
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                             </div>
-                            <p className="text-xs text-[#888888]">% of sepsis cases where earlier screening documentation improves bundle initiation timing</p>
+                            <p className="text-xs text-[#888888]">CMS national average: ~55–80%</p>
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">LOS Reduction (days)</label>
-                            <FormattedNumberInput
-                              value={docQualityInputs.nursingSepsisLosReduction}
-                              onChange={(v: number) => updateDocQualityInputs({ nursingSepsisLosReduction: v })}
-                              step={0.1}
-                              className="h-12 bg-[#F5F0EB] text-base"
-                              data-testid="input-sepsis-los"
-                            />
-                            <p className="text-xs text-[#888888]">Average LOS days saved per improved-compliance case</p>
+                            <label className="text-sm text-[#888888]">Non-Compliant Cases/Year</label>
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                              {sepsisNonCompliant.toFixed(1)}
+                            </div>
                           </div>
                         </div>
+
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: DOCUMENTATION-ATTRIBUTABLE FAILURES</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                          <div className="space-y-2">
+                            <label className="text-sm text-[#888888]">Doc-Lag Share of Failures %</label>
+                            <div className="relative">
+                              <FormattedNumberInput
+                                value={docQualityInputs.nursingSepsisDocLagPercent}
+                                onChange={(v: number) => updateDocQualityInputs({ nursingSepsisDocLagPercent: v })}
+                                className="h-12 bg-[#F5F0EB] pr-8 text-base"
+                                data-testid="input-sepsis-doc-lag"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                            </div>
+                            <p className="text-xs text-[#888888]">% of non-compliant cases where documentation timing was the failure mode</p>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm text-[#888888]">Cases Addressable by Abridge</label>
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                              {sepsisDocLagCases.toFixed(1)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 4: EXCESS COST PER NON-COMPLIANT CASE</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
                           <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Daily Hospitalization Cost $</label>
+                            <label className="text-sm text-[#888888]">Excess Cost per Case $</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                               <FormattedNumberInput
-                                value={docQualityInputs.nursingSepsisDailyCost}
-                                onChange={(v: number) => updateDocQualityInputs({ nursingSepsisDailyCost: v })}
+                                value={docQualityInputs.nursingSepsisExcessCostPerCase}
+                                onChange={(v: number) => updateDocQualityInputs({ nursingSepsisExcessCostPerCase: v })}
                                 className="h-12 bg-[#F5F0EB] pl-7 text-base"
-                                data-testid="input-sepsis-daily-cost"
+                                data-testid="input-sepsis-excess-cost"
                               />
                             </div>
+                            <p className="text-xs text-[#888888]">HCUP cost data and Seymour et al. NEJM 2017 show non-compliant cases cost $3,000–$5,000 more — more ICU time, more antibiotic days, more complications. This is a per-case cost differential, not an LOS claim.</p>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Realization %</label>
@@ -917,11 +946,16 @@ export default function ExploreCareQuality({
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                             </div>
-                            <p className="text-xs text-[#888888]">Reflects that not all LOS savings translate to cost avoidance</p>
+                            <p className="text-xs text-[#888888]">Reflects that not all cost differentials are fully recoverable</p>
                           </div>
                         </div>
 
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
+                        <div className="bg-[#FFF8F6] border border-[#EA2C00]/20 rounded-lg p-3 mb-6">
+                          <p className="text-xs font-semibold text-[#EA2C00] mb-1">MORTALITY SIGNAL — NOT MODELED</p>
+                          <p className="text-xs text-[#EA2C00]">Kumar et al. (2006): each hour of delayed antibiotic administration increases mortality 7.6%. We deliberately do not monetize this. It is included as a CMO-level signal only.</p>
+                        </div>
+
+                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 5: POTENTIAL VALUE</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-2">
@@ -929,16 +963,20 @@ export default function ExploreCareQuality({
                               <span className="font-semibold text-black flex-shrink-0">{sepsisVolume.toFixed(1)}</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Compliance improvement</span>
-                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingSepsisComplianceImprovement}%</span>
+                              <span className="text-[#666666]">x Non-compliant rate</span>
+                              <span className="font-semibold text-black flex-shrink-0">{(100 - docQualityInputs.nursingSepsisCurrentCompliance)}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x LOS reduction</span>
-                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingSepsisLosReduction} days</span>
+                              <span className="text-[#666666]">x Doc-lag share</span>
+                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingSepsisDocLagPercent}%</span>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Daily cost</span>
-                              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingSepsisDailyCost)}</span>
+                              <span className="text-[#666666]">= Cases addressable</span>
+                              <span className="font-semibold text-black flex-shrink-0">{sepsisDocLagCases.toFixed(1)}</span>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <span className="text-[#666666]">x Excess cost per case</span>
+                              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingSepsisExcessCostPerCase)}</span>
                             </div>
                             <div className="flex justify-between gap-2">
                               <span className="text-[#666666]">x Realization</span>
@@ -951,6 +989,8 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
                         </div>
+
+                        <p className="text-xs text-[#888888] mt-3 italic">Modeled as excess cost of non-compliant vs. compliant cases — same structure as CAUTI and CLABSI.</p>
                       </div>
                     </motion.div>
                   )}
