@@ -232,6 +232,31 @@ export interface DocQualityInputs {
 
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
+  nursingCautiEnabled: boolean;
+  nursingCautiUtilizationRatio: number;
+  nursingCautiRate: number;
+  nursingCautiPreventionRate: number;
+  nursingCautiCost: number;
+  nursingCautiExpanded: boolean;
+  nursingClabsiEnabled: boolean;
+  nursingClabsiUtilizationRatio: number;
+  nursingClabsiRate: number;
+  nursingClabsiPreventionRate: number;
+  nursingClabsiCost: number;
+  nursingClabsiExpanded: boolean;
+  nursingSepsisEnabled: boolean;
+  nursingSepsisRatePerThousand: number;
+  nursingSepsisComplianceImprovement: number;
+  nursingSepsisLosReduction: number;
+  nursingSepsisDailyCost: number;
+  nursingSepsisRealization: number;
+  nursingSepsisExpanded: boolean;
+  nursingVapEnabled: boolean;
+  nursingVapVentUtilization: number;
+  nursingVapRate: number;
+  nursingVapPreventionRate: number;
+  nursingVapCost: number;
+  nursingVapExpanded: boolean;
   
   // Expanded states for collapse/expand chevrons
   wrvuExpanded: boolean;
@@ -474,6 +499,31 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingHacRealization: 50,
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
+    nursingCautiEnabled: false,
+    nursingCautiUtilizationRatio: 30,
+    nursingCautiRate: 1.8,
+    nursingCautiPreventionRate: 12,
+    nursingCautiCost: 13000,
+    nursingCautiExpanded: true,
+    nursingClabsiEnabled: false,
+    nursingClabsiUtilizationRatio: 20,
+    nursingClabsiRate: 0.8,
+    nursingClabsiPreventionRate: 8,
+    nursingClabsiCost: 20000,
+    nursingClabsiExpanded: true,
+    nursingSepsisEnabled: false,
+    nursingSepsisRatePerThousand: 2.0,
+    nursingSepsisComplianceImprovement: 8,
+    nursingSepsisLosReduction: 0.5,
+    nursingSepsisDailyCost: 3000,
+    nursingSepsisRealization: 60,
+    nursingSepsisExpanded: true,
+    nursingVapEnabled: false,
+    nursingVapVentUtilization: 15,
+    nursingVapRate: 2.0,
+    nursingVapPreventionRate: 10,
+    nursingVapCost: 20000,
+    nursingVapExpanded: true,
     // Expanded states (auto-expand when first toggled on)
     wrvuExpanded: true,
     hccExpanded: true,

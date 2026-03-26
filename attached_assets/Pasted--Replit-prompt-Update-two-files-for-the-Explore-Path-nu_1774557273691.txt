@@ -1,0 +1,89 @@
+ Replit prompt:
+
+  Update two files for the Explore Path nursing Care Quality page to add bundle compliance drivers.
+
+  FILE 1: client/src/pages/explore/ExploreFlow.tsx
+
+  In the DocQualityInputs interface, after the line `nursingHcahpsEnabled: boolean;`, add these fields:
+
+    // Nursing: CAUTI Bundle Compliance
+    nursingCautiEnabled: boolean;
+    nursingCautiUtilizationRatio: number;
+    nursingCautiRate: number;
+    nursingCautiPreventionRate: number;
+    nursingCautiCost: number;
+    nursingCautiExpanded: boolean;
+    // Nursing: CLABSI Bundle Compliance
+    nursingClabsiEnabled: boolean;
+    nursingClabsiUtilizationRatio: number;
+    nursingClabsiRate: number;
+    nursingClabsiPreventionRate: number;
+    nursingClabsiCost: number;
+    nursingClabsiExpanded: boolean;
+    // Nursing: Sepsis SEP-1
+    nursingSepsisEnabled: boolean;
+    nursingSepsisRatePerThousand: number;
+    nursingSepsisComplianceImprovement: number;
+    nursingSepsisLosReduction: number;
+    nursingSepsisDailyCost: number;
+    nursingSepsisRealization: number;
+    nursingSepsisExpanded: boolean;
+    // Nursing: VAP Bundle Compliance (ICU)
+    nursingVapEnabled: boolean;
+    nursingVapVentUtilization: number;
+    nursingVapRate: number;
+    nursingVapPreventionRate: number;
+    nursingVapCost: number;
+    nursingVapExpanded: boolean;
+
+  In DEFAULT_EXPLORE_STATE.docQualityInputs, after `nursingHcahpsEnabled: false,`, add:
+
+      nursingCautiEnabled: false,
+      nursingCautiUtilizationRatio: 30,
+      nursingCautiRate: 1.8,
+      nursingCautiPreventionRate: 12,
+      nursingCautiCost: 13000,
+      nursingCautiExpanded: true,
+      nursingClabsiEnabled: false,
+      nursingClabsiUtilizationRatio: 20,
+      nursingClabsiRate: 0.8,
+      nursingClabsiPreventionRate: 8,
+      nursingClabsiCost: 20000,
+      nursingClabsiExpanded: true,
+      nursingSepsisEnabled: false,
+      nursingSepsisRatePerThousand: 2.0,
+      nursingSepsisComplianceImprovement: 8,
+      nursingSepsisLosReduction: 0.5,
+      nursingSepsisDailyCost: 3000,
+      nursingSepsisRealization: 60,
+      nursingSepsisExpanded: true,
+      nursingVapEnabled: false,
+      nursingVapVentUtilization: 15,
+      nursingVapRate: 2.0,
+      nursingVapPreventionRate: 10,
+      nursingVapCost: 20000,
+      nursingVapExpanded: true,
+
+  FILE 2: client/src/pages/explore/ExploreCareQuality.tsx
+
+  Replace the entire file with the version from /private/tmp/roi-calc-v17/The-ROI-Calculator/client/src/pages/explore/ExploreCareQuality.tsx
+
+  ---
+  The core changes:
+
+  ExploreFlow.tsx: 26 new fields across 4 bundle drivers in both DocQualityInputs interface and DEFAULT_EXPLORE_STATE
+
+  ExploreCareQuality.tsx:
+  - Added cautiExpanded, clabsiExpanded, sepsisExpanded, vapExpanded state
+  - 14 new useMemo computations (catheter days, CAUTI/CLABSI/Sepsis/VAP volumes and values)
+  - Updated totalPotentialValue to include all 4 new drivers
+  - "Harm Events" section label above HAPI + Falls
+  - "Bundle Compliance" section label above 4 new drivers
+  - Full 3-step driver cards for CAUTI, CLABSI, Sepsis SEP-1, and VAP (ICU-labeled with orange callout)
+  - Updated right panel sidebar with bundle compliance rows
+
+  Key defensibility choices:
+  - CAUTI 12%: Meddings et al. 2014 JAMA IM (54% reduction with nurse-driven stop orders; we take ~1/5 as doc-timing contribution)
+  - CLABSI 8%: IHI bundle compliance literature (30–66% reduction; we take ~1/8)
+  - Sepsis SEP-1: Modeled as LOS reduction from earlier bundle initiation, not mortality (less contested, more quantifiable)
+  - VAP 10%: IHI/SHEA (50–70% with full compliance; we take ~1/6) + explicit ICU-only badge so it's never misapplied
