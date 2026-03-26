@@ -19,7 +19,6 @@ import {
   SETTING_THIRD_CHAPTER_LABELS,
   DOMAIN_LABELS,
   type DomainKey,
-  type MetricDefinition,
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
 
@@ -31,7 +30,6 @@ interface MeasureMetricSelectionProps {
   onHome: () => void;
 }
 
-const CANONICAL_DOMAINS = ['quality', 'workforce', 'revenue'] as const;
 const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
 
 const DOMAIN_QUESTIONS: Record<string, string> = {
@@ -355,12 +353,6 @@ export default function MeasureMetricSelection({
 
     return fourDomainKeys.map(dk => {
       const metrics = domainMap.get(dk) || [];
-      const byPhase = new Map<number, ResolvedMetric[]>();
-      for (const rm of metrics) {
-        const p = rm.metric.phase;
-        if (!byPhase.has(p)) byPhase.set(p, []);
-        byPhase.get(p)!.push(rm);
-      }
 
       const chapters: { phase: number; label: string; metrics: ResolvedMetric[] }[] = [];
       const foundationalInDomain = metrics.filter(rm => rm.metric.domain === 'foundational');
@@ -389,7 +381,7 @@ export default function MeasureMetricSelection({
   const isMetricActive = useCallback((mId: string, rm: ResolvedMetric): boolean => {
     const isOrgWide = ORG_WIDE_METRIC_IDS.includes(mId);
     if (isOrgWide) {
-      return !!state.enabledMetrics?.['outpatient']?.[mId];
+      return Object.values(state.enabledMetrics || {}).some(sm => sm?.[mId]);
     }
     return rm.settings.some(s => !!state.enabledMetrics?.[s]?.[mId]);
   }, [state.enabledMetrics]);
@@ -401,14 +393,16 @@ export default function MeasureMetricSelection({
 
     const newEnabled = { ...state.enabledMetrics };
     if (isOrgWide) {
-      newEnabled['outpatient'] = { ...newEnabled['outpatient'], [mId]: !current };
+      for (const s of activeSettings) {
+        newEnabled[s] = { ...newEnabled[s], [mId]: !current };
+      }
     } else {
       for (const s of rm.settings) {
         newEnabled[s] = { ...newEnabled[s], [mId]: !current };
       }
     }
     updateState({ enabledMetrics: newEnabled });
-  }, [state.enabledMetrics, isMetricActive, updateState]);
+  }, [state.enabledMetrics, isMetricActive, updateState, activeSettings]);
 
   const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {
     const prev = state.metricValues?.[key] || { before: null, after: null, isMonthlyMode: false };
