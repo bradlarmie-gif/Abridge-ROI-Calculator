@@ -944,8 +944,21 @@ export function getActiveMetrics(state: MeasureState): {
   if (!state.metricValues) return [];
 
   return Object.entries(state.metricValues)
-    .filter(([, entry]) => entry.before != null && entry.after != null &&
-      entry.before !== 0 && entry.after !== 0)
+    .filter(([key, entry]) => {
+      if (entry.before == null || entry.after == null || entry.before === 0 && entry.after === 0) return false;
+      const parts = key.split('__');
+      const metricId = parts[0];
+      const setting = parts[1] as MeasureCareSetting | undefined;
+      if (state.enabledMetrics) {
+        if (ORG_WIDE_IDS.includes(metricId)) {
+          const anyEnabled = Object.values(state.enabledMetrics).some(sm => sm?.[metricId]);
+          if (!anyEnabled) return false;
+        } else if (setting) {
+          if (!state.enabledMetrics[setting]?.[metricId]) return false;
+        }
+      }
+      return true;
+    })
     .map(([key, entry]) => {
       const parts = key.split('__');
       const metricId = parts[0];

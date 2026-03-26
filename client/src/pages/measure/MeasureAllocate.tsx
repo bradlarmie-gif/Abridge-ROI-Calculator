@@ -205,8 +205,8 @@ export default function MeasureAllocate({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={5}
-        totalSteps={7}
+        currentStep={4}
+        totalSteps={5}
         stepName="Your Estimated Impact"
         onBack={onBack}
         onHome={onHome}

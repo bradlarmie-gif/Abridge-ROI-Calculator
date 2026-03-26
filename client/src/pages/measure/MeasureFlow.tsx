@@ -9,12 +9,10 @@ import { getDefaultOutpatientMetrics, getDefaultMetrics, syncSettingToState } fr
 import MeasureDataEntry from "./MeasureDataEntry";
 import MeasureMetricSelection from "./MeasureMetricSelection";
 import MeasureJourney from "./MeasureJourney";
-import MeasureStage from "./MeasureStage";
 import MeasureAllocate from "./MeasureAllocate";
-import MeasureScenarios from "./MeasureScenarios";
-import MeasureStory from "./MeasureStory";
+import MeasureOpportunity from "./MeasureOpportunity";
 
-type MeasurePhase = 'data' | 'metricSelection' | 'journey' | 'stage' | 'value' | 'adoption' | 'story';
+type MeasurePhase = 'data' | 'metrics' | 'journey' | 'financial' | 'next';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
@@ -104,13 +102,13 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
         <MeasureDataEntry
           state={state}
           updateState={updateState}
-          onNext={() => { applySettingSync(); navigate('metricSelection'); }}
+          onNext={() => { applySettingSync(); navigate('metrics'); }}
           onBack={goHome}
           onHome={goHome}
         />
       );
 
-    case 'metricSelection':
+    case 'metrics':
       return (
         <MeasureMetricSelection
           state={state}
@@ -125,50 +123,31 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureJourney
           state={state}
-          onNext={() => navigate('stage')}
-          onBack={() => navigate('metricSelection')}
+          onNext={() => navigate('financial')}
+          onBack={() => navigate('metrics')}
           onHome={goHome}
           mode={mode}
         />
       );
 
-    case 'stage':
+    case 'financial':
       return (
-        <MeasureStage
+        <MeasureAllocate
           state={state}
-          onNext={() => navigate('value')}
+          updateState={updateState}
+          onNext={() => navigate('next')}
           onBack={() => navigate('journey')}
           onHome={goHome}
         />
       );
 
-    case 'value':
+    case 'next':
       return (
-        <MeasureAllocate
+        <MeasureOpportunity
           state={state}
           updateState={updateState}
-          onNext={() => navigate('adoption')}
-          onBack={() => navigate('stage')}
-          onHome={goHome}
-        />
-      );
-
-    case 'adoption':
-      return (
-        <MeasureScenarios
-          state={state}
-          updateState={updateState}
-          onNext={() => navigate('story')}
-          onBack={() => navigate('value')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'story':
-      return (
-        <MeasureStory
-          state={state}
-          onBack={() => navigate('adoption')}
+          onNext={goHome}
+          onBack={() => navigate('financial')}
           onHome={goHome}
         />
       );

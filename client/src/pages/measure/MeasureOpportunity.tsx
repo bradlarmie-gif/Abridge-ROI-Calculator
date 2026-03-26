@@ -343,8 +343,8 @@ export default function MeasureOpportunity({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={7}
-        totalSteps={8}
+        currentStep={5}
+        totalSteps={5}
         stepName="Where You're Going"
         onBack={onBack}
         onHome={onHome}
