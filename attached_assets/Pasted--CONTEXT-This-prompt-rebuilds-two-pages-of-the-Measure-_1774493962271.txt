@@ -1,0 +1,580 @@
+ CONTEXT
+
+  This prompt rebuilds two pages of the Measure path from scratch:
+
+  Page 2 — "What You're Measuring" (currently the broken Select Metrics page): data entry for before/after or monthly metrics, organized by domain and chapter, fast enough for pre-call CSM prep, clean enough
+   to not embarrass anyone.
+
+  Page 3 — "The Journey at Abridge" (currently MeasureTransformation): a domain-first dashboard that tells the clinical and operational story. No dollar amounts. Before/after data shown with animated bars,
+  signal strength per domain, plain-English framing. This is the live EBR screen — the "this is what changed" moment.
+
+  Read everything before touching any file.
+
+  ---
+  PART A — PAGE 2: WHAT YOU'RE MEASURING
+
+  Design principles
+
+  - Single Abridge orange (#EA2C00) as the only accent color. No green/blue/teal domain dots.
+  - Optimized for pre-call prep — keyboard-navigable, tab between fields, fast
+  - Domain sections with left orange border when active, gray when empty
+  - Chapter groupings inside domains use plain English, not phase numbers
+  - Metric inactive state: name + one-line description + visible "+ Measure this" button
+  - Metric active state: large before/after inputs with immediate delta, OR monthly grid with live sparkline
+  - Entry state is welcoming, not "0 of 21 active"
+
+  Page header
+
+  <div className="mb-8">
+    <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-1">
+      {state.deployment.organizationName} · {settings.join(' + ')} ·
+      Live since {goLiveDisplay}
+    </p>
+    <h1 className="text-2xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A]">
+      What Are You Measuring?
+    </h1>
+    <p className="text-sm text-[#666666] mt-1">
+      Add what you have. You can always come back to fill in more.
+    </p>
+  </div>
+
+  No global metric count. No "0 of X active." The subheading is reassuring, not demanding.
+
+  Domain signal strip (replaces global count)
+
+  // Four compact domain status pills at top
+  // Each shows: domain name + number of active metrics
+  // Pill style: bg-[#F5F0EB] text-[#666666] when empty
+  //             bg-[#EA2C00]/10 text-[#EA2C00] border border-[#EA2C00]/30 when active
+
+  Example: Quality  ●2 Workforce  ●0 Revenue  ●3 Capacity  ●1
+
+  Clicking a pill scrolls to that domain section.
+
+  Domain section structure
+
+  Each domain is a full-width section block, not an accordion row:
+
+  <section className={`rounded-xl border-l-4 border overflow-hidden mb-4 transition-all ${
+    domainHasData
+      ? 'border-l-[#EA2C00] border-[#E5E5E5] bg-white'
+      : 'border-l-[#E5E5E5] border-[#F0F0F0] bg-[#FAFAFA]'
+  }`}>
+
+    {/* Domain header — always visible */}
+    <button onClick={() => toggleDomain(domain)} className="w-full px-6 py-4 flex items-center justify-between">
+      <div>
+        <p className="text-[11px] uppercase tracking-[2px] text-[#999999] mb-0.5">Domain</p>
+        <h2 className="text-base font-bold text-[#1A1A1A]">{domainLabel}</h2>
+        <p className="text-xs text-[#999999] mt-0.5">{domainQuestion}</p>
+      </div>
+      <div className="flex items-center gap-3">
+        {activeCount > 0 && (
+          <span className="text-xs font-semibold text-[#EA2C00]">{activeCount} active</span>
+        )}
+        <ChevronDown className={`w-4 h-4 text-[#CCCCCC] transition-transform ${open ? 'rotate-180' : ''}`} />
+      </div>
+    </button>
+
+    {/* Domain body */}
+    <AnimatePresence>
+      {open && (
+        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
+          className="overflow-hidden">
+          <div className="px-6 pb-6">
+            {chapters.map(chapter => (
+              <ChapterSection key={chapter.label} {...chapter} />
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </section>
+
+  Domain questions (one per domain):
+  - Quality: "What changed in documentation quality?"
+  - Workforce: "How has provider burden shifted?"
+  - Revenue: "What moved in your billing and coding data?"
+  - Capacity/Throughput/Patient Flow/Staffing: "What changed in flow, access, or availability?"
+
+  Chapter sections inside each domain
+
+  function ChapterSection({ label, metrics, state, onUpdate }) {
+    return (
+      <div className="mb-6 last:mb-0">
+        <p className="text-[10px] uppercase tracking-[2px] text-[#CCCCCC] mb-3 font-medium">
+          {label}  {/* "Documentation impact" / "Efficiency gains" / "Capacity gains" */}
+        </p>
+        <div className="space-y-2">
+          {metrics.map(metric => (
+            <MetricEntryRow key={metric.id} metric={metric} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  Third chapter (e.g. "Staffing outcomes") rendered at opacity-50 — visible, accessible, but not calling for attention.
+
+  Metric row — inactive state
+
+  // Inactive: clean row with name, description, and a real button
+  <div className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-[#FAFAFA] group">
+    <div>
+      <p className="text-sm font-medium text-[#1A1A1A]">{metric.label}</p>
+      <p className="text-xs text-[#999999] mt-0.5">{metric.contextNote?.split('.')[0]}.</p>
+    </div>
+    <button
+      onClick={() => activateMetric(metric.id)}
+      className="text-xs font-medium text-[#EA2C00] border border-[#EA2C00]/40
+                 px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100
+                 transition-opacity hover:bg-[#EA2C00]/5"
+    >
+      + Measure this
+    </button>
+  </div>
+
+  Note: group-hover makes the button appear on row hover. On mobile or for accessibility it's always visible.
+
+  Metric row — active state (before/after mode)
+
+  When activated, the row expands in place:
+
+  <motion.div
+    initial={{ height: 0, opacity: 0 }}
+    animate={{ height: 'auto', opacity: 1 }}
+    className="bg-white border border-[#E5E5E5] rounded-xl p-5 mb-2"
+  >
+    <div className="flex items-start justify-between mb-4">
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A]">{metric.label}</p>
+        <p className="text-xs text-[#999999] mt-0.5">{metric.unit ? `Measured in ${metric.unit}` : ''}</p>
+      </div>
+      <div className="flex items-center gap-2">
+        {/* Monthly toggle */}
+        <button
+          onClick={() => toggleMonthlyMode(metric.id)}
+          className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md transition-all ${
+            isMonthly
+              ? 'bg-[#1A1A1A] text-white'
+              : 'text-[#999999] hover:text-[#666666]'
+          }`}
+        >
+          Monthly trend
+        </button>
+        {/* Remove */}
+        <button onClick={() => deactivateMetric(metric.id)} className="text-[#CCCCCC] hover:text-[#999999]">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    {!isMonthly ? (
+      /* Before/After inputs */
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-[1.5px] text-[#999999] mb-2">Before Abridge</p>
+          <input
+            type="number"
+            value={entry.before ?? ''}
+            onChange={e => updateMetric(metric.id, 'before', parseFloat(e.target.value))}
+            placeholder="—"
+            className="w-full h-14 text-2xl font-bold text-center text-[#1A1A1A]
+                       border-2 border-[#E5E5E5] rounded-xl focus:border-[#EA2C00]
+                       focus:outline-none bg-[#FAFAFA] focus:bg-white transition-all"
+          />
+        </div>
+
+        <div className="flex-shrink-0 flex flex-col items-center gap-1 pt-6">
+          <ArrowRight className="w-5 h-5 text-[#CCCCCC]" />
+          {/* Delta badge — appears when both filled */}
+          <AnimatePresence>
+            {entry.before && entry.after && (
+              <motion.span
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`text-xs font-bold ${improved ? 'text-green-600' : 'text-red-500'}`}
+              >
+                {improved ? '↓' : '↑'}{Math.abs(deltaPercent).toFixed(1)}%
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-[1.5px] text-[#EA2C00] mb-2">With Abridge</p>
+          <input
+            type="number"
+            value={entry.after ?? ''}
+            onChange={e => updateMetric(metric.id, 'after', parseFloat(e.target.value))}
+            placeholder="—"
+            className="w-full h-14 text-2xl font-bold text-center text-[#1A1A1A]
+                       border-2 border-[#EA2C00]/30 rounded-xl focus:border-[#EA2C00]
+                       focus:outline-none bg-[#EA2C00]/5 focus:bg-white transition-all"
+          />
+        </div>
+      </div>
+    ) : (
+      /* Monthly grid */
+      <MonthlyEntryGrid metric={metric} entry={entry} onUpdate={updateMetric} />
+    )}
+
+    {/* Survey note for applicable metrics */}
+    {metric.isSurvey && (
+      <p className="text-[10px] text-[#CCCCCC] mt-3">
+        Use the same survey instrument for both readings. Note scale in Presenter Notes.
+      </p>
+    )}
+  </motion.div>
+
+  Monthly entry grid component
+
+  function MonthlyEntryGrid({ metric, entry, onUpdate }) {
+    const months = generateMonthLabels(state.goLiveDate, state.deployment.monthsOnAbridge);
+    // e.g. ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
+
+    return (
+      <div>
+        {/* Month cells */}
+        <div className="grid gap-2 mb-4" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+          {months.map((month, i) => (
+            <div key={month} className="text-center">
+              <p className="text-[10px] text-[#999999] mb-1">{month}</p>
+              <input
+                type="number"
+                value={entry.monthlyData?.[i] ?? ''}
+                onChange={e => updateMonthlyValue(metric.id, i, parseFloat(e.target.value))}
+                onKeyDown={e => e.key === 'Tab' && focusNextCell(i)}
+                placeholder="—"
+                className="w-full h-10 text-sm font-semibold text-center text-[#1A1A1A]
+                           border border-[#E5E5E5] rounded-lg focus:border-[#EA2C00]
+                           focus:outline-none bg-[#FAFAFA] focus:bg-white transition-all"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Live sparkline — renders as values are entered */}
+        {hasAnyMonthlyData && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-12">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyPoints} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={`grad-${metric.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.12} />
+                    <stop offset="95%" stopColor="#EA2C00" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="value" stroke="#EA2C00" strokeWidth={2}
+                      fill={`url(#grad-${metric.id})`} dot={false} isAnimationActive animationDuration={300} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+
+  Tab key moves cell to cell across the row. After the last month, Tab moves to the next metric.
+
+  Page footer
+
+  <div className="border-t border-[#E5E5E5] pt-6 mt-8">
+    {/* Model assumptions — collapsed */}
+    <CollapsibleAssumptions state={state} onUpdate={updateCalibration} />
+
+    {/* CTA */}
+    <div className="mt-6 flex justify-center">
+      <Button
+        onClick={onNext}
+        disabled={activeMetricCount === 0}
+        className="h-[52px] px-10 bg-[#EA2C00] hover:bg-[#EA2C00]/90
+                   text-white font-medium rounded-md gap-2 disabled:opacity-30"
+      >
+        {activeMetricCount > 0
+          ? `View the Journey →`
+          : `Add at least one metric to continue`}
+      </Button>
+    </div>
+  </div>
+
+  When activeMetricCount > 0, the CTA says "View the Journey →" — not "View Journey Dashboard." It names the destination.
+
+  ---
+  PART B — PAGE 3: THE JOURNEY AT ABRIDGE
+
+  This page is MeasureTransformation.tsx, fully rewritten. No dollar amounts anywhere on this page. This is the clinical and operational story. The partner success person talks to it; the client sees their
+  data beautifully presented.
+
+  Design principles
+
+  - Domain-first, not metric-first
+  - Every domain section shows: signal strength, framing question, metric comparison bars
+  - Animated orange bars fill on load — the visual payoff of the data entry
+  - Plain-English interpretation per domain (from plainEnglishTemplate)
+  - If a domain has no data: quiet, not alarming — "No data entered yet" with a soft link back
+  - NO dollar amounts, NO conversion factors, NO revenue calculations
+
+  Page header
+
+  <div className="mb-10">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+      <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-1">
+        {orgName}  ·  {settings.join(' + ')}  ·  Live since {goLiveDisplay}  ·  {months} months
+      </p>
+      <h1 className="text-3xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A]">
+        The Journey at Abridge
+      </h1>
+    </motion.div>
+
+    {/* Summary strip */}
+    <motion.div
+      className="flex gap-6 mt-4 pt-4 border-t border-[#F0F0F0]"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+    >
+      <div>
+        <p className="text-xs text-[#999999]">Domains signaling</p>
+        <p className="text-xl font-bold text-[#1A1A1A]">{activeDomainsCount} of 4</p>
+      </div>
+      <div>
+        <p className="text-xs text-[#999999]">Metrics active</p>
+        <p className="text-xl font-bold text-[#1A1A1A]">{activeMetricCount}</p>
+      </div>
+      <div>
+        <p className="text-xs text-[#999999]">Providers on Abridge</p>
+        <p className="text-xl font-bold text-[#1A1A1A]">{providers}</p>
+      </div>
+      <div>
+        <p className="text-xs text-[#999999]">Encounters documented</p>
+        <p className="text-xl font-bold text-[#1A1A1A]">{formatNumber(adoptedEncounters)}</p>
+      </div>
+    </motion.div>
+  </div>
+
+  Domain section component
+
+  function JourneyDomainSection({ domain, label, question, metrics, delay }) {
+    const hasData = metrics.some(m => m.before && m.after);
+    const signalCount = metrics.filter(m => m.before && m.after).length;
+    const totalPossible = metrics.length;
+
+    return (
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.4 }}
+        className={`rounded-xl border-l-4 p-6 mb-6 ${
+          hasData 
+            ? 'border-l-[#EA2C00] border border-[#E5E5E5] bg-white'
+            : 'border-l-[#E5E5E5] border border-[#F0F0F0] bg-[#FAFAFA]'
+        }`}
+      >
+        {/* Domain header */}
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <p className="text-[10px] uppercase tracking-[2px] text-[#999999]">Domain</p>
+            <h2 className={`text-lg font-bold ${hasData ? 'text-[#1A1A1A]' : 'text-[#CCCCCC]'}`}>
+              {label}
+            </h2>
+          </div>
+          {/* Signal strength indicator */}
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-2 h-2 rounded-full transition-colors"
+                style={{ backgroundColor: i < signalCount ? '#EA2C00' : '#E5E5E5' }}
+              />
+            ))}
+            <span className="text-xs text-[#999999] ml-1">
+              {signalCount} signal{signalCount !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+
+        {!hasData ? (
+          <p className="text-sm text-[#CCCCCC] mt-3 italic">
+            No data entered for this domain yet.{' '}
+            <button onClick={onBack} className="text-[#EA2C00]/50 underline text-xs">
+              Add metrics
+            </button>
+          </p>
+        ) : (
+          <>
+            {/* Domain framing question */}
+            <p className="text-sm text-[#666666] mt-1 mb-5">{question}</p>
+
+            {/* Metric comparison bars */}
+            <div className="space-y-4">
+              {metrics
+                .filter(m => m.before && m.after)
+                .map((m, i) => (
+                  <MetricBar key={m.id} metric={m} delay={delay + 0.1 + i * 0.07} />
+                ))}
+            </div>
+          </>
+        )}
+      </motion.section>
+    );
+  }
+
+  MetricBar component — the visual centerpiece
+
+  function MetricBar({ metric, delay }) {
+    const delta = metric.after - metric.before;
+    const deltaPercent = (delta / metric.before) * 100;
+    const improved = metric.higherIsBetter ? delta > 0 : delta < 0;
+
+    // Bar fill: represents "after" as proportion of "before"
+    // For lower-is-better: fill shrinks (after/before × 100%)
+    // For higher-is-better: fill grows (after/before × 100%, capped at 100% visual, overflow indicated)
+    const barWidth = Math.min((metric.after / metric.before) * 100, 100);
+    const isOverflow = metric.higherIsBetter && metric.after > metric.before;
+
+    return (
+      <div>
+        {/* Label row */}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-[#1A1A1A]">{metric.label}</p>
+          <motion.span
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: delay + 0.4 }}
+            className={`text-base font-bold ${improved ? 'text-green-600' : 'text-red-500'}`}
+          >
+            {improved ? '↓' : '↑'} {Math.abs(deltaPercent).toFixed(1)}%
+          </motion.span>
+        </div>
+
+        {/* Bar track */}
+        <div className="relative h-3 bg-[#F0F0F0] rounded-full overflow-hidden mb-2">
+          {/* Ghost bar showing baseline (before) at 100% */}
+          <div className="absolute inset-0 bg-[#F0F0F0] rounded-full" />
+          {/* Animated orange bar showing "after" */}
+          <motion.div
+            className="absolute inset-y-0 left-0 rounded-full"
+            style={{ backgroundColor: improved ? '#EA2C00' : '#F87171' }}
+            initial={{ width: '100%' }}
+            animate={{ width: `${barWidth}%` }}
+            transition={{ delay, duration: 0.8, ease: 'easeOut' }}
+          />
+        </div>
+
+        {/* Before / after labels */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-[#999999]">
+            Before: <span className="font-medium text-[#666666]">{metric.before}{metric.unit ? ` ${metric.unit}` : ''}</span>
+          </span>
+          <span className="text-xs text-[#999999]">
+            Now: <span className="font-semibold text-[#1A1A1A]">{metric.after}{metric.unit ? ` ${metric.unit}` : ''}</span>
+          </span>
+        </div>
+
+        {/* Multi-setting rows (if applicable) */}
+        {metric.settingRows && metric.settingRows.length > 1 && (
+          <div className="mt-2 space-y-1 pl-3 border-l-2 border-[#F0F0F0]">
+            {metric.settingRows.map(row => (
+              <p key={row.setting} className="text-xs text-[#999999]">
+                <span className="capitalize">{row.setting}:</span>{' '}
+                {row.before} → {row.after}
+                {' · '}
+                <span className={row.improved ? 'text-green-600' : 'text-red-500'}>
+                  {Math.abs(row.deltaPercent).toFixed(1)}%
+                </span>
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Plain-English interpretation — rendered if available */}
+        {metric.plainEnglish && (
+          <p className="text-xs text-[#888888] mt-2 leading-relaxed italic">
+            {metric.plainEnglish}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  The bar animation: starts at 100% width (baseline) and animates DOWN to the "after" proportion. For lower-is-better metrics, the bar shrinking = improvement. The orange color fills the "remaining" portion.
+   It's immediately intuitive — you see the bar get shorter and the percentage decrease. No explanation needed.
+
+  Full page render                                                                                                                                                                                             
+   
+  export default function MeasureJourney({ state, onNext, onBack, onHome }) {                                                                                                                                  
+    const domains = useMemo(() => buildDomainSections(state), [state]);                                   
+                                              
+    return (                              
+      <div className="min-h-screen bg-white">                                                                                                                                                                  
+        <UnifiedHeader pathType="measure" currentStep={3} totalSteps={5}                                                                                                                                       
+          stepName="The Journey at Abridge" onBack={onBack} onHome={onHome} />                                                                                                                                 
+        <UnifiedHeaderSpacer />                                                                                                                                                                                
+                                                                                                          
+        <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">                                                                                                                                     
+          {/* Header */}                  
+          <JourneyHeader state={state} />                                                                                                                                                                      
+                                                                                                                                                                                                               
+          {/* Four domain sections */}                                                                                                                                                                         
+          {domains.map((domain, i) => (                                                                                                                                                                        
+            <JourneyDomainSection                                                                                                                                                                              
+              key={domain.key}                
+              {...domain}                                                                                                                                                                                      
+              delay={0.1 + i * 0.1}                                                                       
+            />                                                                                                                                                                                                 
+          ))}                                 
+                                                                                                                                                                                                               
+          {/* CTA */}                                                                                     
+          <motion.div                                                                                                                                                                                          
+            className="flex justify-center mt-8"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}                                                                                                                      
+          >                                                                                               
+            <Button                       
+              onClick={onNext}
+              className="h-[52px] px-10 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"                                                                                            
+            >                                 
+              What Could This Mean Financially                                                                                                                                                                 
+              <ArrowRight className="w-4 h-4" />                                                          
+            </Button>                                                                                                                                                                                          
+          </motion.div>                   
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                                                                                                                                   
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                          
+  ---
+  PART C — FLOW + ROUTING UPDATES
+                                              
+  In MeasureFlow.tsx, update the phase sequence to:
+  'data'       → Partner Profile (MeasureDataEntry — org context only)
+  'metrics'    → What You're Measuring (new data entry page)                                                                                                                                                   
+  'journey'    → The Journey at Abridge (new MeasureJourney page)
+  'financial'  → What Could This Mean Financially (MeasureAllocate)                                                                                                                                            
+  'next'       → What's Next (MeasureOpportunity)                                                         
+                                                                                                                                                                                                               
+  Remove 'change', 'scenarios', 'story' from routing. These are either absorbed into the new pages or cut.                                                                                                     
+                                                                                                                                                                                                               
+  Update totalSteps={5} in all UnifiedHeader calls.                                                                                                                                                            
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  VERIFICATION                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Page 2:                                                                                                                                                                                                      
+  1. Domain sections show left orange border only when that domain has at least one active metric         
+  2. Inactive metrics show name + one-line description + + Measure this button (visible on hover)
+  3. Activating a metric expands it in-place with two large input fields — h-14, centered, large font
+  4. Delta badge appears immediately when both fields filled — no submit required                                                                                                                              
+  5. "Monthly trend" toggle replaces inputs with month grid; sparkline draws live as cells are filled                                                                                                          
+  6. Tab navigates cell to cell across month grid then to next metric                                                                                                                                          
+  7. CTA reads "View the Journey →" when any metric is active; disabled text when none                                                                                                                         
+                                                                                                                                                                                                               
+  Page 3:                                                                                                                                                                                                      
+  1. Each domain section: left orange border when data present, gray left border when empty                                                                                                                    
+  2. Signal dots (4 dots, filled orange for each active metric up to 4) in domain header                                                                                                                       
+  3. MetricBar animated orange bar fills/shrinks from 100% to after/before ratio over 0.8s on load                                                                                                             
+  4. Delta percentage appears after bar animation completes (delay + 0.4s)                                                                                                                                     
+  5. Lower-is-better metric: bar shrinks = improvement = green percentage                                                                                                                                      
+  6. Higher-is-better metric: bar grown beyond origin point = improvement = green percentage              
+  7. Plain-English interpretation renders below each bar if template is populated                                                                                                                              
+  8. Empty domain: quiet muted state with soft "Add metrics" link — not alarming                                                                                                                               
+  9. No dollar amounts anywhere on this page                                                                                                                                                                   
+  10. CTA reads "What Could This Mean Financially" — explicit about what's next 
