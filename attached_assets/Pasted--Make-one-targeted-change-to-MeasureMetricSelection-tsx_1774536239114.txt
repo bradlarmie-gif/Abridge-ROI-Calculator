@@ -1,0 +1,78 @@
+ Make one targeted change to MeasureMetricSelection.tsx. Do not touch any other file.                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  The problem                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  When a user enters before/after values on Page 2, updateMetricValue writes to state.metricValues only. But applySettingSync() — which runs on navigation and populates the legacy flat fields that           
+  computeDomainStatus, maturity calculations, and several other functions depend on — reads from state.settingData. Since settingData is never updated by Page 2, the maturity stage on Page 5 always shows    
+  "Unmeasured" regardless of what the user entered.                                                       
+
+  The fix                                                                                                                                                                                                      
+   
+  Find the updateMetricValue callback in MeasureMetricSelection.tsx. It currently looks like this:                                                                                                             
+                                                                                                          
+  const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {
+    updateState({                                                                                                                                                                                              
+      metricValues: {                     
+        ...state.metricValues,                                                                                                                                                                                 
+        [key]: { ...(state.metricValues?.[key] || {}), ...updates },                                                                                                                                           
+      },
+    });                                                                                                                                                                                                        
+  }, [state.metricValues, updateState]);                                                                  
+                                              
+  Replace it with this:                   
+
+  const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {                                                                                                                      
+    // Parse the metric key — format is `${metricId}__${setting}` or just `${metricId}` for org-wide
+    const separatorIdx = key.indexOf('__');                                                                                                                                                                    
+    const metricId = separatorIdx >= 0 ? key.slice(0, separatorIdx) : key;                                
+    const setting = separatorIdx >= 0 ? key.slice(separatorIdx + 2) as MeasureCareSetting : null;
+                                                                                                                                                                                                               
+    const updatedMetricValues = {                                                                                                                                                                              
+      ...state.metricValues,                                                                                                                                                                                   
+      [key]: { ...(state.metricValues?.[key] || {}), ...updates },                                                                                                                                             
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // Also write to settingData so applySettingSync can populate legacy fields                                                                                                                                
+    // (computeDomainStatus, maturity stage, and scenario calculations all read from there)               
+    if (setting && (updates.before !== undefined || updates.after !== undefined)) {
+      const currentSettingData = state.settingData?.[setting] || {};                                                                                                                                           
+      const updatedSettingData = { ...currentSettingData };
+      if (updates.before !== null && updates.before !== undefined) {                                                                                                                                           
+        updatedSettingData[`${metricId}_before`] = updates.before;                                        
+      }                                                                                                                                                                                                        
+      if (updates.after !== null && updates.after !== undefined) {                                        
+        updatedSettingData[`${metricId}_after`] = updates.after;                                                                                                                                               
+      }                                                                                                                                                                                                        
+      updateState({
+        metricValues: updatedMetricValues,                                                                                                                                                                     
+        settingData: { ...state.settingData, [setting]: updatedSettingData },                             
+      });
+    } else {                                                                                                                                                                                                   
+      updateState({ metricValues: updatedMetricValues });
+    }                                                                                                                                                                                                          
+  }, [state.metricValues, state.settingData, updateState]);                                               
+
+  Note the updated dependency array now includes state.settingData.                                                                                                                                            
+                                          
+  ---                                                                                                                                                                                                          
+  Why this works                                                                                                                                                                                               
+                
+  When the user enters wRVU before=1.8 / after=2.1 for Outpatient, the key is wrvuPerEncounter__outpatient. This fix writes:                                                                                   
+  - state.metricValues['wrvuPerEncounter__outpatient'] = { before: 1.8, after: 2.1 } (existing)           
+  - state.settingData.outpatient['wrvuPerEncounter_before'] = 1.8 (new)                        
+  - state.settingData.outpatient['wrvuPerEncounter_after'] = 2.1 (new) 
+                                                                                                                                                                                                               
+  When the user navigates from Page 2 → Page 3, applySettingSync() runs, reads settingData.outpatient.wrvuPerEncounter_before/after, and writes them into state.documentationQuality.wrvuWithout/With. From    
+  that point, every downstream function — computeDomainStatus, deriveEngagementContext, maturity stage, all of it — reads populated values instead of zeros.                                                   
+                                                                                                                                                                                                               
+  Org-wide metrics (burnout, likelihood to stay) have no __setting suffix so setting is null — the settingData write is skipped for them, which is correct because they don't map to any settingData fields.   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification                                                                                                                                                                                                 
+                                                                                                          
+  1. Enter wrvuPerEncounter before=1.8 / after=2.1 for Outpatient on Page 2 → navigate to Page 3 → Quality domain shows a bar with ↑16.7%                                                                      
+  2. Navigate to Page 5 → maturity stage is not "Unmeasured" (shows "Signaling" or higher depending on other inputs)
+  3. Enter afterHours before=1.5 / after=0.3 → Page 4 cost reduction row appears                                                                                                                               
+  4. Toggle monthly mode on a metric, enter values → the derived before/after from first/last monthly values also write through to settingData
+  5. Org-wide metric (burnout) — entering values does NOT cause a JavaScript error (the setting === null branch is taken cleanly) 

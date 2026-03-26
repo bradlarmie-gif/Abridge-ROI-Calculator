@@ -407,14 +407,32 @@ export default function MeasureMetricSelection({
   }, [state.enabledMetrics, isMetricActive, updateState, activeSettings]);
 
   const updateMetricValue = useCallback((key: string, updates: Partial<MetricEntry>) => {
-    const prev = state.metricValues?.[key] || { before: null, after: null, isMonthlyMode: false };
-    updateState({
-      metricValues: {
-        ...state.metricValues,
-        [key]: { ...prev, ...updates },
-      },
-    });
-  }, [state.metricValues, updateState]);
+    const separatorIdx = key.indexOf('__');
+    const metricId = separatorIdx >= 0 ? key.slice(0, separatorIdx) : key;
+    const setting = separatorIdx >= 0 ? key.slice(separatorIdx + 2) as MeasureCareSetting : null;
+
+    const updatedMetricValues = {
+      ...state.metricValues,
+      [key]: { ...(state.metricValues?.[key] || {}), ...updates },
+    };
+
+    if (setting && (updates.before !== undefined || updates.after !== undefined)) {
+      const currentSettingData = state.settingData?.[setting] || {};
+      const updatedSettingData = { ...currentSettingData };
+      if (updates.before !== null && updates.before !== undefined) {
+        updatedSettingData[`${metricId}_before`] = updates.before;
+      }
+      if (updates.after !== null && updates.after !== undefined) {
+        updatedSettingData[`${metricId}_after`] = updates.after;
+      }
+      updateState({
+        metricValues: updatedMetricValues,
+        settingData: { ...state.settingData, [setting]: updatedSettingData },
+      });
+    } else {
+      updateState({ metricValues: updatedMetricValues });
+    }
+  }, [state.metricValues, state.settingData, updateState]);
 
   const domainActiveCounts = useMemo(() => {
     const counts: Record<string, number> = {};
