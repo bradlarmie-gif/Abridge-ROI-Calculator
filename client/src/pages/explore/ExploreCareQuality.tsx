@@ -45,7 +45,7 @@ export default function ExploreCareQuality({
   const [cautiExpanded, setCautiExpanded] = useState(true);
   const [clabsiExpanded, setClabsiExpanded] = useState(true);
   const [sepsisExpanded, setSepsisExpanded] = useState(true);
-  const [vapExpanded, setVapExpanded] = useState(true);
+
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -127,31 +127,14 @@ export default function ExploreCareQuality({
     return sepsisVolume * (docQualityInputs.nursingSepsisComplianceImprovement / 100) * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
   }, [sepsisVolume, docQualityInputs.nursingSepsisComplianceImprovement, docQualityInputs.nursingSepsisLosReduction, docQualityInputs.nursingSepsisDailyCost, docQualityInputs.nursingSepsisRealization]);
 
-  const ventDays = useMemo(() => {
-    return patientDaysPerYear * (docQualityInputs.nursingVapVentUtilization / 100);
-  }, [patientDaysPerYear, docQualityInputs.nursingVapVentUtilization]);
-
-  const vapPerYear = useMemo(() => {
-    return (ventDays / 1000) * docQualityInputs.nursingVapRate;
-  }, [ventDays, docQualityInputs.nursingVapRate]);
-
-  const vapPrevented = useMemo(() => {
-    return vapPerYear * (docQualityInputs.nursingVapPreventionRate / 100);
-  }, [vapPerYear, docQualityInputs.nursingVapPreventionRate]);
-
-  const vapValue = useMemo(() => {
-    return vapPrevented * docQualityInputs.nursingVapCost;
-  }, [vapPrevented, docQualityInputs.nursingVapCost]);
-
   const totalPotentialValue = useMemo(() => {
     return (docQualityInputs.nursingHapiEnabled ? hapiValue : 0) +
            (docQualityInputs.nursingFallsEnabled ? fallsValue : 0) +
            (docQualityInputs.nursingHacEnabled ? hacValue : 0) +
            (docQualityInputs.nursingCautiEnabled ? cautiValue : 0) +
            (docQualityInputs.nursingClabsiEnabled ? clabsiValue : 0) +
-           (docQualityInputs.nursingSepsisEnabled ? sepsisValue : 0) +
-           (docQualityInputs.nursingVapEnabled ? vapValue : 0);
-  }, [docQualityInputs.nursingHapiEnabled, hapiValue, docQualityInputs.nursingFallsEnabled, fallsValue, docQualityInputs.nursingHacEnabled, hacValue, docQualityInputs.nursingCautiEnabled, cautiValue, docQualityInputs.nursingClabsiEnabled, clabsiValue, docQualityInputs.nursingSepsisEnabled, sepsisValue, docQualityInputs.nursingVapEnabled, vapValue]);
+           (docQualityInputs.nursingSepsisEnabled ? sepsisValue : 0);
+  }, [docQualityInputs.nursingHapiEnabled, hapiValue, docQualityInputs.nursingFallsEnabled, fallsValue, docQualityInputs.nursingHacEnabled, hacValue, docQualityInputs.nursingCautiEnabled, cautiValue, docQualityInputs.nursingClabsiEnabled, clabsiValue, docQualityInputs.nursingSepsisEnabled, sepsisValue]);
 
   const carePerNurseWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return 0;
@@ -974,159 +957,6 @@ export default function ExploreCareQuality({
                 </AnimatePresence>
               </div>
 
-              {/* Driver: VAP Bundle Compliance (ICU) */}
-              <div className="space-y-0">
-                <div
-                  className={`w-full p-4 text-left transition-all ${
-                    docQualityInputs.nursingVapEnabled
-                      ? (vapExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
-                      : "bg-white/70 hover:bg-white rounded-lg"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-black">VAP Bundle Compliance</p>
-                        <span className="text-[12px] font-medium text-[#EA2C00] bg-[#FFF8F6] px-2 py-0.5 rounded uppercase">
-                          POTENTIAL
-                        </span>
-                        <span className="text-[11px] font-medium text-[#EA2C00] border border-[#EA2C00]/30 px-2 py-0.5 rounded uppercase">
-                          ICU ONLY
-                        </span>
-                      </div>
-                      <p className="text-sm text-[#888888]">Ventilator-associated pneumonia prevention through documented bundle compliance — applies only to ICU ventilator days</p>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {docQualityInputs.nursingVapEnabled && (
-                        <button
-                          onClick={() => setVapExpanded(!vapExpanded)}
-                          className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
-                        >
-                          {vapExpanded ? <ChevronUp className="w-5 h-5 text-[#888888]" /> : <ChevronDown className="w-5 h-5 text-[#888888]" />}
-                        </button>
-                      )}
-                      <Switch
-                        checked={docQualityInputs.nursingVapEnabled}
-                        onCheckedChange={(checked) => {
-                          updateDocQualityInputs({ nursingVapEnabled: checked });
-                          if (checked) setVapExpanded(true);
-                        }}
-                        className="data-[state=checked]:bg-[#EA2C00]"
-                        data-testid="toggle-vap"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {docQualityInputs.nursingVapEnabled && vapExpanded && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                      <div className="bg-white rounded-b-lg p-5 pt-0">
-                        <div className="bg-[#FFF8F6] border border-[#EA2C00]/20 rounded-lg p-3 mb-4">
-                          <p className="text-xs text-[#EA2C00] font-medium">This driver applies only to ICU ventilator days. If your facility does not have an ICU, leave this toggled off.</p>
-                        </div>
-
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
-                        <p className="text-sm text-black mb-6">
-                          IHI/SHEA evidence shows 50–70% VAP reduction with full bundle compliance. We model 10% as the documentation-timing contribution — roughly 1/6 of the full bundle effect — reflecting that timely HOB elevation, oral care, and sedation vacation documentation supports compliance verification.
-                        </p>
-
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 1: VENTILATOR DAYS & VAP VOLUME</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                          <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Ventilator Utilization %</label>
-                            <div className="relative">
-                              <FormattedNumberInput
-                                value={docQualityInputs.nursingVapVentUtilization}
-                                onChange={(v: number) => updateDocQualityInputs({ nursingVapVentUtilization: v })}
-                                className="h-12 bg-[#F5F0EB] pr-8 text-base"
-                                data-testid="input-vap-util"
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-                            </div>
-                            <p className="text-xs text-[#888888]">% of patient days on mechanical ventilation (ICU only)</p>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">VAP Rate per 1,000 vent days</label>
-                            <FormattedNumberInput
-                              value={docQualityInputs.nursingVapRate}
-                              onChange={(v: number) => updateDocQualityInputs({ nursingVapRate: v })}
-                              step={0.1}
-                              className="h-12 bg-[#F5F0EB] text-base"
-                              data-testid="input-vap-rate"
-                            />
-                            <p className="text-xs text-[#888888]">NHSN benchmark: 1.0–3.0</p>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">VAPs/Year</label>
-                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
-                              {vapPerYear.toFixed(1)}
-                            </div>
-                          </div>
-                        </div>
-
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 2: DOCUMENTATION-PREVENTABLE</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-                          <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Prevention Rate %</label>
-                            <div className="relative">
-                              <FormattedNumberInput
-                                value={docQualityInputs.nursingVapPreventionRate}
-                                onChange={(v: number) => updateDocQualityInputs({ nursingVapPreventionRate: v })}
-                                className="h-12 bg-[#F5F0EB] pr-8 text-base"
-                                data-testid="input-vap-prevention"
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-                            </div>
-                            <p className="text-xs text-[#888888]">IHI/SHEA: 50–70% with full compliance; we take ~1/6 as doc-timing share.</p>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm text-[#888888]">Cost per VAP $</label>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                              <FormattedNumberInput
-                                value={docQualityInputs.nursingVapCost}
-                                onChange={(v: number) => updateDocQualityInputs({ nursingVapCost: v })}
-                                className="h-12 bg-[#F5F0EB] pl-7 text-base"
-                                data-testid="input-vap-cost"
-                              />
-                            </div>
-                            <p className="text-xs text-[#888888]">CDC estimate: $15K–$40K. We use $20K as blended average.</p>
-                          </div>
-                        </div>
-
-                        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
-                        <div className="bg-[#F5F0EB] rounded-lg p-4">
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">VAPs/year</span>
-                              <span className="font-semibold text-black flex-shrink-0">{vapPerYear.toFixed(1)}</span>
-                            </div>
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Prevention rate</span>
-                              <span className="font-semibold text-black flex-shrink-0">{docQualityInputs.nursingVapPreventionRate}%</span>
-                            </div>
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">= VAPs prevented</span>
-                              <span className="font-semibold text-black flex-shrink-0">{vapPrevented.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between gap-2">
-                              <span className="text-[#666666]">x Cost per VAP</span>
-                              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(docQualityInputs.nursingVapCost)}</span>
-                            </div>
-                            <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between gap-2">
-                              <span className="font-medium text-black">Potential VAP Value</span>
-                              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(vapValue)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
               {/* Existing: HAC Penalty Avoidance */}
               <div className="pt-4">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
@@ -1505,17 +1335,6 @@ export default function ExploreCareQuality({
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.nursingVapEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                        <span className="text-sm text-[#888888]">VAP (ICU)</span>
-                      </div>
-                      <span className={`text-sm font-semibold ${docQualityInputs.nursingVapEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                        {docQualityInputs.nursingVapEnabled ? formatCurrency(vapValue) : '—'}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </div>
 

@@ -251,12 +251,7 @@ export interface DocQualityInputs {
   nursingSepsisDailyCost: number;
   nursingSepsisRealization: number;
   nursingSepsisExpanded: boolean;
-  nursingVapEnabled: boolean;
-  nursingVapVentUtilization: number;
-  nursingVapRate: number;
-  nursingVapPreventionRate: number;
-  nursingVapCost: number;
-  nursingVapExpanded: boolean;
+
   
   // Expanded states for collapse/expand chevrons
   wrvuExpanded: boolean;
@@ -518,12 +513,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingSepsisDailyCost: 3000,
     nursingSepsisRealization: 60,
     nursingSepsisExpanded: true,
-    nursingVapEnabled: false,
-    nursingVapVentUtilization: 15,
-    nursingVapRate: 2.0,
-    nursingVapPreventionRate: 10,
-    nursingVapCost: 20000,
-    nursingVapExpanded: true,
     // Expanded states (auto-expand when first toggled on)
     wrvuExpanded: true,
     hccExpanded: true,

@@ -254,10 +254,6 @@ export default function ExploreModel({
       const improved = sepsisPerYear * (docQualityInputs.nursingSepsisComplianceImprovement / 100);
       total += improved * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
     }
-    if (docQualityInputs.nursingVapEnabled) {
-      const ventDays = patientDays * (docQualityInputs.nursingVapVentUtilization / 100);
-      total += (ventDays / 1000) * docQualityInputs.nursingVapRate * (docQualityInputs.nursingVapPreventionRate / 100) * docQualityInputs.nursingVapCost;
-    }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
@@ -308,13 +304,6 @@ export default function ExploreModel({
     return Math.round(improved * state.docQualityInputs.nursingSepsisLosReduction * state.docQualityInputs.nursingSepsisDailyCost * (state.docQualityInputs.nursingSepsisRealization / 100));
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
-  const nursingVapValue = useMemo(() => {
-    if (!isNursing || !state.docQualityInputs.nursingVapEnabled) return 0;
-    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const ventDays = patientDays * (state.docQualityInputs.nursingVapVentUtilization / 100);
-    return Math.round((ventDays / 1000) * state.docQualityInputs.nursingVapRate * (state.docQualityInputs.nursingVapPreventionRate / 100) * state.docQualityInputs.nursingVapCost);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
-
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
   const year1Value = totalValue - implementationCost;
@@ -355,7 +344,7 @@ export default function ExploreModel({
     if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" as const });
     if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" as const });
     if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" as const });
-    if (nursingVapValue > 0) drivers.push({ id: "nursingVap", name: "VAP Bundle Compliance", value: nursingVapValue, category: "documentation", onset: "immediate" as const });
+
     for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
       if (item.amount > 0 && item.label) {
         drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", onset: "immediate" as const });
@@ -731,7 +720,7 @@ export default function ExploreModel({
           if (nursingCautiValue > 0) parts.push(`CAUTI bundle compliance: ${fmtK(nursingCautiValue)}`);
           if (nursingClabsiValue > 0) parts.push(`CLABSI bundle compliance: ${fmtK(nursingClabsiValue)}`);
           if (nursingSepsisValue > 0) parts.push(`Sepsis SEP-1 bundle: ${fmtK(nursingSepsisValue)}`);
-          if (nursingVapValue > 0) parts.push(`VAP bundle compliance: ${fmtK(nursingVapValue)}`);
+
           parts.push(`= ${fmtK(nursingCareQualityPotential)}/year`);
           drivers.push({
             id: 'nursingCareQuality', name: 'Care Quality (Potential)', value: nursingCareQualityPotential, category: 'documentation',
@@ -1086,10 +1075,6 @@ export default function ExploreModel({
           const sepsisPerYr = parseFloat(((patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand).toFixed(1));
           const sepsisImproved = parseFloat((sepsisPerYr * (docQualityInputs.nursingSepsisComplianceImprovement / 100)).toFixed(2));
 
-          const vapVentDays = Math.round(patientDays * (docQualityInputs.nursingVapVentUtilization / 100));
-          const vapPerYr = parseFloat(((vapVentDays / 1000) * docQualityInputs.nursingVapRate).toFixed(1));
-          const vapPrevented = parseFloat((vapPerYr * (docQualityInputs.nursingVapPreventionRate / 100)).toFixed(2));
-
           const nFullScaleBeds = expandedProviders;
           const nFullScaleAdoption = expandedUtilization;
           const nFullScaleMult = beds > 0 ? (nFullScaleBeds / beds) * (nFullScaleAdoption / adoptRate) : 1;
@@ -1172,15 +1157,7 @@ export default function ExploreModel({
             nursingSepsisDailyCost: docQualityInputs.nursingSepsisDailyCost,
             nursingSepsisRealization: docQualityInputs.nursingSepsisRealization,
             nursingSepsisValue: nursingSepsisValue,
-            nursingVapEnabled: docQualityInputs.nursingVapEnabled,
-            nursingVapVentUtilization: docQualityInputs.nursingVapVentUtilization,
-            nursingVapDaysPerYear: vapVentDays,
-            nursingVapRatePer1000: docQualityInputs.nursingVapRate,
-            nursingVapPerYear: vapPerYr,
-            nursingVapPreventionRate: docQualityInputs.nursingVapPreventionRate,
-            nursingVapCostPer: docQualityInputs.nursingVapCost,
-            nursingVapPrevented: vapPrevented,
-            nursingVapValue: nursingVapValue,
+
             nursingPotentialTotal: nursingCareQualityPotential,
             nursingFullScaleBeds: nFullScaleBeds,
             nursingFullScaleAdoption: nFullScaleAdoption,
