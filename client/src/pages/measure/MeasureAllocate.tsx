@@ -10,6 +10,7 @@ import {
   formatCurrency,
   formatNumber,
   getMonthsFromGoLive,
+  getActiveMetrics,
 } from "@/lib/measureCalculator";
 import { useCountUp } from "@/hooks/useCountUp";
 
@@ -58,13 +59,48 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const realLow = Math.max(0.40, realPct - 0.10);
   const realHigh = Math.min(0.99, realPct + 0.10);
 
-  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
-  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
-
   const settingData = state.settingData?.[setting] || {};
-  const cmiBefore = settingData.cmi_before ?? 0;
-  const cmiAfter = settingData.cmi_after ?? 0;
+  const activeMetrics = getActiveMetrics(state);
+
+  const wrvuMetric = activeMetrics.find(m =>
+    ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === setting)
+  );
+  const wrvuBefore = wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0;
+  const wrvuAfter = wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0;
+  const wrvuDelta = wrvuAfter - wrvuBefore;
+
+  const emMetric = activeMetrics.find(m =>
+    ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === setting)
+  );
+  const emBefore = emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0;
+  const emAfter = emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0;
+  const emDelta = emAfter - emBefore;
+
+  const afterHoursMetric = activeMetrics.find(m =>
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId) &&
+    (!m.setting || m.setting === setting)
+  );
+  const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
+  const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
+
+  const cmiMetric = activeMetrics.find(m =>
+    ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+  );
+  const cmiBefore = cmiMetric?.before ?? settingData.cmi_before ?? 0;
+  const cmiAfter = cmiMetric?.after ?? settingData.cmi_after ?? 0;
   const cmiDelta = isInpatient ? Math.max(0, cmiAfter - cmiBefore) : 0;
+
+  const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+  const lwbsBefore = lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0;
+  const lwbsAfter = lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0;
+  const lwbsDelta = lwbsBefore - lwbsAfter;
+
+  const denialMetric = activeMetrics.find(m =>
+    ['initial_denial_rate', 'initialDenialRate', 'denialRate', 'claimDenialRate', 'medicalNecessityDenialRate'].includes(m.metricId)
+  );
+  const denialBefore = denialMetric?.before ?? settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
+  const denialAfter = denialMetric?.after ?? settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;
+  const denialDelta = denialBefore - denialAfter;
 
   let billingCaptureLow = 0;
   let billingCaptureHigh = 0;
@@ -118,10 +154,6 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const recoveryDetails: { label: string; detail: string }[] = [];
 
   if (isED) {
-    const lwbsBefore = settingData.lwbsRate_before ?? 0;
-    const lwbsAfter = settingData.lwbsRate_after ?? 0;
-    const lwbsDelta = lwbsBefore - lwbsAfter;
-
     if (lwbsDelta > 0 && totalEncounters > 0) {
       const annualVisits = totalEncounters * 12;
       const recoveredVisits = (lwbsDelta / 100) * annualVisits;
@@ -134,10 +166,6 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
         detail: `Monthly ED visits: ${formatNumber(totalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
       });
     }
-
-    const denialBefore = settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
-    const denialAfter = settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;
-    const denialDelta = denialBefore - denialAfter;
 
     if (denialDelta > 0 && totalEncounters > 0) {
       const avgDenialCost = 350;
@@ -156,8 +184,6 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   let costReductionLow = 0;
   let costReductionHigh = 0;
 
-  const afterHoursWithout = state.timeEfficiency.workOutsideWithout;
-  const afterHoursWith = state.timeEfficiency.workOutsideWith;
   const afterHoursDelta = Math.max(0, afterHoursWithout - afterHoursWith);
 
   let hasAfterHours = false;

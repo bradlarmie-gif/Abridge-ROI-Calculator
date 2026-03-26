@@ -10,6 +10,7 @@ import {
   deriveEngagementContext,
   computeDomainStatus,
   getMonthsFromGoLive,
+  getActiveMetrics,
 } from "@/lib/measureCalculator";
 
 const STAGES: { key: MaturityStage; label: string }[] = [
@@ -72,23 +73,36 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
   let totalLow = 0;
   let totalHigh = 0;
 
-  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const settingData = state.settingData?.[setting] || {};
+  const activeMetrics = getActiveMetrics(state);
+
+  const wrvuMetric = activeMetrics.find(m =>
+    ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === setting)
+  );
+  const wrvuDelta = (wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0) -
+    (wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0);
   if (wrvuDelta > 0 && adoptedEncounters > 0) {
     const base = wrvuDelta * adoptedEncounters * cf;
     totalLow += base * attrLow * realLow;
     totalHigh += base * attrHigh * realHigh;
   }
 
-  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
+  const emMetric = activeMetrics.find(m =>
+    ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === setting)
+  );
+  const emDelta = (emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0) -
+    (emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0);
   if (emDelta > 0 && adoptedEncounters > 0) {
     const base = emDelta * adoptedEncounters * 45;
     totalLow += base * attrLow * realLow;
     totalHigh += base * attrHigh * realHigh;
   }
 
-  const settingData = state.settingData?.[setting] || {};
   if (setting === 'inpatient') {
-    const cmiDelta = Math.max(0, (settingData.cmi_after ?? 0) - (settingData.cmi_before ?? 0));
+    const cmiMetric = activeMetrics.find(m =>
+      ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+    );
+    const cmiDelta = Math.max(0, (cmiMetric?.after ?? settingData.cmi_after ?? 0) - (cmiMetric?.before ?? settingData.cmi_before ?? 0));
     if (cmiDelta > 0) {
       const base = cmiDelta * totalEncounters * 6800;
       totalLow += base * attrLow * realLow;
@@ -97,7 +111,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
   }
 
   if (setting === 'ed') {
-    const lwbsDelta = (settingData.lwbsRate_before ?? 0) - (settingData.lwbsRate_after ?? 0);
+    const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
+    const lwbsDelta = (lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0) - (lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0);
     if (lwbsDelta > 0 && totalEncounters > 0) {
       const recovered = (lwbsDelta / 100) * totalEncounters * 12;
       totalLow += recovered * 480 * attrLow;
@@ -105,7 +120,14 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     }
   }
 
-  const afterHoursDelta = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
+  const afterHoursMetric = activeMetrics.find(m =>
+    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift'].includes(m.metricId) &&
+    (!m.setting || m.setting === setting)
+  );
+  const afterHoursDelta = Math.max(0,
+    (afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0) -
+    (afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0)
+  );
   if (afterHoursDelta > 0 && providers > 0) {
     const annual = afterHoursDelta * 5 * providers * 75 * 52;
     totalLow += annual * attrLow;

@@ -1,0 +1,132 @@
+Make the following five targeted fixes. Do not refactor anything beyond what is described. Do not change visual design, animation logic, or page structure.                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 1 — State bridge: MeasureAllocate.tsx and MeasureOpportunity.tsx read $0
+                                                                                                                                                                                                               
+  Root cause: computeFinancials() in MeasureAllocate.tsx reads wRVU, E/M, CMI, and after-hours from legacy flat fields (state.documentationQuality.wrvuWith, state.timeEfficiency.workOutsideWithout, etc.).
+  But MeasureMetricSelection writes user-entered values to state.metricValues (keyed store), never to those legacy fields. So every financial calculation except burnout/retention shows $0.                   
+                                                                                                                                                                                                               
+  Fix: Update computeFinancials() to read from state.metricValues first, with legacy fields as fallback. Import getActiveMetrics from @/lib/measureCalculator at the top of MeasureAllocate.tsx.
+                                                                                                                                                                                                               
+  Replace the current variable declarations at the top of computeFinancials():                            
+                                                                                                                                                                                                               
+  // OLD:                                                                                                 
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;                                                                                                              
+  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;     
+  // ... and further down:                                                                                                                                                                                     
+  const afterHoursWithout = state.timeEfficiency.workOutsideWithout;                                      
+  const afterHoursWith = state.timeEfficiency.workOutsideWith;                                                                                                                                                 
+  // ... and for settingData CMI/LWBS reads
+                                                                                                                                                                                                               
+  // NEW:                                                                                                 
+  const activeMetrics = getActiveMetrics(state);                                                                                                                                                               
+                                                                                                                                                                                                               
+  // wRVU — check metricValues first, fall back to legacy
+  const wrvuMetric = activeMetrics.find(m =>                                                                                                                                                                   
+    m.metricId === 'wrvuPerEncounter' && (!m.setting || m.setting === setting)                                                                                                                                 
+  );                                      
+  const wrvuBefore = wrvuMetric?.before ?? state.documentationQuality.wrvuWithout ?? 0;                                                                                                                        
+  const wrvuAfter = wrvuMetric?.after ?? state.documentationQuality.wrvuWith ?? 0;                                                                                                                             
+  const wrvuDelta = wrvuAfter - wrvuBefore;
+                                                                                                                                                                                                               
+  // E/M level                                                                                                                                                                                                 
+  const emMetric = activeMetrics.find(m =>
+    m.metricId === 'emLevel' && (!m.setting || m.setting === setting)                                                                                                                                          
+  );                                                                                                                                                                                                           
+  const emBefore = emMetric?.before ?? state.documentationQuality.emLevelWithout ?? 0;
+  const emAfter = emMetric?.after ?? state.documentationQuality.emLevelWith ?? 0;                                                                                                                              
+  const emDelta = emAfter - emBefore;                                                                     
+
+  // After-hours / work outside hours                                                                                                                                                                          
+  const afterHoursMetric = activeMetrics.find(m =>
+    ['afterHours', 'workOutsideHours', 'workAfterHours', 'afterHoursWork'].includes(m.metricId) &&                                                                                                             
+    (!m.setting || m.setting === setting)                                                                                                                                                                      
+  );                                      
+  const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;                                                                                                          
+  const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;                                                                                                                 
+                                          
+  // CMI (inpatient)                                                                                                                                                                                           
+  const cmiMetric = activeMetrics.find(m =>                                                                                                                                                                    
+    ['cmi', 'cmiScore', 'caseMixIndex'].includes(m.metricId)
+  );                                                                                                                                                                                                           
+  const cmiBefore = cmiMetric?.before ?? settingData.cmi_before ?? 0;                                     
+  const cmiAfter = cmiMetric?.after ?? settingData.cmi_after ?? 0;                                                                                                                                             
+  const cmiDelta = isInpatient ? Math.max(0, cmiAfter - cmiBefore) : 0;                                                                                                                                        
+                                                                                                                                                                                                               
+  // LWBS (ED)                                                                                                                                                                                                 
+  const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');                                                                                                                                       
+  const lwbsBefore = lwbsMetric?.before ?? settingData.lwbsRate_before ?? 0;
+  const lwbsAfter = lwbsMetric?.after ?? settingData.lwbsRate_after ?? 0;                                                                                                                                      
+  const lwbsDelta = lwbsBefore - lwbsAfter;                                                               
+                                                                                                                                                                                                               
+  // Denial rate (ED)                                                                                                                                                                                          
+  const denialMetric = activeMetrics.find(m =>
+    ['initialDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)                                                                                                                                
+  );                                                                                                                                                                                                           
+  const denialBefore = denialMetric?.before ?? settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
+  const denialAfter = denialMetric?.after ?? settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;                                                                                       
+  const denialDelta = denialBefore - denialAfter;                                                                                                                                                              
+                                              
+  Then update the rest of computeFinancials() to use these new variables instead of re-reading settingData for CMI/LWBS/denial. Specifically, replace:                                                         
+  - Any settingData.lwbsRate_before/after with lwbsBefore/lwbsAfter and use the already-computed lwbsDelta
+  - Any settingData.initial_denial_rate_before/after with denialBefore/denialAfter and use denialDelta                                                                                                         
+  - The existing afterHoursWithout/afterHoursWith var declarations (they will now conflict — remove the old ones)                                                                                              
+  - The existing cmiBefore/cmiAfter inside the if (cmiDelta > 0) block — remove those re-declarations                                                                                                          
+                                                                                                                                                                                                               
+  Also apply the same fix to MeasureOpportunity.tsx: find computeConfirmedRange() (or whatever function computes the confirmed value range on that page) and apply the same getActiveMetrics + fallback pattern
+   for wRVU and CMI reads.                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Arrow direction inverted on higher-is-better metrics in MeasureJourney.tsx                                                                                                                           
+                                                                                                                                                                                                               
+  In the MetricBar component, find the delta badge JSX. It currently reads something like:                                                                                                                     
+                                                                                                          
+  {improved ? '↓' : '↑'}{Math.abs(deltaPercent).toFixed(1)}%                                                                                                                                                   
+                                              
+  Replace with:                                                                                                                                                                                                
+                                                                                                          
+  {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}{Math.abs(deltaPercent).toFixed(1)}%                                                                                                        
+                                                                                                          
+  This ensures wRVU going from 1.8 → 2.1 shows ↑16.7% (improvement), and time-in-notes going from 3 → 1.5 shows ↓50% (improvement). Do not change any other logic in MetricBar.                                
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Fix 3 — Auto-expand first domain on Page 2 in MeasureMetricSelection.tsx                                                                                                                                     
+                                                                                                                                                                                                               
+  The expandedDomains state currently initializes as an empty Set, so the user lands on Page 2 with every domain collapsed.                                                                                    
+                                                                                                          
+  Find:                                   
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
+                                                                                                                                                                                                               
+  Replace with:                               
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));                                                                                                   
+                                                                                                            
+  This opens the first two domain sections on load so users see actual metrics immediately instead of a blank page.                                                                                            
+                                              
+  ---                                                                                                                                                                                                          
+  Fix 4 — Delta badge colors: green → orange in MeasureMetricSelection.tsx                                                                                                                                     
+                                                                                                                                                                                                               
+  Find the DeltaBadge component. It currently has:                                                                                                                                                             
+  className={`... ${improved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}                                                                                                                      
+                                                                                                                                                                                                               
+  Replace with:                               
+  className={`... ${improved ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'bg-[#F5F0EB] text-[#999999]'}`}                                                                                                             
+                                                                                                          
+  No green. When a metric hasn't improved, show it in neutral gray — not alarming red. The before/after bar on Page 3 already communicates direction; the badge on Page 2 just needs to confirm improvement.   
+                                              
+  ---                                                                                                                                                                                                          
+  Fix 5 — Delete orphaned file                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Delete client/src/pages/measure/MeasureScenarios.tsx. It is not imported or used anywhere in the flow. Verify it is not imported before deleting — if it is imported somewhere, remove that import too.      
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Verification
+                                                                                                                                                                                                               
+  After these changes:                    
+                                                                                                                                                                                                               
+  1. Enter wrvuPerEncounter before=1.8 / after=2.1 on Page 2 → Page 4 billing capture row appears with a non-zero range, hero counts up                                                                        
+  2. Enter afterHours before=1.5 / after=0.3 on Page 2 → Page 4 cost reduction row appears
+  3. On Page 3, find a metric where higher is better (wRVU) — confirm badge shows ↑, not ↓                                                                                                                     
+  4. On Page 3, find a metric where lower is better (time in notes) — confirm badge shows ↓                                                                                                                    
+  5. Land on Page 2 — "Foundational" and "Quality" domains are open by default
+  6. Activate a metric and enter before/after values — delta badge is orange, not green                                                                                                                        
+  7. MeasureScenarios.tsx no longer exists in the codebase                     

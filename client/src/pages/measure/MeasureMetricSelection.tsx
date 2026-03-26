@@ -82,7 +82,7 @@ function DeltaBadge({ before, after, lowerIsBetter, unit }: { before: number; af
 
   return (
     <span
-      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${improved ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}
+      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${improved ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'bg-[#F5F0EB] text-[#999999]'}`}
       data-testid="badge-delta"
     >
       {sign}{delta.toFixed(1)}{displayUnit}
@@ -308,7 +308,7 @@ export default function MeasureMetricSelection({
   onBack,
   onHome,
 }: MeasureMetricSelectionProps) {
-  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -447,8 +447,7 @@ export default function MeasureMetricSelection({
   };
 
   useEffect(() => {
-    const first = domainGroups[0]?.domainKey;
-    if (first) setExpandedDomains(new Set([first]));
+    setExpandedDomains(new Set(['foundational', 'quality']));
   }, []);
 
   return (

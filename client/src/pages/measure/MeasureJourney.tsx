@@ -132,7 +132,7 @@ function MetricBar({ label, before, after, lowerIsBetter, unit, template, whyItM
             data-testid="badge-pct-change"
           >
             <span className={`text-2xl font-bold tabular-nums ${improved ? 'text-[#EA2C00]' : 'text-[#F87171]'}`}>
-              {improved ? '↓' : '↑'}{Math.abs(deltaPercent).toFixed(1)}%
+              {lowerIsBetter ? (improved ? '↓' : '↑') : (improved ? '↑' : '↓')}{Math.abs(deltaPercent).toFixed(1)}%
             </span>
           </motion.div>
         )}
