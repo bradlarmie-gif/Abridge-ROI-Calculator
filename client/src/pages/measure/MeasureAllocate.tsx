@@ -1,92 +1,262 @@
-import { useMemo } from "react";
-import { ArrowRight, TrendingUp, Clock, DollarSign, Activity, Heart } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowRight, BarChart2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { 
-  type MeasureState, 
-  type DataSource,
-  formatCurrency, 
+import {
+  type MeasureState,
+  formatCurrency,
   formatNumber,
-  calculateConfirmedValue,
-  deriveEngagementContext,
-  computeDomainStatus,
   getMonthsFromGoLive,
 } from "@/lib/measureCalculator";
-import { EngagementContextBar } from "@/components/measure/EngagementContextBar";
-import NarrativePanel from "@/components/measure/NarrativePanel";
-import { generateNarrative } from "@/lib/measureNarrative";
+import { useCountUp } from "@/hooks/useCountUp";
 
-function DataSourceBadge({ source }: { source: DataSource }) {
-  const config: Record<DataSource, { label: string; bg: string; text: string }> = {
-    analytics: { label: 'Analytics Pull', bg: 'bg-green-100', text: 'text-green-700' },
-    benchmark: { label: 'Partner Platform', bg: 'bg-blue-100', text: 'text-blue-700' },
-    estimate: { label: 'Team Estimate', bg: 'bg-gray-100', text: 'text-gray-600' },
-  };
-  const c = config[source] || config.estimate;
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${c.bg} ${c.text}`} data-testid="badge-data-source">
-      {c.label}
-    </span>
-  );
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
 }
 
-function formatSmartRange(low: number, high: number): string {
-  const lowFmt = formatCurrency(low);
-  const highFmt = formatCurrency(high);
-  if (lowFmt === highFmt) return lowFmt;
-  return `${lowFmt}\u2013${highFmt}`;
+function fmtRange(low: number, high: number): string {
+  if (low === high) return fmt(low);
+  return `${fmt(low)} — ${fmt(high)}`;
 }
 
-const DOMAIN_ICONS: Record<string, typeof TrendingUp> = {
-  Workforce: Clock,
-  Revenue: DollarSign,
-  Quality: Activity,
-  Capacity: TrendingUp,
-  'Patient Flow': TrendingUp,
-  Throughput: TrendingUp,
+interface Assumptions {
+  attribution: number;
+  realization: number;
+  conversionFactor: number;
+  otPremiumRate: number;
+  edRevenuePerVisit: number;
+  drgBaseRate: number;
+}
+
+const DEFAULT_ASSUMPTIONS: Assumptions = {
+  attribution: 62,
+  realization: 80,
+  conversionFactor: 33,
+  otPremiumRate: 75,
+  edRevenuePerVisit: 480,
+  drgBaseRate: 6800,
 };
 
-interface DomainCardData {
-  name: string;
-  icon: typeof TrendingUp;
-  valueLow: number;
-  valueHigh: number;
-  detail: string;
-  active: boolean;
-  inactiveNote?: string;
-}
+function computeFinancials(state: MeasureState, assumptions: Assumptions) {
+  const setting = state.careSetting || "outpatient";
+  const isED = setting === "ed";
+  const isInpatient = setting === "inpatient";
+  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
+  const totalEncounters = state.deployment.totalEncounters || 0;
+  const utilizationRate = state.deployment.utilizationRate || 0;
+  const adoptedEncounters = Math.round(totalEncounters * (utilizationRate / 100));
 
-function DomainBreakdownCard({ domain, delay = 0 }: { domain: DomainCardData; delay?: number }) {
-  return (
-    <motion.div
-      className={`rounded-xl border p-5 ${domain.active ? 'bg-[#FAF8F5] border-[#E8E2DA]' : 'bg-[#FAFAFA] border-[#F0F0F0]'}`}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.35 }}
-      data-testid={`domain-card-${domain.name.toLowerCase().replace(/\s/g, '-')}`}
-    >
-      <div className="flex items-center gap-2.5 mb-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${domain.active ? 'bg-[#EA2C00]/10' : 'bg-[#F0F0F0]'}`}>
-          <domain.icon className={`w-4 h-4 ${domain.active ? 'text-[#EA2C00]' : 'text-[#CCCCCC]'}`} />
-        </div>
-        <h4 className={`text-xs font-bold uppercase tracking-[1.5px] ${domain.active ? 'text-[#1A1A1A]' : 'text-[#CCCCCC]'}`}>
-          {domain.name}
-        </h4>
-      </div>
+  const attrPct = assumptions.attribution / 100;
+  const realPct = assumptions.realization / 100;
+  const attrLow = Math.max(0.30, attrPct - 0.12);
+  const attrHigh = Math.min(0.95, attrPct + 0.12);
+  const realLow = Math.max(0.40, realPct - 0.10);
+  const realHigh = Math.min(0.99, realPct + 0.10);
 
-      {domain.active ? (
-        <>
-          <p className="text-2xl font-bold text-[#1A1A1A] mb-1" data-testid={`domain-value-${domain.name.toLowerCase().replace(/\s/g, '-')}`}>
-            {formatSmartRange(domain.valueLow, domain.valueHigh)}
-          </p>
-          <p className="text-xs text-[#888888] leading-relaxed">{domain.detail}</p>
-        </>
-      ) : (
-        <p className="text-xs italic text-[#CCCCCC] py-1">{domain.inactiveNote || 'No data entered'}</p>
-      )}
-    </motion.div>
-  );
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
+
+  const settingData = state.settingData?.[setting] || {};
+  const cmiBefore = settingData.cmi_before ?? 0;
+  const cmiAfter = settingData.cmi_after ?? 0;
+  const cmiDelta = isInpatient ? Math.max(0, cmiAfter - cmiBefore) : 0;
+
+  let billingCaptureLow = 0;
+  let billingCaptureHigh = 0;
+  const billingDetails: { label: string; detail: string; formula: string }[] = [];
+
+  if (wrvuDelta > 0 && adoptedEncounters > 0) {
+    const base = wrvuDelta * adoptedEncounters * assumptions.conversionFactor;
+    const low = base * attrLow * realLow;
+    const high = base * attrHigh * realHigh;
+    billingCaptureLow += low;
+    billingCaptureHigh += high;
+    billingDetails.push({
+      label: `wRVU lift: +${wrvuDelta.toFixed(2)} per encounter`,
+      detail: `Adopted encounters: ${formatNumber(adoptedEncounters)}/yr`,
+      formula: `+${wrvuDelta.toFixed(2)} wRVU × ${formatNumber(adoptedEncounters)} encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% realization = ${fmt(base * (assumptions.realization / 100))}`,
+    });
+  }
+
+  if (emDelta > 0 && adoptedEncounters > 0) {
+    const avgEmValue = 45;
+    const base = emDelta * adoptedEncounters * avgEmValue;
+    const low = base * attrLow * realLow;
+    const high = base * attrHigh * realHigh;
+    billingCaptureLow += low;
+    billingCaptureHigh += high;
+    billingDetails.push({
+      label: `E/M level improvement: +${emDelta.toFixed(1)} levels`,
+      detail: `${formatNumber(adoptedEncounters)} adopted encounters`,
+      formula: `+${emDelta.toFixed(1)} E/M × ${formatNumber(adoptedEncounters)} encounters × ~$${avgEmValue}/level = ${fmt(base)}`,
+    });
+  }
+
+  if (cmiDelta > 0) {
+    const discharges = totalEncounters;
+    const base = cmiDelta * discharges * assumptions.drgBaseRate;
+    const low = base * attrLow * realLow;
+    const high = base * attrHigh * realHigh;
+    billingCaptureLow += low;
+    billingCaptureHigh += high;
+    billingDetails.push({
+      label: `CMI improvement: +${cmiDelta.toFixed(3)}`,
+      detail: `${formatNumber(discharges)} annual discharges × $${formatNumber(assumptions.drgBaseRate)} DRG base rate`,
+      formula: `+${cmiDelta.toFixed(3)} CMI × ${formatNumber(discharges)} discharges × $${formatNumber(assumptions.drgBaseRate)} = ${fmt(base)}`,
+    });
+  }
+
+  const hasBillingCapture = billingCaptureLow > 0;
+
+  let revenueRecoveryLow = 0;
+  let revenueRecoveryHigh = 0;
+  const recoveryDetails: { label: string; detail: string }[] = [];
+
+  if (isED) {
+    const lwbsBefore = settingData.lwbsRate_before ?? 0;
+    const lwbsAfter = settingData.lwbsRate_after ?? 0;
+    const lwbsDelta = lwbsBefore - lwbsAfter;
+
+    if (lwbsDelta > 0 && totalEncounters > 0) {
+      const annualVisits = totalEncounters * 12;
+      const recoveredVisits = (lwbsDelta / 100) * annualVisits;
+      const low = recoveredVisits * assumptions.edRevenuePerVisit * attrLow;
+      const high = recoveredVisits * assumptions.edRevenuePerVisit * attrHigh;
+      revenueRecoveryLow += low;
+      revenueRecoveryHigh += high;
+      recoveryDetails.push({
+        label: `LWBS reduction: ${lwbsBefore.toFixed(1)}% → ${lwbsAfter.toFixed(1)}% (−${lwbsDelta.toFixed(1)} pts)`,
+        detail: `Monthly ED visits: ${formatNumber(totalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
+      });
+    }
+
+    const denialBefore = settingData.initial_denial_rate_before ?? settingData.denialRate_before ?? 0;
+    const denialAfter = settingData.initial_denial_rate_after ?? settingData.denialRate_after ?? 0;
+    const denialDelta = denialBefore - denialAfter;
+
+    if (denialDelta > 0 && totalEncounters > 0) {
+      const avgDenialCost = 350;
+      const base = (denialDelta / 100) * totalEncounters * 12 * avgDenialCost;
+      revenueRecoveryLow += base * attrLow;
+      revenueRecoveryHigh += base * attrHigh;
+      recoveryDetails.push({
+        label: `Denial rate reduction: −${denialDelta.toFixed(1)} pts`,
+        detail: `Average denial cost: $${avgDenialCost}/case`,
+      });
+    }
+  }
+
+  const hasRevenueRecovery = revenueRecoveryLow > 0;
+
+  let costReductionLow = 0;
+  let costReductionHigh = 0;
+
+  const afterHoursWithout = state.timeEfficiency.workOutsideWithout;
+  const afterHoursWith = state.timeEfficiency.workOutsideWith;
+  const afterHoursDelta = Math.max(0, afterHoursWithout - afterHoursWith);
+
+  let hasAfterHours = false;
+  let afterHoursAnnual = 0;
+  if (afterHoursDelta > 0 && providers > 0) {
+    hasAfterHours = true;
+    afterHoursAnnual = afterHoursDelta * 5 * providers * assumptions.otPremiumRate * 52;
+    costReductionLow += afterHoursAnnual * attrLow;
+    costReductionHigh += afterHoursAnnual * attrHigh;
+  }
+
+  let hasRetentionSignal = false;
+  let burnoutDelta = 0;
+  let likelihoodDelta = 0;
+  let retentionLow = 0;
+  let retentionHigh = 0;
+
+  const mv = state.metricValues || {};
+  const burnoutKeys = Object.keys(mv).filter(k => k.startsWith('burnout'));
+  const likelihoodKeys = Object.keys(mv).filter(k => k.startsWith('likelihood'));
+
+  for (const k of burnoutKeys) {
+    const e = mv[k];
+    if (e && e.before != null && e.after != null && e.before > e.after) {
+      burnoutDelta = Math.max(burnoutDelta, e.before - e.after);
+    }
+  }
+  for (const k of likelihoodKeys) {
+    const e = mv[k];
+    if (e && e.before != null && e.after != null && e.after > e.before) {
+      likelihoodDelta = Math.max(likelihoodDelta, e.after - e.before);
+    }
+  }
+
+  if (state.customMetrics && state.customMetrics.length > 0) {
+    for (const cm of state.customMetrics) {
+      if (cm.section === 'workforce' && cm.before > 0 && cm.after > 0) {
+        if (cm.label.toLowerCase().includes('burnout') && cm.before > cm.after) {
+          burnoutDelta = Math.max(burnoutDelta, cm.before - cm.after);
+        }
+        if (cm.label.toLowerCase().includes('stay') && cm.after > cm.before) {
+          likelihoodDelta = Math.max(likelihoodDelta, cm.after - cm.before);
+        }
+      }
+    }
+  }
+
+  if (burnoutDelta > 0 || likelihoodDelta > 0) {
+    hasRetentionSignal = true;
+    const mdReplacementLow = 50_000;
+    const mdReplacementHigh = 150_000;
+    retentionLow = 1 * mdReplacementLow * attrLow;
+    retentionHigh = 3 * mdReplacementHigh * attrHigh;
+    costReductionLow += retentionLow;
+    costReductionHigh += retentionHigh;
+  }
+
+  const hasCostReduction = hasAfterHours || hasRetentionSignal;
+
+  const totalLow = billingCaptureLow + revenueRecoveryLow + costReductionLow;
+  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + costReductionHigh;
+  const hasAnyFinancial = totalLow > 0;
+
+  return {
+    setting,
+    isED,
+    isInpatient,
+    providers,
+    adoptedEncounters,
+    totalEncounters,
+    utilizationRate,
+    wrvuDelta,
+    emDelta,
+    cmiDelta,
+    hasBillingCapture,
+    billingCaptureLow,
+    billingCaptureHigh,
+    billingDetails,
+    hasRevenueRecovery,
+    revenueRecoveryLow,
+    revenueRecoveryHigh,
+    recoveryDetails,
+    hasCostReduction,
+    costReductionLow,
+    costReductionHigh,
+    hasAfterHours,
+    afterHoursDelta,
+    afterHoursAnnual,
+    hasRetentionSignal,
+    burnoutDelta,
+    likelihoodDelta,
+    retentionLow,
+    retentionHigh,
+    totalLow,
+    totalHigh,
+    hasAnyFinancial,
+    attrLow,
+    attrHigh,
+  };
 }
 
 interface MeasureAllocateProps {
@@ -103,266 +273,408 @@ export default function MeasureAllocate({
   onBack,
   onHome,
 }: MeasureAllocateProps) {
-  const confirmed = useMemo(() => calculateConfirmedValue(state), [state]);
-  const context = useMemo(() => deriveEngagementContext(state), [state]);
-  const domainStatus = useMemo(() => computeDomainStatus(state), [state]);
-  const narrative = useMemo(() => generateNarrative('value', state), [state]);
+  const [assumptions, setAssumptions] = useState<Assumptions>({
+    ...DEFAULT_ASSUMPTIONS,
+    conversionFactor: state.calibration.conversionFactor || 33,
+    otPremiumRate: state.calibration.otHourlyRate || 75,
+  });
+  const [sensitivityOpen, setSensitivityOpen] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const fin = useMemo(() => computeFinancials(state, assumptions), [state, assumptions]);
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
+  const orgName = state.deployment.organizationName || "Your Organization";
+  const settingLabel = fin.setting === 'ed' ? 'Emergency Department' : fin.setting === 'inpatient' ? 'Inpatient' : fin.setting === 'nursing' ? 'Nursing' : 'Outpatient';
 
-  const careSetting = state.careSetting || "outpatient";
-  const isInpatient = careSetting === "inpatient";
-  const isED = careSetting === "ed";
-  const isNursing = careSetting === "nursing";
-  const providerLabel = isNursing ? "nurses" : "providers";
-  const d = confirmed.domains;
+  const heroLow = useCountUp(Math.round(fin.totalLow), 1200, 300);
+  const heroHigh = useCountUp(Math.round(fin.totalHigh), 1200, 500);
 
-  const attributionDelta = confirmed.high - confirmed.low;
-  const perPoint = attributionDelta / 25;
-  const impactLow = confirmed.high;
-  const impactHigh = confirmed.high + perPoint * 15;
-
-  const heroValue = formatSmartRange(Math.round(impactLow), Math.round(impactHigh));
-
-  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
-  const timeSavedPerNote = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.encounterCoverageRate / 100));
-
-  const workforceScaleLow = 75 / 50;
-  const workforceScaleHigh = 90 / 50;
-
-  const domainCards: DomainCardData[] = useMemo(() => {
-    const cards: DomainCardData[] = [];
-
-    const wfActive = domainStatus.workforce !== 'no-data' && d.workforceValue > 0;
-    cards.push({
-      name: 'Workforce',
-      icon: Clock,
-      valueLow: wfActive ? Math.round(d.workforceValue * workforceScaleLow) : 0,
-      valueHigh: wfActive ? Math.round(d.workforceValue * workforceScaleHigh) : 0,
-      detail: wfActive
-        ? `${formatNumber(Math.round(d.efficiencyHours))} hours reclaimed across ${state.deployment.providers} ${providerLabel}`
-        : '',
-      active: wfActive,
-      inactiveNote: 'Time efficiency data not yet entered',
+  const toggleRow = (key: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
     });
+  };
 
-    if (!isNursing) {
-      const revActive = domainStatus.revenue !== 'no-data' && (d.revenueValueLow > 0 || d.revenueValueHigh > 0);
-      const revLow = d.revenueValueLow * (75 / 50);
-      const revHigh = d.revenueValueHigh * (90 / 75);
-      cards.push({
-        name: 'Revenue',
-        icon: DollarSign,
-        valueLow: revActive ? Math.round(revLow) : 0,
-        valueHigh: revActive ? Math.round(revHigh) : 0,
-        detail: revActive
-          ? isInpatient
-            ? 'CMI improvement and denial reduction impact'
-            : wrvuDelta > 0 ? `+${wrvuDelta.toFixed(2)} wRVU lift per encounter` : 'Revenue capture improvement'
-          : '',
-        active: revActive,
-        inactiveNote: 'Revenue metrics not yet entered',
-      });
-    }
-
-    const capLabel = isInpatient ? 'Patient Flow' : isED ? 'Throughput' : 'Capacity';
-    const capActive = domainStatus.capacity !== 'no-data' && d.capacityValue > 0;
-    cards.push({
-      name: capLabel,
-      icon: TrendingUp,
-      valueLow: capActive ? Math.round(d.capacityValue * workforceScaleLow) : 0,
-      valueHigh: capActive ? Math.round(d.capacityValue * workforceScaleHigh) : 0,
-      detail: capActive
-        ? isED ? 'Additional patients seen from throughput gains' : 'Additional visits from reclaimed time'
-        : '',
-      active: capActive,
-      inactiveNote: months < 6 ? 'Signal expected at month 6' : 'Capacity data not yet entered',
-    });
-
-    const qualActive = domainStatus.quality !== 'no-data' && (d.qualityValueLow > 0 || d.qualityValueHigh > 0 || d.qualityHoursPerWeek > 0);
-    cards.push({
-      name: 'Quality',
-      icon: Heart,
-      valueLow: qualActive ? Math.round(d.qualityValueLow * workforceScaleLow) : 0,
-      valueHigh: qualActive ? Math.round(d.qualityValueHigh * workforceScaleHigh) : 0,
-      detail: qualActive
-        ? d.qualityHoursPerWeek > 0
-          ? `${d.qualityHoursPerWeek.toFixed(1)} hrs/provider/wk returned to wellbeing`
-          : isInpatient ? 'CMI-driven quality improvement' : 'Documentation quality gains'
-        : '',
-      active: qualActive,
-      inactiveNote: 'Quality metrics not yet entered',
-    });
-
-    return cards;
-  }, [d, domainStatus, state.deployment.providers, providerLabel, isInpatient, isED, isNursing, wrvuDelta, months, workforceScaleLow, workforceScaleHigh]);
-
-  const activeDomains = domainCards.filter(dc => dc.active);
-  const inactiveDomains = domainCards.filter(dc => !dc.active);
-  const encounterLabel = isInpatient ? "discharges" : isNursing ? "shifts" : "encounters";
+  const updateAssumption = (key: keyof Assumptions, value: number) => {
+    setAssumptions(prev => ({ ...prev, [key]: value }));
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <UnifiedHeader
         pathType="measure"
         currentStep={4}
         totalSteps={5}
-        stepName="Your Estimated Impact"
+        stepName="Financial Impact"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <EngagementContextBar context={context} dataSource={state.dataSource} organizationName={state.deployment.organizationName} deployment={state.deployment} />
-
-        <NarrativePanel narrative={narrative} />
-
         <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
+          className="mb-2"
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-            Your Estimated Impact
-          </h1>
-          <p className="text-base text-[#888888]">
-            Based on your data, here{"'"}s what Abridge is delivering across your organization.
+          <p className="text-xs text-[#999999] uppercase tracking-widest font-medium">
+            {orgName} · {settingLabel} · {months} month{months !== 1 ? 's' : ''} with Abridge
           </p>
         </motion.div>
 
-        <motion.div
-          className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-8 text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          data-testid="section-hero-value"
-        >
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <p className="text-[12px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Estimated Annual Value</p>
-            <DataSourceBadge source={state.dataSource} />
-          </div>
-          <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
-            {heroValue}
-          </p>
-          <p className="text-sm text-[#888888] mb-1">
-            Across {formatNumber(state.deployment.mruProviders !== undefined ? state.deployment.mruProviders : state.deployment.providers)} active {providerLabel} covering {formatNumber(state.deployment.abridgeEncounters > 0 ? state.deployment.abridgeEncounters : adoptedEncounters)} of {formatNumber(state.deployment.totalEncounters)} encounters
-          </p>
-          <p className="text-xs text-[#AAAAAA]">
-            75{"\u2013"}90% of observed improvement attributed to Abridge
-          </p>
-        </motion.div>
-
-        <motion.div
+        <motion.h1
+          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="mb-8"
+          transition={{ delay: 0.05 }}
+          data-testid="text-page-title"
         >
-          <h2 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-4">Value by Domain</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeDomains.map((dc, i) => (
-              <DomainBreakdownCard key={dc.name} domain={dc} delay={0.2 + i * 0.07} />
-            ))}
-          </div>
-          {inactiveDomains.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {inactiveDomains.map((dc, i) => (
-                <DomainBreakdownCard key={dc.name} domain={dc} delay={0.35 + i * 0.07} />
-              ))}
-            </div>
-          )}
-        </motion.div>
+          What Could This Mean Financially
+        </motion.h1>
 
-        {(timeSavedPerNote > 0 || wrvuDelta > 0) && (
+        {fin.hasAnyFinancial ? (
           <motion.div
-            className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 mb-8"
-            initial={{ opacity: 0, y: 16 }}
+            className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-8 text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            data-testid="section-formula"
+            transition={{ delay: 0.1 }}
+            data-testid="section-hero-value"
           >
-            <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#1A1A1A] mb-4">Show Your Work</h3>
-
-            {timeSavedPerNote > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-3.5 h-3.5 text-[#EA2C00]" />
-                  <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Time Efficiency</span>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E8E2DA]">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-bold text-[#1A1A1A]">{timeSavedPerNote} min</p>
-                      <p className="text-[10px] text-[#999999] uppercase">saved per note</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(adoptedEncounters)}</p>
-                      <p className="text-[10px] text-[#999999] uppercase">adopted {encounterLabel}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-[#EA2C00]">{formatNumber(Math.round(d.totalHoursSaved))}</p>
-                      <p className="text-[10px] text-[#999999] uppercase">hours reclaimed</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {wrvuDelta > 0 && !isNursing && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-3.5 h-3.5 text-[#EA2C00]" />
-                  <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Documentation Quality</span>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E8E2DA]">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-bold text-[#1A1A1A]">+{wrvuDelta.toFixed(2)}</p>
-                      <p className="text-[10px] text-[#999999] uppercase">wRVU delta</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-[#1A1A1A]">${state.calibration.conversionFactor}</p>
-                      <p className="text-[10px] text-[#999999] uppercase">conversion factor</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-[#EA2C00]">{formatSmartRange(Math.round(d.revenueValueHigh), Math.round(d.revenueValueHigh * (90 / 75)))}</p>
-                      <p className="text-[10px] text-[#999999] uppercase">revenue impact</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <p className="text-[10px] text-[#AAAAAA] mt-4 italic leading-relaxed">
-              Values reflect 75{"\u2013"}90% attribution to Abridge. Methodology: efficiency hours valued at opportunity cost, wRVU lift credited at observed capture rates.
+            <p className="text-4xl md:text-5xl font-bold text-[#1A1A1A] font-abridge mb-2" data-testid="text-hero-value">
+              {fmt(heroLow)} <span className="font-normal text-[#999999] text-2xl md:text-3xl">—</span> {fmt(heroHigh)}
+            </p>
+            <p className="text-sm text-[#666666] mb-1">confirmed annual value range</p>
+            <p className="text-xs text-[#999999]">
+              {formatNumber(fin.providers)} providers · attribution: {assumptions.attribution}%
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-12 text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            data-testid="section-empty-prompt"
+          >
+            <BarChart2 className="w-10 h-10 text-[#999999] mx-auto mb-4" />
+            <p className="text-[#999999] text-sm leading-relaxed max-w-md mx-auto">
+              Add wRVU, E/M, CMI, LWBS, or after-hours data on the previous page to see estimated financial impact.
             </p>
           </motion.div>
         )}
 
+        <div className="space-y-4 mb-8">
+          {fin.hasBillingCapture && (
+            <motion.div
+              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              data-testid="row-billing-capture"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Billing Capture</h3>
+                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Revenue</span>
+              </div>
+
+              {fin.billingDetails.map((d, i) => (
+                <div key={i} className="mb-3">
+                  <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>
+                  <p className="text-xs text-[#999999]">{d.detail}</p>
+                  {fin.wrvuDelta > 0 && i === 0 && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-[#999999]">Conversion factor:</span>
+                      <span className="text-xs font-medium text-[#1A1A1A]">${assumptions.conversionFactor}/wRVU</span>
+                      <span className="text-xs text-[#999999]">·</span>
+                      <span className="text-xs text-[#999999]">Realization:</span>
+                      <span className="text-xs font-medium text-[#1A1A1A]">{assumptions.realization}%</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                <p className="text-sm text-[#666666]">Estimated impact:</p>
+                <p className="text-xl font-bold text-[#EA2C00]" data-testid="text-billing-value">
+                  {fmtRange(Math.round(fin.billingCaptureLow), Math.round(fin.billingCaptureHigh))} / year
+                </p>
+              </div>
+
+              <button
+                className="mt-3 text-xs text-[#999999] hover:text-[#666666] flex items-center gap-1 transition-colors"
+                onClick={() => toggleRow('billing')}
+                data-testid="button-billing-expand"
+              >
+                How we calculated this
+                <ChevronDown className={`w-3 h-3 transition-transform ${expandedRows.has('billing') ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {expandedRows.has('billing') && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 p-3 bg-[#FAFAFA] rounded-lg border border-[#E5E5E5]">
+                      {fin.billingDetails.map((d, i) => (
+                        <p key={i} className="text-xs text-[#666666] font-mono leading-relaxed">{d.formula}</p>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {fin.hasRevenueRecovery && (
+            <motion.div
+              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              data-testid="row-revenue-recovery"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Revenue Recovery</h3>
+                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Throughput</span>
+              </div>
+
+              {fin.recoveryDetails.map((d, i) => (
+                <div key={i} className="mb-3">
+                  <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>
+                  <p className="text-xs text-[#999999]">{d.detail}</p>
+                </div>
+              ))}
+
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                <p className="text-sm text-[#666666]">Estimated impact:</p>
+                <p className="text-xl font-bold text-[#EA2C00]" data-testid="text-recovery-value">
+                  {fmtRange(Math.round(fin.revenueRecoveryLow), Math.round(fin.revenueRecoveryHigh))} / year
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {fin.hasCostReduction && (
+            <motion.div
+              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              data-testid="row-cost-reduction"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Actual Cost Reduction</h3>
+                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Workforce</span>
+              </div>
+
+              {fin.hasAfterHours && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">After-hours payroll</p>
+                  <p className="text-sm text-[#1A1A1A]">
+                    After-hours eliminated: {fin.afterHoursDelta.toFixed(1)} hrs/day per provider
+                  </p>
+                  <p className="text-xs text-[#999999]">
+                    OT premium rate: ${assumptions.otPremiumRate}/hr · Providers on Abridge: {fin.providers}
+                  </p>
+                  <p className="text-sm font-bold text-[#1A1A1A] mt-2">
+                    Annual OT cost avoided: <span className="text-[#EA2C00]">{fmtRange(
+                      Math.round(fin.afterHoursAnnual * fin.attrLow),
+                      Math.round(fin.afterHoursAnnual * fin.attrHigh)
+                    )} / year</span>
+                  </p>
+                  <p className="text-[10px] text-[#999999] mt-1 font-mono">
+                    {fin.afterHoursDelta.toFixed(1)} hrs/day × 5 days × {fin.providers} providers × ${assumptions.otPremiumRate}/hr × 52 weeks
+                  </p>
+                </div>
+              )}
+
+              {fin.hasRetentionSignal && (
+                <div className={fin.hasAfterHours ? "pt-4 border-t border-[#E5E5E5]" : ""}>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">Retention signal</p>
+                  <div className="flex items-center gap-4 mb-2">
+                    {fin.burnoutDelta > 0 && (
+                      <p className="text-sm text-[#1A1A1A]">Burnout signal: <span className="font-bold">−{Math.round(fin.burnoutDelta)} pts</span></p>
+                    )}
+                    {fin.likelihoodDelta > 0 && (
+                      <p className="text-sm text-[#1A1A1A]">Likelihood to stay: <span className="font-bold">+{Math.round(fin.likelihoodDelta)}%</span></p>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-[#1A1A1A]">
+                    Estimated retention value (MGMA benchmarks): <span className="text-[#EA2C00]">{fmtRange(Math.round(fin.retentionLow), Math.round(fin.retentionHigh))} / year</span>
+                  </p>
+                  <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
+                    Low = 1 turnover avoided × $50K/MD replacement cost × 50% attribution<br />
+                    High = 3 turnovers avoided × $150K/MD replacement cost × 75% attribution
+                  </p>
+                  <p className="text-[10px] text-[#AAAAAA] mt-1.5 italic">
+                    Not a direct calculation — a signal-based range using published MGMA benchmarks ($50K–$150K per physician)
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                <p className="text-sm text-[#666666]">Combined cost reduction:</p>
+                <p className="text-xl font-bold text-[#EA2C00]" data-testid="text-cost-value">
+                  {fmtRange(Math.round(fin.costReductionLow), Math.round(fin.costReductionHigh))} / year
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
         <motion.div
-          className="bg-[#FAFAFA] rounded-xl border border-[#F0F0F0] p-5 mb-8 max-w-lg mx-auto"
+          className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] mb-8"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          data-testid="section-sensitivity"
+        >
+          <button
+            className="w-full flex items-center justify-between p-5 text-left"
+            onClick={() => setSensitivityOpen(!sensitivityOpen)}
+            data-testid="button-sensitivity-toggle"
+          >
+            <span className="text-xs font-bold uppercase tracking-widest text-[#666666]">Adjust assumptions</span>
+            <ChevronDown className={`w-4 h-4 text-[#999999] transition-transform ${sensitivityOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {sensitivityOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-5 space-y-5">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-[#666666]">Attribution confidence</label>
+                      <span className="text-sm font-bold text-[#1A1A1A]">{assumptions.attribution}%</span>
+                    </div>
+                    <Slider
+                      value={[assumptions.attribution]}
+                      onValueChange={([v]) => updateAssumption('attribution', v)}
+                      min={50}
+                      max={75}
+                      step={1}
+                      className="w-full"
+                      data-testid="slider-attribution"
+                    />
+                    <div className="flex justify-between text-[10px] text-[#CCCCCC] mt-1">
+                      <span>50%</span>
+                      <span>75%</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-[#666666]">Realization rate</label>
+                      <span className="text-sm font-bold text-[#1A1A1A]">{assumptions.realization}%</span>
+                    </div>
+                    <Slider
+                      value={[assumptions.realization]}
+                      onValueChange={([v]) => updateAssumption('realization', v)}
+                      min={50}
+                      max={95}
+                      step={1}
+                      className="w-full"
+                      data-testid="slider-realization"
+                    />
+                    <div className="flex justify-between text-[10px] text-[#CCCCCC] mt-1">
+                      <span>50%</span>
+                      <span>95%</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-[#666666]">Conversion factor ($/wRVU)</label>
+                    </div>
+                    <Input
+                      type="number"
+                      value={assumptions.conversionFactor}
+                      onChange={e => updateAssumption('conversionFactor', Number(e.target.value) || 0)}
+                      className="h-9 bg-white border-[#E5E5E5] text-sm"
+                      data-testid="input-conversion-factor"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm text-[#666666]">OT premium rate ($/hr)</label>
+                    </div>
+                    <Input
+                      type="number"
+                      value={assumptions.otPremiumRate}
+                      onChange={e => updateAssumption('otPremiumRate', Number(e.target.value) || 0)}
+                      className="h-9 bg-white border-[#E5E5E5] text-sm"
+                      data-testid="input-ot-rate"
+                    />
+                  </div>
+
+                  {fin.isED && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm text-[#666666]">ED revenue per visit</label>
+                      </div>
+                      <Input
+                        type="number"
+                        value={assumptions.edRevenuePerVisit}
+                        onChange={e => updateAssumption('edRevenuePerVisit', Number(e.target.value) || 0)}
+                        className="h-9 bg-white border-[#E5E5E5] text-sm"
+                        data-testid="input-ed-revenue"
+                      />
+                    </div>
+                  )}
+
+                  {fin.isInpatient && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm text-[#666666]">DRG base rate ($)</label>
+                      </div>
+                      <Input
+                        type="number"
+                        value={assumptions.drgBaseRate}
+                        onChange={e => updateAssumption('drgBaseRate', Number(e.target.value) || 0)}
+                        className="h-9 bg-white border-[#E5E5E5] text-sm"
+                        data-testid="input-drg-rate"
+                      />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        <motion.div
+          className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-5 mb-8 max-w-lg mx-auto"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
           data-testid="section-not-counted"
         >
-          <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-[#999999] mb-3">Also Real. Not Quantified.</h3>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-3">Also Real. Not Quantified.</h3>
           <div className="space-y-2">
             {[
-              'Physician satisfaction and retention',
-              'Patient experience correlation',
-              'Recruitment differentiation',
+              'Provider satisfaction and intent to stay',
+              'Recruitment advantage ("physicians ask about Abridge")',
+              'Reduced administrative backlog and prior auth delays',
+              'Audit readiness and documentation defensibility',
             ].map((item) => (
               <p key={item} className="text-sm text-[#888888] leading-relaxed">{"\u2022"} {item}</p>
             ))}
           </div>
-          <p className="text-[10px] text-[#AAAAAA] mt-3 italic">
-            Dollar signs only where we can trace directly to documented encounters.
-          </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="flex justify-center relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

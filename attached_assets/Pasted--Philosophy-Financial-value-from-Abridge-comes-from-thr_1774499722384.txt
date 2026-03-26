@@ -1,0 +1,248 @@
+ Philosophy
+
+  Financial value from Abridge comes from three defensible categories only:
+
+  1. Billing Capture — metrics that directly affect what gets billed
+  - wRVU per encounter lift → wRVU delta × adopted encounters × conversion factor × realization rate
+  - E/M level improvement → E/M delta × encounters × average E/M level dollar value
+  - CMI improvement (inpatient) → CMI delta × discharges × DRG base rate
+
+  2. Revenue Recovery — metrics that recover revenue that would have been lost
+  - LWBS rate reduction (ED) → LWBS delta (%) × total ED visits × average ED visit revenue
+  - Denial rate reduction → denial delta (per 100) / 100 × encounters × average denial cost per case
+
+  3. Actual Cost Reduction — real payroll and turnover savings, NOT theoretical capacity
+  - After-hours / work outside hours reduction → hours eliminated per week × OT premium rate × FTE count × 52 weeks
+    - Use OT premium (1.5× base), not full hourly rate. Default OT premium: $75/hr. User-adjustable.
+    - This is payroll cost avoided, not "time freed up"
+  - Burnout / Likelihood to Stay signal → if these metrics are entered and improved, show turnover avoidance range using published MGMA benchmarks: $50K–$150K per physician, $30K–$70K per APP/NP
+
+  What NOT to include:
+  - time saved × hourly rate = value — never
+  - Capacity expansion revenue from freed time — this belongs on Page 5 (opportunity), not Page 4
+  - Any metric that isn't in one of the three categories above
+
+  ---
+  Page Structure
+
+  WHAT COULD THIS MEAN FINANCIALLY
+  [org] · [setting] · [N months with Abridge]
+
+  ── HERO (only render if at least one financial metric is calculable) ──
+    $X — $Y
+    confirmed annual value range
+    [N providers] · [attribution: X%]
+
+  ── FINANCIAL IMPACT ROWS (one row per category, only if data present) ──
+
+  ── SENSITIVITY PANEL (collapsed by default) ──
+
+  ── ALSO REAL. NOT QUANTIFIED. ──
+
+  ---
+  Hero Rules
+
+  - Never show $0. If no financial metrics are entered, hide the hero entirely. Show a soft prompt: "Add wRVU, E/M, CMI, LWBS, or after-hours data on the previous page to see estimated financial impact."
+  - If only Billing Capture data exists → show billing capture range as hero
+  - If only Cost Reduction data exists → show cost reduction range as hero
+  - If multiple categories have data → sum all categories, show combined range
+  - Low end uses 50% attribution / 70% realization. High end uses 75% attribution / 90% realization.
+  - Animate from $0 to final value using the useCountUp hook (requestAnimationFrame, easeOutCubic, 1.2s, 300ms delay) — create client/src/hooks/useCountUp.ts if it doesn't exist
+
+  ---
+  Financial Impact Rows
+
+  Each row only renders if that category has calculable data. Use a vertical stacked layout — no grid.
+
+  Row: Billing Capture
+
+  Renders if wRVU delta > 0 OR E/M delta > 0 OR CMI delta > 0 (inpatient)
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ BILLING CAPTURE                              ● Revenue   │
+  │                                                         │
+  │ wRVU lift: +0.3 per encounter                          │
+  │ Adopted encounters: 4,200/yr                           │
+  │ Conversion factor: $33/wRVU [editable]                 │
+  │ Realization rate: 80% [slider 50–90%]                  │
+  │                                                         │
+  │ Estimated impact:  $41K — $62K / year                  │
+  │                                                         │
+  │ [How we calculated this ↓]                             │
+  └─────────────────────────────────────────────────────────┘
+
+  Formula shown on expand:
+  +0.3 wRVU × 4,200 encounters × $33 × 80% attribution = $41,580
+
+  Row: Revenue Recovery (ED only)
+
+  Renders if lwbsRate delta > 0
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ REVENUE RECOVERY                           ● Throughput  │
+  │                                                         │
+  │ LWBS reduction: 2.1% → 1.4% (−0.7 pts)                │
+  │ Monthly ED visits: 3,200                               │
+  │ Revenue per ED visit: $480 [editable]                  │
+  │                                                         │
+  │ Estimated impact:  $128K — $160K / year                │
+  └─────────────────────────────────────────────────────────┘
+
+  Row: Actual Cost Reduction
+
+  Renders if afterHours delta > 0 OR burnout/likelihood-to-stay metrics are entered
+
+  Two sub-rows (only render those with data):
+
+  After-hours payroll:
+  After-hours eliminated: 1.2 hrs/day per provider
+  OT premium rate: $75/hr [editable]
+  Providers on Abridge: 22
+  Annual OT cost avoided:  $22K — $29K / year
+  Formula: 1.2 hrs/day × 5 days × 22 providers × $75/hr × 52 weeks
+
+  Retention signal (if burnout or likelihoodToStay are entered):
+  Burnout signal: −18 pts  |  Likelihood to stay: +22%
+  Estimated retention value (MGMA benchmarks):  $180K — $440K / year
+  Low = 1 turnover avoided × $50K/MD replacement cost × Abridge attribution 50%
+  High = 3 turnovers avoided × $150K/MD replacement cost × 75% attribution
+  [methodology note — not a direct calculation, a signal-based range]
+
+  ---
+  Sensitivity Panel
+
+  Collapsible. Collapsed by default. Header: "Adjust assumptions" + ChevronDown.
+
+  Inside:
+
+  ┌────────────────────────────┬─────────┬─────────────────────────┐
+  │          Control           │ Default │          Range          │
+  ├────────────────────────────┼─────────┼─────────────────────────┤
+  │ Attribution confidence     │ 62%     │ 50%–75% slider          │
+  ├────────────────────────────┼─────────┼─────────────────────────┤
+  │ Realization rate           │ 80%     │ 50%–95% slider          │
+  ├────────────────────────────┼─────────┼─────────────────────────┤
+  │ Conversion factor ($/wRVU) │ $33     │ numeric input           │
+  ├────────────────────────────┼─────────┼─────────────────────────┤
+  │ OT premium rate ($/hr)     │ $75     │ numeric input           │
+  ├────────────────────────────┼─────────┼─────────────────────────┤
+  │ ED revenue per visit       │ $480    │ numeric input (ED only) │
+  └────────────────────────────┴─────────┴─────────────────────────┘
+
+  All sliders recalculate hero and all row values instantly (no submit button). Use React state.
+
+  ---
+  "Also Real. Not Quantified." Section
+
+  Keep this section but position it below all calculable rows. Use a slightly muted style — not a featured card. List items with a small dot and plain language:
+
+  - Provider satisfaction and intent to stay
+  - Recruitment advantage ("physicians ask about Abridge")
+  - Reduced administrative backlog and prior auth delays
+  - Audit readiness and documentation defensibility
+
+  ---
+  Style
+
+  - Page background: bg-[#FAFAFA]
+  - Section cards: bg-[#F5F0EB] (beige) with border border-[#E5E5E5]
+  - No white cards. No colored domain dots.
+  - Domain tag pills: small, filled bg-[#EA2C00]/10 text-[#EA2C00] — only orange, never green/blue/teal
+  - Hero dollar amount: font-abridge text-4xl md:text-5xl font-bold text-[#1A1A1A]
+  - Hero range separator – in lighter weight
+  - Row category headers: text-xs font-bold uppercase tracking-widest text-[#666666]
+  - All financial numbers: font-bold text-[#1A1A1A], estimated ranges get text-[#EA2C00]
+  - Entry prompt (when no data): centered, soft gray, text-[#999999], icon BarChart2 from lucide
+
+  ---
+  Data Wiring
+
+  Read data from state (the MeasureState prop). Key fields:
+
+  // Billing Capture
+  const wrvuDelta = state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout;
+  const emDelta = state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout;
+  const adoptedEncounters = state.deployment.totalEncounters * (state.deployment.utilizationRate / 100);
+  const annualFactor = 12 / Math.max(getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge), 1);
+
+  // Cost Reduction — after hours
+  const afterHoursWithout = state.timeEfficiency.workOutsideWithout;  // hrs/day
+  const afterHoursWith = state.timeEfficiency.workOutsideWith;
+  const afterHoursDelta = afterHoursWithout - afterHoursWith;  // positive = reduction
+
+  // Revenue Recovery — ED
+  const settingData = state.settingData?.[state.careSetting || 'outpatient'] || {};
+  const lwbsBefore = settingData.lwbsRate_before ?? 0;
+  const lwbsAfter = settingData.lwbsRate_after ?? 0;
+  const lwbsDelta = lwbsBefore - lwbsAfter;  // positive = improvement
+
+  // CMI — inpatient
+  const cmiBefore = settingData.cmi_before ?? 0;
+  const cmiAfter = settingData.cmi_after ?? 0;
+  const cmiDelta = cmiAfter - cmiBefore;
+
+  For burnout/likelihood-to-stay signal: check state.customMetrics for entries with section === 'workforce' that have a before and after value. If any exist with a positive improvement direction, show the
+  retention signal sub-row.
+
+  ---
+  Component Interface
+
+  The component receives the same props as the current MeasureScenarios.tsx:
+
+  interface MeasureScenariosProps {
+    state: MeasureState;
+    updateState: (updates: Partial<MeasureState>) => void;
+    onNext: () => void;
+    onBack: () => void;
+    onHome: () => void;
+  }
+
+  Keep the same export name MeasureScenarios so MeasureFlow.tsx doesn't need changes.
+
+  ---
+  useCountUp Hook
+
+  If client/src/hooks/useCountUp.ts doesn't exist, create it:
+
+  import { useState, useEffect, useRef } from 'react';
+
+  function easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  export function useCountUp(target: number, duration = 1200, delay = 300): number {
+    const [current, setCurrent] = useState(0);
+    const rafRef = useRef<number>(0);
+    const startRef = useRef<number | null>(null);
+
+    useEffect(() => {
+      if (target === 0) { setCurrent(0); return; }
+      const timeout = setTimeout(() => {
+        const animate = (timestamp: number) => {
+          if (!startRef.current) startRef.current = timestamp;
+          const elapsed = timestamp - startRef.current;
+          const progress = Math.min(elapsed / duration, 1);
+          setCurrent(Math.round(target * easeOutCubic(progress)));
+          if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+        };
+        rafRef.current = requestAnimationFrame(animate);
+      }, delay);
+      return () => { clearTimeout(timeout); cancelAnimationFrame(rafRef.current); startRef.current = null; };
+    }, [target, duration, delay]);
+
+    return current;
+  }
+
+  ---
+  Verification
+
+  1. Enter only wRVU before/after → billing capture row appears, hero counts up to non-zero range, no other rows render
+  2. Enter only after-hours before/after → cost reduction row appears, hero shows OT savings range
+  3. Enter both → hero combines both ranges, two rows visible
+  4. Enter nothing → hero hidden entirely, soft prompt visible
+  5. Move realization slider → all numbers update instantly, no page jump
+  6. ED setting → revenue recovery row visible when LWBS entered, "ED revenue per visit" field appears in sensitivity panel
+  7. Inpatient setting → CMI row shows inside billing capture, "DRG base rate" field in sensitivity
+  8. "Also Real. Not Quantified." renders below calculated rows regardless of data state
+  9. No white cards anywhere — all section backgrounds are bg-[#F5F0EB]
+  10. No time × hourly rate calculation anywhere in the file
