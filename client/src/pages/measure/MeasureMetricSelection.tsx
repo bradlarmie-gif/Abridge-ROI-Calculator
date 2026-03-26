@@ -527,13 +527,13 @@ export default function MeasureMetricSelection({
                   data-testid={`domain-toggle-${group.domainKey}`}
                 >
                   <div className="flex-1">
-                    <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-gray-600">{group.label}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>
+                    <h3 className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#1A1A1A]">{group.label}</h3>
+                    <p className="text-sm text-[#666666] mt-1 leading-snug">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>
                   </div>
                   {count > 0 && (
                     <span className="text-[10px] font-medium text-[#EA2C00]">{count} active</span>
                   )}
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[#999999] flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -550,7 +550,7 @@ export default function MeasureMetricSelection({
                           const isThirdChapter = chapter.phase === 3;
                           return (
                             <div key={chapter.phase} className={`${ci > 0 ? 'mt-4' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
-                              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-[1.5px] mb-2">
+                              <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-2">
                                 {chapter.label}
                               </p>
                               <div className="space-y-1">

@@ -1,0 +1,19 @@
+In client/src/pages/measure/MeasureMetricSelection.tsx, make two small text style changes:
+                                                                                                                                                                                                               
+  Change 1 — domain section header (around line 513). Replace:                                                                                                                                                 
+  <h3 className="text-xs font-bold uppercase tracking-[1.5px] text-gray-600">{group.label}</h3>                                                                                                                
+  <p className="text-xs text-gray-400 mt-0.5">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>                                                                                                                    
+  With:                                                                                                                                                                                                      
+  <h3 className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#1A1A1A]">{group.label}</h3>                                                                                                           
+  <p className="text-sm text-[#666666] mt-1 leading-snug">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>                                                                                                        
+  Also change the ChevronDown from text-gray-400 to text-[#999999] and add flex-shrink-0.                                                                   
+                                                                                                                                                                                                               
+  Change 2 — chapter sub-labels inside expanded sections (the "DOCUMENTATION IMPACT", "EFFICIENCY GAINS" labels). Replace:                                                                                     
+  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-[1.5px] mb-2">                                                                                                                      
+  With:                                                                                                                                                                                                        
+  <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-2">                                                                                                                     
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  What this does: the domain name (QUALITY, FOUNDATIONAL) goes from nearly invisible to clearly readable in near-black. The question below it steps up from text-gray-400 (very washed out) to text-[#666666]
+  at text-sm — now a proper subtitle. Chapter sub-labels get a slight size and color bump too. The hierarchy becomes: domain name → question → chapter group → individual metrics. Each level is now distinctly
+   readable.                                      
