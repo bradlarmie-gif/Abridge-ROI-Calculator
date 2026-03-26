@@ -593,10 +593,7 @@ export default function MeasureMetricSelection({
                         {group.chapters.map((chapter, ci) => {
                           const isThirdChapter = chapter.phase === 3;
                           return (
-                            <div key={chapter.phase} className={`${ci > 0 ? 'mt-4' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
-                              <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1.5px] mb-2">
-                                {chapter.label}
-                              </p>
+                            <div key={chapter.phase} className={`${ci > 0 ? 'mt-3' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
                               <div className="space-y-1">
                                 {chapter.metrics.map(rm => {
                                   const mActive = isMetricActive(rm.metric.id, rm);
