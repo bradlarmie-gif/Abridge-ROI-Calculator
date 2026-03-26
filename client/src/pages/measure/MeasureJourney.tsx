@@ -52,9 +52,10 @@ function interpolateTemplate(template: string, before: number, after: number): s
   result = result.replace(/\{\{?after\}?\}/gi, String(after));
   result = result.replace(/\{\{?delta\}?\}/gi, String(delta.toFixed(1)));
   result = result.replace(/\{\{?pctChange\}?\}/gi, `${pctChange}%`);
-  if (/\$[\d,]+/.test(result) || /dollar|revenue|cost|savings|income|reimbursement/i.test(result)) {
-    return '';
-  }
+  result = result.replace(/\{\{?\w+\}?\}/g, '');
+  result = result.replace(/\$[\d,.]+/g, '');
+  result = result.replace(/\s{2,}/g, ' ').trim();
+  if (!result || result.length < 5) return '';
   return result;
 }
 
