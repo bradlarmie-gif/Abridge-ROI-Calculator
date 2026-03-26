@@ -468,6 +468,50 @@ export default function MeasureMetricSelection({
     setExpandedDomains(new Set(['foundational', 'quality']));
   }, []);
 
+  useEffect(() => {
+    const updates: Record<string, any> = {};
+    let needsUpdate = false;
+
+    if (state.deployment.utilizationRate > 0) {
+      for (const s of activeSettings) {
+        const k = metricKey('utilization', s);
+        const existing = state.metricValues?.[k];
+        if (!existing || existing.after !== state.deployment.utilizationRate) {
+          updates[k] = { ...(existing || {}), before: 0, after: state.deployment.utilizationRate };
+          needsUpdate = true;
+        }
+      }
+    }
+
+    if (state.deployment.mruProviders > 0 && state.deployment.liveProviders > 0) {
+      const retentionPct = Math.round((state.deployment.mruProviders / state.deployment.liveProviders) * 100);
+      for (const s of activeSettings) {
+        const k = metricKey('user_retention', s);
+        const existing = state.metricValues?.[k];
+        if (!existing || existing.after !== retentionPct) {
+          updates[k] = { ...(existing || {}), before: 0, after: retentionPct };
+          needsUpdate = true;
+        }
+      }
+    }
+
+    if (needsUpdate) {
+      const newEnabled = { ...state.enabledMetrics };
+      for (const s of activeSettings) {
+        if (state.deployment.utilizationRate > 0) {
+          newEnabled[s] = { ...newEnabled[s], utilization: true };
+        }
+        if (state.deployment.mruProviders > 0 && state.deployment.liveProviders > 0) {
+          newEnabled[s] = { ...newEnabled[s], user_retention: true };
+        }
+      }
+      updateState({
+        metricValues: { ...state.metricValues, ...updates },
+        enabledMetrics: newEnabled,
+      });
+    }
+  }, [state.deployment.utilizationRate, state.deployment.mruProviders, state.deployment.liveProviders]);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA]" data-testid="page-metric-selection">
       <UnifiedHeader
