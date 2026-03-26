@@ -155,7 +155,7 @@ export default function ExploreCareQuality({
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1 max-w-[700px]">
+          <div className="flex-1 max-w-[800px]">
             <motion.div
               className="text-center mb-8"
               initial={{ opacity: 0, y: 20 }}
