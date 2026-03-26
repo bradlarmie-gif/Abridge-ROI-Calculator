@@ -1,0 +1,60 @@
+Replit prompt:
+
+  Update three files to include bundle compliance (CAUTI, CLABSI, Sepsis SEP-1, VAP) in the nursing PDF export.
+
+  FILE 1: client/src/pages/explore/ExploreModel.tsx
+
+  1. In the `nursingCareQualityPotential` useMemo (after the nursingHacEnabled block), add:
+
+      if (docQualityInputs.nursingCautiEnabled) {
+        const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
+        total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
+      }
+      if (docQualityInputs.nursingClabsiEnabled) {
+        const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
+        total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
+      }
+      if (docQualityInputs.nursingSepsisEnabled) {
+        const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
+        const improved = sepsisPerYear * (docQualityInputs.nursingSepsisComplianceImprovement / 100);
+        total += improved * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
+      }
+      if (docQualityInputs.nursingVapEnabled) {
+        const ventDays = patientDays * (docQualityInputs.nursingVapVentUtilization / 100);
+        total += (ventDays / 1000) * docQualityInputs.nursingVapRate * (docQualityInputs.nursingVapPreventionRate / 100) * docQualityInputs.nursingVapCost;
+      }
+
+  2. After the existing `nursingHacValue` useMemo, add four new useMemos:
+     - nursingCautiValue, nursingClabsiValue, nursingSepsisValue, nursingVapValue
+     (each checking isNursing + enabled, computing patientDays, device days, and value)
+
+  3. In handleAddToProforma (after nursingHacValue push), add:
+      if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" });
+      if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" });
+      if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" });
+      if (nursingVapValue > 0) drivers.push({ id: "nursingVap", name: "VAP Bundle Compliance", value: nursingVapValue, category: "documentation", onset: "immediate" });
+
+  4. In the PDF data assembly block (after hacReal/hacPenalty lines), add intermediate calculations:
+      const cautiCathDays, cautiPerYr, cautiPrevented
+      const clabsiClDays, clabsiPerYr, clabsiPrevented
+      const sepsisPerYr, sepsisImproved
+      const vapVentDays, vapPerYr, vapPrevented
+
+  5. In the pdfData object (after nursingHcahpsEnabled), add all 9 fields per driver:
+      nursingCautiEnabled, nursingCautiUtilizationRatio, nursingCautiDaysPerYear, nursingCautiRatePer1000, nursingCautiPerYear, nursingCautiPreventionRate, nursingCautiCostPer, nursingCautiPrevented,
+  nursingCautiValue
+      (same pattern for Clabsi, Sepsis, Vap)
+
+  FILE 2: client/src/components/explore/ExplorePDFExport.tsx
+
+  1. In ExplorePDFData interface (after nursingHcahpsEnabled), add all 36 new fields (9 per driver × 4 drivers).
+
+  2. In the nursing PDF render function, after the HAC card but before the HCAHPS row, add 4 new conditional cards rendering CAUTI, CLABSI, Sepsis SEP-1, and VAP with their values and narrative text.
+
+  3. In the `nursingHasCareQuality` check, add: || (data.nursingCautiEnabled && cautiVal > 0) || (data.nursingClabsiEnabled && clabsiVal > 0) || (data.nursingSepsisEnabled && sepsisVal > 0) ||
+  (data.nursingVapEnabled && vapVal > 0)
+
+  4. In the summary table (Care Quality section rows), add rows for CAUTI, CLABSI, Sepsis SEP-1, VAP (ICU) after the HAC Penalty row.
+
+  5. Declare: const cautiVal = safe(data.nursingCautiValue); const clabsiVal = safe(data.nursingClabsiValue); const sepsisVal = safe(data.nursingSepsisValue); const vapVal = safe(data.nursingVapValue); near
+  the top of the nursing PDF component.

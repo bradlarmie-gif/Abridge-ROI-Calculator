@@ -241,6 +241,23 @@ export default function ExploreModel({
       const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
       total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
     }
+    if (docQualityInputs.nursingCautiEnabled) {
+      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
+      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
+    }
+    if (docQualityInputs.nursingClabsiEnabled) {
+      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
+      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
+    }
+    if (docQualityInputs.nursingSepsisEnabled) {
+      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
+      const improved = sepsisPerYear * (docQualityInputs.nursingSepsisComplianceImprovement / 100);
+      total += improved * docQualityInputs.nursingSepsisLosReduction * docQualityInputs.nursingSepsisDailyCost * (docQualityInputs.nursingSepsisRealization / 100);
+    }
+    if (docQualityInputs.nursingVapEnabled) {
+      const ventDays = patientDays * (docQualityInputs.nursingVapVentUtilization / 100);
+      total += (ventDays / 1000) * docQualityInputs.nursingVapRate * (docQualityInputs.nursingVapPreventionRate / 100) * docQualityInputs.nursingVapCost;
+    }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
@@ -268,6 +285,35 @@ export default function ExploreModel({
     const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
     return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100));
   }, [isNursing, state.docQualityInputs]);
+
+  const nursingCautiValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingCautiEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const cathDays = patientDays * (state.docQualityInputs.nursingCautiUtilizationRatio / 100);
+    return Math.round((cathDays / 1000) * state.docQualityInputs.nursingCautiRate * (state.docQualityInputs.nursingCautiPreventionRate / 100) * state.docQualityInputs.nursingCautiCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const nursingClabsiValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingClabsiEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const clDays = patientDays * (state.docQualityInputs.nursingClabsiUtilizationRatio / 100);
+    return Math.round((clDays / 1000) * state.docQualityInputs.nursingClabsiRate * (state.docQualityInputs.nursingClabsiPreventionRate / 100) * state.docQualityInputs.nursingClabsiCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const nursingSepsisValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingSepsisEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const sepsisPerYear = (patientDays / 1000) * state.docQualityInputs.nursingSepsisRatePerThousand;
+    const improved = sepsisPerYear * (state.docQualityInputs.nursingSepsisComplianceImprovement / 100);
+    return Math.round(improved * state.docQualityInputs.nursingSepsisLosReduction * state.docQualityInputs.nursingSepsisDailyCost * (state.docQualityInputs.nursingSepsisRealization / 100));
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const nursingVapValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingVapEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const ventDays = patientDays * (state.docQualityInputs.nursingVapVentUtilization / 100);
+    return Math.round((ventDays / 1000) * state.docQualityInputs.nursingVapRate * (state.docQualityInputs.nursingVapPreventionRate / 100) * state.docQualityInputs.nursingVapCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
@@ -306,6 +352,10 @@ export default function ExploreModel({
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
     if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
+    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" as const });
+    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" as const });
+    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" as const });
+    if (nursingVapValue > 0) drivers.push({ id: "nursingVap", name: "VAP Bundle Compliance", value: nursingVapValue, category: "documentation", onset: "immediate" as const });
     for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
       if (item.amount > 0 && item.label) {
         drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", onset: "immediate" as const });
@@ -678,6 +728,10 @@ export default function ExploreModel({
           if (nursingHapiValue > 0) parts.push(`HAPI risk reduction: ${fmtK(nursingHapiValue)}`);
           if (nursingFallsValue > 0) parts.push(`Fall risk visibility gap: ${fmtK(nursingFallsValue)}`);
           if (nursingHacValue > 0) parts.push(`HAC penalty avoidance: ${fmtK(nursingHacValue)}`);
+          if (nursingCautiValue > 0) parts.push(`CAUTI bundle compliance: ${fmtK(nursingCautiValue)}`);
+          if (nursingClabsiValue > 0) parts.push(`CLABSI bundle compliance: ${fmtK(nursingClabsiValue)}`);
+          if (nursingSepsisValue > 0) parts.push(`Sepsis SEP-1 bundle: ${fmtK(nursingSepsisValue)}`);
+          if (nursingVapValue > 0) parts.push(`VAP bundle compliance: ${fmtK(nursingVapValue)}`);
           parts.push(`= ${fmtK(nursingCareQualityPotential)}/year`);
           drivers.push({
             id: 'nursingCareQuality', name: 'Care Quality (Potential)', value: nursingCareQualityPotential, category: 'documentation',
@@ -1021,6 +1075,21 @@ export default function ExploreModel({
           const hacAttr = docQualityInputs.nursingHacAbridgeAttribution;
           const hacReal = docQualityInputs.nursingHacRealization;
 
+          const cautiCathDays = Math.round(patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100));
+          const cautiPerYr = parseFloat(((cautiCathDays / 1000) * docQualityInputs.nursingCautiRate).toFixed(1));
+          const cautiPrevented = parseFloat((cautiPerYr * (docQualityInputs.nursingCautiPreventionRate / 100)).toFixed(2));
+
+          const clabsiClDays = Math.round(patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100));
+          const clabsiPerYr = parseFloat(((clabsiClDays / 1000) * docQualityInputs.nursingClabsiRate).toFixed(1));
+          const clabsiPrevented = parseFloat((clabsiPerYr * (docQualityInputs.nursingClabsiPreventionRate / 100)).toFixed(2));
+
+          const sepsisPerYr = parseFloat(((patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand).toFixed(1));
+          const sepsisImproved = parseFloat((sepsisPerYr * (docQualityInputs.nursingSepsisComplianceImprovement / 100)).toFixed(2));
+
+          const vapVentDays = Math.round(patientDays * (docQualityInputs.nursingVapVentUtilization / 100));
+          const vapPerYr = parseFloat(((vapVentDays / 1000) * docQualityInputs.nursingVapRate).toFixed(1));
+          const vapPrevented = parseFloat((vapPerYr * (docQualityInputs.nursingVapPreventionRate / 100)).toFixed(2));
+
           const nFullScaleBeds = expandedProviders;
           const nFullScaleAdoption = expandedUtilization;
           const nFullScaleMult = beds > 0 ? (nFullScaleBeds / beds) * (nFullScaleAdoption / adoptRate) : 1;
@@ -1076,6 +1145,42 @@ export default function ExploreModel({
             nursingHacRealization: hacReal,
             nursingHacValue: nursingHacValue,
             nursingHcahpsEnabled: docQualityInputs.nursingHcahpsEnabled,
+            nursingCautiEnabled: docQualityInputs.nursingCautiEnabled,
+            nursingCautiUtilizationRatio: docQualityInputs.nursingCautiUtilizationRatio,
+            nursingCautiDaysPerYear: cautiCathDays,
+            nursingCautiRatePer1000: docQualityInputs.nursingCautiRate,
+            nursingCautiPerYear: cautiPerYr,
+            nursingCautiPreventionRate: docQualityInputs.nursingCautiPreventionRate,
+            nursingCautiCostPer: docQualityInputs.nursingCautiCost,
+            nursingCautiPrevented: cautiPrevented,
+            nursingCautiValue: nursingCautiValue,
+            nursingClabsiEnabled: docQualityInputs.nursingClabsiEnabled,
+            nursingClabsiUtilizationRatio: docQualityInputs.nursingClabsiUtilizationRatio,
+            nursingClabsiDaysPerYear: clabsiClDays,
+            nursingClabsiRatePer1000: docQualityInputs.nursingClabsiRate,
+            nursingClabsiPerYear: clabsiPerYr,
+            nursingClabsiPreventionRate: docQualityInputs.nursingClabsiPreventionRate,
+            nursingClabsiCostPer: docQualityInputs.nursingClabsiCost,
+            nursingClabsiPrevented: clabsiPrevented,
+            nursingClabsiValue: nursingClabsiValue,
+            nursingSepsisEnabled: docQualityInputs.nursingSepsisEnabled,
+            nursingSepsisRatePerThousand: docQualityInputs.nursingSepsisRatePerThousand,
+            nursingSepsisPerYear: sepsisPerYr,
+            nursingSepsisComplianceImprovement: docQualityInputs.nursingSepsisComplianceImprovement,
+            nursingSepsisImproved: sepsisImproved,
+            nursingSepsisLosReduction: docQualityInputs.nursingSepsisLosReduction,
+            nursingSepsisDailyCost: docQualityInputs.nursingSepsisDailyCost,
+            nursingSepsisRealization: docQualityInputs.nursingSepsisRealization,
+            nursingSepsisValue: nursingSepsisValue,
+            nursingVapEnabled: docQualityInputs.nursingVapEnabled,
+            nursingVapVentUtilization: docQualityInputs.nursingVapVentUtilization,
+            nursingVapDaysPerYear: vapVentDays,
+            nursingVapRatePer1000: docQualityInputs.nursingVapRate,
+            nursingVapPerYear: vapPerYr,
+            nursingVapPreventionRate: docQualityInputs.nursingVapPreventionRate,
+            nursingVapCostPer: docQualityInputs.nursingVapCost,
+            nursingVapPrevented: vapPrevented,
+            nursingVapValue: nursingVapValue,
             nursingPotentialTotal: nursingCareQualityPotential,
             nursingFullScaleBeds: nFullScaleBeds,
             nursingFullScaleAdoption: nFullScaleAdoption,

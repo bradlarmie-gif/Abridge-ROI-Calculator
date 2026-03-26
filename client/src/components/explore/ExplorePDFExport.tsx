@@ -362,6 +362,42 @@ export interface ExplorePDFData {
   nursingHacRealization?: number;
   nursingHacValue?: number;
   nursingHcahpsEnabled?: boolean;
+  nursingCautiEnabled?: boolean;
+  nursingCautiUtilizationRatio?: number;
+  nursingCautiDaysPerYear?: number;
+  nursingCautiRatePer1000?: number;
+  nursingCautiPerYear?: number;
+  nursingCautiPreventionRate?: number;
+  nursingCautiCostPer?: number;
+  nursingCautiPrevented?: number;
+  nursingCautiValue?: number;
+  nursingClabsiEnabled?: boolean;
+  nursingClabsiUtilizationRatio?: number;
+  nursingClabsiDaysPerYear?: number;
+  nursingClabsiRatePer1000?: number;
+  nursingClabsiPerYear?: number;
+  nursingClabsiPreventionRate?: number;
+  nursingClabsiCostPer?: number;
+  nursingClabsiPrevented?: number;
+  nursingClabsiValue?: number;
+  nursingSepsisEnabled?: boolean;
+  nursingSepsisRatePerThousand?: number;
+  nursingSepsisPerYear?: number;
+  nursingSepsisComplianceImprovement?: number;
+  nursingSepsisImproved?: number;
+  nursingSepsisLosReduction?: number;
+  nursingSepsisDailyCost?: number;
+  nursingSepsisRealization?: number;
+  nursingSepsisValue?: number;
+  nursingVapEnabled?: boolean;
+  nursingVapVentUtilization?: number;
+  nursingVapDaysPerYear?: number;
+  nursingVapRatePer1000?: number;
+  nursingVapPerYear?: number;
+  nursingVapPreventionRate?: number;
+  nursingVapCostPer?: number;
+  nursingVapPrevented?: number;
+  nursingVapValue?: number;
   nursingPotentialTotal?: number;
   nursingFullScaleBeds?: number;
   nursingFullScaleAdoption?: number;
@@ -2769,10 +2805,18 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const hapiVal = safe(data.nursingHapiValue);
     const fallsVal = safe(data.nursingFallsValue);
     const hacVal = safe(data.nursingHacValue);
+    const cautiVal = safe(data.nursingCautiValue);
+    const clabsiVal = safe(data.nursingClabsiValue);
+    const sepsisVal = safe(data.nursingSepsisValue);
+    const vapVal = safe(data.nursingVapValue);
     const nursingHasCareQuality = !!(
       (data.nursingHapiEnabled && hapiVal > 0) ||
       (data.nursingFallsEnabled && fallsVal > 0) ||
-      (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0)
+      (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0) ||
+      (data.nursingCautiEnabled && cautiVal > 0) ||
+      (data.nursingClabsiEnabled && clabsiVal > 0) ||
+      (data.nursingSepsisEnabled && sepsisVal > 0) ||
+      (data.nursingVapEnabled && vapVal > 0)
     );
     const nursingTotalPages = nursingHasCareQuality ? 6 : 5;
     const investmentPageNum = 4;
@@ -3128,6 +3172,86 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             )}
 
+            {data.nursingCautiEnabled && cautiVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CAUTI Bundle Compliance</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(cautiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      At {safe(data.nursingCautiUtilizationRatio)}% catheter utilization ({fmtNum(safe(data.nursingCautiDaysPerYear))} catheter days/year), a rate of {safe(data.nursingCautiRatePer1000)} per 1,000 catheter days yields {safe(data.nursingCautiPerYear)} CAUTIs/year. A {safe(data.nursingCautiPreventionRate)}% documentation-attributable prevention rate prevents {safe(data.nursingCautiPrevented)} events at {fmtCurrency(safe(data.nursingCautiCostPer))} each.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Source: Meddings et al., 2014 JAMA Internal Medicine. Prevention rate reflects documentation-timing contribution (~1/5 of full bundle effect).
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.nursingClabsiEnabled && clabsiVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CLABSI Bundle Compliance</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(clabsiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      At {safe(data.nursingClabsiUtilizationRatio)}% central line utilization ({fmtNum(safe(data.nursingClabsiDaysPerYear))} line days/year), a rate of {safe(data.nursingClabsiRatePer1000)} per 1,000 line days yields {safe(data.nursingClabsiPerYear)} CLABSIs/year. An {safe(data.nursingClabsiPreventionRate)}% documentation-attributable prevention rate prevents {safe(data.nursingClabsiPrevented)} events at {fmtCurrency(safe(data.nursingClabsiCostPer))} each.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Source: IHI bundle compliance literature. Prevention rate reflects documentation-timing contribution (~1/8 of full bundle effect).
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.nursingSepsisEnabled && sepsisVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Sepsis SEP-1 Bundle</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(sepsisVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      At {safe(data.nursingSepsisRatePerThousand)} cases per 1,000 patient days ({safe(data.nursingSepsisPerYear)} cases/year), a {safe(data.nursingSepsisComplianceImprovement)}% compliance improvement affects {safe(data.nursingSepsisImproved)} cases. Each saves {safe(data.nursingSepsisLosReduction)} LOS days at {fmtCurrency(safe(data.nursingSepsisDailyCost))}/day with {safe(data.nursingSepsisRealization)}% realization.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Modeled as LOS reduction from earlier bundle initiation, not mortality. This is less contested and more quantifiable.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {data.nursingVapEnabled && vapVal > 0 && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>VAP Bundle Compliance <Text style={{ fontSize: 8, color: colors.primary }}>(ICU)</Text></Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(vapVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      At {safe(data.nursingVapVentUtilization)}% ventilator utilization ({fmtNum(safe(data.nursingVapDaysPerYear))} vent days/year), a rate of {safe(data.nursingVapRatePer1000)} per 1,000 vent days yields {safe(data.nursingVapPerYear)} VAPs/year. A {safe(data.nursingVapPreventionRate)}% documentation-attributable prevention rate prevents {safe(data.nursingVapPrevented)} events at {fmtCurrency(safe(data.nursingVapCostPer))} each.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
+                      Source: IHI/SHEA. ICU ventilator days only. Prevention rate reflects documentation-timing contribution (~1/6 of full bundle effect).
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             {data.nursingHcahpsEnabled && (
               <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
                 <Text style={{ fontSize: 9, color: colors.secondary }}>Patient Experience (HCAHPS)</Text>
@@ -3377,6 +3501,22 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>HAC Penalty</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0 ? fmtCurrency(hacVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>CAUTI</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingCautiEnabled && cautiVal > 0 ? fmtCurrency(cautiVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>CLABSI</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingClabsiEnabled && clabsiVal > 0 ? fmtCurrency(clabsiVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Sepsis SEP-1</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingSepsisEnabled && sepsisVal > 0 ? fmtCurrency(sepsisVal) : "Not Modeled"}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>VAP (ICU)</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingVapEnabled && vapVal > 0 ? fmtCurrency(vapVal) : "Not Modeled"}</Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>HCAHPS</Text>
