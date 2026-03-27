@@ -23,7 +23,7 @@ export const shortLinks = pgTable("short_links", {
   paramKey: text("param_key").notNull(),
   payload: text("payload").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  expiresAt: timestamp("expires_at"),
+  expiresAt: timestamp("expires_at").default(sql`now() + interval '30 days'`),
 });
 
 export const insertShortLinkSchema = createInsertSchema(shortLinks).pick({

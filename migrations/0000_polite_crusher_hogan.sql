@@ -4,7 +4,7 @@ CREATE TABLE "short_links" (
 	"param_key" text NOT NULL,
 	"payload" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"expires_at" timestamp,
+	"expires_at" timestamp DEFAULT now() + interval '30 days',
 	CONSTRAINT "short_links_code_unique" UNIQUE("code")
 );
 --> statement-breakpoint
