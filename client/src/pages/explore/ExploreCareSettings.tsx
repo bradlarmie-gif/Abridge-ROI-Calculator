@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check, FileText } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreCareSetting } from "./ExploreFlow";
 import abridgeShape from "@assets/abridge-shape-07_1770229105848.png";
-import { DataRequestDialog } from "@/components/DataRequestDialog";
-import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface CareSettingOption {
   id: ExploreCareSetting;
@@ -61,9 +59,6 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
   const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
     selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
   );
-  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: linkLoading, openWithUrl } = useDataRequestDialog();
-
-  const isMultiMode = selectedForRequest.length > 1;
 
   const handleCardClick = (settingId: ExploreCareSetting) => {
     setSelectedForRequest(prev =>
@@ -82,20 +77,17 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
     }, 800);
   };
 
-  const handleDataRequest = async () => {
-    if (selectedForRequest.length === 0 || linkLoading) return;
-    openWithUrl(async () => {
-      const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-      return generateIntakeFormUrl(selectedForRequest);
-    });
-  };
+  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
+  }, []);
 
   const singleSelected = selectedForRequest.length === 1 ? selectedForRequest[0] : null;
   const singleLabel = singleSelected
     ? CARE_SETTINGS.find(s => s.id === singleSelected)?.label
     : null;
 
-  const selectedCount = selectedForRequest.length;
+  const isMultiMode = selectedForRequest.length > 1;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
@@ -106,6 +98,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
         stepName="Care Setting"
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={generateExploreDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
       
@@ -295,7 +288,6 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col gap-3"
               >
                 <Button
                   onClick={handleContinue}
@@ -320,29 +312,6 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     'Choose a setting to continue'
                   )}
                 </Button>
-
-                {selectedCount > 0 && (
-                  <Button
-                    onClick={handleDataRequest}
-                    disabled={linkLoading}
-                    variant="outline"
-                    className="w-full h-[44px] rounded-lg text-sm font-medium transition-all duration-200 border-[#E0E0E0] text-[#666666] hover:border-[#CCCCCC] hover:text-[#1A1A1A] bg-white"
-                    data-testid="button-data-request"
-                  >
-                    {linkLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating link...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="w-4 h-4 mr-2" />
-                        Data Request{selectedCount > 1 ? ` (${selectedCount} settings)` : ''}
-                      </>
-                    )}
-                  </Button>
-                )}
-                <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={selectedForRequest.map(id => CARE_SETTINGS.find(s => s.id === id)?.label).filter(Boolean).join(' & ')} />
               </motion.div>
             )}
           </AnimatePresence>

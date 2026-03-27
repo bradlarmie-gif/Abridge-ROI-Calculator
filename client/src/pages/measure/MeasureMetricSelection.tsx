@@ -21,9 +21,6 @@ import {
   type DomainKey,
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
-import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
-import { DataRequestDialog } from "@/components/DataRequestDialog";
-import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface MeasureMetricSelectionProps {
   state: MeasureState;
@@ -311,9 +308,14 @@ export default function MeasureMetricSelection({
   onBack,
   onHome,
 }: MeasureMetricSelectionProps) {
+  const generateMeasureDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
+    const setting = (settings[0] || state.careSetting || 'outpatient') as MeasureCareSetting;
+    return generateDataFormUrl({ setting });
+  }, [state.careSetting]);
+
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
-  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating, openWithUrl } = useDataRequestDialog();
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const activeSettings = state.activeCareSettings?.length
@@ -524,6 +526,7 @@ export default function MeasureMetricSelection({
         totalSteps={5}
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={generateMeasureDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
 
@@ -700,23 +703,6 @@ export default function MeasureMetricSelection({
             {totalActive > 0 ? 'View the Journey' : 'Add at least one metric to continue'}
             {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
-          <button
-            disabled={isGenerating}
-            onClick={() => {
-              const setting = state.careSetting || activeSettings[0] || 'outpatient';
-              const activeMetricIds = Array.from(new Set(
-                domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
-              ));
-              openWithUrl(() => generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined }));
-            }}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              isGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
-            }`}
-            data-testid="button-send-data-request"
-          >
-            {isGenerating ? 'Creating link…' : 'Data Request'}
-          </button>
-          <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={CARE_SETTING_CONFIGS[state.careSetting || activeSettings[0] || 'outpatient']?.label} />
         </div>
       </div>
     </div>

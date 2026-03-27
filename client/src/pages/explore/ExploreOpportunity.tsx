@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
-import { DataRequestDialog } from "@/components/DataRequestDialog";
-import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
-import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
+import type { ExploreCareSetting } from "./ExploreFlow";
 
 interface ExploreOpportunityProps {
   state: ExploreState;
@@ -79,13 +77,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
-  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: intakeLinkGenerating, openWithUrl } = useDataRequestDialog();
-  const handleCreateIntakeLink = () => {
-    openWithUrl(async () => {
-      const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-      return generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
-    });
-  };
+
+  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
+  }, []);
 
   function applyFteEstimate(multiplier: number, label: string) {
     if (state.nursingStaffedBeds <= 0) return;
@@ -183,6 +179,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
         stepName="Opportunity Size"
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={generateExploreDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
 
@@ -202,17 +199,6 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               <p className="text-base text-[#888888]">
                 {isNursing ? "Tell us about your deployment and expected adoption." : "Tell us about your starting point."}
               </p>
-              <div className="mt-3">
-                <button
-                  onClick={handleCreateIntakeLink}
-                  disabled={intakeLinkGenerating}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${intakeLinkGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
-                  data-testid="button-data-request"
-                >
-                  {intakeLinkGenerating ? 'Creating link…' : 'Data Request'}
-                </button>
-                <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={state.careSetting ? SETTING_LABELS[state.careSetting] : undefined} />
-              </div>
             </motion.div>
 
             {/* Single Data Entry Card - Measure Style */}

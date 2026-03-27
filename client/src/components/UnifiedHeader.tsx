@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+import { DataRequestDialog } from "@/components/DataRequestDialog";
 
 interface ProgressDotsProps {
   currentStep: number;
@@ -57,6 +59,7 @@ interface UnifiedHeaderProps {
   onHome?: () => void;
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -76,8 +79,10 @@ export function UnifiedHeader({
   onHome,
   onStepClick,
   stepLabels,
+  dataRequestGenerateUrl,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
+  const [drDialogOpen, setDrDialogOpen] = useState(false);
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -145,8 +150,26 @@ export function UnifiedHeader({
           )}
         </div>
 
-        {/* Right: Progress indicator — tiered by screen width */}
-        <div className="flex items-center flex-shrink-0 gap-2">
+        {/* Right: Data Request + Progress indicator */}
+        <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
+          {dataRequestGenerateUrl && (
+            <>
+              <button
+                onClick={() => setDrDialogOpen(true)}
+                className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#666666] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all"
+                data-testid="button-header-data-request"
+              >
+                <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">Data Request</span>
+              </button>
+              <DataRequestDialog
+                open={drDialogOpen}
+                onOpenChange={setDrDialogOpen}
+                generateUrl={dataRequestGenerateUrl}
+              />
+            </>
+          )}
+
           {/* Narrow phones (<480px): compact step counter only */}
           <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
             {currentStep} / {totalSteps}

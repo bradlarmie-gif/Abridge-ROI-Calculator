@@ -6,9 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
-import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
-import { DataRequestDialog } from "@/components/DataRequestDialog";
-import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -37,7 +34,11 @@ export default function MeasureDataEntry({
   onBack,
   onHome,
 }: MeasureDataEntryProps) {
-  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating, openWithUrl } = useDataRequestDialog();
+  const generateMeasureDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
+    const setting = (settings[0] || state.careSetting || 'outpatient') as MeasureCareSetting;
+    return generateDataFormUrl({ setting });
+  }, [state.careSetting]);
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
@@ -183,6 +184,7 @@ export default function MeasureDataEntry({
         stepName="Partner Profile"
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={generateMeasureDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
 
@@ -202,18 +204,6 @@ export default function MeasureDataEntry({
           <p className="text-sm md:text-base text-[#666666]" data-testid="text-page-subtitle">
             Tell us about your Abridge deployment.
           </p>
-          <button
-            disabled={isGenerating}
-            onClick={() => {
-              const setting = state.careSetting || activeSettings[0] || 'outpatient';
-              openWithUrl(() => generateDataFormUrl({ setting }));
-            }}
-            className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${isGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
-            data-testid="button-send-data-request"
-          >
-            {isGenerating ? 'Creating link…' : 'Data Request'}
-          </button>
-          <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={CARE_SETTING_CONFIGS[state.careSetting || activeSettings[0] || 'outpatient']?.label} />
         </motion.div>
 
         <motion.div

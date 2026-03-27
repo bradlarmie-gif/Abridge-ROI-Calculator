@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,10 +10,7 @@ import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
-import { generateIntakeFormUrl } from "@/lib/intakeUrlState";
 import type { ExploreCareSetting } from "./ExploreFlow";
-import { DataRequestDialog } from "@/components/DataRequestDialog";
-import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreModelProps {
@@ -50,11 +47,11 @@ export default function ExploreModel({
   const [isExporting, setIsExporting] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const { toast } = useToast();
-  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: intakeLinkGenerating, openWithUrl } = useDataRequestDialog();
 
-  const handleGenerateIntakeLink = () => {
-    openWithUrl(() => generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined));
-  };
+  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
+  }, []);
 
   const isNursingForTotal = state.careSetting === 'nursing';
   const nursingCareQualityPotential = useMemo(() => {
@@ -1259,6 +1256,7 @@ export default function ExploreModel({
         onHome={onHome}
         onStepClick={onStepClick}
         stepLabels={stepLabels}
+        dataRequestGenerateUrl={generateExploreDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
 
@@ -2396,15 +2394,6 @@ export default function ExploreModel({
                 <Edit className="w-4 h-4" />
                 Edit Model
               </Button>
-              <button
-                onClick={handleGenerateIntakeLink}
-                disabled={intakeLinkGenerating}
-                className={`order-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all self-center ${intakeLinkGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
-                data-testid="button-create-intake"
-              >
-                {intakeLinkGenerating ? 'Creating link…' : 'Data Request'}
-              </button>
-              <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={state.careSetting ? SETTING_LABELS[state.careSetting] : undefined} />
             </div>
           </div>
         </motion.div>
