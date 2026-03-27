@@ -57,7 +57,42 @@ export default function ExploreModel({
     setTimeout(() => setIntakeLinkCopied(false), 2000);
   };
 
-  const totalValue = timeValue + docValue;
+  const isNursingForTotal = state.careSetting === 'nursing';
+  const nursingCareQualityPotential = useMemo(() => {
+    if (!isNursingForTotal) return 0;
+    const { docQualityInputs } = state;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    let total = 0;
+    if (docQualityInputs.nursingHapiEnabled) {
+      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
+      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+    }
+    if (docQualityInputs.nursingFallsEnabled) {
+      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
+      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
+    }
+    if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
+      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
+      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
+    }
+    if (docQualityInputs.nursingCautiEnabled) {
+      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
+      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
+    }
+    if (docQualityInputs.nursingClabsiEnabled) {
+      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
+      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
+    }
+    if (docQualityInputs.nursingSepsisEnabled) {
+      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
+      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
+      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
+      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
+    }
+    return Math.round(total);
+  }, [isNursingForTotal, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const totalValue = timeValue + docValue + nursingCareQualityPotential;
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
@@ -232,42 +267,6 @@ export default function ExploreModel({
     return Math.round(retainedForAgency * weeksOfCoverage * weeklyPremium);
   }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
-  const nursingCareQualityPotential = useMemo(() => {
-    if (!isNursing) return 0;
-    const { docQualityInputs } = state;
-    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    let total = 0;
-    if (docQualityInputs.nursingHapiEnabled) {
-      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      const hapiPreventionRate = Math.min(docQualityInputs.nursingHapiPreventionRate, 15);
-      total += hapIs * (hapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
-    }
-    if (docQualityInputs.nursingFallsEnabled) {
-      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      const fallsPreventionRate = Math.min(docQualityInputs.nursingFallsPreventionRate, 12);
-      total += falls * (fallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
-    }
-    if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
-      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
-      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
-    }
-    if (docQualityInputs.nursingCautiEnabled) {
-      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
-      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
-    }
-    if (docQualityInputs.nursingClabsiEnabled) {
-      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
-      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
-    }
-    if (docQualityInputs.nursingSepsisEnabled) {
-      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
-      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
-      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
-      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
-    }
-    return Math.round(total);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
-
   const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
   const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
 
@@ -275,16 +274,14 @@ export default function ExploreModel({
     if (!isNursing || !state.docQualityInputs.nursingHapiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const hapIs = (patientDays / 1000) * state.docQualityInputs.nursingHapiRate;
-    const hapiPreventionRate = Math.min(state.docQualityInputs.nursingHapiPreventionRate, 15);
-    return Math.round(hapIs * (hapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
+    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingFallsValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingFallsEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
-    const fallsPreventionRate = Math.min(state.docQualityInputs.nursingFallsPreventionRate, 12);
-    return Math.round(falls * (fallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
+    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingHacValue = useMemo(() => {

@@ -28,24 +28,6 @@ export default function ExploreInvestment({
   onHome,
 }: ExploreInvestmentProps) {
   const isNursing = state.careSetting === 'nursing';
-  const totalValue = timeValue + docValue;
-
-  const annualInvestment = useMemo(() => {
-    if (isNursing && state.pricingModel === 'perProvider') {
-      return state.nursingStaffedBeds * state.costPerProvider * 12;
-    }
-    if (state.pricingModel === 'perProvider') {
-      return state.numberOfProviders * state.costPerProvider * 12;
-    }
-    if (state.pricingModel === 'perEncounter') {
-      return state.annualEncounters * state.costPerEncounter;
-    }
-    return state.annualLicenseFee;
-  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.annualEncounters, state.costPerEncounter]);
-
-  const netAnnualValue = totalValue - annualInvestment;
-  const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
-  const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
 
   const nursingCareQualityPotential = useMemo(() => {
     if (!isNursing) return 0;
@@ -64,8 +46,41 @@ export default function ExploreInvestment({
       const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
       total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
     }
+    if (docQualityInputs.nursingCautiEnabled) {
+      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
+      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
+    }
+    if (docQualityInputs.nursingClabsiEnabled) {
+      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
+      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
+    }
+    if (docQualityInputs.nursingSepsisEnabled) {
+      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
+      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
+      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
+      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
+    }
     return Math.round(total);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const totalValue = timeValue + docValue + nursingCareQualityPotential;
+
+  const annualInvestment = useMemo(() => {
+    if (isNursing && state.pricingModel === 'perProvider') {
+      return state.nursingStaffedBeds * state.costPerProvider * 12;
+    }
+    if (state.pricingModel === 'perProvider') {
+      return state.numberOfProviders * state.costPerProvider * 12;
+    }
+    if (state.pricingModel === 'perEncounter') {
+      return state.annualEncounters * state.costPerEncounter;
+    }
+    return state.annualLicenseFee;
+  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.annualEncounters, state.costPerEncounter]);
+
+  const netAnnualValue = totalValue - annualInvestment;
+  const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
+  const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
 
   const valuePerBed = state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
   const investmentPerBed = state.nursingStaffedBeds > 0 ? Math.round(annualInvestment / state.nursingStaffedBeds) : 0;
@@ -331,10 +346,22 @@ export default function ExploreInvestment({
               {/* Value Breakdown */}
               <div className="space-y-3 mb-4">
                 {isNursing ? (
-                  <div className="flex justify-between items-center gap-3">
-                    <span className="text-sm text-[#888888] min-w-0">Annual Value</span>
-                    <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
-                  </div>
+                  <>
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-sm text-[#888888] min-w-0">Time Savings</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
+                    </div>
+                    {nursingCareQualityPotential > 0 && (
+                      <div className="flex justify-between items-center gap-3">
+                        <span className="text-sm text-[#888888] min-w-0">Care Quality</span>
+                        <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(nursingCareQualityPotential)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="text-sm font-semibold text-white min-w-0">Annual Value</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="flex justify-between items-center gap-3">
@@ -350,12 +377,6 @@ export default function ExploreInvestment({
                       <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(totalValue)}</span>
                     </div>
                   </>
-                )}
-                {isNursing && (
-                  <div className="flex justify-between items-center gap-3">
-                    <span className="text-sm text-[#888888] min-w-0">Time Savings</span>
-                    <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
-                  </div>
                 )}
               </div>
 
@@ -413,16 +434,6 @@ export default function ExploreInvestment({
                     Net: <span className="text-white font-semibold">{formatCurrency(netPerBed)}</span> per bed per year
                   </p>
                   <div className="h-px bg-[#333333] my-4" />
-                  {nursingCareQualityPotential > 0 && (
-                    <>
-                      <div className="flex justify-between items-center gap-2 mb-4 flex-wrap">
-                        <span className="text-sm text-[#888888] min-w-0">+ Potential Care Quality</span>
-                        <span className="text-sm font-semibold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingCareQualityPotential)}</span>
-                      </div>
-                      <p className="text-xs text-[#666666] mb-4">(shown separately)</p>
-                      <div className="h-px bg-[#333333] my-4" />
-                    </>
-                  )}
                 </>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
