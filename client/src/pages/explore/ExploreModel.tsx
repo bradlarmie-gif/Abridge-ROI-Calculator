@@ -2414,10 +2414,10 @@ export default function ExploreModel({
               </Button>
               <button
                 onClick={handleGenerateIntakeLink}
-                className="order-3 text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0] self-center"
+                className={`order-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all self-center ${intakeLinkCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
                 data-testid="button-create-intake"
               >
-                {intakeLinkCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send intake form to prospect'}
+                {intakeLinkCopied ? 'Copied!' : 'Data Request'}
               </button>
             </div>
           </div>

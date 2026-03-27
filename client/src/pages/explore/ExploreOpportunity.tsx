@@ -201,8 +201,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 {isNursing ? "Tell us about your deployment and expected adoption." : "Tell us about your starting point."}
               </p>
               <div className="mt-3">
-                <button onClick={handleCreateIntakeLink} className="text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0]">
-                  {intakeLinkCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send intake form to prospect'}
+                <button onClick={handleCreateIntakeLink} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${intakeLinkCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}>
+                  {intakeLinkCopied ? 'Copied!' : 'Data Request'}
                 </button>
               </div>
             </motion.div>

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { ArrowRight, X, ChevronDown, TrendingUp, Send, Copy, ClipboardCheck } from "lucide-react";
+import { ArrowRight, X, ChevronDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -710,12 +710,12 @@ export default function MeasureMetricSelection({
                 setTimeout(() => setDataRequestCopied(false), 2500);
               });
             }}
-            className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-medium transition-all ${
-              dataRequestCopied ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
+              dataRequestCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
             }`}
             data-testid="button-send-data-request"
           >
-            {dataRequestCopied ? <><ClipboardCheck className="w-3.5 h-3.5" /> Link copied!</> : <><Send className="w-3.5 h-3.5" /> Send data request to customer</>}
+            {dataRequestCopied ? 'Copied!' : 'Data Request'}
           </button>
         </div>
       </div>
