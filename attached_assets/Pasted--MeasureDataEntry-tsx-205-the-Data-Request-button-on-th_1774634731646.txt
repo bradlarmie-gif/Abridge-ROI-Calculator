@@ -1,0 +1,72 @@
+  - MeasureDataEntry.tsx:205 — the "Data Request" button on the partner profile page
+  - MeasureMetricSelection.tsx:703 — the "Data Request" button inside metric selection
+
+  activeSettings[0] is always whichever setting was added first — so if Outpatient was selected when you entered Measure, it's always index 0. Clicking ED adds it at index 1, but the link still encodes [0].
+
+  There's also a second issue: toggleSetting in MeasureDataEntry only switches state.careSetting if the old setting is removed — it doesn't update careSetting when you add a new one. So state.careSetting
+  stays Outpatient too.
+
+  The fix:
+
+  In both files, change the data request button to use state.careSetting (not activeSettings[0]), AND update toggleSetting so that clicking a setting pill both adds it AND switches careSetting to it — so the
+   intent is clear.
+
+  ---
+  Replit prompt:
+
+  Fix two bugs in the Measure path related to the "Data Request" link always encoding the wrong care setting.
+
+  ---
+
+  ### Bug 1 — MeasureDataEntry.tsx
+
+  The "Data Request" button (around line 205) uses `activeSettings[0]` to determine which setting to encode in the data form URL. This is always the first setting added, not the one the user is currently
+  working with.
+
+  Change:
+  ```typescript
+  const setting = activeSettings[0] || 'outpatient';
+  const url = generateDataFormUrl({ setting });
+
+  To:
+  const setting = state.careSetting || activeSettings[0] || 'outpatient';
+  const url = generateDataFormUrl({ setting });
+
+  Also fix toggleSetting — when a user clicks a setting pill to ADD a new setting (not remove one), switch careSetting to that new setting so it's clear which setting is "active":
+
+  In the else branch of toggleSetting (the add-setting path), add careSetting: setting to the updateState call:
+
+  } else {
+    current.push(setting);
+    const newSettingData = { ...state.settingData };
+    if (!newSettingData[setting]) {
+      newSettingData[setting] = getDefaultMetrics(setting);
+    }
+    updateState({
+      activeCareSettings: current,
+      careSetting: setting,           // ← switch active setting to the newly added one
+      settingData: newSettingData,
+    });
+  }
+
+  ---
+  Bug 2 — MeasureMetricSelection.tsx
+
+  Same issue on line ~703. The Data Request button there also uses activeSettings[0].
+
+  Find:
+  const setting = activeSettings[0] || 'outpatient';
+  const url = generateDataFormUrl({ setting, preSelectedIds: ... });
+
+  Change to:
+  const setting = state.careSetting || activeSettings[0] || 'outpatient';
+  const url = generateDataFormUrl({ setting, preSelectedIds: ... });
+
+  MeasureMetricSelection likely receives state or has access to the current setting via props — use whatever prop/variable represents the currently-active setting tab (could be careSetting, currentSetting,
+  or activeSettings[0] used elsewhere in that file for tab navigation). The key is it should reflect which setting's metrics are currently being viewed/selected, not always the first one.
+
+  ---
+  No other changes needed
+
+  DataFormPreseed stays single-setting — the data request form is intentionally per-setting. If you have outpatient + ED active and want data for both, you'd generate two separate links (one per setting).
+  That's fine; the fix just ensures the link reflects the setting you're actually looking at.

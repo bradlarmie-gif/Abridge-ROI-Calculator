@@ -1,0 +1,129 @@
+ Fix mobile experience for the two client-facing forms: ExploreIntakeForm.tsx and MeasureDataRequest.tsx.
+
+  ---
+
+  ### Fix 1 — clipboard.ts
+
+  The current logic tries `readText()` after `writeText()` to verify success. `readText()` requires separate user permission on iOS and most browsers and always throws — causing the function to always return
+   false on mobile.
+
+  Replace the entire `copyToClipboard` function with this simpler version that doesn't verify with readText:
+
+  ```typescript
+  export async function copyToClipboard(text: string): Promise<boolean> {
+    // Modern Clipboard API (works on iOS 13.4+, Chrome, Firefox)
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // fall through to execCommand
+      }
+    }
+
+    // Legacy fallback — works on older desktop browsers
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;border:none;padding:0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  Key changes:
+  - Try Clipboard API first (not last)
+  - No readText() verification — if writeText doesn't throw, treat it as success
+  - Legacy textarea is placed at top:0/left:0 with opacity:0.01 (not off-screen) — iOS requires the element be in viewport for execCommand to work
+
+  ---
+  Fix 2 — Add Web Share API to both client forms
+
+  In both ExploreIntakeForm.tsx and MeasureDataRequest.tsx, update the primary submission button to use the Web Share API when available (mobile), falling back to clipboard (desktop).
+
+  Add this helper at the top of each file (or put it in clipboard.ts and export it):
+
+  export async function shareOrCopy(text: string, title?: string): Promise<'shared' | 'copied' | 'fallback'> {
+    // Web Share API — triggers native share sheet on iOS/Android
+    if (navigator.share && navigator.canShare?.({ text })) {
+      try {
+        await navigator.share({ title: title || 'My Abridge Data', text });
+        return 'shared';
+      } catch (e: unknown) {
+        // User cancelled share — don't fall through to copy
+        if (e instanceof Error && e.name === 'AbortError') throw e;
+      }
+    }
+    // Desktop: copy to clipboard
+    const ok = await copyToClipboard(text);
+    return ok ? 'copied' : 'fallback';
+  }
+
+  In ExploreIntakeForm.tsx, the "Copy My Answers" button currently calls copyToClipboard(text) and shows either "Copied!" or the fallback textarea. Update it to:
+
+  const [submitState, setSubmitState] = useState<'idle' | 'copied' | 'shared' | 'fallback'>('idle');
+
+  async function handleSubmit() {
+    const text = generateIntakeResponseText(buildResponse());
+    try {
+      const result = await shareOrCopy(text, 'My Abridge Intake');
+      setSubmitState(result === 'fallback' ? 'fallback' : result);
+      if (result !== 'fallback') setTimeout(() => setSubmitState('idle'), 4000);
+    } catch {
+      // user cancelled native share — do nothing
+    }
+  }
+
+  Button label logic:
+  - idle + mobile (navigator.share available): "Share My Answers"
+  - idle + desktop: "Copy My Answers"
+  - shared: "Sent! ✓"
+  - copied: "Copied! ✓"
+  - fallback: show textarea
+
+  To detect mobile for the button label: const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
+
+  Apply the same pattern to MeasureDataRequest.tsx — replace handleCopy with handleSubmit using shareOrCopy.
+
+  ---
+  Fix 3 — inputMode on MeasureDataRequest number inputs
+
+  The plain <input type="number"> inputs in MeasureDataRequest.tsx don't specify inputMode. On iOS, type="number" shows a decimal keyboard with a tiny number pad — not ideal.
+
+  For all <input type="number"> in MeasureDataRequest.tsx:
+  - Whole number fields (providers, encounters, months): add inputMode="numeric" and pattern="[0-9]*"
+  - Decimal fields (rates like LWBS %, occupancy %): add inputMode="decimal"
+
+  Example — change:
+  <input type="number" min={0} step={1} value={...} .../>
+  To:
+  <input type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*" value={...} .../>
+
+  Apply inputMode="decimal" to before/after metric inputs in MetricRow (since those can be fractional).
+
+  ---
+  Fix 4 — Monthly trend inputs touch target
+
+  The monthly data inputs in MetricRow are w-14 (56px wide) but py-1.5 makes them only ~32px tall. On mobile, these are too small. Change:
+
+  className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-1.5 text-xs text-center ..."
+
+  To:
+
+  className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-2.5 text-xs text-center ..."
+
+  Also add inputMode="decimal" to each monthly input.
+
+  ---
+  No changes needed
+
+  - Form layouts are already responsive — no grid changes needed
+  - PDF behavior on iOS (opens in tab instead of downloading) is correct iOS behavior — leave as-is
+  - The fallback textarea should remain as the last resort — just won't be needed as often after Fix 1
