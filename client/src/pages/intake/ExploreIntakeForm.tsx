@@ -19,10 +19,10 @@ const SETTINGS: { id: ExploreCareSetting; label: string; description: string }[]
 ];
 
 function NumberField({
-  label, hint, value, onChange, placeholder = "0", suffix, min = 0,
+  label, hint, value, onChange, placeholder = "0", suffix, min = 0, step,
 }: {
   label: string; hint?: string; value: number | null; onChange: (v: number | null) => void;
-  placeholder?: string; suffix?: string; min?: number;
+  placeholder?: string; suffix?: string; min?: number; step?: string;
 }) {
   return (
     <div>
@@ -32,7 +32,7 @@ function NumberField({
       </label>
       <div className="flex items-center gap-2">
         <input
-          type="number" min={min} value={value ?? ""}
+          type="number" min={min} step={step} value={value ?? ""}
           onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
           placeholder={placeholder}
           className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
@@ -48,13 +48,21 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
   const [form, setForm] = useState<ExploreIntakeResponse>({
     settings: preseed?.preSelectedSettings ?? [],
     providers: null, annualEncounters: null,
-    staffedBeds: null, occupancyRate: null,
+    opCurrentWrvu: null, opConversionFactor: null, opTurnoverRate: null,
+    edLwbsRate: null, edTurnoverRate: null,
+    ipTurnoverRate: null,
+    nursingStaffedBeds: null, nursingOccupancyRate: null,
+    nursingOtHoursPerWeek: null, nursingTurnoverRate: null,
     hapiRatePer1000: null, fallRatePer1000: null,
     cautiRatePer1000: null, clabsiRatePer1000: null,
   });
   const [copied, setCopied] = useState(false);
 
-  const isNursing = form.settings.includes("nursing");
+  const selectedSettings = form.settings;
+  const isOutpatient = selectedSettings.includes("outpatient");
+  const isED = selectedSettings.includes("ed");
+  const isInpatient = selectedSettings.includes("inpatient");
+  const isNursing = selectedSettings.includes("nursing");
 
   function toggleSetting(id: ExploreCareSetting) {
     setForm((prev) => ({
@@ -127,14 +135,54 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
           </div>
         </div>
 
+        {isOutpatient && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Outpatient benchmarks</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <NumberField label="Average wRVU per encounter" value={form.opCurrentWrvu ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, opCurrentWrvu: v }))} placeholder="e.g. 1.8" step="0.1" />
+              <NumberField label="$/wRVU conversion rate" hint="from your payer contract" value={form.opConversionFactor ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, opConversionFactor: v }))} placeholder="e.g. 33" />
+              <NumberField label="Annual provider turnover" value={form.opTurnoverRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, opTurnoverRate: v }))} placeholder="e.g. 6" suffix="%" />
+            </div>
+          </div>
+        )}
+
+        {isED && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Emergency department</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <NumberField label="Current LWBS rate" value={form.edLwbsRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, edLwbsRate: v }))} placeholder="e.g. 3" suffix="%" />
+              <NumberField label="Annual provider turnover" value={form.edTurnoverRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, edTurnoverRate: v }))} placeholder="e.g. 6" suffix="%" />
+            </div>
+          </div>
+        )}
+
+        {isInpatient && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Inpatient / Hospital Medicine</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <NumberField label="Annual hospitalist turnover" value={form.ipTurnoverRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, ipTurnoverRate: v }))} placeholder="e.g. 8" suffix="%" />
+            </div>
+          </div>
+        )}
+
         {isNursing && (
           <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Nursing operations</h2>
             <div className="grid grid-cols-2 gap-4">
-              <NumberField label="Staffed beds" value={form.staffedBeds ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, staffedBeds: v }))} placeholder="e.g. 350" />
-              <NumberField label="Occupancy rate" value={form.occupancyRate ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, occupancyRate: v }))} placeholder="e.g. 85" suffix="%" />
+              <NumberField label="Staffed beds" value={form.nursingStaffedBeds ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, nursingStaffedBeds: v }))} placeholder="e.g. 200" />
+              <NumberField label="Occupancy rate" value={form.nursingOccupancyRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, nursingOccupancyRate: v }))} placeholder="e.g. 75" suffix="%" />
+              <NumberField label="Overtime hours per nurse per week" value={form.nursingOtHoursPerWeek ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, nursingOtHoursPerWeek: v }))} placeholder="e.g. 4" />
+              <NumberField label="Annual nurse turnover rate" value={form.nursingTurnoverRate ?? null}
+                onChange={(v) => setForm((p) => ({ ...p, nursingTurnoverRate: v }))} placeholder="e.g. 18" suffix="%" />
             </div>
           </div>
         )}
@@ -142,18 +190,18 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
         {isNursing && (
           <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-1">
-              Quality metrics <span className="ml-2 text-xs text-gray-400 font-normal normal-case">optional</span>
+              Quality metrics <span className="ml-2 text-xs text-gray-400 font-normal normal-case">optional — if you track these</span>
             </h2>
             <p className="text-xs text-gray-500 mb-4">If you track any of these, enter your current rates.</p>
             <div className="grid grid-cols-2 gap-4">
               <NumberField label="HAPI rate" hint="per 1,000 patient days" value={form.hapiRatePer1000 ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, hapiRatePer1000: v }))} placeholder="e.g. 1.2" />
+                onChange={(v) => setForm((p) => ({ ...p, hapiRatePer1000: v }))} placeholder="e.g. 1.5" step="0.1" />
               <NumberField label="Patient fall rate" hint="per 1,000 patient days" value={form.fallRatePer1000 ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, fallRatePer1000: v }))} placeholder="e.g. 2.5" />
+                onChange={(v) => setForm((p) => ({ ...p, fallRatePer1000: v }))} placeholder="e.g. 2.0" step="0.1" />
               <NumberField label="CAUTI rate" hint="per 1,000 catheter days" value={form.cautiRatePer1000 ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, cautiRatePer1000: v }))} placeholder="e.g. 1.8" />
+                onChange={(v) => setForm((p) => ({ ...p, cautiRatePer1000: v }))} placeholder="e.g. 1.8" step="0.1" />
               <NumberField label="CLABSI rate" hint="per 1,000 CL days" value={form.clabsiRatePer1000 ?? null}
-                onChange={(v) => setForm((p) => ({ ...p, clabsiRatePer1000: v }))} placeholder="e.g. 0.8" />
+                onChange={(v) => setForm((p) => ({ ...p, clabsiRatePer1000: v }))} placeholder="e.g. 0.8" step="0.1" />
             </div>
           </div>
         )}

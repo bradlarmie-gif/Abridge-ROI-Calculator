@@ -5,8 +5,21 @@ export interface ExploreIntakeResponse {
   settings: ExploreCareSetting[];
   providers: number | null;
   annualEncounters: number | null;
-  staffedBeds?: number | null;
-  occupancyRate?: number | null;
+
+  opCurrentWrvu?: number | null;
+  opConversionFactor?: number | null;
+  opTurnoverRate?: number | null;
+
+  edLwbsRate?: number | null;
+  edTurnoverRate?: number | null;
+
+  ipTurnoverRate?: number | null;
+
+  nursingStaffedBeds?: number | null;
+  nursingOccupancyRate?: number | null;
+  nursingOtHoursPerWeek?: number | null;
+  nursingTurnoverRate?: number | null;
+
   hapiRatePer1000?: number | null;
   fallRatePer1000?: number | null;
   cautiRatePer1000?: number | null;

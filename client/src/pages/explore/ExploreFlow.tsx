@@ -593,9 +593,24 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         }
         if (intakeResponse.providers != null) next.numberOfProviders = intakeResponse.providers;
         if (intakeResponse.annualEncounters != null) next.annualEncounters = intakeResponse.annualEncounters;
+
+        if (setting === 'outpatient') {
+          if (intakeResponse.opCurrentWrvu != null) next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: intakeResponse.opCurrentWrvu };
+          if (intakeResponse.opConversionFactor != null) next.docQualityInputs = { ...next.docQualityInputs, conversionFactor: intakeResponse.opConversionFactor };
+          if (intakeResponse.opTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.opTurnoverRate };
+        }
+        if (setting === 'ed') {
+          if (intakeResponse.edLwbsRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, edLwbsRate: intakeResponse.edLwbsRate };
+          if (intakeResponse.edTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.edTurnoverRate };
+        }
+        if (setting === 'inpatient') {
+          if (intakeResponse.ipTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, ipAnnualTurnoverRate: intakeResponse.ipTurnoverRate };
+        }
         if (setting === 'nursing') {
-          if (intakeResponse.staffedBeds != null) next.nursingStaffedBeds = intakeResponse.staffedBeds;
-          if (intakeResponse.occupancyRate != null) next.nursingOccupancyRate = intakeResponse.occupancyRate;
+          if (intakeResponse.nursingStaffedBeds != null) next.nursingStaffedBeds = intakeResponse.nursingStaffedBeds;
+          if (intakeResponse.nursingOccupancyRate != null) next.nursingOccupancyRate = intakeResponse.nursingOccupancyRate;
+          if (intakeResponse.nursingOtHoursPerWeek != null) next.timeDriverInputs = { ...next.timeDriverInputs, nursingOtHoursPerNurseWeek: intakeResponse.nursingOtHoursPerWeek };
+          if (intakeResponse.nursingTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, nursingTurnoverRate: intakeResponse.nursingTurnoverRate };
           if (intakeResponse.hapiRatePer1000 != null) next.nursingHapiRate = intakeResponse.hapiRatePer1000;
           if (intakeResponse.fallRatePer1000 != null) next.nursingFallsRate = intakeResponse.fallRatePer1000;
           if (intakeResponse.cautiRatePer1000 != null) next.nursingCautiRate = intakeResponse.cautiRatePer1000;

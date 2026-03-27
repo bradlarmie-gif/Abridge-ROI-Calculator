@@ -1,0 +1,137 @@
+ Exactly right. The form right now only collects providers + encounters — but the model has real org-specific inputs that vary hugely: wRVU conversion rate, overtime hours, LWBS rate, turnover rate, etc.
+  Those are the numbers a prospect actually knows about their own org, and they're what make the model feel personalized vs generic.
+
+  Let me look at what the adjustable-per-setting inputs actually are so I can spec this properly.
+
+⏺ Searched for 3 patterns (ctrl+o to expand)
+
+⏺ Now I have the full picture. Here's what's actually adjustable per setting that a prospect would know:
+
+  Outpatient: wRVU per encounter, $/wRVU conversion rate, provider turnover rate
+  ED: current LWBS rate %, provider turnover rate
+  Inpatient: hospitalist turnover rate %
+  Nursing: overtime hours/nurse/week, nurse turnover rate % (plus the existing beds/occupancy/quality metrics)
+
+  The ExploreIntakeResponse needs to expand, the form needs per-setting conditional sections, and applyIntakeToExploreState needs to map all these new fields.
+
+  Here's the Replit prompt:
+
+  ---
+  Update the client intake form to collect setting-specific operational data.
+  Changes touch 3 files: intakeUrlState.ts, ExploreIntakeForm.tsx, and App.tsx.
+
+  ---
+
+  ## 1. intakeUrlState.ts — expand ExploreIntakeResponse
+
+  Replace the current interface with:
+
+  export interface ExploreIntakeResponse {
+    settings: ExploreCareSetting[];
+    providers: number | null;
+    annualEncounters: number | null;
+
+    // Outpatient-specific
+    opCurrentWrvu?: number | null;         // avg wRVU per encounter
+    opConversionFactor?: number | null;    // $/wRVU contract rate
+    opTurnoverRate?: number | null;        // provider annual turnover %
+
+    // ED-specific
+    edLwbsRate?: number | null;            // current LWBS rate %
+    edTurnoverRate?: number | null;        // provider annual turnover %
+
+    // Inpatient-specific
+    ipTurnoverRate?: number | null;        // hospitalist annual turnover %
+
+    // Nursing-specific
+    nursingStaffedBeds?: number | null;
+    nursingOccupancyRate?: number | null;
+    nursingOtHoursPerWeek?: number | null; // overtime hours per nurse per week
+    nursingTurnoverRate?: number | null;   // nurse annual turnover %
+
+    // Nursing quality metrics (per 1,000 patient days)
+    hapiRatePer1000?: number | null;
+    fallRatePer1000?: number | null;
+    cautiRatePer1000?: number | null;
+    clabsiRatePer1000?: number | null;
+  }
+
+  ---
+
+  ## 2. ExploreIntakeForm.tsx — add per-setting conditional sections
+
+  After the "YOUR PRACTICE SIZE" section (providers + encounters), add conditional
+  sections that appear based on which care settings are checked.
+
+  Each section has a subtle label like "OUTPATIENT DETAILS", "EMERGENCY DEPT", etc.
+  All fields are optional — label them with placeholder/hint text showing the default
+  so the prospect knows what to enter if they're unsure.
+
+  OUTPATIENT section (shown when 'outpatient' is in selectedSettings):
+    Label: "OUTPATIENT BENCHMARKS"
+    - "Average wRVU per encounter"  placeholder="e.g. 1.8"
+    - "$/wRVU conversion rate"      placeholder="e.g. 33"  hint: "from your payer contract"
+    - "Annual provider turnover"    placeholder="e.g. 6"   suffix="%"
+
+  EMERGENCY DEPT section (shown when 'ed' is in selectedSettings):
+    Label: "EMERGENCY DEPARTMENT"
+    - "Current LWBS rate"           placeholder="e.g. 3"   suffix="%"
+    - "Annual provider turnover"    placeholder="e.g. 6"   suffix="%"
+
+  INPATIENT section (shown when 'inpatient' is in selectedSettings):
+    Label: "INPATIENT / HOSPITAL MEDICINE"
+    - "Annual hospitalist turnover" placeholder="e.g. 8"   suffix="%"
+
+  NURSING section (shown when 'nursing' is in selectedSettings):
+    Label: "NURSING OPERATIONS"
+    - "Staffed beds"                placeholder="e.g. 200"
+    - "Occupancy rate"              placeholder="e.g. 75"  suffix="%"
+    - "Overtime hours per nurse per week"  placeholder="e.g. 4"
+    - "Annual nurse turnover rate"  placeholder="e.g. 18"  suffix="%"
+
+    Then a sub-section labeled "QUALITY METRICS  optional — if you track these":
+    - "HAPI rate per 1,000 patient days"      placeholder="e.g. 1.5"
+    - "Patient fall rate per 1,000"           placeholder="e.g. 2.0"
+    - "CAUTI rate per 1,000 catheter days"    placeholder="e.g. 1.8"
+    - "CLABSI rate per 1,000 CL days"         placeholder="e.g. 0.8"
+
+  Store all values in the local ExploreIntakeResponse state. Null if left blank.
+  The "Copy my answers" button encodes everything into the ?intake= URL as before.
+
+  ---
+
+  ## 3. App.tsx — update applyIntakeToExploreState
+
+  Update the function to map all new fields:
+
+  function applyIntakeToExploreState(base: ExploreState, intake: ExploreIntakeResponse): ExploreState {
+    const setting = intake.settings[0] ?? null;
+    return {
+      ...base,
+      careSetting: setting,
+      numberOfProviders: intake.providers ?? base.numberOfProviders,
+      annualEncounters: intake.annualEncounters ?? base.annualEncounters,
+      nursingStaffedBeds: intake.nursingStaffedBeds ?? base.nursingStaffedBeds,
+      nursingOccupancyRate: intake.nursingOccupancyRate ?? base.nursingOccupancyRate,
+      docQualityInputs: {
+        ...base.docQualityInputs,
+        ...(intake.opCurrentWrvu != null && { currentWrvu: intake.opCurrentWrvu }),
+        ...(intake.opConversionFactor != null && { conversionFactor: intake.opConversionFactor }),
+        ...(intake.hapiRatePer1000 != null && { nursingHapiRate: intake.hapiRatePer1000 }),
+        ...(intake.fallRatePer1000 != null && { nursingFallRate: intake.fallRatePer1000 }),
+        ...(intake.cautiRatePer1000 != null && { nursingCautiRate: intake.cautiRatePer1000 }),
+        ...(intake.clabsiRatePer1000 != null && { nursingClabsiRate: intake.clabsiRatePer1000 }),
+      },
+      timeDriverInputs: {
+        ...base.timeDriverInputs,
+        ...(intake.opTurnoverRate != null && { annualTurnoverRate: intake.opTurnoverRate }),
+        ...(intake.edTurnoverRate != null && { annualTurnoverRate: intake.edTurnoverRate }),
+        ...(intake.edLwbsRate != null && { edLwbsRate: intake.edLwbsRate }),
+        ...(intake.ipTurnoverRate != null && { ipAnnualTurnoverRate: intake.ipTurnoverRate }),
+        ...(intake.nursingOtHoursPerWeek != null && { nursingOtHoursPerNurseWeek: intake.nursingOtHoursPerWeek }),
+        ...(intake.nursingTurnoverRate != null && { nursingTurnoverRate: intake.nursingTurnoverRate }),
+      },
+    };
+  }
+
+  No other changes.
