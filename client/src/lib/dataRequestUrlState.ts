@@ -54,16 +54,34 @@ export function generateDataFormUrl(preseed: DataFormPreseed): string {
   return `${window.location.origin}/?data_form=${encoded}`;
 }
 
-export function generateDataResponseUrl(data: MeasureDataRequestResponse): string {
-  const encoded = encodeDataRequest(data);
-  return `${window.location.origin}/?data_request=${encoded}`;
-}
+const SETTING_LABELS: Record<MeasureCareSetting, string> = {
+  outpatient: 'Outpatient',
+  ed: 'Emergency Department',
+  inpatient: 'Inpatient / Hospital Medicine',
+  nursing: 'Nursing / Care Teams',
+};
 
-export function getDataRequestResponseFromUrl(): MeasureDataRequestResponse | null {
-  const params = new URLSearchParams(window.location.search);
-  const encoded = params.get('data_request');
-  if (!encoded) return null;
-  return decodeDataRequest(encoded);
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+export function generateDataResponseText(data: MeasureDataRequestResponse, metricLabels: Record<string, string>): string {
+  const lines: string[] = [
+    `ABRIDGE — MEASURE DATA REQUEST (${SETTING_LABELS[data.setting]})`,
+    '',
+  ];
+
+  for (const m of data.metrics) {
+    const label = metricLabels[m.metricId] || m.metricId;
+    const parts: string[] = [`  ${label}`];
+    if (m.before != null) parts.push(`    Before: ${m.before}`);
+    if (m.after != null) parts.push(`    After:  ${m.after}`);
+    if (m.isMonthlyMode && m.monthlyData) {
+      const trend = m.monthlyData.map((v, i) => `${MONTH_NAMES[i]}: ${v ?? '—'}`).join(', ');
+      parts.push(`    Monthly: ${trend}`);
+    }
+    lines.push(parts.join('\n'));
+  }
+
+  return lines.join('\n').trim();
 }
 
 export function getDataFormPreseedFromUrl(): DataFormPreseed | null {

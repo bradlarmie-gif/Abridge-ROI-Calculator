@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseUrl } from "@/lib/dataRequestUrlState";
+import { useState, useEffect } from "react";
+import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseText } from "@/lib/dataRequestUrlState";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -25,6 +25,14 @@ function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
 }
 
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const STORAGE_KEY = 'abridge_measure_data_request';
+
+interface SavedFormState {
+  setting: MeasureCareSetting;
+  checkedIds: string[];
+  entries: Record<string, DataRequestMetricEntry>;
+}
 
 function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
   metric: MetricDefinition; checked: boolean; entry: DataRequestMetricEntry | undefined;
@@ -114,10 +122,43 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
   const byDomain = allMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
     acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
   }, {});
+
   const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? allMetrics.filter((m) => m.phase === 1).map((m) => m.id));
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(defaultCheckedIds);
-  const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
+
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedFormState;
+        if (saved && saved.setting === setting && Array.isArray(saved.checkedIds)) {
+          return new Set(saved.checkedIds);
+        }
+      }
+    } catch { /* ignore */ }
+    return defaultCheckedIds;
+  });
+
+  const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedFormState;
+        if (saved && saved.setting === setting && saved.entries) {
+          return saved.entries;
+        }
+      }
+    } catch { /* ignore */ }
+    return {};
+  });
+
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    try {
+      const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch { /* ignore */ }
+  }, [checkedIds, entries, setting]);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -132,10 +173,21 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
     setEntries((prev) => ({ ...prev, [id]: { ...(prev[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false }), ...updates } }));
   }
 
+  function handleClearAll() {
+    setCheckedIds(new Set());
+    setEntries({});
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+  }
+
   function handleCopy() {
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
-    navigator.clipboard.writeText(generateDataResponseUrl({ setting, metrics })).then(() => {
+
+    const metricLabels: Record<string, string> = {};
+    for (const m of allMetrics) metricLabels[m.id] = m.label;
+
+    const text = generateDataResponseText({ setting, metrics }, metricLabels);
+    navigator.clipboard.writeText(text).then(() => {
       setCopied(true); setTimeout(() => setCopied(false), 2500);
     });
   }
@@ -179,10 +231,24 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
             {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied to clipboard!</> : <><Copy className="w-4 h-4" /> Copy my answers</>}
           </button>
           {!hasAnyData && <p className="text-xs text-gray-400 mt-2">Select at least one metric and enter a before or after value.</p>}
-          {hasAnyData && !copied && <p className="text-xs text-gray-500 mt-2">Paste this link and send it to your Abridge partner.</p>}
-          {copied && <p className="text-xs text-green-600 mt-2">Send this link to your Abridge partner — they'll use it to prep your business review.</p>}
+          {hasAnyData && !copied && <p className="text-xs text-gray-500 mt-2">Copies a formatted summary you can paste and send to your Abridge partner.</p>}
+          {copied && <p className="text-xs text-green-600 mt-2">Send this summary to your Abridge partner — they'll use it to prep your business review.</p>}
         </div>
-        <p className="text-center text-xs text-gray-400 pb-8">No account required. Your answers are encoded in the link — nothing is stored on any server.</p>
+
+        {(checkedIds.size > 0 || Object.keys(entries).length > 0) && (
+          <div className="text-center">
+            <button onClick={handleClearAll}
+              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition-colors"
+              data-testid="button-clear-data-request"
+            >
+              <Trash2 className="w-3 h-3" /> Clear my answers
+            </button>
+          </div>
+        )}
+
+        <p className="text-center text-xs text-gray-400 pb-8">
+          No account required. Your answers are saved in this browser and copied as text — nothing is stored on any server.
+        </p>
       </div>
     </div>
   );

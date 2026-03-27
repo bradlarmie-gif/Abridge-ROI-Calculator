@@ -86,16 +86,85 @@ export function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]
   return `${window.location.origin}/?intake_form=${encoded}`;
 }
 
-export function generateIntakeResponseUrl(data: ExploreIntakeResponse): string {
-  const encoded = encodeIntake(data);
-  return `${window.location.origin}/?intake=${encoded}`;
+const SETTING_LABELS: Record<ExploreCareSetting, string> = {
+  outpatient: 'Outpatient Clinic',
+  ed: 'Emergency Department',
+  inpatient: 'Inpatient / Hospital Medicine',
+  nursing: 'Nursing / Care Teams',
+};
+
+function fmtNum(v: number | null | undefined, opts?: { suffix?: string; decimals?: number }): string {
+  if (v == null) return '';
+  const n = opts?.decimals != null ? v.toFixed(opts.decimals) : v.toLocaleString('en-US');
+  return opts?.suffix ? `${n}${opts.suffix}` : n;
 }
 
-export function getIntakeResponseFromUrl(): ExploreIntakeResponse | null {
-  const params = new URLSearchParams(window.location.search);
-  const encoded = params.get('intake');
-  if (!encoded) return null;
-  return decodeIntake(encoded);
+function line(label: string, v: number | null | undefined, opts?: { suffix?: string; decimals?: number }): string {
+  if (v == null) return '';
+  return `  ${label}: ${fmtNum(v, opts)}`;
+}
+
+export function generateIntakeResponseText(data: ExploreIntakeResponse): string {
+  const lines: string[] = ['ABRIDGE — EXPLORE INTAKE RESPONSES', ''];
+
+  for (const s of data.settings) {
+    lines.push(`── ${SETTING_LABELS[s]} ──`);
+    if (s === 'outpatient') {
+      lines.push(
+        line('Physicians / APPs', data.opProviders),
+        line('Annual encounters', data.opAnnualEncounters),
+        line('Revenue per visit', data.opRevenuePerVisit, { suffix: ' $' }),
+        line('Avg wRVU per encounter', data.opCurrentWrvu, { decimals: 2 }),
+        line('$/wRVU conversion rate', data.opConversionFactor),
+        line('Annual provider turnover', data.opTurnoverRate, { suffix: '%' }),
+        line('Cost to replace one provider', data.opReplacementCost, { suffix: ' $' }),
+        line('Claim denial rate', data.opDenialRate, { suffix: '%' }),
+        line('Avg denied claim value', data.opAvgClaimValue, { suffix: ' $' }),
+        line('Panel size', data.opPanelSize),
+        line('% panel on Medicare Advantage', data.opMaEnrollmentRate, { suffix: '%' }),
+        line('Annual payment per RAF point', data.opAnnualPaymentPerRaf, { suffix: ' $' }),
+      );
+    }
+    if (s === 'ed') {
+      lines.push(
+        line('ED physicians / APPs', data.edProviders),
+        line('Annual ED visits', data.edAnnualVisits),
+        line('Current LWBS rate', data.edLwbsRate, { suffix: '%' }),
+        line('Revenue per ED visit', data.edRevenuePerVisit, { suffix: ' $' }),
+        line('% LWBS patients admitted', data.edAdmissionRate, { suffix: '%' }),
+        line('Revenue per admission', data.edAdmissionRevenue, { suffix: ' $' }),
+        line('Annual provider turnover', data.edTurnoverRate, { suffix: '%' }),
+        line('Cost to replace one provider', data.edReplacementCost, { suffix: ' $' }),
+      );
+    }
+    if (s === 'inpatient') {
+      lines.push(
+        line('Hospitalists', data.ipProviders),
+        line('Annual admissions', data.ipAnnualAdmissions),
+        line('Obs/IP status denial rate', data.ipDenialRate, { suffix: '%' }),
+        line('Avg claim value at risk', data.ipAvgClaimValue, { suffix: ' $' }),
+        line('Annual hospitalist turnover', data.ipTurnoverRate, { suffix: '%' }),
+        line('Cost to replace one hospitalist', data.ipReplacementCost, { suffix: ' $' }),
+      );
+    }
+    if (s === 'nursing') {
+      lines.push(
+        line('Nurse FTEs', data.nursingFTEs),
+        line('Staffed beds', data.nursingStaffedBeds),
+        line('Occupancy rate', data.nursingOccupancyRate, { suffix: '%' }),
+        line('OT hours / nurse / week', data.nursingOtHoursPerWeek),
+        line('OT hourly rate', data.nursingOtHourlyRate, { suffix: ' $/hr' }),
+        line('Annual nurse turnover', data.nursingTurnoverRate, { suffix: '%' }),
+        line('Cost to replace one nurse', data.nursingReplacementCost, { suffix: ' $' }),
+        line('HAPI rate / 1k pt days', data.hapiRatePer1000, { decimals: 1 }),
+        line('Falls rate / 1k pt days', data.fallRatePer1000, { decimals: 1 }),
+        line('CAUTI rate / 1k', data.cautiRatePer1000, { decimals: 1 }),
+        line('CLABSI rate / 1k', data.clabsiRatePer1000, { decimals: 1 }),
+      );
+    }
+    lines.push('');
+  }
+  return lines.filter(l => l !== '').join('\n').trim();
 }
 
 export function getIntakePreseedFromUrl(): IntakeFormPreseed | null {
@@ -105,19 +174,3 @@ export function getIntakePreseedFromUrl(): IntakeFormPreseed | null {
   return decodeIntakePreseed(encoded);
 }
 
-export function getIntakeProviders(intake: ExploreIntakeResponse): number | null {
-  const s = intake.settings[0];
-  if (s === 'outpatient') return intake.opProviders ?? null;
-  if (s === 'ed') return intake.edProviders ?? null;
-  if (s === 'inpatient') return intake.ipProviders ?? null;
-  if (s === 'nursing') return intake.nursingFTEs ?? null;
-  return null;
-}
-
-export function getIntakeEncounters(intake: ExploreIntakeResponse): number | null {
-  const s = intake.settings[0];
-  if (s === 'outpatient') return intake.opAnnualEncounters ?? null;
-  if (s === 'ed') return intake.edAnnualVisits ?? null;
-  if (s === 'inpatient') return intake.ipAnnualAdmissions ?? null;
-  return null;
-}

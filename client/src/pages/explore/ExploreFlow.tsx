@@ -9,7 +9,6 @@ import ExploreCareQuality from "./ExploreCareQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
-import { getIntakeProviders, getIntakeEncounters } from "@/lib/intakeUrlState";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -552,11 +551,9 @@ interface ExploreFlowProps {
   initialExploreState?: ExploreState;
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
-  intakeResponse?: import("@/lib/intakeUrlState").ExploreIntakeResponse | null;
-  onIntakeConsumed?: () => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], intakeResponse, onIntakeConsumed }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
@@ -582,90 +579,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     });
   }, []);
 
-  const intakeAppliedRef = useRef(false);
-  useEffect(() => {
-    if (intakeResponse && intakeResponse.settings.length > 0 && !intakeAppliedRef.current) {
-      intakeAppliedRef.current = true;
-      const setting = intakeResponse.settings[0];
-      setState(() => {
-        const next: ExploreState = { ...DEFAULT_EXPLORE_STATE, careSetting: setting };
-        if (setting === 'ed') {
-          next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: 2.5, denialRate: 10, avgClaimValue: 300 };
-        }
-        if (setting === 'outpatient') {
-          if (intakeResponse.opProviders != null) next.numberOfProviders = intakeResponse.opProviders;
-          if (intakeResponse.opAnnualEncounters != null) next.annualEncounters = intakeResponse.opAnnualEncounters;
-          next.docQualityInputs = {
-            ...next.docQualityInputs,
-            ...(intakeResponse.opCurrentWrvu != null && { currentWrvu: intakeResponse.opCurrentWrvu }),
-            ...(intakeResponse.opConversionFactor != null && { conversionFactor: intakeResponse.opConversionFactor }),
-            ...(intakeResponse.opDenialRate != null && { denialRate: intakeResponse.opDenialRate }),
-            ...(intakeResponse.opAvgClaimValue != null && { avgClaimValue: intakeResponse.opAvgClaimValue }),
-            ...(intakeResponse.opPanelSize != null && { panelSize: intakeResponse.opPanelSize }),
-            ...(intakeResponse.opMaEnrollmentRate != null && { maPercent: intakeResponse.opMaEnrollmentRate }),
-            ...(intakeResponse.opAnnualPaymentPerRaf != null && { annualPayment: intakeResponse.opAnnualPaymentPerRaf }),
-          };
-          next.timeDriverInputs = {
-            ...next.timeDriverInputs,
-            ...(intakeResponse.opRevenuePerVisit != null && { revenuePerVisit: intakeResponse.opRevenuePerVisit }),
-            ...(intakeResponse.opTurnoverRate != null && { annualTurnoverRate: intakeResponse.opTurnoverRate }),
-            ...(intakeResponse.opReplacementCost != null && { replacementCost: intakeResponse.opReplacementCost }),
-          };
-        }
-        if (setting === 'ed') {
-          if (intakeResponse.edProviders != null) next.numberOfProviders = intakeResponse.edProviders;
-          if (intakeResponse.edAnnualVisits != null) next.annualEncounters = intakeResponse.edAnnualVisits;
-          next.timeDriverInputs = {
-            ...next.timeDriverInputs,
-            ...(intakeResponse.edLwbsRate != null && { edLwbsRate: intakeResponse.edLwbsRate }),
-            ...(intakeResponse.edRevenuePerVisit != null && { edRevenuePerVisit: intakeResponse.edRevenuePerVisit }),
-            ...(intakeResponse.edAdmissionRate != null && { edAdmissionRate: intakeResponse.edAdmissionRate }),
-            ...(intakeResponse.edAdmissionRevenue != null && { edAdmissionRevenue: intakeResponse.edAdmissionRevenue }),
-            ...(intakeResponse.edTurnoverRate != null && { annualTurnoverRate: intakeResponse.edTurnoverRate }),
-            ...(intakeResponse.edReplacementCost != null && { replacementCost: intakeResponse.edReplacementCost }),
-          };
-        }
-        if (setting === 'inpatient') {
-          if (intakeResponse.ipProviders != null) next.numberOfProviders = intakeResponse.ipProviders;
-          if (intakeResponse.ipAnnualAdmissions != null) next.annualEncounters = intakeResponse.ipAnnualAdmissions;
-          next.docQualityInputs = {
-            ...next.docQualityInputs,
-            ...(intakeResponse.ipDenialRate != null && { ipObsDefenseDenialRate: intakeResponse.ipDenialRate }),
-            ...(intakeResponse.ipAvgClaimValue != null && { ipObsDefenseClaimValue: intakeResponse.ipAvgClaimValue }),
-          };
-          next.timeDriverInputs = {
-            ...next.timeDriverInputs,
-            ...(intakeResponse.ipTurnoverRate != null && { ipAnnualTurnoverRate: intakeResponse.ipTurnoverRate }),
-            ...(intakeResponse.ipReplacementCost != null && { replacementCost: intakeResponse.ipReplacementCost }),
-          };
-        }
-        if (setting === 'nursing') {
-          if (intakeResponse.nursingFTEs != null) next.numberOfProviders = intakeResponse.nursingFTEs;
-          if (intakeResponse.nursingStaffedBeds != null) next.nursingStaffedBeds = intakeResponse.nursingStaffedBeds;
-          if (intakeResponse.nursingOccupancyRate != null) next.nursingOccupancyRate = intakeResponse.nursingOccupancyRate;
-          next.docQualityInputs = {
-            ...next.docQualityInputs,
-            ...(intakeResponse.hapiRatePer1000 != null && { nursingHapiRate: intakeResponse.hapiRatePer1000 }),
-            ...(intakeResponse.fallRatePer1000 != null && { nursingFallsRate: intakeResponse.fallRatePer1000 }),
-            ...(intakeResponse.cautiRatePer1000 != null && { nursingCautiRate: intakeResponse.cautiRatePer1000 }),
-            ...(intakeResponse.clabsiRatePer1000 != null && { nursingClabsiRate: intakeResponse.clabsiRatePer1000 }),
-          };
-          next.timeDriverInputs = {
-            ...next.timeDriverInputs,
-            ...(intakeResponse.nursingOtHoursPerWeek != null && { nursingOtHoursPerNurseWeek: intakeResponse.nursingOtHoursPerWeek }),
-            ...(intakeResponse.nursingOtHourlyRate != null && { nursingOtHourlyRate: intakeResponse.nursingOtHourlyRate }),
-            ...(intakeResponse.nursingTurnoverRate != null && { nursingTurnoverRate: intakeResponse.nursingTurnoverRate }),
-            ...(intakeResponse.nursingReplacementCost != null && { nursingReplacementCost: intakeResponse.nursingReplacementCost }),
-          };
-        }
-        return next;
-      });
-      setPhase('practice');
-      onIntakeConsumed?.();
-    }
-  }, []);
-
-  const prevCareSettingRef = useRef(intakeResponse?.settings?.[0] || state.careSetting);
+  const prevCareSettingRef = useRef(state.careSetting);
   useEffect(() => {
     if (state.careSetting && state.careSetting !== prevCareSettingRef.current) {
       const newCareSetting = state.careSetting;
@@ -1090,19 +1004,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     }
   }
 
-  const intakeBanner = intakeResponse ? (
-    <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center" data-testid="banner-intake">
-      <span className="text-sm text-amber-800">
-        Pre-filled from client intake
-        {(() => { const p = getIntakeProviders(intakeResponse); return p ? ` \u2014 ${p} providers` : ''; })()}
-        {(() => { const e = getIntakeEncounters(intakeResponse); return e ? `, ${e.toLocaleString()} encounters/yr` : ''; })()}
-      </span>
-    </div>
-  ) : null;
-
   return (
     <>
-      {intakeBanner}
       {progressBar}
       {content}
     </>

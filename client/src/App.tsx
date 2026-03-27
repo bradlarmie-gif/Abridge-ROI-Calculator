@@ -39,8 +39,8 @@ import MeasureFlow from "@/pages/measure/MeasureFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
-import { type ExploreIntakeResponse, type IntakeFormPreseed, decodeIntake, decodeIntakePreseed } from "@/lib/intakeUrlState";
-import { type MeasureDataRequestResponse, type DataFormPreseed, decodeDataRequest, decodeDataFormPreseed } from "@/lib/dataRequestUrlState";
+import { type IntakeFormPreseed, decodeIntakePreseed } from "@/lib/intakeUrlState";
+import { type DataFormPreseed, decodeDataFormPreseed } from "@/lib/dataRequestUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import ProformaView from "@/pages/proforma/ProformaView";
 import type { ProformaSettingSnapshot, ProformaScenario, ProformaConfig } from "@/pages/proforma/proformaTypes";
@@ -58,9 +58,7 @@ interface SelectionState {
 
 type InitialDeepLink =
   | { type: 'explore'; careSetting: ExploreCareSetting; phase: ExplorePhase }
-  | { type: 'explore_intake'; intakeResponse: ExploreIntakeResponse }
   | { type: 'explore_intake_form'; preseed: IntakeFormPreseed }
-  | { type: 'measure_data_request'; dataResponse: MeasureDataRequestResponse }
   | { type: 'measure_data_form'; preseed: DataFormPreseed }
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'none' };
@@ -69,29 +67,15 @@ function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
   const pathname = window.location.pathname;
 
-  const intakeParam = params.get('intake');
-  if (intakeParam) {
-    const decoded = decodeIntake(intakeParam);
-    if (decoded) { window.history.replaceState({}, '', pathname); return { type: 'explore_intake', intakeResponse: decoded }; }
-  }
-
   const intakeFormParam = params.get('intake_form');
   if (intakeFormParam) {
     const decoded = decodeIntakePreseed(intakeFormParam);
-    window.history.replaceState({}, '', pathname);
     return { type: 'explore_intake_form', preseed: decoded ?? {} };
-  }
-
-  const dataRequestParam = params.get('data_request');
-  if (dataRequestParam) {
-    const decoded = decodeDataRequest(dataRequestParam);
-    if (decoded) { window.history.replaceState({}, '', pathname); return { type: 'measure_data_request', dataResponse: decoded }; }
   }
 
   const dataFormParam = params.get('data_form');
   if (dataFormParam) {
     const decoded = decodeDataFormPreseed(dataFormParam);
-    window.history.replaceState({}, '', pathname);
     return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' } };
   }
 
@@ -140,27 +124,17 @@ export default function App() {
     return undefined;
   });
   
-  const [intakeResponse, setIntakeResponse] = useState<ExploreIntakeResponse | null>(() => {
-    if (INITIAL_DEEP_LINK.type === 'explore_intake') return INITIAL_DEEP_LINK.intakeResponse;
-    return null;
-  });
-  const [intakeFormPreseed, setIntakeFormPreseed] = useState<IntakeFormPreseed | null>(() => {
+  const [intakeFormPreseed] = useState<IntakeFormPreseed | null>(() => {
     if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return INITIAL_DEEP_LINK.preseed;
     return null;
   });
-  const [dataRequestResponse, setDataRequestResponse] = useState<MeasureDataRequestResponse | null>(() => {
-    if (INITIAL_DEEP_LINK.type === 'measure_data_request') return INITIAL_DEEP_LINK.dataResponse;
-    return null;
-  });
-  const [dataFormPreseed, setDataFormPreseed] = useState<DataFormPreseed | null>(() => {
+  const [dataFormPreseed] = useState<DataFormPreseed | null>(() => {
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return INITIAL_DEEP_LINK.preseed;
     return null;
   });
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
-    if (INITIAL_DEEP_LINK.type === 'explore_intake') return "explore";
     if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return "explore-intake";
-    if (INITIAL_DEEP_LINK.type === 'measure_data_request') return "measure";
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
@@ -596,8 +570,6 @@ export default function App() {
                 initialExploreState={proformaEditExploreState}
                 onAddToProforma={handleAddToProforma}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
-                intakeResponse={intakeResponse}
-                onIntakeConsumed={() => setIntakeResponse(null)}
               />
             )}
 
@@ -681,7 +653,7 @@ export default function App() {
             )}
 
             {currentView === "measure" && (
-              <MeasureFlow onBackToJourney={() => navigateTo("journey")} dataRequestResponse={dataRequestResponse} onDataRequestConsumed={() => setDataRequestResponse(null)} />
+              <MeasureFlow onBackToJourney={() => navigateTo("journey")} />
             )}
 
             {currentView === "measure-data-request" && (

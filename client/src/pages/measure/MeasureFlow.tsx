@@ -16,11 +16,9 @@ type MeasurePhase = 'data' | 'metrics' | 'journey' | 'financial' | 'next';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
-  dataRequestResponse?: import("@/lib/dataRequestUrlState").MeasureDataRequestResponse | null;
-  onDataRequestConsumed?: () => void;
 }
 
-export default function MeasureFlow({ onBackToJourney, dataRequestResponse, onDataRequestConsumed }: MeasureFlowProps) {
+export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [phase, setPhase] = useState<MeasurePhase>('data');
   const [presentMode, setPresentMode] = useState(false);
   const [state, setState] = useState<MeasureState>({
@@ -53,40 +51,6 @@ export default function MeasureFlow({ onBackToJourney, dataRequestResponse, onDa
     }
   }, []);
 
-  useEffect(() => {
-    if (dataRequestResponse && dataRequestResponse.metrics.length > 0) {
-      setState(prev => {
-        const setting = dataRequestResponse.setting;
-        const newEnabled = { ...prev.enabledMetrics };
-        const newMetricValues = { ...prev.metricValues };
-        if (!newEnabled[setting]) newEnabled[setting] = {};
-
-        for (const m of dataRequestResponse.metrics) {
-          newEnabled[setting][m.metricId] = true;
-          const key = `${m.metricId}__${setting}`;
-          newMetricValues[key] = {
-            ...(newMetricValues[key] || {}),
-            before: m.before,
-            after: m.after,
-            isMonthlyMode: m.isMonthlyMode,
-            ...(m.monthlyData ? { monthlyData: m.monthlyData } : {}),
-          };
-        }
-
-        return {
-          ...prev,
-          careSetting: setting,
-          activeCareSettings: prev.activeCareSettings.includes(setting)
-            ? prev.activeCareSettings
-            : [...prev.activeCareSettings, setting],
-          enabledMetrics: newEnabled,
-          metricValues: newMetricValues,
-        };
-      });
-      setPhase('metrics');
-      onDataRequestConsumed?.();
-    }
-  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
