@@ -110,12 +110,6 @@ function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
   const pathname = window.location.pathname;
 
-  if (params.get('reset') === '1') {
-    clearPartnerSession();
-    window.history.replaceState({}, '', pathname);
-    return { type: 'none' };
-  }
-
   const intakeFormParam = params.get('intake_form');
   if (intakeFormParam) {
     const fp = simpleHash(intakeFormParam);
