@@ -262,7 +262,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
     const ok = await copyToClipboard(text);
     if (ok) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
+      setTimeout(() => setCopied(false), 5000);
     } else {
       setFallbackText(text);
     }

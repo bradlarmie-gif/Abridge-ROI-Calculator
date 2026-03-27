@@ -204,7 +204,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     const ok = await copyToClipboard(text);
     if (ok) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      setTimeout(() => setCopied(false), 5000);
     } else {
       setFallbackText(text);
     }
