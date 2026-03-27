@@ -3,6 +3,7 @@ import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp } from "lucide-reac
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseUrl } from "@/lib/dataRequestUrlState";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
+import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 const SETTING_LABELS: Record<MeasureCareSetting, string> = {
   outpatient: "Outpatient", ed: "Emergency Department",
@@ -31,7 +32,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 }) {
   const isMonthlyMode = entry?.isMonthlyMode ?? false;
   return (
-    <div className={`border rounded-lg transition-all ${checked ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"}`}
+    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E0D8] bg-white" : "border-[#EDE8E2] bg-[#F5F0EB]"}`}
       data-testid={`metric-row-${metric.id}`}
     >
       <div className="flex items-start gap-3 p-4">
@@ -52,13 +53,13 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         </div>
       </div>
       {checked && (
-        <div className="px-4 pb-4 border-t border-gray-50 pt-3">
+        <div className="px-4 pb-4 border-t border-[#EDE8E2] pt-3">
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <label className="block text-xs text-gray-500 mb-1">Before Abridge</label>
               <input type="number" min={0} step="any" value={entry?.before ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
+                className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-before-${metric.id}`}
               />
             </div>
@@ -67,7 +68,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               <label className="block text-xs text-gray-500 mb-1">With Abridge</label>
               <input type="number" min={0} step="any" value={entry?.after ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
+                className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-after-${metric.id}`}
               />
             </div>
@@ -92,7 +93,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                           newData[i] = e.target.value === "" ? null : Number(e.target.value);
                           onUpdate({ monthlyData: newData });
                         }}
-                        className="w-14 border border-gray-200 rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
+                        className="w-14 bg-[#F5F0EB] border-0 rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
                         data-testid={`input-monthly-${metric.id}-${i}`}
                       />
                     </div>
@@ -142,15 +143,12 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
   const hasAnyData = Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#FAFAF8] flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-2xl mb-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-[#EA2C00] rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
-          </div>
-          <span className="text-lg font-semibold text-gray-900 tracking-tight">Abridge</span>
+        <div className="flex items-center justify-center mb-6">
+          <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600 mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F5F0EB] rounded-full text-xs text-[#888888] mb-4">
           {SETTING_LABELS[setting]}
         </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-data-request-title">Help us tell your story</h1>
@@ -161,7 +159,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
 
       <div className="w-full max-w-2xl space-y-6">
         {Object.entries(byDomain).map(([domain, metrics]) => (
-          <div key={domain} className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div key={domain} className="bg-white rounded-xl border border-[#EDE8E2] p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
             <div className="space-y-3">
               {metrics.map((metric) => (
@@ -171,7 +169,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
             </div>
           </div>
         ))}
-        <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm text-center">
+        <div className="bg-white rounded-xl border border-[#EDE8E2] p-6 shadow-sm text-center">
           <button onClick={handleCopy} disabled={!hasAnyData}
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
               hasAnyData ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
