@@ -293,6 +293,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
           Select the metrics you track and enter your numbers. Your Abridge partner will use this to prepare your business review.
         </p>
+        <p className="text-xs text-[#AAAAAA] text-center max-w-sm mx-auto mt-2 leading-relaxed">
+          Only fill in what you track. Anything left blank will be filled with industry benchmarks and refined with you during the review.
+        </p>
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
@@ -467,6 +470,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               <Download className="w-4 h-4" />
               {pdfLoading ? "Generating…" : "Download PDF"}
             </button>
+            <p className="text-xs text-[#BBBBBB] mb-3">
+              Blank fields are okay — we'll use benchmarks as a starting point.
+            </p>
             <button onClick={handleSubmit} disabled={!hasAnyData || submitState === 'creating'}
               className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
                 !hasAnyData
