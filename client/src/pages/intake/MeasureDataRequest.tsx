@@ -46,7 +46,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 }) {
   const isMonthlyMode = entry?.isMonthlyMode ?? false;
   return (
-    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E2DA] bg-white" : "border-[#EDE8E2] bg-[#FAF8F5]"}`}
+    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E3DD] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]" : "border-[#EDE8E2] bg-[#FAF8F5]"}`}
       data-testid={`metric-row-${metric.id}`}
     >
       <div className="flex items-start gap-3 p-4">
@@ -70,7 +70,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         <div className="px-4 pb-4 border-t border-[#EDE8E2] pt-3">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Before Abridge</label>
+              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Before Abridge</label>
               <input type="number" min={0} step="any" value={entry?.before ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
                 className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
@@ -79,7 +79,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
             </div>
             <div className="text-gray-300 mt-4">&rarr;</div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">With Abridge</label>
+              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">With Abridge</label>
               <input type="number" min={0} step="any" value={entry?.after ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
                 className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
@@ -225,10 +225,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const hasAnyData = Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-2xl mb-8 text-center">
-        <div className="flex items-center justify-center mb-6">
-          <img src={abridgeLogo} alt="Abridge" className="h-6" />
+        <div className="flex items-center justify-center mb-8">
+          <img src={abridgeLogo} alt="Abridge" className="h-7" />
         </div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF8F5] border border-[#E8E2DA] rounded-full text-xs text-[#888888] mb-4">
           {isSettingLocked && <Lock className="w-3 h-3 text-[#EA2C00]" />}
@@ -237,8 +237,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         {isSettingLocked && (
           <p className="text-xs text-[#AAAAAA] mb-2 italic">Your Abridge contact has scoped this review to {SETTING_LABELS[setting]}.</p>
         )}
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-data-request-title">Help us tell your story</h1>
-        <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto">
+        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-EBR Data Request</p>
+        <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-data-request-title">Help us tell your story</h1>
+        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
           Select the metrics you track and enter your numbers. Your Abridge partner will use this to prepare your business review.
         </p>
       </div>
@@ -246,7 +247,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       <div className="w-full max-w-2xl space-y-6">
         {Object.entries(byDomain).map(([domain, metrics]) => (
           <div key={domain} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
+            <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
             <div className="space-y-3">
               {metrics.map((metric) => (
                 <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
@@ -259,7 +260,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           <div className="grid grid-cols-2 gap-3">
             <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
               className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
               }`}
               data-testid="button-download-pdf-data-request"
             >
@@ -270,7 +271,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
                 hasAnyData
                   ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
               }`}
               data-testid="button-copy-link-data-request"
             >
@@ -312,8 +313,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-400 pb-8">
-          No account required. Your answers are saved in this browser and copied as text — nothing is stored on any server.
+        <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
+          No account required. Your answers are saved in this browser — nothing is stored on any server.
         </p>
       </div>
     </div>

@@ -118,7 +118,7 @@ function NumberField({
 
   return (
     <div>
-      <label className="block text-xs font-medium text-[#888888] mb-1 uppercase tracking-wide">
+      <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">
         {label}
       </label>
       <div className="flex items-center gap-2">
@@ -137,15 +137,15 @@ function NumberField({
         />
         {suffix && <span className="text-sm text-[#999999] whitespace-nowrap font-medium">{suffix}</span>}
       </div>
-      {hint && <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug">{hint}</p>}
+      {hint && <p className="text-[11px] text-[#BBBBBB] mt-1 leading-snug italic">{hint}</p>}
     </div>
   );
 }
 
 function SectionDivider({ label }: { label: string }) {
   return (
-    <div className="border-t border-[#F0EBE5] pt-4 mt-4">
-      <p className="text-xs text-[#AAAAAA] uppercase tracking-widest mb-3">{label}</p>
+    <div className="border-t border-[#EDE8E2] pt-4 mt-5">
+      <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">{label}</p>
     </div>
   );
 }
@@ -301,14 +301,16 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   const hasAnyData = Object.entries(formState).some(([k, v]) => k !== 'selectedSettings' && v != null);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-2xl mb-10 text-center">
-        <div className="flex items-center justify-center mb-6">
-          <img src={abridgeLogo} alt="Abridge" className="h-6" />
+        <div className="flex items-center justify-center mb-8">
+          <img src={abridgeLogo} alt="Abridge" className="h-7" />
         </div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-intake-title">Help us prepare for our call</h1>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          Share a few details about your organization before we connect. Takes about 2 minutes.
+        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
+        <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
+        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
+          Share a few details about your organization before we connect.
+          Takes about 2 minutes.
         </p>
       </div>
 
@@ -324,7 +326,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                   disabled={hasLocking}
                   className={`relative text-left p-3 rounded-lg border-2 transition-all ${
                     isGreyed ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed" :
-                    selected ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-gray-200 hover:border-gray-300"
+                    selected ? "border-[#EA2C00] bg-white shadow-[0_2px_8px_rgba(234,44,0,0.08)]" : "border-[#E5E0DB] bg-[#F5F0EB] hover:border-[#EA2C00] hover:shadow-sm"
                   }`}
                   data-testid={`button-setting-${setting.id}`}
                 >
@@ -338,8 +340,8 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
                   )}
-                  <div className={`text-sm font-medium pr-5 ${isGreyed ? "text-gray-400" : "text-gray-900"}`}>{setting.label}</div>
-                  <div className={`text-xs mt-0.5 ${isGreyed ? "text-gray-300" : "text-gray-500"}`}>{setting.description}</div>
+                  <div className={`text-sm font-semibold pr-5 ${isGreyed ? "text-gray-400" : "text-[#1A1A1A]"}`}>{setting.label}</div>
+                  <div className={`text-xs mt-0.5 ${isGreyed ? "text-gray-300" : "text-[#888888]"}`}>{setting.description}</div>
                 </button>
               );
             })}
@@ -363,11 +365,11 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="bg-white rounded-xl border border-[#E5E0DB] p-6 shadow-sm"
+                className="bg-white rounded-xl border border-[#E8E3DD] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
               >
                 <div className="flex items-center gap-2 mb-5">
                   <Icon className="w-4.5 h-4.5 text-[#EA2C00]" />
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{meta.label}</h3>
+                  <h3 className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-widest">{meta.label}</h3>
                 </div>
 
                 {settingId === "outpatient" && (
@@ -532,7 +534,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             <div className="grid grid-cols-2 gap-3">
               <button onClick={handleDownloadPDF} disabled={!hasMinimum || pdfLoading}
                 className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                  hasMinimum ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
+                  hasMinimum ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
                 }`}
                 data-testid="button-download-pdf-intake"
               >
@@ -545,7 +547,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     ? copied
                       ? "bg-green-500 text-white"
                       : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                    : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
+                    : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
                 }`}
                 data-testid="button-copy-link-intake"
               >
@@ -590,8 +592,8 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
           </div>
         )}
 
-        <p className="text-center text-xs text-[#BBBBBB] pb-8 mt-3">
-          No account required. Your answers are saved in this browser and copied as text — nothing is stored on any server.
+        <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
+          No account required. Your answers are saved in this browser — nothing is stored on any server.
         </p>
       </div>
     </div>
