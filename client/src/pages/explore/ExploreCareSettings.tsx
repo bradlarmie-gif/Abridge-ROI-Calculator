@@ -56,6 +56,15 @@ interface ExploreCareSettingsProps {
 
 export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
+
+  const handleCreateIntakeLink = async () => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    const url = generateIntakeFormUrl(selectedSetting ? [selectedSetting] : undefined);
+    await navigator.clipboard.writeText(url);
+    setIntakeLinkCopied(true);
+    setTimeout(() => setIntakeLinkCopied(false), 2000);
+  };
 
   const handleContinue = () => {
     if (!selectedSetting) return;
@@ -290,6 +299,24 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
               </motion.div>
             )}
           </AnimatePresence>
+
+          <motion.div
+            className="max-w-[480px] mx-auto px-1 mt-4 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <button
+              onClick={handleCreateIntakeLink}
+              className="text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0]"
+              data-testid="button-intake-link"
+            >
+              {intakeLinkCopied
+                ? <span className="text-green-500 no-underline">link copied</span>
+                : 'send intake form to prospect'
+              }
+            </button>
+          </motion.div>
         </motion.div>
       </div>
     </div>
