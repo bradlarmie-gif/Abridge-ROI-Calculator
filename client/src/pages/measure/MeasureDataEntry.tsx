@@ -36,6 +36,7 @@ export default function MeasureDataEntry({
   onHome,
 }: MeasureDataEntryProps) {
   const [dataFormCopied, setDataFormCopied] = useState(false);
+  const [dataFormCreating, setDataFormCreating] = useState(false);
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
@@ -201,8 +202,10 @@ export default function MeasureDataEntry({
             Tell us about your Abridge deployment.
           </p>
           <button
+            disabled={dataFormCreating}
             onClick={async () => {
               setDataFormCopied(false);
+              setDataFormCreating(true);
               try {
                 const setting = state.careSetting || activeSettings[0] || 'outpatient';
                 const url = await generateDataFormShortUrl({ setting });
@@ -210,11 +213,12 @@ export default function MeasureDataEntry({
                 setDataFormCopied(true);
                 setTimeout(() => setDataFormCopied(false), 2500);
               } catch { /* ignore */ }
+              setDataFormCreating(false);
             }}
-            className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${dataFormCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
+            className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${dataFormCopied ? 'bg-green-600 text-white' : dataFormCreating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
             data-testid="button-send-data-request"
           >
-            {dataFormCopied ? 'Copied!' : 'Data Request'}
+            {dataFormCreating ? 'Creating link…' : dataFormCopied ? 'Copied!' : 'Data Request'}
           </button>
         </motion.div>
 

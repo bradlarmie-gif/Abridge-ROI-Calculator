@@ -312,6 +312,7 @@ export default function MeasureMetricSelection({
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
   const [dataRequestCopied, setDataRequestCopied] = useState(false);
+  const [dataRequestCreating, setDataRequestCreating] = useState(false);
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const activeSettings = state.activeCareSettings?.length
@@ -699,8 +700,10 @@ export default function MeasureMetricSelection({
             {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
           <button
+            disabled={dataRequestCreating}
             onClick={async () => {
               setDataRequestCopied(false);
+              setDataRequestCreating(true);
               try {
                 const setting = state.careSetting || activeSettings[0] || 'outpatient';
                 const activeMetricIds = Array.from(new Set(
@@ -711,13 +714,14 @@ export default function MeasureMetricSelection({
                 setDataRequestCopied(true);
                 setTimeout(() => setDataRequestCopied(false), 2500);
               } catch { /* ignore */ }
+              setDataRequestCreating(false);
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              dataRequestCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
+              dataRequestCopied ? 'bg-green-600 text-white' : dataRequestCreating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
             }`}
             data-testid="button-send-data-request"
           >
-            {dataRequestCopied ? 'Copied!' : 'Data Request'}
+            {dataRequestCreating ? 'Creating link…' : dataRequestCopied ? 'Copied!' : 'Data Request'}
           </button>
         </div>
       </div>

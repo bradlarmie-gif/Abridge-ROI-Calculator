@@ -78,13 +78,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
   const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
   const handleCreateIntakeLink = async () => {
-    try {
-      const { generateIntakeFormShortUrl } = await import('@/lib/intakeUrlState');
-      const url = await generateIntakeFormShortUrl(state.careSetting ? [state.careSetting] : undefined);
-      await navigator.clipboard.writeText(url);
-      setIntakeLinkCopied(true);
-      setTimeout(() => setIntakeLinkCopied(false), 2000);
-    } catch { /* ignore */ }
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+    await navigator.clipboard.writeText(url);
+    setIntakeLinkCopied(true);
+    setTimeout(() => setIntakeLinkCopied(false), 2000);
   };
 
   function applyFteEstimate(multiplier: number, label: string) {

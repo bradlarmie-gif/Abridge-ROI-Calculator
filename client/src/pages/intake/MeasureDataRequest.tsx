@@ -183,7 +183,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     return defaultDeployment;
   });
 
-  const [submitState, setSubmitState] = useState<'idle' | 'copied' | 'shared' | 'fallback'>('idle');
+  const [submitState, setSubmitState] = useState<'idle' | 'creating' | 'copied' | 'shared' | 'fallback'>('idle');
   const [fallbackText, setFallbackText] = useState<string | null>(null);
   const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -243,10 +243,11 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   }
 
   async function handleSubmit() {
-    setSubmitState('idle');
+    setSubmitState('creating');
     setFallbackText(null);
     try {
       const url = await generateDataReceiptShortUrl(buildResponse());
+      setSubmitState('idle');
       const result = await shareOrCopy(url, 'My Abridge Data');
       if (result === 'fallback') {
         setSubmitState('fallback');
@@ -256,7 +257,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         setTimeout(() => setSubmitState('idle'), 4000);
       }
     } catch {
-      // user cancelled native share or short link failed
+      setSubmitState('idle');
     }
   }
 
@@ -466,15 +467,19 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               <Download className="w-4 h-4" />
               {pdfLoading ? "Generating…" : "Download PDF"}
             </button>
-            <button onClick={handleSubmit} disabled={!hasAnyData}
+            <button onClick={handleSubmit} disabled={!hasAnyData || submitState === 'creating'}
               className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                hasAnyData
-                  ? submitState === 'copied' || submitState === 'shared' ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+                !hasAnyData
+                  ? "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+                  : submitState === 'creating' ? "bg-[#555] text-white cursor-wait"
+                  : submitState === 'copied' || submitState === 'shared' ? "bg-green-500 text-white"
+                  : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
               }`}
               data-testid="button-copy-link-data-request"
             >
-              {submitState === 'shared'
+              {submitState === 'creating'
+                ? <><Link2 className="w-4 h-4" /> Creating link…</>
+                : submitState === 'shared'
                 ? <><ClipboardCheck className="w-4 h-4" /> Sent! ✓</>
                 : submitState === 'copied'
                   ? <><ClipboardCheck className="w-4 h-4" /> Copied! ✓</>

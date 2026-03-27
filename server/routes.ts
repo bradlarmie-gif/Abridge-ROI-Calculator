@@ -1,10 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { nanoid } from "nanoid";
+import crypto from "crypto";
 
-const ALLOWED_PARAM_KEYS = ["data_form", "data_receipt", "intake_receipt", "intake_form"] as const;
+const ALLOWED_PARAM_KEYS = ["data_form", "data_receipt", "intake_receipt"] as const;
 const LINK_TTL_DAYS = 30;
+const CODE_LENGTH = 8;
+const ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const MAX_RETRIES = 5;
+
+function generateAlphanumericCode(length: number): string {
+  const bytes = crypto.randomBytes(length);
+  return Array.from(bytes, (b) => ALPHANUMERIC[b % ALPHANUMERIC.length]).join("");
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -20,10 +28,23 @@ export async function registerRoutes(
       if (!payload || typeof payload !== "string") {
         return res.status(400).json({ error: "Invalid payload" });
       }
-      const code = nanoid(10);
       const expiresAt = new Date(Date.now() + LINK_TTL_DAYS * 24 * 60 * 60 * 1000);
-      await storage.createShortLink(code, paramKey, payload, expiresAt);
-      res.json({ code, url: `/s/${code}` });
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        const code = generateAlphanumericCode(CODE_LENGTH);
+        try {
+          await storage.createShortLink(code, paramKey, payload, expiresAt);
+          return res.json({ code, url: `/s/${code}` });
+        } catch (err: any) {
+          if (err?.code === "23505") {
+            lastErr = err;
+            continue;
+          }
+          throw err;
+        }
+      }
+      console.error("Failed to generate unique code after retries:", lastErr);
+      res.status(500).json({ error: "Internal server error" });
     } catch (err) {
       console.error("Failed to create short link:", err);
       res.status(500).json({ error: "Internal server error" });

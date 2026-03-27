@@ -206,7 +206,7 @@ function loadSavedState(preseed?: IntakeFormPreseed, fingerprint?: string): Inta
 export default function ExploreIntakeForm({ preseed, storageFingerprint }: ExploreIntakeFormProps) {
   const storageKey = getStorageKey(storageFingerprint);
   const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
-  const [submitState, setSubmitState] = useState<'idle' | 'copied' | 'shared' | 'fallback'>('idle');
+  const [submitState, setSubmitState] = useState<'idle' | 'creating' | 'copied' | 'shared' | 'fallback'>('idle');
   const [fallbackText, setFallbackText] = useState<string | null>(null);
   const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -267,10 +267,11 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   }
 
   async function handleSubmit() {
-    setSubmitState('idle');
+    setSubmitState('creating');
     setFallbackText(null);
     try {
       const url = await generateIntakeReceiptShortUrl(buildResponse());
+      setSubmitState('idle');
       const result = await shareOrCopy(url, 'My Abridge Intake');
       if (result === 'fallback') {
         setSubmitState('fallback');
@@ -280,7 +281,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         setTimeout(() => setSubmitState('idle'), 4000);
       }
     } catch {
-      // user cancelled native share or short link failed
+      setSubmitState('idle');
     }
   }
 
@@ -547,17 +548,20 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 <Download className="w-4 h-4" />
                 {pdfLoading ? "Generating…" : "Download PDF"}
               </button>
-              <button onClick={handleSubmit} disabled={!hasMinimum}
+              <button onClick={handleSubmit} disabled={!hasMinimum || submitState === 'creating'}
                 className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                  hasMinimum
-                    ? submitState === 'copied' || submitState === 'shared'
+                  !hasMinimum
+                    ? "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+                    : submitState === 'creating' ? "bg-[#555] text-white cursor-wait"
+                    : submitState === 'copied' || submitState === 'shared'
                       ? "bg-green-500 text-white"
                       : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                    : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
                 }`}
                 data-testid="button-copy-link-intake"
               >
-                {submitState === 'shared'
+                {submitState === 'creating'
+                  ? <><Link2 className="w-4 h-4" /> Creating link…</>
+                  : submitState === 'shared'
                   ? <><ClipboardCheck className="w-4 h-4" /> Sent! ✓</>
                   : submitState === 'copied'
                     ? <><ClipboardCheck className="w-4 h-4" /> Copied! ✓</>
