@@ -34,7 +34,7 @@ const s = StyleSheet.create({
   metaRow: { flexDirection: "row", gap: 24, marginBottom: 4 },
   metaLabel: { fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: 1, width: 110 },
   metaValue: { fontSize: 10, color: C.text },
-  settingHeader: { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: C.text, marginBottom: 12, borderBottomWidth: 2, borderBottomColor: C.primary, paddingBottom: 6 },
+  settingHeader: { fontSize: 16, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: C.text, marginBottom: 16, borderBottomWidth: 2, borderBottomColor: C.primary, paddingBottom: 8 },
   sectionLabel: { fontSize: 8.5, color: C.primary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 700, marginTop: 14, marginBottom: 6 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 0 },
   cell: { width: "50%", paddingVertical: 5, paddingRight: 12 },
@@ -42,6 +42,7 @@ const s = StyleSheet.create({
   fieldValue: { fontSize: 11, fontWeight: 700, color: C.text, marginTop: 2 },
   footer: { marginTop: "auto", paddingTop: 10, borderTopWidth: 1, borderTopColor: C.border },
   footerText: { fontSize: 7.5, color: C.muted, lineHeight: 1.5, textAlign: "center" },
+  pageNumber: { position: "absolute", bottom: 24, right: 54, fontSize: 8, color: C.muted },
 });
 
 const SETTING_LABELS: Record<ExploreCareSetting, string> = {
@@ -172,7 +173,7 @@ function FooterBlock() {
   );
 }
 
-function SettingSection({ setting, data }: { setting: ExploreCareSetting; data: ExploreIntakeResponse }) {
+function SettingContent({ setting, data }: { setting: ExploreCareSetting; data: ExploreIntakeResponse }) {
   const groups = getFieldsForSetting(setting, data);
   return (
     <View>
@@ -198,8 +199,51 @@ function SettingSection({ setting, data }: { setting: ExploreCareSetting; data: 
   );
 }
 
-function IntakeReceiptDocument({ data }: { data: ExploreIntakeResponse }) {
-  const settingsLabel = data.settings.map(s => SETTING_LABELS[s]).join(" · ");
+function CoverPage({ data }: { data: ExploreIntakeResponse }) {
+  const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
+  return (
+    <Page size="LETTER" style={s.page}>
+      <View style={s.logoBanner}>
+        <Text style={s.logoText}>ABRIDGE</Text>
+      </View>
+      <Text style={s.coverTitle}>PRE-CALL DATA INTAKE</Text>
+      <Text style={s.coverSub}>Organization Baseline Summary</Text>
+      <View style={s.metaRow}>
+        <Text style={s.metaLabel}>Prepared for</Text>
+        <Text style={s.metaValue}>Abridge Sales Team</Text>
+      </View>
+      <View style={s.metaRow}>
+        <Text style={s.metaLabel}>Date</Text>
+        <Text style={s.metaValue}>{today()}</Text>
+      </View>
+      <View style={s.metaRow}>
+        <Text style={s.metaLabel}>Care Settings</Text>
+        <Text style={s.metaValue}>{data.settings.length}</Text>
+      </View>
+      <View style={{ ...s.metaRow, marginBottom: 24 }}>
+        <Text style={s.metaLabel}>Ref</Text>
+        <Text style={s.metaValue}>Explore Intake — {settingsLabel}</Text>
+      </View>
+      <FooterBlock />
+    </Page>
+  );
+}
+
+function SettingPage({ setting, data, pageNum, totalPages }: { setting: ExploreCareSetting; data: ExploreIntakeResponse; pageNum: number; totalPages: number }) {
+  return (
+    <Page size="LETTER" style={s.page}>
+      <View style={s.logoBanner}>
+        <Text style={s.logoText}>ABRIDGE</Text>
+      </View>
+      <SettingContent setting={setting} data={data} />
+      <FooterBlock />
+      <Text style={s.pageNumber}>{pageNum} / {totalPages}</Text>
+    </Page>
+  );
+}
+
+function SingleSettingDocument({ data }: { data: ExploreIntakeResponse }) {
+  const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
   return (
     <Document>
       <Page size="LETTER" style={s.page}>
@@ -220,16 +264,28 @@ function IntakeReceiptDocument({ data }: { data: ExploreIntakeResponse }) {
           <Text style={s.metaLabel}>Ref</Text>
           <Text style={s.metaValue}>Explore Intake — {settingsLabel}</Text>
         </View>
-        {data.settings.map((setting) => (
-          <SettingSection key={setting} setting={setting} data={data} />
-        ))}
+        <SettingContent setting={data.settings[0]} data={data} />
         <FooterBlock />
       </Page>
     </Document>
   );
 }
 
+function MultiSettingDocument({ data }: { data: ExploreIntakeResponse }) {
+  const totalPages = data.settings.length + 1;
+  return (
+    <Document>
+      <CoverPage data={data} />
+      {data.settings.map((setting, i) => (
+        <SettingPage key={setting} setting={setting} data={data} pageNum={i + 2} totalPages={totalPages} />
+      ))}
+    </Document>
+  );
+}
+
 export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse): Promise<void> {
-  const blob = await pdf(<IntakeReceiptDocument data={data} />).toBlob();
+  const isMulti = data.settings.length > 1;
+  const doc = isMulti ? <MultiSettingDocument data={data} /> : <SingleSettingDocument data={data} />;
+  const blob = await pdf(doc).toBlob();
   await savePdfBlob(blob, `Abridge_Intake_Receipt_${new Date().toISOString().slice(0, 10)}.pdf`, "Pre-Call Data Intake");
 }

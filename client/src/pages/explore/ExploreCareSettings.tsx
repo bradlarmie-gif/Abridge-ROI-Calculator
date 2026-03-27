@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check } from "lucide-react";
+import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check, FileText, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -56,17 +56,53 @@ interface ExploreCareSettingsProps {
 
 export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
+    selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
+  );
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [linkLoading, setLinkLoading] = useState(false);
+
+  const isMultiMode = selectedForRequest.length > 1;
+
+  const handleCardClick = (settingId: ExploreCareSetting) => {
+    setSelectedForRequest(prev =>
+      prev.includes(settingId)
+        ? prev.filter(s => s !== settingId)
+        : [...prev, settingId]
+    );
+  };
+
   const handleContinue = () => {
-    if (!selectedSetting) return;
+    if (selectedForRequest.length !== 1) return;
+    onSelectSetting(selectedForRequest[0]);
     setIsLoading(true);
     setTimeout(() => {
       onNext();
     }, 800);
   };
 
-  const selectedLabel = selectedSetting
-    ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label
+  const handleDataRequest = async () => {
+    if (selectedForRequest.length === 0 || linkLoading) return;
+    setLinkLoading(true);
+    try {
+      const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+      const url = generateIntakeFormUrl(selectedForRequest);
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* ignore */
+    } finally {
+      setLinkLoading(false);
+    }
+  };
+
+  const singleSelected = selectedForRequest.length === 1 ? selectedForRequest[0] : null;
+  const singleLabel = singleSelected
+    ? CARE_SETTINGS.find(s => s.id === singleSelected)?.label
     : null;
+
+  const selectedCount = selectedForRequest.length;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
@@ -128,13 +164,13 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
           <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-4 gap-3 min-[400px]:gap-4 lg:gap-5">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
-              const isSelected = selectedSetting === setting.id;
+              const isSelected = selectedForRequest.includes(setting.id);
               const isDisabled = disabledSettings.includes(setting.id);
               
               return (
                 <motion.div
                   key={setting.id}
-                  onClick={() => !isDisabled && onSelectSetting(setting.id)}
+                  onClick={() => !isDisabled && handleCardClick(setting.id)}
                   role="button"
                   tabIndex={isDisabled ? -1 : 0}
                   aria-disabled={isDisabled}
@@ -142,7 +178,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     if (isDisabled) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      onSelectSetting(setting.id);
+                      handleCardClick(setting.id);
                     }
                   }}
                   className={`
@@ -162,12 +198,14 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 >
                   {isSelected && !isDisabled && (
                     <motion.div 
-                      className="absolute top-3 right-3 min-[400px]:top-4 min-[400px]:right-4 w-2 h-2 bg-[#EA2C00] rounded-full"
+                      className="absolute top-3 right-3 min-[400px]:top-4 min-[400px]:right-4 w-5 h-5 bg-[#EA2C00] rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       data-testid={`indicator-selected-${setting.id}`}
-                    />
+                    >
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    </motion.div>
                   )}
 
                   <div
@@ -264,28 +302,64 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-3"
               >
                 <Button
                   onClick={handleContinue}
-                  disabled={!selectedSetting}
+                  disabled={selectedForRequest.length !== 1}
                   className={`
                     w-full h-[52px] font-semibold rounded-lg text-base transition-all duration-200
-                    ${selectedSetting 
+                    ${selectedForRequest.length === 1
                       ? 'bg-[#EA2C00] hover:bg-[#D42800] text-white' 
                       : 'bg-[#E0E0E0] text-[#999999] cursor-not-allowed'
                     }
                   `}
                   data-testid="button-continue"
                 >
-                  {selectedSetting ? (
+                  {selectedForRequest.length === 1 ? (
                     <>
-                      Continue with {selectedLabel}
+                      Continue with {singleLabel}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </>
+                  ) : isMultiMode ? (
+                    'Select one setting to build a model'
                   ) : (
                     'Choose a setting to continue'
                   )}
                 </Button>
+
+                {selectedCount > 0 && (
+                  <Button
+                    onClick={handleDataRequest}
+                    disabled={linkLoading}
+                    variant="outline"
+                    className={`
+                      w-full h-[44px] rounded-lg text-sm font-medium transition-all duration-200
+                      ${linkCopied
+                        ? 'border-green-500 text-green-600 bg-green-50 hover:bg-green-50'
+                        : 'border-[#E0E0E0] text-[#666666] hover:border-[#CCCCCC] hover:text-[#1A1A1A] bg-white'
+                      }
+                    `}
+                    data-testid="button-data-request"
+                  >
+                    {linkLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creating link...
+                      </>
+                    ) : linkCopied ? (
+                      <>
+                        <CheckCheck className="w-4 h-4 mr-2" />
+                        Link copied!
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Data Request{selectedCount > 1 ? ` (${selectedCount} settings)` : ''}
+                      </>
+                    )}
+                  </Button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
