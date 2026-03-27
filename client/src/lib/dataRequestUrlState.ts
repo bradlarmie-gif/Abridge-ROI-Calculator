@@ -9,8 +9,20 @@ export interface DataRequestMetricEntry {
   isMonthlyMode: boolean;
 }
 
+export interface DeploymentSnapshot {
+  organizationName: string;
+  goLiveDate?: string | null;
+  monthsOnAbridge: number;
+  totalProviders: number;
+  liveProviders: number;
+  mruProviders: number;
+  totalEncounters: number;
+  abridgeEncounters: number;
+}
+
 export interface MeasureDataRequestResponse {
   setting: MeasureCareSetting;
+  deployment: DeploymentSnapshot;
   metrics: DataRequestMetricEntry[];
 }
 
@@ -23,12 +35,42 @@ export function encodeDataRequest(data: MeasureDataRequestResponse): string {
   return LZString.compressToEncodedURIComponent(JSON.stringify(data));
 }
 
+function safeFiniteNum(v: unknown, fallback = 0): number {
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+function normalizeDeployment(raw: unknown): DeploymentSnapshot {
+  const d = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const totalProviders = safeFiniteNum(d.totalProviders);
+  const liveProviders = Math.min(safeFiniteNum(d.liveProviders), totalProviders);
+  const mruProviders = Math.min(safeFiniteNum(d.mruProviders), liveProviders);
+  const totalEncounters = safeFiniteNum(d.totalEncounters);
+  const abridgeEncounters = Math.min(safeFiniteNum(d.abridgeEncounters), totalEncounters);
+  return {
+    organizationName: typeof d.organizationName === 'string' ? d.organizationName : '',
+    goLiveDate: typeof d.goLiveDate === 'string' ? d.goLiveDate : null,
+    monthsOnAbridge: safeFiniteNum(d.monthsOnAbridge),
+    totalProviders,
+    liveProviders,
+    mruProviders,
+    totalEncounters,
+    abridgeEncounters,
+  };
+}
+
+export function hasDeploymentData(dep?: DeploymentSnapshot): boolean {
+  if (!dep) return false;
+  return !!(dep.organizationName || dep.monthsOnAbridge > 0 || dep.totalProviders > 0 || dep.totalEncounters > 0);
+}
+
 export function decodeDataRequest(encoded: string): MeasureDataRequestResponse | null {
   try {
     const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
     if (!decompressed) return null;
     const parsed = JSON.parse(decompressed);
     if (!parsed?.setting || !Array.isArray(parsed.metrics)) return null;
+    parsed.deployment = normalizeDeployment(parsed.deployment);
     return parsed as MeasureDataRequestResponse;
   } catch {
     return null;
@@ -64,10 +106,20 @@ const SETTING_LABELS: Record<MeasureCareSetting, string> = {
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 export function generateDataResponseText(data: MeasureDataRequestResponse, metricLabels: Record<string, string>): string {
+  const dep = data.deployment;
   const lines: string[] = [
     `ABRIDGE — MEASURE DATA REQUEST (${SETTING_LABELS[data.setting]})`,
     '',
   ];
+
+  if (dep.organizationName) lines.push(`  Organization: ${dep.organizationName}`);
+  if (dep.monthsOnAbridge) lines.push(`  Months on Abridge: ${dep.monthsOnAbridge}`);
+  if (dep.totalProviders) lines.push(`  Total providers: ${dep.totalProviders}`);
+  if (dep.liveProviders) lines.push(`  Live on Abridge: ${dep.liveProviders}`);
+  if (dep.mruProviders) lines.push(`  Monthly recording users: ${dep.mruProviders}`);
+  if (dep.totalEncounters) lines.push(`  Total encounters: ${dep.totalEncounters.toLocaleString('en-US')}`);
+  if (dep.abridgeEncounters) lines.push(`  Abridge encounters: ${dep.abridgeEncounters.toLocaleString('en-US')}`);
+  lines.push('');
 
   for (const m of data.metrics) {
     const label = metricLabels[m.metricId] || m.metricId;

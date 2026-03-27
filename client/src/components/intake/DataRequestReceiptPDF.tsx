@@ -98,19 +98,57 @@ function DataRequestReceiptDocument({ data }: { data: MeasureDataRequestResponse
           <Text style={s.logoText}>ABRIDGE</Text>
         </View>
         <Text style={s.coverTitle}>PRE-EBR DATA REQUEST</Text>
-        <Text style={s.coverSub}>{SETTING_LABELS[data.setting]} — Metric Summary</Text>
-        <View style={s.metaRow}>
-          <Text style={s.metaLabel}>Prepared for</Text>
-          <Text style={s.metaValue}>Abridge Partner Team</Text>
-        </View>
+        <Text style={s.coverSub}>
+          {data.deployment?.organizationName
+            ? `${data.deployment.organizationName} · ${SETTING_LABELS[data.setting]}`
+            : `${SETTING_LABELS[data.setting]} — Metric Summary`
+          }
+        </Text>
+        {data.deployment?.organizationName ? (
+          <View style={s.metaRow}>
+            <Text style={s.metaLabel}>Organization</Text>
+            <Text style={s.metaValue}>{data.deployment.organizationName}</Text>
+          </View>
+        ) : (
+          <View style={s.metaRow}>
+            <Text style={s.metaLabel}>Prepared for</Text>
+            <Text style={s.metaValue}>Abridge Partner Team</Text>
+          </View>
+        )}
         <View style={s.metaRow}>
           <Text style={s.metaLabel}>Date</Text>
           <Text style={s.metaValue}>{today()}</Text>
         </View>
-        <View style={{ ...s.metaRow, marginBottom: 24 }}>
+        <View style={s.metaRow}>
           <Text style={s.metaLabel}>Setting</Text>
           <Text style={s.metaValue}>{SETTING_LABELS[data.setting]}</Text>
         </View>
+        {data.deployment?.monthsOnAbridge > 0 && (
+          <View style={s.metaRow}>
+            <Text style={s.metaLabel}>Months on Abridge</Text>
+            <Text style={s.metaValue}>{data.deployment.monthsOnAbridge}</Text>
+          </View>
+        )}
+        {data.deployment?.totalProviders > 0 && (
+          <View style={s.metaRow}>
+            <Text style={s.metaLabel}>Providers</Text>
+            <Text style={s.metaValue}>
+              {data.deployment.totalProviders} total · {data.deployment.liveProviders} live · {data.deployment.mruProviders} MRUs
+            </Text>
+          </View>
+        )}
+        {data.deployment?.totalEncounters > 0 && (
+          <View style={{ ...s.metaRow, marginBottom: 24 }}>
+            <Text style={s.metaLabel}>Encounters</Text>
+            <Text style={s.metaValue}>
+              {data.deployment.abridgeEncounters.toLocaleString()} / {data.deployment.totalEncounters.toLocaleString()}
+              {data.deployment.totalEncounters > 0 ? ` (${Math.round((data.deployment.abridgeEncounters / data.deployment.totalEncounters) * 100)}%)` : ''}
+            </Text>
+          </View>
+        )}
+        {!(data.deployment?.totalEncounters > 0) && (
+          <View style={{ ...s.metaRow, marginBottom: 24 }}><Text style={s.metaLabel}> </Text></View>
+        )}
 
         <View style={s.headerRow}>
           <Text style={{ ...s.headerLabel, flex: 1 }}>Metric</Text>

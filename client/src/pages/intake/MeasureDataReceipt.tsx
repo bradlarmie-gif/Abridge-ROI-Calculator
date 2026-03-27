@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CheckCircle, Download, ArrowRight } from "lucide-react";
-import type { MeasureDataRequestResponse } from "@/lib/dataRequestUrlState";
+import { type MeasureDataRequestResponse, hasDeploymentData } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
@@ -50,9 +50,58 @@ export default function MeasureDataReceipt({ data, onLoadInCalculator }: Measure
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <h1 className="text-lg font-semibold text-[#1A1A1A]">Data received</h1>
           </div>
-          <p className="text-sm text-[#888888]">Metric summary for {SETTING_LABELS[data.setting]}</p>
+          <p className="text-sm text-[#888888]">
+            {data.deployment?.organizationName
+              ? `${data.deployment.organizationName} · ${SETTING_LABELS[data.setting]}`
+              : `Metric summary for ${SETTING_LABELS[data.setting]}`
+            }
+          </p>
           <p className="text-xs text-[#AAAAAA] mt-1">Received {today}</p>
         </div>
+
+        {hasDeploymentData(data.deployment) && (
+          <div className="bg-white border border-[#E5E0DB] rounded-xl p-6 mb-4" data-testid="receipt-deployment-card">
+            <h3 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Deployment Profile</h3>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              {data.deployment.monthsOnAbridge > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Months on Abridge</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.monthsOnAbridge}</p>
+                </div>
+              )}
+              {data.deployment.totalProviders > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Total Providers</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.totalProviders}</p>
+                </div>
+              )}
+              {data.deployment.liveProviders > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Live on Abridge</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.liveProviders}</p>
+                </div>
+              )}
+              {data.deployment.mruProviders > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Monthly Recording Users</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.mruProviders}</p>
+                </div>
+              )}
+              {data.deployment.totalEncounters > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Total Encounters</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.totalEncounters.toLocaleString()}</p>
+                </div>
+              )}
+              {data.deployment.abridgeEncounters > 0 && (
+                <div>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Abridge Encounters</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.abridgeEncounters.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white border border-[#E5E0DB] rounded-xl p-6 mb-8" data-testid="receipt-metrics-card">
           <div className="flex border-b border-[#E5E0DB] pb-2 mb-2">

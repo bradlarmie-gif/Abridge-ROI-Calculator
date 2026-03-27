@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { copyToClipboard } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -38,7 +38,19 @@ interface SavedFormState {
   setting: MeasureCareSetting;
   checkedIds: string[];
   entries: Record<string, DataRequestMetricEntry>;
+  deployment: DeploymentSnapshot;
 }
+
+const defaultDeployment: DeploymentSnapshot = {
+  organizationName: '',
+  goLiveDate: null,
+  monthsOnAbridge: 0,
+  totalProviders: 0,
+  liveProviders: 0,
+  mruProviders: 0,
+  totalEncounters: 0,
+  abridgeEncounters: 0,
+};
 
 function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
   metric: MetricDefinition; checked: boolean; entry: DataRequestMetricEntry | undefined;
@@ -158,6 +170,19 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     return {};
   });
 
+  const [deployment, setDeployment] = useState<DeploymentSnapshot>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedFormState;
+        if (saved && saved.setting === setting && saved.deployment) {
+          return saved.deployment;
+        }
+      }
+    } catch { /* ignore */ }
+    return defaultDeployment;
+  });
+
   const [copied, setCopied] = useState(false);
   const [fallbackText, setFallbackText] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -168,12 +193,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       try {
-        const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries };
+        const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries, deployment };
         localStorage.setItem(storageKey, JSON.stringify(toSave));
       } catch { /* ignore */ }
     }, 400);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [checkedIds, entries, setting, storageKey]);
+  }, [checkedIds, entries, deployment, setting, storageKey]);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -191,13 +216,29 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   function handleClearAll() {
     setCheckedIds(new Set());
     setEntries({});
+    setDeployment(defaultDeployment);
     try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+  }
+
+  function updateDeployment(updates: Partial<DeploymentSnapshot>) {
+    setDeployment(prev => {
+      const next = { ...prev, ...updates };
+      if (updates.goLiveDate !== undefined) {
+        if (updates.goLiveDate) {
+          const goLive = new Date(updates.goLiveDate);
+          const now = new Date();
+          const diff = (now.getFullYear() - goLive.getFullYear()) * 12 + (now.getMonth() - goLive.getMonth());
+          next.monthsOnAbridge = Math.max(0, diff);
+        }
+      }
+      return next;
+    });
   }
 
   function buildResponse(): MeasureDataRequestResponse {
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
-    return { setting, metrics };
+    return { setting, deployment, metrics };
   }
 
   async function handleCopyLink() {
@@ -222,7 +263,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     }
   }
 
-  const hasAnyData = Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
+  const hasAnyData =
+    deployment.organizationName.trim().length > 0 ||
+    deployment.totalProviders > 0 ||
+    Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
@@ -245,6 +289,155 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
+        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
+          <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">Your Organization</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Organization Name</label>
+              <input
+                type="text"
+                value={deployment.organizationName}
+                onChange={(e) => updateDeployment({ organizationName: e.target.value })}
+                placeholder="e.g., Valley Health System"
+                className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                data-testid="input-dep-org-name"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Go-Live Date</label>
+                <input
+                  type="date"
+                  value={deployment.goLiveDate || ''}
+                  onChange={(e) => updateDeployment({ goLiveDate: e.target.value || null })}
+                  className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  data-testid="input-dep-go-live"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Months on Abridge</label>
+                {deployment.goLiveDate ? (
+                  <div className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm font-semibold text-gray-900 text-right">
+                    {deployment.monthsOnAbridge}
+                  </div>
+                ) : (
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.monthsOnAbridge || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ monthsOnAbridge: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-months"
+                  />
+                )}
+                {deployment.goLiveDate && (
+                  <p className="text-[10px] text-gray-400 mt-0.5">Auto-calculated</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[#777777] mb-2 uppercase tracking-wider">Provider Adoption</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.totalProviders || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ totalProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-total-providers"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Live on Abridge</label>
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.liveProviders || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ liveProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-live-providers"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.mruProviders || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ mruProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-mru-providers"
+                  />
+                </div>
+              </div>
+              {deployment.totalProviders > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {[
+                    { label: 'Total', value: deployment.totalProviders, color: '#E8E2DA' },
+                    { label: 'Live', value: deployment.liveProviders, color: '#F5C4B8' },
+                    { label: 'MRUs', value: deployment.mruProviders, color: '#EA2C00' },
+                  ].map(tier => {
+                    const pct = Math.round((tier.value / deployment.totalProviders) * 100);
+                    return (
+                      <div key={tier.label} className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">{tier.label}</span>
+                        <div className="flex-1 h-4 bg-white rounded overflow-hidden">
+                          <div className="h-full rounded transition-all duration-300" style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: tier.color }} />
+                        </div>
+                        <span className="text-[11px] font-semibold text-gray-700 w-8 text-right">{tier.value}</span>
+                        <span className="text-[10px] text-gray-400 w-8 text-right">{pct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[#777777] mb-2 uppercase tracking-wider">Encounter Coverage</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Total Encounters</label>
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.totalEncounters || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ totalEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-total-encounters"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Abridge Encounters</label>
+                  <input
+                    type="number" min={0} step={1}
+                    value={deployment.abridgeEncounters || ''}
+                    placeholder="—"
+                    onChange={(e) => updateDeployment({ abridgeEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    data-testid="input-dep-abridge-encounters"
+                  />
+                </div>
+              </div>
+              {deployment.totalEncounters > 0 && deployment.abridgeEncounters > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">Cvg</span>
+                  <div className="flex-1 h-4 bg-white rounded overflow-hidden">
+                    <div className="h-full rounded transition-all duration-300" style={{
+                      width: `${Math.max(Math.round((deployment.abridgeEncounters / deployment.totalEncounters) * 100), 2)}%`,
+                      backgroundColor: '#EA2C00',
+                    }} />
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#EA2C00] w-12 text-right">
+                    {Math.round((deployment.abridgeEncounters / deployment.totalEncounters) * 100)}% covered
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {Object.entries(byDomain).map(([domain, metrics]) => (
           <div key={domain} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
             <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">{DOMAIN_LABELS[domain] || domain}</h2>

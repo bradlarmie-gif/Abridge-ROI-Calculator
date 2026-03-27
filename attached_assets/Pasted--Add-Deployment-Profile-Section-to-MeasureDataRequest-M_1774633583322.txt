@@ -1,0 +1,328 @@
+  Add Deployment Profile Section to MeasureDataRequest
+
+  MeasureDataRequest.tsx is the client-facing form customers fill out before an EBR. It currently only collects before/after metric values. It's missing the deployment/partner profile section — org name,
+  months on Abridge, provider adoption funnel, encounter coverage — which is essential context for the business review.
+
+  Step 1 — Update dataRequestUrlState.ts
+
+  Add a DeploymentSnapshot interface and include it in MeasureDataRequestResponse:
+
+  export interface DeploymentSnapshot {
+    organizationName: string;
+    goLiveDate?: string | null;           // ISO date string
+    monthsOnAbridge: number;
+    totalProviders: number;
+    liveProviders: number;
+    mruProviders: number;
+    totalEncounters: number;
+    abridgeEncounters: number;
+  }
+
+  export interface MeasureDataRequestResponse {
+    setting: MeasureCareSetting;
+    deployment: DeploymentSnapshot;       // ← add this
+    metrics: DataRequestMetricEntry[];
+  }
+
+  Update decodeDataRequest validation to accept responses where deployment may be absent (for backward compat — treat it as an empty object):
+
+  export function decodeDataRequest(encoded: string): MeasureDataRequestResponse | null {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+      if (!decompressed) return null;
+      const parsed = JSON.parse(decompressed);
+      if (!parsed?.setting || !Array.isArray(parsed.metrics)) return null;
+      if (!parsed.deployment) parsed.deployment = {
+        organizationName: '', monthsOnAbridge: 0, totalProviders: 0,
+        liveProviders: 0, mruProviders: 0, totalEncounters: 0, abridgeEncounters: 0,
+      };
+      return parsed as MeasureDataRequestResponse;
+    } catch {
+      return null;
+    }
+  }
+
+  Update generateDataResponseText to include a deployment header block before the metrics:
+
+  export function generateDataResponseText(data: MeasureDataRequestResponse, metricLabels: Record<string, string>): string {
+    const dep = data.deployment;
+    const lines: string[] = [
+      `ABRIDGE — MEASURE DATA REQUEST (${SETTING_LABELS[data.setting]})`,
+      '',
+    ];
+
+    if (dep.organizationName) lines.push(`  Organization: ${dep.organizationName}`);
+    if (dep.monthsOnAbridge) lines.push(`  Months on Abridge: ${dep.monthsOnAbridge}`);
+    if (dep.totalProviders) lines.push(`  Total providers: ${dep.totalProviders}`);
+    if (dep.liveProviders) lines.push(`  Live on Abridge: ${dep.liveProviders}`);
+    if (dep.mruProviders) lines.push(`  Monthly recording users: ${dep.mruProviders}`);
+    if (dep.totalEncounters) lines.push(`  Total encounters: ${dep.totalEncounters.toLocaleString('en-US')}`);
+    if (dep.abridgeEncounters) lines.push(`  Abridge encounters: ${dep.abridgeEncounters.toLocaleString('en-US')}`);
+    lines.push('');
+
+    // ... rest of metrics loop unchanged
+  }
+
+  ---
+  Step 2 — Update MeasureDataRequest.tsx
+
+  Add deployment state to the component's local state and localStorage persistence.
+
+  At the top of the component, alongside checkedIds and entries, add:
+
+  const defaultDeployment: DeploymentSnapshot = {
+    organizationName: '',
+    goLiveDate: null,
+    monthsOnAbridge: 0,
+    totalProviders: 0,
+    liveProviders: 0,
+    mruProviders: 0,
+    totalEncounters: 0,
+    abridgeEncounters: 0,
+  };
+
+  interface SavedFormState {
+    setting: MeasureCareSetting;
+    checkedIds: string[];
+    entries: Record<string, DataRequestMetricEntry>;
+    deployment: DeploymentSnapshot;    // ← add
+  }
+
+  const [deployment, setDeployment] = useState<DeploymentSnapshot>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedFormState;
+        if (saved && saved.setting === setting && saved.deployment) {
+          return saved.deployment;
+        }
+      }
+    } catch { /* ignore */ }
+    return defaultDeployment;
+  });
+
+  Update the debounced useEffect to also save deployment:
+  const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries, deployment };
+
+  Update handleClearAll to also reset deployment:
+  function handleClearAll() {
+    setCheckedIds(new Set());
+    setEntries({});
+    setDeployment(defaultDeployment);
+    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+  }
+
+  Update handleCopy to pass deployment in the response object:
+  async function handleCopy() {
+    const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
+      .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
+
+    const metricLabels: Record<string, string> = {};
+    for (const m of allMetrics) metricLabels[m.id] = m.label;
+
+    const text = generateDataResponseText({ setting, deployment, metrics }, metricLabels);
+    // ... rest unchanged
+  }
+
+  Add a updateDeployment helper:
+  function updateDeployment(updates: Partial<DeploymentSnapshot>) {
+    setDeployment(prev => {
+      const next = { ...prev, ...updates };
+      // Auto-calculate months from go-live date
+      if (updates.goLiveDate !== undefined) {
+        if (updates.goLiveDate) {
+          const goLive = new Date(updates.goLiveDate);
+          const now = new Date();
+          const diff = (now.getFullYear() - goLive.getFullYear()) * 12 + (now.getMonth() - goLive.getMonth());
+          next.monthsOnAbridge = Math.max(0, diff);
+        }
+      }
+      return next;
+    });
+  }
+
+  ---
+  Step 3 — Add deployment card UI in MeasureDataRequest.tsx
+
+  Insert this card before the {Object.entries(byDomain).map(...)} block (i.e., before the metric domain cards):
+
+  Style exactly matches the existing metric domain cards: bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm.
+
+  {/* Deployment Profile */}
+  <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
+    <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Your Organization</h2>
+    <div className="space-y-4">
+
+      {/* Org name */}
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Organization Name</label>
+        <input
+          type="text"
+          value={deployment.organizationName}
+          onChange={(e) => updateDeployment({ organizationName: e.target.value })}
+          placeholder="e.g., Valley Health System"
+          className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+          data-testid="input-dep-org-name"
+        />
+      </div>
+
+      {/* Go-live date + months auto-calc */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Go-Live Date</label>
+          <input
+            type="date"
+            value={deployment.goLiveDate || ''}
+            onChange={(e) => updateDeployment({ goLiveDate: e.target.value || null })}
+            className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+            data-testid="input-dep-go-live"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Months on Abridge</label>
+          {deployment.goLiveDate ? (
+            <div className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm font-semibold text-gray-900 text-right">
+              {deployment.monthsOnAbridge}
+            </div>
+          ) : (
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={deployment.monthsOnAbridge || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ monthsOnAbridge: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-months"
+            />
+          )}
+          {deployment.goLiveDate && (
+            <p className="text-[10px] text-gray-400 mt-0.5">Auto-calculated</p>
+          )}
+        </div>
+      </div>
+
+      {/* Provider funnel */}
+      <div>
+        <p className="text-xs font-medium text-gray-700 mb-2">Provider Adoption</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
+            <input
+              type="number" min={0} step={1}
+              value={deployment.totalProviders || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ totalProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-total-providers"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] text-gray-400 mb-1">Live on Abridge</label>
+            <input
+              type="number" min={0} step={1}
+              value={deployment.liveProviders || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ liveProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-live-providers"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
+            <input
+              type="number" min={0} step={1}
+              value={deployment.mruProviders || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ mruProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-mru-providers"
+            />
+          </div>
+        </div>
+        {/* Adoption funnel bar — show only if totalProviders > 0 */}
+        {deployment.totalProviders > 0 && (
+          <div className="mt-3 space-y-1.5">
+            {[
+              { label: 'Total', value: deployment.totalProviders, color: '#E8E2DA' },
+              { label: 'Live', value: deployment.liveProviders, color: '#F5C4B8' },
+              { label: 'MRUs', value: deployment.mruProviders, color: '#EA2C00' },
+            ].map(tier => {
+              const pct = Math.round((tier.value / deployment.totalProviders) * 100);
+              return (
+                <div key={tier.label} className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">{tier.label}</span>
+                  <div className="flex-1 h-4 bg-white rounded overflow-hidden">
+                    <div className="h-full rounded transition-all duration-300" style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: tier.color }} />
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-700 w-8 text-right">{tier.value}</span>
+                  <span className="text-[10px] text-gray-400 w-8 text-right">{pct}%</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Encounter coverage */}
+      <div>
+        <p className="text-xs font-medium text-gray-700 mb-2">Encounter Coverage</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[10px] text-gray-400 mb-1">Total Encounters</label>
+            <input
+              type="number" min={0} step={1}
+              value={deployment.totalEncounters || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ totalEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-total-encounters"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] text-gray-400 mb-1">Abridge Encounters</label>
+            <input
+              type="number" min={0} step={1}
+              value={deployment.abridgeEncounters || ''}
+              placeholder="—"
+              onChange={(e) => updateDeployment({ abridgeEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+              data-testid="input-dep-abridge-encounters"
+            />
+          </div>
+        </div>
+        {deployment.totalEncounters > 0 && deployment.abridgeEncounters > 0 && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-[10px] text-gray-400 w-8 text-right shrink-0">Cvg</span>
+            <div className="flex-1 h-4 bg-white rounded overflow-hidden">
+              <div className="h-full rounded transition-all duration-300" style={{
+                width: `${Math.max(Math.round((deployment.abridgeEncounters / deployment.totalEncounters) * 100), 2)}%`,
+                backgroundColor: '#EA2C00',
+              }} />
+            </div>
+            <span className="text-[11px] font-semibold text-[#EA2C00] w-12 text-right">
+              {Math.round((deployment.abridgeEncounters / deployment.totalEncounters) * 100)}% covered
+            </span>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+
+  ---
+  Step 4 — Update hasAnyData to also include deployment
+
+  const hasAnyData =
+    deployment.organizationName.trim().length > 0 ||
+    deployment.totalProviders > 0 ||
+    Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
+
+  ---
+  Notes
+
+  - No changes needed to MeasureFlow.tsx in this pass — the existing ?data_request= loading path should already apply whatever is in the decoded MeasureDataRequestResponse. If MeasureFlow.tsx maps
+  dataRequest.deployment to state.deployment downstream, it can do so using the same field mapping as MeasureDataEntry.tsx (updateDeployment calls for organizationName, monthsOnAbridge, totalProviders,
+  liveProviders, mruProviders, totalEncounters, abridgeEncounters).
+  - The form is client-facing so it does NOT use FormattedNumberInput — plain <input type="number"> is fine.
+  - The setting badge/label at the top of the page (already present: {SETTING_LABELS[setting]} inline badge) stays as-is — setting is still read-only, locked from preseed.
