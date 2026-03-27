@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseText } from "@/lib/dataRequestUrlState";
+import { copyToClipboard } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -157,6 +158,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   });
 
   const [copied, setCopied] = useState(false);
+  const [fallbackText, setFallbackText] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -189,7 +191,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
   }
 
-  function handleCopy() {
+  async function handleCopy() {
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
 
@@ -197,9 +199,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     for (const m of allMetrics) metricLabels[m.id] = m.label;
 
     const text = generateDataResponseText({ setting, metrics }, metricLabels);
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true); setTimeout(() => setCopied(false), 2500);
-    });
+    setFallbackText(null);
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } else {
+      setFallbackText(text);
+    }
   }
 
   const hasAnyData = Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
@@ -243,6 +250,18 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           {!hasAnyData && <p className="text-xs text-gray-400 mt-2">Select at least one metric and enter a before or after value.</p>}
           {hasAnyData && !copied && <p className="text-xs text-gray-500 mt-2">Copies a formatted summary you can paste and send to your Abridge partner.</p>}
           {copied && <p className="text-xs text-green-600 mt-2">Send this summary to your Abridge partner — they'll use it to prep your business review.</p>}
+          {fallbackText && (
+            <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3 text-left">
+              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the text below, then copy and send it to your Abridge partner.</p>
+              <textarea
+                readOnly
+                value={fallbackText}
+                className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                data-testid="textarea-fallback-data-request"
+              />
+            </div>
+          )}
         </div>
 
         {(checkedIds.size > 0 || Object.keys(entries).length > 0) && (

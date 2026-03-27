@@ -6,6 +6,7 @@ import {
   type IntakeFormPreseed,
   generateIntakeResponseText,
 } from "@/lib/intakeUrlState";
+import { copyToClipboard } from "@/lib/clipboard";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -201,6 +202,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   const storageKey = getStorageKey(storageFingerprint);
   const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
   const [copied, setCopied] = useState(false);
+  const [fallbackText, setFallbackText] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -253,12 +255,16 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
     };
   }
 
-  function handleCopy() {
+  async function handleCopy() {
     const text = generateIntakeResponseText(buildResponse());
-    navigator.clipboard.writeText(text).then(() => {
+    setFallbackText(null);
+    const ok = await copyToClipboard(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
-    });
+    } else {
+      setFallbackText(text);
+    }
   }
 
   const { selectedSettings } = formState;
@@ -506,6 +512,18 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             </button>
             {!hasMinimum && (
               <p className="text-xs text-[#BBBBBB] mt-3 text-center">Enter at least one provider or FTE count to continue.</p>
+            )}
+            {fallbackText && (
+              <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3">
+                <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the text below, then copy and send it to your Abridge partner.</p>
+                <textarea
+                  readOnly
+                  value={fallbackText}
+                  className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                  data-testid="textarea-fallback-intake"
+                />
+              </div>
             )}
           </motion.div>
         )}
