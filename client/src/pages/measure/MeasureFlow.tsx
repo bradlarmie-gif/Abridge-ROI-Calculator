@@ -17,9 +17,10 @@ type MeasurePhase = 'data' | 'metrics' | 'journey' | 'financial' | 'next';
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
   dataRequestResponse?: import("@/lib/dataRequestUrlState").MeasureDataRequestResponse | null;
+  onDataRequestConsumed?: () => void;
 }
 
-export default function MeasureFlow({ onBackToJourney, dataRequestResponse }: MeasureFlowProps) {
+export default function MeasureFlow({ onBackToJourney, dataRequestResponse, onDataRequestConsumed }: MeasureFlowProps) {
   const [phase, setPhase] = useState<MeasurePhase>('data');
   const [presentMode, setPresentMode] = useState(false);
   const [state, setState] = useState<MeasureState>({
@@ -83,6 +84,7 @@ export default function MeasureFlow({ onBackToJourney, dataRequestResponse }: Me
         };
       });
       setPhase('metrics');
+      onDataRequestConsumed?.();
     }
   }, []);
 

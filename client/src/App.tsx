@@ -36,7 +36,7 @@ import { ExpandFlow } from "@/pages/expand";
 import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
-import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase, DEFAULT_EXPLORE_STATE } from "@/pages/explore";
+import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
 import { type ExploreIntakeResponse, type IntakeFormPreseed, decodeIntake, decodeIntakePreseed } from "@/lib/intakeUrlState";
@@ -597,6 +597,7 @@ export default function App() {
                 onAddToProforma={handleAddToProforma}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
                 intakeResponse={intakeResponse}
+                onIntakeConsumed={() => setIntakeResponse(null)}
               />
             )}
 
@@ -680,7 +681,7 @@ export default function App() {
             )}
 
             {currentView === "measure" && (
-              <MeasureFlow onBackToJourney={() => navigateTo("journey")} dataRequestResponse={dataRequestResponse} />
+              <MeasureFlow onBackToJourney={() => navigateTo("journey")} dataRequestResponse={dataRequestResponse} onDataRequestConsumed={() => setDataRequestResponse(null)} />
             )}
 
             {currentView === "measure-data-request" && (

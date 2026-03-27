@@ -552,9 +552,10 @@ interface ExploreFlowProps {
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
   intakeResponse?: import("@/lib/intakeUrlState").ExploreIntakeResponse | null;
+  onIntakeConsumed?: () => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], intakeResponse }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], intakeResponse, onIntakeConsumed }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
@@ -603,6 +604,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         return next;
       });
       setPhase('practice');
+      onIntakeConsumed?.();
     }
   }, []);
 
@@ -1034,7 +1036,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   const intakeBanner = intakeResponse ? (
     <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center" data-testid="banner-intake">
       <span className="text-sm text-amber-800">
-        Pre-filled from intake form
+        Pre-filled from client intake
         {intakeResponse.providers ? ` \u2014 ${intakeResponse.providers} providers` : ''}
         {intakeResponse.annualEncounters ? `, ${intakeResponse.annualEncounters.toLocaleString()} encounters/yr` : ''}
       </span>
