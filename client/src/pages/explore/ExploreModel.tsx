@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2 } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2, ClipboardList, Copy, ClipboardCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -10,6 +10,8 @@ import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
+import { generateIntakeFormUrl } from "@/lib/intakeUrlState";
+import type { ExploreCareSetting } from "./ExploreFlow";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreModelProps {
@@ -43,6 +45,8 @@ export default function ExploreModel({
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showIntakeModal, setShowIntakeModal] = useState(false);
+  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const { toast } = useToast();
@@ -2402,6 +2406,15 @@ export default function ExploreModel({
                 <Edit className="w-4 h-4" />
                 Edit Model
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowIntakeModal(true)}
+                className="gap-2 border-neutral-300 text-neutral-600 order-4 h-11 sm:h-9 text-sm"
+                data-testid="button-create-intake"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Create Intake Form
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -2469,6 +2482,56 @@ export default function ExploreModel({
           isExporting={isExporting}
           documentType="ROI model"
         />
+
+        <AnimatePresence>
+          {showIntakeModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowIntakeModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+                data-testid="modal-intake"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Create Intake Form</h3>
+                  <button onClick={() => setShowIntakeModal(false)} className="p-1 text-gray-400 hover:text-gray-600 rounded-md"><X className="w-5 h-5" /></button>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Generate a shareable link for prospects to fill in their practice details before a call. Their answers will pre-fill the Explore model when you open the response link.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-gray-500 mb-1">Pre-selected care setting</p>
+                  <p className="text-sm font-medium text-gray-900 capitalize">{state.careSetting || 'None'}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
+                    navigator.clipboard.writeText(url).then(() => {
+                      setIntakeLinkCopied(true);
+                      setTimeout(() => setIntakeLinkCopied(false), 2500);
+                      toast({ title: "Intake form link copied", description: "Send this link to the prospect." });
+                    });
+                  }}
+                  className={`w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+                    intakeLinkCopied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                  }`}
+                  data-testid="button-copy-intake-link"
+                >
+                  {intakeLinkCopied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy intake form link</>}
+                </button>
+                <p className="text-xs text-gray-400 mt-3 text-center">No login required. The prospect sees a simple form and copies their answers back.</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

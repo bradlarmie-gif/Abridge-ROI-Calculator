@@ -551,9 +551,10 @@ interface ExploreFlowProps {
   initialExploreState?: ExploreState;
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
+  intakeResponse?: import("@/lib/intakeUrlState").ExploreIntakeResponse | null;
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], intakeResponse }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
@@ -579,7 +580,33 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     });
   }, []);
 
-  const prevCareSettingRef = useRef(state.careSetting);
+  const intakeAppliedRef = useRef(false);
+  useEffect(() => {
+    if (intakeResponse && intakeResponse.settings.length > 0 && !intakeAppliedRef.current) {
+      intakeAppliedRef.current = true;
+      const setting = intakeResponse.settings[0];
+      setState(() => {
+        const next: ExploreState = { ...DEFAULT_EXPLORE_STATE, careSetting: setting };
+        if (setting === 'ed') {
+          next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: 2.5, denialRate: 10, avgClaimValue: 300 };
+        }
+        if (intakeResponse.providers != null) next.numberOfProviders = intakeResponse.providers;
+        if (intakeResponse.annualEncounters != null) next.annualEncounters = intakeResponse.annualEncounters;
+        if (setting === 'nursing') {
+          if (intakeResponse.staffedBeds != null) next.nursingStaffedBeds = intakeResponse.staffedBeds;
+          if (intakeResponse.occupancyRate != null) next.nursingOccupancyRate = intakeResponse.occupancyRate;
+          if (intakeResponse.hapiRatePer1000 != null) next.nursingHapiRate = intakeResponse.hapiRatePer1000;
+          if (intakeResponse.fallRatePer1000 != null) next.nursingFallsRate = intakeResponse.fallRatePer1000;
+          if (intakeResponse.cautiRatePer1000 != null) next.nursingCautiRate = intakeResponse.cautiRatePer1000;
+          if (intakeResponse.clabsiRatePer1000 != null) next.nursingClabsiRate = intakeResponse.clabsiRatePer1000;
+        }
+        return next;
+      });
+      setPhase('practice');
+    }
+  }, []);
+
+  const prevCareSettingRef = useRef(intakeResponse?.settings?.[0] || state.careSetting);
   useEffect(() => {
     if (state.careSetting && state.careSetting !== prevCareSettingRef.current) {
       const newCareSetting = state.careSetting;
@@ -1004,8 +1031,19 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     }
   }
 
+  const intakeBanner = intakeResponse ? (
+    <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center" data-testid="banner-intake">
+      <span className="text-sm text-amber-800">
+        Pre-filled from intake form
+        {intakeResponse.providers ? ` \u2014 ${intakeResponse.providers} providers` : ''}
+        {intakeResponse.annualEncounters ? `, ${intakeResponse.annualEncounters.toLocaleString()} encounters/yr` : ''}
+      </span>
+    </div>
+  ) : null;
+
   return (
     <>
+      {intakeBanner}
       {progressBar}
       {content}
     </>

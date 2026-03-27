@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { ArrowRight, X, ChevronDown, TrendingUp } from "lucide-react";
+import { ArrowRight, X, ChevronDown, TrendingUp, Send, Copy, ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import {
   type DomainKey,
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
+import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureMetricSelectionProps {
   state: MeasureState;
@@ -310,6 +311,7 @@ export default function MeasureMetricSelection({
 }: MeasureMetricSelectionProps) {
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
+  const [dataRequestCopied, setDataRequestCopied] = useState(false);
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const activeSettings = state.activeCareSettings?.length
@@ -696,6 +698,25 @@ export default function MeasureMetricSelection({
             {totalActive > 0 ? 'View the Journey' : 'Add at least one metric to continue'}
             {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
+          <button
+            onClick={() => {
+              const setting = activeSettings[0] || 'outpatient';
+              const activeMetricIds = Array.from(new Set(
+                domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
+              ));
+              const url = generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
+              navigator.clipboard.writeText(url).then(() => {
+                setDataRequestCopied(true);
+                setTimeout(() => setDataRequestCopied(false), 2500);
+              });
+            }}
+            className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-medium transition-all ${
+              dataRequestCopied ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+            }`}
+            data-testid="button-send-data-request"
+          >
+            {dataRequestCopied ? <><ClipboardCheck className="w-3.5 h-3.5" /> Link copied!</> : <><Send className="w-3.5 h-3.5" /> Send data request to customer</>}
+          </button>
         </div>
       </div>
     </div>
