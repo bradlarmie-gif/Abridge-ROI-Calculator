@@ -1,0 +1,202 @@
+## PART 1 — CARE SETTING LOCKING
+
+  In ExploreIntakeForm.tsx:
+
+  When preseed.preSelectedSettings is provided and non-empty:
+  - Those settings are PRE-CHECKED and LOCKED — they cannot be unchecked
+  - All OTHER settings are visible but greyed out and non-interactive
+  - Add a small note below the setting pills:
+    "Your Abridge contact has scoped this conversation to the areas above."
+
+  Visual treatment for locked-selected settings:
+    border-[#EA2C00] bg-[#EA2C00]/5 — same as selected but with a lock icon
+    instead of the red dot, show a small lock icon (Lock from lucide) top-right
+
+  Visual treatment for greyed-out (not in scope) settings:
+    border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed
+    No hover effects. No click handler.
+
+  When no preseed (Brad opened form without pre-selecting):
+    All settings are freely toggleable — existing behavior unchanged.
+
+  Same locking logic applies to MeasureDataRequest.tsx:
+    The setting (outpatient/ed/inpatient/nursing) from preseed is locked.
+    User cannot switch to a different setting.
+    Show the setting name in a locked header, not a selector.
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ## PART 2 — TWO SUBMISSION OPTIONS (replace "Copy my answers")
+
+  Replace the single "Copy my answers" button with two options:
+
+  ┌─────────────────────────────────────────────────────────┐
+  │  [↓ Download PDF]        [Copy link to send back →]     │
+  │  Save a copy for         Share this with your           │
+  │  your records            Abridge contact                │
+  └─────────────────────────────────────────────────────────┘
+
+  Both disabled until hasMinimum is true.
+
+  "Download PDF" → generates and downloads an Abridge-branded receipt PDF
+    (see Part 3 for PDF spec)
+
+  "Copy link to send back" → generates a ?intake_receipt=<encoded_data> URL,
+    copies to clipboard, button shows "✓ Copied!" for 3s
+    The encoded data is the same ExploreIntakeResponse object (same as before)
+    URL param name changes from ?intake= to ?intake_receipt=
+
+  Same for MeasureDataRequest.tsx — replace "Copy my answers" with:
+    [↓ Download PDF]  +  [Copy link to send back →]
+    Link uses ?data_receipt=<encoded> instead of ?data_request=
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ## PART 3 — PDF RECEIPT (Abridge-branded, @react-pdf/renderer)
+
+  Create client/src/components/intake/IntakeReceiptPDF.tsx
+
+  Use @react-pdf/renderer (same pattern as ExplorePDFExport.tsx).
+  Register Manrope font (regular + bold) same as existing PDFs.
+
+  Colors: same as app — background #FFFFFF, cards #F5F0EB, primary #EA2C00,
+    text #1A1A1A, muted #888888
+
+  PDF LAYOUT:
+
+  Page 1:
+    ┌──────────────────────────────────────────────────────┐
+    │  [ABRIDGE logo area — use colored rectangle #EA2C00  │
+    │   with "ABRIDGE" in white bold, since logo is image] │
+    │                                                      │
+    │  PRE-CALL DATA INTAKE                                │
+    │  Organization Baseline Summary                       │
+    │                                                      │
+    │  Prepared for: Abridge Sales Team                    │
+    │  Date: [today's date]                                │
+    │  Ref: Explore Intake — [settings joined by " · "]   │
+    └──────────────────────────────────────────────────────┘
+
+  Then for each care setting in the response, a section:
+
+    ── OUTPATIENT CLINIC ──────────────────────────────────
+
+    Two-column grid of filled-in values:
+
+    DEPLOYMENT                    TIME & REVENUE
+    Physicians / APPs   50        Revenue per visit        $250
+    Annual encounters   90,000    wRVU per encounter       1.8
+                                  $/wRVU conversion rate   $33
+
+    WORKFORCE                     DOCUMENTATION QUALITY
+    Provider turnover   6%        Claim denial rate        8%
+    Replacement cost    $350,000  Avg denied claim value   $200
+
+    HCC / RAF (if values present)
+    Panel size          1,500     % on Medicare Adv.       35%
+    Annual RAF payment  $10,000/pt
+
+    (Only show rows where value is not null)
+
+    Nursing section also includes quality metrics table:
+    QUALITY METRICS
+    HAPI rate           1.5/1k    Falls rate    2.0/1k
+    CAUTI rate          1.8/1k    CLABSI rate   0.8/1k
+
+  Footer on each page:
+    "This document contains organization-provided baseline data only.
+     No ROI projections or Abridge benchmarks are included.
+     Prepared by Abridge · [date]"
+
+  Export function signature:
+    export async function downloadIntakeReceiptPDF(
+      data: ExploreIntakeResponse,
+      orgName?: string
+    ): Promise<void>
+
+  Create equivalent for Measure:
+    client/src/components/intake/DataRequestReceiptPDF.tsx
+    export async function downloadDataRequestReceiptPDF(
+      data: MeasureDataRequestResponse
+    ): Promise<void>
+
+    Layout: header same as above but says "PRE-EBR DATA REQUEST"
+    Body: one section per care setting showing metric name, before value, after value
+    Show monthly trend data as a simple row of numbers if isMonthlyMode
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ## PART 4 — RECEIPT/SUMMARY PAGE (IP protection)
+
+  The returned link (?intake_receipt= or ?data_receipt=) must NEVER open
+  the calculator. It opens a clean summary page.
+
+  Add to App.tsx AppView type: 'explore-intake-receipt' | 'measure-data-receipt'
+
+  In getInitialDeepLink(), add detection BEFORE existing intake_form check:
+
+    const intakeReceiptParam = params.get('intake_receipt');
+    if (intakeReceiptParam) {
+      window.history.replaceState({}, '', '/');
+      const data = decodeIntake(intakeReceiptParam);
+      if (data) return { type: 'explore_intake_receipt', data };
+    }
+
+    const dataReceiptParam = params.get('data_receipt');
+    if (dataReceiptParam) {
+      window.history.replaceState({}, '', '/');
+      const data = decodeDataRequest(dataReceiptParam);
+      if (data) return { type: 'measure_data_receipt', data };
+    }
+
+  Create client/src/pages/intake/ExploreIntakeReceipt.tsx
+
+  LAYOUT — matches app branding (UnifiedHeader pattern but simplified):
+
+    Header bar: Abridge logo left, nothing right
+
+    Content (max-w-2xl centered):
+
+    ┌─────────────────────────────────────────────────────┐
+    │  ✓  Data received                                   │
+    │  Baseline summary from [settings]                   │
+    │  Received [today's date]                            │
+    └─────────────────────────────────────────────────────┘
+    (bg-[#F5F0EB] rounded-xl p-6)
+
+    Then one card per care setting — same card style as the form
+    (bg-white border border-[#E5E0DB] rounded-xl p-6)
+    but READ-ONLY. Show filled values as clean label/value rows.
+    Only show fields where value is not null.
+
+    Field display style:
+      label (text-xs text-[#888888] uppercase tracking-wide)
+      value (text-sm font-semibold text-[#1A1A1A])
+    Two-column grid same as form layout.
+
+    Footer actions:
+
+    [↓ Download PDF receipt]    [→ Load in Calculator]
+
+    "Download PDF receipt" — same PDF as Part 3
+    "Load in Calculator" — this is the Brad-facing action
+      Styled differently: outlined/secondary, smaller
+      On click: navigate to explore view with this data pre-loaded
+      (same behavior as current ?intake= handling — calls applyIntakeToExploreState)
+
+  Create equivalent client/src/pages/intake/MeasureDataReceipt.tsx
+    Same pattern but for MeasureDataRequestResponse
+    "Load in Calculator" navigates to measure view with data pre-loaded
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ## PART 5 — intakeUrlState.ts updates
+
+  Add:
+    export function generateIntakeReceiptUrl(data: ExploreIntakeResponse): string {
+      return `${window.location.origin}/?intake_receipt=${encodeIntake(data)}`;
+    }
+
+  In dataRequestUrlState.ts add:
+    export function generateDataReceiptUrl(data: MeasureDataRequestResponse): string {
+      return `${window.location.origin}/?data_receipt=${compress(data)}`;
+    }
+
+  Update ExploreIntakeForm.tsx "Copy link" button to call generateIntakeReceiptUrl()
+  Update MeasureDataRequest.tsx "Copy link" button to call generateDataReceiptUrl()
