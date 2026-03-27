@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,9 +52,10 @@ interface ExploreCareSettingsProps {
   onBack: () => void;
   onHome: () => void;
   disabledSettings?: ExploreCareSetting[];
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
-export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
+export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], dataRequestGenerateUrl }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
     selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
@@ -77,10 +78,6 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
     }, 800);
   };
 
-  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
-    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
-  }, []);
 
   const singleSelected = selectedForRequest.length === 1 ? selectedForRequest[0] : null;
   const singleLabel = singleSelected
@@ -98,7 +95,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
         stepName="Care Setting"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={generateExploreDataRequestUrl}
+        dataRequestGenerateUrl={dataRequestGenerateUrl}
       />
       <UnifiedHeaderSpacer />
       

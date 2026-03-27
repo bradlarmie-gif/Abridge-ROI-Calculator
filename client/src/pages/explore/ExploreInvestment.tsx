@@ -15,6 +15,7 @@ interface ExploreInvestmentProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreInvestment({
@@ -26,6 +27,7 @@ export default function ExploreInvestment({
   onNext,
   onBack,
   onHome,
+  dataRequestGenerateUrl,
 }: ExploreInvestmentProps) {
   const isNursing = state.careSetting === 'nursing';
 
@@ -94,6 +96,7 @@ export default function ExploreInvestment({
         stepName="Investment"
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={dataRequestGenerateUrl}
       />
       <UnifiedHeaderSpacer />
 

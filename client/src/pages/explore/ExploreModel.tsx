@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +10,6 @@ import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
-import type { ExploreCareSetting } from "./ExploreFlow";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreModelProps {
@@ -26,6 +25,7 @@ interface ExploreModelProps {
   onAddToProforma?: (snapshot: ProformaSettingSnapshot) => void;
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreModel({
@@ -41,17 +41,13 @@ export default function ExploreModel({
   onAddToProforma,
   onStepClick,
   stepLabels,
+  dataRequestGenerateUrl,
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
-    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
-  }, []);
 
   const isNursingForTotal = state.careSetting === 'nursing';
   const nursingCareQualityPotential = useMemo(() => {
@@ -1256,7 +1252,7 @@ export default function ExploreModel({
         onHome={onHome}
         onStepClick={onStepClick}
         stepLabels={stepLabels}
-        dataRequestGenerateUrl={generateExploreDataRequestUrl}
+        dataRequestGenerateUrl={dataRequestGenerateUrl}
       />
       <UnifiedHeaderSpacer />
 

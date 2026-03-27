@@ -643,6 +643,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     return () => window.removeEventListener('popstate', handlePopState);
   }, [onBackToJourney]);
 
+  const dataRequestGenerateUrl = useCallback(async (settings: string[]) => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
+  }, []);
+
   const goHome = useCallback(() => {
     if (onBackToJourney) {
       onBackToJourney();
@@ -886,6 +891,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onBack={goHome}
           onHome={goHome}
           disabledSettings={disabledCareSettings}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -898,6 +904,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('timeSavings')}
           onBack={() => navigate('careSetting')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -912,6 +919,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           }}
           onBack={() => navigate('practice')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -925,6 +933,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -941,6 +950,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -954,6 +964,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -969,6 +980,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onNext={() => navigate('model')}
           onBack={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
           onHome={goHome}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;
@@ -994,6 +1006,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           onAddToProforma={onAddToProforma}
           onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
           stepLabels={stepLabels}
+          dataRequestGenerateUrl={dataRequestGenerateUrl}
         />
       );
       break;

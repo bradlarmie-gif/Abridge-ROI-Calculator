@@ -12,6 +12,7 @@ interface ExploreTimeSavingsProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreTimeSavings({
@@ -20,6 +21,7 @@ export default function ExploreTimeSavings({
   onNext,
   onBack,
   onHome,
+  dataRequestGenerateUrl,
 }: ExploreTimeSavingsProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
@@ -124,6 +126,7 @@ export default function ExploreTimeSavings({
         stepName="Time Savings"
         onBack={onBack}
         onHome={onHome}
+        dataRequestGenerateUrl={dataRequestGenerateUrl}
       />
       <UnifiedHeaderSpacer />
 

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
-import type { ExploreCareSetting } from "./ExploreFlow";
 
 interface ExploreOpportunityProps {
   state: ExploreState;
@@ -13,6 +12,7 @@ interface ExploreOpportunityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 interface BusynessPreset {
@@ -56,7 +56,7 @@ const FTE_ESTIMATES = [
   { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },
 ];
 
-export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
+export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome, dataRequestGenerateUrl }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
@@ -78,10 +78,6 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [usingTotalInput, setUsingTotalInput] = useState(false);
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
 
-  const generateExploreDataRequestUrl = useCallback(async (settings: string[]) => {
-    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    return generateIntakeFormUrl(settings as ExploreCareSetting[]);
-  }, []);
 
   function applyFteEstimate(multiplier: number, label: string) {
     if (state.nursingStaffedBeds <= 0) return;
@@ -179,7 +175,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
         stepName="Opportunity Size"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={generateExploreDataRequestUrl}
+        dataRequestGenerateUrl={dataRequestGenerateUrl}
       />
       <UnifiedHeaderSpacer />
 
