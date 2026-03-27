@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Check, ClipboardCheck, Stethoscope, Zap, ClipboardList, HeartPulse } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,6 +7,7 @@ import {
   generateIntakeResponseUrl,
 } from "@/lib/intakeUrlState";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 interface ExploreIntakeFormProps {
   preseed?: IntakeFormPreseed;
@@ -28,12 +29,84 @@ const SETTING_ICONS: Record<ExploreCareSetting, typeof Stethoscope> = {
 
 const SETTING_ORDER: ExploreCareSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
 
+function formatWithCommas(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
+function parseFormatted(s: string): number | null {
+  const cleaned = s.replace(/,/g, '').replace(/[^\d.\-]/g, '');
+  if (!cleaned || cleaned === '-' || cleaned === '.') return null;
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? null : parsed;
+}
+
 function NumberField({
-  label, hint, value, onChange, placeholder = "0", suffix, min = 0, step,
+  label, hint, value, onChange, placeholder = "0", suffix, step,
 }: {
   label: string; hint?: string; value: number | null; onChange: (v: number | null) => void;
-  placeholder?: string; suffix?: string; min?: number; step?: string;
+  placeholder?: string; suffix?: string; step?: string;
 }) {
+  const isDecimal = step != null && parseFloat(step) < 1;
+  const [display, setDisplay] = useState(() =>
+    value != null ? (isDecimal ? String(value) : formatWithCommas(value)) : ''
+  );
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const cursor = e.target.selectionStart || 0;
+
+    if (isDecimal) {
+      setDisplay(raw);
+      onChange(raw === '' ? null : (isNaN(Number(raw)) ? value : Number(raw)));
+      return;
+    }
+
+    const digitsOnly = raw.replace(/[^\d.]/g, '');
+    const parts = digitsOnly.split('.');
+    const intPart = parts[0] || '';
+    const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    const rawDigitsBefore = raw.slice(0, cursor).replace(/[^\d.]/g, '').length;
+    let newCursor = 0;
+    let dCount = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (formatted[i] !== ',') dCount++;
+      if (dCount === rawDigitsBefore) { newCursor = i + 1; break; }
+    }
+    if (dCount < rawDigitsBefore) newCursor = formatted.length;
+
+    setDisplay(formatted);
+    requestAnimationFrame(() => {
+      if (inputRef.current && document.activeElement === inputRef.current) {
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    });
+    onChange(parseFormatted(formatted));
+  }, [onChange, value, isDecimal]);
+
+  const handleBlur = useCallback(() => {
+    setFocused(false);
+    if (value != null && !isDecimal) {
+      setDisplay(formatWithCommas(value));
+    } else if (value != null && isDecimal) {
+      setDisplay(String(value));
+    } else {
+      setDisplay('');
+    }
+  }, [value, isDecimal]);
+
+  const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    setFocused(true);
+    setTimeout(() => e.target.select(), 0);
+  }, []);
+
+  if (!focused && value != null) {
+    const shown = isDecimal ? String(value) : formatWithCommas(value);
+    if (display !== shown) setDisplay(shown);
+  }
+
   return (
     <div>
       <label className="block text-xs font-medium text-[#888888] mb-1 uppercase tracking-wide">
@@ -41,11 +114,17 @@ function NumberField({
       </label>
       <div className="flex items-center gap-2">
         <input
-          type="number" min={min} step={step} value={value ?? ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+          ref={inputRef}
+          type="text"
+          inputMode="decimal"
+          value={display}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors"
           data-testid={`input-intake-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+          autoComplete="off"
         />
         {suffix && <span className="text-sm text-[#999999] whitespace-nowrap font-medium">{suffix}</span>}
       </div>
@@ -152,11 +231,8 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-2xl mb-10 text-center">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-[#EA2C00] rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
-          </div>
-          <span className="text-lg font-semibold text-gray-900 tracking-tight">Abridge</span>
+        <div className="flex items-center justify-center mb-6">
+          <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-intake-title">Help us prepare for our call</h1>
         <p className="text-gray-500 text-sm leading-relaxed">
