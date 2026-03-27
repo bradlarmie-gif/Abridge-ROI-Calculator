@@ -750,8 +750,7 @@ export default function App() {
               <ExploreIntakeReceipt data={intakeReceiptData} onLoadInCalculator={(data) => {
                 const firstSetting = data.settings[0];
                 if (firstSetting) {
-                  const mapped = firstSetting as unknown as ExploreCareSetting;
-                  setExploreState(prev => ({ ...prev, careSetting: mapped, phase: "opportunity" as ExplorePhase }));
+                  setExploreInitialSettings({ careSetting: firstSetting, phase: "practice" });
                   navigateTo("explore");
                 }
               }} />
