@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseText } from "@/lib/dataRequestUrlState";
+import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
+import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { copyToClipboard } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
@@ -159,7 +160,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
 
   const [copied, setCopied] = useState(false);
   const [fallbackText, setFallbackText] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSettingLocked = !!preseed?.setting;
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -191,22 +194,31 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
   }
 
-  async function handleCopy() {
+  function buildResponse(): MeasureDataRequestResponse {
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
+    return { setting, metrics };
+  }
 
-    const metricLabels: Record<string, string> = {};
-    for (const m of allMetrics) metricLabels[m.id] = m.label;
-
-    const text = generateDataResponseText({ setting, metrics }, metricLabels);
+  async function handleCopyLink() {
+    const url = generateDataReceiptUrl(buildResponse());
     setCopied(false);
     setFallbackText(null);
-    const ok = await copyToClipboard(text);
+    const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 5000);
     } else {
-      setFallbackText(text);
+      setFallbackText(url);
+    }
+  }
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try {
+      await downloadDataRequestReceiptPDF(buildResponse());
+    } finally {
+      setPdfLoading(false);
     }
   }
 
@@ -219,8 +231,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF8F5] border border-[#E8E2DA] rounded-full text-xs text-[#888888] mb-4">
+          {isSettingLocked && <Lock className="w-3 h-3 text-[#EA2C00]" />}
           {SETTING_LABELS[setting]}
         </div>
+        {isSettingLocked && (
+          <p className="text-xs text-[#AAAAAA] mb-2 italic">Your Abridge contact has scoped this review to {SETTING_LABELS[setting]}.</p>
+        )}
         <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-data-request-title">Help us tell your story</h1>
         <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto">
           Select the metrics you track and enter your numbers. Your Abridge partner will use this to prepare your business review.
@@ -239,27 +255,45 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
             </div>
           </div>
         ))}
-        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm text-center">
-          <button onClick={handleCopy} disabled={!hasAnyData}
-            className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
-              hasAnyData ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            }`}
-            data-testid="button-copy-data-request"
-          >
-            {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied to clipboard!</> : <><Copy className="w-4 h-4" /> Copy my answers</>}
-          </button>
-          {!hasAnyData && <p className="text-xs text-gray-400 mt-2">Select at least one metric and enter a before or after value.</p>}
-          {hasAnyData && !copied && <p className="text-xs text-gray-500 mt-2">Copies a formatted summary you can paste and send to your Abridge partner.</p>}
-          {copied && <p className="text-xs text-green-600 mt-2">Send this summary to your Abridge partner — they'll use it to prep your business review.</p>}
+        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
+              className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+                hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+              data-testid="button-download-pdf-data-request"
+            >
+              <Download className="w-4 h-4" />
+              {pdfLoading ? "Generating…" : "Download PDF"}
+            </button>
+            <button onClick={handleCopyLink} disabled={!hasAnyData}
+              className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+                hasAnyData
+                  ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+              data-testid="button-copy-link-data-request"
+            >
+              {copied
+                ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
+                : <><Link2 className="w-4 h-4" /> Copy link to send back</>
+              }
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-1">
+            <p className="text-xs text-gray-400 text-center">Save a copy for your records</p>
+            <p className="text-xs text-gray-400 text-center">Share this with your Abridge contact</p>
+          </div>
+          {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Select at least one metric and enter a before or after value.</p>}
           {fallbackText && (
             <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3 text-left">
-              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the text below, then copy and send it to your Abridge partner.</p>
+              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the link below, then copy and send it to your Abridge partner.</p>
               <textarea
                 readOnly
                 value={fallbackText}
                 autoFocus
                 ref={(el) => { if (el) { el.focus(); el.select(); } }}
-                className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full h-20 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                 data-testid="textarea-fallback-data-request"
               />

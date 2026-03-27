@@ -84,6 +84,10 @@ export function generateDataResponseText(data: MeasureDataRequestResponse, metri
   return lines.join('\n').trim();
 }
 
+export function generateDataReceiptUrl(data: MeasureDataRequestResponse): string {
+  return `${window.location.origin}/?data_receipt=${encodeDataRequest(data)}`;
+}
+
 export function getDataFormPreseedFromUrl(): DataFormPreseed | null {
   const params = new URLSearchParams(window.location.search);
   const encoded = params.get('data_form');

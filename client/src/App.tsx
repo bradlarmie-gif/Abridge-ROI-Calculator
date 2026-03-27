@@ -39,8 +39,10 @@ import MeasureFlow from "@/pages/measure/MeasureFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
-import { type IntakeFormPreseed, decodeIntakePreseed } from "@/lib/intakeUrlState";
-import { type DataFormPreseed, decodeDataFormPreseed } from "@/lib/dataRequestUrlState";
+import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
+import MeasureDataReceipt from "@/pages/intake/MeasureDataReceipt";
+import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed, decodeIntake } from "@/lib/intakeUrlState";
+import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import ProformaView from "@/pages/proforma/ProformaView";
 import type { ProformaSettingSnapshot, ProformaScenario, ProformaConfig } from "@/pages/proforma/proformaTypes";
@@ -49,7 +51,7 @@ import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "partner-dead-end";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "partner-dead-end";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -60,6 +62,8 @@ type InitialDeepLink =
   | { type: 'explore'; careSetting: ExploreCareSetting; phase: ExplorePhase }
   | { type: 'explore_intake_form'; preseed: IntakeFormPreseed; fingerprint: string }
   | { type: 'measure_data_form'; preseed: DataFormPreseed; fingerprint: string }
+  | { type: 'explore_intake_receipt'; data: ExploreIntakeResponse }
+  | { type: 'measure_data_receipt'; data: MeasureDataRequestResponse }
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'partner_dead_end' }
   | { type: 'none' };
@@ -109,6 +113,20 @@ function clearPartnerSession() {
 function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
   const pathname = window.location.pathname;
+
+  const intakeReceiptParam = params.get('intake_receipt');
+  if (intakeReceiptParam) {
+    window.history.replaceState({}, '', '/');
+    const data = decodeIntake(intakeReceiptParam);
+    if (data) return { type: 'explore_intake_receipt', data };
+  }
+
+  const dataReceiptParam = params.get('data_receipt');
+  if (dataReceiptParam) {
+    window.history.replaceState({}, '', '/');
+    const data = decodeDataRequest(dataReceiptParam);
+    if (data) return { type: 'measure_data_receipt', data };
+  }
 
   const intakeFormParam = params.get('intake_form');
   if (intakeFormParam) {
@@ -189,8 +207,18 @@ export default function App() {
     }
     return '';
   });
+  const [intakeReceiptData, setIntakeReceiptData] = useState<ExploreIntakeResponse | null>(() => {
+    if (INITIAL_DEEP_LINK.type === 'explore_intake_receipt') return INITIAL_DEEP_LINK.data;
+    return null;
+  });
+  const [dataReceiptData, setDataReceiptData] = useState<MeasureDataRequestResponse | null>(() => {
+    if (INITIAL_DEEP_LINK.type === 'measure_data_receipt') return INITIAL_DEEP_LINK.data;
+    return null;
+  });
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
+    if (INITIAL_DEEP_LINK.type === 'explore_intake_receipt') return "explore-intake-receipt";
+    if (INITIAL_DEEP_LINK.type === 'measure_data_receipt') return "measure-data-receipt";
     if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return "explore-intake";
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
@@ -716,6 +744,14 @@ export default function App() {
 
             {currentView === "measure-data-request" && (
               <MeasureDataRequest preseed={dataFormPreseed ?? undefined} storageFingerprint={formFingerprint} />
+            )}
+
+            {currentView === "explore-intake-receipt" && intakeReceiptData && (
+              <ExploreIntakeReceipt data={intakeReceiptData} />
+            )}
+
+            {currentView === "measure-data-receipt" && dataReceiptData && (
+              <MeasureDataReceipt data={dataReceiptData} />
             )}
 
             {currentView === "partner-dead-end" && (

@@ -167,6 +167,10 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
   return lines.filter(l => l !== '').join('\n').trim();
 }
 
+export function generateIntakeReceiptUrl(data: ExploreIntakeResponse): string {
+  return `${window.location.origin}/?intake_receipt=${encodeIntake(data)}`;
+}
+
 export function getIntakePreseedFromUrl(): IntakeFormPreseed | null {
   const params = new URLSearchParams(window.location.search);
   const encoded = params.get('intake_form');

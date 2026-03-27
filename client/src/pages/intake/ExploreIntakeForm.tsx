@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Check, ClipboardCheck, Stethoscope, Zap, ClipboardList, HeartPulse, Trash2 } from "lucide-react";
+import { Check, ClipboardCheck, Stethoscope, Zap, ClipboardList, HeartPulse, Trash2, Lock, Download, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   type ExploreIntakeResponse,
   type IntakeFormPreseed,
-  generateIntakeResponseText,
+  generateIntakeReceiptUrl,
 } from "@/lib/intakeUrlState";
+import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
 import { copyToClipboard } from "@/lib/clipboard";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -191,6 +192,10 @@ function loadSavedState(preseed?: IntakeFormPreseed, fingerprint?: string): Inta
     if (raw) {
       const parsed = JSON.parse(raw) as IntakeFormState;
       if (parsed && typeof parsed === 'object' && Array.isArray(parsed.selectedSettings)) {
+        const locked = preseed?.preSelectedSettings ?? [];
+        if (locked.length > 0) {
+          parsed.selectedSettings = locked as ExploreCareSetting[];
+        }
         return parsed;
       }
     }
@@ -203,7 +208,11 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
   const [copied, setCopied] = useState(false);
   const [fallbackText, setFallbackText] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lockedSettings = preseed?.preSelectedSettings ?? [];
+  const hasLocking = lockedSettings.length > 0;
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -218,6 +227,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   }
 
   function toggleSetting(id: ExploreCareSetting) {
+    if (hasLocking) return;
     setFormState(prev => ({
       ...prev,
       selectedSettings: prev.selectedSettings.includes(id)
@@ -255,16 +265,25 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
     };
   }
 
-  async function handleCopy() {
-    const text = generateIntakeResponseText(buildResponse());
+  async function handleCopyLink() {
+    const url = generateIntakeReceiptUrl(buildResponse());
     setCopied(false);
     setFallbackText(null);
-    const ok = await copyToClipboard(text);
+    const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 5000);
     } else {
-      setFallbackText(text);
+      setFallbackText(url);
+    }
+  }
+
+  async function handleDownloadPDF() {
+    setPdfLoading(true);
+    try {
+      await downloadIntakeReceiptPDF(buildResponse());
+    } finally {
+      setPdfLoading(false);
     }
   }
 
@@ -296,26 +315,40 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       <div className="w-full max-w-2xl space-y-4">
         <div>
           <div className="grid grid-cols-2 gap-3">
-            {SETTINGS.map((s) => {
-              const selected = selectedSettings.includes(s.id);
+            {SETTINGS.map((setting) => {
+              const selected = selectedSettings.includes(setting.id);
+              const isLocked = hasLocking && lockedSettings.includes(setting.id);
+              const isGreyed = hasLocking && !lockedSettings.includes(setting.id);
               return (
-                <button key={s.id} onClick={() => toggleSetting(s.id)}
+                <button key={setting.id} onClick={() => toggleSetting(setting.id)}
+                  disabled={hasLocking}
                   className={`relative text-left p-3 rounded-lg border-2 transition-all ${
+                    isGreyed ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed" :
                     selected ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-gray-200 hover:border-gray-300"
                   }`}
-                  data-testid={`button-setting-${s.id}`}
+                  data-testid={`button-setting-${setting.id}`}
                 >
-                  {selected && (
+                  {isLocked && (
+                    <div className="absolute top-2 right-2 w-4 h-4 bg-[#EA2C00] rounded-full flex items-center justify-center">
+                      <Lock className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  )}
+                  {!hasLocking && selected && (
                     <div className="absolute top-2 right-2 w-4 h-4 bg-[#EA2C00] rounded-full flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
                   )}
-                  <div className="text-sm font-medium text-gray-900 pr-5">{s.label}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{s.description}</div>
+                  <div className={`text-sm font-medium pr-5 ${isGreyed ? "text-gray-400" : "text-gray-900"}`}>{setting.label}</div>
+                  <div className={`text-xs mt-0.5 ${isGreyed ? "text-gray-300" : "text-gray-500"}`}>{setting.description}</div>
                 </button>
               );
             })}
           </div>
+          {hasLocking && (
+            <p className="text-xs text-[#AAAAAA] mt-3 text-center italic">
+              Your Abridge contact has scoped this conversation to the areas above.
+            </p>
+          )}
         </div>
 
         <AnimatePresence mode="popLayout">
@@ -496,33 +529,48 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             animate={{ opacity: 1 }}
             className="pt-2"
           >
-            <button onClick={handleCopy} disabled={!hasMinimum}
-              className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-base transition-all ${
-                hasMinimum
-                  ? copied
-                    ? "bg-green-500 text-white"
-                    : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                  : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
-              }`}
-              data-testid="button-copy-intake"
-            >
-              {copied
-                ? <><ClipboardCheck className="w-4 h-4" /> Copied — paste this summary and send it back</>
-                : "Copy my answers"
-              }
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={handleDownloadPDF} disabled={!hasMinimum || pdfLoading}
+                className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+                  hasMinimum ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
+                }`}
+                data-testid="button-download-pdf-intake"
+              >
+                <Download className="w-4 h-4" />
+                {pdfLoading ? "Generating…" : "Download PDF"}
+              </button>
+              <button onClick={handleCopyLink} disabled={!hasMinimum}
+                className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+                  hasMinimum
+                    ? copied
+                      ? "bg-green-500 text-white"
+                      : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                    : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
+                }`}
+                data-testid="button-copy-link-intake"
+              >
+                {copied
+                  ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
+                  : <><Link2 className="w-4 h-4" /> Copy link to send back</>
+                }
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              <p className="text-xs text-[#BBBBBB] text-center">Save a copy for your records</p>
+              <p className="text-xs text-[#BBBBBB] text-center">Share this with your Abridge contact</p>
+            </div>
             {!hasMinimum && (
               <p className="text-xs text-[#BBBBBB] mt-3 text-center">Enter at least one provider or FTE count to continue.</p>
             )}
             {fallbackText && (
               <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3">
-                <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the text below, then copy and send it to your Abridge partner.</p>
+                <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the link below, then copy and send it to your Abridge partner.</p>
                 <textarea
                   readOnly
                   value={fallbackText}
                   autoFocus
                   ref={(el) => { if (el) { el.focus(); el.select(); } }}
-                  className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  className="w-full h-20 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
                   onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                   data-testid="textarea-fallback-intake"
                 />
