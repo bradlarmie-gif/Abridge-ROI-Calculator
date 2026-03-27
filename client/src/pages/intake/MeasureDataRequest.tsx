@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
+import { Check, ChevronDown, ChevronUp, Trash2, Lock, Download } from "lucide-react";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
-import { shareOrCopy } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -183,9 +182,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     return defaultDeployment;
   });
 
-  const [submitState, setSubmitState] = useState<'idle' | 'creating' | 'copied' | 'shared' | 'fallback'>('idle');
-  const [fallbackText, setFallbackText] = useState<string | null>(null);
-  const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSettingLocked = !!preseed?.setting;
@@ -240,25 +236,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
     return { setting, deployment, metrics };
-  }
-
-  async function handleSubmit() {
-    setSubmitState('creating');
-    setFallbackText(null);
-    try {
-      const url = await generateDataReceiptUrl(buildResponse());
-      setSubmitState('idle');
-      const result = await shareOrCopy(url, 'My Abridge Data');
-      if (result === 'fallback') {
-        setSubmitState('fallback');
-        setFallbackText(url);
-      } else {
-        setSubmitState(result);
-        setTimeout(() => setSubmitState('idle'), 4000);
-      }
-    } catch {
-      setSubmitState('idle');
-    }
   }
 
   async function handleDownloadPDF() {
@@ -460,60 +437,17 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           </div>
         ))}
         <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
-              className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
-              }`}
-              data-testid="button-download-pdf-data-request"
-            >
-              <Download className="w-4 h-4" />
-              {pdfLoading ? "Generating…" : "Download PDF"}
-            </button>
-            <p className="text-xs text-[#BBBBBB] mb-3">
-              Blank fields are okay — we'll use benchmarks as a starting point.
-            </p>
-            <button onClick={handleSubmit} disabled={!hasAnyData || submitState === 'creating'}
-              className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                !hasAnyData
-                  ? "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
-                  : submitState === 'creating' ? "bg-[#555] text-white cursor-wait"
-                  : submitState === 'copied' || submitState === 'shared' ? "bg-green-500 text-white"
-                  : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-              }`}
-              data-testid="button-copy-link-data-request"
-            >
-              {submitState === 'creating'
-                ? <><Link2 className="w-4 h-4" /> Creating link…</>
-                : submitState === 'shared'
-                ? <><ClipboardCheck className="w-4 h-4" /> Sent! ✓</>
-                : submitState === 'copied'
-                  ? <><ClipboardCheck className="w-4 h-4" /> Copied! ✓</>
-                  : isMobile
-                    ? <><Link2 className="w-4 h-4" /> Share My Answers</>
-                    : <><Link2 className="w-4 h-4" /> Copy My Answers</>
-              }
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-1">
-            <p className="text-xs text-gray-400 text-center">Save a copy for your records</p>
-            <p className="text-xs text-gray-400 text-center">Share this with your Abridge contact</p>
-          </div>
+          <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
+            className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+              hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+            }`}
+            data-testid="button-download-pdf-data-request"
+          >
+            <Download className="w-4 h-4" />
+            {pdfLoading ? "Generating…" : "Download PDF"}
+          </button>
+          <p className="text-xs text-gray-400 text-center mt-2">Save a copy for your records</p>
           {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Select at least one metric and enter a before or after value.</p>}
-          {fallbackText && (
-            <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3 text-left">
-              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the link below, then copy and send it to your Abridge partner.</p>
-              <textarea
-                readOnly
-                value={fallbackText}
-                autoFocus
-                ref={(el) => { if (el) { el.focus(); el.select(); } }}
-                className="w-full h-20 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
-                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-                data-testid="textarea-fallback-data-request"
-              />
-            </div>
-          )}
         </div>
 
         {(checkedIds.size > 0 || Object.keys(entries).length > 0) && (

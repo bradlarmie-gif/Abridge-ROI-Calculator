@@ -1,13 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Check, ClipboardCheck, Stethoscope, Zap, ClipboardList, HeartPulse, Trash2, Lock, Download, Link2 } from "lucide-react";
+import { Check, Stethoscope, Zap, ClipboardList, HeartPulse, Trash2, Lock, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   type ExploreIntakeResponse,
   type IntakeFormPreseed,
-  generateIntakeReceiptUrl,
 } from "@/lib/intakeUrlState";
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
-import { shareOrCopy } from "@/lib/clipboard";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -206,9 +204,6 @@ function loadSavedState(preseed?: IntakeFormPreseed, fingerprint?: string): Inta
 export default function ExploreIntakeForm({ preseed, storageFingerprint }: ExploreIntakeFormProps) {
   const storageKey = getStorageKey(storageFingerprint);
   const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
-  const [submitState, setSubmitState] = useState<'idle' | 'creating' | 'copied' | 'shared' | 'fallback'>('idle');
-  const [fallbackText, setFallbackText] = useState<string | null>(null);
-  const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -264,25 +259,6 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       hapiRatePer1000: s.hapiRate, fallRatePer1000: s.fallRate,
       cautiRatePer1000: s.cautiRate, clabsiRatePer1000: s.clabsiRate,
     };
-  }
-
-  async function handleSubmit() {
-    setSubmitState('creating');
-    setFallbackText(null);
-    try {
-      const url = await generateIntakeReceiptUrl(buildResponse());
-      setSubmitState('idle');
-      const result = await shareOrCopy(url, 'My Abridge Intake');
-      if (result === 'fallback') {
-        setSubmitState('fallback');
-        setFallbackText(url);
-      } else {
-        setSubmitState(result);
-        setTimeout(() => setSubmitState('idle'), 4000);
-      }
-    } catch {
-      setSubmitState('idle');
-    }
   }
 
   async function handleDownloadPDF() {
@@ -538,59 +514,18 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             animate={{ opacity: 1 }}
             className="pt-2"
           >
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={handleDownloadPDF} disabled={!hasMinimum || pdfLoading}
-                className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                  hasMinimum ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
-                }`}
-                data-testid="button-download-pdf-intake"
-              >
-                <Download className="w-4 h-4" />
-                {pdfLoading ? "Generating…" : "Download PDF"}
-              </button>
-              <button onClick={handleSubmit} disabled={!hasMinimum || submitState === 'creating'}
-                className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-                  !hasMinimum
-                    ? "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
-                    : submitState === 'creating' ? "bg-[#555] text-white cursor-wait"
-                    : submitState === 'copied' || submitState === 'shared'
-                      ? "bg-green-500 text-white"
-                      : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                }`}
-                data-testid="button-copy-link-intake"
-              >
-                {submitState === 'creating'
-                  ? <><Link2 className="w-4 h-4" /> Creating link…</>
-                  : submitState === 'shared'
-                  ? <><ClipboardCheck className="w-4 h-4" /> Sent! ✓</>
-                  : submitState === 'copied'
-                    ? <><ClipboardCheck className="w-4 h-4" /> Copied! ✓</>
-                    : isMobile
-                      ? <><Link2 className="w-4 h-4" /> Share My Answers</>
-                      : <><Link2 className="w-4 h-4" /> Copy My Answers</>
-                }
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-1">
-              <p className="text-xs text-[#BBBBBB] text-center">Save a copy for your records</p>
-              <p className="text-xs text-[#BBBBBB] text-center">Share this with your Abridge contact</p>
-            </div>
+            <button onClick={handleDownloadPDF} disabled={!hasMinimum || pdfLoading}
+              className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
+                hasMinimum ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+              }`}
+              data-testid="button-download-pdf-intake"
+            >
+              <Download className="w-4 h-4" />
+              {pdfLoading ? "Generating…" : "Download PDF"}
+            </button>
+            <p className="text-xs text-[#BBBBBB] text-center mt-2">Save a copy for your records</p>
             {!hasMinimum && (
               <p className="text-xs text-[#BBBBBB] mt-3 text-center">Enter at least one provider or FTE count to continue.</p>
-            )}
-            {fallbackText && (
-              <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-white p-3">
-                <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select the link below, then copy and send it to your Abridge partner.</p>
-                <textarea
-                  readOnly
-                  value={fallbackText}
-                  autoFocus
-                  ref={(el) => { if (el) { el.focus(); el.select(); } }}
-                  className="w-full h-20 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
-                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-                  data-testid="textarea-fallback-intake"
-                />
-              </div>
             )}
           </motion.div>
         )}

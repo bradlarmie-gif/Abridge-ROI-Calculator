@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb, AlertCircle } from "lucide-react";
+import { ArrowLeft, FileText, Target, Lightbulb, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from "recharts";
@@ -354,10 +354,11 @@ export default function ExpandJourneyExpansion({
             size="sm"
             variant="outline"
             className="gap-2"
+            onClick={handleExportPDF}
             data-testid="button-export"
           >
-            <Share2 className="w-4 h-4" />
-            Export & Share
+            <FileText className="w-4 h-4" />
+            Export PDF
           </Button>
         </div>
         {/* Title */}
@@ -675,14 +676,6 @@ export default function ExpandJourneyExpansion({
           <Button variant="outline" className="gap-2" onClick={handleExportPDF} data-testid="button-export-pdf">
             <FileText className="w-4 h-4" />
             Export as PDF
-          </Button>
-          <Button variant="outline" className="gap-2" data-testid="button-share-email">
-            <Mail className="w-4 h-4" />
-            Share via Email
-          </Button>
-          <Button variant="outline" className="gap-2" data-testid="button-copy-link">
-            <Link className="w-4 h-4" />
-            Copy Link
           </Button>
         </div>
       </main>
