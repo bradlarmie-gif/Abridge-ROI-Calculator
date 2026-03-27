@@ -81,9 +81,12 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
     }, 800);
   };
 
+  const [clipboardFailed, setClipboardFailed] = useState(false);
+
   const handleDataRequest = async () => {
     if (selectedForRequest.length === 0 || linkLoading) return;
     setLinkLoading(true);
+    setClipboardFailed(false);
     try {
       const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
       const url = generateIntakeFormUrl(selectedForRequest);
@@ -91,7 +94,8 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      /* ignore */
+      setClipboardFailed(true);
+      setTimeout(() => setClipboardFailed(false), 3000);
     } finally {
       setLinkLoading(false);
     }
@@ -351,6 +355,10 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                       <>
                         <CheckCheck className="w-4 h-4 mr-2" />
                         Link copied!
+                      </>
+                    ) : clipboardFailed ? (
+                      <>
+                        Could not copy — try again
                       </>
                     ) : (
                       <>
