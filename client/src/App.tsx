@@ -112,9 +112,17 @@ function getInitialDeepLink(): InitialDeepLink {
     return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' }, fingerprint: fp };
   }
 
+  if (isPartnerSession()) {
+    const savedFp = (() => { try { return localStorage.getItem(PARTNER_FINGERPRINT_KEY) ?? ''; } catch { return ''; } })();
+    const savedType = (() => { try { return localStorage.getItem(PARTNER_SESSION_KEY); } catch { return null; } })();
+    if (savedType === 'data_request') {
+      return { type: 'measure_data_form', preseed: {}, fingerprint: savedFp };
+    }
+    return { type: 'explore_intake_form', preseed: {}, fingerprint: savedFp };
+  }
+
   const exploreSetting = params.get('explore');
   if (exploreSetting) {
-    clearPartnerSession();
     const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     if (validSettings.includes(exploreSetting as ExploreCareSetting)) {
       window.history.replaceState({}, '', pathname);
@@ -123,22 +131,12 @@ function getInitialDeepLink(): InitialDeepLink {
   }
 
   if (pathname.startsWith('/learn/')) {
-    clearPartnerSession();
     const setting = pathname.replace('/learn/', '');
     const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
     if (validScreens.includes(setting as LearnScreen)) {
       window.history.replaceState({}, '', '/');
       return { type: 'learn', screen: setting as LearnScreen };
     }
-  }
-
-  if (isPartnerSession()) {
-    const savedFp = (() => { try { return localStorage.getItem(PARTNER_FINGERPRINT_KEY) ?? ''; } catch { return ''; } })();
-    const savedType = (() => { try { return localStorage.getItem(PARTNER_SESSION_KEY); } catch { return null; } })();
-    if (savedType === 'data_request') {
-      return { type: 'measure_data_form', preseed: {}, fingerprint: savedFp };
-    }
-    return { type: 'explore_intake_form', preseed: {}, fingerprint: savedFp };
   }
 
   return { type: 'none' };
