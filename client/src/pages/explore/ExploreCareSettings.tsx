@@ -56,16 +56,6 @@ interface ExploreCareSettingsProps {
 
 export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
-
-  const handleCreateIntakeLink = async () => {
-    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    const url = generateIntakeFormUrl(selectedSetting ? [selectedSetting] : undefined);
-    await navigator.clipboard.writeText(url);
-    setIntakeLinkCopied(true);
-    setTimeout(() => setIntakeLinkCopied(false), 2000);
-  };
-
   const handleContinue = () => {
     if (!selectedSetting) return;
     setIsLoading(true);
@@ -300,20 +290,6 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
             )}
           </AnimatePresence>
 
-          <motion.div
-            className="max-w-[480px] mx-auto px-1 mt-4 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <button
-              onClick={handleCreateIntakeLink}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${intakeLinkCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
-              data-testid="button-intake-link"
-            >
-              {intakeLinkCopied ? 'Copied!' : 'Data Request'}
-            </button>
-          </motion.div>
         </motion.div>
       </div>
     </div>
