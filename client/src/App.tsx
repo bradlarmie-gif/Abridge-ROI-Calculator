@@ -747,11 +747,20 @@ export default function App() {
             )}
 
             {currentView === "explore-intake-receipt" && intakeReceiptData && (
-              <ExploreIntakeReceipt data={intakeReceiptData} />
+              <ExploreIntakeReceipt data={intakeReceiptData} onLoadInCalculator={(data) => {
+                const firstSetting = data.settings[0];
+                if (firstSetting) {
+                  const mapped = firstSetting as unknown as ExploreCareSetting;
+                  setExploreState(prev => ({ ...prev, careSetting: mapped, phase: "opportunity" as ExplorePhase }));
+                  navigateTo("explore");
+                }
+              }} />
             )}
 
             {currentView === "measure-data-receipt" && dataReceiptData && (
-              <MeasureDataReceipt data={dataReceiptData} />
+              <MeasureDataReceipt data={dataReceiptData} onLoadInCalculator={() => {
+                navigateTo("measure");
+              }} />
             )}
 
             {currentView === "partner-dead-end" && (
