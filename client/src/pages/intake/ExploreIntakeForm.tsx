@@ -257,6 +257,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
   async function handleCopy() {
     const text = generateIntakeResponseText(buildResponse());
+    setCopied(false);
     setFallbackText(null);
     const ok = await copyToClipboard(text);
     if (ok) {
@@ -519,6 +520,8 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 <textarea
                   readOnly
                   value={fallbackText}
+                  autoFocus
+                  ref={(el) => { if (el) { el.focus(); el.select(); } }}
                   className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
                   onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                   data-testid="textarea-fallback-intake"

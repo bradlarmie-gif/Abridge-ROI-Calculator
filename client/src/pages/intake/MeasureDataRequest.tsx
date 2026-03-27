@@ -199,6 +199,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     for (const m of allMetrics) metricLabels[m.id] = m.label;
 
     const text = generateDataResponseText({ setting, metrics }, metricLabels);
+    setCopied(false);
     setFallbackText(null);
     const ok = await copyToClipboard(text);
     if (ok) {
@@ -256,6 +257,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               <textarea
                 readOnly
                 value={fallbackText}
+                autoFocus
+                ref={(el) => { if (el) { el.focus(); el.select(); } }}
                 className="w-full h-48 text-xs font-mono bg-[#F5F0EB] rounded-lg p-3 border-0 resize-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                 data-testid="textarea-fallback-data-request"
