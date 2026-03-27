@@ -25,7 +25,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 export async function shareOrCopy(text: string, title?: string): Promise<'shared' | 'copied' | 'fallback'> {
-  if (navigator.share && navigator.canShare?.({ text })) {
+  if (navigator.share) {
     try {
       await navigator.share({ title: title || 'My Abridge Data', text });
       return 'shared';

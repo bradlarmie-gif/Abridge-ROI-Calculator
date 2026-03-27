@@ -558,12 +558,12 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 data-testid="button-copy-link-intake"
               >
                 {submitState === 'shared'
-                  ? <><ClipboardCheck className="w-4 h-4" /> Sent!</>
+                  ? <><ClipboardCheck className="w-4 h-4" /> Sent! ✓</>
                   : submitState === 'copied'
-                    ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
+                    ? <><ClipboardCheck className="w-4 h-4" /> Copied! ✓</>
                     : isMobile
-                      ? <><Link2 className="w-4 h-4" /> Share my answers</>
-                      : <><Link2 className="w-4 h-4" /> Copy link to send back</>
+                      ? <><Link2 className="w-4 h-4" /> Share My Answers</>
+                      : <><Link2 className="w-4 h-4" /> Copy My Answers</>
                 }
               </button>
             </div>
