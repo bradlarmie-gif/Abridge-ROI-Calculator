@@ -361,6 +361,7 @@ export interface ExplorePDFData {
   nursingHacAttribution?: number;
   nursingHacRealization?: number;
   nursingHacValue?: number;
+  /* HAC fields above kept for backward compat; nursingHacValue is no longer modeled */
   nursingHcahpsEnabled?: boolean;
   nursingCautiEnabled?: boolean;
   nursingCautiUtilizationRatio?: number;
@@ -2797,14 +2798,14 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const agencyOn = !!data.nursingAgencyEnabled;
     const hapiVal = safe(data.nursingHapiValue);
     const fallsVal = safe(data.nursingFallsValue);
-    const hacVal = safe(data.nursingHacValue);
+    const hacPenaltyVal = safe(data.nursingHacPenalty);
     const cautiVal = safe(data.nursingCautiValue);
     const clabsiVal = safe(data.nursingClabsiValue);
     const sepsisVal = safe(data.nursingSepsisValue);
     const nursingHasCareQuality = !!(
       (data.nursingHapiEnabled && hapiVal > 0) ||
       (data.nursingFallsEnabled && fallsVal > 0) ||
-      (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0) ||
+      (data.nursingHacEnabled && data.nursingHacBottomQuartile && hacPenaltyVal > 0) ||
       (data.nursingCautiEnabled && cautiVal > 0) ||
       (data.nursingClabsiEnabled && clabsiVal > 0) ||
       (data.nursingSepsisEnabled && sepsisVal > 0)
@@ -3141,25 +3142,25 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
             )}
 
-            {data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0 ? (
-              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+            {data.nursingHacEnabled && data.nursingHacBottomQuartile && hacPenaltyVal > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8, backgroundColor: "#F5F5F5" }]}>
                 <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ width: 3, backgroundColor: "#888888", marginRight: 10, borderRadius: 1, minHeight: 40 }} />
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HAC Penalty Avoidance</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hacVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>potential</Text></Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HAC Penalty Exposure</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: "#991B1B" }}>{fmtCurrency(hacPenaltyVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>at risk</Text></Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      The CMS HAC Reduction Program penalizes hospitals in the bottom quartile by reducing Medicare payments by 1%. At {fmtCurrency(safe(data.nursingHacMedicareRevenue))} in annual Medicare inpatient revenue, that{"\u2019"}s a {fmtCurrency(safe(data.nursingHacPenalty))} penalty. With {safe(data.nursingHacAttribution)}% attribution to documentation and {safe(data.nursingHacRealization)}% Year 1 realization, the potential value is {fmtCurrency(hacVal)}.
+                      The CMS HAC Reduction Program penalizes hospitals in the bottom quartile by reducing Medicare payments by 1%. At {fmtCurrency(safe(data.nursingHacMedicareRevenue))} in annual Medicare inpatient revenue, the penalty exposure is {fmtCurrency(hacPenaltyVal)}/year. This is a 2{"\u2013"}3 year quality trajectory and is shown for risk awareness{"\u2014"}it is not included in the financial model.
                     </Text>
                   </View>
                 </View>
               </View>
             ) : (
               <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
-                <Text style={{ fontSize: 9, color: colors.secondary }}>HAC Penalty Avoidance</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary }}>Not Modeled</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>HAC Penalty Exposure</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary }}>Not Applicable</Text>
               </View>
             )}
 
@@ -3470,8 +3471,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingFallsEnabled && fallsVal > 0 ? fmtCurrency(fallsVal) : "Not Modeled"}</Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HAC Penalty</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.nursingHacEnabled && data.nursingHacBottomQuartile && hacVal > 0 ? fmtCurrency(hacVal) : "Not Modeled"}</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>HAC Penalty Exposure</Text>
+                    <Text style={{ fontSize: 8.5, color: "#888888", fontStyle: "italic" }}>{data.nursingHacEnabled && data.nursingHacBottomQuartile && hacPenaltyVal > 0 ? `${fmtCurrency(hacPenaltyVal)} (risk)` : "N/A"}</Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>CAUTI</Text>

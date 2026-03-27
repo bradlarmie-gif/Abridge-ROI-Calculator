@@ -71,10 +71,6 @@ export default function ExploreModel({
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
       total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
     }
-    if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
-      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
-      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
-    }
     if (docQualityInputs.nursingCautiEnabled) {
       const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
       total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
@@ -284,10 +280,9 @@ export default function ExploreModel({
     return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
-  const nursingHacValue = useMemo(() => {
+  const nursingHacPenalty = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingHacEnabled || !state.docQualityInputs.nursingHacBottomQuartile) return 0;
-    const penalty = state.docQualityInputs.nursingHacMedicareRevenue * 0.01; // CMS HAC penalty: 1% of Medicare revenue (CY2025)
-    return Math.round(penalty * (state.docQualityInputs.nursingHacAbridgeAttribution / 100) * (state.docQualityInputs.nursingHacRealization / 100));
+    return Math.round(state.docQualityInputs.nursingHacMedicareRevenue * 0.01);
   }, [isNursing, state.docQualityInputs]);
 
   const nursingCautiValue = useMemo(() => {
@@ -349,7 +344,6 @@ export default function ExploreModel({
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
-    if (nursingHacValue > 0) drivers.push({ id: "nursingHac", name: "HAC Penalty Avoidance", value: nursingHacValue, category: "documentation", onset: "immediate" as const });
     if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" as const });
     if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" as const });
     if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" as const });
@@ -725,7 +719,6 @@ export default function ExploreModel({
           const parts: string[] = [];
           if (nursingHapiValue > 0) parts.push(`HAPI risk reduction: ${fmtK(nursingHapiValue)}`);
           if (nursingFallsValue > 0) parts.push(`Fall risk visibility gap: ${fmtK(nursingFallsValue)}`);
-          if (nursingHacValue > 0) parts.push(`HAC penalty avoidance: ${fmtK(nursingHacValue)}`);
           if (nursingCautiValue > 0) parts.push(`CAUTI bundle compliance: ${fmtK(nursingCautiValue)}`);
           if (nursingClabsiValue > 0) parts.push(`CLABSI bundle compliance: ${fmtK(nursingClabsiValue)}`);
           if (nursingSepsisValue > 0) parts.push(`Sepsis SEP-1 bundle: ${fmtK(nursingSepsisValue)}`);
@@ -1070,8 +1063,6 @@ export default function ExploreModel({
 
           const hacMedRev = docQualityInputs.nursingHacMedicareRevenue;
           const hacPenalty = Math.round(hacMedRev * 0.01);
-          const hacAttr = docQualityInputs.nursingHacAbridgeAttribution;
-          const hacReal = docQualityInputs.nursingHacRealization;
 
           const cautiCathDays = Math.round(patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100));
           const cautiPerYr = parseFloat(((cautiCathDays / 1000) * docQualityInputs.nursingCautiRate).toFixed(1));
@@ -1136,9 +1127,6 @@ export default function ExploreModel({
             nursingHacBottomQuartile: docQualityInputs.nursingHacBottomQuartile,
             nursingHacMedicareRevenue: hacMedRev,
             nursingHacPenalty: hacPenalty,
-            nursingHacAttribution: hacAttr,
-            nursingHacRealization: hacReal,
-            nursingHacValue: nursingHacValue,
             nursingHcahpsEnabled: docQualityInputs.nursingHcahpsEnabled,
             nursingCautiEnabled: docQualityInputs.nursingCautiEnabled,
             nursingCautiUtilizationRatio: docQualityInputs.nursingCautiUtilizationRatio,
@@ -1761,11 +1749,11 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">• HAC Penalty</span>
-                      <span className="font-semibold text-black">{state.docQualityInputs.nursingHacEnabled && nursingHacValue > 0 ? formatCurrency(nursingHacValue) : '—'}</span>
+                      <span className="text-[#666666]">• HAC Penalty Exposure</span>
+                      <span className="font-semibold text-[#666666]">{state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 ? formatCurrency(nursingHacPenalty) : '—'}</span>
                     </div>
-                    {state.docQualityInputs.nursingHacEnabled && nursingHacValue > 0 && (
-                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                    {state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 && (
+                      <p className="text-xs text-[#888888] pl-4 italic">risk only — not in total</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• HCAHPS</span>

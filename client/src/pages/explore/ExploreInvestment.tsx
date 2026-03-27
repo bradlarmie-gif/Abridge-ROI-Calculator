@@ -42,10 +42,6 @@ export default function ExploreInvestment({
       const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
       total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
     }
-    if (docQualityInputs.nursingHacEnabled && docQualityInputs.nursingHacBottomQuartile) {
-      const penalty = docQualityInputs.nursingHacMedicareRevenue * 0.01;
-      total += penalty * (docQualityInputs.nursingHacAbridgeAttribution / 100) * (docQualityInputs.nursingHacRealization / 100);
-    }
     if (docQualityInputs.nursingCautiEnabled) {
       const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
       total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;

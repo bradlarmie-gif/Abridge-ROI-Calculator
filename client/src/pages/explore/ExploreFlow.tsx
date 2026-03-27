@@ -223,12 +223,10 @@ export interface DocQualityInputs {
   nursingFallsPreventionRate: number; // % prevented with better documentation
   nursingFallsCost: number; // Cost per fall
   
-  // Nursing: HAC Penalty Avoidance (potential value)
+  // Nursing: HAC Penalty Exposure (risk display — not modeled as ROI)
   nursingHacEnabled: boolean;
   nursingHacBottomQuartile: boolean;
   nursingHacMedicareRevenue: number;
-  nursingHacAbridgeAttribution: number;
-  nursingHacRealization: number;
 
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
@@ -490,8 +488,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingHacEnabled: false,
     nursingHacBottomQuartile: false,
     nursingHacMedicareRevenue: 50000000,
-    nursingHacAbridgeAttribution: 25,
-    nursingHacRealization: 50,
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
     nursingCautiEnabled: false,
