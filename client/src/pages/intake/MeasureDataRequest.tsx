@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Trash2, Lock, Download } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
@@ -26,19 +26,6 @@ function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
 }
 
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-const STORAGE_KEY_PREFIX = 'abridge_measure_data_request';
-
-function getStorageKey(fingerprint?: string): string {
-  return fingerprint ? `${STORAGE_KEY_PREFIX}_${fingerprint}` : STORAGE_KEY_PREFIX;
-}
-
-interface SavedFormState {
-  setting: MeasureCareSetting;
-  checkedIds: string[];
-  entries: Record<string, DataRequestMetricEntry>;
-  deployment: DeploymentSnapshot;
-}
 
 const defaultDeployment: DeploymentSnapshot = {
   organizationName: '',
@@ -135,7 +122,6 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 
 export default function MeasureDataRequest({ preseed, storageFingerprint }: { preseed?: DataFormPreseed; storageFingerprint?: string }) {
   const setting: MeasureCareSetting = preseed?.setting ?? "outpatient";
-  const storageKey = getStorageKey(storageFingerprint);
   const allMetrics = getMetricsForSetting(setting);
   const byDomain = allMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
     acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
@@ -143,59 +129,11 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
 
   const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? allMetrics.filter((m) => m.phase === 1).map((m) => m.id));
 
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const saved = JSON.parse(raw) as SavedFormState;
-        if (saved && saved.setting === setting && Array.isArray(saved.checkedIds)) {
-          return new Set(saved.checkedIds);
-        }
-      }
-    } catch { /* ignore */ }
-    return defaultCheckedIds;
-  });
-
-  const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const saved = JSON.parse(raw) as SavedFormState;
-        if (saved && saved.setting === setting && saved.entries) {
-          return saved.entries;
-        }
-      }
-    } catch { /* ignore */ }
-    return {};
-  });
-
-  const [deployment, setDeployment] = useState<DeploymentSnapshot>(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const saved = JSON.parse(raw) as SavedFormState;
-        if (saved && saved.setting === setting && saved.deployment) {
-          return saved.deployment;
-        }
-      }
-    } catch { /* ignore */ }
-    return defaultDeployment;
-  });
-
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(defaultCheckedIds);
+  const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
+  const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSettingLocked = !!preseed?.setting;
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      try {
-        const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries, deployment };
-        localStorage.setItem(storageKey, JSON.stringify(toSave));
-      } catch { /* ignore */ }
-    }, 400);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [checkedIds, entries, deployment, setting, storageKey]);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -214,7 +152,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     setCheckedIds(new Set());
     setEntries({});
     setDeployment(defaultDeployment);
-    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
   }
 
   function updateDeployment(updates: Partial<DeploymentSnapshot>) {
