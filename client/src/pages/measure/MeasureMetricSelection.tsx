@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ArrowRight, X, ChevronDown, TrendingUp, Stethoscope, Zap, ClipboardList, HeartPulse } from "lucide-react";
+import type { CareSettingOption } from "@/components/DataRequestDialog";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,12 +31,12 @@ interface MeasureMetricSelectionProps {
   onHome: () => void;
 }
 
-const MEASURE_CARE_SETTING_MAP = {
+const MEASURE_CARE_SETTING_MAP: Record<string, CareSettingOption> = {
   outpatient: { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
   ed: { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
   inpatient: { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
   nursing: { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
-} as const;
+};
 
 const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
 
@@ -467,7 +468,7 @@ export default function MeasureMetricSelection({
   }, [state.careSetting, domainGroups, isMetricActive]);
 
   const measureCareOptions = useMemo(() => {
-    return activeSettings.map(s => MEASURE_CARE_SETTING_MAP[s as keyof typeof MEASURE_CARE_SETTING_MAP]).filter(Boolean);
+    return activeSettings.map(s => MEASURE_CARE_SETTING_MAP[s]).filter(Boolean);
   }, [activeSettings]);
 
   const scrollToDomain = (dk: string) => {
@@ -542,6 +543,7 @@ export default function MeasureMetricSelection({
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
         dataRequestCareSettingOptions={measureCareOptions}
+        dataRequestSingleSelect
       />
       <UnifiedHeaderSpacer />
 

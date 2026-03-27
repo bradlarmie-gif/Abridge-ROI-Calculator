@@ -60,7 +60,8 @@ interface UnifiedHeaderProps {
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
   dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
-  dataRequestCareSettingOptions?: ReadonlyArray<{ id: string; label: string; desc: string; icon: any }>;
+  dataRequestCareSettingOptions?: import("@/components/DataRequestDialog").CareSettingOption[];
+  dataRequestSingleSelect?: boolean;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -82,6 +83,7 @@ export function UnifiedHeader({
   stepLabels,
   dataRequestGenerateUrl,
   dataRequestCareSettingOptions,
+  dataRequestSingleSelect,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   const [drDialogOpen, setDrDialogOpen] = useState(false);
@@ -168,7 +170,8 @@ export function UnifiedHeader({
                 open={drDialogOpen}
                 onOpenChange={setDrDialogOpen}
                 generateUrl={dataRequestGenerateUrl}
-                careSettingOptions={dataRequestCareSettingOptions as any}
+                careSettingOptions={dataRequestCareSettingOptions}
+                singleSelect={dataRequestSingleSelect}
               />
             </>
           )}

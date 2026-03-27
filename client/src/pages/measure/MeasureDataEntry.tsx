@@ -6,13 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
+import type { CareSettingOption } from "@/components/DataRequestDialog";
 
-const MEASURE_CARE_SETTING_MAP = {
+const MEASURE_CARE_SETTING_MAP: Record<string, CareSettingOption> = {
   outpatient: { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
   ed: { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
   inpatient: { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
   nursing: { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
-} as const;
+};
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -198,6 +199,7 @@ export default function MeasureDataEntry({
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
         dataRequestCareSettingOptions={measureCareOptions}
+        dataRequestSingleSelect
       />
       <UnifiedHeaderSpacer />
 

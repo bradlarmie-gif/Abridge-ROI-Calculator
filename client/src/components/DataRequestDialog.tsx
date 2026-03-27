@@ -9,21 +9,29 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-const CARE_SETTINGS = [
+export interface CareSettingOption {
+  id: string;
+  label: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const CARE_SETTINGS: CareSettingOption[] = [
   { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
   { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
   { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
   { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
-] as const;
+];
 
 interface DataRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   generateUrl: (settings: string[]) => Promise<string>;
-  careSettingOptions?: typeof CARE_SETTINGS;
+  careSettingOptions?: CareSettingOption[];
+  singleSelect?: boolean;
 }
 
-export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions }: DataRequestDialogProps) {
+export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false }: DataRequestDialogProps) {
   const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
   const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
   const [selected, setSelected] = useState<string[]>([]);
@@ -48,7 +56,11 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
   }, [onOpenChange, reset]);
 
   const toggleSetting = (id: string) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+    if (singleSelect) {
+      setSelected(prev => prev.includes(id) ? [] : [id]);
+    } else {
+      setSelected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+    }
   };
 
   const handleContinue = async () => {
