@@ -51,7 +51,7 @@ export default function ExploreModel({
   const { toast } = useToast();
 
   const handleGenerateIntakeLink = async () => {
-    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
+    const url = await generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
     await navigator.clipboard.writeText(url);
     setIntakeLinkCopied(true);
     setTimeout(() => setIntakeLinkCopied(false), 2000);

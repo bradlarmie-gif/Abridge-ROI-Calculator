@@ -89,7 +89,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
     setClipboardFailed(false);
     try {
       const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-      const url = generateIntakeFormUrl(selectedForRequest);
+      const url = await generateIntakeFormUrl(selectedForRequest);
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);

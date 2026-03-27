@@ -79,7 +79,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
   const handleCreateIntakeLink = async () => {
     const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+    const url = await generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
     await navigator.clipboard.writeText(url);
     setIntakeLinkCopied(true);
     setTimeout(() => setIntakeLinkCopied(false), 2000);

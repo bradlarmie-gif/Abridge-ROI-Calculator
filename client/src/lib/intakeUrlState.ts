@@ -80,10 +80,11 @@ export function decodeIntakePreseed(encoded: string): IntakeFormPreseed | null {
   }
 }
 
-export function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]): string {
+export async function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]): Promise<string> {
+  const { createShortLink } = await import('./shortLinks');
   const preseed: IntakeFormPreseed = { preSelectedSettings };
   const encoded = encodeIntakePreseed(preseed);
-  return `${window.location.origin}/?intake_form=${encoded}`;
+  return createShortLink('intake_form', encoded);
 }
 
 const SETTING_LABELS: Record<ExploreCareSetting, string> = {

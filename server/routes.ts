@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
-const ALLOWED_PARAM_KEYS = ["data_form", "data_receipt", "intake_receipt"] as const;
+const ALLOWED_PARAM_KEYS = ["data_form", "data_receipt", "intake_receipt", "intake_form"] as const;
 
 export async function registerRoutes(
   httpServer: Server,
