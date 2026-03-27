@@ -1,0 +1,38 @@
+ Two small changes:                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  --- 1. ExploreOpportunity.tsx ---                                                                                                                                                                            
+                                                                                                          
+  In the Header section (the motion.div with the h1 title and subtitle p tag), add a
+  quiet text link immediately after the subtitle paragraph:                                                                                                                                                    
+                                                           
+    <div className="mt-3">                                                                                                                                                                                     
+      <button onClick={handleCreateIntakeLink} className="text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0]">                       
+        {intakeLinkCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send intake form to prospect'}                                                          
+      </button>                                                                                                                                                                                                
+    </div>                                                                                                                                                                                                     
+          
+  Also add the state and handler at the top of the component (after existing useState calls):                                                                                                                  
+                                                                                                          
+    const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);                                                                                                                                           
+    const handleCreateIntakeLink = async () => {                                                          
+      const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+      const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+      await navigator.clipboard.writeText(url);                                              
+      setIntakeLinkCopied(true);               
+      setTimeout(() => setIntakeLinkCopied(false), 2000);
+    };                                                                                                                                                                                                         
+      
+  --- 2. ExploreModel.tsx ---                                                                                                                                                                                  
+                                                                                                          
+  Find the existing "Create Intake Form" Button (outline variant, with ClipboardList icon)
+  in the action row near the Download PDF button. Replace it entirely with this quiet     
+  text link:                                                                                                                                                                                                   
+                                              
+    <button                                                                                                                                                                                                    
+      onClick={handleGenerateIntakeLink}                                                                  
+      className="order-3 text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0] self-center"                                             
+    >                                                                                                     
+      {intakeLinkCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send intake form to prospect'}                                                                                   
+    </button>                                                                                             
+                                                                                                                                                                                                               
+  No other changes.     

@@ -76,6 +76,14 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
+  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
+  const handleCreateIntakeLink = async () => {
+    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+    await navigator.clipboard.writeText(url);
+    setIntakeLinkCopied(true);
+    setTimeout(() => setIntakeLinkCopied(false), 2000);
+  };
 
   function applyFteEstimate(multiplier: number, label: string) {
     if (state.nursingStaffedBeds <= 0) return;
@@ -192,6 +200,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               <p className="text-base text-[#888888]">
                 {isNursing ? "Tell us about your deployment and expected adoption." : "Tell us about your starting point."}
               </p>
+              <div className="mt-3">
+                <button onClick={handleCreateIntakeLink} className="text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0]">
+                  {intakeLinkCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send intake form to prospect'}
+                </button>
+              </div>
             </motion.div>
 
             {/* Single Data Entry Card - Measure Style */}
