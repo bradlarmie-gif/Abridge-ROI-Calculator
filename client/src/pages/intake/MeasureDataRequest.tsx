@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptShortUrl } from "@/lib/dataRequestUrlState";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { shareOrCopy } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -246,7 +246,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     setSubmitState('creating');
     setFallbackText(null);
     try {
-      const url = await generateDataReceiptShortUrl(buildResponse());
+      const url = await generateDataReceiptUrl(buildResponse());
       setSubmitState('idle');
       const result = await shareOrCopy(url, 'My Abridge Data');
       if (result === 'fallback') {

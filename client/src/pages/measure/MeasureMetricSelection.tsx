@@ -21,7 +21,7 @@ import {
   type DomainKey,
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
-import { generateDataFormShortUrl } from "@/lib/dataRequestUrlState";
+import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureMetricSelectionProps {
   state: MeasureState;
@@ -709,7 +709,7 @@ export default function MeasureMetricSelection({
                 const activeMetricIds = Array.from(new Set(
                   domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
                 ));
-                const url = await generateDataFormShortUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
+                const url = await generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
                 await navigator.clipboard.writeText(url);
                 setDataRequestCopied(true);
                 setTimeout(() => setDataRequestCopied(false), 2500);

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   type ExploreIntakeResponse,
   type IntakeFormPreseed,
-  generateIntakeReceiptShortUrl,
+  generateIntakeReceiptUrl,
 } from "@/lib/intakeUrlState";
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
 import { shareOrCopy } from "@/lib/clipboard";
@@ -270,7 +270,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
     setSubmitState('creating');
     setFallbackText(null);
     try {
-      const url = await generateIntakeReceiptShortUrl(buildResponse());
+      const url = await generateIntakeReceiptUrl(buildResponse());
       setSubmitState('idle');
       const result = await shareOrCopy(url, 'My Abridge Intake');
       if (result === 'fallback') {

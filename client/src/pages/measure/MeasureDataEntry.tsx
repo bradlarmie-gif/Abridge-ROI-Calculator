@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
-import { generateDataFormShortUrl } from "@/lib/dataRequestUrlState";
+import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -208,7 +208,7 @@ export default function MeasureDataEntry({
               setDataFormCreating(true);
               try {
                 const setting = state.careSetting || activeSettings[0] || 'outpatient';
-                const url = await generateDataFormShortUrl({ setting });
+                const url = await generateDataFormUrl({ setting });
                 await navigator.clipboard.writeText(url);
                 setDataFormCopied(true);
                 setTimeout(() => setDataFormCopied(false), 2500);

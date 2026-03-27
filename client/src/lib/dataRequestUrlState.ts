@@ -91,12 +91,7 @@ export function decodeDataFormPreseed(encoded: string): DataFormPreseed | null {
   }
 }
 
-export function generateDataFormUrl(preseed: DataFormPreseed): string {
-  const encoded = encodeDataFormPreseed(preseed);
-  return `${window.location.origin}/?data_form=${encoded}`;
-}
-
-export async function generateDataFormShortUrl(preseed: DataFormPreseed): Promise<string> {
+export async function generateDataFormUrl(preseed: DataFormPreseed): Promise<string> {
   const { createShortLink } = await import('./shortLinks');
   const encoded = encodeDataFormPreseed(preseed);
   return createShortLink('data_form', encoded);
@@ -142,11 +137,7 @@ export function generateDataResponseText(data: MeasureDataRequestResponse, metri
   return lines.join('\n').trim();
 }
 
-export function generateDataReceiptUrl(data: MeasureDataRequestResponse): string {
-  return `${window.location.origin}/?data_receipt=${encodeDataRequest(data)}`;
-}
-
-export async function generateDataReceiptShortUrl(data: MeasureDataRequestResponse): Promise<string> {
+export async function generateDataReceiptUrl(data: MeasureDataRequestResponse): Promise<string> {
   const { createShortLink } = await import('./shortLinks');
   const encoded = encodeDataRequest(data);
   return createShortLink('data_receipt', encoded);

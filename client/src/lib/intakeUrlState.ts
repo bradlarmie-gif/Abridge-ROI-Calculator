@@ -86,13 +86,6 @@ export function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]
   return `${window.location.origin}/?intake_form=${encoded}`;
 }
 
-export async function generateIntakeFormShortUrl(preSelectedSettings?: ExploreCareSetting[]): Promise<string> {
-  const { createShortLink } = await import('./shortLinks');
-  const preseed: IntakeFormPreseed = { preSelectedSettings };
-  const encoded = encodeIntakePreseed(preseed);
-  return createShortLink('intake_form', encoded);
-}
-
 const SETTING_LABELS: Record<ExploreCareSetting, string> = {
   outpatient: 'Outpatient Clinic',
   ed: 'Emergency Department',
@@ -174,11 +167,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
   return lines.filter(l => l !== '').join('\n').trim();
 }
 
-export function generateIntakeReceiptUrl(data: ExploreIntakeResponse): string {
-  return `${window.location.origin}/?intake_receipt=${encodeIntake(data)}`;
-}
-
-export async function generateIntakeReceiptShortUrl(data: ExploreIntakeResponse): Promise<string> {
+export async function generateIntakeReceiptUrl(data: ExploreIntakeResponse): Promise<string> {
   const { createShortLink } = await import('./shortLinks');
   const encoded = encodeIntake(data);
   return createShortLink('intake_receipt', encoded);
