@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
-import { copyToClipboard } from "@/lib/clipboard";
+import { shareOrCopy } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -83,7 +83,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Before Abridge</label>
-              <input type="number" min={0} step="any" value={entry?.before ?? ""} placeholder="—"
+              <input type="number" min={0} step="any" inputMode="decimal" value={entry?.before ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
                 className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-before-${metric.id}`}
@@ -92,7 +92,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
             <div className="text-gray-300 mt-4">&rarr;</div>
             <div className="flex-1">
               <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">With Abridge</label>
-              <input type="number" min={0} step="any" value={entry?.after ?? ""} placeholder="—"
+              <input type="number" min={0} step="any" inputMode="decimal" value={entry?.after ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
                 className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-after-${metric.id}`}
@@ -113,13 +113,13 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                   {MONTH_LABELS.map((month, i) => (
                     <div key={month} className="flex flex-col items-center gap-1">
                       <span className="text-xs text-gray-400">{month}</span>
-                      <input type="number" min={0} step="any" value={entry?.monthlyData?.[i] ?? ""} placeholder="—"
+                      <input type="number" min={0} step="any" inputMode="decimal" value={entry?.monthlyData?.[i] ?? ""} placeholder="—"
                         onChange={(e) => {
                           const newData = [...(entry?.monthlyData ?? new Array(12).fill(null))];
                           newData[i] = e.target.value === "" ? null : Number(e.target.value);
                           onUpdate({ monthlyData: newData });
                         }}
-                        className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                        className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-2.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
                         data-testid={`input-monthly-${metric.id}-${i}`}
                       />
                     </div>
@@ -183,8 +183,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     return defaultDeployment;
   });
 
-  const [copied, setCopied] = useState(false);
+  const [submitState, setSubmitState] = useState<'idle' | 'copied' | 'shared' | 'fallback'>('idle');
   const [fallbackText, setFallbackText] = useState<string | null>(null);
+  const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSettingLocked = !!preseed?.setting;
@@ -241,16 +242,21 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     return { setting, deployment, metrics };
   }
 
-  async function handleCopyLink() {
+  async function handleSubmit() {
     const url = generateDataReceiptUrl(buildResponse());
-    setCopied(false);
+    setSubmitState('idle');
     setFallbackText(null);
-    const ok = await copyToClipboard(url);
-    if (ok) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 5000);
-    } else {
-      setFallbackText(url);
+    try {
+      const result = await shareOrCopy(url, 'My Abridge Data');
+      if (result === 'fallback') {
+        setSubmitState('fallback');
+        setFallbackText(url);
+      } else {
+        setSubmitState(result);
+        setTimeout(() => setSubmitState('idle'), 4000);
+      }
+    } catch {
+      // user cancelled native share
     }
   }
 
@@ -322,7 +328,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   </div>
                 ) : (
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.monthsOnAbridge || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ monthsOnAbridge: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -341,7 +347,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.totalProviders || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ totalProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -352,7 +358,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Live on Abridge</label>
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.liveProviders || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ liveProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -363,7 +369,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.mruProviders || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ mruProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -400,7 +406,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total Encounters</label>
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.totalEncounters || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ totalEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -411,7 +417,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Abridge Encounters</label>
                   <input
-                    type="number" min={0} step={1}
+                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
                     value={deployment.abridgeEncounters || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ abridgeEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
@@ -460,17 +466,21 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               <Download className="w-4 h-4" />
               {pdfLoading ? "Generating…" : "Download PDF"}
             </button>
-            <button onClick={handleCopyLink} disabled={!hasAnyData}
+            <button onClick={handleSubmit} disabled={!hasAnyData}
               className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
                 hasAnyData
-                  ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                  ? submitState === 'copied' || submitState === 'shared' ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
                   : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
               }`}
               data-testid="button-copy-link-data-request"
             >
-              {copied
-                ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
-                : <><Link2 className="w-4 h-4" /> Copy link to send back</>
+              {submitState === 'shared'
+                ? <><ClipboardCheck className="w-4 h-4" /> Sent!</>
+                : submitState === 'copied'
+                  ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
+                  : isMobile
+                    ? <><Link2 className="w-4 h-4" /> Share my answers</>
+                    : <><Link2 className="w-4 h-4" /> Copy link to send back</>
               }
             </button>
           </div>

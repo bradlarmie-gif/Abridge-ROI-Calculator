@@ -7,7 +7,7 @@ import {
   generateIntakeReceiptUrl,
 } from "@/lib/intakeUrlState";
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
-import { copyToClipboard } from "@/lib/clipboard";
+import { shareOrCopy } from "@/lib/clipboard";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -206,8 +206,9 @@ function loadSavedState(preseed?: IntakeFormPreseed, fingerprint?: string): Inta
 export default function ExploreIntakeForm({ preseed, storageFingerprint }: ExploreIntakeFormProps) {
   const storageKey = getStorageKey(storageFingerprint);
   const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
-  const [copied, setCopied] = useState(false);
+  const [submitState, setSubmitState] = useState<'idle' | 'copied' | 'shared' | 'fallback'>('idle');
   const [fallbackText, setFallbackText] = useState<string | null>(null);
+  const isMobile = typeof navigator !== 'undefined' && !!navigator.share;
   const [pdfLoading, setPdfLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -265,16 +266,21 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
     };
   }
 
-  async function handleCopyLink() {
+  async function handleSubmit() {
     const url = generateIntakeReceiptUrl(buildResponse());
-    setCopied(false);
+    setSubmitState('idle');
     setFallbackText(null);
-    const ok = await copyToClipboard(url);
-    if (ok) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 5000);
-    } else {
-      setFallbackText(url);
+    try {
+      const result = await shareOrCopy(url, 'My Abridge Intake');
+      if (result === 'fallback') {
+        setSubmitState('fallback');
+        setFallbackText(url);
+      } else {
+        setSubmitState(result);
+        setTimeout(() => setSubmitState('idle'), 4000);
+      }
+    } catch {
+      // user cancelled native share
     }
   }
 
@@ -541,19 +547,23 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 <Download className="w-4 h-4" />
                 {pdfLoading ? "Generating…" : "Download PDF"}
               </button>
-              <button onClick={handleCopyLink} disabled={!hasMinimum}
+              <button onClick={handleSubmit} disabled={!hasMinimum}
                 className={`inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
                   hasMinimum
-                    ? copied
+                    ? submitState === 'copied' || submitState === 'shared'
                       ? "bg-green-500 text-white"
                       : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
                     : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
                 }`}
                 data-testid="button-copy-link-intake"
               >
-                {copied
-                  ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
-                  : <><Link2 className="w-4 h-4" /> Copy link to send back</>
+                {submitState === 'shared'
+                  ? <><ClipboardCheck className="w-4 h-4" /> Sent!</>
+                  : submitState === 'copied'
+                    ? <><ClipboardCheck className="w-4 h-4" /> Copied!</>
+                    : isMobile
+                      ? <><Link2 className="w-4 h-4" /> Share my answers</>
+                      : <><Link2 className="w-4 h-4" /> Copy link to send back</>
                 }
               </button>
             </div>
