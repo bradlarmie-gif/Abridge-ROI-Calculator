@@ -1,0 +1,111 @@
+  Redesign the HAC card in ExploreCareQuality.tsx.
+  Same state fields, completely new framing and layout.
+
+  ──────────────────────────────────────────────────────
+  TITLE: "HAC Penalty Exposure"
+  Remove the "POTENTIAL" badge entirely — replace with nothing,
+  or a neutral "RISK" badge in gray.
+  Subtitle: "CMS reduces Medicare payments 1% annually for
+  bottom-quartile hospitals"
+
+  ──────────────────────────────────────────────────────
+  THE THEORY (rewrite entirely):
+
+  "The CMS HAC Reduction Program automatically cuts Medicare
+  inpatient payments by 1% for hospitals in the bottom quartile
+  of HAC scores — roughly 25% of hospitals each year. HAC scores
+  are driven by rates of CAUTI, CLABSI, pressure injuries, falls,
+  and surgical infections. Documentation quality supports bundle
+  compliance and earlier intervention, which are inputs into HAC
+  score improvement over a 2–3 year trajectory. This is not a
+  Year 1 return — it is a risk signal."
+
+  ──────────────────────────────────────────────────────
+  STEP 1: ARE YOU CURRENTLY PENALIZED?
+
+  Checkbox (same as before):
+  "We are currently in the bottom quartile of HAC scores"
+  hint: "~25% of hospitals receive this penalty each year"
+
+  If unchecked: show nothing below. Card collapses.
+  If checked: show Steps 2 and 3.
+
+  ──────────────────────────────────────────────────────
+  STEP 2: YOUR CURRENT PENALTY
+
+  Label: "ANNUAL MEDICARE INPATIENT REVENUE"
+  Input: Annual Medicare Inpatient Revenue
+         placeholder="e.g. 50,000,000"  prefix="$"
+         hint: "Typical range: $20M–$200M"
+
+  Below the input, show a calculated display (not an input):
+
+  ┌─────────────────────────────────────────────────────┐
+  │  Current annual CMS penalty                         │
+  │  $500,000 / year                    ← bold, red     │
+  │  Automatic 1% reduction on all Medicare             │
+  │  inpatient revenue while in bottom quartile         │
+  └─────────────────────────────────────────────────────┘
+
+  This replaces the old "1% CMS Penalty" calculated field.
+  Style: bg-red-50 border border-red-200 rounded-lg p-4.
+  The number is the real exposure — not a projected saving.
+
+  ──────────────────────────────────────────────────────
+  STEP 3: WHAT DRIVES HAC SCORES (static, no inputs)
+
+  Label: "WHAT'S IN YOUR HAC SCORE"
+
+  Show a simple list in a neutral gray box:
+  • Catheter-associated UTIs (CAUTI)
+  • Central line bloodstream infections (CLABSI)
+  • Hospital-acquired pressure injuries (HAPI)
+  • Patient falls with injury
+  • Surgical site infections
+
+  Then below the list:
+  "Better flowsheet documentation supports timely bundle
+  assessments and earlier intervention — which are inputs
+  into each of these metrics over time. The CAUTI and CLABSI
+  drivers above model the direct documentation mechanism.
+  HAC score improvement is the downstream effect over 2–3 years."
+
+  Style: bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666]
+
+  ──────────────────────────────────────────────────────
+  REMOVE entirely:
+  - "Attribution to Documentation %" input
+  - "Year 1 Realization %" input
+  - "Potential HAC Value" dollar figure at the bottom
+  - The old Step 4 potential value breakdown table
+
+  REPLACE the bottom summary with:
+
+  ┌─────────────────────────────────────────────────────┐
+  │  Penalty at risk while in bottom quartile           │
+  │  $500,000 / year                    ← bold          │
+  │                                                     │
+  │  Documentation is one of several levers.            │
+  │  This is a 2–3 year quality trajectory,             │
+  │  not a Year 1 financial return.                     │
+  └─────────────────────────────────────────────────────┘
+
+  Style: bg-[#1A1A1A] text-white rounded-lg p-4
+  Dollar figure in white, bold.
+  The two disclaimer lines in white/60 opacity, text-sm.
+
+  ──────────────────────────────────────────────────────
+  STATE CHANGES:
+
+  Remove from ExploreState / calculations:
+  - nursingHacAbridgeAttribution
+  - nursingHacRealization
+  - The calculated "potential HAC value" that feeds into
+    the total care quality number
+
+  The HAC card should NO LONGER contribute a dollar amount
+  to the total nursing care quality value. It is a risk
+  display only — not an ROI driver.
+
+  Update the nursing care quality total to exclude HAC.
+  If HAC was adding to the total model output, remove it.
