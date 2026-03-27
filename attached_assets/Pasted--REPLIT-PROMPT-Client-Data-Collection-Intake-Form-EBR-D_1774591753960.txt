@@ -1,0 +1,873 @@
+ REPLIT PROMPT — Client Data Collection: Intake Form + EBR Data Request
+
+  I need to implement a "shareable link" data collection system with two distinct workflows. No server storage — everything is URL-encoded with lz-string compression (already installed).
+
+  ---
+  STEP 1 — Create client/src/lib/intakeUrlState.ts (new file)
+
+  import LZString from 'lz-string';
+  import type { ExploreCareSetting } from '../pages/explore/ExploreFlow';
+
+  export interface ExploreIntakeResponse {
+    settings: ExploreCareSetting[];
+    providers: number | null;
+    annualEncounters: number | null;
+    staffedBeds?: number | null;
+    occupancyRate?: number | null;
+    hapiRatePer1000?: number | null;
+    fallRatePer1000?: number | null;
+    cautiRatePer1000?: number | null;
+    clabsiRatePer1000?: number | null;
+  }
+
+  export interface IntakeFormPreseed {
+    preSelectedSettings?: ExploreCareSetting[];
+  }
+
+  export function encodeIntake(data: ExploreIntakeResponse): string {
+    return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+  }
+
+  export function decodeIntake(encoded: string): ExploreIntakeResponse | null {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+      if (!decompressed) return null;
+      const parsed = JSON.parse(decompressed);
+      if (!parsed?.settings || !Array.isArray(parsed.settings)) return null;
+      return parsed as ExploreIntakeResponse;
+    } catch {
+      return null;
+    }
+  }
+
+  export function encodeIntakePreseed(data: IntakeFormPreseed): string {
+    return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+  }
+
+  export function decodeIntakePreseed(encoded: string): IntakeFormPreseed | null {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+      if (!decompressed) return null;
+      return JSON.parse(decompressed) as IntakeFormPreseed;
+    } catch {
+      return null;
+    }
+  }
+
+  export function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]): string {
+    const preseed: IntakeFormPreseed = { preSelectedSettings };
+    const encoded = encodeIntakePreseed(preseed);
+    return `${window.location.origin}/?intake_form=${encoded}`;
+  }
+
+  export function generateIntakeResponseUrl(data: ExploreIntakeResponse): string {
+    const encoded = encodeIntake(data);
+    return `${window.location.origin}/?intake=${encoded}`;
+  }
+
+  export function getIntakeResponseFromUrl(): ExploreIntakeResponse | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('intake');
+    if (!encoded) return null;
+    return decodeIntake(encoded);
+  }
+
+  export function getIntakePreseedFromUrl(): IntakeFormPreseed | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('intake_form');
+    if (!encoded) return null;
+    return decodeIntakePreseed(encoded);
+  }
+
+  ---
+  STEP 2 — Create client/src/lib/dataRequestUrlState.ts (new file)
+
+  import LZString from 'lz-string';
+  import type { MeasureCareSetting } from './measureCalculator';
+
+  export interface DataRequestMetricEntry {
+    metricId: string;
+    before: number | null;
+    after: number | null;
+    monthlyData?: number[];
+    isMonthlyMode: boolean;
+  }
+
+  export interface MeasureDataRequestResponse {
+    setting: MeasureCareSetting;
+    metrics: DataRequestMetricEntry[];
+  }
+
+  export interface DataFormPreseed {
+    setting: MeasureCareSetting;
+    preSelectedIds?: string[];
+  }
+
+  export function encodeDataRequest(data: MeasureDataRequestResponse): string {
+    return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+  }
+
+  export function decodeDataRequest(encoded: string): MeasureDataRequestResponse | null {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+      if (!decompressed) return null;
+      const parsed = JSON.parse(decompressed);
+      if (!parsed?.setting || !Array.isArray(parsed.metrics)) return null;
+      return parsed as MeasureDataRequestResponse;
+    } catch {
+      return null;
+    }
+  }
+
+  export function encodeDataFormPreseed(data: DataFormPreseed): string {
+    return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+  }
+
+  export function decodeDataFormPreseed(encoded: string): DataFormPreseed | null {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+      if (!decompressed) return null;
+      return JSON.parse(decompressed) as DataFormPreseed;
+    } catch {
+      return null;
+    }
+  }
+
+  export function generateDataFormUrl(preseed: DataFormPreseed): string {
+    const encoded = encodeDataFormPreseed(preseed);
+    return `${window.location.origin}/?data_form=${encoded}`;
+  }
+
+  export function generateDataResponseUrl(data: MeasureDataRequestResponse): string {
+    const encoded = encodeDataRequest(data);
+    return `${window.location.origin}/?data_request=${encoded}`;
+  }
+
+  export function getDataRequestResponseFromUrl(): MeasureDataRequestResponse | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('data_request');
+    if (!encoded) return null;
+    return decodeDataRequest(encoded);
+  }
+
+  export function getDataFormPreseedFromUrl(): DataFormPreseed | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('data_form');
+    if (!encoded) return null;
+    return decodeDataFormPreseed(encoded);
+  }
+
+  ---
+  STEP 3 — Create client/src/pages/intake/ExploreIntakeForm.tsx (new file, new directory)
+
+  import { useState } from "react";
+  import { Check, Copy, ClipboardCheck } from "lucide-react";
+  import {
+    type ExploreIntakeResponse,
+    type IntakeFormPreseed,
+    generateIntakeResponseUrl,
+  } from "@/lib/intakeUrlState";
+  import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+
+  interface ExploreIntakeFormProps {
+    preseed?: IntakeFormPreseed;
+  }
+
+  const SETTINGS: { id: ExploreCareSetting; label: string; description: string }[] = [
+    { id: "outpatient", label: "Outpatient Clinic", description: "Ambulatory / clinic-based care" },
+    { id: "ed", label: "Emergency Department", description: "ED / urgent care" },
+    { id: "inpatient", label: "Inpatient / Hospital Medicine", description: "Hospitalists, unit-based care" },
+    { id: "nursing", label: "Nursing / Care Teams", description: "Bedside nursing documentation" },
+  ];
+
+  function NumberField({
+    label, hint, value, onChange, placeholder = "0", suffix, min = 0,
+  }: {
+    label: string; hint?: string; value: number | null; onChange: (v: number | null) => void;
+    placeholder?: string; suffix?: string; min?: number;
+  }) {
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+          {hint && <span className="ml-2 text-xs text-gray-400 font-normal">{hint}</span>}
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number" min={min} value={value ?? ""}
+            onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+            placeholder={placeholder}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]"
+          />
+          {suffix && <span className="text-sm text-gray-500 whitespace-nowrap">{suffix}</span>}
+        </div>
+      </div>
+    );
+  }
+
+  export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
+    const [form, setForm] = useState<ExploreIntakeResponse>({
+      settings: preseed?.preSelectedSettings ?? [],
+      providers: null, annualEncounters: null,
+      staffedBeds: null, occupancyRate: null,
+      hapiRatePer1000: null, fallRatePer1000: null,
+      cautiRatePer1000: null, clabsiRatePer1000: null,
+    });
+    const [copied, setCopied] = useState(false);
+
+    const isNursing = form.settings.includes("nursing");
+
+    function toggleSetting(id: ExploreCareSetting) {
+      setForm((prev) => ({
+        ...prev,
+        settings: prev.settings.includes(id)
+          ? prev.settings.filter((s) => s !== id)
+          : [...prev.settings, id],
+      }));
+    }
+
+    function handleCopy() {
+      navigator.clipboard.writeText(generateIntakeResponseUrl(form)).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      });
+    }
+
+    const hasMinimum = form.settings.length > 0 && (form.providers !== null || form.annualEncounters !== null);
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
+        <div className="w-full max-w-xl mb-8 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 bg-[#EA2C00] rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
+            </div>
+            <span className="text-lg font-semibold text-gray-900 tracking-tight">Abridge</span>
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Help us prepare for our call</h1>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Share a few details about your organization before we connect. This takes about 2 minutes.
+          </p>
+        </div>
+
+        <div className="w-full max-w-xl space-y-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
+              Which areas are you exploring Abridge for?
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {SETTINGS.map((s) => {
+                const selected = form.settings.includes(s.id);
+                return (
+                  <button key={s.id} onClick={() => toggleSetting(s.id)}
+                    className={`relative text-left p-3 rounded-lg border-2 transition-all ${
+                      selected ? "border-[#EA2C00] bg-[#EA2C00]/5" : "border-gray-200 hover:border-gray-300"
+                    }`}>
+                    {selected && (
+                      <div className="absolute top-2 right-2 w-4 h-4 bg-[#EA2C00] rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                    <div className="text-sm font-medium text-gray-900 pr-5">{s.label}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{s.description}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Your practice size</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <NumberField label="Physicians / APPs" hint="estimate is fine" value={form.providers}
+                onChange={(v) => setForm((p) => ({ ...p, providers: v }))} placeholder="e.g. 120" />
+              <NumberField label="Patient encounters / year" hint="estimate" value={form.annualEncounters}
+                onChange={(v) => setForm((p) => ({ ...p, annualEncounters: v }))} placeholder="e.g. 90,000" />
+            </div>
+          </div>
+
+          {isNursing && (
+            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Nursing operations</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <NumberField label="Staffed beds" value={form.staffedBeds ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, staffedBeds: v }))} placeholder="e.g. 350" />
+                <NumberField label="Occupancy rate" value={form.occupancyRate ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, occupancyRate: v }))} placeholder="e.g. 85" suffix="%" />
+              </div>
+            </div>
+          )}
+
+          {isNursing && (
+            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-1">
+                Quality metrics <span className="ml-2 text-xs text-gray-400 font-normal normal-case">optional</span>
+              </h2>
+              <p className="text-xs text-gray-500 mb-4">If you track any of these, enter your current rates.</p>
+              <div className="grid grid-cols-2 gap-4">
+                <NumberField label="HAPI rate" hint="per 1,000 patient days" value={form.hapiRatePer1000 ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, hapiRatePer1000: v }))} placeholder="e.g. 1.2" />
+                <NumberField label="Patient fall rate" hint="per 1,000 patient days" value={form.fallRatePer1000 ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, fallRatePer1000: v }))} placeholder="e.g. 2.5" />
+                <NumberField label="CAUTI rate" hint="per 1,000 catheter days" value={form.cautiRatePer1000 ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, cautiRatePer1000: v }))} placeholder="e.g. 1.8" />
+                <NumberField label="CLABSI rate" hint="per 1,000 CL days" value={form.clabsiRatePer1000 ?? null}
+                  onChange={(v) => setForm((p) => ({ ...p, clabsiRatePer1000: v }))} placeholder="e.g. 0.8" />
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm text-center">
+            <button onClick={handleCopy} disabled={!hasMinimum}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                hasMinimum ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}>
+              {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied to clipboard!</>
+                : <><Copy className="w-4 h-4" /> Copy my answers</>}
+            </button>
+            {!hasMinimum && <p className="text-xs text-gray-400 mt-2">Select at least one care setting and enter a provider or encounter count to continue.</p>}
+            {hasMinimum && !copied && <p className="text-xs text-gray-500 mt-2">Paste this link and send it back to your Abridge contact.</p>}
+            {copied && <p className="text-xs text-green-600 mt-2">Send this link to your Abridge contact — they'll use it to prep for your call.</p>}
+          </div>
+
+          <p className="text-center text-xs text-gray-400 pb-8">
+            No account required. Your answers are encoded in the link — nothing is stored on any server.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  ---
+  STEP 4 — Create client/src/pages/intake/MeasureDataRequest.tsx (new file)
+
+  import { useState } from "react";
+  import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp } from "lucide-react";
+  import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseUrl } from "@/lib/dataRequestUrlState";
+  import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
+  import type { MeasureCareSetting } from "@/lib/measureCalculator";
+
+  const SETTING_LABELS: Record<MeasureCareSetting, string> = {
+    outpatient: "Outpatient", ed: "Emergency Department",
+    inpatient: "Inpatient / Hospital Medicine", nursing: "Nursing / Care Teams",
+  };
+
+  const DOMAIN_LABELS: Record<string, string> = {
+    foundational: "Adoption & Utilization", quality: "Care Quality", workforce: "Workforce",
+    capacity: "Capacity", revenue: "Revenue", throughput: "Throughput",
+    patientFlow: "Patient Flow", staffing: "Staffing",
+  };
+
+  function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
+    const map: Record<MeasureCareSetting, MetricDefinition[]> = {
+      outpatient: OUTPATIENT_METRICS, ed: ED_METRICS,
+      inpatient: INPATIENT_METRICS, nursing: NURSING_METRICS,
+    };
+    return (map[setting] ?? OUTPATIENT_METRICS).filter((m) => m.inputType === "before-after" && !m.phase3Roadmap);
+  }
+
+  const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
+    metric: MetricDefinition; checked: boolean; entry: DataRequestMetricEntry | undefined;
+    onToggle: () => void; onUpdate: (updates: Partial<DataRequestMetricEntry>) => void;
+  }) {
+    const isMonthlyMode = entry?.isMonthlyMode ?? false;
+    return (
+      <div className={`border rounded-lg transition-all ${checked ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"}`}>
+        <div className="flex items-start gap-3 p-4">
+          <button onClick={onToggle}
+            className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${
+              checked ? "bg-[#EA2C00] border-[#EA2C00]" : "border-gray-300 bg-white"
+            }`}>
+            {checked && <Check className="w-3 h-3 text-white" />}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className={`text-sm font-medium ${checked ? "text-gray-900" : "text-gray-400"}`}>{metric.label}</span>
+              <span className={`text-xs ${checked ? "text-gray-400" : "text-gray-300"}`}>({metric.unitLabel})</span>
+            </div>
+            {checked && metric.description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{metric.description}</p>}
+          </div>
+        </div>
+        {checked && (
+          <div className="px-4 pb-4 border-t border-gray-50 pt-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">Before Abridge</label>
+                <input type="number" min={0} step="any" value={entry?.before ?? ""} placeholder="—"
+                  onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]" />
+              </div>
+              <div className="text-gray-300 mt-4">→</div>
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">With Abridge</label>
+                <input type="number" min={0} step="any" value={entry?.after ?? ""} placeholder="—"
+                  onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <button onClick={() => onUpdate({ isMonthlyMode: !isMonthlyMode, monthlyData: !isMonthlyMode ? new Array(12).fill(null) : undefined })}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                {isMonthlyMode ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {isMonthlyMode ? "Hide monthly trend" : "Add monthly trend data (optional)"}
+              </button>
+              {isMonthlyMode && (
+                <div className="mt-3 overflow-x-auto">
+                  <div className="flex gap-2 min-w-max">
+                    {MONTH_LABELS.map((month, i) => (
+                      <div key={month} className="flex flex-col items-center gap-1">
+                        <span className="text-xs text-gray-400">{month}</span>
+                        <input type="number" min={0} step="any" value={entry?.monthlyData?.[i] ?? ""} placeholder="—"
+                          onChange={(e) => {
+                            const newData = [...(entry?.monthlyData ?? new Array(12).fill(null))];
+                            newData[i] = e.target.value === "" ? null : Number(e.target.value);
+                            onUpdate({ monthlyData: newData });
+                          }}
+                          className="w-14 border border-gray-200 rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPreseed }) {
+    const setting: MeasureCareSetting = preseed?.setting ?? "outpatient";
+    const allMetrics = getMetricsForSetting(setting);
+    const byDomain = allMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
+      acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
+    }, {});
+    const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? allMetrics.filter((m) => m.phase === 1).map((m) => m.id));
+    const [checkedIds, setCheckedIds] = useState<Set<string>>(defaultCheckedIds);
+    const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
+    const [copied, setCopied] = useState(false);
+
+    function toggleMetric(id: string) {
+      setCheckedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) { next.delete(id); }
+        else { next.add(id); setEntries((e) => ({ ...e, [id]: e[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false } })); }
+        return next;
+      });
+    }
+
+    function updateEntry(id: string, updates: Partial<DataRequestMetricEntry>) {
+      setEntries((prev) => ({ ...prev, [id]: { ...(prev[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false }), ...updates } }));
+    }
+
+    function handleCopy() {
+      const metrics = [...checkedIds].map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
+        .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
+      navigator.clipboard.writeText(generateDataResponseUrl({ setting, metrics })).then(() => {
+        setCopied(true); setTimeout(() => setCopied(false), 2500);
+      });
+    }
+
+    const hasAnyData = [...checkedIds].some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
+        <div className="w-full max-w-2xl mb-8 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 bg-[#EA2C00] rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-sm">A</span>
+            </div>
+            <span className="text-lg font-semibold text-gray-900 tracking-tight">Abridge</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600 mb-4">
+            {SETTING_LABELS[setting]}
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Help us tell your story</h1>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto">
+            Select the metrics you track and enter your numbers. Your Abridge partner will use this to prepare your business review.
+          </p>
+        </div>
+        <div className="w-full max-w-2xl space-y-6">
+          {Object.entries(byDomain).map(([domain, metrics]) => (
+            <div key={domain} className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">{DOMAIN_LABELS[domain] ?? domain}</h2>
+              <div className="space-y-3">
+                {metrics.map((metric) => (
+                  <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
+                    onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm text-center">
+            <button onClick={handleCopy} disabled={!hasAnyData}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                hasAnyData ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}>
+              {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied to clipboard!</> : <><Copy className="w-4 h-4" /> Copy my answers</>}
+            </button>
+            {!hasAnyData && <p className="text-xs text-gray-400 mt-2">Select at least one metric and enter a before or after value.</p>}
+            {hasAnyData && !copied && <p className="text-xs text-gray-500 mt-2">Paste this link and send it to your Abridge partner.</p>}
+            {copied && <p className="text-xs text-green-600 mt-2">Send this link to your Abridge partner — they'll use it to prep your business review.</p>}
+          </div>
+          <p className="text-center text-xs text-gray-400 pb-8">No account required. Your answers are encoded in the link — nothing is stored on any server.</p>
+        </div>
+      </div>
+    );
+  }
+
+  ---
+  STEP 5 — Modify client/src/App.tsx
+
+  5a. Replace the existing explore/measure imports (lines starting with import { ExploreFlow...} through to import ProformaHub) with:
+
+  import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase, DEFAULT_EXPLORE_STATE } from "@/pages/explore";
+  import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
+  import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
+  import { type ExploreIntakeResponse, type IntakeFormPreseed, decodeIntake, decodeIntakePreseed } from "@/lib/intakeUrlState";
+  import { type MeasureDataRequestResponse, type DataFormPreseed, decodeDataRequest, decodeDataFormPreseed } from "@/lib/dataRequestUrlState";
+
+  5b. Replace the AppView type to add two new views:
+  type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" |
+  "explore-intake" | "measure-data-request";
+
+  5c. Replace the entire InitialDeepLink type and getInitialDeepLink function:
+
+  type InitialDeepLink =
+    | { type: 'explore'; careSetting: ExploreCareSetting; phase: ExplorePhase }
+    | { type: 'explore_intake'; intakeResponse: ExploreIntakeResponse }
+    | { type: 'explore_intake_form'; preseed: IntakeFormPreseed }
+    | { type: 'measure_data_request'; dataResponse: MeasureDataRequestResponse }
+    | { type: 'measure_data_form'; preseed: DataFormPreseed }
+    | { type: 'learn'; screen: LearnScreen }
+    | { type: 'none' };
+
+  function getInitialDeepLink(): InitialDeepLink {
+    const params = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname;
+
+    const intakeParam = params.get('intake');
+    if (intakeParam) {
+      const decoded = decodeIntake(intakeParam);
+      if (decoded) { window.history.replaceState({}, '', pathname); return { type: 'explore_intake', intakeResponse: decoded }; }
+    }
+
+    const intakeFormParam = params.get('intake_form');
+    if (intakeFormParam) {
+      const decoded = decodeIntakePreseed(intakeFormParam);
+      window.history.replaceState({}, '', pathname);
+      return { type: 'explore_intake_form', preseed: decoded ?? {} };
+    }
+
+    const dataRequestParam = params.get('data_request');
+    if (dataRequestParam) {
+      const decoded = decodeDataRequest(dataRequestParam);
+      if (decoded) { window.history.replaceState({}, '', pathname); return { type: 'measure_data_request', dataResponse: decoded }; }
+    }
+
+    const dataFormParam = params.get('data_form');
+    if (dataFormParam) {
+      const decoded = decodeDataFormPreseed(dataFormParam);
+      window.history.replaceState({}, '', pathname);
+      return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' } };
+    }
+
+    const exploreSetting = params.get('explore');
+    if (exploreSetting) {
+      const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
+      if (validSettings.includes(exploreSetting as ExploreCareSetting)) {
+        window.history.replaceState({}, '', pathname);
+        return { type: 'explore', careSetting: exploreSetting as ExploreCareSetting, phase: 'practice' };
+      }
+    }
+
+    if (pathname.startsWith('/learn/')) {
+      const setting = pathname.replace('/learn/', '');
+      const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
+      if (validScreens.includes(setting as LearnScreen)) {
+        window.history.replaceState({}, '', '/');
+        return { type: 'learn', screen: setting as LearnScreen };
+      }
+    }
+
+    return { type: 'none' };
+  }
+
+  5d. In the App() component body, after the existing exploreInitialSettings useState, add:
+
+    const [exploreIntakeResponse, setExploreIntakeResponse] = useState<ExploreIntakeResponse | undefined>(() => {
+      if (INITIAL_DEEP_LINK.type === 'explore_intake') return INITIAL_DEEP_LINK.intakeResponse;
+      return undefined;
+    });
+    const [intakeFormPreseed, setIntakeFormPreseed] = useState<IntakeFormPreseed | undefined>(() => {
+      if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return INITIAL_DEEP_LINK.preseed;
+      return undefined;
+    });
+    const [measureDataResponse, setMeasureDataResponse] = useState<MeasureDataRequestResponse | undefined>(() => {
+      if (INITIAL_DEEP_LINK.type === 'measure_data_request') return INITIAL_DEEP_LINK.dataResponse;
+      return undefined;
+    });
+    const [dataFormPreseed, setDataFormPreseed] = useState<DataFormPreseed | undefined>(() => {
+      if (INITIAL_DEEP_LINK.type === 'measure_data_form') return INITIAL_DEEP_LINK.preseed;
+      return undefined;
+    });
+
+  5e. Update the currentView useState initializer to:
+
+    const [currentView, setCurrentView] = useState<AppView>(() => {
+      if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
+      if (INITIAL_DEEP_LINK.type === 'explore_intake') return "explore";
+      if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return "explore-intake";
+      if (INITIAL_DEEP_LINK.type === 'measure_data_request') return "measure";
+      if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
+      if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
+      return "splash";
+    });
+
+  5f. Add this helper function right before handleExploreComplete:
+
+    function applyIntakeToExploreState(intake: ExploreIntakeResponse): ExploreState {
+      return {
+        ...DEFAULT_EXPLORE_STATE,
+        careSetting: intake.settings[0] ?? null,
+        numberOfProviders: intake.providers ?? DEFAULT_EXPLORE_STATE.numberOfProviders,
+        annualEncounters: intake.annualEncounters ?? DEFAULT_EXPLORE_STATE.annualEncounters,
+        nursingStaffedBeds: intake.staffedBeds ?? DEFAULT_EXPLORE_STATE.nursingStaffedBeds,
+        nursingOccupancyRate: intake.occupancyRate ?? DEFAULT_EXPLORE_STATE.nursingOccupancyRate,
+        docQualityInputs: {
+          ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+          ...(intake.hapiRatePer1000 != null ? { nursingHapiRate: intake.hapiRatePer1000 } : {}),
+          ...(intake.fallRatePer1000 != null ? { nursingFallsRate: intake.fallRatePer1000 } : {}),
+          ...(intake.cautiRatePer1000 != null ? { nursingCautiRate: intake.cautiRatePer1000 } : {}),
+          ...(intake.clabsiRatePer1000 != null ? { nursingClabsiRate: intake.clabsiRatePer1000 } : {}),
+        },
+      };
+    }
+
+  5g. Replace the {currentView === "explore" && ...} block with:
+
+              {currentView === "explore" && (
+                <ExploreFlow
+                  onBackToJourney={handleBackToJourney}
+                  onContinueToInvestment={handleExploreComplete}
+                  initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
+                  initialPhase={exploreIntakeResponse ? 'practice' : exploreInitialSettings.phase}
+                  initialExploreState={
+                    exploreIntakeResponse
+                      ? applyIntakeToExploreState(exploreIntakeResponse)
+                      : proformaEditExploreState
+                  }
+                  intakeResponse={exploreIntakeResponse}
+                  onAddToProforma={handleAddToProforma}
+                  disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
+                />
+              )}
+
+              {currentView === "explore-intake" && (
+                <ExploreIntakeForm preseed={intakeFormPreseed} />
+              )}
+
+              {currentView === "measure-data-request" && (
+                <MeasureDataRequest preseed={dataFormPreseed} />
+              )}
+
+  5h. Replace the {currentView === "measure" && ...} block with:
+
+              {currentView === "measure" && (
+                <MeasureFlow
+                  onBackToJourney={() => navigateTo("journey")}
+                  dataRequestResponse={measureDataResponse}
+                />
+              )}
+
+  ---
+  STEP 6 — Modify client/src/pages/explore/ExploreFlow.tsx
+
+  6a. Find interface ExploreFlowProps and add one new prop:
+    intakeResponse?: import('@/lib/intakeUrlState').ExploreIntakeResponse;
+
+  6b. In the function signature, destructure the new prop:
+  export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, intakeResponse, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
+
+  6c. Just before the return ( statement at the very bottom of the component, add:
+
+    const intakeBanner = intakeResponse && (
+      <div className="px-4 pt-3 max-w-2xl mx-auto w-full">
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+          <span className="font-semibold">Pre-filled from client intake</span>
+          <span className="text-amber-600">·</span>
+          <span className="text-amber-700">
+            {intakeResponse.settings.join(', ')}
+            {intakeResponse.providers ? ` · ${intakeResponse.providers} providers` : ''}
+            {intakeResponse.annualEncounters ? ` · ${intakeResponse.annualEncounters.toLocaleString()} encounters` : ''}
+          </span>
+        </div>
+      </div>
+    );
+
+  6d. Change the return statement from:
+    return (
+      <>
+        {progressBar}
+        {content}
+      </>
+    );
+  to:
+    return (
+      <>
+        {intakeBanner}
+        {progressBar}
+        {content}
+      </>
+    );
+
+  ---
+  STEP 7 — Modify client/src/pages/explore/ExploreModel.tsx
+
+  7a. Add ClipboardList to the lucide-react import and useCallback to the react import.
+
+  7b. After the const { toast } = useToast(); line, add:
+
+    const [showIntakeModal, setShowIntakeModal] = useState(false);
+    const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
+
+    const handleGenerateIntakeLink = useCallback(() => {
+      import('@/lib/intakeUrlState').then(({ generateIntakeFormUrl }) => {
+        const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+        navigator.clipboard.writeText(url).then(() => {
+          setIntakeLinkCopied(true);
+          setTimeout(() => setIntakeLinkCopied(false), 2500);
+        });
+        setShowIntakeModal(true);
+      });
+    }, [state.careSetting]);
+
+  7c. In the action buttons row (near the Download PDF and Edit Model buttons), add a new button between them:
+
+                <Button
+                  variant="outline"
+                  onClick={handleGenerateIntakeLink}
+                  className="gap-2 h-11 sm:h-9 text-sm border-neutral-300 text-neutral-600"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Create Intake Form
+                </Button>
+
+  7d. Just before the closing </div></div> of the component return, add the intake modal (right after the <PDFExportModal ... /> block):
+
+          {showIntakeModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setShowIntakeModal(false)}>
+              <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList className="w-5 h-5 text-[#EA2C00]" />
+                    <h3 className="text-base font-semibold text-gray-900">Create Client Intake Form</h3>
+                  </div>
+                  <button onClick={() => setShowIntakeModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Send this link to your prospect before the ROI call. They'll fill in their actual numbers — no ROI math shown.
+                </p>
+                {state.careSetting && (
+                  <div className="flex items-center gap-1.5 mb-3 text-xs text-gray-500">
+                    <Check className="w-3.5 h-3.5 text-green-500" />
+                    <span>{state.careSetting.charAt(0).toUpperCase() + state.careSetting.slice(1)} pre-selected</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-500 font-mono truncate">
+                    {window.location.origin}/?intake_form=…
+                  </div>
+                  <Button size="sm" onClick={handleGenerateIntakeLink}
+                    className={`gap-1.5 text-xs flex-shrink-0 ${intakeLinkCopied ? "bg-green-500 hover:bg-green-500" : "bg-[#EA2C00] hover:bg-[#c92500]"} text-white`}>
+                    {intakeLinkCopied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Link className="w-3.5 h-3.5" /> Copy Link</>}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400">
+                  When they send it back, open their link to load their data into this calculator automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
+  ---
+  STEP 8 — Modify client/src/pages/measure/MeasureFlow.tsx
+
+  8a. Add import at the top:
+  import { type MeasureDataRequestResponse } from "@/lib/dataRequestUrlState";
+
+  8b. Add dataRequestResponse?: MeasureDataRequestResponse to MeasureFlowProps and destructure it.
+
+  8c. In the existing useEffect that calls getStateFromCurrentUrl(), update it to also handle the data request response:
+
+    useEffect(() => {
+      const urlState = getStateFromCurrentUrl();
+      if (urlState) {
+        setState(urlState);
+        setPhase('journey');
+        clearUrlState();
+        return;
+      }
+      if (dataRequestResponse) {
+        const setting = dataRequestResponse.setting as MeasureCareSetting;
+        const metricValues: MeasureState['metricValues'] = {};
+        dataRequestResponse.metrics.forEach((m) => {
+          metricValues[m.metricId] = {
+            before: m.before, after: m.after,
+            monthlyData: m.monthlyData, isMonthlyMode: m.isMonthlyMode,
+          };
+        });
+        setState((prev) => ({ ...prev, careSetting: setting, activeCareSettings: [setting], metricValues }));
+        setPhase('journey');
+      }
+    }, [dataRequestResponse]);
+
+  ---
+  STEP 9 — Modify client/src/pages/measure/MeasureMetricSelection.tsx
+
+  9a. Add Send to the lucide-react import.
+
+  9b. Add const [dataRequestCopied, setDataRequestCopied] = useState(false); with the other state declarations.
+
+  9c. After the totalActive useMemo, add:
+
+    const handleSendDataRequest = useCallback(() => {
+      const setting = (activeSettings[0] || 'outpatient') as import('@/lib/measureCalculator').MeasureCareSetting;
+      const activeIds = domainGroups.flatMap(g =>
+        g.chapters.flatMap(ch =>
+          ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)
+        )
+      );
+      import('@/lib/dataRequestUrlState').then(({ generateDataFormUrl }) => {
+        const url = generateDataFormUrl({ setting, preSelectedIds: activeIds });
+        navigator.clipboard.writeText(url).then(() => {
+          setDataRequestCopied(true);
+          setTimeout(() => setDataRequestCopied(false), 2500);
+        });
+      });
+    }, [activeSettings, domainGroups, isMetricActive]);
+
+  9d. Below the "View the Journey" button, add:
+
+            {totalActive > 0 && (
+              <button onClick={handleSendDataRequest}
+                className={`flex items-center gap-1.5 text-xs transition-colors px-4 py-2 rounded-full border ${
+                  dataRequestCopied
+                    ? 'border-green-400 text-green-600 bg-green-50'
+                    : 'border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                }`}>
+                <Send className="w-3 h-3" />
+                {dataRequestCopied ? 'Data request link copied!' : 'Send data request to customer'}
+              </button>
+            )}
+
+  ---
+  That's the complete implementation. The workflow when done:
+
+  - Before ROI call: Click "Create Intake Form" on the Explore model page → copy link → send to prospect → they fill in their org data → copy URL → you open it → Explore loads with amber banner and their
+  real numbers
+  - Before EBR: Click "Send data request to customer" on Measure metric selection → copy link → send to customer → they enter before/after for metrics they track → copy URL → you open it → Measure loads at
+  the journey/output page with their real data
