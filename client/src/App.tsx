@@ -65,6 +65,8 @@ type InitialDeepLink =
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
 const PARTNER_FINGERPRINT_KEY = 'abridge_partner_fingerprint';
+const PARTNER_SESSION_TS_KEY = 'abridge_partner_ts';
+const PARTNER_SESSION_TTL_MS = 4 * 60 * 60 * 1000;
 
 function simpleHash(str: string): string {
   let h = 0;
@@ -78,23 +80,40 @@ function setPartnerSession(formType: 'intake' | 'data_request', fingerprint: str
   try {
     localStorage.setItem(PARTNER_SESSION_KEY, formType);
     localStorage.setItem(PARTNER_FINGERPRINT_KEY, fingerprint);
+    localStorage.setItem(PARTNER_SESSION_TS_KEY, Date.now().toString());
   } catch { /* ignore */ }
 }
 
 function isPartnerSession(): boolean {
-  try { return localStorage.getItem(PARTNER_SESSION_KEY) != null; } catch { return false; }
+  try {
+    const val = localStorage.getItem(PARTNER_SESSION_KEY);
+    if (!val) return false;
+    const ts = parseInt(localStorage.getItem(PARTNER_SESSION_TS_KEY) ?? '0', 10);
+    if (Date.now() - ts > PARTNER_SESSION_TTL_MS) {
+      clearPartnerSession();
+      return false;
+    }
+    return true;
+  } catch { return false; }
 }
 
 function clearPartnerSession() {
   try {
     localStorage.removeItem(PARTNER_SESSION_KEY);
     localStorage.removeItem(PARTNER_FINGERPRINT_KEY);
+    localStorage.removeItem(PARTNER_SESSION_TS_KEY);
   } catch { /* ignore */ }
 }
 
 function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
   const pathname = window.location.pathname;
+
+  if (params.get('reset') === '1') {
+    clearPartnerSession();
+    window.history.replaceState({}, '', pathname);
+    return { type: 'none' };
+  }
 
   const intakeFormParam = params.get('intake_form');
   if (intakeFormParam) {
