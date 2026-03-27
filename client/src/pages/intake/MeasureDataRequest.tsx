@@ -32,7 +32,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 }) {
   const isMonthlyMode = entry?.isMonthlyMode ?? false;
   return (
-    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E0D8] bg-white" : "border-[#EDE8E2] bg-[#F5F0EB]"}`}
+    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E2DA] bg-white" : "border-[#EDE8E2] bg-[#FAF8F5]"}`}
       data-testid={`metric-row-${metric.id}`}
     >
       <div className="flex items-start gap-3 p-4">
@@ -59,7 +59,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               <label className="block text-xs text-gray-500 mb-1">Before Abridge</label>
               <input type="number" min={0} step="any" value={entry?.before ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-before-${metric.id}`}
               />
             </div>
@@ -68,7 +68,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               <label className="block text-xs text-gray-500 mb-1">With Abridge</label>
               <input type="number" min={0} step="any" value={entry?.after ?? ""} placeholder="—"
                 onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-after-${metric.id}`}
               />
             </div>
@@ -93,7 +93,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                           newData[i] = e.target.value === "" ? null : Number(e.target.value);
                           onUpdate({ monthlyData: newData });
                         }}
-                        className="w-14 bg-[#F5F0EB] border-0 rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                        className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
                         data-testid={`input-monthly-${metric.id}-${i}`}
                       />
                     </div>
@@ -148,7 +148,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
         <div className="flex items-center justify-center mb-6">
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F5F0EB] rounded-full text-xs text-[#888888] mb-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF8F5] border border-[#E8E2DA] rounded-full text-xs text-[#888888] mb-4">
           {SETTING_LABELS[setting]}
         </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-2" data-testid="text-data-request-title">Help us tell your story</h1>
@@ -159,7 +159,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
 
       <div className="w-full max-w-2xl space-y-6">
         {Object.entries(byDomain).map(([domain, metrics]) => (
-          <div key={domain} className="bg-white rounded-xl border border-[#EDE8E2] p-6 shadow-sm">
+          <div key={domain} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
             <div className="space-y-3">
               {metrics.map((metric) => (
@@ -169,7 +169,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
             </div>
           </div>
         ))}
-        <div className="bg-white rounded-xl border border-[#EDE8E2] p-6 shadow-sm text-center">
+        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm text-center">
           <button onClick={handleCopy} disabled={!hasAnyData}
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
               hasAnyData ? copied ? "bg-green-500 text-white" : "bg-[#EA2C00] hover:bg-[#c92500] text-white" : "bg-gray-100 text-gray-400 cursor-not-allowed"
