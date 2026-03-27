@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
+import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -34,6 +35,8 @@ export default function MeasureDataEntry({
   onBack,
   onHome,
 }: MeasureDataEntryProps) {
+  const [dataFormCopied, setDataFormCopied] = useState(false);
+
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
     : ['outpatient' as MeasureCareSetting];
@@ -197,6 +200,20 @@ export default function MeasureDataEntry({
           <p className="text-sm md:text-base text-[#666666]" data-testid="text-page-subtitle">
             Tell us about your Abridge deployment.
           </p>
+          <button
+            onClick={() => {
+              const setting = activeSettings[0] || 'outpatient';
+              const url = generateDataFormUrl({ setting });
+              navigator.clipboard.writeText(url).then(() => {
+                setDataFormCopied(true);
+                setTimeout(() => setDataFormCopied(false), 2500);
+              });
+            }}
+            className="mt-3 text-xs text-[#CCCCCC] hover:text-[#999999] transition-colors duration-200 underline underline-offset-2 decoration-[#E0E0E0]"
+            data-testid="button-send-data-request"
+          >
+            {dataFormCopied ? <span className="text-green-500 no-underline">link copied</span> : 'send data request to partner'}
+          </button>
         </motion.div>
 
         <motion.div
