@@ -51,7 +51,7 @@ import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "partner-dead-end";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -65,7 +65,6 @@ type InitialDeepLink =
   | { type: 'explore_intake_receipt'; data: ExploreIntakeResponse }
   | { type: 'measure_data_receipt'; data: MeasureDataRequestResponse }
   | { type: 'learn'; screen: LearnScreen }
-  | { type: 'partner_dead_end' }
   | { type: 'none' };
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
@@ -144,10 +143,6 @@ function getInitialDeepLink(): InitialDeepLink {
     return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' }, fingerprint: fp };
   }
 
-  if (isPartnerSession()) {
-    return { type: 'partner_dead_end' };
-  }
-
   const exploreSetting = params.get('explore');
   if (exploreSetting) {
     const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
@@ -223,7 +218,6 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
-    if (INITIAL_DEEP_LINK.type === 'partner_dead_end') return "partner-dead-end";
     return "splash";
   });
   
@@ -760,20 +754,6 @@ export default function App() {
               <MeasureDataReceipt data={dataReceiptData} onLoadInCalculator={() => {
                 navigateTo("measure");
               }} />
-            )}
-
-            {currentView === "partner-dead-end" && (
-              <div className="flex items-center justify-center min-h-[60vh]" data-testid="partner-dead-end">
-                <div className="text-center max-w-md mx-auto px-6">
-                  <div className="w-12 h-12 rounded-full bg-[#FFF0EC] flex items-center justify-center mx-auto mb-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA2C00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  </div>
-                  <h2 className="text-lg font-semibold text-[#1A1A1A] mb-2" data-testid="text-dead-end-title">This link is incomplete</h2>
-                  <p className="text-sm text-[#666666] leading-relaxed">
-                    Please use the full form link provided by your Abridge partner to access the questionnaire.
-                  </p>
-                </div>
-              </div>
             )}
 
             {currentView === "proforma-hub" && (
