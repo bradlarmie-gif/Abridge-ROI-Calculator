@@ -700,7 +700,7 @@ export default function MeasureMetricSelection({
           </Button>
           <button
             onClick={() => {
-              const setting = activeSettings[0] || 'outpatient';
+              const setting = state.careSetting || activeSettings[0] || 'outpatient';
               const activeMetricIds = Array.from(new Set(
                 domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
               ));

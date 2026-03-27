@@ -70,7 +70,7 @@ export default function MeasureDataEntry({
       }
       updateState({
         activeCareSettings: current,
-        careSetting: current.includes(state.careSetting || 'outpatient') ? state.careSetting : current[0],
+        careSetting: setting,
         settingData: newSettingData,
       });
     }
@@ -202,7 +202,7 @@ export default function MeasureDataEntry({
           </p>
           <button
             onClick={() => {
-              const setting = activeSettings[0] || 'outpatient';
+              const setting = state.careSetting || activeSettings[0] || 'outpatient';
               const url = generateDataFormUrl({ setting });
               navigator.clipboard.writeText(url).then(() => {
                 setDataFormCopied(true);

@@ -1,0 +1,114 @@
+Three fixes and one addition across the Measure path and shared clipboard utility. No new pages, no URL return flow — submission is text copy + PDF download only. Do NOT add any "copy link to send back"   
+  button, receipt URL, or ?intake_receipt= / ?data_receipt= params anywhere.                                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                     
+                                                                                                                                                                                                               
+  ### Fix 1 — Care setting bug (MeasureDataEntry.tsx + MeasureMetricSelection.tsx)
+                                                                                                                                                                                                               
+  Both files have a "Data Request" button that always uses `activeSettings[0]` to determine which setting to encode in the URL. This always encodes the first setting added, not the one the user is currently
+  working with.                                                                                                                                                                                                
+   
+  **MeasureDataEntry.tsx (~line 205):**                                                                                                                                                                        
+  Change:                                                                                                 
+  ```typescript                                                                                                                                                                                                
+  const setting = activeSettings[0] || 'outpatient';                                                                                                                                                           
+  To:                                         
+  const setting = state.careSetting || activeSettings[0] || 'outpatient';                                                                                                                                      
+                                                                                                          
+  Also in toggleSetting, in the else branch (the add-setting path), add careSetting: setting to the updateState call so clicking a new setting pill switches the active setting to it:                         
+  updateState({                               
+    activeCareSettings: current,                                                                                                                                                                               
+    careSetting: setting,           // switch active setting to newly added one                           
+    settingData: newSettingData,                                                                                                                                                                               
+  });                                     
+                                                                                                                                                                                                               
+  MeasureMetricSelection.tsx (~line 703):                                                                                                                                                                      
+  Same fix — change activeSettings[0] to state.careSetting || activeSettings[0] when building the data form URL. Use whichever variable holds the currently-viewed setting in that component.
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 2 — clipboard.ts (iOS clipboard broken)                                                                                                                                                                  
+                                                                                                                                                                                                               
+  The current copyToClipboard tries execCopy first (fails silently on iOS with hidden textarea), then navigator.clipboard.writeText, then calls navigator.clipboard.readText() to verify — which throws on iOS
+  because readText requires separate permission. This causes the function to always return false on iOS, showing the fallback textarea every time.                                                             
+                                                                                                          
+  Replace the entire copyToClipboard function with:
+                                                                                                                                                                                                               
+  export async function copyToClipboard(text: string): Promise<boolean> {
+    // Modern Clipboard API — works on iOS 13.4+, Chrome, Firefox                                                                                                                                              
+    if (navigator.clipboard?.writeText) {                                                                 
+      try {                                   
+        await navigator.clipboard.writeText(text);                                                                                                                                                             
+        return true;                                                                                                                                                                                           
+      } catch {                                                                                                                                                                                                
+        // fall through to execCommand                                                                                                                                                                         
+      }                                                                                                                                                                                                        
+    }                                                                                                     
+
+    // Legacy fallback — older desktop browsers                                                                                                                                                                
+    try {
+      const textarea = document.createElement('textarea');                                                                                                                                                     
+      textarea.value = text;                                                                              
+      // Must be in viewport for iOS execCommand to work
+      textarea.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;border:none;padding:0;';
+      document.body.appendChild(textarea);                                                                                                                                                                     
+      textarea.focus();                       
+      textarea.select();                                                                                                                                                                                       
+      textarea.setSelectionRange(0, text.length);                                                                                                                                                              
+      const ok = document.execCommand('copy');                                                                                                                                                                 
+      document.body.removeChild(textarea);                                                                                                                                                                     
+      return ok;                                                                                                                                                                                               
+    } catch {                                                                                             
+      return false;                                                                                                                                                                                            
+    }
+  }                                                                                                                                                                                                            
+                                                                                                          
+  ---
+  Fix 3 — MeasureDataRequest.tsx: add deployment profile section + mobile input fixes
+                                                                                     
+  Add deployment state and card:          
+                                              
+  Add this interface to dataRequestUrlState.ts (exported):                                                                                                                                                     
+  export interface DeploymentSnapshot {   
+    organizationName: string;                                                                                                                                                                                  
+    goLiveDate?: string | null;                                                                                                                                                                                
+    monthsOnAbridge: number;                                                                                                                                                                                   
+    totalProviders: number;                                                                                                                                                                                    
+    liveProviders: number;                                                                                
+    mruProviders: number; 
+    totalEncounters: number;                                                                                                                                                                                   
+    abridgeEncounters: number;                
+  }                                                                                                                                                                                                            
+                                                                                                          
+  Add deployment: DeploymentSnapshot to MeasureDataRequestResponse. Update decodeDataRequest to default deployment to empty values if absent (backward compat). Update generateDataResponseText to prepend a   
+  deployment block:                           
+                                                                                                                                                                                                               
+  Organization: Valley Health System                                                                      
+  Months on Abridge: 8                                                                                                                                                                                         
+  Total providers: 45  |  Live: 38  |  MRUs: 29
+  Total encounters: 12,400  |  Abridge encounters: 8,900                                                                                                                                                       
+                                                                                                          
+  In MeasureDataRequest.tsx, add local deployment state (defaulting to all zeros/empty), persisted to localStorage alongside checkedIds and entries. Add updateDeployment(updates) helper that auto-calculates 
+  monthsOnAbridge when goLiveDate changes.                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Insert a deployment card before the metric domain cards, styled identical to the existing domain cards (bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm):                                      
+                                                                                                                                                                                                               
+  - Section header: "Your Organization" (same text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4 style as domain headers)                                                                        
+  - Organization name: full-width text input                                                                                                                                                                   
+  - Go-live date + Months on Abridge: side-by-side; months auto-calculates if go-live is set, otherwise manual input
+  - Provider adoption: 3-column grid (Total in Org / Live on Abridge / Monthly Recording Users) with a simple 3-tier funnel bar visualization below (shown only when totalProviders > 0), matching             
+  MeasureDataEntry.tsx's funnel bar style                                                                 
+  - Encounter coverage: 2-column grid (Total Encounters / Abridge Encounters) with a single coverage bar below (shown when both > 0)                                                                           
+                                                                                                                                                                                                               
+  Update handleCopy to include deployment in the response object passed to generateDataResponseText.                                                                                                           
+                                                                                                                                                                                                               
+  Update handleClearAll to also reset deployment to defaults.                                                                                                                                                  
+                                                                                                                                                                                                               
+  Update hasAnyData to also be true if deployment.organizationName.trim().length > 0 || deployment.totalProviders > 0.                                                                                         
+                                                                                                                                                                                                               
+  Mobile input fixes:                                                                                     
+                                                                                                                                                                                                               
+  For all <input type="number"> in MeasureDataRequest.tsx (both in the deployment card and in MetricRow): 
+  - Whole number fields (providers, encounters, months): add inputMode="numeric" and pattern="[0-9]*"                                                                                                          
+  - Decimal/rate fields (before/after metric values, monthly trend values): add inputMode="decimal"       
+                                                                                                                                                                                                               
+  For monthly trend inputs in MetricRow, increase touch target height from py-1.5 to py-2.5.  
