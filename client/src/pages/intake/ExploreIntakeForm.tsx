@@ -11,6 +11,7 @@ import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 interface ExploreIntakeFormProps {
   preseed?: IntakeFormPreseed;
+  storageFingerprint?: string;
 }
 
 const SETTINGS: { id: ExploreCareSetting; label: string; description: string }[] = [
@@ -29,7 +30,11 @@ const SETTING_ICONS: Record<ExploreCareSetting, typeof Stethoscope> = {
 
 const SETTING_ORDER: ExploreCareSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
 
-const STORAGE_KEY = 'abridge_explore_intake';
+const STORAGE_KEY_PREFIX = 'abridge_explore_intake';
+
+function getStorageKey(fingerprint?: string): string {
+  return fingerprint ? `${STORAGE_KEY_PREFIX}_${fingerprint}` : STORAGE_KEY_PREFIX;
+}
 
 function formatWithCommas(n: number): string {
   return n.toLocaleString('en-US');
@@ -179,9 +184,9 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
   };
 }
 
-function loadSavedState(preseed?: IntakeFormPreseed): IntakeFormState {
+function loadSavedState(preseed?: IntakeFormPreseed, fingerprint?: string): IntakeFormState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey(fingerprint));
     if (raw) {
       const parsed = JSON.parse(raw) as IntakeFormState;
       if (parsed && typeof parsed === 'object' && Array.isArray(parsed.selectedSettings)) {
@@ -192,13 +197,19 @@ function loadSavedState(preseed?: IntakeFormPreseed): IntakeFormState {
   return getEmptyState(preseed);
 }
 
-export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
-  const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed));
+export default function ExploreIntakeForm({ preseed, storageFingerprint }: ExploreIntakeFormProps) {
+  const storageKey = getStorageKey(storageFingerprint);
+  const [formState, setFormState] = useState<IntakeFormState>(() => loadSavedState(preseed, storageFingerprint));
   const [copied, setCopied] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(formState)); } catch { /* ignore */ }
-  }, [formState]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      try { localStorage.setItem(storageKey, JSON.stringify(formState)); } catch { /* ignore */ }
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [formState, storageKey]);
 
   function update<K extends keyof IntakeFormState>(key: K, val: IntakeFormState[K]) {
     setFormState(prev => ({ ...prev, [key]: val }));
@@ -216,7 +227,7 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
   function handleClearAll() {
     const empty = getEmptyState(preseed);
     setFormState(empty);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
   }
 
   function buildResponse(): ExploreIntakeResponse {

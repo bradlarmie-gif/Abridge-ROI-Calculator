@@ -58,10 +58,39 @@ interface SelectionState {
 
 type InitialDeepLink =
   | { type: 'explore'; careSetting: ExploreCareSetting; phase: ExplorePhase }
-  | { type: 'explore_intake_form'; preseed: IntakeFormPreseed }
-  | { type: 'measure_data_form'; preseed: DataFormPreseed }
+  | { type: 'explore_intake_form'; preseed: IntakeFormPreseed; fingerprint: string }
+  | { type: 'measure_data_form'; preseed: DataFormPreseed; fingerprint: string }
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'none' };
+
+const PARTNER_SESSION_KEY = 'abridge_partner_session';
+const PARTNER_FINGERPRINT_KEY = 'abridge_partner_fingerprint';
+
+function simpleHash(str: string): string {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(36);
+}
+
+function setPartnerSession(formType: 'intake' | 'data_request', fingerprint: string) {
+  try {
+    localStorage.setItem(PARTNER_SESSION_KEY, formType);
+    localStorage.setItem(PARTNER_FINGERPRINT_KEY, fingerprint);
+  } catch { /* ignore */ }
+}
+
+function isPartnerSession(): boolean {
+  try { return localStorage.getItem(PARTNER_SESSION_KEY) != null; } catch { return false; }
+}
+
+function clearPartnerSession() {
+  try {
+    localStorage.removeItem(PARTNER_SESSION_KEY);
+    localStorage.removeItem(PARTNER_FINGERPRINT_KEY);
+  } catch { /* ignore */ }
+}
 
 function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
@@ -69,18 +98,23 @@ function getInitialDeepLink(): InitialDeepLink {
 
   const intakeFormParam = params.get('intake_form');
   if (intakeFormParam) {
+    const fp = simpleHash(intakeFormParam);
+    setPartnerSession('intake', fp);
     const decoded = decodeIntakePreseed(intakeFormParam);
-    return { type: 'explore_intake_form', preseed: decoded ?? {} };
+    return { type: 'explore_intake_form', preseed: decoded ?? {}, fingerprint: fp };
   }
 
   const dataFormParam = params.get('data_form');
   if (dataFormParam) {
+    const fp = simpleHash(dataFormParam);
+    setPartnerSession('data_request', fp);
     const decoded = decodeDataFormPreseed(dataFormParam);
-    return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' } };
+    return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' }, fingerprint: fp };
   }
 
   const exploreSetting = params.get('explore');
   if (exploreSetting) {
+    clearPartnerSession();
     const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
     if (validSettings.includes(exploreSetting as ExploreCareSetting)) {
       window.history.replaceState({}, '', pathname);
@@ -89,12 +123,22 @@ function getInitialDeepLink(): InitialDeepLink {
   }
 
   if (pathname.startsWith('/learn/')) {
+    clearPartnerSession();
     const setting = pathname.replace('/learn/', '');
     const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
     if (validScreens.includes(setting as LearnScreen)) {
       window.history.replaceState({}, '', '/');
       return { type: 'learn', screen: setting as LearnScreen };
     }
+  }
+
+  if (isPartnerSession()) {
+    const savedFp = (() => { try { return localStorage.getItem(PARTNER_FINGERPRINT_KEY) ?? ''; } catch { return ''; } })();
+    const savedType = (() => { try { return localStorage.getItem(PARTNER_SESSION_KEY); } catch { return null; } })();
+    if (savedType === 'data_request') {
+      return { type: 'measure_data_form', preseed: {}, fingerprint: savedFp };
+    }
+    return { type: 'explore_intake_form', preseed: {}, fingerprint: savedFp };
   }
 
   return { type: 'none' };
@@ -132,12 +176,25 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return INITIAL_DEEP_LINK.preseed;
     return null;
   });
+  const [formFingerprint] = useState<string>(() => {
+    if (INITIAL_DEEP_LINK.type === 'explore_intake_form' || INITIAL_DEEP_LINK.type === 'measure_data_form') {
+      return INITIAL_DEEP_LINK.fingerprint;
+    }
+    if (isPartnerSession()) {
+      try { return localStorage.getItem(PARTNER_FINGERPRINT_KEY) ?? ''; } catch { return ''; }
+    }
+    return '';
+  });
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     if (INITIAL_DEEP_LINK.type === 'explore_intake_form') return "explore-intake";
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
+    if (isPartnerSession()) {
+      const savedType = (() => { try { return localStorage.getItem(PARTNER_SESSION_KEY); } catch { return null; } })();
+      return savedType === 'data_request' ? "measure-data-request" : "explore-intake";
+    }
     return "splash";
   });
   
@@ -574,7 +631,7 @@ export default function App() {
             )}
 
             {currentView === "explore-intake" && (
-              <ExploreIntakeForm preseed={intakeFormPreseed ?? undefined} />
+              <ExploreIntakeForm preseed={intakeFormPreseed ?? undefined} storageFingerprint={formFingerprint} />
             )}
 
             {currentView === "baseline-setup" && hasSelection && (
@@ -657,7 +714,7 @@ export default function App() {
             )}
 
             {currentView === "measure-data-request" && (
-              <MeasureDataRequest preseed={dataFormPreseed ?? undefined} />
+              <MeasureDataRequest preseed={dataFormPreseed ?? undefined} storageFingerprint={formFingerprint} />
             )}
 
             {currentView === "proforma-hub" && (

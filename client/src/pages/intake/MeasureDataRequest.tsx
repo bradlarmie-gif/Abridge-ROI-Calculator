@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, Copy, ClipboardCheck, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, generateDataResponseText } from "@/lib/dataRequestUrlState";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -26,7 +26,11 @@ function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
 
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-const STORAGE_KEY = 'abridge_measure_data_request';
+const STORAGE_KEY_PREFIX = 'abridge_measure_data_request';
+
+function getStorageKey(fingerprint?: string): string {
+  return fingerprint ? `${STORAGE_KEY_PREFIX}_${fingerprint}` : STORAGE_KEY_PREFIX;
+}
 
 interface SavedFormState {
   setting: MeasureCareSetting;
@@ -116,8 +120,9 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
   );
 }
 
-export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPreseed }) {
+export default function MeasureDataRequest({ preseed, storageFingerprint }: { preseed?: DataFormPreseed; storageFingerprint?: string }) {
   const setting: MeasureCareSetting = preseed?.setting ?? "outpatient";
+  const storageKey = getStorageKey(storageFingerprint);
   const allMetrics = getMetricsForSetting(setting);
   const byDomain = allMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
     acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
@@ -127,7 +132,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
 
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
         const saved = JSON.parse(raw) as SavedFormState;
         if (saved && saved.setting === setting && Array.isArray(saved.checkedIds)) {
@@ -140,7 +145,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
 
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
         const saved = JSON.parse(raw) as SavedFormState;
         if (saved && saved.setting === setting && saved.entries) {
@@ -152,13 +157,18 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
   });
 
   const [copied, setCopied] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    try {
-      const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-    } catch { /* ignore */ }
-  }, [checkedIds, entries, setting]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      try {
+        const toSave: SavedFormState = { setting, checkedIds: Array.from(checkedIds), entries };
+        localStorage.setItem(storageKey, JSON.stringify(toSave));
+      } catch { /* ignore */ }
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [checkedIds, entries, setting, storageKey]);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -176,7 +186,7 @@ export default function MeasureDataRequest({ preseed }: { preseed?: DataFormPres
   function handleClearAll() {
     setCheckedIds(new Set());
     setEntries({});
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
   }
 
   function handleCopy() {
