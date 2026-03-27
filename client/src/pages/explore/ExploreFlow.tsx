@@ -595,31 +595,68 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         if (setting === 'outpatient') {
           if (intakeResponse.opProviders != null) next.numberOfProviders = intakeResponse.opProviders;
           if (intakeResponse.opAnnualEncounters != null) next.annualEncounters = intakeResponse.opAnnualEncounters;
-          if (intakeResponse.opCurrentWrvu != null) next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: intakeResponse.opCurrentWrvu };
-          if (intakeResponse.opConversionFactor != null) next.docQualityInputs = { ...next.docQualityInputs, conversionFactor: intakeResponse.opConversionFactor };
-          if (intakeResponse.opTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.opTurnoverRate };
+          next.docQualityInputs = {
+            ...next.docQualityInputs,
+            ...(intakeResponse.opCurrentWrvu != null && { currentWrvu: intakeResponse.opCurrentWrvu }),
+            ...(intakeResponse.opConversionFactor != null && { conversionFactor: intakeResponse.opConversionFactor }),
+            ...(intakeResponse.opDenialRate != null && { denialRate: intakeResponse.opDenialRate }),
+            ...(intakeResponse.opAvgClaimValue != null && { avgClaimValue: intakeResponse.opAvgClaimValue }),
+            ...(intakeResponse.opPanelSize != null && { panelSize: intakeResponse.opPanelSize }),
+            ...(intakeResponse.opMaEnrollmentRate != null && { maPercent: intakeResponse.opMaEnrollmentRate }),
+            ...(intakeResponse.opAnnualPaymentPerRaf != null && { annualPayment: intakeResponse.opAnnualPaymentPerRaf }),
+          };
+          next.timeDriverInputs = {
+            ...next.timeDriverInputs,
+            ...(intakeResponse.opRevenuePerVisit != null && { revenuePerVisit: intakeResponse.opRevenuePerVisit }),
+            ...(intakeResponse.opTurnoverRate != null && { annualTurnoverRate: intakeResponse.opTurnoverRate }),
+            ...(intakeResponse.opReplacementCost != null && { replacementCost: intakeResponse.opReplacementCost }),
+          };
         }
         if (setting === 'ed') {
           if (intakeResponse.edProviders != null) next.numberOfProviders = intakeResponse.edProviders;
           if (intakeResponse.edAnnualVisits != null) next.annualEncounters = intakeResponse.edAnnualVisits;
-          if (intakeResponse.edLwbsRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, edLwbsRate: intakeResponse.edLwbsRate };
-          if (intakeResponse.edTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.edTurnoverRate };
+          next.timeDriverInputs = {
+            ...next.timeDriverInputs,
+            ...(intakeResponse.edLwbsRate != null && { edLwbsRate: intakeResponse.edLwbsRate }),
+            ...(intakeResponse.edRevenuePerVisit != null && { edRevenuePerVisit: intakeResponse.edRevenuePerVisit }),
+            ...(intakeResponse.edAdmissionRate != null && { edAdmissionRate: intakeResponse.edAdmissionRate }),
+            ...(intakeResponse.edAdmissionRevenue != null && { edAdmissionRevenue: intakeResponse.edAdmissionRevenue }),
+            ...(intakeResponse.edTurnoverRate != null && { annualTurnoverRate: intakeResponse.edTurnoverRate }),
+            ...(intakeResponse.edReplacementCost != null && { replacementCost: intakeResponse.edReplacementCost }),
+          };
         }
         if (setting === 'inpatient') {
           if (intakeResponse.ipProviders != null) next.numberOfProviders = intakeResponse.ipProviders;
           if (intakeResponse.ipAnnualAdmissions != null) next.annualEncounters = intakeResponse.ipAnnualAdmissions;
-          if (intakeResponse.ipTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, ipAnnualTurnoverRate: intakeResponse.ipTurnoverRate };
+          next.docQualityInputs = {
+            ...next.docQualityInputs,
+            ...(intakeResponse.ipDenialRate != null && { ipObsDefenseDenialRate: intakeResponse.ipDenialRate }),
+            ...(intakeResponse.ipAvgClaimValue != null && { ipObsDefenseClaimValue: intakeResponse.ipAvgClaimValue }),
+          };
+          next.timeDriverInputs = {
+            ...next.timeDriverInputs,
+            ...(intakeResponse.ipTurnoverRate != null && { ipAnnualTurnoverRate: intakeResponse.ipTurnoverRate }),
+            ...(intakeResponse.ipReplacementCost != null && { replacementCost: intakeResponse.ipReplacementCost }),
+          };
         }
         if (setting === 'nursing') {
           if (intakeResponse.nursingFTEs != null) next.numberOfProviders = intakeResponse.nursingFTEs;
           if (intakeResponse.nursingStaffedBeds != null) next.nursingStaffedBeds = intakeResponse.nursingStaffedBeds;
           if (intakeResponse.nursingOccupancyRate != null) next.nursingOccupancyRate = intakeResponse.nursingOccupancyRate;
-          if (intakeResponse.nursingOtHoursPerWeek != null) next.timeDriverInputs = { ...next.timeDriverInputs, nursingOtHoursPerNurseWeek: intakeResponse.nursingOtHoursPerWeek };
-          if (intakeResponse.nursingTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, nursingTurnoverRate: intakeResponse.nursingTurnoverRate };
-          if (intakeResponse.hapiRatePer1000 != null) next.nursingHapiRate = intakeResponse.hapiRatePer1000;
-          if (intakeResponse.fallRatePer1000 != null) next.nursingFallsRate = intakeResponse.fallRatePer1000;
-          if (intakeResponse.cautiRatePer1000 != null) next.nursingCautiRate = intakeResponse.cautiRatePer1000;
-          if (intakeResponse.clabsiRatePer1000 != null) next.nursingClabsiRate = intakeResponse.clabsiRatePer1000;
+          next.docQualityInputs = {
+            ...next.docQualityInputs,
+            ...(intakeResponse.hapiRatePer1000 != null && { nursingHapiRate: intakeResponse.hapiRatePer1000 }),
+            ...(intakeResponse.fallRatePer1000 != null && { nursingFallsRate: intakeResponse.fallRatePer1000 }),
+            ...(intakeResponse.cautiRatePer1000 != null && { nursingCautiRate: intakeResponse.cautiRatePer1000 }),
+            ...(intakeResponse.clabsiRatePer1000 != null && { nursingClabsiRate: intakeResponse.clabsiRatePer1000 }),
+          };
+          next.timeDriverInputs = {
+            ...next.timeDriverInputs,
+            ...(intakeResponse.nursingOtHoursPerWeek != null && { nursingOtHoursPerNurseWeek: intakeResponse.nursingOtHoursPerWeek }),
+            ...(intakeResponse.nursingOtHourlyRate != null && { nursingOtHourlyRate: intakeResponse.nursingOtHourlyRate }),
+            ...(intakeResponse.nursingTurnoverRate != null && { nursingTurnoverRate: intakeResponse.nursingTurnoverRate }),
+            ...(intakeResponse.nursingReplacementCost != null && { nursingReplacementCost: intakeResponse.nursingReplacementCost }),
+          };
         }
         return next;
       });

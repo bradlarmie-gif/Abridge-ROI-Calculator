@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ClipboardCheck, Building2, Zap, BedDouble, HeartPulse, Stethoscope, ClipboardList } from "lucide-react";
+import { Check, ClipboardCheck, Stethoscope, Zap, ClipboardList, HeartPulse } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   type ExploreIntakeResponse,
@@ -19,7 +19,7 @@ const SETTINGS: { id: ExploreCareSetting; label: string; description: string }[]
   { id: "nursing", label: "Nursing / Care Teams", description: "Bedside nursing documentation" },
 ];
 
-const SETTING_ICONS: Record<ExploreCareSetting, typeof Building2> = {
+const SETTING_ICONS: Record<ExploreCareSetting, typeof Stethoscope> = {
   outpatient: Stethoscope,
   ed: Zap,
   inpatient: ClipboardList,
@@ -36,9 +36,8 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-[#666666] mb-1 uppercase tracking-wide">
+      <label className="block text-xs font-medium text-[#888888] mb-1 uppercase tracking-wide">
         {label}
-        {hint && <span className="ml-1.5 normal-case tracking-normal font-normal text-[#999999]">{hint}</span>}
       </label>
       <div className="flex items-center gap-2">
         <input
@@ -50,6 +49,15 @@ function NumberField({
         />
         {suffix && <span className="text-sm text-[#999999] whitespace-nowrap font-medium">{suffix}</span>}
       </div>
+      {hint && <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug">{hint}</p>}
+    </div>
+  );
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="border-t border-[#F0EBE5] pt-4 mt-4">
+      <p className="text-xs text-[#AAAAAA] uppercase tracking-widest mb-3">{label}</p>
     </div>
   );
 }
@@ -61,24 +69,40 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
 
   const [opProviders, setOpProviders] = useState<number | null>(null);
   const [opEncounters, setOpEncounters] = useState<number | null>(null);
+  const [opRevenuePerVisit, setOpRevenuePerVisit] = useState<number | null>(null);
   const [opCurrentWrvu, setOpCurrentWrvu] = useState<number | null>(null);
   const [opConversionFactor, setOpConversionFactor] = useState<number | null>(null);
+  const [opDenialRate, setOpDenialRate] = useState<number | null>(null);
+  const [opAvgClaimValue, setOpAvgClaimValue] = useState<number | null>(null);
+  const [opPanelSize, setOpPanelSize] = useState<number | null>(null);
+  const [opMaEnrollmentRate, setOpMaEnrollmentRate] = useState<number | null>(null);
+  const [opAnnualPaymentPerRaf, setOpAnnualPaymentPerRaf] = useState<number | null>(null);
   const [opTurnoverRate, setOpTurnoverRate] = useState<number | null>(null);
+  const [opReplacementCost, setOpReplacementCost] = useState<number | null>(null);
 
   const [edProviders, setEdProviders] = useState<number | null>(null);
   const [edVisits, setEdVisits] = useState<number | null>(null);
   const [edLwbsRate, setEdLwbsRate] = useState<number | null>(null);
+  const [edRevenuePerVisit, setEdRevenuePerVisit] = useState<number | null>(null);
+  const [edAdmissionRate, setEdAdmissionRate] = useState<number | null>(null);
+  const [edAdmissionRevenue, setEdAdmissionRevenue] = useState<number | null>(null);
   const [edTurnoverRate, setEdTurnoverRate] = useState<number | null>(null);
+  const [edReplacementCost, setEdReplacementCost] = useState<number | null>(null);
 
   const [ipProviders, setIpProviders] = useState<number | null>(null);
   const [ipAdmissions, setIpAdmissions] = useState<number | null>(null);
+  const [ipDenialRate, setIpDenialRate] = useState<number | null>(null);
+  const [ipAvgClaimValue, setIpAvgClaimValue] = useState<number | null>(null);
   const [ipTurnoverRate, setIpTurnoverRate] = useState<number | null>(null);
+  const [ipReplacementCost, setIpReplacementCost] = useState<number | null>(null);
 
   const [nursingFTEs, setNursingFTEs] = useState<number | null>(null);
   const [nursingStaffedBeds, setNursingStaffedBeds] = useState<number | null>(null);
   const [nursingOccupancyRate, setNursingOccupancyRate] = useState<number | null>(null);
   const [nursingOtHoursPerWeek, setNursingOtHoursPerWeek] = useState<number | null>(null);
+  const [nursingOtHourlyRate, setNursingOtHourlyRate] = useState<number | null>(null);
   const [nursingTurnoverRate, setNursingTurnoverRate] = useState<number | null>(null);
+  const [nursingReplacementCost, setNursingReplacementCost] = useState<number | null>(null);
   const [hapiRate, setHapiRate] = useState<number | null>(null);
   const [fallRate, setFallRate] = useState<number | null>(null);
   const [cautiRate, setCautiRate] = useState<number | null>(null);
@@ -95,10 +119,15 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
   function buildResponse(): ExploreIntakeResponse {
     return {
       settings: selectedSettings,
-      opProviders, opAnnualEncounters: opEncounters, opCurrentWrvu, opConversionFactor, opTurnoverRate,
-      edProviders, edAnnualVisits: edVisits, edLwbsRate, edTurnoverRate,
-      ipProviders, ipAnnualAdmissions: ipAdmissions, ipTurnoverRate,
-      nursingFTEs, nursingStaffedBeds, nursingOccupancyRate, nursingOtHoursPerWeek, nursingTurnoverRate,
+      opProviders, opAnnualEncounters: opEncounters, opRevenuePerVisit, opCurrentWrvu,
+      opConversionFactor, opDenialRate, opAvgClaimValue, opPanelSize,
+      opMaEnrollmentRate, opAnnualPaymentPerRaf, opTurnoverRate, opReplacementCost,
+      edProviders, edAnnualVisits: edVisits, edLwbsRate, edRevenuePerVisit,
+      edAdmissionRate, edAdmissionRevenue, edTurnoverRate, edReplacementCost,
+      ipProviders, ipAnnualAdmissions: ipAdmissions, ipDenialRate, ipAvgClaimValue,
+      ipTurnoverRate, ipReplacementCost,
+      nursingFTEs, nursingStaffedBeds, nursingOccupancyRate, nursingOtHoursPerWeek,
+      nursingOtHourlyRate, nursingTurnoverRate, nursingReplacementCost,
       hapiRatePer1000: hapiRate, fallRatePer1000: fallRate,
       cautiRatePer1000: cautiRate, clabsiRatePer1000: clabsiRate,
     };
@@ -112,10 +141,10 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
   }
 
   const hasProviders =
-    (selectedSettings.includes("outpatient") && opProviders !== null) ||
-    (selectedSettings.includes("ed") && edProviders !== null) ||
-    (selectedSettings.includes("inpatient") && ipProviders !== null) ||
-    (selectedSettings.includes("nursing") && nursingFTEs !== null);
+    (selectedSettings.includes("outpatient") && opProviders != null && opProviders > 0) ||
+    (selectedSettings.includes("ed") && edProviders != null && edProviders > 0) ||
+    (selectedSettings.includes("inpatient") && ipProviders != null && ipProviders > 0) ||
+    (selectedSettings.includes("nursing") && nursingFTEs != null && nursingFTEs > 0);
 
   const hasMinimum = selectedSettings.length > 0 && hasProviders;
   const orderedSelected = SETTING_ORDER.filter((s) => selectedSettings.includes(s));
@@ -135,11 +164,8 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
         </p>
       </div>
 
-      <div className="w-full max-w-2xl space-y-6">
+      <div className="w-full max-w-2xl space-y-4">
         <div>
-          <h2 className="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-3">
-            Which areas are you exploring Abridge for?
-          </h2>
           <div className="grid grid-cols-2 gap-3">
             {SETTINGS.map((s) => {
               const selected = selectedSettings.includes(s.id);
@@ -190,16 +216,42 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
                       <NumberField label="Annual encounters" value={opEncounters}
                         onChange={setOpEncounters} placeholder="e.g. 90,000" />
                     </div>
+
+                    <SectionDivider label="Time & Revenue" />
                     <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Revenue per visit" value={opRevenuePerVisit}
+                        onChange={setOpRevenuePerVisit} placeholder="e.g. 250" suffix="$" />
                       <NumberField label="Avg wRVU per encounter" value={opCurrentWrvu}
                         onChange={setOpCurrentWrvu} placeholder="e.g. 1.8" step="0.1" />
-                      <NumberField label="$/wRVU conversion rate" value={opConversionFactor}
-                        onChange={setOpConversionFactor} placeholder="e.g. 33" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="$/wRVU conversion rate" value={opConversionFactor}
+                        onChange={setOpConversionFactor} placeholder="e.g. 33" />
                       <NumberField label="Annual provider turnover" value={opTurnoverRate}
                         onChange={setOpTurnoverRate} placeholder="e.g. 6" suffix="%" />
                     </div>
+                    <NumberField label="Cost to replace one provider" value={opReplacementCost}
+                      onChange={setOpReplacementCost} placeholder="e.g. 350,000" suffix="$"
+                      hint="recruiting + training + lost revenue — typically $250k–$500k" />
+
+                    <SectionDivider label="Documentation Quality" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Claim denial rate" value={opDenialRate}
+                        onChange={setOpDenialRate} placeholder="e.g. 8" suffix="%" />
+                      <NumberField label="Avg denied claim value" value={opAvgClaimValue}
+                        onChange={setOpAvgClaimValue} placeholder="e.g. 200" suffix="$" />
+                    </div>
+
+                    <SectionDivider label="HCC / RAF — if you have Medicare Advantage patients" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Panel size" value={opPanelSize}
+                        onChange={setOpPanelSize} placeholder="e.g. 1,500" />
+                      <NumberField label="% panel on Medicare Advantage" value={opMaEnrollmentRate}
+                        onChange={setOpMaEnrollmentRate} placeholder="e.g. 35" suffix="%" />
+                    </div>
+                    <NumberField label="Annual payment per RAF point" value={opAnnualPaymentPerRaf}
+                      onChange={setOpAnnualPaymentPerRaf} placeholder="e.g. 10,000" suffix="$"
+                      hint="from your MA contract — typically $8k–$12k per RAF point/year" />
                   </div>
                 )}
 
@@ -211,11 +263,28 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
                       <NumberField label="Annual ED visits" value={edVisits}
                         onChange={setEdVisits} placeholder="e.g. 35,000" />
                     </div>
+
+                    <SectionDivider label="Throughput & Revenue" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Current LWBS rate" value={edLwbsRate}
                         onChange={setEdLwbsRate} placeholder="e.g. 2.5" suffix="%" />
+                      <NumberField label="Revenue per ED visit" value={edRevenuePerVisit}
+                        onChange={setEdRevenuePerVisit} placeholder="e.g. 800" suffix="$" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="% LWBS patients admitted" value={edAdmissionRate}
+                        onChange={setEdAdmissionRate} placeholder="e.g. 15" suffix="%"
+                        hint="of recovered patients who end up admitted" />
+                      <NumberField label="Revenue per admission" value={edAdmissionRevenue}
+                        onChange={setEdAdmissionRevenue} placeholder="e.g. 12,000" suffix="$" />
+                    </div>
+
+                    <SectionDivider label="Workforce" />
+                    <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual provider turnover" value={edTurnoverRate}
                         onChange={setEdTurnoverRate} placeholder="e.g. 6" suffix="%" />
+                      <NumberField label="Cost to replace one provider" value={edReplacementCost}
+                        onChange={setEdReplacementCost} placeholder="e.g. 350,000" suffix="$" />
                     </div>
                   </div>
                 )}
@@ -228,9 +297,22 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
                       <NumberField label="Annual admissions" value={ipAdmissions}
                         onChange={setIpAdmissions} placeholder="e.g. 5,000" />
                     </div>
+
+                    <SectionDivider label="Documentation Quality" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Obs/IP status denial rate" value={ipDenialRate}
+                        onChange={setIpDenialRate} placeholder="e.g. 5" suffix="%" />
+                      <NumberField label="Avg claim value at risk" value={ipAvgClaimValue}
+                        onChange={setIpAvgClaimValue} placeholder="e.g. 10,000" suffix="$"
+                        hint="avg $ of claims where Obs vs IP status is disputed" />
+                    </div>
+
+                    <SectionDivider label="Workforce" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual hospitalist turnover" value={ipTurnoverRate}
                         onChange={setIpTurnoverRate} placeholder="e.g. 8" suffix="%" />
+                      <NumberField label="Cost to replace one hospitalist" value={ipReplacementCost}
+                        onChange={setIpReplacementCost} placeholder="e.g. 300,000" suffix="$" />
                     </div>
                   </div>
                 )}
@@ -250,26 +332,27 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
                         onChange={setNursingOtHoursPerWeek} placeholder="e.g. 4" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="OT hourly rate" value={nursingOtHourlyRate}
+                        onChange={setNursingOtHourlyRate} placeholder="e.g. 75" suffix="$/hr" />
                       <NumberField label="Annual nurse turnover" value={nursingTurnoverRate}
                         onChange={setNursingTurnoverRate} placeholder="e.g. 18" suffix="%" />
                     </div>
+                    <NumberField label="Cost to replace one nurse" value={nursingReplacementCost}
+                      onChange={setNursingReplacementCost} placeholder="e.g. 56,000" suffix="$"
+                      hint="recruiting + training + agency fill — typically $40k–$75k" />
 
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="flex items-center gap-2 mb-3">
-                        <h4 className="text-xs font-semibold text-[#999999] uppercase tracking-wide">Quality metrics</h4>
-                        <span className="text-[10px] text-[#999999]">·</span>
-                        <span className="text-[10px] text-[#999999] italic">optional, if you track these</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <NumberField label="HAPI / 1k pt days" value={hapiRate}
-                          onChange={setHapiRate} placeholder="e.g. 1.5" step="0.1" />
-                        <NumberField label="Falls / 1k pt days" value={fallRate}
-                          onChange={setFallRate} placeholder="e.g. 2.0" step="0.1" />
-                        <NumberField label="CAUTI / 1k" value={cautiRate}
-                          onChange={setCautiRate} placeholder="e.g. 1.8" step="0.1" />
-                        <NumberField label="CLABSI / 1k" value={clabsiRate}
-                          onChange={setClabsiRate} placeholder="e.g. 0.8" step="0.1" />
-                      </div>
+                    <SectionDivider label="Quality metrics · optional, if you track these" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="HAPI rate / 1k pt days" value={hapiRate}
+                        onChange={setHapiRate} placeholder="e.g. 1.5" step="0.1" />
+                      <NumberField label="Falls rate / 1k pt days" value={fallRate}
+                        onChange={setFallRate} placeholder="e.g. 2.0" step="0.1" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="CAUTI rate / 1k" value={cautiRate}
+                        onChange={setCautiRate} placeholder="e.g. 1.8" step="0.1" />
+                      <NumberField label="CLABSI rate / 1k" value={clabsiRate}
+                        onChange={setClabsiRate} placeholder="e.g. 0.8" step="0.1" />
                     </div>
                   </div>
                 )}
@@ -285,12 +368,12 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
             className="pt-2"
           >
             <button onClick={handleCopy} disabled={!hasMinimum}
-              className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl text-sm font-semibold transition-all ${
+              className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-base transition-all ${
                 hasMinimum
                   ? copied
                     ? "bg-green-500 text-white"
                     : "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-[#E0E0E0] text-[#AAAAAA] cursor-not-allowed"
               }`}
               data-testid="button-copy-intake"
             >
@@ -300,15 +383,12 @@ export default function ExploreIntakeForm({ preseed }: ExploreIntakeFormProps) {
               }
             </button>
             {!hasMinimum && (
-              <p className="text-xs text-gray-400 mt-2 text-center">Enter at least one provider or FTE count to continue.</p>
-            )}
-            {hasMinimum && !copied && (
-              <p className="text-xs text-gray-500 mt-2 text-center">Paste this link and send it back to your Abridge contact.</p>
+              <p className="text-xs text-[#BBBBBB] mt-3 text-center">Enter at least one provider or FTE count to continue.</p>
             )}
           </motion.div>
         )}
 
-        <p className="text-center text-xs text-gray-400 pb-8">
+        <p className="text-center text-xs text-[#BBBBBB] pb-8 mt-3">
           No account required. Your answers are encoded in the link — nothing is stored on any server.
         </p>
       </div>

@@ -6,24 +6,40 @@ export interface ExploreIntakeResponse {
 
   opProviders?: number | null;
   opAnnualEncounters?: number | null;
+  opRevenuePerVisit?: number | null;
   opCurrentWrvu?: number | null;
   opConversionFactor?: number | null;
+  opDenialRate?: number | null;
+  opAvgClaimValue?: number | null;
+  opPanelSize?: number | null;
+  opMaEnrollmentRate?: number | null;
+  opAnnualPaymentPerRaf?: number | null;
   opTurnoverRate?: number | null;
+  opReplacementCost?: number | null;
 
   edProviders?: number | null;
   edAnnualVisits?: number | null;
   edLwbsRate?: number | null;
+  edRevenuePerVisit?: number | null;
+  edAdmissionRate?: number | null;
+  edAdmissionRevenue?: number | null;
   edTurnoverRate?: number | null;
+  edReplacementCost?: number | null;
 
   ipProviders?: number | null;
   ipAnnualAdmissions?: number | null;
+  ipDenialRate?: number | null;
+  ipAvgClaimValue?: number | null;
   ipTurnoverRate?: number | null;
+  ipReplacementCost?: number | null;
 
   nursingFTEs?: number | null;
   nursingStaffedBeds?: number | null;
   nursingOccupancyRate?: number | null;
   nursingOtHoursPerWeek?: number | null;
+  nursingOtHourlyRate?: number | null;
   nursingTurnoverRate?: number | null;
+  nursingReplacementCost?: number | null;
   hapiRatePer1000?: number | null;
   fallRatePer1000?: number | null;
   cautiRatePer1000?: number | null;
