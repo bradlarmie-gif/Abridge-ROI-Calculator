@@ -7,6 +7,8 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
 import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
+import { DataRequestDialog } from "@/components/DataRequestDialog";
+import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -35,8 +37,7 @@ export default function MeasureDataEntry({
   onBack,
   onHome,
 }: MeasureDataEntryProps) {
-  const [dataFormCopied, setDataFormCopied] = useState(false);
-  const [dataFormCreating, setDataFormCreating] = useState(false);
+  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating, openWithUrl } = useDataRequestDialog();
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
@@ -202,24 +203,17 @@ export default function MeasureDataEntry({
             Tell us about your Abridge deployment.
           </p>
           <button
-            disabled={dataFormCreating}
-            onClick={async () => {
-              setDataFormCopied(false);
-              setDataFormCreating(true);
-              try {
-                const setting = state.careSetting || activeSettings[0] || 'outpatient';
-                const url = await generateDataFormUrl({ setting });
-                await navigator.clipboard.writeText(url);
-                setDataFormCopied(true);
-                setTimeout(() => setDataFormCopied(false), 2500);
-              } catch { /* ignore */ }
-              setDataFormCreating(false);
+            disabled={isGenerating}
+            onClick={() => {
+              const setting = state.careSetting || activeSettings[0] || 'outpatient';
+              openWithUrl(() => generateDataFormUrl({ setting }));
             }}
-            className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${dataFormCopied ? 'bg-green-600 text-white' : dataFormCreating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
+            className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${isGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
             data-testid="button-send-data-request"
           >
-            {dataFormCreating ? 'Creating link…' : dataFormCopied ? 'Copied!' : 'Data Request'}
+            {isGenerating ? 'Creating link…' : 'Data Request'}
           </button>
+          <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={CARE_SETTING_CONFIGS[state.careSetting || activeSettings[0] || 'outpatient']?.label} />
         </motion.div>
 
         <motion.div

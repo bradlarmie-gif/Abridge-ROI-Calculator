@@ -12,6 +12,8 @@ import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/c
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { generateIntakeFormUrl } from "@/lib/intakeUrlState";
 import type { ExploreCareSetting } from "./ExploreFlow";
+import { DataRequestDialog } from "@/components/DataRequestDialog";
+import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreModelProps {
@@ -45,16 +47,13 @@ export default function ExploreModel({
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
   const { toast } = useToast();
+  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: intakeLinkGenerating, openWithUrl } = useDataRequestDialog();
 
-  const handleGenerateIntakeLink = async () => {
-    const url = await generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
-    await navigator.clipboard.writeText(url);
-    setIntakeLinkCopied(true);
-    setTimeout(() => setIntakeLinkCopied(false), 2000);
+  const handleGenerateIntakeLink = () => {
+    openWithUrl(() => generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined));
   };
 
   const isNursingForTotal = state.careSetting === 'nursing';
@@ -2399,11 +2398,13 @@ export default function ExploreModel({
               </Button>
               <button
                 onClick={handleGenerateIntakeLink}
-                className={`order-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all self-center ${intakeLinkCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
+                disabled={intakeLinkGenerating}
+                className={`order-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all self-center ${intakeLinkGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
                 data-testid="button-create-intake"
               >
-                {intakeLinkCopied ? 'Copied!' : 'Data Request'}
+                {intakeLinkGenerating ? 'Creating link…' : 'Data Request'}
               </button>
+              <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={state.careSetting ? SETTING_LABELS[state.careSetting] : undefined} />
             </div>
           </div>
         </motion.div>

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check, FileText, CheckCheck } from "lucide-react";
+import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreCareSetting } from "./ExploreFlow";
 import abridgeShape from "@assets/abridge-shape-07_1770229105848.png";
+import { DataRequestDialog } from "@/components/DataRequestDialog";
+import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface CareSettingOption {
   id: ExploreCareSetting;
@@ -59,8 +61,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
   const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
     selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
   );
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [linkLoading, setLinkLoading] = useState(false);
+  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: linkLoading, openWithUrl } = useDataRequestDialog();
 
   const isMultiMode = selectedForRequest.length > 1;
 
@@ -81,24 +82,12 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
     }, 800);
   };
 
-  const [clipboardFailed, setClipboardFailed] = useState(false);
-
   const handleDataRequest = async () => {
     if (selectedForRequest.length === 0 || linkLoading) return;
-    setLinkLoading(true);
-    setClipboardFailed(false);
-    try {
+    openWithUrl(async () => {
       const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-      const url = await generateIntakeFormUrl(selectedForRequest);
-      await navigator.clipboard.writeText(url);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      setClipboardFailed(true);
-      setTimeout(() => setClipboardFailed(false), 3000);
-    } finally {
-      setLinkLoading(false);
-    }
+      return generateIntakeFormUrl(selectedForRequest);
+    });
   };
 
   const singleSelected = selectedForRequest.length === 1 ? selectedForRequest[0] : null;
@@ -337,28 +326,13 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     onClick={handleDataRequest}
                     disabled={linkLoading}
                     variant="outline"
-                    className={`
-                      w-full h-[44px] rounded-lg text-sm font-medium transition-all duration-200
-                      ${linkCopied
-                        ? 'border-green-500 text-green-600 bg-green-50 hover:bg-green-50'
-                        : 'border-[#E0E0E0] text-[#666666] hover:border-[#CCCCCC] hover:text-[#1A1A1A] bg-white'
-                      }
-                    `}
+                    className="w-full h-[44px] rounded-lg text-sm font-medium transition-all duration-200 border-[#E0E0E0] text-[#666666] hover:border-[#CCCCCC] hover:text-[#1A1A1A] bg-white"
                     data-testid="button-data-request"
                   >
                     {linkLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Creating link...
-                      </>
-                    ) : linkCopied ? (
-                      <>
-                        <CheckCheck className="w-4 h-4 mr-2" />
-                        Link copied!
-                      </>
-                    ) : clipboardFailed ? (
-                      <>
-                        Could not copy — try again
                       </>
                     ) : (
                       <>
@@ -368,6 +342,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                     )}
                   </Button>
                 )}
+                <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={selectedForRequest.map(id => CARE_SETTINGS.find(s => s.id === id)?.label).filter(Boolean).join(' & ')} />
               </motion.div>
             )}
           </AnimatePresence>

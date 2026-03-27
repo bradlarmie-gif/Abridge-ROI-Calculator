@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
+import { DataRequestDialog } from "@/components/DataRequestDialog";
+import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
+import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
 interface ExploreOpportunityProps {
   state: ExploreState;
@@ -76,13 +79,12 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
-  const [intakeLinkCopied, setIntakeLinkCopied] = useState(false);
-  const handleCreateIntakeLink = async () => {
-    const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
-    const url = await generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
-    await navigator.clipboard.writeText(url);
-    setIntakeLinkCopied(true);
-    setTimeout(() => setIntakeLinkCopied(false), 2000);
+  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating: intakeLinkGenerating, openWithUrl } = useDataRequestDialog();
+  const handleCreateIntakeLink = () => {
+    openWithUrl(async () => {
+      const { generateIntakeFormUrl } = await import('@/lib/intakeUrlState');
+      return generateIntakeFormUrl(state.careSetting ? [state.careSetting] : undefined);
+    });
   };
 
   function applyFteEstimate(multiplier: number, label: string) {
@@ -201,9 +203,15 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 {isNursing ? "Tell us about your deployment and expected adoption." : "Tell us about your starting point."}
               </p>
               <div className="mt-3">
-                <button onClick={handleCreateIntakeLink} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${intakeLinkCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}>
-                  {intakeLinkCopied ? 'Copied!' : 'Data Request'}
+                <button
+                  onClick={handleCreateIntakeLink}
+                  disabled={intakeLinkGenerating}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${intakeLinkGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
+                  data-testid="button-data-request"
+                >
+                  {intakeLinkGenerating ? 'Creating link…' : 'Data Request'}
                 </button>
+                <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={state.careSetting ? SETTING_LABELS[state.careSetting] : undefined} />
               </div>
             </motion.div>
 

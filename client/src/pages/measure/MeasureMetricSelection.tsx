@@ -22,6 +22,8 @@ import {
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
 import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
+import { DataRequestDialog } from "@/components/DataRequestDialog";
+import { useDataRequestDialog } from "@/hooks/useDataRequestDialog";
 
 interface MeasureMetricSelectionProps {
   state: MeasureState;
@@ -311,8 +313,7 @@ export default function MeasureMetricSelection({
 }: MeasureMetricSelectionProps) {
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
-  const [dataRequestCopied, setDataRequestCopied] = useState(false);
-  const [dataRequestCreating, setDataRequestCreating] = useState(false);
+  const { dialogOpen, setDialogOpen, dialogUrl, isGenerating, openWithUrl } = useDataRequestDialog();
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const activeSettings = state.activeCareSettings?.length
@@ -700,29 +701,22 @@ export default function MeasureMetricSelection({
             {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
           <button
-            disabled={dataRequestCreating}
-            onClick={async () => {
-              setDataRequestCopied(false);
-              setDataRequestCreating(true);
-              try {
-                const setting = state.careSetting || activeSettings[0] || 'outpatient';
-                const activeMetricIds = Array.from(new Set(
-                  domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
-                ));
-                const url = await generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
-                await navigator.clipboard.writeText(url);
-                setDataRequestCopied(true);
-                setTimeout(() => setDataRequestCopied(false), 2500);
-              } catch { /* ignore */ }
-              setDataRequestCreating(false);
+            disabled={isGenerating}
+            onClick={() => {
+              const setting = state.careSetting || activeSettings[0] || 'outpatient';
+              const activeMetricIds = Array.from(new Set(
+                domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
+              ));
+              openWithUrl(() => generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined }));
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              dataRequestCopied ? 'bg-green-600 text-white' : dataRequestCreating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
+              isGenerating ? 'bg-[#555] text-white cursor-wait' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
             }`}
             data-testid="button-send-data-request"
           >
-            {dataRequestCreating ? 'Creating link…' : dataRequestCopied ? 'Copied!' : 'Data Request'}
+            {isGenerating ? 'Creating link…' : 'Data Request'}
           </button>
+          <DataRequestDialog open={dialogOpen} onOpenChange={setDialogOpen} url={dialogUrl} careSettingLabel={CARE_SETTING_CONFIGS[state.careSetting || activeSettings[0] || 'outpatient']?.label} />
         </div>
       </div>
     </div>
