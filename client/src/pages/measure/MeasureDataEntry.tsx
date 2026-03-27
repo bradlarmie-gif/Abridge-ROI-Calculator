@@ -49,9 +49,9 @@ export default function MeasureDataEntry({
   }, [state.careSetting]);
 
   const measureCareOptions = useMemo(() => {
-    const active = state.activeCareSettings?.length > 0 ? state.activeCareSettings : ['outpatient' as MeasureCareSetting];
+    const active = state.activeCareSettings?.length > 0 ? state.activeCareSettings : [state.careSetting || 'outpatient' as MeasureCareSetting];
     return active.map(s => MEASURE_CARE_SETTING_MAP[s]).filter(Boolean);
-  }, [state.activeCareSettings]);
+  }, [state.activeCareSettings, state.careSetting]);
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings

@@ -88,7 +88,7 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
     }
   };
 
-  const settingLabels = selected.map(id => CARE_SETTINGS.find(s => s.id === id)?.label).filter(Boolean).join(' & ');
+  const settingLabels = selected.map(id => visibleSettings.find(s => s.id === id)?.label).filter(Boolean).join(' & ');
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
