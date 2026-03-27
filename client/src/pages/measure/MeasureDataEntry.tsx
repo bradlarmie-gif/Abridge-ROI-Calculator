@@ -1,11 +1,18 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
+import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart, Zap, ClipboardList, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
+
+const MEASURE_CARE_SETTING_MAP = {
+  outpatient: { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
+  ed: { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
+  inpatient: { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
+  nursing: { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
+} as const;
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -39,6 +46,11 @@ export default function MeasureDataEntry({
     const setting = (settings[0] || state.careSetting || 'outpatient') as MeasureCareSetting;
     return generateDataFormUrl({ setting });
   }, [state.careSetting]);
+
+  const measureCareOptions = useMemo(() => {
+    const active = state.activeCareSettings?.length > 0 ? state.activeCareSettings : ['outpatient' as MeasureCareSetting];
+    return active.map(s => MEASURE_CARE_SETTING_MAP[s]).filter(Boolean);
+  }, [state.activeCareSettings]);
 
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
@@ -185,6 +197,7 @@ export default function MeasureDataEntry({
         onBack={onBack}
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
+        dataRequestCareSettingOptions={measureCareOptions}
       />
       <UnifiedHeaderSpacer />
 

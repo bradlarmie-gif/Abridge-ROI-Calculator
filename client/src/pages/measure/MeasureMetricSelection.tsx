@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { ArrowRight, X, ChevronDown, TrendingUp } from "lucide-react";
+import { ArrowRight, X, ChevronDown, TrendingUp, Stethoscope, Zap, ClipboardList, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +29,13 @@ interface MeasureMetricSelectionProps {
   onBack: () => void;
   onHome: () => void;
 }
+
+const MEASURE_CARE_SETTING_MAP = {
+  outpatient: { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
+  ed: { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
+  inpatient: { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
+  nursing: { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
+} as const;
 
 const FOURTH_DOMAIN_VARIANTS: DomainKey[] = ['capacity', 'throughput', 'patientFlow', 'staffing'];
 
@@ -308,12 +315,6 @@ export default function MeasureMetricSelection({
   onBack,
   onHome,
 }: MeasureMetricSelectionProps) {
-  const generateMeasureDataRequestUrl = useCallback(async (settings: string[]) => {
-    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
-    const setting = (settings[0] || state.careSetting || 'outpatient') as MeasureCareSetting;
-    return generateDataFormUrl({ setting });
-  }, [state.careSetting]);
-
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
   const [showAssumptions, setShowAssumptions] = useState(false);
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -456,6 +457,19 @@ export default function MeasureMetricSelection({
 
   const totalActive = useMemo(() => Object.values(domainActiveCounts).reduce((a, b) => a + b, 0), [domainActiveCounts]);
 
+  const generateMeasureDataRequestUrl = useCallback(async (settings: string[]) => {
+    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
+    const setting = (settings[0] || state.careSetting || 'outpatient') as MeasureCareSetting;
+    const activeMetricIds = Array.from(new Set(
+      domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
+    ));
+    return generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
+  }, [state.careSetting, domainGroups, isMetricActive]);
+
+  const measureCareOptions = useMemo(() => {
+    return activeSettings.map(s => MEASURE_CARE_SETTING_MAP[s as keyof typeof MEASURE_CARE_SETTING_MAP]).filter(Boolean);
+  }, [activeSettings]);
+
   const scrollToDomain = (dk: string) => {
     const el = domainRefs.current[dk];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -527,6 +541,7 @@ export default function MeasureMetricSelection({
         onBack={onBack}
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
+        dataRequestCareSettingOptions={measureCareOptions}
       />
       <UnifiedHeaderSpacer />
 

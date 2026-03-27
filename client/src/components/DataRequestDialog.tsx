@@ -20,9 +20,11 @@ interface DataRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   generateUrl: (settings: string[]) => Promise<string>;
+  careSettingOptions?: typeof CARE_SETTINGS;
 }
 
-export function DataRequestDialog({ open, onOpenChange, generateUrl }: DataRequestDialogProps) {
+export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions }: DataRequestDialogProps) {
+  const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
   const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
   const [selected, setSelected] = useState<string[]>([]);
   const [url, setUrl] = useState('');
@@ -93,7 +95,7 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl }: DataReque
         {phase === 'pick' ? (
           <div className="px-6 pb-6 space-y-4">
             <div className="grid grid-cols-2 gap-2.5">
-              {CARE_SETTINGS.map(setting => {
+              {visibleSettings.map(setting => {
                 const Icon = setting.icon;
                 const isSelected = selected.includes(setting.id);
                 return (
