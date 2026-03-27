@@ -1,0 +1,85 @@
+REDESIGN ExploreIntakeForm.tsx with a card-per-setting layout.
+
+  ──────────────────────────────────────
+  WHICH AREAS ARE YOU EXPLORING ABRIDGE FOR?
+  [Outpatient Clinic ✓]  [Emergency Dept ✓]  [Inpatient]  [Nursing ✓]
+
+  ──────────────────────────────────────
+  [Card slides in for each checked setting]
+
+  ┌─── 🏥 OUTPATIENT CLINIC ────────────────────────────────┐
+  │  Physicians / APPs          Annual encounters            │
+  │  [___________]              [___________]                │
+  │                                                          │
+  │  Avg wRVU per encounter     $/wRVU conversion rate       │
+  │  [___________]              [___________]                │
+  │                                                          │
+  │  Annual provider turnover                                │
+  │  [___________] %                                         │
+  └──────────────────────────────────────────────────────────┘
+
+  ┌─── ⚡ EMERGENCY DEPARTMENT ─────────────────────────────┐
+  │  ED Physicians / APPs       Annual ED visits             │
+  │  [___________]              [___________]                │
+  │                                                          │
+  │  Current LWBS rate          Annual provider turnover     │
+  │  [___________] %            [___________] %              │
+  └──────────────────────────────────────────────────────────┘
+
+  ┌─── 💙 NURSING / CARE TEAMS ─────────────────────────────┐
+  │  Nurse FTEs                 Staffed beds                 │
+  │  [___________]              [___________]                │
+  │                                                          │
+  │  Occupancy rate             OT hours / nurse / week      │
+  │  [___________] %            [___________]                │
+  │                                                          │
+  │  Annual nurse turnover                                   │
+  │  [___________] %                                         │
+  │                                                          │
+  │  ── Quality metrics  optional ─────────────────────────  │
+  │  HAPI rate /1k    Falls /1k    CAUTI /1k    CLABSI /1k   │
+  │  [_______]        [_______]    [_______]    [_______]    │
+  └──────────────────────────────────────────────────────────┘
+
+  [Copy My Answers]  ←  large red button, disabled until at least one
+                         card has providers filled in
+  ──────────────────────────────────────
+
+  Visual spec:
+  - Page: white background, max-w-2xl centered, clean sans-serif
+  - Header: Abridge logo (small, centered), headline "Help us prepare for our call",
+    subtext "Share a few details before we connect. Takes about 2 minutes."
+  - Setting pills at top: same style as care setting cards but compact pill/chip format,
+    toggle on click, Abridge red (#EA2C00) border + background tint when selected
+  - Cards: white background, border border-[#E5E0DB] rounded-xl p-6, shadow-sm
+    - Card header: setting icon (lucide) + setting name in small bold uppercase,
+      colored with the setting's accent (use #EA2C00 for icon)
+    - Inputs: 2-column grid where it makes sense (paired fields side by side),
+      label above input, input is clean white with border, rounded-lg h-11
+    - Quality metrics inside nursing card: 4-column grid, lighter label style,
+      small "optional" badge next to section heading
+  - Cards animate in/out with framer-motion (initial: opacity 0, y: 10 → animate:
+    opacity 1, y: 0) as settings are toggled
+  - Each card stores its own values in the ExploreIntakeResponse state object
+  - "Copy My Answers" button: full width, bg-[#EA2C00] text-white, h-13,
+    rounded-xl, disabled (gray) until at least one setting is selected AND
+    at least one providers field is filled
+
+  State structure (use the updated ExploreIntakeResponse from intakeUrlState.ts):
+  - Each setting card manages its own slice of state
+  - Outpatient card → providers, annualEncounters, opCurrentWrvu,
+    opConversionFactor, opTurnoverRate
+  - ED card → providers, annualEncounters, edLwbsRate, edTurnoverRate
+  - Inpatient card → providers, annualEncounters, ipTurnoverRate
+  - Nursing card → providers, nursingStaffedBeds, nursingOccupancyRate,
+    nursingOtHoursPerWeek, nursingTurnoverRate, hapiRatePer1000,
+    fallRatePer1000, cautiRatePer1000, clabsiRatePer1000
+
+  Note: if multiple settings selected, providers/encounters from the first
+  (or primary) setting get used as the top-level providers/annualEncounters fields.
+
+  On "Copy My Answers": call generateIntakeResponseUrl(state), copy to clipboard,
+  button text changes to "✓ Copied — paste this link and send it back" for 3 seconds.
+
+  No calculator chrome. No ROI numbers. No Abridge benchmarks. No navigation bar.
+  Just the Abridge logo, the form, and the copy button.
