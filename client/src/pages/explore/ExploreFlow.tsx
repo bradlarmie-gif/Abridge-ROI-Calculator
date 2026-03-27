@@ -389,21 +389,21 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipAllocWellbeingPercent: 33,
     // Nursing-specific defaults
     nursingOtEnabled: false,
-    nursingOtExpanded: true,
+    nursingOtExpanded: false,
     nursingOtHoursPerNurseWeek: 4,
     nursingOtReductionPercent: 25,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
-    nursingRetentionExpanded: true,
+    nursingRetentionExpanded: false,
     nursingTurnoverRate: 18,
     nursingReplacementCost: 56300,
     nursingCareTimeEnabled: false,
-    nursingCareTimeExpanded: true,
+    nursingCareTimeExpanded: false,
     nursingCareTimePercent: 40,
     nursingShiftSustainabilityPercent: 35,
     // Agency Cost Avoidance defaults
     nursingAgencyEnabled: false,
-    nursingAgencyExpanded: true,
+    nursingAgencyExpanded: false,
     nursingAnnualAgencySpend: 2000000, // $2M default (legacy)
     nursingAvgAgencyHourlyRate: 150, // $150/hr default (legacy)
     nursingAgencyWeeksPerVacancy: 12, // 12 weeks average time to fill
@@ -411,7 +411,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingAdditionalCostSavings: [],
     // Care Quality (HAPI & Falls) defaults
     nursingCareQualityEnabled: false,
-    nursingCareQualityExpanded: true,
+    nursingCareQualityExpanded: false,
     nursingFallsRate: 3.5, // per 1,000 patient days
     nursingFallsPreventablePct: 10, // % where documentation timeliness gap was primary factor
     nursingCostPerFall: 6500, // $ per fall
@@ -420,12 +420,12 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCostPerHapi: 25000, // $ per HAPI
     nursingCareQualityRealization: 85, // % realization rate
     // Collapsible state defaults
-    costReductionExpanded: true,
-    patientAccessExpanded: true,
-    wellbeingExpanded: true,
-    edLwbsExpanded: true,
-    edThroughputExpanded: true,
-    ipRoundingExpanded: true,
+    costReductionExpanded: false,
+    patientAccessExpanded: false,
+    wellbeingExpanded: false,
+    edLwbsExpanded: false,
+    edThroughputExpanded: false,
+    ipRoundingExpanded: false,
   },
   // Documentation quality inputs
   docQualityInputs: {
@@ -462,7 +462,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipObsDefenseClaimValue: 10000,
     ipObsDefenseDocContribution: 20,
     ipObsDefenseRealization: 25,
-    ipObsDefenseExpanded: true,
+    ipObsDefenseExpanded: false,
     ipConcurrentReviewEnabled: false,
     ipConcurrentReviewRate: 45,
     ipConcurrentDenialRate: 8,
@@ -470,7 +470,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipConcurrentAvgDays: 1.5,
     ipConcurrentDailyRate: 2800,
     ipConcurrentRealization: 30,
-    ipConcurrentExpanded: true,
+    ipConcurrentExpanded: false,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',
@@ -499,30 +499,30 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCautiRate: 1.8,
     nursingCautiPreventionRate: 12,
     nursingCautiCost: 13000,
-    nursingCautiExpanded: true,
+    nursingCautiExpanded: false,
     nursingClabsiEnabled: false,
     nursingClabsiUtilizationRatio: 20,
     nursingClabsiRate: 0.8,
     nursingClabsiPreventionRate: 8,
     nursingClabsiCost: 20000,
-    nursingClabsiExpanded: true,
+    nursingClabsiExpanded: false,
     nursingSepsisEnabled: false,
     nursingSepsisRatePerThousand: 2.0,
     nursingSepsisCurrentCompliance: 75,
     nursingSepsisDocLagPercent: 30,
     nursingSepsisExcessCostPerCase: 3500,
     nursingSepsisRealization: 60,
-    nursingSepsisExpanded: true,
+    nursingSepsisExpanded: false,
     // Expanded states (auto-expand when first toggled on)
-    wrvuExpanded: true,
-    hccExpanded: true,
-    denialsExpanded: true,
-    ipDrgExpanded: true,
-    ipCdiExpanded: true,
-    nursingHapiExpanded: true,
-    nursingFallsExpanded: true,
-    nursingHacExpanded: true,
-    nursingHcahpsExpanded: true,
+    wrvuExpanded: false,
+    hccExpanded: false,
+    denialsExpanded: false,
+    ipDrgExpanded: false,
+    ipCdiExpanded: false,
+    nursingHapiExpanded: false,
+    nursingFallsExpanded: false,
+    nursingHacExpanded: false,
+    nursingHcahpsExpanded: false,
   },
   pricingModel: 'perProvider',
   costPerProvider: 0,
@@ -912,46 +912,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           onNext={() => {
-            const td = state.timeDriverInputs;
-            if (isNursing) {
-              updateState({
-                timeDriverInputs: {
-                  ...td,
-                  nursingOtEnabled: true,
-                  nursingRetentionEnabled: true,
-                },
-                docQualityInputs: {
-                  ...state.docQualityInputs,
-                  nursingHapiEnabled: true,
-                  nursingFallsEnabled: true,
-                },
-              });
-            } else if (isED) {
-              updateState({
-                timeDriverInputs: {
-                  ...td,
-                  edLwbsEnabled: true,
-                  edThroughputEnabled: true,
-                  wellbeingEnabled: true,
-                },
-              });
-            } else if (isInpatient) {
-              updateState({
-                timeDriverInputs: {
-                  ...td,
-                  ipRoundingEnabled: true,
-                  wellbeingEnabled: true,
-                },
-              });
-            } else {
-              updateState({
-                timeDriverInputs: {
-                  ...td,
-                  patientAccessEnabled: true,
-                  wellbeingEnabled: true,
-                },
-              });
-            }
             navigate('valueDrivers');
           }}
           onBack={() => navigate('practice')}
