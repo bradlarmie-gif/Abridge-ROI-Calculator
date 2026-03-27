@@ -27,16 +27,21 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {
+  if (execCopy(text)) return true;
+
   if (navigator.clipboard?.writeText) {
     try {
       await withTimeout(navigator.clipboard.writeText(text), 2000);
-      return true;
-    } catch { /* fall through to execCommand */ }
+      try {
+        const result = await withTimeout(navigator.clipboard.readText(), 1000);
+        return result === text;
+      } catch {
+        return false;
+      }
+    } catch {
+      return false;
+    }
   }
 
-  try {
-    return execCopy(text);
-  } catch {
-    return false;
-  }
+  return false;
 }
