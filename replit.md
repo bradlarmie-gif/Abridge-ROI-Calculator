@@ -19,6 +19,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **State Management**: Primarily React's `useState` hooks, with TanStack React Query for future API integrations.
 -   **Security & Privacy**: Client-side processing, automatic session clearing, input security, and privacy-preserving analytics.
 -   **Performance**: Gzip compression on the Express server.
+-   **Short Links**: Server-side short URL service (`/s/:code`) using PostgreSQL `short_links` table. Partner-facing URLs (data request forms, data receipts, intake receipts) are stored server-side with 30-day TTL and resolved via 302 redirect, keeping the main app URL hidden from partners. API: `POST /api/shorten`, `GET /s/:code`.
 
 ### Feature Specifications
 -   **Comprehensive ROI Modeling**: Includes specialized flows for various user journeys (Explore, Assess, Expand, Measure Paths) and detailed proforma builders for multiple care settings (Outpatient, ED, Inpatient, Nursing).

@@ -21,7 +21,7 @@ import {
   type DomainKey,
   type ResolvedMetric,
 } from "@/lib/measureCareSettings";
-import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
+import { generateDataFormShortUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureMetricSelectionProps {
   state: MeasureState;
@@ -699,16 +699,18 @@ export default function MeasureMetricSelection({
             {totalActive > 0 && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
           <button
-            onClick={() => {
-              const setting = state.careSetting || activeSettings[0] || 'outpatient';
-              const activeMetricIds = Array.from(new Set(
-                domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
-              ));
-              const url = generateDataFormUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
-              navigator.clipboard.writeText(url).then(() => {
+            onClick={async () => {
+              setDataRequestCopied(false);
+              try {
+                const setting = state.careSetting || activeSettings[0] || 'outpatient';
+                const activeMetricIds = Array.from(new Set(
+                  domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
+                ));
+                const url = await generateDataFormShortUrl({ setting, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
+                await navigator.clipboard.writeText(url);
                 setDataRequestCopied(true);
                 setTimeout(() => setDataRequestCopied(false), 2500);
-              });
+              } catch { /* ignore */ }
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
               dataRequestCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'

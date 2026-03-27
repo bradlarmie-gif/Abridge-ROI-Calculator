@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { CARE_SETTING_CONFIGS, getDefaultMetrics } from "@/lib/measureCareSettings";
-import { generateDataFormUrl } from "@/lib/dataRequestUrlState";
+import { generateDataFormShortUrl } from "@/lib/dataRequestUrlState";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -201,13 +201,15 @@ export default function MeasureDataEntry({
             Tell us about your Abridge deployment.
           </p>
           <button
-            onClick={() => {
-              const setting = state.careSetting || activeSettings[0] || 'outpatient';
-              const url = generateDataFormUrl({ setting });
-              navigator.clipboard.writeText(url).then(() => {
+            onClick={async () => {
+              setDataFormCopied(false);
+              try {
+                const setting = state.careSetting || activeSettings[0] || 'outpatient';
+                const url = await generateDataFormShortUrl({ setting });
+                await navigator.clipboard.writeText(url);
                 setDataFormCopied(true);
                 setTimeout(() => setDataFormCopied(false), 2500);
-              });
+              } catch { /* ignore */ }
             }}
             className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-all ${dataFormCopied ? 'bg-green-600 text-white' : 'bg-[#1A1A1A] text-white hover:bg-[#333333]'}`}
             data-testid="button-send-data-request"

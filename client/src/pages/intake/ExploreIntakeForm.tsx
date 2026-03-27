@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   type ExploreIntakeResponse,
   type IntakeFormPreseed,
-  generateIntakeReceiptUrl,
+  generateIntakeReceiptShortUrl,
 } from "@/lib/intakeUrlState";
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
 import { shareOrCopy } from "@/lib/clipboard";
@@ -267,10 +267,10 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   }
 
   async function handleSubmit() {
-    const url = generateIntakeReceiptUrl(buildResponse());
     setSubmitState('idle');
     setFallbackText(null);
     try {
+      const url = await generateIntakeReceiptShortUrl(buildResponse());
       const result = await shareOrCopy(url, 'My Abridge Intake');
       if (result === 'fallback') {
         setSubmitState('fallback');
@@ -280,7 +280,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         setTimeout(() => setSubmitState('idle'), 4000);
       }
     } catch {
-      // user cancelled native share
+      // user cancelled native share or short link failed
     }
   }
 

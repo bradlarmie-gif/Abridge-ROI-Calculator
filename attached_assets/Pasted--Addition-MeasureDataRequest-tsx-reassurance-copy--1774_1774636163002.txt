@@ -1,0 +1,16 @@
+ ### Addition — MeasureDataRequest.tsx: reassurance copy
+                                                                                                                                                                                                               
+  Below the existing page subtitle ("Select the metrics you track and enter your numbers..."), add a quiet inline note:
+                                                                                                                       
+  <p className="text-xs text-[#AAAAAA] text-center max-w-sm mx-auto mt-2 leading-relaxed">
+    Only fill in what you track. Anything left blank will be filled with                                                                                                                                       
+    industry benchmarks and refined with you during the review.                                                                                                                                                
+  </p>                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Above the "Copy my answers" button (inside the bottom action card, before the button), add:             
+                                                                                                                                                                                                               
+  <p className="text-xs text-[#BBBBBB] mb-3">                                                             
+    Blank fields are okay — we'll use benchmarks as a starting point.
+  </p>                                                                                                                                                                                                         
+      
+  No tooltips. No icons. Just the text, styled to disappear into the background.  

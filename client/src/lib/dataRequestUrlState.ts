@@ -96,6 +96,12 @@ export function generateDataFormUrl(preseed: DataFormPreseed): string {
   return `${window.location.origin}/?data_form=${encoded}`;
 }
 
+export async function generateDataFormShortUrl(preseed: DataFormPreseed): Promise<string> {
+  const { createShortLink } = await import('./shortLinks');
+  const encoded = encodeDataFormPreseed(preseed);
+  return createShortLink('data_form', encoded);
+}
+
 const SETTING_LABELS: Record<MeasureCareSetting, string> = {
   outpatient: 'Outpatient',
   ed: 'Emergency Department',
@@ -138,6 +144,12 @@ export function generateDataResponseText(data: MeasureDataRequestResponse, metri
 
 export function generateDataReceiptUrl(data: MeasureDataRequestResponse): string {
   return `${window.location.origin}/?data_receipt=${encodeDataRequest(data)}`;
+}
+
+export async function generateDataReceiptShortUrl(data: MeasureDataRequestResponse): Promise<string> {
+  const { createShortLink } = await import('./shortLinks');
+  const encoded = encodeDataRequest(data);
+  return createShortLink('data_receipt', encoded);
 }
 
 export function getDataFormPreseedFromUrl(): DataFormPreseed | null {

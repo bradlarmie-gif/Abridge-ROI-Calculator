@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, ClipboardCheck, ChevronDown, ChevronUp, Trash2, Lock, Download, Link2 } from "lucide-react";
-import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptUrl } from "@/lib/dataRequestUrlState";
+import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot, generateDataReceiptShortUrl } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { shareOrCopy } from "@/lib/clipboard";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -243,10 +243,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   }
 
   async function handleSubmit() {
-    const url = generateDataReceiptUrl(buildResponse());
     setSubmitState('idle');
     setFallbackText(null);
     try {
+      const url = await generateDataReceiptShortUrl(buildResponse());
       const result = await shareOrCopy(url, 'My Abridge Data');
       if (result === 'fallback') {
         setSubmitState('fallback');
@@ -256,7 +256,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         setTimeout(() => setSubmitState('idle'), 4000);
       }
     } catch {
-      // user cancelled native share
+      // user cancelled native share or short link failed
     }
   }
 

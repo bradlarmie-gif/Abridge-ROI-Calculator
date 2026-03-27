@@ -10,7 +10,7 @@ import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
-import { generateIntakeFormUrl } from "@/lib/intakeUrlState";
+import { generateIntakeFormShortUrl } from "@/lib/intakeUrlState";
 import type { ExploreCareSetting } from "./ExploreFlow";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
@@ -51,10 +51,12 @@ export default function ExploreModel({
   const { toast } = useToast();
 
   const handleGenerateIntakeLink = async () => {
-    const url = generateIntakeFormUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
-    await navigator.clipboard.writeText(url);
-    setIntakeLinkCopied(true);
-    setTimeout(() => setIntakeLinkCopied(false), 2000);
+    try {
+      const url = await generateIntakeFormShortUrl(state.careSetting ? [state.careSetting as ExploreCareSetting] : undefined);
+      await navigator.clipboard.writeText(url);
+      setIntakeLinkCopied(true);
+      setTimeout(() => setIntakeLinkCopied(false), 2000);
+    } catch { /* ignore */ }
   };
 
   const isNursingForTotal = state.careSetting === 'nursing';
