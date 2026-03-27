@@ -1,0 +1,30 @@
+ OUTPATIENT card — add below the turnover rate field:                                                                                                                                                         
+    "Cost to replace one provider"   [_______]    placeholder="e.g. 350,000"                              
+    hint text: "recruiting, onboarding, lost revenue — typical $250k–$500k" 
+    Maps to: timeDriverInputs.replacementCost                                                                                                                                                                  
+    Add to ExploreIntakeResponse: opReplacementCost?: number | null                                                                                                                                            
+                                                                                                                                                                                                               
+  ED card — add below the turnover rate field:                                                                                                                                                                 
+    "Cost to replace one provider"   [_______]    placeholder="e.g. 350,000"                                                                                                                                   
+    Maps to: timeDriverInputs.replacementCost                                                                                                                                                                  
+    Add to ExploreIntakeResponse: edReplacementCost?: number | null                                                                                                                                            
+                                                                                                                                                                                                               
+  INPATIENT card — add below the turnover rate field:                                                                                                                                                          
+    "Cost to replace one hospitalist" [_______]   placeholder="e.g. 300,000"                              
+    Maps to: timeDriverInputs.replacementCost                                                                                                                                                                  
+    Add to ExploreIntakeResponse: ipReplacementCost?: number | null
+                                                                                                                                                                                                               
+  NURSING card — add two fields after "OT hours / nurse / week":                                          
+    "OT hourly rate"                 [_______]    placeholder="e.g. 75"   suffix="$/hr"                                                                                                                        
+    "Cost to replace one nurse"      [_______]    placeholder="e.g. 56,000"            
+    hint: "recruiting + training — typical $40k–$75k"                                                                                                                                                          
+    Maps to: timeDriverInputs.nursingOtHourlyRate, timeDriverInputs.nursingReplacementCost                                                                                                                     
+    Add to ExploreIntakeResponse: nursingOtHourlyRate?: number | null,                    
+                                  nursingReplacementCost?: number | null                                                                                                                                       
+                                                                                                                                                                                                               
+  Update applyIntakeToExploreState to map these:                                                                                                                                                               
+    ...(intake.opReplacementCost != null && { replacementCost: intake.opReplacementCost }),                                                                                                                    
+    ...(intake.edReplacementCost != null && { replacementCost: intake.edReplacementCost }),                                                                                                                    
+    ...(intake.ipReplacementCost != null && { replacementCost: intake.ipReplacementCost }),               
+    ...(intake.nursingOtHourlyRate != null && { nursingOtHourlyRate: intake.nursingOtHourlyRate }),                                                                                                            
+    ...(intake.nursingReplacementCost != null && { nursingReplacementCost: intake.nursingReplacementCost }),

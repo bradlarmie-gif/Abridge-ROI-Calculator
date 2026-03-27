@@ -9,6 +9,7 @@ import ExploreCareQuality from "./ExploreCareQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
+import { getIntakeProviders, getIntakeEncounters } from "@/lib/intakeUrlState";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -591,22 +592,26 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         if (setting === 'ed') {
           next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: 2.5, denialRate: 10, avgClaimValue: 300 };
         }
-        if (intakeResponse.providers != null) next.numberOfProviders = intakeResponse.providers;
-        if (intakeResponse.annualEncounters != null) next.annualEncounters = intakeResponse.annualEncounters;
-
         if (setting === 'outpatient') {
+          if (intakeResponse.opProviders != null) next.numberOfProviders = intakeResponse.opProviders;
+          if (intakeResponse.opAnnualEncounters != null) next.annualEncounters = intakeResponse.opAnnualEncounters;
           if (intakeResponse.opCurrentWrvu != null) next.docQualityInputs = { ...next.docQualityInputs, currentWrvu: intakeResponse.opCurrentWrvu };
           if (intakeResponse.opConversionFactor != null) next.docQualityInputs = { ...next.docQualityInputs, conversionFactor: intakeResponse.opConversionFactor };
           if (intakeResponse.opTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.opTurnoverRate };
         }
         if (setting === 'ed') {
+          if (intakeResponse.edProviders != null) next.numberOfProviders = intakeResponse.edProviders;
+          if (intakeResponse.edAnnualVisits != null) next.annualEncounters = intakeResponse.edAnnualVisits;
           if (intakeResponse.edLwbsRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, edLwbsRate: intakeResponse.edLwbsRate };
           if (intakeResponse.edTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, annualTurnoverRate: intakeResponse.edTurnoverRate };
         }
         if (setting === 'inpatient') {
+          if (intakeResponse.ipProviders != null) next.numberOfProviders = intakeResponse.ipProviders;
+          if (intakeResponse.ipAnnualAdmissions != null) next.annualEncounters = intakeResponse.ipAnnualAdmissions;
           if (intakeResponse.ipTurnoverRate != null) next.timeDriverInputs = { ...next.timeDriverInputs, ipAnnualTurnoverRate: intakeResponse.ipTurnoverRate };
         }
         if (setting === 'nursing') {
+          if (intakeResponse.nursingFTEs != null) next.numberOfProviders = intakeResponse.nursingFTEs;
           if (intakeResponse.nursingStaffedBeds != null) next.nursingStaffedBeds = intakeResponse.nursingStaffedBeds;
           if (intakeResponse.nursingOccupancyRate != null) next.nursingOccupancyRate = intakeResponse.nursingOccupancyRate;
           if (intakeResponse.nursingOtHoursPerWeek != null) next.timeDriverInputs = { ...next.timeDriverInputs, nursingOtHoursPerNurseWeek: intakeResponse.nursingOtHoursPerWeek };
@@ -1052,8 +1057,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center" data-testid="banner-intake">
       <span className="text-sm text-amber-800">
         Pre-filled from client intake
-        {intakeResponse.providers ? ` \u2014 ${intakeResponse.providers} providers` : ''}
-        {intakeResponse.annualEncounters ? `, ${intakeResponse.annualEncounters.toLocaleString()} encounters/yr` : ''}
+        {(() => { const p = getIntakeProviders(intakeResponse); return p ? ` \u2014 ${p} providers` : ''; })()}
+        {(() => { const e = getIntakeEncounters(intakeResponse); return e ? `, ${e.toLocaleString()} encounters/yr` : ''; })()}
       </span>
     </div>
   ) : null;

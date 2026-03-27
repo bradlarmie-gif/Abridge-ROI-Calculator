@@ -3,23 +3,27 @@ import type { ExploreCareSetting } from '../pages/explore/ExploreFlow';
 
 export interface ExploreIntakeResponse {
   settings: ExploreCareSetting[];
-  providers: number | null;
-  annualEncounters: number | null;
 
+  opProviders?: number | null;
+  opAnnualEncounters?: number | null;
   opCurrentWrvu?: number | null;
   opConversionFactor?: number | null;
   opTurnoverRate?: number | null;
 
+  edProviders?: number | null;
+  edAnnualVisits?: number | null;
   edLwbsRate?: number | null;
   edTurnoverRate?: number | null;
 
+  ipProviders?: number | null;
+  ipAnnualAdmissions?: number | null;
   ipTurnoverRate?: number | null;
 
+  nursingFTEs?: number | null;
   nursingStaffedBeds?: number | null;
   nursingOccupancyRate?: number | null;
   nursingOtHoursPerWeek?: number | null;
   nursingTurnoverRate?: number | null;
-
   hapiRatePer1000?: number | null;
   fallRatePer1000?: number | null;
   cautiRatePer1000?: number | null;
@@ -83,4 +87,21 @@ export function getIntakePreseedFromUrl(): IntakeFormPreseed | null {
   const encoded = params.get('intake_form');
   if (!encoded) return null;
   return decodeIntakePreseed(encoded);
+}
+
+export function getIntakeProviders(intake: ExploreIntakeResponse): number | null {
+  const s = intake.settings[0];
+  if (s === 'outpatient') return intake.opProviders ?? null;
+  if (s === 'ed') return intake.edProviders ?? null;
+  if (s === 'inpatient') return intake.ipProviders ?? null;
+  if (s === 'nursing') return intake.nursingFTEs ?? null;
+  return null;
+}
+
+export function getIntakeEncounters(intake: ExploreIntakeResponse): number | null {
+  const s = intake.settings[0];
+  if (s === 'outpatient') return intake.opAnnualEncounters ?? null;
+  if (s === 'ed') return intake.edAnnualVisits ?? null;
+  if (s === 'inpatient') return intake.ipAnnualAdmissions ?? null;
+  return null;
 }

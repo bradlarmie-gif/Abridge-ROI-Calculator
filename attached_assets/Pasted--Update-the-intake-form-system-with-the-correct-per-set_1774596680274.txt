@@ -1,0 +1,192 @@
+ ---
+  Update the intake form system with the correct per-setting fields.
+  Three files to change: intakeUrlState.ts, ExploreIntakeForm.tsx, App.tsx.
+
+  ---
+
+  ## 1. intakeUrlState.ts — update ExploreIntakeResponse interface
+
+  export interface ExploreIntakeResponse {
+    settings: ExploreCareSetting[];
+
+    // Outpatient
+    opProviders?: number | null;
+    opAnnualEncounters?: number | null;
+    opCurrentWrvu?: number | null;          // avg wRVU per encounter, state: docQualityInputs.currentWrvu
+    opConversionFactor?: number | null;     // $/wRVU, state: docQualityInputs.conversionFactor
+    opTurnoverRate?: number | null;         // state: timeDriverInputs.annualTurnoverRate
+
+    // ED
+    edProviders?: number | null;
+    edAnnualVisits?: number | null;
+    edLwbsRate?: number | null;             // state: timeDriverInputs.edLwbsRate
+    edTurnoverRate?: number | null;         // state: timeDriverInputs.annualTurnoverRate
+
+    // Inpatient
+    ipProviders?: number | null;
+    ipAnnualAdmissions?: number | null;
+    ipTurnoverRate?: number | null;         // state: timeDriverInputs.ipAnnualTurnoverRate
+
+    // Nursing
+    nursingFTEs?: number | null;
+    nursingStaffedBeds?: number | null;
+    nursingOccupancyRate?: number | null;
+    nursingOtHoursPerWeek?: number | null;  // state: timeDriverInputs.nursingOtHoursPerNurseWeek
+    nursingTurnoverRate?: number | null;    // state: timeDriverInputs.nursingTurnoverRate
+    hapiRatePer1000?: number | null;        // state: docQualityInputs.nursingHapiRate
+    fallRatePer1000?: number | null;        // state: docQualityInputs.nursingFallsRate (check exact name)
+    cautiRatePer1000?: number | null;       // state: docQualityInputs.nursingCautiRate
+    clabsiRatePer1000?: number | null;      // state: docQualityInputs.nursingClabsiRate
+  }
+
+  ---
+
+  ## 2. ExploreIntakeForm.tsx — card-per-setting layout
+
+  Replace the current form entirely with this structure:
+
+  PAGE LAYOUT (white, max-w-2xl, centered, no calculator chrome):
+
+  Header:
+    - Abridge logo (small, centered, top)
+    - "Help us prepare for our call"
+    - "Share a few details before we connect. Takes about 2 minutes."
+
+  Care setting pills (same as before, 2x2 grid):
+    [ Outpatient Clinic ]  [ Emergency Department ]
+    [ Inpatient / Hospital Medicine ]  [ Nursing / Care Teams ]
+    Toggle on click. Red border + tint when selected.
+
+  Cards section (one card per selected setting, animate in/out):
+    Cards appear below the pills as settings are selected.
+    Use framer-motion: initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}.
+
+  ──────────────────────────────────
+  OUTPATIENT CLINIC card (shown when 'outpatient' selected):
+    Card header: stethoscope icon + "OUTPATIENT CLINIC" in small bold uppercase
+
+    Row 1 (2-col grid):
+      "Physicians / APPs"        [_______]    placeholder="e.g. 50"
+      "Annual encounters"        [_______]    placeholder="e.g. 90,000"
+
+    Row 2 (2-col grid):
+      "Avg wRVU per encounter"   [_______]    placeholder="e.g. 1.8"
+      "$/wRVU conversion rate"   [_______]    placeholder="e.g. 33"
+
+    Row 3 (single):
+      "Annual provider turnover" [_______] %  placeholder="e.g. 6"
+
+  ──────────────────────────────────
+  EMERGENCY DEPARTMENT card (shown when 'ed' selected):
+    Card header: zap icon + "EMERGENCY DEPARTMENT"
+
+    Row 1 (2-col):
+      "ED physicians / APPs"     [_______]    placeholder="e.g. 20"
+      "Annual ED visits"         [_______]    placeholder="e.g. 35,000"
+
+    Row 2 (2-col):
+      "Current LWBS rate"        [_______] %  placeholder="e.g. 2.5"
+      "Annual provider turnover" [_______] %  placeholder="e.g. 6"
+
+  ──────────────────────────────────
+  INPATIENT / HOSPITAL MEDICINE card (shown when 'inpatient' selected):
+    Card header: clipboard icon + "INPATIENT / HOSPITAL MEDICINE"
+
+    Row 1 (2-col):
+      "Hospitalists"             [_______]    placeholder="e.g. 15"
+      "Annual admissions"        [_______]    placeholder="e.g. 5,000"
+
+    Row 2 (single):
+      "Annual hospitalist turnover" [_______] %  placeholder="e.g. 8"
+
+  ──────────────────────────────────
+  NURSING / CARE TEAMS card (shown when 'nursing' selected):
+    Card header: heart-pulse icon + "NURSING / CARE TEAMS"
+
+    Row 1 (2-col):
+      "Nurse FTEs"               [_______]    placeholder="e.g. 300"
+      "Staffed beds"             [_______]    placeholder="e.g. 200"
+
+    Row 2 (2-col):
+      "Occupancy rate"           [_______] %  placeholder="e.g. 75"
+      "OT hours / nurse / week"  [_______]    placeholder="e.g. 4"
+
+    Row 3 (single):
+      "Annual nurse turnover"    [_______] %  placeholder="e.g. 18"
+
+    Divider with label: "QUALITY METRICS  ·  optional, if you track these"
+
+    Row 4 (2-col or 4-col if space):
+      "HAPI rate / 1k pt days"   [_______]    placeholder="e.g. 1.5"
+      "Falls rate / 1k pt days"  [_______]    placeholder="e.g. 2.0"
+      "CAUTI rate / 1k"          [_______]    placeholder="e.g. 1.8"
+      "CLABSI rate / 1k"         [_______]    placeholder="e.g. 0.8"
+
+  ──────────────────────────────────
+  Footer:
+    Button: "Copy My Answers"
+      - full width, bg-[#EA2C00] text-white, h-14, rounded-xl, font-semibold
+      - disabled (gray) until: at least one setting selected AND that setting's
+        providers field has a value
+      - on click: generateIntakeResponseUrl(state) → clipboard → button shows
+        "✓ Copied — paste this link and send it back" for 3 seconds, then resets
+
+    Small text below button:
+      "No account required. Your answers are encoded in the link —
+       nothing is stored on any server."
+
+  Each setting's card stores its own fields in the ExploreIntakeResponse state.
+  All fields are optional numbers — null if left blank.
+
+  Card visual: bg-white border border-[#E5E0DB] rounded-xl p-6 shadow-sm
+  Input: bg-[#F5F0EB] border-0 rounded-lg h-11, label above in text-xs font-medium
+         text-[#666666] uppercase tracking-wide mb-1
+
+  ---
+
+  ## 3. App.tsx — update applyIntakeToExploreState
+
+  function applyIntakeToExploreState(base: ExploreState, intake: ExploreIntakeResponse): ExploreState {
+    // Use first setting's providers/encounters as the primary values
+    const primarySetting = intake.settings[0];
+    const providers =
+      primarySetting === 'outpatient' ? intake.opProviders :
+      primarySetting === 'ed' ? intake.edProviders :
+      primarySetting === 'inpatient' ? intake.ipProviders :
+      primarySetting === 'nursing' ? intake.nursingFTEs : null;
+    const encounters =
+      primarySetting === 'outpatient' ? intake.opAnnualEncounters :
+      primarySetting === 'ed' ? intake.edAnnualVisits :
+      primarySetting === 'inpatient' ? intake.ipAnnualAdmissions : null;
+
+    return {
+      ...base,
+      careSetting: primarySetting ?? null,
+      numberOfProviders: providers ?? base.numberOfProviders,
+      annualEncounters: encounters ?? base.annualEncounters,
+      nursingStaffedBeds: intake.nursingStaffedBeds ?? base.nursingStaffedBeds,
+      nursingOccupancyRate: intake.nursingOccupancyRate ?? base.nursingOccupancyRate,
+      docQualityInputs: {
+        ...base.docQualityInputs,
+        ...(intake.opCurrentWrvu != null && { currentWrvu: intake.opCurrentWrvu }),
+        ...(intake.opConversionFactor != null && { conversionFactor: intake.opConversionFactor }),
+        ...(intake.hapiRatePer1000 != null && { nursingHapiRate: intake.hapiRatePer1000 }),
+        ...(intake.fallRatePer1000 != null && { nursingFallsRate: intake.fallRatePer1000 }),
+        ...(intake.cautiRatePer1000 != null && { nursingCautiRate: intake.cautiRatePer1000 }),
+        ...(intake.clabsiRatePer1000 != null && { nursingClabsiRate: intake.clabsiRatePer1000 }),
+      },
+      timeDriverInputs: {
+        ...base.timeDriverInputs,
+        ...(intake.opTurnoverRate != null && { annualTurnoverRate: intake.opTurnoverRate }),
+        ...(intake.edTurnoverRate != null && { annualTurnoverRate: intake.edTurnoverRate }),
+        ...(intake.edLwbsRate != null && { edLwbsRate: intake.edLwbsRate }),
+        ...(intake.ipTurnoverRate != null && { ipAnnualTurnoverRate: intake.ipTurnoverRate }),
+        ...(intake.nursingOtHoursPerWeek != null && { nursingOtHoursPerNurseWeek: intake.nursingOtHoursPerWeek }),
+        ...(intake.nursingTurnoverRate != null && { nursingTurnoverRate: intake.nursingTurnoverRate }),
+        ...(intake.nursingFTEs != null && primarySetting === 'nursing' && { /* numberOfProviders already set above */ }),
+      },
+    };
+  }
+
+  Important: check the exact field name for falls rate in docQualityInputs
+  (may be nursingFallsRate or nursingFallRate — use whichever exists in ExploreFlow.tsx).
