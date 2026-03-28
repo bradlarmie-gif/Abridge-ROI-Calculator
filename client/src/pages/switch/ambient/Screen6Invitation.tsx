@@ -136,18 +136,28 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
 
   if (domain === 'workforce') {
     if (level === 1) {
-      if (raw.afterHoursReduction) out['After-hours reduction'] = `${raw.afterHoursReduction} hrs/week`;
-    }
-    if (level === 2) {
       if (raw.editTimeSaved) out['In-clinic time saved'] = `${raw.editTimeSaved} min/day`;
-      if (raw.confirmedAfterHoursReduction) out['Confirmed after-hours reduction'] = `${raw.confirmedAfterHoursReduction} hrs/week`;
       if (raw.surveyType) out['Survey approach'] = String(raw.surveyType);
       const findings = resolveChecklist(raw.surveyFindings as string, SURVEY_FINDINGS_LABELS);
       if (findings.length) out['Survey findings'] = findings.join(', ');
     }
+    if (level === 2) {
+      const BEHAVIORAL_CHANGE_SHORT = [
+        'After-hours time reduced',
+        'Leaving on time',
+        'Lunch breaks resumed',
+        'Work-outside-of-work reduced',
+        'Weekend catch-up reduced',
+        'Notes completed before leaving',
+        'More present at home',
+      ];
+      const behaviors = resolveChecklist(raw.observedBehaviors as string, BEHAVIORAL_CHANGE_SHORT);
+      if (behaviors.length) out['Behavioral changes'] = behaviors.join(', ');
+      if (raw.afterHoursReduction) out['After-hours reduction'] = `${raw.afterHoursReduction} hrs/week`;
+    }
     if (level === 3) {
-      if (raw.beforeTurnoverRate) out['Pre-deployment turnover rate'] = `${raw.beforeTurnoverRate}%`;
-      if (raw.afterTurnoverRate) out['Post-deployment turnover rate'] = `${raw.afterTurnoverRate}%`;
+      if (raw.beforeTurnoverRate) out['Turnover rate before Abridge'] = `${raw.beforeTurnoverRate}%`;
+      if (raw.afterTurnoverRate) out['Turnover rate with Abridge'] = `${raw.afterTurnoverRate}%`;
       if (raw.replacementCost) out['Replacement cost per provider'] = fmtDollar(Number(raw.replacementCost));
     }
     if (level === 4) {

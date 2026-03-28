@@ -30,8 +30,8 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Documentation as a Revenue Lever',
   },
   workforce: {
-    1: 'Time Is Returning',
-    2: 'Burden Measured',
+    1: 'Provider Sentiment Measured',
+    2: 'Behavioral Change Visible',
     3: 'Retention Confirmed',
     4: 'Workforce Strategically Managed',
   },
@@ -73,7 +73,10 @@ export function computeDomainScore(domain: Domain, level: ActivationLevel, input
   if (domain === 'workforce' && (level === 3 || level === 4)) {
     if (level === 3) {
       const beforeTurnoverRate = inputs.beforeTurnoverRate as number | undefined;
-      if (!beforeTurnoverRate || beforeTurnoverRate <= 0) {
+      const afterTurnoverRate = inputs.afterTurnoverRate as number | undefined;
+      const hasDelta = beforeTurnoverRate && beforeTurnoverRate > 0 &&
+        afterTurnoverRate !== undefined && afterTurnoverRate >= 0 && afterTurnoverRate < beforeTurnoverRate;
+      if (!hasDelta) {
         return 12;
       }
     }
@@ -544,25 +547,7 @@ export function computeWorkforceFeedback(
   providers: number,
 ): DomainFeedback {
   if (level === 1) {
-    const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
-    const defaultHrs = 2.0;
-    const effectiveHrs = (afterHoursReduction && afterHoursReduction > 0) ? afterHoursReduction : defaultHrs;
-    const totalHoursReturned = Math.round(effectiveHrs * providers * CLINICAL_WEEKS);
-    return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
-      headlineMetric: `${totalHoursReturned.toLocaleString()} after-hours hours returned annually`,
-      context: `${providers.toLocaleString()} providers × ${effectiveHrs} hrs/week × ${CLINICAL_WEEKS} clinical weeks = ${totalHoursReturned.toLocaleString()} hours of after-hours documentation time returned annually.\n\nResearch consistently identifies documentation burden as a leading contributor to physician burnout and intent to leave (Shanafelt et al., 2022; Melnick et al., 2020).`,
-      formula: `[burdenHours] = ${effectiveHrs} × ${providers} × ${CLINICAL_WEEKS} = ${totalHoursReturned.toLocaleString()}`,
-      footnote: `Annualized using ${CLINICAL_WEEKS} clinical weeks (${CLINICAL_DAYS} working days). After-hours time is self-reported and may vary by specialty and EHR workflow.`,
-      nextLevelTeaser: 'Level 2 adds in-clinic time savings and provider survey data.',
-    };
-  }
-
-  if (level === 2) {
     const minutesSaved = inputs.editTimeSaved as number | undefined;
-    const confirmedAfterHours = (inputs.confirmedAfterHoursReduction as number | undefined) || (inputs.afterHoursReduction as number | undefined);
     const surveyType = inputs.surveyType as string | undefined;
     const surveyFindingsStr = inputs.surveyFindings as string | undefined;
     const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];
@@ -577,19 +562,14 @@ export function computeWorkforceFeedback(
         value: null,
         hasValue: false,
         headlineMetric: 'Enter in-clinic time savings to calculate.',
-        context: `Benchmark: 10–20 minutes per provider per day of in-clinic burden reduction. At ${providers.toLocaleString()} providers, that is ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually.`,
+        context: `Published benchmark: 10–20 minutes per provider per day of in-clinic burden reduction (MGMA Physician Productivity data). At ${providers.toLocaleString()} providers, that is ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually.`,
         formula: '',
         footnote: '',
-        nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
+        nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',
       };
     }
 
     const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);
-
-    const afterHoursHours = confirmedAfterHours && confirmedAfterHours > 0
-      ? Math.round(confirmedAfterHours * providers * CLINICAL_WEEKS)
-      : 0;
-
     const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
     const surveyNarrative = hasSurveyData
       ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`
@@ -597,22 +577,72 @@ export function computeWorkforceFeedback(
         ? '\n\nProvider survey not yet conducted or informal only.'
         : '';
 
-    const totalHours = clinicSavedHours + afterHoursHours;
-    const fteEquiv = Math.round(totalHours / ANNUAL_HOURS * 10) / 10;
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`,
+      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × ${CLINICAL_DAYS} clinical days).${surveyNarrative}`,
+      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}`,
+      footnote: `${CLINICAL_DAYS} clinical working days. Dollar value connects at Level 3 when turnover data is entered.`,
+      nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',
+    };
+  }
 
-    const headlineMetric = afterHoursHours > 0
-      ? `${clinicSavedHours.toLocaleString()} in-clinic hours + ${afterHoursHours.toLocaleString()} after-hours hours recovered annually — ${fteEquiv} FTE equivalent of provider time.`
-      : `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`;
+  if (level === 2) {
+    const BEHAVIORAL_CHANGE_LABELS = [
+      'After-hours documentation time reduced',
+      'Leaving clinic on time more consistently',
+      'Taking lunch breaks resumed',
+      'Work-outside-of-work documentation eliminated or reduced',
+      'Weekend catch-up work reduced',
+      'Notes completed before leaving the clinic',
+      'More present at home / personal time reclaimed',
+    ];
+
+    const behaviorsCsv = inputs.observedBehaviors as string | undefined;
+    const behaviorSet = new Set((behaviorsCsv || '').split(',').filter(Boolean));
+    const behaviorCount = behaviorSet.size;
+    const checkedBehaviorLabels = BEHAVIORAL_CHANGE_LABELS.filter((_, i) => behaviorSet.has(String(i)));
+    const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
+    const afterHoursHours = (afterHoursReduction && afterHoursReduction > 0)
+      ? Math.round(afterHoursReduction * providers * CLINICAL_WEEKS)
+      : 0;
+
+    if (behaviorCount === 0 && !afterHoursReduction) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Select observable behavioral changes to document impact.',
+        context: 'At this level, the story is behavioral, not just time. Providers leaving on time, taking lunch, not documenting on weekends — these are the signals that retention impact is building.',
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',
+      };
+    }
+
+    const headlineParts: string[] = [];
+    if (behaviorCount > 0) headlineParts.push(`${behaviorCount} behavioral change${behaviorCount !== 1 ? 's' : ''} documented`);
+    if (afterHoursHours > 0) headlineParts.push(`${afterHoursHours.toLocaleString()} after-hours hours returned annually`);
+
+    let contextText = '';
+    if (checkedBehaviorLabels.length > 0) {
+      contextText += `Observable behavioral changes documented across your provider population:\n${checkedBehaviorLabels.map(l => `• ${l}`).join('\n')}`;
+    }
+    if (afterHoursHours > 0) {
+      contextText += `\n\nAfter-hours reduction: ${afterHoursReduction} hrs/week × ${providers} providers × ${CLINICAL_WEEKS} clinical weeks = ${afterHoursHours.toLocaleString()} hours returned annually.`;
+    }
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric,
-      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}`,
-      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAfterHours} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : ''}`,
-      footnote: '230 clinical working days. Dollar value appears at Level 3 when turnover data is entered.',
-      nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',
+      headlineMetric: headlineParts.join('\n'),
+      context: contextText,
+      formula: afterHoursHours > 0 ? `[afterHoursHours] = ${afterHoursReduction} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : '',
+      footnote: 'Behavioral changes are qualitative indicators. Financial value connects at Level 3 when turnover data is entered.',
+      nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',
     };
   }
 
@@ -621,47 +651,51 @@ export function computeWorkforceFeedback(
     const afterTurnoverRate = inputs.afterTurnoverRate as number | undefined;
     const replacementCostRaw = inputs.replacementCost as number | undefined;
     const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
+    const isDefaultReplacementCost = !replacementCostRaw || replacementCostRaw === 350000;
 
     if (!beforeTurnoverRate || beforeTurnoverRate <= 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Enter before/after turnover rates to calculate.',
-        context: 'Enter your turnover rate before and after ambient deployment to see prevented departures and annual savings.',
+        headlineMetric: 'Enter before and after turnover rates to calculate retention value.',
+        context: `Enter your turnover rate before and after Abridge deployment to calculate the financial value of improved retention. Use the AMGA benchmark replacement cost ($350K) or your organization's actual figure.`,
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
       };
     }
 
-    const afterMeasured = afterTurnoverRate !== undefined && afterTurnoverRate !== null && afterTurnoverRate > 0;
-    const afterRate = afterMeasured ? afterTurnoverRate : beforeTurnoverRate;
-    const rateDelta = afterMeasured ? Math.max(0, beforeTurnoverRate - afterRate) : 0;
-    const preventedDepartures = Math.round(providers * (rateDelta / 100) * 10) / 10;
-    const annualSavings = Math.round(preventedDepartures * replacementCost);
-    const hasSavings = afterMeasured && rateDelta > 0 && annualSavings > 0;
+    const effectiveAfterRate = (afterTurnoverRate !== undefined && afterTurnoverRate >= 0) ? afterTurnoverRate : beforeTurnoverRate;
+    const rateDelta = beforeTurnoverRate - effectiveAfterRate;
 
-    const replacementLabel = replacementCost === 350000
-      ? `Using AMGA benchmark midpoint: ${formatDollar(replacementCost)}`
-      : `Based on your input: ${formatDollar(replacementCost)}`;
+    if (rateDelta <= 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'After rate should be lower than before rate to show retention value.',
+        context: `Current inputs show turnover moved from ${beforeTurnoverRate}% to ${effectiveAfterRate}%. Enter an after rate lower than the before rate to calculate the financial value of retention improvement.`,
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+      };
+    }
 
-    const headlineMetric = hasSavings
-      ? `${formatDollar(annualSavings)} in annual retention savings`
-      : !afterMeasured
-        ? 'Enter your post-deployment turnover rate to calculate savings.'
-        : afterRate >= beforeTurnoverRate
-          ? 'Turnover has not decreased since deployment.'
-          : 'Enter your post-deployment turnover rate to calculate savings.';
+    const departuresAvoided = providers * (rateDelta / 100);
+    const retentionValue = Math.round(departuresAvoided * replacementCost);
+    const replacementLabel = isDefaultReplacementCost
+      ? `AMGA benchmark: ${formatDollar(replacementCost)}/physician`
+      : `Your input: ${formatDollar(replacementCost)}/physician`;
 
     return {
-      label: 'Estimated Impact',
-      value: hasSavings ? annualSavings : null,
-      hasValue: hasSavings,
-      headlineMetric,
-      context: `Before deployment: ${beforeTurnoverRate}% annual turnover.\n${afterMeasured ? `After deployment: ${afterRate}% annual turnover.` : 'After deployment: not yet measured.'}\n\n${hasSavings ? `Improvement: ${rateDelta.toFixed(1)} percentage points → ${preventedDepartures.toFixed(1)} prevented departure${preventedDepartures !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}.\nAnnual savings: ${formatDollar(annualSavings)}.` : !afterMeasured ? 'Enter your post-deployment turnover rate to see the comparison. If it hasn\'t been measured yet, leave at 0.' : afterRate >= beforeTurnoverRate ? 'No improvement observed yet. Turnover reduction takes time — most organizations see measurable change after 12–18 months of deployment.' : 'Enter your post-deployment turnover rate to see the comparison.'}`,
-      formula: hasSavings ? `[rateDelta] = ${beforeTurnoverRate}% − ${afterRate}% = ${rateDelta.toFixed(1)}%\n[preventedDepartures] = ${providers} × ${rateDelta.toFixed(1)}% = ${preventedDepartures.toFixed(1)}\n[annualSavings] = ${preventedDepartures.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(annualSavings)}` : '',
-      footnote: 'All inputs are your organization\'s data. Turnover reduction may be influenced by multiple factors beyond documentation burden.',
+      label: 'Confirmed Impact',
+      value: retentionValue,
+      hasValue: true,
+      headlineMetric: `${formatDollar(retentionValue)} in retention value from ${rateDelta.toFixed(1)} pp improvement in physician turnover.`,
+      context: `Turnover rate moved from ${beforeTurnoverRate}% to ${effectiveAfterRate}% — a ${rateDelta.toFixed(1)} percentage point improvement across ${providers} providers.\n\nDepartures avoided: ${providers} × ${rateDelta.toFixed(1)}% = ${departuresAvoided.toFixed(1)} physicians.\nReplacement cost: ${replacementLabel}.\nRetention value: ${departuresAvoided.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}.`,
+      formula: `[departuresAvoided] = ${providers} × (${beforeTurnoverRate}% − ${effectiveAfterRate}%) = ${departuresAvoided.toFixed(1)}\n[retentionValue] = ${departuresAvoided.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}`,
+      footnote: isDefaultReplacementCost ? 'Replacement cost uses AMGA benchmark midpoint ($350K). Update if your organization tracks actual replacement cost.' : 'Replacement cost based on your input.',
       nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
     };
   }
